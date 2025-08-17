@@ -4,18 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/emptyViewNote"
     android:visibility="gone"
-    android:layout_gravity="center"
+    android:layout_gravity="top"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     tools:ignore="UseCompoundDrawables">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="200dp" />
+
     <ImageView
         android:id="@+id/imageEmpty"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/heightImageEmpty"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_note"
+        android:layout_height="160dp"
+        android:layout_gravity="top"
+        android:src="@drawable/ic_empty_notes"
         android:contentDescription="@string/emptyNotes"
         app:tint="?attr/colorPrimary" />
 
@@ -23,8 +27,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:layout_margin="20dp"
+        android:layout_margin="30dp"
         android:fontFamily="@font/railway_medium"
+        android:textSize="16sp"
         android:gravity="center"
         android:text="@string/emptyNotes" />
 </LinearLayout>
