@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/login_page"
+        layout="@layout/view_login_page" />
+
+    <LinearLayout
+        android:id="@+id/trashActivityLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/trash"
+            android:src="@drawable/ic_trash_notes" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/trash" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/themeApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/settingsInterface"
+            android:src="@drawable/ic_interface_set" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/settingsInterface" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/backups"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/settingsBackups"
+            android:src="@drawable/ic_backup_restore" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/settingsBackups" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/aboutApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/aboutApps"
+            android:src="@drawable/ic_about" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/aboutApps" />
+    </LinearLayout>
+</LinearLayout>

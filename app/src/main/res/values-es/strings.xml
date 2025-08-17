@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mis notas</string>
+    <string name="NewNote">Nueva nota</string>
+    <string name="trashNotes">Mover a la papelera</string>
+    <string name="trashClean">Vaciar Papelera</string>
+    <string name="share">Compartir</string>
+    <string name="yesCleanTrash">Sí, limpiar</string>
+    <string name="cancel">Cancelar</string>
+
+    <string name="noSave">Cerrar sin guardar</string>
+    <string name="ratingApp">Calificar aplicación</string>
+    <string name="exitWhat">Para salir, debe repetir la acción</string>
+
+    <string name="telegram">Abrir contactos de desarrollador</string>
+    <string name="notSupportedShare">Este contenido no es compatible.</string>
+    <string name="notFoundPlayMarket">Falta la aplicación Play Market</string>
+    <string name="copyX">"Copiado"</string>
+    <string name="cd_format">Formato de notas</string>
+
+    <string name="search">Buscar en notas</string>
+    <string name="close">Cerrar</string>
+    <string name="addTag">Agregar etiqueta</string>
+    <string name="deleteTag">Eliminar</string>
+    <string name="deleteTagAndNotes">Eliminar etiqueta y notas etiquetadas</string>
+    <string name="countTagsError">No se pueden crear más de %1$s etiquetas</string>
+    <string name="allNotes">Todas las notas</string>
+    <string name="more">Más</string>
+    <string name="noteTitle">Título</string>
+    <string name="deleteSelectTag">Eliminar una etiqueta</string>
+    <string name="deleteSelectTagTextMassage">¿Está seguro de que desea eliminar la etiqueta? Después de la eliminación, la etiqueta desaparecerá de todas las notas marcadas.</string>
+    <string name="cleanTrashMessage">¿Está seguro de que desea vaciar la Papelera? Todas las notas se eliminarán de forma permanente.</string>
+    <string name="selectAll">Seleccione esta y algunas notas más</string>
+    <string name="createNewTag">Ingrese el nombre de la etiqueta</string>
+    <string name="sort_Date_Increase">Fecha de modificación: más reciente primero</string>
+    <string name="sort_Date_Decrease">Fecha de cambio: antiguo primero</string>
+    <string name="sort_Title_Increase">Título: A-Z</string>
+    <string name="sort_Title_Decrease">Título: Z-A</string>
+    <string name="sortHead">Ordenar por:</string>
+    <string name="shareApp">Compartir aplicación</string>
+    <string name="privacyApp">Política de privacidad</string>
+    <string name="addShortCutLauncher">Añadir acceso directo al escritorio</string>
+    <string name="addShortCutSuccessfully">Acceso directo agregado con éxito</string>
+    <string name="translateNote">Traducir nota</string>
+    <string name="hintTextNote">Texto</string>
+    <string name="notInstaledAppTranslate">Google Traductor debe estar instalado para usar esta función</string>
+    <string name="lastDateEditNote">Última edición: %1$s </string>
+    <string name="restore">Restaurar</string>
+    <string name="noteSaved">Nota guardada</string>
+    <string name="searchNotesFromTitle">Empieza a escribir</string>
+    <string name="errorNewTagInput">Error: el número máximo de caracteres que puede contener un nombre de etiqueta es %1$d </string>
+    <string name="emptyTrash">Tus notas eliminadas se muestran aquí</string>
+    <string name="emptyNotes">Las notas que cree aparecerán aquí</string>
+    <string name="chooseNote">Acciones en la nota seleccionada</string>
+    <string name="contentDescrChangeStyleText">Cambiar estilo de texto</string>
+    <string name="copyNoteEdits">Editar copia</string>
+    <string name="noteMoveTrashSnackbar">Nota movida a la papelera</string>
+    <string name="button_edit">Editar</string>
+    <string name="button_copy">Copiar</string>
+    <string name="button_phone">Llamar</string>
+    <string name="button_mail">Escribir</string>
+    <string name="button_url">Ir a</string>
+
+    <string name="hiddeTag">Ocultar notas</string>
+    <string name="visibleTag">Mostrar notas</string>
+    <string name="hintNameLabel">Nombre de la etiqueta</string>
+    <string name="titleDialogShortCut">Crear acceso directo</string>
+    <string name="functionNotSupport">Esta función no es compatible con su dispositivo</string>
+    <string name="shortCutCreateFallDouble">Ya se ha creado una etiqueta para esta nota</string>
+    <string name="buttonCreateShortCut">Agregar acceso directo al escritorio</string>
+    <string name="errorMaxNameShortCut">Error en el nombre del atajo</string>
+    <string name="renameTag">Renombrar</string>
+
+    <string name="settingsInterface">Configuración de la interfaz</string>
+    <string name="settingsBackups">Sincronización y copia de seguridad</string>
+    <string name="aboutApps">Acerca de la aplicación</string>
+    <string name="trash">Papelera</string>
+    <string name="themes">Temas</string>
+    <string name="onDynamicColor">Habilitar color dinámico</string>
+    <string name="coffeeByPlay">Gracias desarrollador</string>
+    <string name="coffeeByTextInfo"><b>My Notes</b> es una aplicación sin anuncios que se distribuye como un producto gratuito. La aplicación está desarrollada por una sola persona, por lo que algunas actualizaciones llegan tarde. Mantener la salud de la aplicación y algunas características requiere un costo. Puede agradecer al desarrollador invitándole a un café o pagando el alquiler del servidor, así como enviar una donación a los enlaces especificados, que se mostrarán a continuación. ¡Gracias por usar esta aplicación!</string>
+
+    <string name="loginUser">Inicio de sesión de Google</string>
+    <string name="cloudBackup">Nube</string>
+    <string name="localBackup">Dispositivo</string>
+    <string name="importLocalBackup">Restaurar desde Res. copias</string>
+    <string name="exportLocalBackup">Crear una copia de seguridad</string>
+    <string name="lastCloudCopy">Última copia de seguridad: %1$s</string>
+    <string name="errorDriveAuth">Invitado</string>
+    <string name="autoCloudBackupTitle">Copia de seguridad automática</string>
+    <string name="restoreNotesTitle">Restauración de datos</string>
+    <string name="restoreNotesMessage">¡Se agregarán nuevas notas antes que las existentes y se ignorarán los duplicados!</string>
+    <string name="selectRestore">Seleccione Restaurar. copiar</string>
+    <string name="nextRestore">Restaurar desde la nube</string>
+    <string name="messageRestoreProcess"><b>Restaurando datos</b> \nEsta ventana se cerrará automáticamente cuando se complete.</string>
+    <string name="emptyBackups">No se encontraron copias de seguridad</string>
+    <string name="checkLastBackupsCloud">Espere, cargando datos…</string>
+
+    <!-- Copia de seguridad automática de matrices -->
+    <string name="autoCloudVariantsDay">Todos los días</string>
+    <string name="autoCloudVariantsWeek">Todas las semanas</string>
+    <string name="autoCloudVariantsMonth">Todos los meses</string>
+    <string name="autoCloudVariantsOff">Desactivado</string>
+
+    <!-- Cadenas de copia de seguridad automática -->
+
+    <!-- Copia de seguridad/restauración de resultados de error -->
+    <string name="emptyDataToBackup">No hay datos para respaldar</string>
+    <string name="errorConnectedNetwork">Sin conexión a Internet</string>
+    <string name="creteLocalCopyOkay">Copia de seguridad creada con éxito</string>
+    <string name="creteLocalCopyFail">Error, copia de seguridad no guardada</string>
+    <string name="restoreDataOkay">Restauración de datos completada con éxito</string>
+    <string name="restoreDataFall">Error: la copia de seguridad está dañada</string>
+    <string name="errorAuth">Error, inténtalo de nuevo más tarde</string>
+    <string name="errorLoadingLastBackupCloud">Error, haga clic para intentarlo de nuevo</string>
+    <string name="errorDriveSync">Error del servidor o mala calidad de Internet</string>
+    <string name="errorCredential">Error, problemas de autorización</string>
+
+    <string name="errorDriverAuthInfo">Debe iniciar sesión para usar la sincronización en la nube</string>
+    <string name="sortNotes">Ordenar notas</string>
+    <string name="percentProgress">Copia de seguridad (%d%%)</string>
+
+    <!-- Oferta de productos -->
+    <string name="byyError">Error al comprar.</string>
+    <string name="byyCancel">Nos esforzaremos por ser mejores.</string>
+    <string name="errorLoadingsProduct">Error, no se pudo cargar el escaparate</string>
+    <string name="thanks_title">Estimado usuario</string>
+    <string name="errorSyncTitle">¡Atención!</string>
+    <string name="errorSyncDescrpt">Con esta versión, dejamos de ofrecer soporte para la sincronización con Google Drive. En futuras actualizaciones, implementaremos un método de sincronización más seguro y eficiente, lo que garantizará una mejor experiencia de usuario.</string>
+
+    <string name="creteNoteToTag">Crear una nota</string>
+    <string name="thanks_donate">El desarrollador del proyecto le agradece su compra. Nos esforzaremos por ser mejores y más convenientes. \n <b>¡Respetuosamente, mis notas!</b></string>
+</resources>

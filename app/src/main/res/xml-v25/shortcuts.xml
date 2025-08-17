@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="static"
+        android:enabled="true"
+        android:icon="@drawable/ic_add"
+        android:shortcutShortLabel="@string/NewNote"
+        android:shortcutLongLabel="@string/NewNote">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.pasich.mynotes"
+            android:targetClass="com.pasich.mynotes.ui.view.activity.NoteActivity" />
+
+        <categories android:name="android.shortcut.conversation" />
+        <capability-binding android:key="actions.intent.CREATE_MESSAGE" />
+    </shortcut>
+
+</shortcuts>

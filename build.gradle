@@ -1,0 +1,30 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.12.0'
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.44.2'
+    }
+
+}
+plugins {
+
+    id 'com.google.dagger.hilt.android' version '2.44.2' apply false
+}
+allprojects {
+
+
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext {
+
+    rxjava2Version = '2.1.6'
+    rxandroidVersion = '2.0.1'
+}

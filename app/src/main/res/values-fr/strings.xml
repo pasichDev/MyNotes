@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name"> Mes notes </string>
+    <string name="NewNote"> Créer une note </string>
+    <string name="trashNotes">Déplacer vers la corbeille</string>
+    <string name="trashClean">Nettoyer la corbeille</string>
+    <string name="share">Partager</string>
+    <string name="yesCleanTrash">Oui, nettoyer</string>
+    <string name="cancel">Annuler</string>
+    <string name="noSave">Fermer sans enregistrer</string>
+    <string name="ratingApp">Évaluer l\'application</string>
+    <string name="exitWhat">Vous devez répéter l\'action pour quitter</string>
+    <string name="telegram">Ouvrir les contacts des développeurs</string>
+    <string name="notSupportedShare">Ce contenu n\'est pas pris en charge.</string>
+    <string name="notFoundPlayMarket">PlayMarket est manquant</string>
+    <string name="copyX">Copié</string>
+    <string name="cd_format">Notes de mise en forme</string>
+    <string name="search">Rechercher dans les notes </string>
+    <string name="close">Fermer</string>
+    <string name="addTag">Ajouter une balise</string>
+    <string name="deleteTag">Supprimer</string>
+    <string name="deleteTagAndNotes">Supprimer les balises et les notes balisées</string>
+    <string name="countTagsError">Impossible de créer plus de %1$s balises</string>
+    <string name="allNotes">Toutes les notes</string>
+    <string name="more">Plus</string>
+    <string name="noteTitle">Titre</string>
+    <string name="deleteSelectTag">Supprimer la balise</string>
+    <string name="deleteSelectTagTextMassage">Voulez-vous vraiment supprimer la balise? Une fois supprimée, la marque disparaîtra de toutes les notes marquées.</string>
+    <string name="cleanTrashMessage">Voulez-vous vraiment vider la corbeille? Toutes les notes seront définitivement supprimées.</string>
+    <string name="selectAll">Sélectionnez ceci et plusieurs autres notes</string>
+    <string name="createNewTag">Entrez un nom de balise</string>
+    <string name="sort_Date_Increase">Date de la dernière modification: nouvelle par rapport au-dessus</string>
+    <string name="sort_Date_Decrease">Date du dernier changement: ancien en haut</string>
+    <string name="sort_Title_Increase">Titre: AZ</string>
+    <string name="sort_Title_Decrease">Titre: de Z à A</string>
+    <string name="sortHead">Trier par:</string>
+    <string name="shareApp">Partager l\'application</string>
+    <string name="privacyApp">Politique de confidentialité</string>
+    <string name="addShortCutLauncher">Ajouter un raccourci sur le bureau</string>
+    <string name="addShortCutSuccessfully">Ajouter un raccourci avec succès</string>
+    <string name="translateNote">Traduire la note</string>
+    <string name="hintTextNote">Texte</string>
+    <string name="notInstaledAppTranslate">Google Translator doit être installé pour utiliser cette fonctionnalité</string>
+    <string name="lastDateEditNote">Modifié par %1$s</string>
+    <string name="restore">Restaurer</string>
+    <string name="noteSaved">Note enregistrée</string>
+    <string name="searchNotesFromTitle">Commencer à taper</string>
+    <string name="errorNewTagInput">Erreur: nombre maximal de caractères que le nom de balise %1$d peut contenir </string>
+    <string name="emptyTrash">Vos notes supprimées seront affichées ici</string>
+    <string name="emptyNotes">Les notes que vous avez créées seront affichées ici</string>
+    <string name="chooseNote">Actions sur la note sélectionnée</string>
+    <string name="contentDescrChangeStyleText">Modifier le style de texte</string>
+    <string name="copyNoteEdits">Modifier une copie d\'une note</string>
+    <string name="noteMoveTrashSnackbar">Note déplacée vers la corbeille</string>
+
+    <string name="button_edit">Modifier</string>
+    <string name="button_copy">Copier</string>
+    <string name="button_phone">Appeler</string>
+    <string name="button_mail">Écrire</string>
+    <string name="button_url">Ouvrir le lien</string>
+    <string name="hiddeTag">Masquer les notes</string>
+    <string name="visibleTag">Afficher les notes</string>
+    <string name="hintNameLabel">Le nom de l\'étiquette</string>
+    <string name="titleDialogShortCut">Créer un raccourci</string>
+    <string name="functionNotSupport">Cette fonction n\'est pas prise en charge par votre appareil</string>
+    <string name="shortCutCreateFallDouble">Le raccourci pour cette note a déjà été créé</string>
+    <string name="buttonCreateShortCut">Ajouter un raccourci sur le bureau</string>
+    <string name="errorMaxNameShortCut">Erreur dans le nom du raccourci</string>
+    <string name="renameTag">Renommer</string>
+    <string name="settingsInterface">Paramètres d\'interface</string>
+    <string name="settingsBackups">Synchronisation et sauvegardes</string>
+    <string name="aboutApps">À propos de l\'application</string>
+    <string name="trash">Corbeille</string>
+    <string name="themes">Thèmes</string>
+    <string name="onDynamicColor">Activer la couleur dynamique</string>
+    <string name="coffeeByPlay">Remercier le développeur</string>
+    <string name="coffeeByTextInfo"><b>Mes notes</b> est une application sans publicité et distribuée en tant que produit gratuit. L\'application est développée par une seule personne, donc certaines mises à jour sont livrées en retard. Le maintien de la fonctionnalité du programme et de certaines fonctions crée des coûts. Vous pouvez remercier le développeur en lui achetant un café ou en payant la location d\'un serveur, ainsi qu\'en envoyant un don en utilisant les liens spécifiés qui seront affichés ci-dessous. Merci d\'utiliser cette application!</string>
+    <string name="loginUser">Autorisation Google</string>
+    <string name="cloudBackup">Cloud</string>
+    <string name="localBackup">Périphérique</string>
+    <string name="importLocalBackup">Restauration à l\'aide de res. copies</string>
+    <string name="exportLocalBackup">Créer une sauvegarde</string>
+    <string name="lastCloudCopy">Dernière sauvegarde: %1$s</string>
+    <string name="errorDriveAuth">Invité</string>
+    <string name="autoCloudBackupTitle">Sauvegarde automatique</string>
+    <string name="restoreNotesTitle">Restaurer les notes</string>
+    <string name="restoreNotesMessage">Les nouvelles notes seront ajoutées aux notes existantes et les doublons seront ignorés!</string>
+    <string name="selectRestore">Sélectionner res. copier</string>
+    <string name="nextRestore">Restauration à partir du cloud</string>
+    <string name="messageRestoreProcess"><b>Restaurer les données</b> \nCette fenêtre se fermera automatiquement une fois terminée.</string>
+    <string name="emptyBackups">Aucune sauvegarde trouvée</string>
+    <string name="checkLastBackupsCloud">Veuillez patienter, chargement des données…</string>
+    <!-- Sauvegarde automatique des baies -->
+    <string name="autoCloudVariantsDay">Tous les jours</string>
+    <string name="autoCloudVariantsWeek">Chaque semaine</string>
+    <string name="autoCloudVariantsMonth">Tous les mois</string>
+    <string name="autoCloudVariantsOff">Désactivé</string>
+
+
+    <!-- Erreur de sauvegarde/restauration des résultats -->
+    <string name="emptyDataToBackup">Il n\'y a pas de données à sauvegarder</string>
+    <string name="errorConnectedNetwork">Pas d\'accès à Internet</string>
+    <string name="creteLocalCopyOkay">Sauvegarde créée avec succès</string>
+    <string name="creteLocalCopyFail">Erreur, sauvegarde non enregistrée</string>
+    <string name="restoreDataOkay">Restauration des données terminée avec succès</string>
+    <string name="restoreDataFall">Erreur: Sauvegarde corrompue</string>
+    <string name="errorAuth">Erreur, veuillez réessayer plus tard</string>
+    <string name="errorLoadingLastBackupCloud">Erreur, cliquez pour réessayer</string>
+    <string name="errorDriveSync">Erreur de serveur ou mauvaise qualité Internet</string>
+    <string name="errorCredential">Erreur, problèmes d\'authentification</string>
+    <string name="errorDriverAuthInfo">Pour utiliser la synchronisation cloud, vous devez être autorisé</string>
+    <string name="sortNotes">Trier les notes</string>
+    <string name="percentProgress" translatable="false">Sauvegarde (%d%%)</string>
+    <string name="errorSyncTitle">Attention!</string>
+    <string name="errorSyncDescrpt">Avec cette version, nous arrêtons le support de la synchronisation avec Google Drive. Dans les futures mises à jour, nous introduirons une méthode de synchronisation plus sécurisée et efficace, garantissant une meilleure expérience utilisateur.</string>
+
+    <!-- Offre produit -->
+    <string name="byyError">Erreur lors de l\'achat.</string>
+    <string name="byyCancel">Nous nous efforcerons de nous améliorer.</string>
+    <string name="errorLoadingsProduct">Erreur lors du chargement de la vitrine</string>
+    <string name="thanks_title">Cher utilisateur</string>
+    <string name="creteNoteToTag">Créer une note</string>
+    <string name="thanks_donate">Le développeur du projet vous remercie pour votre achat. Nous nous efforcerons de devenir meilleurs et plus pratiques. \n <b>Cordialement, mes notes!</b></string>
+</resources>

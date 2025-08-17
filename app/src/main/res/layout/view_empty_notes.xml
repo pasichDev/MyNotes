@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/emptyViewNote"
+    android:visibility="gone"
+    android:layout_gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:ignore="UseCompoundDrawables">
+
+    <ImageView
+        android:id="@+id/imageEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/heightImageEmpty"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_note"
+        android:contentDescription="@string/emptyNotes"
+        app:tint="?attr/colorPrimary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_margin="20dp"
+        android:fontFamily="@font/railway_medium"
+        android:gravity="center"
+        android:text="@string/emptyNotes" />
+</LinearLayout>
+
+
+

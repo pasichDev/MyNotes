@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name"> Moje notatki </string>
+    <string name="NewNote"> Utwórz notatkę </string>
+    <string name="trashNotes">Przenieś do koszyka</string>
+    <string name="trashClean"> Wyczyść kosz </string>
+    <string name="share"> Udostępnij </string>
+    <string name="yesCleanTrash"> Tak, wyczyść </string>
+    <string name="cancel"> Cofnij </string>
+    <string name="noSave"> Zamknij bez zapisywania </string>
+    <string name="ratingApp"> Oceń aplikację </string>
+    <string name="exitWhat">Aby wyjść, musisz powtórzyć czynność</string>
+
+    <string name="telegram">Otwórz kontakty programistów</string>
+    <string name="notSupportedShare">Ta zawartość nie jest obsługiwana.</string>
+    <string name="notFoundPlayMarket">Brak aplikacji Play Market</string>
+    <string name="copyX">Skopiowane</string>
+    <string name="cd_format">Formatuj notatki</string>
+
+    <string name="search">Szukaj w notatkach</string>
+    <string name="close">Zamknij</string>
+    <string name="addTag">Dodaj tag</string>
+    <string name="deleteTag">Usuń</string>
+    <string name="deleteTagAndNotes">Usuń tag i oznaczone notatki</string>
+    <string name="countTagsError">Nie można utworzyć więcej niż %1$s tagów</string>
+    <string name="allNotes">Wszystkie notatki</string>
+    <string name="more">Więcej</string>
+    <string name="noteTitle">Tytuł</string>
+    <string name="deleteSelectTag">Usuń tag</string>
+    <string name="deleteSelectTagTextMassage">Czy na pewno chcesz usunąć tag? Po usunięciu znacznik zniknie ze wszystkich zaznaczonych notatek.</string>
+    <string name="cleanTrashMessage">Czy na pewno chcesz opróżnić Kosz? Wszystkie notatki zostaną trwale usunięte.</string>
+    <string name="selectAll">Wybierz tę i kilka innych notatek</string>
+    <string name="createNewTag">Wprowadź nazwę tagu</string>
+    <string name="sort_Date_Increase">Data modyfikacji: od najnowszych</string>
+    <string name="sort_Date_Decrease">Data zmiany: najpierw stare</string>
+    <string name="sort_Title_Increase">Tytuł: A-Z</string>
+    <string name="sort_Title_Decrease">Tytuł: Z-A</string>
+    <string name="sortHead">Sortuj według:</string>
+    <string name="shareApp">Udostępnij aplikację</string>
+    <string name="privacyApp">Polityka prywatności</string>
+    <string name="addShortCutLauncher">Dodaj skrót do pulpitu</string>
+    <string name="addShortCutSuccessfully">Skrót został pomyślnie dodany</string>
+    <string name="translateNote">Przetłumacz notatkę</string>
+    <string name="hintTextNote">Tekst</string>
+    <string name="notInstaledAppTranslate">Tłumacz Google musi być zainstalowany, aby korzystać z tej funkcji</string>
+    <string name="lastDateEditNote">Ostatnia edycja: %1$s </string>
+    <string name="restore">Przywróć</string>
+    <string name="noteSaved">Notatka została zapisana</string>
+    <string name="searchNotesFromTitle">Zacznij pisać</string>
+    <string name="errorNewTagInput">Błąd: Maksymalna liczba znaków, jaką może zawierać nazwa znacznika, to %1$d </string>
+    <string name="emptyTrash">Twoje usunięte notatki są wyświetlane tutaj</string>
+    <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
+    <string name="chooseNote">Działania na wybranej notatce</string>
+    <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
+    <string name="copyNoteEdits">Edytuj kopię</string>
+    <string name="noteMoveTrashSnackbar">Notatka przeniesiona do kosza</string>
+    <string name="button_edit">Edytuj</string>
+    <string name="button_copy">Kopiuj</string>
+    <string name="button_phone">Zadzwoń</string>
+    <string name="button_mail">Zapisz</string>
+    <string name="button_url">Idź do</string>
+    <!-- Wyczyść następną wersję -->
+    <string name="hiddeTag">Ukryj notatki</string>
+    <string name="visibleTag">Pokaż notatki</string>
+    <string name="hintNameLabel">Nazwa etykiety</string>
+    <string name="titleDialogShortCut">Utwórz skrót</string>
+    <string name="functionNotSupport">Ta funkcja nie jest obsługiwana przez Twoje urządzenie</string>
+    <string name="shortCutCreateFallDouble">Etykieta została już utworzona dla tej notatki</string>
+    <string name="buttonCreateShortCut">Dodaj skrót do pulpitu</string>
+    <string name="errorMaxNameShortCut">Błąd w nazwie skrótu</string>
+    <string name="renameTag">Zmień nazwę</string>
+
+    <string name="settingsInterface">Ustawienia interfejsu</string>
+    <string name="settingsBackups">Synchronizacja i kopia zapasowa</string>
+    <string name="aboutApps">Informacje o aplikacji</string>
+    <string name="trash">Kosz</string>
+    <string name="themes">Motywy</string>
+    <string name="onDynamicColor">Włącz kolor dynamiczny</string>
+    <string name="coffeeByPlay">Podziękuj deweloperowi</string>
+    <string name="coffeeByTextInfo"><b>Moje notatki</b> to aplikacja bez reklam i jest rozprowadzana jako produkt bezpłatny. Aplikacja jest rozwijana przez jedną osobę, więc niektóre aktualizacje są dostarczane z opóźnieniem. Utrzymanie kondycji aplikacji i niektórych funkcji generuje koszty. Możesz podziękować deweloperowi, kupując mu kawę lub płacąc za wynajem serwera, a także przesłać darowiznę na wskazane linki, które zostaną wyświetlone poniżej. Dziękujemy za korzystanie z tej aplikacji!</string>
+
+    <string name="loginUser">Logowanie Google</string>
+    <string name="cloudBackup">Chmura</string>
+    <string name="localBackup">Urządzenie</string>
+    <string name="importLocalBackup">Przywróć z Res. kopie</string>
+    <string name="exportLocalBackup">Utwórz kopię zapasową</string>
+    <string name="lastCloudCopy">Ostatnia kopia zapasowa: %1$s</string>
+    <string name="errorDriveAuth">Gość</string>
+    <string name="autoCloudBackupTitle">Automatyczna kopia zapasowa</string>
+    <string name="restoreNotesTitle">Przywracanie danych</string>
+    <string name="restoreNotesMessage">Nowe notatki zostaną dodane przed istniejącymi, a duplikaty będą ignorowane!</string>
+    <string name="selectRestore">Wybierz opcję Przywróć. skopiuj</string>
+    <string name="nextRestore">Przywróć z chmury</string>
+    <string name="messageRestoreProcess"><b>Przywracanie danych</b> \nTo okno zamknie się automatycznie po zakończeniu.</string>
+    <string name="emptyBackups">Nie znaleziono kopii zapasowych</string>
+    <string name="checkLastBackupsCloud">Proszę czekać, ładowanie danych…</string>
+
+    <!-- Automatyczna kopia zapasowa tablic -->
+    <string name="autoCloudVariantsDay">Każdego dnia</string>
+    <string name="autoCloudVariantsWeek">Co tydzień</string>
+    <string name="autoCloudVariantsMonth">Co miesiąc</string>
+    <string name="autoCloudVariantsOff">Wyłączone</string>
+
+    <!-- Ciągi automatycznej kopii zapasowej -->
+
+
+    <!-- Błąd wyników tworzenia kopii zapasowej/przywracania -->
+    <string name="emptyDataToBackup">Brak danych do wykonania kopii zapasowej</string>
+    <string name="errorConnectedNetwork">Brak połączenia internetowego</string>
+    <string name="creteLocalCopyOkay">Kopia zapasowa została pomyślnie utworzona</string>
+    <string name="creteLocalCopyFail">Błąd, kopia zapasowa nie została zapisana</string>
+    <string name="restoreDataOkay">Przywracanie danych zakończone pomyślnie</string>
+    <string name="restoreDataFall">Błąd: Uszkodzona kopia zapasowa</string>
+    <string name="errorAuth">Błąd, spróbuj ponownie później</string>
+    <string name="errorLoadingLastBackupCloud">Błąd, kliknij, aby spróbować ponownie</string>
+    <string name="errorDriveSync">Błąd serwera lub niska jakość internetu</string>
+    <string name="errorCredential">Błąd, problemy z autoryzacją</string>
+
+    <string name="errorDriverAuthInfo">Musisz być zalogowany, aby korzystać z synchronizacji w chmurze</string>
+    <string name="sortNotes">Sortuj notatki</string>
+    <string name="percentProgress">Kopia zapasowa (%d%%)</string>
+    <string name="errorSyncTitle">Uwaga!</string>
+    <string name="errorSyncDescrpt">W tej wersji przestajemy wspierać synchronizację z Google Drive. W przyszłych aktualizacjach wprowadzimy bezpieczniejszą i bardziej wydajną metodę synchronizacji, zapewniając lepsze doświadczenie użytkownika.</string>
+
+    <string name="creteNoteToTag">Utwórz notatkę</string>
+    <!-- Oferta produktowa -->
+    <string name="byyError">Błąd podczas zakupu.</string>
+    <string name="byyCancel">Będziemy starać się być lepsi.</string>
+    <string name="errorLoadingsProduct">Błąd, nie udało się załadować witryny sklepowej</string>
+    <string name="thanks_title">Drogi użytkowniku</string>
+    <string name="thanks_donate">Twórca projektu dziękuje za zakup. Będziemy dążyć do tego, aby stać się lepszymi i wygodniejszymi. \n <b>Z wyrazami szacunku, moje notatki!</b></string>
+</resources>

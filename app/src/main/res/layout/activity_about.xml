@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="activity"
+            type="com.pasich.mynotes.ui.view.activity.AboutActivity" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/activity_about"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical"
+        tools:context=".ui.view.activity.AboutActivity">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/transparent"
+            app:title="@string/aboutApps" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@mipmap/ic_launcher"
+                        app:shapeAppearanceOverlay="@style/rounderIconApp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="20dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/versionApp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="18sp"
+                            tools:text="verisnApp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:paddingVertical="2dp"
+                            android:text="@string/developer"
+                            android:textColor="?attr/colorOutline"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/telegramSend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:onClick="@{()-> activity.sendTelegram()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems"
+                    android:visibility="gone">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/telegram"
+                        android:src="@drawable/ic_link_app" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/telegram_nick"
+                        android:textColor="?attr/colorPrimary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/emailSend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:onClick="@{()-> activity.sendEmail()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems"
+                    android:visibility="gone">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/ratingApp"
+                        android:src="@drawable/ic_link_app" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/email_address"
+                        android:textColor="?attr/colorPrimary" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/shareApp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:onClick="@{()-> activity.shareApp()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/shareApp"
+                        android:src="@drawable/ic_share_app" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/shareApp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ratingApp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:onClick="@{()-> activity.openRatingGooglePlay()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/ratingApp"
+                        android:src="@drawable/ic_rating_app" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/ratingApp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/privacyApp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:onClick="@{()-> activity.policyOpen()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/privacyApp"
+                        android:src="@drawable/ic_policy" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/privacyApp" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/donnatDev"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="?attr/colorControlHighlight" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_marginTop="10dp"
+                        android:fontFamily="@font/railway_medium"
+                        android:padding="6dp"
+                        android:text="@string/coffeeByPlay"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="20dp"
+                        android:padding="6dp"
+                        android:text="@string/coffeeByTextInfo"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="25dp" />
+
+                <LinearLayout
+                    android:id="@+id/kofi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:onClick="@{()-> activity.sendKoFi()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityListCoffee"
+                        android:contentDescription="Support Me on Ko-Fi"
+                        android:src="@drawable/ic_glass_off_coffee" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:fontFamily="@font/railway_medium"
+                        android:text="Support Me on Ko-Fi"
+                        android:textColor="?android:colorPrimary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/reddit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:onClick="@{()-> activity.reddit()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityListCoffee"
+                        android:contentDescription="Support Me on Ko-Fi"
+                        android:src="@drawable/ic_reddit" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:fontFamily="@font/railway_medium"
+                        android:text="Join the community"
+                        android:textColor="?android:colorPrimary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </ScrollView>
+    </LinearLayout>
+
+</layout>

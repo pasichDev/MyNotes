@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/headTextDialog"
+        style="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="start"
+        android:padding="@dimen/paddingItems"
+        tool:text="DialogTitle" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:orientation="vertical">
+
+
+        <FrameLayout
+            android:id="@+id/edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="@dimen/paddingItems">
+
+            <TextView
+                android:id="@+id/DataSortText"
+                style="@style/marginDialogItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/button_edit"
+                android:textSize="@dimen/textSizeItems" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/copy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="@dimen/paddingItems">
+
+            <TextView
+                style="@style/marginDialogItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/button_copy"
+                android:textSize="@dimen/textSizeItems" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/action"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="@dimen/paddingItems">
+
+            <TextView
+                android:id="@+id/actionButton"
+                style="@style/marginDialogItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textSize="@dimen/textSizeItems" />
+
+        </FrameLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

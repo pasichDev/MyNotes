@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/title"
+        layout="@layout/view_head_dialog" />
+
+    <TextView
+        android:id="@+id/textMessageDialog"
+        style="@style/TextAppearance.Material3.BodyLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:gravity="center"
+        android:padding="@dimen/paddingItems"
+        android:text="@string/deleteSelectTagTextMassage" />
+
+
+    <LinearLayout
+        android:id="@+id/deleteTag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/deleteTag"
+            android:src="@drawable/ic_trash_notes" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/deleteTag" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/deleteTagAndNotes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems"
+        android:visibility="gone">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/deleteTagAndNotes"
+            android:src="@drawable/ic_delete_notes_tag" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/deleteTagAndNotes" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/cancel"
+            android:src="@drawable/ic_close" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/cancel" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

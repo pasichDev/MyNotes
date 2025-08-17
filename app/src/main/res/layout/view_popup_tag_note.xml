@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_popup_tag">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:id="@+id/createNoteTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_top_ripple"
+            android:orientation="horizontal"
+            android:padding="@dimen/paddingItems">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginVertical="8dp"
+                android:contentDescription="@string/creteNoteToTag"
+                android:src="@drawable/ic_add_tag_dialog" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingVertical="@dimen/paddingItems"
+                android:paddingStart="@dimen/paddingItems"
+                android:paddingEnd="20dp"
+                android:text="@string/creteNoteToTag"
+                android:textSize="@dimen/textSizeItems" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+</FrameLayout>

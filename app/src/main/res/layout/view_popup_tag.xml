@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_popup_tag">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:id="@+id/deleteTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_top_ripple"
+            android:orientation="horizontal"
+            android:padding="@dimen/paddingItems">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginVertical="8dp"
+                android:contentDescription="@string/deleteTag"
+                android:src="@drawable/ic_trash_notes" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingVertical="@dimen/paddingItems"
+                android:paddingStart="@dimen/paddingItems"
+                android:paddingEnd="20dp"
+                android:text="@string/deleteTag"
+                android:textSize="@dimen/textSizeItems" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/renameTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:orientation="horizontal"
+            android:padding="@dimen/paddingItems">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginVertical="8dp"
+                android:contentDescription="@string/renameTag"
+                android:src="@drawable/ic_rename" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingVertical="@dimen/paddingItems"
+                android:paddingStart="@dimen/paddingItems"
+                android:paddingEnd="20dp"
+                android:text="@string/renameTag"
+                android:textSize="@dimen/textSizeItems" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/visibleTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_bottom_ripple"
+            android:orientation="horizontal"
+            android:padding="@dimen/paddingItems">
+
+            <ImageView
+                android:id="@+id/imageTagVisible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginVertical="8dp"
+                android:contentDescription="@string/deleteTag"
+                android:src="@drawable/ic_hide" />
+
+            <TextView
+                android:id="@+id/textVisibilityTag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:paddingVertical="@dimen/paddingItems"
+                android:paddingStart="@dimen/paddingItems"
+                android:paddingEnd="20dp"
+                android:textSize="@dimen/textSizeItems" />
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    tool:ignore="UselessParent">
+
+    <TextView
+        android:id="@+id/head"
+        style="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            tool:text="DialogTitle"
+            android:maxLines="1"
+            android:gravity="start" />
+
+        <FrameLayout
+            android:id="@+id/DataSort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="@dimen/paddingItems">
+
+            <TextView
+                android:id="@+id/DataSortText"
+                style="@style/marginDialogItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/sort_Date_Increase"
+                android:textSize="@dimen/textSizeItems" />
+
+            <ImageView
+                android:id="@+id/DataSortCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                style="@style/marginDialogItem"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_check" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/DataReserve"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="@dimen/paddingItems">
+
+            <TextView
+                android:id="@+id/DataReserveText"
+                style="@style/marginDialogItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/sort_Date_Decrease"
+                android:textSize="@dimen/textSizeItems" />
+
+            <ImageView
+                android:id="@+id/DataReserveCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                style="@style/marginDialogItem"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_check" />
+        </FrameLayout>
+
+
+        <FrameLayout
+            android:id="@+id/TitleSort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="@dimen/paddingItems">
+
+            <TextView
+                android:id="@+id/TitleSortText"
+                style="@style/marginDialogItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/sort_Title_Increase"
+                android:textSize="@dimen/textSizeItems" />
+
+            <ImageView
+                android:id="@+id/TitleSortCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                style="@style/marginDialogItem"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_check" />
+        </FrameLayout>
+
+
+        <FrameLayout
+            android:id="@+id/TitleReserve"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:background="@drawable/item_bottom_ripple"
+            android:padding="@dimen/paddingItems">
+
+            <TextView
+                android:id="@+id/TitleReserveText"
+                style="@style/marginDialogItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/sort_Title_Decrease"
+                android:textSize="@dimen/textSizeItems" />
+
+            <ImageView
+                android:id="@+id/TitleReserveCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                style="@style/marginDialogItem"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_check" />
+        </FrameLayout>
+    </LinearLayout>

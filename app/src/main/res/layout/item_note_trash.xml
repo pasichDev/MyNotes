@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="Note"
+            type="com.pasich.mynotes.data.model.TrashNote" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/item_Note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
+        app:cardBackgroundColor="@{Note.checked ? @color/item_bindig_note_surface_variant : @color/item_bindig_note_surface}"
+        app:strokeColor="@{Note.checked ? @color/item_bindig_note_primary :  @color/item_bindig_note_surface_variant}">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="15dp">
+
+            <TextView
+                android:id="@+id/nameNote"
+                style="@style/itemNoteTitle"
+                android:text="@{Note.title}"
+                android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
+                tools:text="Title Note" />
+
+            <TextView
+                android:id="@+id/previewNote"
+                style="@style/itemNotePreview"
+                android:text="@{Note.value}"
+                tools:text="Preview Note Check" />
+
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</layout>

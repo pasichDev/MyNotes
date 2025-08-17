@@ -1,0 +1,109 @@
+plugins {
+    id 'com.android.application'
+    id 'com.google.dagger.hilt.android'
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.dagger.hilt.android'
+
+android {
+    compileSdkVersion 33
+    buildFeatures {
+        viewBinding true
+        dataBinding true
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0']
+        }
+    }
+    defaultConfig {
+        applicationId "com.pasich.mynotes"
+        minSdkVersion 23
+        targetSdkVersion 35
+        versionCode 29
+        versionName '2.1.29'
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+        }
+        debug {
+            applicationIdSuffix  ".debug"
+            versionNameSuffix  "-debug"
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+    }
+    hilt {
+        enableAggregatingTask = true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    namespace 'com.pasich.mynotes'
+    lint {
+        abortOnError false
+    }
+}
+
+ext {
+    powerPrefenceVersion = '2.1.0'
+    roomVersion = '2.5.1'
+}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.preference:preference:1.2.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.6.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
+    implementation 'androidx.core:core-splashscreen:1.0.0'
+
+
+    //DI (Hilt)
+    implementation 'com.google.dagger:hilt-android:2.49'
+    annotationProcessor 'com.google.dagger:hilt-compiler:2.49'
+    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.44.2'
+    androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.49'
+    testImplementation 'com.google.dagger:hilt-android-testing:2.44.2'
+    testAnnotationProcessor 'com.google.dagger:hilt-compiler:2.49'
+
+
+    //Reactive (rxjava2)
+    implementation "io.reactivex.rxjava2:rxandroid:2.0.1"
+    implementation 'androidx.room:room-rxjava2:2.5.1'
+    annotationProcessor "androidx.room:room-compiler:$roomVersion"
+    testImplementation "androidx.room:room-compiler-processing-testing:$roomVersion"
+
+    //Google Drive integration, Pay Billing
+    implementation 'com.google.android.gms:play-services-auth:20.4.1'
+    implementation 'com.google.http-client:google-http-client-gson:1.42.1'
+    implementation 'com.google.api-client:google-api-client-android:1.26.0'
+    implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
+    implementation 'com.google.android.play:app-update:2.1.0'
+
+
+    //Other lib (Gson/Glide/PowerPreferences)
+    implementation 'com.github.bumptech.glide:glide:4.14.2'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation "com.github.AliAsadi:PowerPreference:$powerPrefenceVersion"
+
+}
+

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Мои Заметки</string>
+    <string name="NewNote">Создать заметку</string>
+    <string name="trashNotes">Переместить в корзину</string>
+    <string name="trashClean">Очистить корзину</string>
+    <string name="share">Поделиться</string>
+    <string name="yesCleanTrash">Да, очистить</string>
+    <string name="cancel">Отменить</string>
+
+    <string name="noSave">Закрыть без сохранения</string>
+    <string name="ratingApp">Оценить приложение</string>
+    <string name="exitWhat">Для выхода, нужно повторить действие</string>
+
+    <string name="telegram">Открыть контакты разработчика</string>
+    <string name="notSupportedShare">Этот контент не поддерживается.</string>
+    <string name="notFoundPlayMarket">Отсутствует приложение Play Market</string>
+    <string name="copyX">"Скопировано "</string>
+    <string name="cd_format">Форматировать заметки</string>
+
+    <string name="search">Поиск в заметках </string>
+    <string name="close">Закрыть</string>
+    <string name="addTag">Добавить метку</string>
+    <string name="deleteTag">Удалить</string>
+    <string name="deleteTagAndNotes">Удалить метку и отмеченные заметки</string>
+    <string name="countTagsError">Нельзя создать больше %1$s меток</string>
+    <string name="allNotes">Все заметки </string>
+    <string name="more">Больше</string>
+    <string name="noteTitle">Название</string>
+    <string name="deleteSelectTag">Удаление метки</string>
+    <string name="deleteSelectTagTextMassage">Вы действительно хотите удалить метку? После удаления метка пропадет у всех отмеченных заметках.</string>
+    <string name="cleanTrashMessage">Вы действительно хотите очистить корзину? Все заметки будут навсегда удаленны.</string>
+    <string name="selectAll">Выбрать эту, и еще несколько заметок</string>
+    <string name="createNewTag">Введите название метки</string>
+    <string name="sort_Date_Increase">Дате изменения: сначала новые</string>
+    <string name="sort_Date_Decrease">Дате изменения: сначала старые</string>
+    <string name="sort_Title_Increase">Названии: от А-Я</string>
+    <string name="sort_Title_Decrease">Названии: от Я-А</string>
+    <string name="sortHead">Cортировать по:</string>
+    <string name="shareApp">Поделиться приложением</string>
+    <string name="privacyApp">Политика Конфиденциальности</string>
+    <string name="addShortCutLauncher">Добавить ярлык на рабочий стол</string>
+    <string name="addShortCutSuccessfully">Добавления ярлыка выполнено успешно</string>
+    <string name="translateNote">Перевести заметку</string>
+    <string name="hintTextNote">Текст</string>
+    <string name="notInstaledAppTranslate">Для использования этой функции нужно установить Google Translator</string>
+    <string name="lastDateEditNote">Последнее изменение: %1$s </string>
+    <string name="restore">Восстановить</string>
+    <string name="noteSaved">Заметку сохранено</string>
+    <string name="searchNotesFromTitle">Начните вводить текст</string>
+    <string name="errorNewTagInput">Ошибка: Максимальное количество символов которое может содержать название метки  %1$d </string>
+    <string name="emptyTrash">Здесь отображаються удаленные вами заметки</string>
+    <string name="emptyNotes">Здесь будут отображаться созданные вами заметки</string>
+    <string name="chooseNote">Действия над выбраной заметкой</string>
+    <string name="contentDescrChangeStyleText">Изменить стиль текста</string>
+    <string name="copyNoteEdits">Редактировать копию</string>
+    <string name="noteMoveTrashSnackbar">Заметку перемещено в корзину</string>
+    <string name="button_edit">Редактировать</string>
+    <string name="button_copy">Копировать</string>
+    <string name="button_phone">Позвонить</string>
+    <string name="button_mail">Написать</string>
+    <string name="button_url">Перейти</string>
+
+    <string name="hiddeTag">Скрыть заметки</string>
+    <string name="visibleTag">Отображать заметки</string>
+    <string name="hintNameLabel">Название ярлыка</string>
+    <string name="titleDialogShortCut">Создать ярлык</string>
+    <string name="functionNotSupport">Данная функция не поддерживаеться вашим устройством</string>
+    <string name="shortCutCreateFallDouble">Ярлык для данной заметки уже создан</string>
+    <string name="buttonCreateShortCut">Добавить ярлык на рабочий стол</string>
+    <string name="errorMaxNameShortCut">Ошибка в названии ярлыка</string>
+    <string name="renameTag">Переименовать</string>
+
+    <string name="settingsInterface">Настройки интерфейса</string>
+    <string name="settingsBackups">Синхронизация и резервное копирование</string>
+    <string name="aboutApps">О приложении</string>
+    <string name="trash">Корзина</string>
+    <string name="themes">Темы</string>
+    <string name="onDynamicColor">Включить dynamic color</string>
+    <string name="coffeeByPlay">Спасибо разработчику</string>
+    <string name="coffeeByTextInfo"><b>Мои заметки</b> – это приложение без рекламы, которое распространяется как бесплатный продукт. Приложение разрабатывается одним человеком, поэтому некоторые обновления приходят с опозданием. Поддержание работоспособности приложения и некоторых функций требует затрат. Вы можете отблагодарить разработчика, купив ему кофе или оплатив аренду сервера, а также отправить пожертвование по указанным ссылкам, которые будут отображаться ниже. Спасибо за использование этого приложения!</string>
+
+    <string name="loginUser">Вход через Google</string>
+    <string name="cloudBackup">Облако</string>
+    <string name="localBackup">Устройство</string>
+    <string name="importLocalBackup">Восстановить с Рез. копии</string>
+    <string name="exportLocalBackup">Создать резервную копию</string>
+    <string name="lastCloudCopy">Последняя резервная копия: %1$s</string>
+    <string name="errorDriveAuth">Гость</string>
+    <string name="autoCloudBackupTitle">Автоматическое резервное копирование</string>
+    <string name="restoreNotesTitle">Восстановление данных</string>
+    <string name="restoreNotesMessage">Новые заметки будут добавлены до существующих, а дубликаты будут проигнорированы!</string>
+    <string name="selectRestore">Выбрать рез. копию</string>
+    <string name="nextRestore">Восстановить из облака</string>
+    <string name="messageRestoreProcess"><b>Восстановление данных</b> \nПо завершении это окно закроется автоматически.</string>
+    <string name="emptyBackups">Резервные копии не найдены</string>
+    <string name="checkLastBackupsCloud">Подождите, идет загрузка данных…</string>
+
+    <!-- Arrays AutoBackup  -->
+    <string name="autoCloudVariantsDay">Каждый день</string>
+    <string name="autoCloudVariantsWeek">Каждую неделю</string>
+    <string name="autoCloudVariantsMonth">Каждый месяц</string>
+    <string name="autoCloudVariantsOff">Выкл.</string>
+
+    <!-- AutoBackup strings  -->
+
+
+    <!-- Error results backup/restore  -->
+    <string name="emptyDataToBackup">Нет данных, для создания резервной копии</string>
+    <string name="errorConnectedNetwork">Нет подключения к интернету</string>
+    <string name="creteLocalCopyOkay">Резервную копию успешно создано</string>
+    <string name="creteLocalCopyFail">Ошибка, резервная копия не сохранена</string>
+    <string name="restoreDataOkay">Восстановление данных завершено успешно</string>
+    <string name="restoreDataFall">Ошибка: Резервная копия повреждена</string>
+    <string name="errorAuth">Ошибка, повторите попытку позже</string>
+    <string name="errorLoadingLastBackupCloud">Ошибка, нажмите чтобы повторить попытку</string>
+    <string name="errorDriveSync">Ошибка сервера, или плохое качество интернета</string>
+    <string name="errorCredential">Ошибка, проблемы с авторизацией</string>
+
+    <string name="errorDriverAuthInfo">Чтобы использовать синхронизацию с облаком необходимо авторизоваться</string>
+    <string name="sortNotes">Сортировать заметки</string>
+    <string name="percentProgress">Создание резервной копии (%d%%)</string>
+
+    <!-- Product offer  -->
+    <string name="byyError">Ошибка при приобретении.</string>
+    <string name="byyCancel">Мы будем стремиться стать лучше.</string>
+    <string name="errorLoadingsProduct">Ошибка, не удалось загрузить витрину</string>
+    <string name="thanks_title">Уважаемый пользователь</string>
+    <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
+
+    <string name="creteNoteToTag">Создать заметку</string>
+    <string name="errorSyncTitle">Внимание!</string>
+    <string name="errorSyncDescrpt">С этой версией мы прекращаем поддержку синхронизации с Google Диском. В будущих обновлениях мы внедрим более безопасный и эффективный метод синхронизации, что обеспечит вам лучший пользовательский опыт.</string>
+
+</resources>

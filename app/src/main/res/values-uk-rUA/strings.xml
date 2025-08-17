@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name"> Мої Нотатки </string>
+    <string name="NewNote"> Створити нотатку </string>
+    <string name="trashNotes">Перемістити до корзини</string>
+    <string name="trashClean">Очистити корзину</string>
+    <string name="share">Поділитися</string>
+    <string name="yesCleanTrash">Так, очистити</string>
+    <string name="cancel">Відмінити</string>
+    <string name="noSave">Закрити без збереження</string>
+    <string name="ratingApp">Оцінити додаток</string>
+    <string name="exitWhat">Для виходу потрібно повторити дію</string>
+    <string name="telegram">Відкрити контакти розробника</string>
+    <string name="notSupportedShare">Цей вміст не підтримується.</string>
+    <string name="notFoundPlayMarket">Відсутній  Play Market</string>
+    <string name="copyX">Скопійовано</string>
+    <string name="cd_format">Форматувати нотатки</string>
+    <string name="search">Пошук у нотатках </string>
+    <string name="close">Закрити</string>
+    <string name="addTag">Додати тег</string>
+    <string name="deleteTag">Видалити</string>
+    <string name="deleteTagAndNotes">Видалити тег та позначені нотатки</string>
+    <string name="countTagsError">Не можна створити більше %1$s тегів</string>
+    <string name="allNotes">Всі нотатки </string>
+    <string name="more">Більше</string>
+    <string name="noteTitle">Назва</string>
+    <string name="deleteSelectTag">Видалення тега</string>
+    <string name="deleteSelectTagTextMassage">Ви дійсно хочете видалити тег? Після видалення позначка зникне у всіх позначених нотатках.</string>
+    <string name="cleanTrashMessage">Ви дійсно хочете очистити кошик? Всі нотатки будуть видалені назавжди.</string>
+    <string name="selectAll">Вибрати цю і ще декілька нотаток</string>
+    <string name="createNewTag">Введіть назву тега</string>
+    <string name="sort_Date_Increase">Датою останньої зміни: зверху нові</string>
+    <string name="sort_Date_Decrease">Датою останньої зміни: зверху старі</string>
+    <string name="sort_Title_Increase">Назвою: від А-Я</string>
+    <string name="sort_Title_Decrease">Назвою: від Я-А</string>
+    <string name="sortHead">Сортувати за:</string>
+    <string name="shareApp">Поділитись додатком</string>
+    <string name="privacyApp">Політика конфіденційності</string>
+    <string name="addShortCutLauncher">Додати ярлик на робочий стіл</string>
+    <string name="addShortCutSuccessfully">Додавання ярлика виконано успішно</string>
+    <string name="translateNote">Зробити переклад нотатки</string>
+    <string name="hintTextNote">Текст</string>
+    <string name="notInstaledAppTranslate">Для використання цієї функції потрібно встановити Google Translator</string>
+    <string name="lastDateEditNote">Відредаговано: %1$s</string>
+    <string name="restore">Відновити</string>
+    <string name="noteSaved">Нотатка збережена</string>
+    <string name="searchNotesFromTitle">Почніть вводити текст</string>
+    <string name="errorNewTagInput">Помилка: Максимальна кількість символів, яка може містити назва тега %1$d </string>
+    <string name="emptyTrash">Тут відображатимуться видалені вами нотатки</string>
+    <string name="emptyNotes">Тут відображатимуться створені вами нотатки</string>
+    <string name="chooseNote">Дії над вибраною нотаткою</string>
+    <string name="contentDescrChangeStyleText">Змінити стиль тексту</string>
+    <string name="copyNoteEdits">Редагувати копію нотатки</string>
+    <string name="noteMoveTrashSnackbar">Нотатку переміщена в кошик</string>
+
+    <string name="button_edit">Редагувати</string>
+    <string name="button_copy">Копіювати</string>
+    <string name="button_phone">Зателефонувати</string>
+    <string name="button_mail">Написати</string>
+    <string name="button_url">Відкрити посилання</string>
+    <string name="hiddeTag">Приховати нотатки</string>
+    <string name="visibleTag">Відображати нотатки</string>
+    <string name="hintNameLabel">Назва ярлика</string>
+    <string name="titleDialogShortCut">Створити ярлик</string>
+    <string name="functionNotSupport">Ця функція не підтримується вашим пристроєм</string>
+    <string name="shortCutCreateFallDouble">Ярлик для цієї нотатки вже створено</string>
+    <string name="buttonCreateShortCut">Додати ярлик на робочий стіл</string>
+    <string name="errorMaxNameShortCut">Помилка у назві ярлика</string>
+    <string name="renameTag">Перейменувати</string>
+    <string name="settingsInterface">Налаштування інтерфейсу</string>
+    <string name="settingsBackups">Синхронізація та рез.копії</string>
+    <string name="aboutApps">Про програму</string>
+    <string name="trash">Кошик</string>
+    <string name="themes">Теми</string>
+    <string name="onDynamicColor">Увімкнути Dynamic Color</string>
+    <string name="coffeeByPlay">Подякувати розробнику</string>
+    <string name="coffeeByTextInfo"><b>Мої нотатки</b> - це програма без реклами та поширюється як безкоштовний продукт. Додаток розробляє одна людина, тому деякі оновлення поставляються із запізненням. Підтримка працездатності програми та деяких функцій створює витрати. Ви можете подякувати розробнику, купивши йому каву або сплатити за оренду сервера, а також відправити донат за вказаними посиланнями, які будуть відображатися знизу. Дякую, що використовуєте цю програму!</string>
+    <string name="loginUser">Авторизація Google</string>
+    <string name="cloudBackup">Хмара</string>
+    <string name="localBackup">Пристрій</string>
+    <string name="importLocalBackup">Відновити за допомогою рез. копії</string>
+    <string name="exportLocalBackup">Створити резервну копію</string>
+    <string name="lastCloudCopy">Остання резервна копія: %1$s</string>
+    <string name="errorDriveAuth">Гість</string>
+    <string name="autoCloudBackupTitle">Автоматичне резервне копіювання</string>
+    <string name="restoreNotesTitle">Відновлення даних</string>
+    <string name="restoreNotesMessage">Нові нотатки будуть додані до існуючих, а дублікати будуть проігноровані!</string>
+    <string name="selectRestore">Вибрати рез. копію</string>
+    <string name="nextRestore">Відновити з хмари</string>
+    <string name="messageRestoreProcess"><b>Відновлення даних</b> \nПісля завершення це вікно буде автоматично закрито.</string>
+    <string name="emptyBackups">Резервних копій не знайдено</string>
+    <string name="checkLastBackupsCloud">Зачекайте, завантажуються дані…</string>
+    <!-- Arrays AutoBackup -->
+    <string name="autoCloudVariantsDay">Кожен день</string>
+    <string name="autoCloudVariantsWeek">Кожен тиждень</string>
+    <string name="autoCloudVariantsMonth">Кожен місяць</string>
+    <string name="autoCloudVariantsOff">Вимк.</string>
+
+
+    <!-- Error results backup/restore -->
+    <string name="emptyDataToBackup">Немає даних для створення резервної копії</string>
+    <string name="errorConnectedNetwork">Немає доступу до інтернету</string>
+    <string name="creteLocalCopyOkay">Резервну копію успішно створено</string>
+    <string name="creteLocalCopyFail">Помилка, резервна копія не збережена</string>
+    <string name="restoreDataOkay">Відновлення даних успішно завершено</string>
+    <string name="restoreDataFall">Помилка: Резервна копія пошкоджена</string>
+    <string name="errorAuth">Помилка, повторіть спробу пізніше</string>
+    <string name="errorLoadingLastBackupCloud">Помилка, натисніть, щоб повторити спробу</string>
+    <string name="errorDriveSync">Помилка сервера або погана якість інтернету</string>
+    <string name="errorCredential">Помилка, проблеми з авторизацією</string>
+    <string name="errorDriverAuthInfo">Щоб використовувати синхронізацію з хмарою, необхідно авторизуватися</string>
+    <string name="sortNotes">Сортувати нотатки</string>
+    <string name="percentProgress" translatable="false">Створення резервної копії (%d%%)</string>
+
+    <!-- Product offer -->
+    <string name="byyError">Помилка при придбанні.</string>
+    <string name="byyCancel">Ми будемо прагнути стати кращими.</string>
+    <string name="errorLoadingsProduct">Помилка, не вдалося завантажити вітрину</string>
+    <string name="thanks_title">Шановний користувач</string>
+    <string name="creteNoteToTag">Створити нотатку</string>
+    <string name="thanks_donate">Розробник проекту каже вам спасибі за вашу покупку. Ми будемо прагнути стати кращими і зручнішими. \n <b>З повагою, мої нотатки!</b></string>
+
+
+    <string name="errorSyncTitle">Зверніть увагу!</string>
+    <string name="errorSyncDescrpt">З цією версією ми припиняємо підтримку синхронізації з Google Диском. У майбутніх оновленнях ми запровадимо більш безпечний і ефективний метод синхронізації, що забезпечить вам ще кращий досвід використання.</string>
+</resources>

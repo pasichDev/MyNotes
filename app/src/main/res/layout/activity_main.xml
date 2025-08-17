@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="presenter"
+            type="com.pasich.mynotes.ui.presenter.MainPresenter" />
+
+        <variable
+            name="emptyNotes"
+            type="boolean" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/activity_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:colorBackground"
+        tools:context=".ui.view.activity.MainActivity">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarMainActivity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fitsSystemWindows="true"
+            android:background="@android:color/transparent"
+            app:layout_behavior="com.pasich.mynotes.utils.behavior.FixedAppBarLayoutBehavior">
+
+            <com.google.android.material.search.SearchBar
+                android:id="@+id/actionSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search"
+                android:searchIcon="@drawable/ic_search"
+                android:layout_marginHorizontal="20dp"
+                app:menu="@menu/menu_search_notes"
+                app:defaultMarginsEnabled="false"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
+                android:layout_margin="15dp"
+                android:backgroundTint="?attr/colorSurfaceVariant"
+                app:elevation="0dp"
+                app:navigationIconTint="?attr/colorPrimary" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:overScrollMode="never"
+                android:paddingStart="15dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="15dp"
+                app:layout_scrollFlags="noScroll" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <com.google.android.material.search.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:autoShowKeyboard="true"
+            android:hint="@string/searchNotesFromTitle"
+            app:layout_anchor="@id/actionSearch">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/resultsSearchList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?android:colorBackground"
+                app:layout_anchor="@id/actionSearch" />
+
+        </com.google.android.material.search.SearchView>
+
+
+        <FrameLayout
+            android:id="@+id/notes_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_notes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:overScrollMode="never"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="15dp"
+                android:visibility="@{emptyNotes ? View.GONE : View.VISIBLE,  default=visible}" />
+
+            <include
+                android:id="@+id/includeEmpty"
+                layout="@layout/view_empty_notes" />
+
+        </FrameLayout>
+
+
+        <include
+            android:id="@+id/actionInclude"
+            layout="@layout/action_panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="15dp"
+            android:visibility="gone"
+            app:layout_anchor="@id/notes_layout"
+            app:layout_anchorGravity="bottom|right|end" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/newNotesButton"
+            style="@style/fab_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="25dp"
+            android:layout_marginBottom="25dp"
+            android:contentDescription="@string/NewNote"
+            android:onClick="@{(view) -> presenter.newNotesClick()}"
+            app:layout_anchor="@id/notes_layout"
+            app:layout_anchorGravity="bottom|right|end"
+            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+            app:layout_dodgeInsetEdges="bottom"
+            app:srcCompat="@drawable/ic_add" />
+
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+</layout>

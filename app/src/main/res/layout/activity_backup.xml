@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="presenter"
+            type="com.pasich.mynotes.ui.presenter.BackupPresenter" />
+
+
+        <variable
+            name="isAuthUser"
+            type="boolean" />
+
+        <variable
+            name="isPlayService"
+            type="boolean" />
+
+        <variable
+            name="isVisibleProgressCloud"
+            type="boolean" />
+
+    </data>
+
+    <LinearLayout
+        android:id="@+id/activity_backup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true"
+        tools:context=".ui.view.activity.BackupActivity">
+
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/transparent"
+            app:title="@string/settingsBackups" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/driveData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="@{isPlayService ? View.VISIBLE : View.GONE}"
+                    android:onClick="@{(view) -> presenter.clickInformationCloud(isAuthUser)}"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="20dp">
+
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_google_drive"
+                        app:shapeAppearanceOverlay="@style/rounderIconApp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginHorizontal="20dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/userNameDrive"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="16sp"
+                            tools:text="userNameDrive" />
+
+                        <TextView
+                            android:id="@+id/lastBackupCloud"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:visibility="@{isVisibleProgressCloud ? View.GONE : View.VISIBLE}"
+                            android:paddingVertical="2dp"
+                            android:text="@string/errorLoadingLastBackupCloud"
+                            android:textColor="?attr/colorOutline"
+                            android:textSize="14sp" />
+
+
+                        <TextView
+                            android:id="@+id/percentProgress"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:visibility="@{isVisibleProgressCloud ? View.VISIBLE : View.GONE}"
+                            tools:text="0%"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="2dp"
+                            android:textSize="14sp" />
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progressBackupCloud"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:visibility="@{isVisibleProgressCloud ? View.VISIBLE : View.INVISIBLE}"
+                            app:showAnimationBehavior="outward"
+                            android:paddingVertical="2dp"
+                            app:trackCornerRadius="4dp"
+                            android:indeterminate="true" />
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+
+                <TextView
+                    style="@style/paragraphText"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginVertical="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="@{isPlayService ? View.VISIBLE : View.GONE}"
+                    android:padding="6dp"
+                    android:text="@string/cloudBackup" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="10dp"
+                    >
+
+                    <TextView
+                        android:id="@+id/errorTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="18sp"
+                        style="@style/itemNoteTitle"
+                        android:text="@string/errorSyncTitle" />
+
+                    <TextView
+                        android:id="@+id/errorText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:visibility="@{isVisibleProgressCloud ? View.GONE : View.VISIBLE}"
+                        android:paddingVertical="2dp"
+                        android:text="@string/errorSyncDescrpt"
+                        android:textColor="?attr/colorOutline"
+                        style="@style/itemNotePreview"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <!--   android:visibility="@{isPlayService ? View.VISIBLE : View.GONE}" -->
+                <LinearLayout
+                    android:id="@+id/autoBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:onClick="@{(view) -> presenter.openChoiceDialogAutoBackup()}"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/autoCloudBackupTitle"
+                        android:src="@drawable/ic_cloud_auto_backup" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/itemTextBottomSheets"
+                            android:padding="4dp"
+                            android:text="@string/autoCloudBackupTitle" />
+
+                        <TextView
+                            android:id="@+id/switchAutoCloud"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:textSize="14sp"
+                            android:paddingHorizontal="4dp"
+                            android:textColor="?attr/colorOutline"
+                            android:text="@string/cloudBackup" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:id="@+id/cloudExport"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:onClick="@{(view) -> presenter.saveBackupPresenter(false)}"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:orientation="horizontal"
+                    android:clickable="false"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/exportLocalBackup"
+                        android:src="@drawable/ic_cloud_export" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/exportLocalBackup" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/importCloudBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="@{isPlayService ? View.VISIBLE : View.GONE}"
+                    android:onClick="@{(view) -> presenter.restoreBackupPresenter(false)}"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/importLocalBackup"
+                        android:src="@drawable/ic_cloud_import" />
+
+
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/importLocalBackup" />
+
+                </LinearLayout>
+
+                <TextView
+                    style="@style/paragraphText"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginVertical="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp"
+                    android:text="@string/localBackup" />
+
+                <LinearLayout
+                    android:id="@+id/exportLocal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view) -> presenter.saveBackupPresenter(true)}"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/exportLocalBackup"
+                        android:src="@drawable/ic_export" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/exportLocalBackup" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/importLocal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(view) -> presenter.restoreBackupPresenter(true)}"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/importLocalBackup"
+                        android:src="@drawable/ic_import" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/importLocalBackup" />
+
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+
+</layout>

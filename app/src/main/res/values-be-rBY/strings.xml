@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Мае Нататкі</string>
+    <string name="NewNote">Стварыць нататку</string>
+    <string name="trashNotes">Перамясціць у кошык</string>
+    <string name="trashClean">Ачысціць кошык</string>
+    <string name="share">Падзяліцца</string>
+    <string name="yesCleanTrash">Так, ачысціць</string>
+    <string name="cancel">Адмяніць</string>
+    <string name="noSave">Зачыніць без захавання</string>
+    <string name="ratingApp">Ацаніць дадатак</string>
+    <string name="exitWhat">Для выхаду, трэба паўтарыць дзеянне</string>
+
+    <string name="telegram">Адкрыць кантакты распрацоўніка</string>
+    <string name="notSupportedShare">Гэты кантэнт не падтрымліваецца.</string>
+    <string name="notFoundPlayMarket">Адсутнічае прыкладанне Play Market</string>
+    <string name="copyX">Скапіравана</string>
+    <string name="cd_format">Фарматаваць нататкі</string>
+
+    <string name="search">Пошук у нататках </string>
+    <string name="close">Закрыць</string>
+    <string name="addTag">Дадаць пазнаку</string>
+    <string name="deleteTag">Выдаліць</string>
+    <string name="deleteTagAndNotes">Выдаліць пазнаку і адзначаныя нататкі</string>
+    <string name="countTagsError">Нельга стварыць больш %1$s пазнак</string>
+    <string name="allNotes">Усе нататкі </string>
+    <string name="more">Больш</string>
+    <string name="noteTitle">Назва</string>
+    <string name="deleteSelectTag">Выдаленне пазнакі</string>
+    <string name="deleteSelectTagTextMassage">Вы сапраўды жадаеце выдаліць пазнаку? Пасля выдалення пазнака знікне ва ўсіх адзначаных нататках.</string>
+    <string name="cleanTrashMessage">Вы сапраўды хочаце ачысціць кошык? Усе нататкі будуць назаўжды выдалены.</string>
+    <string name="selectAll">Выбраць гэтую, і яшчэ некалькі нататак</string>
+    <string name="createNewTag">Увядзіце назву пазнакі</string>
+    <string name="sort_Date_Increase">Даце змены: спачатку новыя</string>
+    <string name="sort_Date_Decrease">Даце змены: спачатку старыя</string>
+    <string name="sort_Title_Increase">Назве: ад А-Я</string>
+    <string name="sort_Title_Decrease">Назве: ад Я-А</string>
+    <string name="sortHead">Картаваць па:</string>
+    <string name="shareApp">Падзяліцца дадаткам</string>
+    <string name="privacyApp">Палітыка прыватнасці</string>
+    <string name="addShortCutLauncher">Дадаць ярлык на працоўны стол</string>
+    <string name="addShortCutSuccessfully">Дадаванні ярлыка выканана паспяхова</string>
+    <string name="translateNote">Перавесці нататку</string>
+    <string name="hintTextNote">Тэкст</string>
+    <string name="notInstaledAppTranslate">Для выкарыстання гэтай функцыі трэба ўсталяваць Google Translator</string>
+    <string name="lastDateEditNote">Апошняя змена: %1$s</string>
+    <string name="restore">Аднавіць</string>
+    <string name="noteSaved">Нататку захавана</string>
+    <string name="searchNotesFromTitle">Пачніце ўводзіць тэкст</string>
+    <string name="errorNewTagInput">Памылка: Максімальная колькасць знакаў якая можа змяшчаць назву пазнакі %1$d </string>
+    <string name="emptyTrash">Тут адлюстроўваюцца выдаленыя вамі нататкі</string>
+    <string name="emptyNotes">Тут будуць адлюстроўвацца створаныя вамі нататкі</string>
+    <string name="chooseNote">Дзеянні над абранай нататкай</string>
+    <string name="contentDescrChangeStyleText">Змяніць стыль тэксту</string>
+    <string name="copyNoteEdits">Рэдагаваць копію</string>
+    <string name="noteMoveTrashSnackbar">Нататку перамешчана ў кошык</string>
+    <string name="button_edit">Рэдагаваць</string>
+    <string name="button_copy">Капіяваць</string>
+    <string name="button_phone">Патэлефанаваць</string>
+    <string name="button_mail">Напісаць</string>
+    <string name="button_url">Перайсці</string>
+    <!-- Clean next version -->
+    <string name="hiddeTag">Схаваць нататкі</string>
+    <string name="visibleTag">Адлюстроўваць нататкі</string>
+    <string name="hintNameLabel">Назва ярлыка</string>
+    <string name="titleDialogShortCut">Стварыць ярлык</string>
+    <string name="functionNotSupport">Гэтая функцыя не падтрымліваецца вашай прыладай</string>
+    <string name="shortCutCreateFallDouble">Ярлык для дадзенай нататкі ўжо створаны</string>
+    <string name="buttonCreateShortCut">Дадаць ярлык на працоўны стол</string>
+    <string name="errorMaxNameShortCut">Памылка ў назве ярлыка</string>
+    <string name="renameTag">Перайменаваць</string>
+
+    <string name="settingsInterface">Налады інтэрфейсу</string>
+    <string name="settingsBackups">Сінхранізацыя і рэз.копіі</string>
+    <string name="aboutApps">Аб дадатку</string>
+    <string name="trash">Кошык</string>
+    <string name="themes">Тэмы</string>
+    <string name="onDynamicColor">Уключыць Dynamic Color</string>
+    <string name="coffeeByPlay">Падзякаваць распрацоўшчыку</string>
+    <string name="coffeeByTextInfo"><b>Мае нататкі</b> - гэта дадатак без рэкламы і распаўсюджваецца як бясплатны прадукт. Дадатак распрацоўвае адзін чалавек, таму некаторыя абнаўленне пастаўляюцца са спазненнем. Падтрымка працаздольнасці дадатку і некаторых функцый стварае выдаткі. Вы можаце падзякаваць распрацоўшчыку, купіўшы яму каву або аплаціць арэнду сервера, а таксама адправіць донат па ўказаных спасылках, якія будуць адлюстроўвацца знізу. Дзякуй, што карыстаецеся гэта дадатак!</string>
+
+    <string name="loginUser">Аўтарызацыя Google</string>
+    <string name="cloudBackup">Хмара</string>
+    <string name="localBackup">Прылада</string>
+    <string name="importLocalBackup">Аднавіць з дапамогай рэз. копіі</string>
+    <string name="exportLocalBackup">Стварыць рэзервовую копію</string>
+    <string name="lastCloudCopy">Апошняя рэзервовая копія: %1$s</string>
+    <string name="errorDriveAuth">Госць</string>
+    <string name="autoCloudBackupTitle">Аўтаматычнае рэзервовае капіраванне</string>
+    <string name="restoreNotesTitle">Аднаўленне дадзеных</string>
+    <string name="restoreNotesMessage">Новыя нататкі будуць дададзеныя да ўжо існых, а дублікаты будуць праігнараваныя!</string>
+    <string name="selectRestore">Выбраць рэз. копію</string>
+    <string name="nextRestore">Аднавіць з аблокі</string>
+    <string name="messageRestoreProcess"><b>Аднаўленне дадзеных</b> \nПасля завяршэння дадзенае акно будзе аўтаматычна зачынена.</string>
+    <string name="emptyBackups">Рэзервовых копій не знойдзена</string>
+    <string name="checkLastBackupsCloud">Пачакайце, ідзе загрузка дадзеных…</string>
+
+    <!-- Arrays AutoBackup -->
+    <string name="autoCloudVariantsDay">Кожны дзень</string>
+    <string name="autoCloudVariantsWeek">Кожны тыдзень</string>
+    <string name="autoCloudVariantsMonth">Кожны месяц</string>
+    <string name="autoCloudVariantsOff">Выкл.</string>
+
+    <!-- AutoBackup strings -->
+
+
+    <!-- Error results backup/restore -->
+    <string name="emptyDataToBackup">Няма дадзеных, для стварэння рэзервовай копіі</string>
+    <string name="errorConnectedNetwork">Няма падлучэння да інтэрнэту</string>
+    <string name="creteLocalCopyOkay">Рэзервовую копію паспяхова створана</string>
+    <string name="creteLocalCopyFail">Памылка, рэзервовая копія не захавана</string>
+    <string name="restoreDataOkay">Аднаўленне дадзеных завершана паспяхова</string>
+    <string name="restoreDataFall">Памылка: Рэзервовая копія пашкоджана</string>
+    <string name="errorAuth">Памылка, паспрабуйце пазней</string>
+    <string name="errorLoadingLastBackupCloud">Памылка, націсніце, каб паўтарыць спробу</string>
+    <string name="errorDriveSync">Памылка сервера, або дрэнная якасць інтэрнэту</string>
+    <string name="errorCredential">Памылка, праблемы з аўтарызацыяй</string>
+
+    <string name="errorDriverAuthInfo">Каб выкарыстоўваць сінхранізацыю з воблакам неабходна аўтарызавацца</string>
+    <string name="sortNotes">Сартаваць нататкі</string>
+    <string name="percentProgress">Рэзервовае капіраванне (%d%%)</string>
+
+    <!-- Product offer -->
+    <string name="byyError">Памылка пры набыцці.</string>
+    <string name="byyCancel">Мы будзем імкнуцца стаць лепшымі.</string>
+    <string name="errorLoadingsProduct">Памылка, не атрымалася загрузіць вітрыну</string>
+    <string name="thanks_title">Паважаны карыстальнік</string>
+    <string name="creteNoteToTag">Стварыце нататку</string>
+    <string name="errorSyncTitle">Звярніце ўвагу!</string>
+    <string name="errorSyncDescrpt">З гэтай версіяй мы спыняем падтрымку сінхранізацыі з Google Дыскам. У будучых абнаўленнях мы ўвядзем больш бяспечны і эфектыўны метад сінхранізацыі, які забяспечыць вам лепшы карыстальніцкі досвед.</string>
+
+    <string name="thanks_donate">Распрацоўшчык праекту кажа вам дзякуй за вашу куплю. Мы будзем імкнуцца стаць лепшымі і зручнейшымі. \n <b>З павагай, мае нататкі!</b></string>
+</resources>

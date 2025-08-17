@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="countLinesNoteTitle">3</integer>
+    <integer name="maxLengthNotesTitle">100</integer>
+    <integer name="maxLengthNotesTextValue">20000</integer>
+    <integer name="maxLinesItemNoteValue">10</integer>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="sortButton" type="id" />
+    <item name="formatButton" type="id" />
+    <item name="deleteNotesArray" type="id" />
+    <item name="removeNotesArray" type="id" />
+</resources>

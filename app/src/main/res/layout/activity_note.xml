@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="presenter"
+            type="com.pasich.mynotes.ui.presenter.NotePresenter" />
+
+        <variable
+            name="activateEdit"
+            type="boolean"
+            android:value="false" />
+
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/noteLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:fitsSystemWindows="true"
+        tools:context=".ui.view.activity.NoteActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent">
+
+
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:background="@android:color/transparent"
+                    app:layout_collapseMode="pin">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/title_toolbar_tag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textSize="16sp"
+                            android:visibility="gone"
+                            android:textColor="?attr/colorPrimary"
+                            tools:text="tag_name" />
+
+                        <TextView
+                            android:id="@+id/title_toolbar_data"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textSize="14sp"
+                            tools:text="data_name" />
+                    </LinearLayout>
+                </com.google.android.material.appbar.MaterialToolbar>
+            </com.google.android.material.appbar.AppBarLayout>
+
+
+            <ScrollView
+                android:id="@+id/scrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="16dp"
+                android:scrollbarSize="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <EditText
+                        android:id="@+id/notesTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:autofillHints="no"
+                        android:background="@null"
+                        android:autoLink="all"
+                        android:linksClickable="true"
+                        android:fontFamily="@font/railway_medium"
+                        android:hint="@string/noteTitle"
+                        android:inputType="textMultiLine"
+                        android:maxLength="@integer/maxLengthNotesTitle"
+                        android:maxLines="@integer/countLinesNoteTitle"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:textColor="@drawable/selector_color_title"
+                        android:textStyle="bold"
+                        android:enabled="@{activateEdit, default=false}"
+
+                        tools:ignore="TouchTargetSizeCheck" />
+
+
+                    <EditText
+                        android:id="@+id/valueNote"
+                        android:autoLink="web|email|phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:autofillHints="no"
+                        android:background="#00FFFFFF"
+                        android:enabled="@{activateEdit, default=false}"
+                        android:focusable="@{activateEdit, default=false}"
+                        android:focusableInTouchMode="@{activateEdit, default=false}"
+                        android:gravity="start|top"
+                        android:hint="@string/hintTextNote"
+                        android:inputType="textAutoComplete|text|textCapSentences|textMultiLine"
+                        android:longClickable="true"
+                        android:maxLength="@integer/maxLengthNotesTextValue"
+                        android:singleLine="false"
+                        android:minHeight="100dp"
+                        android:padding="20dp"
+                        android:textColor="@drawable/selector_color_value" />
+
+                </LinearLayout>
+            </ScrollView>
+
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/editActive"
+            style="@style/fab_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="25dp"
+            android:layout_marginBottom="25dp"
+            android:contentDescription="@string/editNoteButton"
+            android:onClick="@{(view) -> presenter.activateEditNote()}"
+            android:visibility="@{activateEdit ? View.GONE : View.VISIBLE}"
+            app:layout_anchor="@id/scrollView"
+            app:layout_anchorGravity="bottom|right|end"
+            app:layout_dodgeInsetEdges="bottom"
+            app:srcCompat="@drawable/ic_edit" />
+
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

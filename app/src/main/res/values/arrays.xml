@@ -1,0 +1,15 @@
+<resources>
+    <string-array name="autoCloudVariants">
+        <item>@string/autoCloudVariantsDay</item>
+        <item>@string/autoCloudVariantsWeek</item>
+        <item>@string/autoCloudVariantsMonth</item>
+        <item>@string/autoCloudVariantsOff</item>
+    </string-array>
+
+    <integer-array name="autoCloudIndexes">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </integer-array>
+</resources>

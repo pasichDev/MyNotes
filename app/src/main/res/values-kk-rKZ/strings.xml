@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Менің жазбаларым</string>
+    <string name="NewNote">Жаңа ескертпе</string>
+    <string name="trashNotes">Себетке жылжыту</string>
+    <string name="trashClean">Себетті босату</string>
+    <string name="share">Бөлісу</string>
+    <string name="yesCleanTrash">Иә, тазалаңыз</string>
+    <string name="cancel">Болдырмау</string>
+    <string name="noSave">Сақтамай жабу</string>
+    <string name="ratingApp">Қолданбаны бағалау</string>
+    <string name="exitWhat">Шығу үшін әрекетті қайталау керек</string>
+
+    <string name="telegram">Әзірлеуші ​​контактілерін ашыңыз</string>
+    <string name="notSupportedShare">Бұл мазмұнға қолдау көрсетілмейді.</string>
+    <string name="notFoundPlayMarket">Play Market қолданбасы жоқ</string>
+    <string name="copyX">Көшірілген</string>
+    <string name="cd_format">Жазбаларды пішімдеу</string>
+    <string name="search">Ескертпелердегі іздеу</string>
+    <string name="close">Жабу</string>
+    <string name="addTag">Тег қосу</string>
+    <string name="deleteTag">Текті</string>
+    <string name="deleteTagAndNotes">Тег пен тегтелген жазбаларды жою</string>
+    <string name="countTagsError">%1$s тегтен артық жасау мүмкін емес</string>
+    <string name="allNotes">Барлық ескертпелер</string>
+    <string name="more">Қосымша</string>
+    <string name="noteTitle">Тақырып</string>
+    <string name="deleteSelectTag">Тегті жою</string>
+    <string name="deleteSelectTagTextMassage">Тегті шынымен жойғыңыз келе ме? Жойылғаннан кейін тег барлық белгіленген жазбалардан жоғалады.</string>
+    <string name="cleanTrashMessage">Себетті шынымен босатқыңыз келе ме? Барлық ескертпелер біржола жойылады.</string>
+    <string name="selectAll">Осы және тағы бірнеше ескертпелерді таңдаңыз</string>
+    <string name="createNewTag">Тег атауын енгізіңіз</string>
+    <string name="sort_Date_Increase">Өзгертілген күні: ең жаңасы бірінші</string>
+    <string name="sort_Date_Decrease">Өзгертілген күні: алдымен ескі</string>
+    <string name="sort_Title_Increase">Тақырып: A-Z</string>
+    <string name="sort_Title_Decrease">Тақырып: Z-A</string>
+    <string name="sortHead">Сұрыптау:</string>
+    <string name="shareApp">Қолданбаны ортақ пайдалану</string>
+    <string name="privacyApp">Құпиялылық саясаты</string>
+    <string name="addShortCutLauncher">Жұмыс үстеліне төте жол қосу</string>
+    <string name="addShortCutSuccessfully">Таңбаша сәтті қосылды</string>
+    <string name="translateNote">Ескертуді аудару</string>
+    <string name="hintTextNote">Мәтін</string>
+    <string name="notInstaledAppTranslate">Бұл мүмкіндікті пайдалану үшін Google Translator орнатылуы керек</string>
+    <string name="lastDateEditNote">Соңғы өңдеу: %1$s </string>
+    <string name="restore">Қалпына келтіру</string>
+    <string name="noteSaved">Ескертпе сақталды</string>
+    <string name="searchNotesFromTitle">Теруді бастаңыз</string>
+    <string name="errorNewTagInput">Қате: тег атауында болуы мүмкін таңбалардың ең көп саны – %1$d </string>
+    <string name="emptyTrash">Жойылған ескертпелер осы жерде көрсетіледі</string>
+    <string name="emptyNotes">Сіз жасаған ескертпелер осы жерде пайда болады</string>
+    <string name="chooseNote">Таңдалған ескертпедегі әрекеттер</string>
+    <string name="contentDescrChangeStyleText">Мәтін мәнерін өзгерту</string>
+    <string name="copyNoteEdits">Көшірмені өңдеу</string>
+    <string name="noteMoveTrashSnackbar">Ескертпе себетке жіберілді</string>
+    <string name="button_edit">Өңдеу</string>
+    <string name="button_copy">Көшіру</string>
+    <string name="button_phone">Қоңырау шалу</string>
+    <string name="button_mail">Жазу</string>
+    <string name="button_url">өтіңіз</string>
+    <!-- Келесі нұсқаны тазалау -->
+    <string name="hiddeTag">Ескертпелерді жасыру</string>
+    <string name="visibleTag">Ескертпелерді көрсету</string>
+    <string name="hintNameLabel">Жапсырма аты</string>
+    <string name="titleDialogShortCut">Таңбаша жасау</string>
+    <string name="functionNotSupport">Бұл функцияға құрылғыңыз қолдау көрсетпейді</string>
+    <string name="shortCutCreateFallDouble">Бұл ескертпе үшін белгі әлдеқашан жасалған</string>
+    <string name="buttonCreateShortCut">Жұмыс үстеліне төте жолды қосу</string>
+    <string name="errorMaxNameShortCut">Таңбаша атауындағы қате</string>
+    <string name="renameTag">Атын өзгерту</string>
+
+    <string name="settingsInterface">Интерфейс параметрлері</string>
+    <string name="settingsBackups">Синхрондау және сақтық көшірме</string>
+    <string name="aboutApps">Қолданба туралы</string>
+    <string name="trash">Себет</string>
+    <string name="themes">Тақырыптар</string>
+    <string name="onDynamicColor">Динамикалық түсті қосу</string>
+    <string name="coffeeByPlay">Әзірлеушіге рахмет</string>
+    <string name="coffeeByTextInfo"><b>Менің жазбаларым</b> - бұл жарнамасыз қолданба және тегін өнім ретінде таратылады. Қолданбаны бір адам әзірлеген, сондықтан кейбір жаңартулар кеш жеткізіледі. Қолданбаның және кейбір мүмкіндіктердің денсаулығын сақтау шығындарды тудырады. Сіз әзірлеушіге кофе сатып алу немесе сервер жалдау ақысын төлеу арқылы алғыс айта аласыз, сонымен қатар төменде көрсетілетін сілтемелерге қайырымдылық жібере аласыз. Осы қолданбаны пайдаланғаныңызға рахмет!</string>
+
+    <string name="loginUser">Google жүйесіне кіру</string>
+    <string name="cloudBackup">Бұлт</string>
+    <string name="localBackup">Құрылғы</string>
+    <string name="importLocalBackup">Res. көшірмелер</string>
+    <string name="exportLocalBackup">Сақтық көшірме жасау</string>
+    <string name="lastCloudCopy">Соңғы сақтық көшірме: %1$s</string>
+    <string name="errorDriveAuth">Қонақ</string>
+    <string name="autoCloudBackupTitle">Сақтық көшірмені автоматты түрде жасау</string>
+    <string name="restoreNotesTitle">Деректерді қалпына келтіру</string>
+    <string name="restoreNotesMessage">Барлардан бұрын жаңа ескертпелер қосылады және көшірмелер еленбейді!</string>
+    <string name="selectRestore">Қалпына келтіру опциясын таңдаңыз. көшіру</string>
+    <string name="nextRestore">Бұлттан қалпына келтіру</string>
+    <string name="messageRestoreProcess"><b>Деректерді қалпына келтіру</b> \nБұл терезе аяқталғаннан кейін автоматты түрде жабылады.</string>
+    <string name="emptyBackups">Сақтық көшірмелер табылмады</string>
+    <string name="checkLastBackupsCloud">Күтіңіз, деректер жүктелуде…</string>
+
+    <!-- Массивтердің автосақтық көшірмесі -->
+    <string name="autoCloudVariantsDay">Күн сайын</string>
+    <string name="autoCloudVariantsWeek">Апта сайын</string>
+    <string name="autoCloudVariantsMonth">Ай сайын</string>
+    <string name="autoCloudVariantsOff">Өшірулі</string>
+
+    <!-- Автоматты сақтық көшірме жолдары -->
+
+
+    <!-- Қате нәтижелерінің сақтық көшірмесін жасау/қалпына келтіру -->
+    <string name="emptyDataToBackup">Сақтық көшірме жасау үшін деректер жоқ</string>
+    <string name="errorConnectedNetwork">Интернет қосылымы жоқ</string>
+    <string name="creteLocalCopyOkay">Сақтық көшірме сәтті жасалды</string>
+    <string name="creteLocalCopyFail">Қате, сақтық көшірме сақталмады</string>
+    <string name="restoreDataOkay">Деректерді қалпына келтіру сәтті аяқталды</string>
+    <string name="restoreDataFall">Қате: сақтық көшірме бүлінген</string>
+    <string name="errorAuth">Қате, әрекетті кейінірек қайталаңыз</string>
+    <string name="errorLoadingLastBackupCloud">Қате, әрекетті қайталау үшін басыңыз</string>
+    <string name="errorDriveSync">Сервер қатесі немесе нашар интернет сапасы</string>
+    <string name="errorCredential">Қате, авторизация мәселелері</string>
+
+    <string name="errorDriverAuthInfo">Бұлтты синхрондауды пайдалану үшін жүйеге кіруіңіз керек</string>
+    <string name="sortNotes">Ескертпелерді сұрыптау</string>
+    <string name="percentProgress">Сақтық көшірме (%d%%)</string>
+
+    <!-- Өнім ұсынысы -->
+    <string name="byyError">Сатып алу кезіндегі қате.</string>
+    <string name="byyCancel">Біз жақсырақ болуға тырысамыз.</string>
+    <string name="errorLoadingsProduct">Қате, дүкен сөресі жүктелмеді</string>
+    <string name="errorSyncTitle">Назар аударыңыз!</string>
+    <string name="errorSyncDescrpt">Осы нұсқамен біз Google Дискісімен синхрондауды қолдауды тоқтатамыз. Келесі жаңартуларда біз қауіпсіз және тиімдірек синхрондау әдісін енгіземіз, бұл сізге жақсы пайдаланушы тәжірибесін қамтамасыз етеді.</string>
+
+    <string name="creteNoteToTag">Жазба жасаңыз</string>
+    <string name="thanks_title">Құрметті пайдаланушы</string>
+    <string name="thanks_donate">Жоба әзірлеушісі сатып алғаныңыз үшін алғыс білдіреді. Біз жақсырақ және ыңғайлырақ болуға тырысамыз. \n <b>Құрметпен, менің жазбаларым!</b></string>
+</resources>

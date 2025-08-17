@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="NewNote"> Create note </string>
+    <string name="trashNotes">Move to trash</string>
+    <string name="trashClean">Trash Clean</string>
+    <string name="share">Share</string>
+    <string name="yesCleanTrash">Yes, clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="telegram">Open developer contacts</string>
+    <string name="noSave"> Close without saving </string>
+    <string name="ratingApp"> Rate this app </string>
+    <string name="exitWhat">To exit, you need to repeat the action</string>
+    <string name="notFoundPlayMarket">Missing Play Market app</string>
+    <string name="notSupportedShare">This content is not supported.</string>
+    <string name="copyX">Copied</string>
+    <string name="cd_format">Format notes</string>
+
+
+    <string name="search">Search notes </string>
+    <string name="close">Close</string>
+    <string name="addTag">Add Tag</string>
+    <string name="deleteTag">Delete</string>
+    <string name="deleteTagAndNotes">Delete tag and tagged notes</string>
+    <string name="countTagsError">Cannot create more than %1$s tags</string>
+    <string name="allNotes">All Notes </string>
+    <string name="more">More</string>
+    <string name="noteTitle">Title</string>
+    <string name="deleteSelectTag">Delete tag</string>
+    <string name="deleteSelectTagTextMassage">Are you sure you want to delete the tag? After deletion, the tag will disappear from all marked notes.</string>
+    <string name="cleanTrashMessage">Are you sure you want to empty the Trash? All notes will be permanently deleted.</string>
+    <string name="selectAll">Select this and some more notes</string>
+    <string name="createNewTag">Enter tag name</string>
+    <string name="sort_Date_Increase">Date modified: newest first</string>
+    <string name="sort_Date_Decrease">Date changed: old first</string>
+    <string name="sort_Title_Increase">Title: A-Z</string>
+    <string name="sort_Title_Decrease">Title: Z-A</string>
+    <string name="sortHead">Sort by:</string>
+    <string name="shareApp">Share App</string>
+    <string name="privacyApp">Privacy Policy</string>
+    <string name="addShortCutLauncher">Add shortcut to desktop</string>
+    <string name="addShortCutSuccessfully">Shortcut added successfully</string>
+    <string name="translateNote">Translate note</string>
+    <string name="hintTextNote">Text</string>
+    <string name="notInstaledAppTranslate">Google Translator must be installed to use this feature</string>
+    <string name="lastDateEditNote">Last edit: %1$s </string>
+    <string name="restore">Restore</string>
+    <string name="noteSaved">Note saved</string>
+    <string name="searchNotesFromTitle">Start typing</string>
+    <string name="errorNewTagInput">Error: The maximum number of characters a tag name can contain is %1$d </string>
+    <string name="emptyTrash">Your deleted notes are displayed here</string>
+    <string name="emptyNotes">Notes you create will appear here</string>
+    <string name="chooseNote">Actions on the selected note</string>
+    <string name="contentDescrChangeStyleText">Change text style</string>
+    <string name="copyNoteEdits">Edit copy</string>
+    <string name="noteMoveTrashSnackbar">Note moved to trash</string>
+    <string name="button_edit">Edit</string>
+    <string name="button_copy">Copy</string>
+    <string name="button_phone">Call</string>
+    <string name="button_mail">Write</string>
+    <string name="button_url">Go to</string>
+
+
+    <!-- Strings that are not translated  -->
+    <string name="plus" translatable="false">+</string>
+    <string name="tagHastag" translatable="false">#%1$s</string>
+    <string name="app_name"> My Notes </string>
+    <string name="telegram_nick" translatable="false">"@"pasichDev</string>
+    <string name="email_address" translatable="false">pasichDev@gmail.com</string>
+    <string name="theme_demo" translatable="false">Demo Screen Theme</string>
+    <string name="editNoteButton" translatable="false">EditNote</string>
+    <string name="contentCoffee" translatable="false">Coffee</string>
+    <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
+    <string name="versionAndCodeApp" translatable="false">My notes (v%1$s)</string>
+    <string name="MonoBank_Donate" translatable="false">MonoBank Donate</string>
+    <string name="userAvatar" translatable="false">User Avatar</string>
+    <string name="logOut" translatable="false">LogOut</string>
+    <string name="thanksImage" translatable="false">Thanks byy</string>
+    <string name="sliderTextSize" translatable="false">Slider edit text size</string>
+
+    <string name="hiddeTag">Hide notes</string>
+    <string name="visibleTag">Show notes</string>
+    <string name="hintNameLabel">Label name</string>
+    <string name="titleDialogShortCut">Create Shortcut</string>
+    <string name="functionNotSupport">This function is not supported by your device</string>
+    <string name="shortCutCreateFallDouble">A label has already been created for this note</string>
+    <string name="buttonCreateShortCut">Add shortcut to desktop</string>
+    <string name="errorMaxNameShortCut">Error in shortcut name</string>
+    <string name="renameTag">Rename</string>
+
+
+    <string name="settingsInterface">Interface settings</string>
+    <string name="settingsBackups">Sync &amp; Backup</string>
+    <string name="aboutApps">About App</string>
+    <string name="trash">Trash</string>
+    <string name="themes">Themes</string>
+    <string name="onDynamicColor">Enable Dynamic Color</string>
+    <string name="coffeeByPlay">Thank Developer</string>
+    <string name="coffeeByTextInfo"><b>My Notes</b> is an ad-free app and is distributed as a free product. The application is developed by one person, so some updates are delivered late. Maintaining the health of the application and some features generates costs. You can thank the developer by buying him a coffee or paying for the server rent, as well as send a donation to the specified links that will be displayed below. Thank you for using this app!</string>
+
+    <string name="loginUser">Google Login</string>
+    <string name="cloudBackup">Cloud</string>
+    <string name="localBackup">Device</string>
+    <string name="importLocalBackup">Restore with Res. copies</string>
+    <string name="exportLocalBackup">Create backup</string>
+    <string name="lastCloudCopy">Last backup: %1$s</string>
+    <string name="errorDriveAuth">Guest</string>
+    <string name="autoCloudBackupTitle">Auto Backup</string>
+    <string name="restoreNotesTitle">Data Restore</string>
+    <string name="restoreNotesMessage">New notes will be added before existing ones, and duplicates will be ignored!</string>
+    <string name="selectRestore">Select Restore. copy</string>
+    <string name="nextRestore">Restore from Cloud</string>
+    <string name="messageRestoreProcess"><b>Restoring data</b> \nThis window will close automatically when completed.</string>
+    <string name="emptyBackups">No backups found</string>
+    <string name="checkLastBackupsCloud">Please wait, loading data…</string>
+
+    <!-- Arrays AutoBackup -->
+    <string name="autoCloudVariantsDay">Every day</string>
+    <string name="autoCloudVariantsWeek">Every week</string>
+    <string name="autoCloudVariantsMonth">Every month</string>
+    <string name="autoCloudVariantsOff">Off</string>
+
+    <!-- AutoBackup strings -->
+
+
+    <!-- Error results backup/restore -->
+    <string name="emptyDataToBackup">No data to backup</string>
+    <string name="errorConnectedNetwork">No internet connection</string>
+    <string name="creteLocalCopyOkay">The backup was created successfully</string>
+    <string name="creteLocalCopyFail">Error, backup not saved</string>
+    <string name="restoreDataOkay">Data restore completed successfully</string>
+    <string name="restoreDataFall">Error: Backup corrupted</string>
+    <string name="errorAuth">Error, please try again later</string>
+    <string name="errorLoadingLastBackupCloud">Error, click to try again</string>
+    <string name="errorDriveSync">Server error or poor internet quality</string>
+    <string name="errorCredential">Error, authorization problems</string>
+
+    <string name="errorDriverAuthInfo">You must be logged in to use cloud sync</string>
+    <string name="sortNotes">Sort notes</string>
+
+
+    <!-- Product offer -->
+    <string name="byyError"> Error while purchasing.</string>
+    <string name="byyCancel">We will strive to be better.</string>
+    <string name="errorLoadingsProduct">Error, failed to load storefront</string>
+    <string name="thanks_title">Dear User</string>
+    <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
+
+    <string name="percentProgress">Backup (%d%%)</string>
+
+    <string name="errorSyncTitle">Attention!</string>
+    <string name="errorSyncDescrpt">With this version, we are discontinuing support for Google Drive synchronization. In future updates, we will introduce a more secure and efficient synchronization method, ensuring you a better user experience.</string>
+
+    <string name="creteNoteToTag">Create  note</string>
+</resources>

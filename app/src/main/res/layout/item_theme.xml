@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="theme"
+            type="com.pasich.mynotes.data.model.Theme" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/itemTheme"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:strokeWidth="2dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
+        app:strokeColor="@{theme.check ? context.getColor(theme.colorStrokeSelected) : @color/item_theme_stroke_color_default}">
+
+        <ImageView
+            android:id="@+id/imageTheme"
+            android:layout_width="128dp"
+            android:layout_height="160dp"
+            android:layout_margin="5dp"
+            app:imageResource="@{theme.image}"
+            android:contentDescription="@string/theme_demo" />
+    </com.google.android.material.card.MaterialCardView>
+</layout>
