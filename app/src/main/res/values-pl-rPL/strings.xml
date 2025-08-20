@@ -76,6 +76,9 @@
     <string name="trash">Kosz</string>
     <string name="themes">Motywy</string>
     <string name="onDynamicColor">Włącz kolor dynamiczny</string>
+    <string name="onDynamicColorDescription">Dostosowuje kolory aplikacji do tapety (Android 12+)</string>
+    <string name="onScreenProtection">Włącz ochronę ekranu</string>
+    <string name="onScreenProtectionDescription">Wchodzi w życie po ponownym uruchomieniu aplikacji</string>
     <string name="coffeeByPlay">Podziękuj deweloperowi</string>
     <string name="coffeeByTextInfo"><b>Moje notatki</b> to aplikacja bez reklam i jest rozprowadzana jako produkt bezpłatny. Aplikacja jest rozwijana przez jedną osobę, więc niektóre aktualizacje są dostarczane z opóźnieniem. Utrzymanie kondycji aplikacji i niektórych funkcji generuje koszty. Możesz podziękować deweloperowi, kupując mu kawę lub płacąc za wynajem serwera, a także przesłać darowiznę na wskazane linki, które zostaną wyświetlone poniżej. Dziękujemy za korzystanie z tej aplikacji!</string>
 

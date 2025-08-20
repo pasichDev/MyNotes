@@ -76,6 +76,9 @@
     <string name="trash">Кошык</string>
     <string name="themes">Тэмы</string>
     <string name="onDynamicColor">Уключыць Dynamic Color</string>
+    <string name="onDynamicColorDescription">Адаптуе колеры дадатка да вашай шпалеры (Android 12+)</string>
+    <string name="onScreenProtection">Уключыць абарону экрана</string>
+    <string name="onScreenProtectionDescription">Ўступіць у сілу пасля перазапуску дадатку</string>
     <string name="coffeeByPlay">Падзякаваць распрацоўшчыку</string>
     <string name="coffeeByTextInfo"><b>Мае нататкі</b> - гэта дадатак без рэкламы і распаўсюджваецца як бясплатны прадукт. Дадатак распрацоўвае адзін чалавек, таму некаторыя абнаўленне пастаўляюцца са спазненнем. Падтрымка працаздольнасці дадатку і некаторых функцый стварае выдаткі. Вы можаце падзякаваць распрацоўшчыку, купіўшы яму каву або аплаціць арэнду сервера, а таксама адправіць донат па ўказаных спасылках, якія будуць адлюстроўвацца знізу. Дзякуй, што карыстаецеся гэта дадатак!</string>
 

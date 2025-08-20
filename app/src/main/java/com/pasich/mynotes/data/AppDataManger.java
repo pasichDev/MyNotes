@@ -106,6 +106,16 @@ public class AppDataManger implements DataManager {
     }
 
     @Override
+    public boolean isScreenProtectionEnabled() {
+        return preferencesHelper.isScreenProtectionEnabled();
+    }
+
+    @Override
+    public void setScreenProtectionEnabled(boolean enabled) {
+        preferencesHelper.setScreenProtectionEnabled(enabled);
+    }
+
+    @Override
     public String getTypeFaceNoteActivity() {
         return preferencesHelper.getTypeFaceNoteActivity();
     }

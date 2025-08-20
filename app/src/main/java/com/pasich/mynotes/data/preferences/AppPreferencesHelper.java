@@ -106,5 +106,15 @@ public class AppPreferencesHelper implements PreferenceHelper {
         return getDefaultPreferences().getString(ARGUMENT_PREFERENCE_TEXT_STYLE, ARGUMENT_DEFAULT_TEXT_STYLE);
     }
 
+    @Override
+    public boolean isScreenProtectionEnabled() {
+        return getDefaultPreferences().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
+    }
+
+    @Override
+    public void setScreenProtectionEnabled(boolean enabled) {
+        getDefaultPreferences().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, enabled);
+    }
+
 
 }

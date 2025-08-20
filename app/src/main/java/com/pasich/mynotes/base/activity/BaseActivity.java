@@ -24,12 +24,28 @@ import com.preference.PowerPreference;
 
 public abstract class BaseActivity extends AppCompatActivity implements BaseView {
 
-
     @Override
     public void selectTheme() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         setTheme(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? R.style.AppThemeDynamic : getSelectedTheme());
+        applyScreenProtection();
+    }
 
+    private void applyScreenProtection() {
+        boolean isScreenProtectionEnabled = PowerPreference.getDefaultFile().getBoolean(
+            PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, 
+            PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE
+        );
+        
+        if (isScreenProtectionEnabled) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
+    }
+
+    protected void updateScreenProtection() {
+        applyScreenProtection();
     }
 
     private int getSelectedTheme() {

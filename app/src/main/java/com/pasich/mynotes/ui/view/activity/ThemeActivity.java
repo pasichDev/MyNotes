@@ -2,7 +2,6 @@ package com.pasich.mynotes.ui.view.activity;
 
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
@@ -19,6 +18,7 @@ import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Theme;
+import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.databinding.ActivityThemeBinding;
 import com.pasich.mynotes.utils.adapters.themeAdapter.ThemesAdapter;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
@@ -29,11 +29,14 @@ import com.preference.PowerPreference;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class ThemeActivity extends BaseActivity {
 
+    @Inject
+    PreferenceHelper mPreferenceHelper;
 
     public ActivityThemeBinding activityThemeBinding;
     private ThemesAdapter mAdapter;
@@ -71,6 +74,8 @@ public class ThemeActivity extends BaseActivity {
             activityThemeBinding.dynamicColor.setEnabled(true);
             activityThemeBinding.dynamicColor.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE));
         }
+        activityThemeBinding.screenProtection.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE));
+
     }
 
     private void setListThemes() {
@@ -111,7 +116,6 @@ public class ThemeActivity extends BaseActivity {
         Theme mTheme = mAdapter.getSelectTheme();
         boolean enableDynamicColor = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
 
-
         if (themeIdStartActivity != mTheme.getId()) {
             setResult(11, new Intent().putExtra("updateThemeStyle", mAdapter.getSelectTheme().getTHEME_STYLE()));
         }
@@ -144,6 +148,10 @@ public class ThemeActivity extends BaseActivity {
                 setStatusDynamicColor(isChecked);
             }
         });
+        
+        activityThemeBinding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            PowerPreference.getDefaultFile().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, isChecked);
+        });
     }
 
 
@@ -152,12 +160,27 @@ public class ThemeActivity extends BaseActivity {
         super.redrawActivity(themeStyle);
         setTheme(themeStyle);
         int colorOnBackground = MaterialColors.getColor(this, R.attr.colorOnBackground, Color.GRAY);
+        int colorPrimary = MaterialColors.getColor(this, R.attr.colorPrimary, Color.GRAY);
+        int colorSurfaceVariant = MaterialColors.getColor(this, R.attr.colorSurfaceVariant, Color.GRAY);
+        int colorOnSurface = MaterialColors.getColor(this, R.attr.colorOnSurface, Color.GRAY);
+        int colorOnSurfaceVariant = MaterialColors.getColor(this, R.attr.colorOnSurfaceVariant, Color.GRAY);
+        int colorSurfaceContainer = MaterialColors.getColor(this, R.attr.colorSurfaceContainer, Color.GRAY);
+        
+        // Background
         activityThemeBinding.activityTheme.setBackgroundColor(MaterialColors.getColor(this, android.R.attr.colorBackground, Color.GRAY));
+        
+        // Title
         activityThemeBinding.titleTheme.setTextColor(colorOnBackground);
-
-        // materialSwitch
-        activityThemeBinding.dynamicColor.setTrackTintList(ColorStateList.valueOf(MaterialColors.getColor(this, R.attr.colorSurfaceVariant, Color.GRAY)));
-        activityThemeBinding.dynamicColor.setThumbTintList(ColorStateList.valueOf(MaterialColors.getColor(this, R.attr.colorPrimary, Color.GRAY)));
+        
+        // Dynamic Color Card and Switch
+        activityThemeBinding.dynamicColorCard.setCardBackgroundColor(colorSurfaceContainer);
+        activityThemeBinding.dynamicColor.setTextColor(colorOnSurface);
+        activityThemeBinding.dynamicColorDescription.setTextColor(colorOnSurfaceVariant);
+        
+        // Screen Protection Card and Switch  
+        activityThemeBinding.screenProtectionCard.setCardBackgroundColor(colorSurfaceContainer);
+        activityThemeBinding.screenProtection.setTextColor(colorOnSurface);
+        activityThemeBinding.screenProtectionDescription.setTextColor(colorOnSurfaceVariant);
     }
 
 

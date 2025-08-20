@@ -73,6 +73,9 @@
     <string name="trash">Кошик</string>
     <string name="themes">Теми</string>
     <string name="onDynamicColor">Увімкнути Dynamic Color</string>
+    <string name="onDynamicColorDescription">Адаптує кольори додатку до вашої шпалери (Android 12+)</string>
+    <string name="onScreenProtection">Увімкнути захист екрану</string>
+    <string name="onScreenProtectionDescription">Вступить в силу після перезапуску додатку</string>
     <string name="coffeeByPlay">Подякувати розробнику</string>
     <string name="coffeeByTextInfo"><b>Мої нотатки</b> - це програма без реклами та поширюється як безкоштовний продукт. Додаток розробляє одна людина, тому деякі оновлення поставляються із запізненням. Підтримка працездатності програми та деяких функцій створює витрати. Ви можете подякувати розробнику, купивши йому каву або сплатити за оренду сервера, а також відправити донат за вказаними посиланнями, які будуть відображатися знизу. Дякую, що використовуєте цю програму!</string>
     <string name="loginUser">Авторизація Google</string>

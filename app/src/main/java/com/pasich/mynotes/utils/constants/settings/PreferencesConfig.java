@@ -23,4 +23,7 @@ public class PreferencesConfig {
     //DynamicColors
     public static final String ARGUMENT_PREFERENCE_DYNAMIC_COLOR = "dynamicColorEnable";
     public static final boolean ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE = false;
+    //ScreenProtection
+    public static final String ARGUMENT_PREFERENCE_SCREEN_PROTECTION = "screenProtectionEnable";
+    public static final boolean ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE = false;
 }

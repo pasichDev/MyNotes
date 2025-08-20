@@ -187,7 +187,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
             Log.d("AppUpdate", "Update availability: " +
-            appUpdateInfo.updateAvailability());
+                    appUpdateInfo.updateAvailability());
 
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
@@ -207,7 +207,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     this,
                     REQUEST_UPDATE);
         } catch (Exception e) {
-             Log.d("AppUpdate", "Unable to start the update: " + e.getMessage());
+            Log.d("AppUpdate", "Unable to start the update: " + e.getMessage());
         }
     }
 
@@ -358,7 +358,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 .setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
-        //  mActivityBinding.searchView.findViewById(R.id.search_view_divider).setVisibility(View.GONE);
+        // mActivityBinding.searchView.findViewById(R.id.search_view_divider).setVisibility(View.GONE);
 
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override

@@ -20,6 +20,8 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.AppDbHelper;
 import com.pasich.mynotes.data.database.DbHelper;
+import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
+import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.utils.backup.CloudCacheHelper;
 import com.pasich.mynotes.utils.constants.Database;
 import com.pasich.mynotes.utils.constants.DriveScope;
@@ -76,6 +78,12 @@ public class ApplicationModule {
     @Singleton
     DataManager providesDataManager(AppDataManger appDataManager) {
         return appDataManager;
+    }
+
+    @Provides
+    @Singleton
+    PreferenceHelper providesPreferenceHelper(AppPreferencesHelper appPreferencesHelper) {
+        return appPreferencesHelper;
     }
 
 

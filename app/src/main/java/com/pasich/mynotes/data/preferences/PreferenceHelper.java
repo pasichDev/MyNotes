@@ -30,4 +30,8 @@ public interface PreferenceHelper {
     PreferencesBackup getListPreferences();
 
     void setListPreferences(PreferencesBackup preferences);
+
+    boolean isScreenProtectionEnabled();
+
+    void setScreenProtectionEnabled(boolean enabled);
 }

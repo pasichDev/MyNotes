@@ -72,6 +72,9 @@
     <string name="trash">Papierkorb</string>
     <string name="themes">Designs</string>
     <string name="onDynamicColor">Dynamische Farbe aktivieren</string>
+    <string name="onDynamicColorDescription">Passt App-Farben an Ihr Hintergrundbild an (Android 12+)</string>
+    <string name="onScreenProtection">Bildschirmschutz aktivieren</string>
+    <string name="onScreenProtectionDescription">Wird nach dem Neustart der App wirksam</string>
     <string name="coffeeByPlay">Danke dem Entwickler</string>
     <string name="coffeeByTextInfo"><b>Meine Notizen</b> ist eine werbefreie Anwendung und wird als kostenloses Produkt vertrieben. Die App wird von einer Person entwickelt, daher werden einige Updates verspätet geliefert. Die Aufrechterhaltung der Funktionalität des Programms und einiger Funktionen verursacht Kosten. Sie können dem Entwickler danken, indem Sie ihm einen Kaffee kaufen oder für eine Servermiete bezahlen, sowie eine Spende über die angegebenen Links senden, die unten angezeigt werden. Vielen Dank, dass Sie diese App verwenden!</string>
     <string name="loginUser">Google-Autorisierung</string>
