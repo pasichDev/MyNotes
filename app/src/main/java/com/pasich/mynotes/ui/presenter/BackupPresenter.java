@@ -152,7 +152,8 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
                             )
             );
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("restoreData", "restoreData: " + e.getMessage(), e);
+
         }
 
 
@@ -243,17 +244,21 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
     @Override
     public void saveDataLoadingLastBackup(Drive mDriveCredential) {
         getDataManager().getLastBackupInfo(mDriveCredential).addOnSuccessListener(lastInfo -> {
-            if (lastInfo.getErrorCode() == 0) {
-                getDataManager().getBackupCloudInfoPreference().setString(ARGUMENT_LAST_BACKUP_ID, lastInfo.getId());
-                getDataManager().getBackupCloudInfoPreference().setLong(ARGUMENT_LAST_BACKUP_TIME, lastInfo.getLastDate());
+            if (lastInfo != null) {
+                if (lastInfo.getErrorCode() == 0) {
+                    getDataManager().getBackupCloudInfoPreference().setString(ARGUMENT_LAST_BACKUP_ID, lastInfo.getId());
+                    getDataManager().getBackupCloudInfoPreference().setLong(ARGUMENT_LAST_BACKUP_TIME, lastInfo.getLastDate());
+                } else {
+                    getView().showErrors(CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW);
+                }
+                getView().editLastDataEditBackupCloud(lastInfo.getLastDate(), lastInfo.getErrorCode() != 0);
             } else {
-                getView().showErrors(CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW);
+                Log.e("BackupPresenter", "LastBackupInfo is null");
+                getView().showErrors(CloudErrors.ERROR_LOAD_LAST_INFO_BACKUP);
             }
-            getView().editLastDataEditBackupCloud(lastInfo.getLastDate(), lastInfo.getErrorCode() != 0);
         }).addOnFailureListener(stack ->
                 {
-                    stack.printStackTrace();
-                    Log.d("Drive", stack.getMessage());
+                    Log.e("BackupPresenter", "Error loading last backup info: " + stack.getMessage(), stack);
                     getView().showErrors(CloudErrors.ERROR_LOAD_LAST_INFO_BACKUP);
                 }
 
