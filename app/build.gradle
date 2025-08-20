@@ -20,7 +20,7 @@ android {
     defaultConfig {
         applicationId "com.pasich.mynotes"
         minSdkVersion 23
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 30
         versionName '2.1.30'
         javaCompileOptions {
@@ -63,31 +63,31 @@ android {
 
 ext {
     powerPrefenceVersion = '2.1.0'
-    roomVersion = '2.5.1'
+    roomVersion = '2.7.2'
 }
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.preference:preference:1.2.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel:2.6.1"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
-    implementation 'androidx.core:core-splashscreen:1.0.0'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.2"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.20"
+    implementation 'androidx.core:core-splashscreen:1.0.1'
 
 
     //DI (Hilt)
-    implementation 'com.google.dagger:hilt-android:2.49'
-    annotationProcessor 'com.google.dagger:hilt-compiler:2.49'
-    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.44.2'
-    androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.49'
-    testImplementation 'com.google.dagger:hilt-android-testing:2.44.2'
-    testAnnotationProcessor 'com.google.dagger:hilt-compiler:2.49'
+    implementation 'com.google.dagger:hilt-android:2.57'
+    annotationProcessor 'com.google.dagger:hilt-compiler:2.57'
+    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.57'
+    androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.57'
+    testImplementation 'com.google.dagger:hilt-android-testing:2.57'
+    testAnnotationProcessor 'com.google.dagger:hilt-compiler:2.57'
 
 
     //Reactive (rxjava2)
-    implementation "io.reactivex.rxjava2:rxandroid:2.0.1"
-    implementation 'androidx.room:room-rxjava2:2.5.1'
+    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
+    implementation 'androidx.room:room-rxjava2:2.7.2'
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
     testImplementation "androidx.room:room-compiler-processing-testing:$roomVersion"
 
@@ -100,9 +100,9 @@ dependencies {
 
 
     //Other lib (Gson/Glide/PowerPreferences)
-    implementation 'com.github.bumptech.glide:glide:4.14.2'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
-    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'com.google.code.gson:gson:2.13.1'
     implementation "com.github.AliAsadi:PowerPreference:$powerPrefenceVersion"
 
 }
