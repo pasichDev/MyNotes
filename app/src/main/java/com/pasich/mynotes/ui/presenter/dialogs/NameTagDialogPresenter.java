@@ -1,5 +1,7 @@
 package com.pasich.mynotes.ui.presenter.dialogs;
 
+import android.util.Log;
+
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
@@ -28,18 +30,22 @@ public class NameTagDialogPresenter extends BasePresenter<NameTagDialogContract.
         getCompositeDisposable().add(getDataManager().addTag(new Tag().create(nameNewTag))
                 .subscribeOn(getSchedulerProvider().io())
                 .observeOn(getSchedulerProvider().ui())
-                .subscribe());
+                .subscribe(
+                    () -> {}, // onComplete
+                    throwable -> Log.e("NameTagDialogPresenter", "Error saving tag", throwable)
+                ));
     }
 
     @Override
     public void editNameTag(String nameNewTag, Tag mTag) {
-        //   String oldName = mTag.getNameTag();
-        //   mTag.setNameTag(nameNewTag);
         getCompositeDisposable().add(getDataManager()
                 .renameTag(mTag, nameNewTag)
                 .subscribeOn(getSchedulerProvider().io())
                 .observeOn(getSchedulerProvider().ui())
-                .subscribe());
+                .subscribe(
+                    () -> {}, // onComplete
+                    throwable -> Log.e("NameTagDialogPresenter", "Error editing tag name", throwable)
+                ));
     }
 
 

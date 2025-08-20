@@ -82,33 +82,71 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     public void deleteNotesArray(ArrayList<Note> notes) {
         for (Note note : notes) {
-            getCompositeDisposable().add(getDataManager().moveNoteToTrash(new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe());
+            getCompositeDisposable().add(getDataManager().moveNoteToTrash(
+                new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note)
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(
+                    () -> {}, // onComplete
+                    throwable -> Log.e("MainPresenter", "Error deleting note", throwable)
+                ));
         }
     }
 
     @Override
     public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().moveNoteToTrash(new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe());
+        getCompositeDisposable().add(getDataManager().moveNoteToTrash(
+            new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note)
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(
+                () -> {}, // onComplete
+                throwable -> Log.e("MainPresenter", "Error deleting note", throwable)
+            ));
     }
 
     @Override
     public void restoreNote(Note nNote) {
-        getCompositeDisposable().add(getDataManager().restoreNote(nNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe());
+        getCompositeDisposable().add(getDataManager().restoreNote(nNote)
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(
+                () -> {}, // onComplete
+                throwable -> Log.e("MainPresenter", "Error restoring note", throwable)
+            ));
     }
 
     @Override
     public void deleteTag(Tag tag) {
-        getCompositeDisposable().add(getDataManager().getCountNotesTag(tag.getNameTag()).subscribeOn(getSchedulerProvider().io()).subscribe(integer -> {
-            if (integer == 0)
-                getCompositeDisposable().add(getDataManager().deleteTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe());
-            else getView().startDeleteTagDialog(tag);
-        }));
-
+        getCompositeDisposable().add(getDataManager().getCountNotesTag(tag.getNameTag())
+            .subscribeOn(getSchedulerProvider().io())
+            .subscribe(
+                integer -> {
+                    if (integer == 0) {
+                        getCompositeDisposable().add(getDataManager().deleteTag(tag)
+                            .subscribeOn(getSchedulerProvider().io())
+                            .observeOn(getSchedulerProvider().ui())
+                            .subscribe(
+                                () -> {}, // onComplete
+                                throwable -> Log.e("MainPresenter", "Error deleting tag", throwable)
+                            ));
+                    } else {
+                        getView().startDeleteTagDialog(tag);
+                    }
+                },
+                throwable -> Log.e("MainPresenter", "Error checking tag count", throwable)
+            ));
     }
 
     @Override
     public void editVisibleTag(Tag tag) {
-        getCompositeDisposable().add(getDataManager().updateTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe());
+        getCompositeDisposable().add(getDataManager().updateTag(tag)
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(
+                () -> {}, // onComplete
+                throwable -> Log.e("MainPresenter", "Error updating tag", throwable)
+            ));
     }
 
 
@@ -120,7 +158,13 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     @Deprecated
     public void addNote(Note note) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe());
+        getCompositeDisposable().add(getDataManager().addNote(note, false)
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(
+                aLong -> {}, // onSuccess  
+                throwable -> Log.e("MainPresenter", "Error adding note", throwable)
+            ));
     }
 
     public Note getBackupDeleteNote() {

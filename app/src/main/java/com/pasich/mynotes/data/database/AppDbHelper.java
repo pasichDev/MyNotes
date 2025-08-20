@@ -148,7 +148,10 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Single<Note> getNoteForId(long idNote) {
-        return Single.fromCallable(() -> appDatabase.noteDao().getNoteForId(idNote));
+        return Single.fromCallable(() -> {
+            Note note = appDatabase.noteDao().getNoteForId(idNote);
+            return note != null ? note : new Note(); // Защита от null
+        });
     }
 
     @Override
