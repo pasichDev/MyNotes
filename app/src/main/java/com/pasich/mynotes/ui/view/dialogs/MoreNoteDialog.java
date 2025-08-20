@@ -6,8 +6,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
-import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -208,8 +208,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                 dismiss();
             });
 
-
-            initCreateShortCut();
         }
 
     }
@@ -220,7 +218,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         try {
             pi = requireActivity().getPackageManager().getPackageInfo(GoogleTranslationIntent.packageTranslator, 0);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Log.e("Error initTranslate", String.valueOf(e));
+
         }
 
         if (pi != null) {
@@ -232,15 +231,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
     }
 
-    private void initCreateShortCut() {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            binding.addShortCutLauncher.setVisibility(isCreateShortCutId() ? View.GONE : View.VISIBLE);
-            binding.addShortCutLauncher.setOnClickListener(v -> {
-                new CreateShortcutDialog(mNote).show(getParentFragmentManager(), "CreateDialogShortCut");
-                dismiss();
-            });
-        }
-    }
+
 
 
     @Override
@@ -259,9 +250,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             positionItem = 0;
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            binding.addShortCutLauncher.setOnClickListener(null);
-        }
+
         binding.moveToTrash.setOnClickListener(null);
         binding.copyNote.setOnClickListener(null);
         binding.share.setOnClickListener(null);
@@ -269,7 +258,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
 
     private void createChipsTag(List<Tag> tags) {
-        if (tags.size() != 0) {
+        if (!tags.isEmpty()) {
             for (Tag tag : tags) {
 
                 Chip newChip = (Chip) getLayoutInflater().inflate(R.layout.layout_chip_entry, binding.chipGroupSystem, false);

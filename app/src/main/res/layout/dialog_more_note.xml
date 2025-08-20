@@ -91,24 +91,6 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/addShortCutLauncher"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:orientation="horizontal"
-            android:padding="@dimen/paddingItems"
-            android:visibility="gone">
-
-            <ImageView
-                style="@style/iconDialogList"
-                android:contentDescription="@string/addShortCutLauncher"
-                android:src="@drawable/ic_label" />
-
-            <TextView
-                style="@style/itemTextBottomSheets"
-                android:text="@string/addShortCutLauncher" />
-        </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/translateNote"
