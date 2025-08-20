@@ -7,6 +7,7 @@ import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -117,7 +118,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() != RESULT_OK) {
                     Toast.makeText(this, "Оновлення не вдалося!", Toast.LENGTH_SHORT).show();
-                    checkForUpdate(); // Можна спробувати ще раз або повідомити користувача
+                    checkForUpdate();
                 }
             });
 
@@ -174,10 +175,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     protected void onResume() {
         super.onResume();
-        // Перевірка, якщо оновлення було відкладене
         appUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                // Розпочати процес оновлення, якщо воно ще не завершене
                 startUpdateFlow(appUpdateInfo);
             }
         });
@@ -185,42 +184,30 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     private void checkForUpdate() {
-        // Отримайте інформацію про оновлення
         Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
-
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-            // Додати журнали для відстеження стану оновлення (для налагодження)
-            // Log.d("AppUpdate", "Update availability: " +
-            // appUpdateInfo.updateAvailability());
-            // Log.d("AppUpdate", "Update type allowed: " +
-            // appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE));
+            Log.d("AppUpdate", "Update availability: " +
+            appUpdateInfo.updateAvailability());
 
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
-                // Запустіть процес оновлення
                 startUpdateFlow(appUpdateInfo);
             }
         }).addOnFailureListener(e -> {
-            // Log.d("AppUpdate", "Помилка перевірки оновлень: " + e.getMessage());
-            // Toast.makeText(this, "Помилка перевірки оновлень: " + e.getMessage(),
-            // Toast.LENGTH_SHORT).show();
+            Log.d("AppUpdate", "Error checking for updates: " + e.getMessage());
         });
 
     }
 
     private void startUpdateFlow(AppUpdateInfo appUpdateInfo) {
         try {
-            // Використовуємо новий метод для запуску оновлення
             appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
                     this,
                     REQUEST_UPDATE);
         } catch (Exception e) {
-            e.printStackTrace();
-            // Log.d("AppUpdate", "Не вдалося розпочати оновлення: " + e.getMessage());
-            // Toast.makeText(this, "Не вдалося розпочати оновлення: " + e.getMessage(),
-            // Toast.LENGTH_SHORT).show();
+             Log.d("AppUpdate", "Unable to start the update: " + e.getMessage());
         }
     }
 
@@ -549,9 +536,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void shareNotes() {
         StringBuilder valueShare = new StringBuilder();
         for (Note note : noteActionTool.getArrayChecked()) {
-            valueShare.append(note.getTitle()).append(System.getProperty("line.separator"))
-                    .append(System.getProperty("line.separator")).append(note.getValue())
-                    .append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+            valueShare.append(note.getTitle()).append(System.lineSeparator())
+                    .append(System.lineSeparator()).append(note.getValue())
+                    .append(System.lineSeparator()).append(System.lineSeparator());
         }
         ShareUtils.shareNotes(this, valueShare.toString());
         actionUtils.closeActionPanel();
