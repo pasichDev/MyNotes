@@ -66,7 +66,11 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                setEnabled(finishActivity());
+                if (getAction()) {
+                    actionUtils.closeActionPanel();
+                } else {
+                    finishActivity();
+                }
             }
         });
 
@@ -110,27 +114,22 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     }
 
     @Override
-    public void onBackPressed() {
-        if (getAction()) actionUtils.closeActionPanel();
-        finishActivity();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == android.R.id.home) {
             if (getAction()) {
                 actionUtils.closeActionPanel();
-            } else finishActivity();
+            } else {
+                finishActivity();
+            }
         }
 
         return true;
     }
 
 
-    private boolean finishActivity() {
+    private void finishActivity() {
         supportFinishAfterTransition();
-        return true;
     }
 
     @Override

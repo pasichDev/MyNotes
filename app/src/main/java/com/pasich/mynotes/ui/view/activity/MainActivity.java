@@ -510,12 +510,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         new MoreNoteDialog(note, false, false, position).show(getSupportFragmentManager(), "ChoiceDialog");
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        finishActivity();
-    }
-
     private boolean finishActivity() {
         if (getAction()) {
             actionUtils.closeActionPanel();

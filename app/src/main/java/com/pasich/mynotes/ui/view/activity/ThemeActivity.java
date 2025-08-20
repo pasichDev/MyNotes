@@ -97,11 +97,6 @@ public class ThemeActivity extends BaseActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        finishActivity();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == android.R.id.home) {

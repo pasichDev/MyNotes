@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -67,6 +68,14 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         notePresenter.attachView(this);
         notePresenter.getLoadIntentData(getIntent());
         notePresenter.viewIsReady();
+
+        // Handle back button press with OnBackPressedDispatcher
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                notePresenter.closeActivity();
+            }
+        });
 
 
     }
@@ -180,11 +189,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void onRestart() {
         super.onRestart();
-    }
-
-    @Override
-    public void onBackPressed() {
-        notePresenter.closeActivity();
     }
 
     @Override
