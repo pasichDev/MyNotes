@@ -4,7 +4,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-import com.google.gson.annotations.Expose;
+import java.util.Objects;
 
 @Entity(tableName = "notes")
 public class Note {
@@ -65,7 +65,8 @@ public class Note {
     }
 
     public String getValue() {
-        return this.value;
+        // or return some default value if you prefer
+        return Objects.requireNonNullElse(value, "");
     }
 
     public void setValue(String value) {
