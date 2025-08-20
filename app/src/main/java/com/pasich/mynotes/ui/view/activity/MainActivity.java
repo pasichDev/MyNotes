@@ -73,15 +73,15 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
 
+    final private ActivityResultLauncher<Intent> startThemeActivity = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                Intent data = result.getData();
+                if (result.getResultCode() == 11) {
+                    assert data != null;
+                    this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+                }
 
-    final private ActivityResultLauncher<Intent> startThemeActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        Intent data = result.getData();
-        if (result.getResultCode() == 11) {
-            assert data != null;
-            this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
-        }
-
-    });
+            });
     public ActivityMainBinding mActivityBinding;
     @Inject
     public MainContract.presenter mainPresenter;
@@ -113,8 +113,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private AppUpdateManager appUpdateManager;
 
     // Ланчер для ActivityResult API
-    private final ActivityResultLauncher<Intent> updateLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    private final ActivityResultLauncher<Intent> updateLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() != RESULT_OK) {
                     Toast.makeText(this, "Оновлення не вдалося!", Toast.LENGTH_SHORT).show();
                     checkForUpdate(); // Можна спробувати ще раз або повідомити користувача
@@ -137,7 +137,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         actionUtils.setMangerView(mActivityBinding.getRoot());
 
         // Ініціалізуйте AppUpdateManager
-     appUpdateManager = AppUpdateManagerFactory.create(this);
+        appUpdateManager = AppUpdateManagerFactory.create(this);
 
         // Перевірте доступність оновлення
         checkForUpdate();
@@ -161,7 +161,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         super.onPause();
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -176,24 +175,25 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     protected void onResume() {
         super.onResume();
         // Перевірка, якщо оновлення було відкладене
-      appUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
+        appUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
                 // Розпочати процес оновлення, якщо воно ще не завершене
                 startUpdateFlow(appUpdateInfo);
             }
         });
 
-
     }
 
     private void checkForUpdate() {
         // Отримайте інформацію про оновлення
-     Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
 
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
             // Додати журнали для відстеження стану оновлення (для налагодження)
-            //    Log.d("AppUpdate", "Update availability: " + appUpdateInfo.updateAvailability());
-            //    Log.d("AppUpdate", "Update type allowed: " + appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE));
+            // Log.d("AppUpdate", "Update availability: " +
+            // appUpdateInfo.updateAvailability());
+            // Log.d("AppUpdate", "Update type allowed: " +
+            // appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE));
 
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
@@ -201,10 +201,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 startUpdateFlow(appUpdateInfo);
             }
         }).addOnFailureListener(e -> {
-            //        Log.d("AppUpdate", "Помилка перевірки оновлень: " + e.getMessage());
-            //   Toast.makeText(this, "Помилка перевірки оновлень: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            // Log.d("AppUpdate", "Помилка перевірки оновлень: " + e.getMessage());
+            // Toast.makeText(this, "Помилка перевірки оновлень: " + e.getMessage(),
+            // Toast.LENGTH_SHORT).show();
         });
-
 
     }
 
@@ -215,17 +215,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
                     this,
-                    REQUEST_UPDATE
-            );
+                    REQUEST_UPDATE);
         } catch (Exception e) {
             e.printStackTrace();
-            //   Log.d("AppUpdate", "Не вдалося розпочати оновлення: " + e.getMessage());
-            //  Toast.makeText(this, "Не вдалося розпочати оновлення: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            // Log.d("AppUpdate", "Не вдалося розпочати оновлення: " + e.getMessage());
+            // Toast.makeText(this, "Не вдалося розпочати оновлення: " + e.getMessage(),
+            // Toast.LENGTH_SHORT).show();
         }
     }
-
-
-
 
     @Override
     public void startDeleteTagDialog(Tag tag) {
@@ -247,7 +244,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.searchView.hide();
     }
 
-
     @Override
     public void initListeners() {
         mActivityBinding.searchView.addTransitionListener(
@@ -260,12 +256,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     }
                 });
 
-
         searchNotesAdapter.setItemClickListener((idNote, view) -> openNoteEdit(idNote, (MaterialCardView) view));
         mActivityBinding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
-                if (s.length() >= 2) searchNotesAdapter.filter(s.toString());
+                if (s.length() >= 2)
+                    searchNotesAdapter.filter(s.toString());
                 else {
                     searchNotesAdapter.cleanResult();
                 }
@@ -287,10 +283,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                         openMoreActivity();
                     }
 
-
                     return true;
                 });
-
 
         tagsAdapter.setOnItemClickListener(new OnItemClickListenerTag() {
             @Override
@@ -312,28 +306,30 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 if (!getAction()) {
                     openNoteEdit(model.id,
                             (MaterialCardView) staggeredGridLayoutManager.findViewByPosition(position));
-                } else selectItemAction(model, position, true);
+                } else
+                    selectItemAction(model, position, true);
 
             }
 
             @Override
             public void onLongClick(int position, Note model) {
-                if (!getAction()) choiceNoteDialog(model, position);
+                if (!getAction())
+                    choiceNoteDialog(model, position);
             }
 
         });
 
-
     }
 
-
     private void openMoreActivity() {
-        if (getAction()) actionUtils.closeActionPanel();
+        if (getAction())
+            actionUtils.closeActionPanel();
         new AboutDialog(new AboutOpensActivity() {
             @Override
             protected void openThemeActivity() {
                 startThemeActivity.launch(new Intent(MainActivity.this, ThemeActivity.class),
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, (Pair<View, String>[]) null));
+                        ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,
+                                (Pair<View, String>[]) null));
             }
 
             @Override
@@ -371,11 +367,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listNotes.addItemDecoration(itemDecorationNotes);
         mActivityBinding.listNotes.setLayoutManager(staggeredGridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
-        mActivityBinding.resultsSearchList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        mActivityBinding.resultsSearchList
+                .setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
         mActivityBinding.searchView.findViewById(R.id.search_view_divider).setVisibility(View.GONE);
-
 
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
@@ -390,7 +386,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 if (direction == ItemTouchHelper.LEFT) {
                     selectItemAction(mNoteAdapter.getCurrentList().get(position), position, false);
 
-
                 } else {
 
                     Note sNote = mNoteAdapter.getCurrentList().get(position);
@@ -404,8 +399,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     public void snackBarRestoreNote() {
-        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, getString(R.string.noteMoveTrashSnackbar), Snackbar.LENGTH_LONG);
-        snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNote(mainPresenter.getBackupDeleteNote()));
+        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, getString(R.string.noteMoveTrashSnackbar),
+                Snackbar.LENGTH_LONG);
+        snackbar.setAction(getString(R.string.restore),
+                view -> mainPresenter.restoreNote(mainPresenter.getBackupDeleteNote()));
         if (mActivityBinding.newNotesButton.getY() >= mActivityBinding.activityMain.getHeight()) {
             snackbar.setAnchorView(mActivityBinding.newNotesButton);
         }
@@ -423,10 +420,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void loadingTags(List<Tag> tagList) {
         tagsAdapter.submitList(tagList);
-        int countNotes = mNoteAdapter.setNameTagsHidden(tagList, tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
+        int countNotes = mNoteAdapter.setNameTagsHidden(tagList,
+                tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
         showEmptyNotes(!(countNotes >= 1));
     }
-
 
     private void showEmptyNotes(boolean flag) {
         mActivityBinding.setEmptyNotes(flag);
@@ -439,7 +436,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void actionStartNote(Note note, int position) {
         selectItemAction(note, position, true);
     }
-
 
     @Override
     public void openCopyNote(long idNote) {
@@ -457,26 +453,28 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         snackBarRestoreNote();
     }
 
-
     public void openNoteEdit(long idNote, MaterialCardView materialCardView) {
         startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false)
-                        .putExtra("idNote", idNote).putExtra("shareText", "")
-                        .putExtra("tagNote", ""),
+                .putExtra("idNote", idNote).putExtra("shareText", "")
+                .putExtra("tagNote", ""),
                 ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView,
                         String.valueOf(idNote)).toBundle());
     }
 
     @Override
     public void startToastCheckCountTags() {
-        onInfoSnack(Integer.parseInt(getString(R.string.countTagsError, String.valueOf(MAX_TAG_COUNT))), mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+        String message = getString(R.string.countTagsError, String.valueOf(MAX_TAG_COUNT));
+        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, message, Snackbar.LENGTH_LONG);
+        snackbar.show();
     }
-
 
     @Override
     public void newNotesButton() {
         Tag tagSelected = tagsAdapter.getTagSelected();
         String tagName = tagSelected == null ? "" : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
-        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName),
+                ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton,
+                        NameTransition.fabTransaction).toBundle());
     }
 
     @Override
@@ -505,7 +503,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }
         });
 
-
     }
 
     @Override
@@ -513,12 +510,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         new MoreNoteDialog(note, false, false, position).show(getSupportFragmentManager(), "ChoiceDialog");
     }
 
-
     @Override
     public void onBackPressed() {
         finishActivity();
     }
-
 
     private boolean finishActivity() {
         if (getAction()) {
@@ -545,7 +540,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.newNotesButton.setVisibility(View.VISIBLE);
     }
 
-
     @Override
     public void deleteNotes() {
         if (noteActionTool.getArrayChecked().size() == mNoteAdapter.getItemCount()) {
@@ -556,12 +550,13 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         actionUtils.closeActionPanel();
     }
 
-
     @Override
     public void shareNotes() {
         StringBuilder valueShare = new StringBuilder();
         for (Note note : noteActionTool.getArrayChecked()) {
-            valueShare.append(note.getTitle()).append(System.getProperty("line.separator")).append(System.getProperty("line.separator")).append(note.getValue()).append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+            valueShare.append(note.getTitle()).append(System.getProperty("line.separator"))
+                    .append(System.getProperty("line.separator")).append(note.getValue())
+                    .append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
         }
         ShareUtils.shareNotes(this, valueShare.toString());
         actionUtils.closeActionPanel();
@@ -572,15 +567,18 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         if (note.getChecked()) {
             note.setChecked(false);
-            if (!noteActionTool.isCheckedItemFalse(note)) actionUtils.closeActionPanel();
+            if (!noteActionTool.isCheckedItemFalse(note))
+                actionUtils.closeActionPanel();
         } else {
             noteActionTool.isCheckedItem(note);
             note.setChecked(true);
         }
 
         actionUtils.manageActionPanel(noteActionTool.getCountCheckedItem());
-        if (payloads) mNoteAdapter.notifyItemChanged(position, 22);
-        else mNoteAdapter.notifyItemChanged(position);
+        if (payloads)
+            mNoteAdapter.notifyItemChanged(position, 22);
+        else
+            mNoteAdapter.notifyItemChanged(position);
     }
 
     @Override
@@ -591,9 +589,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void selectTagUser(int position) {
         tagsAdapter.chooseTag(position);
-        showEmptyNotes(!(mNoteAdapter.filter(tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag()) >= 1));
+        showEmptyNotes(!(mNoteAdapter.filter(
+                tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag()) >= 1));
     }
-
 
     private void variablesNull() {
         mNoteAdapter = null;
@@ -602,12 +600,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void createShortCut() {
-        onInfoSnack(R.string.addShortCutSuccessfully, mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+        onInfoSnack(R.string.addShortCutSuccessfully, mActivityBinding.newNotesButton, SnackBarInfo.Info,
+                Snackbar.LENGTH_LONG);
     }
 
     @Override
     public void shortCutDouble() {
-        onInfoSnack(R.string.shortCutCreateFallDouble, mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+        onInfoSnack(R.string.shortCutCreateFallDouble, mActivityBinding.newNotesButton, SnackBarInfo.Info,
+                Snackbar.LENGTH_LONG);
     }
 
     @Override
