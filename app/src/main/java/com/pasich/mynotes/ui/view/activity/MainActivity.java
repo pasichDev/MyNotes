@@ -337,6 +337,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 startActivity(new Intent(MainActivity.this, BackupActivity.class),
                         ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
             }
+
+            @Override
+            protected void openSupportActivity() {
+                startActivity(new Intent(MainActivity.this, SupportActivity.class),
+                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
+            }
         }).show(getSupportFragmentManager(), "MoreActivity");
     }
 

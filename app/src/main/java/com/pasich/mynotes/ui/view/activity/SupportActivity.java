@@ -1,52 +1,32 @@
 package com.pasich.mynotes.ui.view.activity;
 
-import static com.pasich.mynotes.utils.constants.ContactLink.LINK_APP_SITE;
-import static com.pasich.mynotes.utils.constants.ContactLink.LINK_PRIVACY_POLICY;
-import static com.pasich.mynotes.utils.constants.ContactLink.LINK_TELEGRAM_DEVELOP;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.transition.platform.MaterialFade;
-import com.pasich.mynotes.BuildConfig;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
-import com.pasich.mynotes.databinding.ActivityAboutBinding;
-import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
+import com.pasich.mynotes.databinding.ActivitySupportBinding;
 
 import java.util.Objects;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class AboutActivity extends BaseActivity {
+public class SupportActivity extends BaseActivity {
 
-    public ActivityAboutBinding binding;
-
-    @Inject
-    public LinearLayoutManager mLinearLayoutManager;
-    @Named("NotesItemSpaceDecoration")
-    @Inject
-    public SpacesItemDecoration itemDecorationNotes;
-    @Inject
-    boolean isPlayMarketInstall;
-
+    public ActivitySupportBinding binding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
-        binding = ActivityAboutBinding.inflate(getLayoutInflater());
-        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activityAbout));
+        binding = ActivitySupportBinding.inflate(getLayoutInflater());
+        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activitySupport));
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
@@ -60,24 +40,17 @@ public class AboutActivity extends BaseActivity {
         });
     }
 
-
-    private void startLoadingProducts() {
-
-        initListeners();
-    }
-
-
-
     @Override
     public void initListeners() {
-
     }
 
     private void initActivity() {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        binding.versionApp.setText(getString(R.string.versionAndCodeApp, BuildConfig.VERSION_NAME));
-        startLoadingProducts();
+    }
+
+    public void sendTelegram() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/pasichDev")));
     }
 
     public void sendEmail() {
@@ -87,19 +60,23 @@ public class AboutActivity extends BaseActivity {
         }
     }
 
-    public void shareApp() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_APP_SITE)));
+    public void reddit() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.reddit.com/r/MyNotes_/")));
     }
 
-    public void policyOpen() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_PRIVACY_POLICY)));
+    public void sendKoFi() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://ko-fi.com/pasichdev")));
     }
 
-    public void openChangelog() {
-        startActivity(new Intent(this, ChangelogActivity.class));
+    public void sendPayPal() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://paypal.me/pasichDev")));
     }
 
-    public void openRatingGooglePlay() {
+    public void sendGitHubSponsors() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sponsors/pasichDev")));
+    }
+
+    public void openPlayStore() {
         final Intent rateAppIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName()));
         if (!getPackageManager().queryIntentActivities(rateAppIntent, 0).isEmpty()) {
             startActivity(rateAppIntent);
@@ -109,25 +86,15 @@ public class AboutActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity_toolbar, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         if (item.getItemId() == android.R.id.home) {
             finishActivity();
         }
-
         return true;
     }
-
 
     private boolean finishActivity() {
         supportFinishAfterTransition();
         return true;
     }
-
 }

@@ -35,7 +35,15 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="16dp"
 
+                    android:layout_marginHorizontal="20dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -46,7 +54,8 @@
                     <com.google.android.material.imageview.ShapeableImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:src="@mipmap/ic_launcher"
+                        android:src="@drawable/ic_splash_screen"
+                        android:tint="?attr/colorOnSurface"
                         app:shapeAppearanceOverlay="@style/rounderIconApp" />
 
                     <LinearLayout
@@ -73,57 +82,15 @@
                     </LinearLayout>
 
 
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/telegramSend"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:onClick="@{()-> activity.sendTelegram()}"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="gone">
-
-                    <ImageView
-                        style="@style/iconActivityList"
-                        android:contentDescription="@string/telegram"
-                        android:src="@drawable/ic_link_app" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/telegram_nick"
-                        android:textColor="?attr/colorPrimary" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/emailSend"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:onClick="@{()-> activity.sendEmail()}"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="gone">
-
-                    <ImageView
-                        style="@style/iconActivityList"
-                        android:contentDescription="@string/ratingApp"
-                        android:src="@drawable/ic_link_app" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/email_address"
-                        android:textColor="?attr/colorPrimary" />
-
-                </LinearLayout>
+                </LinearLayout>    </com.google.android.material.card.MaterialCardView>
 
 
                 <LinearLayout
                     android:id="@+id/shareApp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="@drawable/bg_item_start"
+                    android:layout_marginHorizontal="20dp"
                     android:onClick="@{()-> activity.shareApp()}"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems">
@@ -138,31 +105,15 @@
                         android:text="@string/shareApp" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/ratingApp"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:onClick="@{()-> activity.openRatingGooglePlay()}"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems">
-
-                    <ImageView
-                        style="@style/iconActivityList"
-                        android:contentDescription="@string/ratingApp"
-                        android:src="@drawable/ic_rating_app" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/ratingApp" />
-
-                </LinearLayout>
-
+                    android:layout_height="1dp" />
                 <LinearLayout
                     android:id="@+id/privacyApp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="@drawable/bg_item_middle"
+                    android:layout_marginHorizontal="20dp"
                     android:onClick="@{()-> activity.policyOpen()}"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems">
@@ -176,87 +127,31 @@
                         style="@style/itemTextBottomSheets"
                         android:text="@string/privacyApp" />
                 </LinearLayout>
-
-
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp" />
                 <LinearLayout
-                    android:id="@+id/donnatDev"
+                    android:id="@+id/changelogApp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="?attr/colorControlHighlight" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="20dp"
-                        android:layout_marginTop="10dp"
-                        android:fontFamily="@font/railway_medium"
-                        android:padding="6dp"
-                        android:text="@string/coffeeByPlay"
-                        android:textColor="?attr/colorOnBackground"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="20dp"
-                        android:padding="6dp"
-                        android:text="@string/coffeeByTextInfo"
-                        android:textColor="?attr/colorOnBackground"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="25dp" />
-
-                <LinearLayout
-                    android:id="@+id/kofi"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:onClick="@{()-> activity.sendKoFi()}"
+                    android:background="@drawable/bg_item_end"
+                    android:layout_marginHorizontal="20dp"
+                    android:onClick="@{()-> activity.openChangelog()}"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems">
 
                     <ImageView
-                        style="@style/iconActivityListCoffee"
-                        android:contentDescription="Support Me on Ko-Fi"
-                        android:src="@drawable/ic_glass_off_coffee" />
+                        style="@style/iconActivityList"
+                        android:contentDescription="@string/changelog"
+                        android:src="@drawable/ic_history" />
 
                     <TextView
                         style="@style/itemTextBottomSheets"
-                        android:fontFamily="@font/railway_medium"
-                        android:text="Support Me on Ko-Fi"
-                        android:textColor="?android:colorPrimary"
-                        android:textStyle="bold" />
+                        android:text="@string/changelog" />
                 </LinearLayout>
-                <LinearLayout
-                    android:id="@+id/reddit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:onClick="@{()-> activity.reddit()}"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems">
 
-                    <ImageView
-                        style="@style/iconActivityListCoffee"
-                        android:contentDescription="Support Me on Ko-Fi"
-                        android:src="@drawable/ic_reddit" />
 
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:fontFamily="@font/railway_medium"
-                        android:text="Join the community"
-                        android:textColor="?android:colorPrimary"
-                        android:textStyle="bold" />
-                </LinearLayout>
+
             </LinearLayout>
 
         </ScrollView>

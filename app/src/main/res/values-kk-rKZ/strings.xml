@@ -149,4 +149,25 @@
     <string name="creteNoteToTag">Жазба жасаңыз</string>
     <string name="thanks_title">Құрметті пайдаланушы</string>
     <string name="thanks_donate">Жоба әзірлеушісі сатып алғаныңыз үшін алғыс білдіреді. Біз жақсырақ және ыңғайлырақ болуға тырысамыз. \n <b>Құрметпен, менің жазбаларым!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Әзірлеушіні қолдау</string>
+    <string name="thankYouTitle">MyNotes қолданғаныңыз үшін рақмет!</string>
+    <string name="thankYouDescription">Сіздің қолдауыңыз бізге әзірлеуді жалғастыруға және қолданбаны жақсартуға көмектеседі</string>
+    <string name="donationMethods">Қолдау көрсету әдістері</string>
+    <string name="kofiDescription">Ko-Fi-да маған кофе сыйлаңыз</string>
+    <string name="paypalDescription">PayPal арқылы ақша жіберіңіз</string>
+    <string name="githubSponsorsDescription">GitHub-та демеуші болыңыз</string>
+    <string name="otherWaysToSupport">Қолдаудың басқа жолдары</string>
+    <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
+    <string name="joinCommunity">Қауымдастыққа қосылу</string>
+    <string name="joinCommunityDescription">Reddit-те басқа пайдаланушылармен байланысыңыз</string>
+    <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Өзгерістер тізімі</string>
+    <string name="errorLoadingChangelog">Өзгерістер тізімін жүктеу қатесі</string>
+    <string name="checkInternetConnection">Интернет байланысын тексеріңіз</string>
+    <string name="retry">Қайталау</string>
+
 </resources>

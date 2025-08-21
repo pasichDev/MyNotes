@@ -149,4 +149,25 @@
     <string name="errorLoadingsProduct">Błąd, nie udało się załadować witryny sklepowej</string>
     <string name="thanks_title">Drogi użytkowniku</string>
     <string name="thanks_donate">Twórca projektu dziękuje za zakup. Będziemy dążyć do tego, aby stać się lepszymi i wygodniejszymi. \n <b>Z wyrazami szacunku, moje notatki!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Wspieraj twórcę</string>
+    <string name="thankYouTitle">Dziękujemy za korzystanie z MyNotes!</string>
+    <string name="thankYouDescription">Twoje wsparcie pomaga nam kontynuować rozwój i ulepszanie aplikacji</string>
+    <string name="donationMethods">Metody wsparcia</string>
+    <string name="kofiDescription">Postaw mi kawę na Ko-Fi</string>
+    <string name="paypalDescription">Wyślij darowiznę przez PayPal</string>
+    <string name="githubSponsorsDescription">Zostań sponsorem na GitHub</string>
+    <string name="otherWaysToSupport">Inne sposoby wsparcia</string>
+    <string name="ratingAppDescription">Oceń nas na 5 gwiazdek w Google Play</string>
+    <string name="joinCommunity">Dołącz do społeczności</string>
+    <string name="joinCommunityDescription">Połącz się z innymi użytkownikami na Reddit</string>
+    <string name="contactDeveloper">Skontaktuj się z twórcą</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Lista zmian</string>
+    <string name="errorLoadingChangelog">Błąd ładowania listy zmian</string>
+    <string name="checkInternetConnection">Sprawdź połączenie internetowe</string>
+    <string name="retry">Ponów</string>
+
 </resources>

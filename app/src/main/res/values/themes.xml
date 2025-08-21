@@ -371,6 +371,10 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
+    <style name="cubeIconApp">
+        <item name="cornerSize">4%</item>
+    </style>
+
     <style name="rounderIconApp">
         <item name="cornerSize">10%</item>
     </style>

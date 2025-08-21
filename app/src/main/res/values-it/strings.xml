@@ -139,4 +139,25 @@
     <string name="thanks_title">Gentile utente</string>
     <string name="creteNoteToTag">Crea nota</string>
     <string name="thanks_donate">Lo sviluppatore del progetto ti ringrazia per l\'acquisto. Ci impegneremo a diventare migliori e più convenienti. \n <b>Saluti, i miei appunti!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Supporta lo sviluppatore</string>
+    <string name="thankYouTitle">Grazie per aver utilizzato MyNotes!</string>
+    <string name="thankYouDescription">Il tuo supporto ci aiuta a continuare lo sviluppo e migliorare l\'app</string>
+    <string name="donationMethods">Metodi di donazione</string>
+    <string name="kofiDescription">Offrimi un caffè su Ko-Fi</string>
+    <string name="paypalDescription">Invia una donazione tramite PayPal</string>
+    <string name="githubSponsorsDescription">Diventa uno sponsor su GitHub</string>
+    <string name="otherWaysToSupport">Altri modi per supportare</string>
+    <string name="ratingAppDescription">Valutaci con 5 stelle su Google Play</string>
+    <string name="joinCommunity">Unisciti alla community</string>
+    <string name="joinCommunityDescription">Connettiti con altri utenti su Reddit</string>
+    <string name="contactDeveloper">Contatta lo sviluppatore</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Registro delle modifiche</string>
+    <string name="errorLoadingChangelog">Errore nel caricamento del registro delle modifiche</string>
+    <string name="checkInternetConnection">Controlla la connessione internet</string>
+    <string name="retry">Riprova</string>
+
 </resources>

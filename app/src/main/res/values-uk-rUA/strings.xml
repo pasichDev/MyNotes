@@ -143,4 +143,25 @@
 
     <string name="errorSyncTitle">Зверніть увагу!</string>
     <string name="errorSyncDescrpt">З цією версією ми припиняємо підтримку синхронізації з Google Диском. У майбутніх оновленнях ми запровадимо більш безпечний і ефективний метод синхронізації, що забезпечить вам ще кращий досвід використання.</string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Підтримати розробника</string>
+    <string name="thankYouTitle">Дякуємо за використання MyNotes!</string>
+    <string name="thankYouDescription">Ваша підтримка допомагає нам продовжувати розробку та покращувати додаток</string>
+    <string name="donationMethods">Способи підтримки</string>
+    <string name="kofiDescription">Частуйте мене кавою на Ko-Fi</string>
+    <string name="paypalDescription">Надішліть донат через PayPal</string>
+    <string name="githubSponsorsDescription">Станьте спонсором на GitHub</string>
+    <string name="otherWaysToSupport">Інші способи підтримки</string>
+    <string name="ratingAppDescription">Поставте нам 5 зірок в Google Play</string>
+    <string name="joinCommunity">Приєднатися до спільноти</string>
+    <string name="joinCommunityDescription">Спілкуйтеся з іншими користувачами на Reddit</string>
+    <string name="contactDeveloper">Зв\'язатися з розробником</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Список змін</string>
+    <string name="errorLoadingChangelog">Помилка завантаження списку змін</string>
+    <string name="checkInternetConnection">Будь ласка, перевірте підключення до інтернету</string>
+    <string name="retry">Повторити</string>
+
 </resources>

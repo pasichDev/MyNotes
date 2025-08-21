@@ -150,4 +150,25 @@
     <string name="errorSyncDescrpt">З гэтай версіяй мы спыняем падтрымку сінхранізацыі з Google Дыскам. У будучых абнаўленнях мы ўвядзем больш бяспечны і эфектыўны метад сінхранізацыі, які забяспечыць вам лепшы карыстальніцкі досвед.</string>
 
     <string name="thanks_donate">Распрацоўшчык праекту кажа вам дзякуй за вашу куплю. Мы будзем імкнуцца стаць лепшымі і зручнейшымі. \n <b>З павагай, мае нататкі!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Падтрымаць распрацоўшчыка</string>
+    <string name="thankYouTitle">Дзякуй за выкарыстанне MyNotes!</string>
+    <string name="thankYouDescription">Ваша падтрымка дапамагае нам працягваць распрацоўку і палепшваць дадатак</string>
+    <string name="donationMethods">Спосабы падтрымкі</string>
+    <string name="kofiDescription">Пачасціце мяне кавай на Ko-Fi</string>
+    <string name="paypalDescription">Адпраўце данат праз PayPal</string>
+    <string name="githubSponsorsDescription">Станьце спонсарам на GitHub</string>
+    <string name="otherWaysToSupport">Іншыя спосабы падтрымкі</string>
+    <string name="ratingAppDescription">Пастаўце нам 5 зорак у Google Play</string>
+    <string name="joinCommunity">Далучыцца да супольнасці</string>
+    <string name="joinCommunityDescription">Зносьцеся з іншымі карыстальнікамі на Reddit</string>
+    <string name="contactDeveloper">Звязацца з распрацоўшчыкам</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Спіс змен</string>
+    <string name="errorLoadingChangelog">Памылка загрузкі спісу змен</string>
+    <string name="checkInternetConnection">Калі ласка, праверце падключэнне да інтэрнэту</string>
+    <string name="retry">Паўтарыць</string>
+
 </resources>

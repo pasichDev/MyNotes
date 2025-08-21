@@ -43,6 +43,12 @@
             android:name=".ui.view.activity.AboutActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.view.activity.SupportActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ChangelogActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.view.activity.SettingsActivity"
             android:exported="true"
             android:screenOrientation="portrait">

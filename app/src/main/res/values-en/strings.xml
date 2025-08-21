@@ -169,4 +169,25 @@
 
     <string name="percentProgress">Backup (%d%%)</string>
     <string name="creteNoteToTag">Create  note</string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Support Developer</string>
+    <string name="thankYouTitle">Thank you for using MyNotes!</string>
+    <string name="thankYouDescription">Your support helps us continue developing and improving the app</string>
+    <string name="donationMethods">Donation Methods</string>
+    <string name="kofiDescription">Buy me a coffee on Ko-Fi</string>
+    <string name="paypalDescription">Send a donation via PayPal</string>
+    <string name="githubSponsorsDescription">Become a GitHub sponsor</string>
+    <string name="otherWaysToSupport">Other Ways to Support</string>
+    <string name="ratingAppDescription">Rate us 5 stars on Google Play</string>
+    <string name="joinCommunity">Join the Community</string>
+    <string name="joinCommunityDescription">Connect with other users on Reddit</string>
+    <string name="contactDeveloper">Contact Developer</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Changelog</string>
+    <string name="errorLoadingChangelog">Error loading changelog</string>
+    <string name="checkInternetConnection">Please check your internet connection</string>
+    <string name="retry">Retry</string>
+
 </resources>
