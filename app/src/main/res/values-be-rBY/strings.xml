@@ -71,6 +71,10 @@
     <string name="renameTag">Перайменаваць</string>
 
     <string name="settingsInterface">Налады інтэрфейсу</string>
+    <string name="settings">Налады</string>
+    <string name="settingsGeneral">Агульныя налады</string>
+    <string name="settingsAppearance">Знешні выгляд</string>
+    <string name="settingsTheme">Налады тэмы</string>
     <string name="settingsBackups">Сінхранізацыя і рэз.копіі</string>
     <string name="aboutApps">Аб дадатку</string>
     <string name="trash">Кошык</string>

@@ -4,20 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-        android:id="@+id/activity_theme"
+        android:id="@+id/activity_settings"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="?attr/colorSurface"
         android:fitsSystemWindows="true"
-        tools:context=".ui.view.activity.ThemeActivity">
+        tools:context=".ui.view.activity.SettingsActivity">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@android:color/transparent"
-            app:title="@string/settingsInterface" />
+            app:title="@string/settings" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -25,6 +25,17 @@
             android:layout_marginVertical="10dp"
             android:layout_marginHorizontal="20dp"
             android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settingsInterface"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:paddingBottom="10dp"
+                android:fontFamily="@font/railway_medium"
+                />
+
 
             <!-- Accent Color Selection -->
             <com.google.android.material.card.MaterialCardView

@@ -70,6 +70,10 @@
     <string name="renameTag">Атын өзгерту</string>
 
     <string name="settingsInterface">Интерфейс параметрлері</string>
+    <string name="settings">Параметрлер</string>
+    <string name="settingsGeneral">Жалпы параметрлер</string>
+    <string name="settingsAppearance">Сыртқы түр</string>
+    <string name="settingsTheme">Тақырып параметрлері</string>
     <string name="settingsBackups">Синхрондау және сақтық көшірме</string>
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>

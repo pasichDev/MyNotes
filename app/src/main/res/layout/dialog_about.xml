@@ -37,12 +37,12 @@
 
         <ImageView
             style="@style/iconDialogList"
-            android:contentDescription="@string/settingsInterface"
+            android:contentDescription="@string/settings"
             android:src="@drawable/ic_interface_set" />
 
         <TextView
             style="@style/itemTextBottomSheets"
-            android:text="@string/settingsInterface" />
+            android:text="@string/settings" />
     </LinearLayout>
 
     <LinearLayout

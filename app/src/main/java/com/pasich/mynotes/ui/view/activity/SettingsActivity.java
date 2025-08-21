@@ -23,7 +23,7 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Theme;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
-import com.pasich.mynotes.databinding.ActivityThemeBinding;
+import com.pasich.mynotes.databinding.ActivitySettingsBinding;
 import com.pasich.mynotes.utils.adapters.themeAdapter.ThemesAdapter;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.themes.ThemesArray;
@@ -36,12 +36,12 @@ import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class ThemeActivity extends BaseActivity {
+public class SettingsActivity extends BaseActivity {
 
     @Inject
     PreferenceHelper mPreferenceHelper;
 
-    public ActivityThemeBinding activityThemeBinding;
+    public ActivitySettingsBinding activitySettingsBinding;
     private ThemesAdapter mAdapter;
     private int themeIdStartActivity;
     private boolean enableDynamic, themeDynamicStartActivity;
@@ -50,15 +50,15 @@ public class ThemeActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
-        activityThemeBinding = ActivityThemeBinding.inflate(getLayoutInflater());
-        getWindow().setEnterTransition(new MaterialFade().addTarget(activityThemeBinding.activityTheme));
+        activitySettingsBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
+        getWindow().setEnterTransition(new MaterialFade().addTarget(activitySettingsBinding.activitySettings));
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
-        setContentView(activityThemeBinding.getRoot());
+        setContentView(activitySettingsBinding.getRoot());
         themeIdStartActivity = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
         enableDynamic = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
         themeDynamicStartActivity = enableDynamic;
-        setSupportActionBar(activityThemeBinding.toolbar);
+        setSupportActionBar(activitySettingsBinding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         initializeThemes();
         initFunctions();
@@ -85,10 +85,10 @@ public class ThemeActivity extends BaseActivity {
 
     private void initFunctions() {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            activityThemeBinding.dynamicColor.setEnabled(true);
-            activityThemeBinding.dynamicColor.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE));
+            activitySettingsBinding.dynamicColor.setEnabled(true);
+            activitySettingsBinding.dynamicColor.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE));
         }
-        activityThemeBinding.screenProtection.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE));
+        activitySettingsBinding.screenProtection.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE));
         
         // Initialize color preview and accent card state
         updateAccentCardState(enableDynamic);
@@ -129,7 +129,7 @@ public class ThemeActivity extends BaseActivity {
     @Override
     public void initListeners() {
         // Accent Color Card Click Listener
-        activityThemeBinding.accentColorCard.setOnClickListener(v -> openAccentColorDialog());
+        activitySettingsBinding.accentColorCard.setOnClickListener(v -> openAccentColorDialog());
         
         mAdapter.setSelectLabelListener(position -> {
             if (!enableDynamic) {
@@ -139,7 +139,7 @@ public class ThemeActivity extends BaseActivity {
                 redrawActivity(theme.getTHEME_STYLE());
             }
         });
-        activityThemeBinding.dynamicColor.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        activitySettingsBinding.dynamicColor.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (isChecked) {
                     redrawActivity(R.style.AppThemeDynamic);
@@ -152,7 +152,7 @@ public class ThemeActivity extends BaseActivity {
             }
         });
         
-        activityThemeBinding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) -> PowerPreference.getDefaultFile().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, isChecked));
+        activitySettingsBinding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) -> PowerPreference.getDefaultFile().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, isChecked));
     }
 
 
@@ -166,24 +166,24 @@ public class ThemeActivity extends BaseActivity {
         int colorSurfaceContainer = MaterialColors.getColor(this, R.attr.colorSurfaceContainer, Color.GRAY);
         
         // Background
-        activityThemeBinding.activityTheme.setBackgroundColor(MaterialColors.getColor(this, android.R.attr.colorBackground, Color.GRAY));
+        activitySettingsBinding.activitySettings.setBackgroundColor(MaterialColors.getColor(this, android.R.attr.colorBackground, Color.GRAY));
 
         // Dynamic Color Card and Switch
-        activityThemeBinding.dynamicColorCard.setCardBackgroundColor(colorSurfaceContainer);
-        activityThemeBinding.dynamicColor.setTextColor(colorOnSurface);
-        activityThemeBinding.dynamicColorDescription.setTextColor(colorOnSurfaceVariant);
+        activitySettingsBinding.dynamicColorCard.setCardBackgroundColor(colorSurfaceContainer);
+        activitySettingsBinding.dynamicColor.setTextColor(colorOnSurface);
+        activitySettingsBinding.dynamicColorDescription.setTextColor(colorOnSurfaceVariant);
         
         // Screen Protection Card and Switch  
-        activityThemeBinding.screenProtectionCard.setCardBackgroundColor(colorSurfaceContainer);
-        activityThemeBinding.screenProtection.setTextColor(colorOnSurface);
-        activityThemeBinding.screenProtectionDescription.setTextColor(colorOnSurfaceVariant);
+        activitySettingsBinding.screenProtectionCard.setCardBackgroundColor(colorSurfaceContainer);
+        activitySettingsBinding.screenProtection.setTextColor(colorOnSurface);
+        activitySettingsBinding.screenProtectionDescription.setTextColor(colorOnSurfaceVariant);
         
         // Accent Color Card
-        activityThemeBinding.accentColorCard.setCardBackgroundColor(colorSurfaceContainer);
-        activityThemeBinding.accentColorDescription.setTextColor(colorOnSurfaceVariant);
+        activitySettingsBinding.accentColorCard.setCardBackgroundColor(colorSurfaceContainer);
+        activitySettingsBinding.accentColorDescription.setTextColor(colorOnSurfaceVariant);
 
         // Update color preview
-        activityThemeBinding.colorPreview.setBackgroundTintList(android.content.res.ColorStateList.valueOf(colorPrimary));
+        activitySettingsBinding.colorPreview.setBackgroundTintList(android.content.res.ColorStateList.valueOf(colorPrimary));
 
     }
 
@@ -251,7 +251,7 @@ public class ThemeActivity extends BaseActivity {
 
                 View colorCircle = view.findViewById(R.id.themeColorCircle);
                 if (position < themeColorResources.length && position < maxItems) {
-                    int color = ContextCompat.getColor(ThemeActivity.this, themeColorResources[position]);
+                    int color = ContextCompat.getColor(SettingsActivity.this, themeColorResources[position]);
                     colorCircle.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
                 }
 
@@ -285,11 +285,11 @@ public class ThemeActivity extends BaseActivity {
      */
     private void updateAccentCardState(boolean isDynamicEnabled) {
         if (isDynamicEnabled) {
-            activityThemeBinding.accentColorCard.setAlpha(0.5f);
-            activityThemeBinding.accentColorCard.setClickable(false);
+            activitySettingsBinding.accentColorCard.setAlpha(0.5f);
+            activitySettingsBinding.accentColorCard.setClickable(false);
         } else {
-            activityThemeBinding.accentColorCard.setAlpha(1.0f);
-            activityThemeBinding.accentColorCard.setClickable(true);
+            activitySettingsBinding.accentColorCard.setAlpha(1.0f);
+            activitySettingsBinding.accentColorCard.setClickable(true);
         }
     }
 

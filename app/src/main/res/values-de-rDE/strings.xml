@@ -67,6 +67,10 @@
     <string name="errorMaxNameShortCut">Fehler im Verknüpfungsnamen</string>
     <string name="renameTag">Umbenennen</string>
     <string name="settingsInterface">Schnittstelleneinstellungen</string>
+    <string name="settings">Einstellungen</string>
+    <string name="settingsGeneral">Allgemeine Einstellungen</string>
+    <string name="settingsAppearance">Erscheinungsbild</string>
+    <string name="settingsTheme">Design-Einstellungen</string>
     <string name="settingsBackups">Synchronisation und Backups</string>
     <string name="aboutApps">Über die App</string>
     <string name="trash">Papierkorb</string>

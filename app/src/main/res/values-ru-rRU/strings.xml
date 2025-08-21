@@ -85,6 +85,10 @@
     <string name="renameTag">Переименовать</string>
 
     <string name="settingsInterface">Настройки интерфейса</string>
+    <string name="settings">Настройки</string>
+    <string name="settingsGeneral">Общие настройки</string>
+    <string name="settingsAppearance">Внешний вид</string>
+    <string name="settingsTheme">Настройки темы</string>
     <string name="settingsBackups">Синхронизация и резервное копирование</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>

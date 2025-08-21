@@ -67,6 +67,10 @@
     <string name="errorMaxNameShortCut">Errore nel nome della scorciatoia</string>
     <string name="renameTag">Rinomina</string>
     <string name="settingsInterface">Impostazioni interfaccia</string>
+    <string name="settings">Impostazioni</string>
+    <string name="settingsGeneral">Impostazioni generali</string>
+    <string name="settingsAppearance">Aspetto</string>
+    <string name="settingsTheme">Impostazioni tema</string>
     <string name="settingsBackups">Sincronizzazione e backup</string>
     <string name="aboutApps">Informazioni sull\'app</string>
     <string name="trash">Cestino</string>

@@ -74,7 +74,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
 
-    final private ActivityResultLauncher<Intent> startThemeActivity = registerForActivityResult(
+    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 Intent data = result.getData();
                 if (result.getResultCode() == 11) {
@@ -314,7 +314,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         new AboutDialog(new AboutOpensActivity() {
             @Override
             protected void openThemeActivity() {
-                startThemeActivity.launch(new Intent(MainActivity.this, ThemeActivity.class),
+                startSettingsActivity.launch(new Intent(MainActivity.this, SettingsActivity.class),
                         ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,
                                 (Pair<View, String>[]) null));
             }

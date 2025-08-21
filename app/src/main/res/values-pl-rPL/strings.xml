@@ -71,6 +71,10 @@
     <string name="renameTag">Zmień nazwę</string>
 
     <string name="settingsInterface">Ustawienia interfejsu</string>
+    <string name="settings">Ustawienia</string>
+    <string name="settingsGeneral">Ustawienia ogólne</string>
+    <string name="settingsAppearance">Wygląd</string>
+    <string name="settingsTheme">Ustawienia motywu</string>
     <string name="settingsBackups">Synchronizacja i kopia zapasowa</string>
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>

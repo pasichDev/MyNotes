@@ -68,6 +68,10 @@
     <string name="errorMaxNameShortCut">Помилка у назві ярлика</string>
     <string name="renameTag">Перейменувати</string>
     <string name="settingsInterface">Налаштування інтерфейсу</string>
+    <string name="settings">Налаштування</string>
+    <string name="settingsGeneral">Загальні налаштування</string>
+    <string name="settingsAppearance">Вигляд</string>
+    <string name="settingsTheme">Налаштування теми</string>
     <string name="settingsBackups">Синхронізація та рез.копії</string>
     <string name="aboutApps">Про програму</string>
     <string name="trash">Кошик</string>

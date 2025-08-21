@@ -89,6 +89,10 @@
 
 
     <string name="settingsInterface">Interface settings</string>
+    <string name="settings">Settings</string>
+    <string name="settingsGeneral">General Settings</string>
+    <string name="settingsAppearance">Appearance</string>
+    <string name="settingsTheme">Theme Settings</string>
     <string name="settingsBackups">Sync &amp; Backup</string>
     <string name="aboutApps">About App</string>
     <string name="trash">Trash</string>

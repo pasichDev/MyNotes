@@ -68,6 +68,10 @@
     <string name="errorMaxNameShortCut">Erreur dans le nom du raccourci</string>
     <string name="renameTag">Renommer</string>
     <string name="settingsInterface">Paramètres d\'interface</string>
+    <string name="settings">Paramètres</string>
+    <string name="settingsGeneral">Paramètres généraux</string>
+    <string name="settingsAppearance">Apparence</string>
+    <string name="settingsTheme">Paramètres de thème</string>
     <string name="settingsBackups">Synchronisation et sauvegardes</string>
     <string name="aboutApps">À propos de l\'application</string>
     <string name="trash">Corbeille</string>
