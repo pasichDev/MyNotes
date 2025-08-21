@@ -62,7 +62,8 @@
         android:id="@+id/loginUser"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="@drawable/bg_item_full"
+        android:layout_marginHorizontal="20dp"
         android:visibility="gone"
         android:orientation="horizontal"
         android:padding="@dimen/paddingItems">

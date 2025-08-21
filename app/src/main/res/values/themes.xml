@@ -297,12 +297,12 @@
 
     <!-- Стиль иконок в BottomSheetsDialog -->
     <style name="iconDialogList">
-        <item name="android:layout_width">20dp</item>
-        <item name="android:layout_height">20dp</item>
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
         <item name="android:background">@null</item>
         <item name="android:tint">?android:colorPrimary</item>
-        <item name="android:layout_marginStart">20dp</item>
-        <item name="android:layout_marginEnd">20dp</item>
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:layout_marginEnd">10dp</item>
         <item name="android:layout_gravity">center_vertical</item>
     </style>
 

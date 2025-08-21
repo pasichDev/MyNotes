@@ -24,7 +24,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="@drawable/bg_item_start"
+        android:layout_marginHorizontal="20dp"
         android:orientation="horizontal"
         android:padding="@dimen/paddingItems">
 
@@ -37,13 +38,16 @@
             style="@style/itemTextBottomSheets"
             android:text="@string/deleteTag" />
     </LinearLayout>
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"/>
 
     <LinearLayout
         android:id="@+id/deleteTagAndNotes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="@drawable/bg_item_middle"
+        android:layout_marginHorizontal="20dp"
         android:orientation="horizontal"
         android:padding="@dimen/paddingItems"
         android:visibility="gone">
@@ -57,12 +61,15 @@
             style="@style/itemTextBottomSheets"
             android:text="@string/deleteTagAndNotes" />
     </LinearLayout>
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"/>
     <LinearLayout
         android:id="@+id/cancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="@drawable/bg_item_end"
+        android:layout_marginHorizontal="20dp"
         android:orientation="horizontal"
         android:padding="@dimen/paddingItems">
 
@@ -77,5 +84,8 @@
 
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="20dp"/>
 
 </LinearLayout>

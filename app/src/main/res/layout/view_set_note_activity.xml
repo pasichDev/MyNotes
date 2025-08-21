@@ -15,7 +15,8 @@
         android:layout_height="wrap_content"
         style="?android:attr/actionButtonStyle"
         android:layout_marginStart="15dp"
-        android:padding="10dp"
+        android:paddingVertical="20dp"
+        android:paddingHorizontal="10dp"
         android:gravity="center_vertical"
         android:src="@drawable/ic_style_normal"
         android:contentDescription="@string/contentDescrChangeStyleText" />
