@@ -53,7 +53,7 @@
                 android:orientation="horizontal"
                 android:overScrollMode="never"
                 android:paddingStart="15dp"
-                android:paddingEnd="20dp"
+                android:paddingEnd="0dp"
                 android:paddingBottom="15dp"
                 app:layout_scrollFlags="noScroll" />
 
