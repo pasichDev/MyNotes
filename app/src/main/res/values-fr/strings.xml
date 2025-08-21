@@ -48,6 +48,7 @@
     <string name="errorNewTagInput">Erreur: nombre maximal de caractères que le nom de balise %1$d peut contenir </string>
     <string name="emptyTrash">Vos notes supprimées seront affichées ici</string>
     <string name="emptyNotes">Les notes que vous avez créées seront affichées ici</string>
+    <string name="emptyNotesForTag">Ici seront affichées les notes que vous marquerez avec le tag "%1$s"</string>
     <string name="chooseNote">Actions sur la note sélectionnée</string>
     <string name="contentDescrChangeStyleText">Modifier le style de texte</string>
     <string name="copyNoteEdits">Modifier une copie d\'une note</string>

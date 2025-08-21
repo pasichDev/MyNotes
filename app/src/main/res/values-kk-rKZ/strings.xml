@@ -49,6 +49,7 @@
     <string name="errorNewTagInput">Қате: тег атауында болуы мүмкін таңбалардың ең көп саны – %1$d </string>
     <string name="emptyTrash">Жойылған ескертпелер осы жерде көрсетіледі</string>
     <string name="emptyNotes">Сіз жасаған ескертпелер осы жерде пайда болады</string>
+    <string name="emptyNotesForTag">Мұнда сіз "%1$s" тегімен белгілейтін ескертпелер көрсетіледі</string>
     <string name="chooseNote">Таңдалған ескертпедегі әрекеттер</string>
     <string name="contentDescrChangeStyleText">Мәтін мәнерін өзгерту</string>
     <string name="copyNoteEdits">Көшірмені өңдеу</string>

@@ -24,6 +24,7 @@
         app:tint="?attr/colorPrimary" />
 
     <TextView
+        android:id="@+id/emptyNotesText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"

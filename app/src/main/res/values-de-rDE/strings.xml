@@ -48,6 +48,7 @@
     <string name="errorNewTagInput">Fehler: Maximale Anzahl an Zeichen, die der Tag-Name %1$d enthalten kann </string>
     <string name="emptyTrash">Deine gelöschten Notizen werden hier angezeigt</string>
     <string name="emptyNotes">Die von dir erstellten Notizen werden hier angezeigt</string>
+    <string name="emptyNotesForTag">Hier werden Notizen angezeigt, die du mit dem Tag "%1$s" markierst</string>
     <string name="chooseNote">Aktionen für die ausgewählte Notiz</string>
     <string name="contentDescrChangeStyleText">Textstil ändern</string>
     <string name="copyNoteEdits">Bearbeite eine Kopie einer Notiz</string>

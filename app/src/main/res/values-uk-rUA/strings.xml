@@ -48,6 +48,7 @@
     <string name="errorNewTagInput">Помилка: Максимальна кількість символів, яка може містити назва тега %1$d </string>
     <string name="emptyTrash">Тут відображатимуться видалені вами нотатки</string>
     <string name="emptyNotes">Тут відображатимуться створені вами нотатки</string>
+    <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
     <string name="chooseNote">Дії над вибраною нотаткою</string>
     <string name="contentDescrChangeStyleText">Змінити стиль тексту</string>
     <string name="copyNoteEdits">Редагувати копію нотатки</string>

@@ -97,7 +97,7 @@ public class ListUtilsModule {
     @Provides
     @ActivityScoped
     SpacesItemDecoration providerSpaceItemDecorationTags() {
-        return new SpacesItemDecoration(5);
+        return new SpacesItemDecoration(8);
     }
 
 

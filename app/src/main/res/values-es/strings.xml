@@ -51,6 +51,7 @@
     <string name="errorNewTagInput">Error: el número máximo de caracteres que puede contener un nombre de etiqueta es %1$d </string>
     <string name="emptyTrash">Tus notas eliminadas se muestran aquí</string>
     <string name="emptyNotes">Las notas que cree aparecerán aquí</string>
+    <string name="emptyNotesForTag">Aquí se mostrarán las notas que marques con la etiqueta "%1$s"</string>
     <string name="chooseNote">Acciones en la nota seleccionada</string>
     <string name="contentDescrChangeStyleText">Cambiar estilo de texto</string>
     <string name="copyNoteEdits">Editar copia</string>

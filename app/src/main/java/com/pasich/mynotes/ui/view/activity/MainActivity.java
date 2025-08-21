@@ -417,6 +417,20 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         if (getResources().getDisplayMetrics().density < 2.2)
             mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
         mActivityBinding.includeEmpty.emptyViewNote.setVisibility(flag ? View.VISIBLE : View.GONE);
+        
+        // Встановлюємо текст в залежності від вибраного тегу
+        if (flag) {
+            Tag selectedTag = tagsAdapter.getTagSelected();
+            if (selectedTag != null && selectedTag.getSystemAction() != 2 && !selectedTag.getNameTag().equals("allNotes")) {
+                // Якщо вибраний конкретний тег (не "Всі нотатки")
+                mActivityBinding.includeEmpty.emptyNotesText.setText(
+                    getString(R.string.emptyNotesForTag, selectedTag.getNameTag())
+                );
+            } else {
+                // Якщо вибрано "Всі нотатки" або немає тегу
+                mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
+            }
+        }
     }
 
     @Override

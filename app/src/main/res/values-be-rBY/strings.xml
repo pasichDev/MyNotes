@@ -50,6 +50,7 @@
     <string name="errorNewTagInput">Памылка: Максімальная колькасць знакаў якая можа змяшчаць назву пазнакі %1$d </string>
     <string name="emptyTrash">Тут адлюстроўваюцца выдаленыя вамі нататкі</string>
     <string name="emptyNotes">Тут будуць адлюстроўвацца створаныя вамі нататкі</string>
+    <string name="emptyNotesForTag">Тут будуць адлюстроўвацца нататкі якія вы пазначыце тэгам "%1$s"</string>
     <string name="chooseNote">Дзеянні над абранай нататкай</string>
     <string name="contentDescrChangeStyleText">Змяніць стыль тэксту</string>
     <string name="copyNoteEdits">Рэдагаваць копію</string>

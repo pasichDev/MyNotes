@@ -50,6 +50,7 @@
     <string name="errorNewTagInput">Błąd: Maksymalna liczba znaków, jaką może zawierać nazwa znacznika, to %1$d </string>
     <string name="emptyTrash">Twoje usunięte notatki są wyświetlane tutaj</string>
     <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
+    <string name="emptyNotesForTag">Tutaj będą wyświetlane notatki które oznaczysz tagiem "%1$s"</string>
     <string name="chooseNote">Działania na wybranej notatce</string>
     <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
     <string name="copyNoteEdits">Edytuj kopię</string>

@@ -48,6 +48,7 @@
     <string name="errorNewTagInput">Error: The maximum number of characters a tag name can contain is %1$d </string>
     <string name="emptyTrash">Your deleted notes are displayed here</string>
     <string name="emptyNotes">Notes you create will appear here</string>
+    <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
     <string name="chooseNote">Actions on the selected note</string>
     <string name="contentDescrChangeStyleText">Change text style</string>
     <string name="copyNoteEdits">Edit copy</string>

@@ -64,6 +64,7 @@
     <string name="errorNewTagInput">Ошибка: Максимальное количество символов которое может содержать название метки  %1$d </string>
     <string name="emptyTrash">Здесь отображаються удаленные вами заметки</string>
     <string name="emptyNotes">Здесь будут отображаться созданные вами заметки</string>
+    <string name="emptyNotesForTag">Здесь будут отображаться заметки которые вы отметите тегом "%1$s"</string>
     <string name="chooseNote">Действия над выбраной заметкой</string>
     <string name="contentDescrChangeStyleText">Изменить стиль текста</string>
     <string name="copyNoteEdits">Редактировать копию</string>
