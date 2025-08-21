@@ -79,7 +79,7 @@
     <string name="onDynamicColor">Habilitar color dinámico</string>
     <string name="onDynamicColorDescription">Adapta los colores de la app a tu fondo de pantalla (Android 12+)</string>
     <string name="onScreenProtection">Habilitar protección de pantalla</string>
-    <string name="onScreenProtectionDescription">Surte efecto después de reiniciar la aplicación</string>
+    <string name="onScreenProtectionDescription">Evita capturas de pantalla y grabación. Surte efecto después de reiniciar la aplicación</string>
     <string name="coffeeByPlay">Gracias desarrollador</string>
     <string name="coffeeByTextInfo"><b>My Notes</b> es una aplicación sin anuncios que se distribuye como un producto gratuito. La aplicación está desarrollada por una sola persona, por lo que algunas actualizaciones llegan tarde. Mantener la salud de la aplicación y algunas características requiere un costo. Puede agradecer al desarrollador invitándole a un café o pagando el alquiler del servidor, así como enviar una donación a los enlaces especificados, que se mostrarán a continuación. ¡Gracias por usar esta aplicación!</string>
 
