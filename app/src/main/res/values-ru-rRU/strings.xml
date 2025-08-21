@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Мои Заметки</string>
+    <string name="themeBlue">Синяя тема</string>
+    <string name="themeGreen">Зеленая тема</string>
+    <string name="themePurple">Фиолетовая тема</string>
+    <string name="themeOrange">Оранжевая тема</string>
+    <string name="themeRed">Красная тема</string>
+    <string name="themeTeal">Бирюзовая тема</string>
+    <string name="themePaleRed">Бледно-розовая тема</string>
+    <string name="themeYellow">Желтая тема</string>
+    <string name="themePink">Розовая тема</string>
+    <string name="accentColorDescription">Выберите акцентный цвет из которого построится тема</string>
+    <string name="selectAccentColor">Выбрать акцентный цвет</string>
+    <string name="displayModePreview">Предварительный просмотр</string>
+    <string name="onDynamicColor">Включить Dynamic Color</string>
     <string name="NewNote">Создать заметку</string>
     <string name="trashNotes">Переместить в корзину</string>
     <string name="trashClean">Очистить корзину</string>
@@ -75,8 +88,7 @@
     <string name="settingsBackups">Синхронизация и резервное копирование</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>
-    <string name="themes">Темы</string>
-    <string name="onDynamicColor">Включить dynamic color</string>
+    <string name="themes">Тема</string>
     <string name="onDynamicColorDescription">Адаптирует цвета приложения к вашим обоям (Android 12+)</string>
     <string name="onScreenProtection">Включить защиту экрана</string>
     <string name="onScreenProtectionDescription">Предотвращает создание скриншотов и запись экрана. Вступит в силу после перезапуска приложения</string>
