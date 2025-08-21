@@ -96,7 +96,7 @@
     <string name="onDynamicColor">Enable Dynamic Color</string>
     <string name="onDynamicColorDescription">Adapts app colors to your wallpaper (Android 12+)</string>
     <string name="onScreenProtection">Enable screen protection</string>
-    <string name="onScreenProtectionDescription">Takes effect after restarting the app</string>
+    <string name="onScreenProtectionDescription">Prevents screenshots and screen recording. Takes effect after restarting the app</string>
     <string name="coffeeByPlay">Thank Developer</string>
     <string name="coffeeByTextInfo"><b>My Notes</b> is an ad-free app and is distributed as a free product. The application is developed by one person, so some updates are delivered late. Maintaining the health of the application and some features generates costs. You can thank the developer by buying him a coffee or paying for the server rent, as well as send a donation to the specified links that will be displayed below. Thank you for using this app!</string>
 
