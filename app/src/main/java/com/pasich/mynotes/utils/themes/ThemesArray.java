@@ -11,11 +11,11 @@ public class ThemesArray {
     private final ArrayList<Theme> themes = new ArrayList<>();
 
     private void initialThemes(boolean darkTheme) {
-        themes.add(new Theme(darkTheme ? R.drawable.theme_default_dark : R.drawable.theme_default, 0, R.style.DefaultTheme, R.color.default_theme_light_primary));
-        themes.add(new Theme(darkTheme ? R.drawable.theme_green_dark : R.drawable.theme_green, 1, R.style.GreenTheme, R.color.green_theme_light_primary));
-        themes.add(new Theme(darkTheme ? R.drawable.theme_pale_pink_dark : R.drawable.theme_pale_pink, 2, R.style.PalePinkTheme, R.color.pale_pink_theme_light_primary));
-        themes.add(new Theme(darkTheme ? R.drawable.theme_yellow_dark : R.drawable.theme_yellow, 3, R.style.YellowTheme, R.color.yellow_theme_light_primary));
-        themes.add(new Theme(darkTheme ? R.drawable.theme_pink_dark : R.drawable.theme_pink, 4, R.style.PinkTheme, R.color.pink_theme_light_primary));
+        themes.add(new Theme(0, R.style.DefaultTheme));
+        themes.add(new Theme(1, R.style.GreenTheme));
+        themes.add(new Theme( 2, R.style.PalePinkTheme));
+        themes.add(new Theme( 3, R.style.YellowTheme));
+        themes.add(new Theme( 4, R.style.PinkTheme));
     }
 
     public ArrayList<Theme> getThemes(boolean darkTheme) {

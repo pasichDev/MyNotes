@@ -19,7 +19,7 @@ public class PreferencesConfig {
     //THEME
     public static final String ARGUMENT_PREFERENCE_THEME = "appTheme";
     public static final int ARGUMENT_DEFAULT_THEME_VALUE = 0;
-    public static final Theme Theme_DEFAULT = new Theme(R.drawable.ic_theme_darkblue, 0, R.style.DefaultTheme, R.drawable.item_theme_check_blue);
+    public static final Theme Theme_DEFAULT = new Theme(0, R.style.DefaultTheme);
     //DynamicColors
     public static final String ARGUMENT_PREFERENCE_DYNAMIC_COLOR = "dynamicColorEnable";
     public static final boolean ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE = false;

@@ -24,7 +24,6 @@ import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Theme;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
-import com.pasich.mynotes.utils.adapters.themeAdapter.ThemesAdapter;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.themes.ThemesArray;
 import com.preference.PowerPreference;
@@ -42,7 +41,6 @@ public class SettingsActivity extends BaseActivity {
     PreferenceHelper mPreferenceHelper;
 
     public ActivitySettingsBinding activitySettingsBinding;
-    private ThemesAdapter mAdapter;
     private int themeIdStartActivity;
     private boolean enableDynamic, themeDynamicStartActivity;
 
@@ -60,7 +58,6 @@ public class SettingsActivity extends BaseActivity {
         themeDynamicStartActivity = enableDynamic;
         setSupportActionBar(activitySettingsBinding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        initializeThemes();
         initFunctions();
 
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
@@ -70,17 +67,6 @@ public class SettingsActivity extends BaseActivity {
             }
         });
 
-    }
-
-    private void initializeThemes() {
-        ArrayList<Theme> themes;
-        int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
-            themes = new ThemesArray().getThemes(true);
-        } else {
-            themes = new ThemesArray().getThemes(false);
-        }
-        mAdapter = new ThemesAdapter(themes, themeIdStartActivity);
     }
 
     private void initFunctions() {
@@ -113,15 +99,22 @@ public class SettingsActivity extends BaseActivity {
 
 
     private boolean finishActivity() {
-        Theme mTheme = mAdapter.getSelectTheme();
+        int currentThemeId = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
         boolean enableDynamicColor = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
+        if (themeIdStartActivity != currentThemeId) {
+            int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
+            setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
+        }
 
-        if (themeIdStartActivity != mTheme.getId()) {
-            setResult(11, new Intent().putExtra("updateThemeStyle", mAdapter.getSelectTheme().getTHEME_STYLE()));
-        }
         if (themeDynamicStartActivity != enableDynamicColor) {
-            setResult(11, new Intent().putExtra("updateThemeStyle", R.style.AppThemeDynamic));
+            if (enableDynamicColor) {
+                setResult(11, new Intent().putExtra("updateThemeStyle", R.style.AppThemeDynamic));
+            } else {
+                int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
+                setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
+            }
         }
+
         supportFinishAfterTransition();
         return true;
     }
@@ -130,15 +123,6 @@ public class SettingsActivity extends BaseActivity {
     public void initListeners() {
         // Accent Color Card Click Listener
         activitySettingsBinding.accentColorCard.setOnClickListener(v -> openAccentColorDialog());
-        
-        mAdapter.setSelectLabelListener(position -> {
-            if (!enableDynamic) {
-                Theme theme = mAdapter.getThemes().get(position);
-                mAdapter.selectTheme(position);
-                PowerPreference.getDefaultFile().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, theme.getId());
-                redrawActivity(theme.getTHEME_STYLE());
-            }
-        });
         activitySettingsBinding.dynamicColor.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (isChecked) {
@@ -269,9 +253,7 @@ public class SettingsActivity extends BaseActivity {
                .setAdapter(adapter, (dialog, which) -> {
                    if (which < themes.size()) {
                        Theme selectedTheme = themes.get(which);
-                       if (mAdapter != null) {
-                           mAdapter.selectTheme(which);
-                       }
+
                        PowerPreference.getDefaultFile().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, selectedTheme.getId());
                        redrawActivity(selectedTheme.getTHEME_STYLE());
                    }
