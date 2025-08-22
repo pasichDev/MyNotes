@@ -143,10 +143,11 @@
     <string name="retry">Повторити</string>
 
     <!-- Themes names -->
-    <string name="themeBlue">Синя тема</string>
-    <string name="themeGreen">Зелена тема</string>
-    <string name="themePaleRed">Блідо-рожева тема</string>
-    <string name="themeYellow">Жовта тема</string>
-    <string name="themePink">Рожева тема</string>
+    <string name="themeBlue">Океанський синій</string>
+    <string name="themeGreen">Смарагдовий зелений</string>
+    <string name="themeSunset">Помаранчевий захід</string>
+    <string name="themeYellow">Золотисто-жовтий</string>
+    <string name="themePurple">Глибокий фіолетовий</string>
+    <string name="themeCoralRed">Кораловий червоний</string>
 
 </resources>

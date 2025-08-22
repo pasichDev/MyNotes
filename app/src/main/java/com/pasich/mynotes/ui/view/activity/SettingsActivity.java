@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -195,6 +197,7 @@ public class SettingsActivity extends BaseActivity {
      */
     private void showThemeSelectionDialog(ArrayList<Theme> themes) {
         int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        int currentThemeId = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, 0);
 
         String[] themeNames = {
             getString(R.string.themeBlue),
@@ -202,6 +205,7 @@ public class SettingsActivity extends BaseActivity {
             getString(R.string.themeSunset),
             getString(R.string.themeYellow),
             getString(R.string.themePurple),
+            getString(R.string.themeCoralRed)
         };
 
         int[] themeColorResources;
@@ -213,6 +217,7 @@ public class SettingsActivity extends BaseActivity {
                     R.color.red_pale_theme_dark_primary,
                     R.color.yellow_theme_dark_primary,
                     R.color.purple_theme_dark_primary,
+                    R.color.red_pale_theme_dark_primary // Using red_pale as coral red for now
             };
         }else {
             themeColorResources  = new int[]{
@@ -221,10 +226,20 @@ public class SettingsActivity extends BaseActivity {
                     R.color.red_pale_theme_light_primary,
                     R.color.yellow_theme_light_primary,
                     R.color.purple_theme_light_primary,
+                    R.color.red_pale_theme_light_primary // Using red_pale as coral red for now
             };
         }
 
         int maxItems = Math.min(themes.size(), themeNames.length);
+        final int[] selectedPosition = {-1};
+        
+        // Find current selected theme position
+        for (int i = 0; i < themes.size() && i < maxItems; i++) {
+            if (themes.get(i).getId() == currentThemeId) {
+                selectedPosition[0] = i;
+                break;
+            }
+        }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 R.layout.item_theme_dialog, R.id.themeName, themeNames) {
@@ -234,9 +249,38 @@ public class SettingsActivity extends BaseActivity {
                 View view = super.getView(position, convertView, parent);
 
                 View colorCircle = view.findViewById(R.id.themeColorCircle);
+                View colorContainer = view.findViewById(R.id.themeColorContainer);
+                ImageView selectedIndicator = view.findViewById(R.id.selectedIndicator);
+                TextView themeName = view.findViewById(R.id.themeName);
+                
                 if (position < themeColorResources.length && position < maxItems) {
                     int color = ContextCompat.getColor(SettingsActivity.this, themeColorResources[position]);
                     colorCircle.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+                    
+                    // Set selection state
+                    boolean isSelected = position == selectedPosition[0];
+                    view.setSelected(isSelected);
+                    colorContainer.setSelected(isSelected);
+                    
+                    if (isSelected) {
+                        selectedIndicator.setVisibility(View.VISIBLE);
+                        themeName.setTypeface(themeName.getTypeface(), android.graphics.Typeface.BOLD);
+                        
+                        // Use primary color for selected text
+                        int primaryColor = MaterialColors.getColor(SettingsActivity.this, 
+                            R.attr.colorPrimary,
+                            ContextCompat.getColor(SettingsActivity.this, android.R.color.holo_blue_bright));
+                        themeName.setTextColor(primaryColor);
+                    } else {
+                        selectedIndicator.setVisibility(View.GONE);
+                        themeName.setTypeface(themeName.getTypeface(), android.graphics.Typeface.NORMAL);
+                        
+                        // Use default text color
+                        int textColor = MaterialColors.getColor(SettingsActivity.this,
+                            R.attr.colorOnSurface,
+                            ContextCompat.getColor(SettingsActivity.this, android.R.color.black));
+                        themeName.setTextColor(textColor);
+                    }
                 }
 
                 return view;
@@ -248,18 +292,27 @@ public class SettingsActivity extends BaseActivity {
             }
         };
 
-       AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.selectAccentColor))
-               .setAdapter(adapter, (dialog, which) -> {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Theme_MyNotes_Dialog);
+        AlertDialog dialog = builder.setTitle(getString(R.string.selectAccentColor))
+               .setAdapter(adapter, (dialogInterface, which) -> {
                    if (which < themes.size()) {
                        Theme selectedTheme = themes.get(which);
+                       selectedPosition[0] = which;
 
                        PowerPreference.getDefaultFile().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, selectedTheme.getId());
                        redrawActivity(selectedTheme.getTHEME_STYLE());
                    }
                })
                .setNegativeButton(getString(R.string.cancel), null)
-               .show();
+               .create();
+               
+        // Customize dialog appearance
+        dialog.show();
+        
+        // Make dialog corners rounded
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_rounded_background);
+        }
     }
 
     /**

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:paddingHorizontal="20dp"
-    android:paddingVertical="16dp"
-    android:background="?attr/selectableItemBackground">
+    android:paddingVertical="18dp"
+    android:background="@drawable/item_theme_selector_background">
 
     <TextView
         android:id="@+id/themeName"
@@ -16,14 +17,34 @@
         android:textSize="16sp"
         android:textColor="?attr/colorOnSurface"
         android:fontFamily="@font/railway_medium"
-        android:text="Theme Name" />
+        android:text="Theme Name"
+        android:layout_marginEnd="16dp" />
 
-    <View
-        android:id="@+id/themeColorCircle"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_marginStart="16dp"
-        android:background="@drawable/circle_accent_color"
-        android:elevation="2dp" />
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/themeColorContainer"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="2dp"
+        app:strokeColor="@color/item_theme_stroke_color_selector">
+
+        <View
+            android:id="@+id/themeColorCircle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/circle_accent_color_enhanced" />
+
+        <ImageView
+            android:id="@+id/selectedIndicator"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_check_circle"
+            android:visibility="gone"
+            android:tint="@android:color/white"
+            android:elevation="4dp" />
+
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>

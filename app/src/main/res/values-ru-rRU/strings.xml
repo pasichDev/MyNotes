@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Мои Заметки</string>
-    <string name="themeBlue">Синяя тема</string>
-    <string name="themeGreen">Зеленая тема</string>
-    <string name="themePurple">Фиолетовая тема</string>
-    <string name="themeOrange">Оранжевая тема</string>
-    <string name="themeRed">Красная тема</string>
-    <string name="themeTeal">Бирюзовая тема</string>
-    <string name="themePaleRed">Бледно-розовая тема</string>
-    <string name="themeYellow">Желтая тема</string>
-    <string name="themePink">Розовая тема</string>
+    <string name="themeBlue">Океанский синий</string>
+    <string name="themeGreen">Изумрудно-зелёный</string>
+    <string name="themeSunset">Оранжевый закат</string>
+    <string name="themeYellow">Золотисто-жёлтый</string>
+    <string name="themePurple">Глубокий фиолетовый</string>
+    <string name="themeCoralRed">Коралловый красный</string>
     <string name="accentColorDescription">Выберите акцентный цвет из которого построится тема</string>
     <string name="selectAccentColor">Выбрать акцентный цвет</string>
     <string name="displayModePreview">Предварительный просмотр</string>
