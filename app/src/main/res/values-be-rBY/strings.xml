@@ -38,7 +38,6 @@
     <string name="sortHead">Картаваць па:</string>
     <string name="shareApp">Падзяліцца дадаткам</string>
     <string name="privacyApp">Палітыка прыватнасці</string>
-    <string name="addShortCutLauncher">Дадаць ярлык на працоўны стол</string>
     <string name="addShortCutSuccessfully">Дадаванні ярлыка выканана паспяхова</string>
     <string name="translateNote">Перавесці нататку</string>
     <string name="hintTextNote">Тэкст</string>
@@ -60,38 +59,23 @@
     <string name="button_phone">Патэлефанаваць</string>
     <string name="button_mail">Напісаць</string>
     <string name="button_url">Перайсці</string>
-    <!-- Clean next version -->
     <string name="hiddeTag">Схаваць нататкі</string>
     <string name="visibleTag">Адлюстроўваць нататкі</string>
-    <string name="hintNameLabel">Назва ярлыка</string>
-    <string name="titleDialogShortCut">Стварыць ярлык</string>
-    <string name="functionNotSupport">Гэтая функцыя не падтрымліваецца вашай прыладай</string>
     <string name="shortCutCreateFallDouble">Ярлык для дадзенай нататкі ўжо створаны</string>
-    <string name="buttonCreateShortCut">Дадаць ярлык на працоўны стол</string>
-    <string name="errorMaxNameShortCut">Памылка ў назве ярлыка</string>
     <string name="renameTag">Перайменаваць</string>
 
     <string name="settingsInterface">Налады інтэрфейсу</string>
     <string name="settings">Налады</string>
-    <string name="settingsGeneral">Агульныя налады</string>
-    <string name="settingsAppearance">Знешні выгляд</string>
-    <string name="settingsTheme">Налады тэмы</string>
     <string name="settingsBackups">Сінхранізацыя і рэз.копіі</string>
     <string name="aboutApps">Аб дадатку</string>
     <string name="trash">Кошык</string>
     <string name="themes">Тэма</string>
     <string name="themeBlue">Сіняя тэма</string>
     <string name="themeGreen">Зялёная тэма</string>
-    <string name="themePurple">Фіялетавая тэма</string>
-    <string name="themeOrange">Аранжавая тэма</string>
-    <string name="themeRed">Чырвоная тэма</string>
-    <string name="themeTeal">Бірузовая тэма</string>
-    <string name="themePaleRed">Бледна-ружовая тэма</string>
     <string name="themeYellow">Жоўтая тэма</string>
     <string name="themePink">Ружовая тэма</string>
     <string name="accentColorDescription">Выберыце акцэнтны колер з якога збудуецца тэма</string>
     <string name="selectAccentColor">Выбраць акцэнтны колер</string>
-    <string name="displayModePreview">Перадпрагляд дысплэя</string>
     <string name="onDynamicColor">Уключыць Dynamic Color</string>
     <string name="onDynamicColorDescription">Адаптуе колеры дадатка да вашай шпалеры (Android 12+)</string>
     <string name="onScreenProtection">Уключыць абарону экрана</string>
@@ -121,8 +105,6 @@
     <string name="autoCloudVariantsMonth">Кожны месяц</string>
     <string name="autoCloudVariantsOff">Выкл.</string>
 
-    <!-- AutoBackup strings -->
-
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">Няма дадзеных, для стварэння рэзервовай копіі</string>
@@ -141,9 +123,6 @@
     <string name="percentProgress">Рэзервовае капіраванне (%d%%)</string>
 
     <!-- Product offer -->
-    <string name="byyError">Памылка пры набыцці.</string>
-    <string name="byyCancel">Мы будзем імкнуцца стаць лепшымі.</string>
-    <string name="errorLoadingsProduct">Памылка, не атрымалася загрузіць вітрыну</string>
     <string name="thanks_title">Паважаны карыстальнік</string>
     <string name="creteNoteToTag">Стварыце нататку</string>
     <string name="errorSyncTitle">Звярніце ўвагу!</string>

@@ -199,9 +199,9 @@ public class SettingsActivity extends BaseActivity {
         String[] themeNames = {
             getString(R.string.themeBlue),
             getString(R.string.themeGreen),
-            getString(R.string.themePaleRed),
+            getString(R.string.themeSunset),
             getString(R.string.themeYellow),
-            getString(R.string.themePink)
+            getString(R.string.themePurple),
         };
 
         int[] themeColorResources;
@@ -209,18 +209,18 @@ public class SettingsActivity extends BaseActivity {
         if(currentNightMode == Configuration.UI_MODE_NIGHT_YES){
             themeColorResources  = new int[]{
                     R.color.default_theme_dark_primary,
-                    R.color.green_theme_dark_primary,
-                    R.color.pale_pink_theme_dark_primary,
+                    R.color.green_theme_dark_theme_primary,
+                    R.color.red_pale_theme_dark_primary,
                     R.color.yellow_theme_dark_primary,
-                    R.color.pink_theme_dark_primary
+                    R.color.purple_theme_dark_primary,
             };
         }else {
             themeColorResources  = new int[]{
                     R.color.default_theme_light_primary,
-                    R.color.green_theme_light_primary,
-                    R.color.pale_pink_theme_light_primary,
+                    R.color.green_theme_light_theme_primary,
+                    R.color.red_pale_theme_light_primary,
                     R.color.yellow_theme_light_primary,
-                    R.color.pink_theme_light_primary
+                    R.color.purple_theme_light_primary,
             };
         }
 

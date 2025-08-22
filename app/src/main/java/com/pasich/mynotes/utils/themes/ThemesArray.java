@@ -13,9 +13,9 @@ public class ThemesArray {
     private void initialThemes(boolean darkTheme) {
         themes.add(new Theme(0, R.style.DefaultTheme));
         themes.add(new Theme(1, R.style.GreenTheme));
-        themes.add(new Theme( 2, R.style.PalePinkTheme));
+        themes.add(new Theme( 2, R.style.SunsetTheme));
         themes.add(new Theme( 3, R.style.YellowTheme));
-        themes.add(new Theme( 4, R.style.PinkTheme));
+        themes.add(new Theme( 4, R.style.PurpleTheme));
     }
 
     public ArrayList<Theme> getThemes(boolean darkTheme) {

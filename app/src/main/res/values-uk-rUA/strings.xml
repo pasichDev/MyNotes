@@ -36,7 +36,6 @@
     <string name="sortHead">Сортувати за:</string>
     <string name="shareApp">Поділитись додатком</string>
     <string name="privacyApp">Політика конфіденційності</string>
-    <string name="addShortCutLauncher">Додати ярлик на робочий стіл</string>
     <string name="addShortCutSuccessfully">Додавання ярлика виконано успішно</string>
     <string name="translateNote">Зробити переклад нотатки</string>
     <string name="hintTextNote">Текст</string>
@@ -61,34 +60,16 @@
     <string name="button_url">Відкрити посилання</string>
     <string name="hiddeTag">Приховати нотатки</string>
     <string name="visibleTag">Відображати нотатки</string>
-    <string name="hintNameLabel">Назва ярлика</string>
-    <string name="titleDialogShortCut">Створити ярлик</string>
-    <string name="functionNotSupport">Ця функція не підтримується вашим пристроєм</string>
     <string name="shortCutCreateFallDouble">Ярлик для цієї нотатки вже створено</string>
-    <string name="buttonCreateShortCut">Додати ярлик на робочий стіл</string>
-    <string name="errorMaxNameShortCut">Помилка у назві ярлика</string>
     <string name="renameTag">Перейменувати</string>
     <string name="settingsInterface">Налаштування інтерфейсу</string>
     <string name="settings">Налаштування</string>
-    <string name="settingsGeneral">Загальні налаштування</string>
-    <string name="settingsAppearance">Вигляд</string>
-    <string name="settingsTheme">Налаштування теми</string>
     <string name="settingsBackups">Синхронізація та рез.копії</string>
     <string name="aboutApps">Про програму</string>
     <string name="trash">Кошик</string>
     <string name="themes">Тема</string>
-    <string name="themeBlue">Синя тема</string>
-    <string name="themeGreen">Зелена тема</string>
-    <string name="themePurple">Фіолетова тема</string>
-    <string name="themeOrange">Помаранчева тема</string>
-    <string name="themeRed">Червона тема</string>
-    <string name="themeTeal">Бірюзова тема</string>
-    <string name="themePaleRed">Блідо-рожева тема</string>
-    <string name="themeYellow">Жовта тема</string>
-    <string name="themePink">Рожева тема</string>
     <string name="accentColorDescription">Оберіть акцентний колір з якого збудується тема</string>
     <string name="selectAccentColor">Обрати акцентний колір</string>
-    <string name="displayModePreview">Попередній перегляд</string>
     <string name="onDynamicColor">Увімкнути Dynamic Color</string>
     <string name="onDynamicColorDescription">Адаптує кольори додатку до вашої шпалери (Android 12+)</string>
     <string name="onScreenProtection">Увімкнути захист екрану</string>
@@ -133,9 +114,6 @@
     <string name="percentProgress" translatable="false">Створення резервної копії (%d%%)</string>
 
     <!-- Product offer -->
-    <string name="byyError">Помилка при придбанні.</string>
-    <string name="byyCancel">Ми будемо прагнути стати кращими.</string>
-    <string name="errorLoadingsProduct">Помилка, не вдалося завантажити вітрину</string>
     <string name="thanks_title">Шановний користувач</string>
     <string name="creteNoteToTag">Створити нотатку</string>
     <string name="thanks_donate">Розробник проекту каже вам спасибі за вашу покупку. Ми будемо прагнути стати кращими і зручнішими. \n <b>З повагою, мої нотатки!</b></string>
@@ -163,5 +141,12 @@
     <string name="errorLoadingChangelog">Помилка завантаження списку змін</string>
     <string name="checkInternetConnection">Будь ласка, перевірте підключення до інтернету</string>
     <string name="retry">Повторити</string>
+
+    <!-- Themes names -->
+    <string name="themeBlue">Синя тема</string>
+    <string name="themeGreen">Зелена тема</string>
+    <string name="themePaleRed">Блідо-рожева тема</string>
+    <string name="themeYellow">Жовта тема</string>
+    <string name="themePink">Рожева тема</string>
 
 </resources>
