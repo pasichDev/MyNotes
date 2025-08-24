@@ -27,16 +27,15 @@
         android:orientation="vertical">
 
 
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:visibility="@{tag.systemAction == 1 ? View.VISIBLE : View.GONE}"
-            android:textColor="@{checkedTag? @color/item_bindig_tag_text_checked : @color/item_bindig_tag_text_unchecked}"
-            android:textSize="20sp"
+            android:src="@drawable/ic_add_tag_selector"
+            android:selected="@{checkedTag}"
             android:contentDescription="@string/addTag"
-            android:text="@string/plus"
-            android:layout_marginVertical="11dp"
-            android:layout_marginHorizontal="15dp" />
+            android:layout_marginVertical="13dp"
+            android:layout_marginHorizontal="17dp" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/nameTag"

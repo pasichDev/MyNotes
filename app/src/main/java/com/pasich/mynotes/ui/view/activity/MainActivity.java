@@ -278,8 +278,25 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         tagsAdapter.setOnItemClickListener(new OnItemClickListenerTag() {
             @Override
             public void onClick(int position) {
-                if (!getAction())
-                    mainPresenter.clickTag(tagsAdapter.getCurrentList().get(position), position);
+                if (!getAction()) {
+                    Tag clickedTag = tagsAdapter.getCurrentList().get(position);
+                    
+                    // Якщо тег вже вибраний і це не спеціальний тег (не "створити новий")
+                    if (clickedTag.getSelected() && clickedTag.getSystemAction() != 1) {
+                        // Додаємо візуальний feedback - легке потрясіння
+                        View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
+                        if (tagView != null) {
+                            android.view.animation.Animation shake = android.view.animation.AnimationUtils.loadAnimation(MainActivity.this, R.anim.shake_gentle);
+                            tagView.startAnimation(shake);
+                        } else {
+                            android.view.animation.Animation shake = android.view.animation.AnimationUtils.loadAnimation(MainActivity.this, R.anim.shake_gentle);
+                            mActivityBinding.listTags.startAnimation(shake);
+                        }
+                        return;
+                    }
+                    
+                    mainPresenter.clickTag(clickedTag, position);
+                }
             }
 
             @Override
@@ -425,8 +442,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         tagsAdapter.submitList(tagList);
         int countNotes = mNoteAdapter.setNameTagsHidden(tagList,
                 tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
-        
-        // Використовуємо анімований метод тільки якщо активність вже створена  
+
         if (mActivityBinding.listNotes.getAnimation() != null || 
             mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
             showEmptyNotesAnimated(!(countNotes >= 1));
@@ -440,8 +456,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         if (getResources().getDisplayMetrics().density < 2.2)
             mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
         mActivityBinding.includeEmpty.emptyViewNote.setVisibility(flag ? View.VISIBLE : View.GONE);
-        
-        // Встановлюємо текст в залежності від вибраного тегу
+
         if (flag) {
             Tag selectedTag = tagsAdapter.getTagSelected();
             if (selectedTag != null && selectedTag.getSystemAction() != 2 && !selectedTag.getNameTag().equals("allNotes")) {
@@ -633,16 +648,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void selectTagUser(int position) {
-        // Спочатку приховуємо поточний контент з анімацією
         hideCurrentContent(() -> {
-            // Після завершення анімації приховування оновлюємо адаптери
             tagsAdapter.chooseTag(position);
-            
-            // Обчислюємо кількість нотаток без оновлення UI
+
             int noteCount = mNoteAdapter.filter(
                     tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(), false);
-            
-            // Показуємо новий контент з анімацією
+
             showNewContent(!(noteCount >= 1));
         });
     }
