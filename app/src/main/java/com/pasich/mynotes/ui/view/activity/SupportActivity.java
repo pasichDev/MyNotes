@@ -68,14 +68,6 @@ public class SupportActivity extends BaseActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://ko-fi.com/pasichdev")));
     }
 
-    public void sendPayPal() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://paypal.me/pasichDev")));
-    }
-
-    public void sendGitHubSponsors() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sponsors/pasichDev")));
-    }
-
     public void openPlayStore() {
         final Intent rateAppIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName()));
         if (!getPackageManager().queryIntentActivities(rateAppIntent, 0).isEmpty()) {
