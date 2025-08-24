@@ -6,10 +6,13 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import androidx.activity.EdgeToEdge;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -26,10 +29,17 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     @Override
     public void selectTheme() {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         setTheme(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? R.style.AppThemeDynamic : getSelectedTheme());
         applyScreenProtection();
     }
+
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
+        super.onCreate(savedInstanceState);
+    }
+
 
     private void applyScreenProtection() {
         boolean isScreenProtectionEnabled = PowerPreference.getDefaultFile().getBoolean(
@@ -82,5 +92,31 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
     }
+
+    /**
+     * Налаштовує відступи для кореневого view з урахуванням системних барів
+     * Викликайте цей метод після setContentView() у дочірніх Activity
+     */
+    protected void setupEdgeToEdgeInsets(View rootView) {
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            androidx.core.view.WindowInsetsCompat windowInsets = insets;
+
+            // Отримуємо відступи для системних барів
+            androidx.core.graphics.Insets systemBars = windowInsets.getInsets(
+                    androidx.core.view.WindowInsetsCompat.Type.systemBars()
+            );
+
+            // Встановлюємо padding тільки зверху та знизу
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    systemBars.top,
+                    v.getPaddingRight(),
+                    systemBars.bottom
+            );
+
+            return insets;
+        });
+    }
+
 
 }

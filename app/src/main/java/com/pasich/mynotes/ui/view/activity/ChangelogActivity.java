@@ -8,7 +8,6 @@ import android.view.View;
 import androidx.activity.OnBackPressedCallback;
 
 import com.google.android.material.transition.platform.MaterialFade;
-import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityChangelogBinding;
 
@@ -29,7 +28,7 @@ public class ChangelogActivity extends BaseActivity {
 
     public ActivityChangelogBinding binding;
     private static final String CHANGELOG_URL = "https://raw.githubusercontent.com/pasichDev/MyNotes/refs/heads/v30/CHANGELOG.md";
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +37,7 @@ public class ChangelogActivity extends BaseActivity {
         getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activityChangelog));
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
+        setupEdgeToEdgeInsets(binding.getRoot());
         setContentView(binding.getRoot());
         initActivity();
         loadChangelog();

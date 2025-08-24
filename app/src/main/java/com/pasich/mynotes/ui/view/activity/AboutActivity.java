@@ -51,6 +51,8 @@ public class AboutActivity extends BaseActivity {
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
+
+        setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);
         initActivity();
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {

@@ -74,6 +74,9 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.2"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.20"
     implementation 'androidx.core:core-splashscreen:1.0.1'
+    
+    // EdgeToEdge support for API 35+
+    implementation 'androidx.activity:activity:1.9.3'
 
 
     //DI (Hilt)

@@ -100,6 +100,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
+
+        setupEdgeToEdgeInsets(binding.getRoot());
         presenter.attachView(this);
         presenter.viewIsReady();
         binding.setPresenter((BackupPresenter) presenter);

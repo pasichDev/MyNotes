@@ -132,6 +132,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         super.onCreate(savedInstanceState);
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
+
+        setupEdgeToEdgeInsets(mActivityBinding.getRoot());
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);

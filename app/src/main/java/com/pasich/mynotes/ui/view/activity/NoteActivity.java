@@ -18,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -53,7 +54,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         selectTheme();
         settingsStatusBar(getWindow());
         long idNote = getIntent().getLongExtra("idNote", 0);
@@ -62,8 +62,11 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         setEnterSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
         getWindow().setSharedElementEnterTransition(buildContainerTransform(binding.noteLayout));
         getWindow().setSharedElementReturnTransition(buildContainerTransform(binding.noteLayout));
+
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
+
+        setupEdgeToEdgeInsets(binding.getRoot());
         binding.setPresenter((NotePresenter) notePresenter);
         notePresenter.attachView(this);
         notePresenter.getLoadIntentData(getIntent());
@@ -81,17 +84,17 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     }
 
 
-    /**
-     * Method that enables Motion Animation smooth transition support
-     *
-     * @param mWindow - activity window
-     */
-    private void settingsStatusBar(Window mWindow) {
+    private void settingsStatusBar(Window window) {
+        // Декор під edge-to-edge
+        WindowCompat.setDecorFitsSystemWindows(window, false);
+
+        // Контролюємо колір іконок статусбару залежно від нічного режиму
         final int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        mWindow.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-        mWindow.setStatusBarColor(Color.TRANSPARENT);
-        mWindow.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        new WindowInsetsControllerCompat(mWindow, mWindow.getDecorView()).setAppearanceLightStatusBars(currentNightMode == Configuration.UI_MODE_NIGHT_NO);
+        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
+        insetsController.setAppearanceLightStatusBars(currentNightMode == Configuration.UI_MODE_NIGHT_NO);
+
+        // Прозорий статусбар
+        window.setStatusBarColor(Color.TRANSPARENT);
     }
 
 
