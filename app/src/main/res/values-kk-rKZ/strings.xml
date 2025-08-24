@@ -167,4 +167,6 @@
     <string name="checkInternetConnection">Интернет байланысын тексеріңіз</string>
     <string name="retry">Қайталау</string>
 
+    <string name="leaveFeedback">Пікір қалдыру</string>
+
 </resources>

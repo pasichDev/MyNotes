@@ -168,4 +168,6 @@
     <string name="checkInternetConnection">Por favor verifica tu conexión a internet</string>
     <string name="retry">Reintentar</string>
 
+    <string name="leaveFeedback">Dejar comentario</string>
+
 </resources>

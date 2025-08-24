@@ -187,4 +187,6 @@
     <string name="checkInternetConnection">Please check your internet connection</string>
     <string name="retry">Retry</string>
 
+    <string name="leaveFeedback">Leave feedback</string>
+
 </resources>

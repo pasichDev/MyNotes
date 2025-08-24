@@ -167,4 +167,6 @@
     <string name="checkInternetConnection">Sprawdź połączenie internetowe</string>
     <string name="retry">Ponów</string>
 
+    <string name="leaveFeedback">Zostaw opinię</string>
+
 </resources>

@@ -159,4 +159,6 @@
     <string name="checkInternetConnection">Veuillez vérifier votre connexion internet</string>
     <string name="retry">Réessayer</string>
 
+    <string name="leaveFeedback">Laisser un commentaire</string>
+
 </resources>

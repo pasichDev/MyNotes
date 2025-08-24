@@ -157,4 +157,5 @@
     <string name="checkInternetConnection">Controlla la connessione internet</string>
     <string name="retry">Riprova</string>
 
+    <string name="leaveFeedback">Lascia feedback</string>
 </resources>
