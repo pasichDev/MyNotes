@@ -129,12 +129,36 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="10dp" />
+                    android:layout_height="20dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_item_start"
+                    android:layout_marginHorizontal="20dp"
+                    android:onClick="@{()-> activity.githubRepo()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="Github Repo"
+                        android:src="@drawable/ic_github_repo"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="Github Repo"
+                        tools:ignore="HardcodedText" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp" />
                 <LinearLayout
                     android:id="@+id/privacyApp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_item_start"
+                    android:background="@drawable/bg_item_middle"
                     android:layout_marginHorizontal="20dp"
                     android:onClick="@{()-> activity.policyOpen()}"
                     android:orientation="horizontal"

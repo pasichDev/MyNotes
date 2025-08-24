@@ -1,6 +1,7 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import static com.pasich.mynotes.utils.constants.ContactLink.LINK_APP_SITE;
+import static com.pasich.mynotes.utils.constants.ContactLink.LINK_GITHUB_REPO;
 import static com.pasich.mynotes.utils.constants.ContactLink.LINK_PRIVACY_POLICY;
 import static com.pasich.mynotes.utils.constants.ContactLink.SEND_FEEDBACK;
 
@@ -90,6 +91,10 @@ public class AboutActivity extends BaseActivity {
 
     public void sendFeedback() {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK)));
+    }
+
+    public void githubRepo() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_GITHUB_REPO)));
     }
     public void openChangelog() {
         startActivity(new Intent(this, ChangelogActivity.class));
