@@ -4,6 +4,7 @@ import static com.pasich.mynotes.utils.constants.ContactLink.LINK_APP_SITE;
 import static com.pasich.mynotes.utils.constants.ContactLink.LINK_PRIVACY_POLICY;
 import static com.pasich.mynotes.utils.constants.ContactLink.SEND_FEEDBACK;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -71,10 +72,11 @@ public class AboutActivity extends BaseActivity {
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void initActivity() {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        binding.versionApp.setText(BuildConfig.VERSION_NAME);
+        binding.versionApp.setText(BuildConfig.VERSION_NAME + " ⦁ Apache-2.0");
         startLoadingProducts();
     }
 
