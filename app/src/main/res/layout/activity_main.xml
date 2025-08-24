@@ -27,8 +27,9 @@
             android:id="@+id/appBarMainActivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            app:layout_behavior="com.pasich.mynotes.utils.behavior.FixedAppBarLayoutBehavior">
+            android:background="?attr/colorSurface"
+            app:elevation="0dp"
+            app:liftOnScroll="false">
 
             <com.google.android.material.search.SearchBar
                 android:id="@+id/actionSearch"

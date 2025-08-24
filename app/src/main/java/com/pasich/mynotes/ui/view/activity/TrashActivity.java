@@ -59,6 +59,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
 
+
         setupEdgeToEdgeInsets(binding.getRoot());
         trashPresenter.attachView(this);
         trashPresenter.viewIsReady();
