@@ -69,6 +69,10 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
 
 
     public int filter(String tagSelected) {
+        return filter(tagSelected, true);
+    }
+    
+    public int filter(String tagSelected, boolean updateList) {
         ArrayList<Note> newFilter = new ArrayList<>();
 
         if (tagSelected.equals("allNotes")) {
@@ -79,10 +83,10 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
             }
 
             if (nameTagsHidden.size() >= 1) {
-                submitList(newFilter);
+                if (updateList) submitList(newFilter);
                 return newFilter.size();
             } else {
-                submitList(defaultList);
+                if (updateList) submitList(defaultList);
                 return defaultList.size();
             }
         } else {
@@ -93,10 +97,14 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
                 }
             }
 
-            submitList(newFilter);
+            if (updateList) submitList(newFilter);
             return newFilter.size();
         }
 
+    }
+    
+    public void clearList() {
+        submitList(new ArrayList<>());
     }
 
 

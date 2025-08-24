@@ -137,8 +137,18 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
      * @param position - позация метки которую выбрали
      */
     public void chooseTag(int position) {
-        notifyItemChanged(getCheckedPosition(getTagSelected().setSelectedReturn(false)), AppPayloads.PAYLOADS_TAG_EDIT);
+        Tag previousSelected = getTagSelected();
+        int previousPosition = getCheckedPosition(previousSelected);
+        
+        // Встановлюємо новий вибраний тег
         setTagSelected(getItem(position).setSelectedReturn(true));
+        
+        // Оновлюємо відображення попереднього та нового тегів
+        if (previousSelected != null) {
+            previousSelected.setSelectedReturn(false);
+            notifyItemChanged(previousPosition, AppPayloads.PAYLOADS_TAG_EDIT);
+        }
+        
         notifyItemChanged(position, AppPayloads.PAYLOADS_TAG_EDIT);
     }
 
