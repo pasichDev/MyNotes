@@ -1,14 +1,13 @@
-# Change Log
+# CHANGELOG
 
 The change log begins with version 2.1.30.
 
 ## [2.1.30] - 2025-XX-XX
 
-### Added
-
 ### Changed
-
-- Added support for API 36
-- Add screen protection feature
-- Removed support for creating shortcuts on the desktop
-- The maximum number of tags that can be created has been updated to 25.
+- Support for Android API 36
+- Added screen protection feature
+- Maximum number of tags increased to 25
+- Removed support for creating shortcuts on the home screen
+- UI bug fixes and improved animations
+- Performance optimization and overall stability improvements
