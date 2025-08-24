@@ -694,7 +694,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             });
             mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeOut);
         } else {
-            // Якщо нічого не відображається, просто очищаємо список та викликаємо callback
             mNoteAdapter.clearList();
             onComplete.run();
         }

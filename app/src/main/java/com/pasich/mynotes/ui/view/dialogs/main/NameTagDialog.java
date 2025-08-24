@@ -62,8 +62,7 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
         if (getTag() != null && getTag().equals("RenameTag") && mTag != null) {
             binding.nameTag.setText(mTag.getNameTag());
             binding.outlinedTextField.setEndIconDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_rename));
-            // Встановлюємо курсор в кінець тексту
-            binding.nameTag.setSelection(binding.nameTag.getText().length());
+            binding.nameTag.setSelection(Objects.requireNonNull(binding.nameTag.getText()).length());
         }
         binding.outlinedTextField.requestFocus();
 
