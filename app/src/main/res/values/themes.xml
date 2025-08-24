@@ -315,15 +315,6 @@
         <item name="android:layout_gravity">center_vertical</item>
     </style>
 
-    <style name="iconActivityListCoffee">
-        <item name="android:layout_width">24dp</item>
-        <item name="android:layout_height">24dp</item>
-        <item name="android:background">@null</item>
-        <item name="android:layout_marginStart">20dp</item>
-        <item name="android:layout_marginEnd">20dp</item>
-        <item name="android:layout_gravity">center_vertical</item>
-    </style>
-
     <!-- Стиль иконок в ActionPanel -->
     <style name="iconActionPanel" parent="marginDialogItem">
         <item name="android:layout_width">24dp</item>
@@ -367,10 +358,6 @@
         <item name="android:padding">@dimen/paddingItems</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
-    </style>
-
-    <style name="cubeIconApp">
-        <item name="cornerSize">4%</item>
     </style>
 
     <style name="rounderIconApp">
