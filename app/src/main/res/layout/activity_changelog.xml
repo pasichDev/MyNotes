@@ -55,10 +55,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/railway_medium"
-                        android:lineSpacingExtra="4dp"
+                        android:lineSpacingExtra="6dp"
                         android:textColor="?attr/colorOnSurface"
                         android:textIsSelectable="true"
-                        android:textSize="14sp"
+                        android:textSize="15sp"
+                        android:paddingBottom="16dp"
                         tools:text="Changelog content will be loaded here..." />
 
                 </LinearLayout>
@@ -79,8 +80,10 @@
                     android:layout_height="64dp"
                     android:layout_marginBottom="16dp"
                     android:alpha="0.6"
+                    android:contentDescription="ErroNetwork"
                     android:src="@drawable/ic_wifi_off"
-                    app:tint="?attr/colorOnSurfaceVariant" />
+                    app:tint="?attr/colorOnBackground"
+                    tools:ignore="HardcodedText" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -102,9 +105,9 @@
                     android:textSize="14sp" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/retryButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:onClick="@{()-> activity.retryLoad()}"
                     android:text="@string/retry"
                     app:icon="@drawable/ic_refresh" />
 
