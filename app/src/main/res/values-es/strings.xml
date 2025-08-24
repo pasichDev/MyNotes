@@ -39,7 +39,6 @@
     <string name="sortHead">Ordenar por:</string>
     <string name="shareApp">Compartir aplicación</string>
     <string name="privacyApp">Política de privacidad</string>
-    <string name="addShortCutLauncher">Añadir acceso directo al escritorio</string>
     <string name="addShortCutSuccessfully">Acceso directo agregado con éxito</string>
     <string name="translateNote">Traducir nota</string>
     <string name="hintTextNote">Texto</string>
@@ -64,19 +63,11 @@
 
     <string name="hiddeTag">Ocultar notas</string>
     <string name="visibleTag">Mostrar notas</string>
-    <string name="hintNameLabel">Nombre de la etiqueta</string>
-    <string name="titleDialogShortCut">Crear acceso directo</string>
-    <string name="functionNotSupport">Esta función no es compatible con su dispositivo</string>
     <string name="shortCutCreateFallDouble">Ya se ha creado una etiqueta para esta nota</string>
-    <string name="buttonCreateShortCut">Agregar acceso directo al escritorio</string>
-    <string name="errorMaxNameShortCut">Error en el nombre del atajo</string>
     <string name="renameTag">Renombrar</string>
 
     <string name="settingsInterface">Configuración de la interfaz</string>
     <string name="settings">Configuración</string>
-    <string name="settingsGeneral">Configuración general</string>
-    <string name="settingsAppearance">Apariencia</string>
-    <string name="settingsTheme">Configuración de tema</string>
     <string name="settingsBackups">Sincronización y copia de seguridad</string>
     <string name="aboutApps">Acerca de la aplicación</string>
     <string name="trash">Papelera</string>
@@ -89,7 +80,6 @@
     <string name="themeCoralRed">Rojo coral</string>
     <string name="accentColorDescription">Elige color de acento con el que se construirá el tema</string>
     <string name="selectAccentColor">Seleccionar color de acento</string>
-    <string name="displayModePreview">Vista previa de pantalla</string>
     <string name="onDynamicColor">Habilitar color dinámico</string>
     <string name="onDynamicColorDescription">Adapta los colores de la app a tu fondo de pantalla (Android 12+)</string>
     <string name="onScreenProtection">Habilitar protección de pantalla</string>
@@ -138,9 +128,6 @@
     <string name="percentProgress">Copia de seguridad (%d%%)</string>
 
     <!-- Oferta de productos -->
-    <string name="byyError">Error al comprar.</string>
-    <string name="byyCancel">Nos esforzaremos por ser mejores.</string>
-    <string name="errorLoadingsProduct">Error, no se pudo cargar el escaparate</string>
     <string name="thanks_title">Estimado usuario</string>
     <string name="errorSyncTitle">¡Atención!</string>
     <string name="errorSyncDescrpt">Con esta versión, dejamos de ofrecer soporte para la sincronización con Google Drive. En futuras actualizaciones, implementaremos un método de sincronización más seguro y eficiente, lo que garantizará una mejor experiencia de usuario.</string>

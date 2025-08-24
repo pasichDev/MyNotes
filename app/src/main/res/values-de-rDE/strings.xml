@@ -36,7 +36,6 @@
     <string name="sortHead">Sortieren nach:</string>
     <string name="shareApp">App teilen</string>
     <string name="privacyApp">Datenschutzerklärung</string>
-    <string name="addShortCutLauncher">Verknüpfung zum Desktop hinzufügen</string>
     <string name="addShortCutSuccessfully">Shortcut erfolgreich hinzugefügt</string>
     <string name="translateNote">Notiz übersetzen</string>
     <string name="hintTextNote">Text</string>
@@ -60,18 +59,10 @@
     <string name="button_url">Link öffnen</string>
     <string name="hiddeTag">Notizen ausblenden</string>
     <string name="visibleTag">Notizen anzeigen</string>
-    <string name="hintNameLabel">Der Name des Labels</string>
-    <string name="titleDialogShortCut">Verknüpfung erstellen</string>
-    <string name="functionNotSupport">Diese Funktion wird von deinem Gerät nicht unterstützt</string>
     <string name="shortCutCreateFallDouble">Verknüpfung für diese Notiz wurde bereits erstellt</string>
-    <string name="buttonCreateShortCut">Verknüpfung zum Desktop hinzufügen</string>
-    <string name="errorMaxNameShortCut">Fehler im Verknüpfungsnamen</string>
     <string name="renameTag">Umbenennen</string>
     <string name="settingsInterface">Schnittstelleneinstellungen</string>
     <string name="settings">Einstellungen</string>
-    <string name="settingsGeneral">Allgemeine Einstellungen</string>
-    <string name="settingsAppearance">Erscheinungsbild</string>
-    <string name="settingsTheme">Design-Einstellungen</string>
     <string name="settingsBackups">Synchronisation und Backups</string>
     <string name="aboutApps">Über die App</string>
     <string name="trash">Papierkorb</string>
@@ -84,7 +75,6 @@
     <string name="themeCoralRed">Korallenrot</string>
     <string name="accentColorDescription">Akzentfarbe wählen, aus der das Design erstellt wird</string>
     <string name="selectAccentColor">Akzentfarbe auswählen</string>
-    <string name="displayModePreview">Anzeigevorschau</string>
     <string name="onDynamicColor">Dynamische Farbe aktivieren</string>
     <string name="onDynamicColorDescription">Passt App-Farben an Ihr Hintergrundbild an (Android 12+)</string>
     <string name="onScreenProtection">Bildschirmschutz aktivieren</string>
@@ -131,9 +121,6 @@
     <string name="errorSyncDescrpt">Mit dieser Version stellen wir die Unterstützung der Google Drive-Synchronisierung ein. In zukünftigen Updates werden wir eine sicherere und effizientere Synchronisierungsmethode einführen, die Ihnen ein besseres Benutzererlebnis bietet.</string>
 
     <!-- Produktangebot -->
-    <string name="byyError">Fehler beim Kauf.</string>
-    <string name="byyCancel">Wir werden uns bemühen, besser zu werden.</string>
-    <string name="errorLoadingsProduct">Fehler beim Laden der Storefront</string>
     <string name="thanks_title">Lieber Benutzer</string>
     <string name="creteNoteToTag">Notiz erstellen</string>
     <string name="thanks_donate">Der Projektentwickler dankt Ihnen für Ihren Einkauf. Wir werden uns bemühen, besser und bequemer zu werden. \n <b>Grüße, meine Notizen!</b></string>

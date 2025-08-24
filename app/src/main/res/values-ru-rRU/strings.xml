@@ -9,7 +9,6 @@
     <string name="themeCoralRed">Коралловый красный</string>
     <string name="accentColorDescription">Выберите акцентный цвет из которого построится тема</string>
     <string name="selectAccentColor">Выбрать акцентный цвет</string>
-    <string name="displayModePreview">Предварительный просмотр</string>
     <string name="onDynamicColor">Включить Dynamic Color</string>
     <string name="NewNote">Создать заметку</string>
     <string name="trashNotes">Переместить в корзину</string>
@@ -49,7 +48,6 @@
     <string name="sortHead">Cортировать по:</string>
     <string name="shareApp">Поделиться приложением</string>
     <string name="privacyApp">Политика Конфиденциальности</string>
-    <string name="addShortCutLauncher">Добавить ярлык на рабочий стол</string>
     <string name="addShortCutSuccessfully">Добавления ярлыка выполнено успешно</string>
     <string name="translateNote">Перевести заметку</string>
     <string name="hintTextNote">Текст</string>
@@ -74,19 +72,11 @@
 
     <string name="hiddeTag">Скрыть заметки</string>
     <string name="visibleTag">Отображать заметки</string>
-    <string name="hintNameLabel">Название ярлыка</string>
-    <string name="titleDialogShortCut">Создать ярлык</string>
-    <string name="functionNotSupport">Данная функция не поддерживаеться вашим устройством</string>
     <string name="shortCutCreateFallDouble">Ярлык для данной заметки уже создан</string>
-    <string name="buttonCreateShortCut">Добавить ярлык на рабочий стол</string>
-    <string name="errorMaxNameShortCut">Ошибка в названии ярлыка</string>
     <string name="renameTag">Переименовать</string>
 
     <string name="settingsInterface">Настройки интерфейса</string>
     <string name="settings">Настройки</string>
-    <string name="settingsGeneral">Общие настройки</string>
-    <string name="settingsAppearance">Внешний вид</string>
-    <string name="settingsTheme">Настройки темы</string>
     <string name="settingsBackups">Синхронизация и резервное копирование</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>
@@ -139,9 +129,6 @@
     <string name="percentProgress">Создание резервной копии (%d%%)</string>
 
     <!-- Product offer  -->
-    <string name="byyError">Ошибка при приобретении.</string>
-    <string name="byyCancel">Мы будем стремиться стать лучше.</string>
-    <string name="errorLoadingsProduct">Ошибка, не удалось загрузить витрину</string>
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
 

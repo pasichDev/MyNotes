@@ -37,7 +37,6 @@
     <string name="sortHead">Сұрыптау:</string>
     <string name="shareApp">Қолданбаны ортақ пайдалану</string>
     <string name="privacyApp">Құпиялылық саясаты</string>
-    <string name="addShortCutLauncher">Жұмыс үстеліне төте жол қосу</string>
     <string name="addShortCutSuccessfully">Таңбаша сәтті қосылды</string>
     <string name="translateNote">Ескертуді аудару</string>
     <string name="hintTextNote">Мәтін</string>
@@ -62,19 +61,11 @@
     <!-- Келесі нұсқаны тазалау -->
     <string name="hiddeTag">Ескертпелерді жасыру</string>
     <string name="visibleTag">Ескертпелерді көрсету</string>
-    <string name="hintNameLabel">Жапсырма аты</string>
-    <string name="titleDialogShortCut">Таңбаша жасау</string>
-    <string name="functionNotSupport">Бұл функцияға құрылғыңыз қолдау көрсетпейді</string>
     <string name="shortCutCreateFallDouble">Бұл ескертпе үшін белгі әлдеқашан жасалған</string>
-    <string name="buttonCreateShortCut">Жұмыс үстеліне төте жолды қосу</string>
-    <string name="errorMaxNameShortCut">Таңбаша атауындағы қате</string>
     <string name="renameTag">Атын өзгерту</string>
 
     <string name="settingsInterface">Интерфейс параметрлері</string>
     <string name="settings">Параметрлер</string>
-    <string name="settingsGeneral">Жалпы параметрлер</string>
-    <string name="settingsAppearance">Сыртқы түр</string>
-    <string name="settingsTheme">Тақырып параметрлері</string>
     <string name="settingsBackups">Синхрондау және сақтық көшірме</string>
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>
@@ -87,7 +78,6 @@
     <string name="themeCoralRed">Маржан қызыл</string>
     <string name="accentColorDescription">Тақырып құрылатын акцент түсін таңдаңыз</string>
     <string name="selectAccentColor">Акцент түсін таңдау</string>
-    <string name="displayModePreview">Дисплей алдын ала көрінісі</string>
     <string name="onDynamicColor">Динамикалық түсті қосу</string>
     <string name="onDynamicColorDescription">Қолданба түстерін тұсқағазыңызға бейімдейді (Android 12+)</string>
     <string name="onScreenProtection">Экран қорғанысын қосу</string>
@@ -137,9 +127,6 @@
     <string name="percentProgress">Сақтық көшірме (%d%%)</string>
 
     <!-- Өнім ұсынысы -->
-    <string name="byyError">Сатып алу кезіндегі қате.</string>
-    <string name="byyCancel">Біз жақсырақ болуға тырысамыз.</string>
-    <string name="errorLoadingsProduct">Қате, дүкен сөресі жүктелмеді</string>
     <string name="errorSyncTitle">Назар аударыңыз!</string>
     <string name="errorSyncDescrpt">Осы нұсқамен біз Google Дискісімен синхрондауды қолдауды тоқтатамыз. Келесі жаңартуларда біз қауіпсіз және тиімдірек синхрондау әдісін енгіземіз, бұл сізге жақсы пайдаланушы тәжірибесін қамтамасыз етеді.</string>
 

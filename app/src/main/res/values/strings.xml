@@ -66,7 +66,6 @@
     <string name="app_name"> My Notes </string>
     <string name="telegram_nick" translatable="false">"@"pasichDev</string>
     <string name="email_address" translatable="false">pasichDev@outlook.com</string>
-    <string name="theme_demo" translatable="false">Demo Screen Theme</string>
     <string name="editNoteButton" translatable="false">EditNote</string>
     <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
     <string name="versionAndCodeApp" translatable="false">My notes (v%1$s)</string>

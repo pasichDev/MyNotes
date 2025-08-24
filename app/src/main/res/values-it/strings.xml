@@ -36,7 +36,6 @@
     <string name="sortHead">Ordina per:</string>
     <string name="shareApp">Condividi app</string>
     <string name="privacyApp">Informativa sulla privacy</string>
-    <string name="addShortCutLauncher">Aggiungi collegamento al desktop</string>
     <string name="addShortCutSuccessfully">Aggiunta scorciatoia riuscita</string>
     <string name="translateNote">Traduci nota</string>
     <string name="hintTextNote">Testo</string>
@@ -60,18 +59,10 @@
     <string name="button_url">Apri collegamento</string>
     <string name="hiddeTag">Nascondi note</string>
     <string name="visibleTag">Mostra note</string>
-    <string name="hintNameLabel">Il nome dell\'etichetta</string>
-    <string name="titleDialogShortCut">Crea scorciatoia</string>
-    <string name="functionNotSupport">Questa funzione non è supportata dal tuo dispositivo</string>
     <string name="shortCutCreateFallDouble">La scorciatoia per questa nota è già stata creata</string>
-    <string name="buttonCreateShortCut">Aggiungi collegamento al desktop</string>
-    <string name="errorMaxNameShortCut">Errore nel nome della scorciatoia</string>
     <string name="renameTag">Rinomina</string>
     <string name="settingsInterface">Impostazioni interfaccia</string>
     <string name="settings">Impostazioni</string>
-    <string name="settingsGeneral">Impostazioni generali</string>
-    <string name="settingsAppearance">Aspetto</string>
-    <string name="settingsTheme">Impostazioni tema</string>
     <string name="settingsBackups">Sincronizzazione e backup</string>
     <string name="aboutApps">Informazioni sull\'app</string>
     <string name="trash">Cestino</string>
@@ -84,7 +75,6 @@
     <string name="themeCoralRed">Rosso corallo</string>
     <string name="accentColorDescription">Scegli colore accento da cui verrà costruito il tema</string>
     <string name="selectAccentColor">Seleziona colore accento</string>
-    <string name="displayModePreview">Anteprima display</string>
     <string name="onDynamicColor">Abilita colore dinamico</string>
     <string name="onDynamicColorDescription">Adatta i colori dell\'app al tuo sfondo (Android 12+)</string>
     <string name="onScreenProtection">Abilita protezione schermo</string>
@@ -130,9 +120,6 @@
     <string name="errorSyncDescrpt">Con questa versione, interrompiamo il supporto per la sincronizzazione con Google Drive. Nei futuri aggiornamenti introdurremo un metodo di sincronizzazione più sicuro ed efficiente, garantendo un\'esperienza utente migliore.</string>
 
     <!-- Offerta prodotto -->
-    <string name="byyError">Errore durante l\'acquisto.</string>
-    <string name="byyCancel">Ci impegneremo per migliorare.</string>
-    <string name="errorLoadingsProduct">Errore durante il caricamento della vetrina</string>
     <string name="thanks_title">Gentile utente</string>
     <string name="creteNoteToTag">Crea nota</string>
     <string name="thanks_donate">Lo sviluppatore del progetto ti ringrazia per l\'acquisto. Ci impegneremo a diventare migliori e più convenienti. \n <b>Saluti, i miei appunti!</b></string>

@@ -38,7 +38,6 @@
     <string name="sortHead">Sortuj według:</string>
     <string name="shareApp">Udostępnij aplikację</string>
     <string name="privacyApp">Polityka prywatności</string>
-    <string name="addShortCutLauncher">Dodaj skrót do pulpitu</string>
     <string name="addShortCutSuccessfully">Skrót został pomyślnie dodany</string>
     <string name="translateNote">Przetłumacz notatkę</string>
     <string name="hintTextNote">Tekst</string>
@@ -63,19 +62,11 @@
     <!-- Wyczyść następną wersję -->
     <string name="hiddeTag">Ukryj notatki</string>
     <string name="visibleTag">Pokaż notatki</string>
-    <string name="hintNameLabel">Nazwa etykiety</string>
-    <string name="titleDialogShortCut">Utwórz skrót</string>
-    <string name="functionNotSupport">Ta funkcja nie jest obsługiwana przez Twoje urządzenie</string>
     <string name="shortCutCreateFallDouble">Etykieta została już utworzona dla tej notatki</string>
-    <string name="buttonCreateShortCut">Dodaj skrót do pulpitu</string>
-    <string name="errorMaxNameShortCut">Błąd w nazwie skrótu</string>
     <string name="renameTag">Zmień nazwę</string>
 
     <string name="settingsInterface">Ustawienia interfejsu</string>
     <string name="settings">Ustawienia</string>
-    <string name="settingsGeneral">Ustawienia ogólne</string>
-    <string name="settingsAppearance">Wygląd</string>
-    <string name="settingsTheme">Ustawienia motywu</string>
     <string name="settingsBackups">Synchronizacja i kopia zapasowa</string>
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>
@@ -88,7 +79,6 @@
     <string name="themeCoralRed">Koralowa czerwień</string>
     <string name="accentColorDescription">Wybierz kolor akcentu z którego zostanie zbudowany motyw</string>
     <string name="selectAccentColor">Wybierz kolor akcentu</string>
-    <string name="displayModePreview">Podgląd wyświetlania</string>
     <string name="onDynamicColor">Włącz kolor dynamiczny</string>
     <string name="onDynamicColorDescription">Dostosowuje kolory aplikacji do tapety (Android 12+)</string>
     <string name="onScreenProtection">Włącz ochronę ekranu</string>
@@ -141,9 +131,6 @@
 
     <string name="creteNoteToTag">Utwórz notatkę</string>
     <!-- Oferta produktowa -->
-    <string name="byyError">Błąd podczas zakupu.</string>
-    <string name="byyCancel">Będziemy starać się być lepsi.</string>
-    <string name="errorLoadingsProduct">Błąd, nie udało się załadować witryny sklepowej</string>
     <string name="thanks_title">Drogi użytkowniku</string>
     <string name="thanks_donate">Twórca projektu dziękuje za zakup. Będziemy dążyć do tego, aby stać się lepszymi i wygodniejszymi. \n <b>Z wyrazami szacunku, moje notatki!</b></string>
 
