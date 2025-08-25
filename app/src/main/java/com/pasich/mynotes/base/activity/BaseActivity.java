@@ -15,6 +15,9 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.snackbar.Snackbar;
@@ -62,13 +65,24 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         return new ThemesArray().getThemeStyle(PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE));
     }
 
-    @Override
+    // Метод для ресурсів
     public void onInfoSnack(int resID, View view, int typeInfo, int time) {
-        Snackbar snackbar = Snackbar.make(view == null ? findViewById(android.R.id.content) : view, getString(resID), time);
+        onInfoSnack(getString(resID), view, typeInfo, time);
+    }
+
+    // Метод для готового рядка
+    public void onInfoSnack(String message, View view, int typeInfo, int time) {
+        Snackbar snackbar = Snackbar.make(
+                view == null ? findViewById(android.R.id.content) : view,
+                message,
+                time
+        );
+
         if (typeInfo != SnackBarInfo.Info) {
             TextView snackbarTextView = snackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text);
             snackbarTextView.setTypeface(snackbarTextView.getTypeface(), Typeface.BOLD);
         }
+
         switch (typeInfo) {
             case SnackBarInfo.Info:
                 break;
@@ -83,9 +97,9 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
             default:
         }
 
-
         snackbar.show();
     }
+
 
     @Override
     public boolean isNetworkConnected() {
@@ -98,12 +112,12 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
      * Викликайте цей метод після setContentView() у дочірніх Activity
      */
     protected void setupEdgeToEdgeInsets(View rootView) {
-        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-            androidx.core.view.WindowInsetsCompat windowInsets = insets;
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+           WindowInsetsCompat windowInsets = insets;
 
             // Отримуємо відступи для системних барів
-            androidx.core.graphics.Insets systemBars = windowInsets.getInsets(
-                    androidx.core.view.WindowInsetsCompat.Type.systemBars()
+            Insets systemBars = windowInsets.getInsets(
+                   WindowInsetsCompat.Type.systemBars()
             );
 
             // Встановлюємо padding тільки зверху та знизу
