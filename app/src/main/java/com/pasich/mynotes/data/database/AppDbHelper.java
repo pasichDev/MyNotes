@@ -4,6 +4,7 @@ package com.pasich.mynotes.data.database;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
+import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,13 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Flowable<List<Tag>> getTags() {
-        return appDatabase.tagsDao().getTags();
+        return appDatabase.tagsDao().getTags()
+                .map(userTags -> {
+                    List<Tag> allTags = new ArrayList<>();
+                    allTags.addAll(SystemTagsManager.getSystemTags());
+                    allTags.addAll(userTags);
+                    return allTags;
+                });
     }
 
     @Override

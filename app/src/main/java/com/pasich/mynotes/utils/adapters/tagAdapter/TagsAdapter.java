@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagBinding;
 import com.pasich.mynotes.utils.constants.AppPayloads;
+import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -66,7 +67,7 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Tag tag = getItem(position);
         holder.ItemBinding.setTag(tag);
-        if (!oneCheckedAllNotes && tag.getSystemAction() == 2) {
+        if (!oneCheckedAllNotes && SystemTagsManager.isAllNotesTag(tag)) {
             mTagSelected = tag.setSelectedReturn(true);
             oneCheckedAllNotes = true;
         }
@@ -85,7 +86,7 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
             int x2 = o2.getSystemAction();
 
 
-            if (o2.getSystemAction() == 1) x2 = x2 + 2;
+            if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = x2 + 2;
             int sComp = Math.toIntExact(x2 - x1);
 
             if (sComp != 0) {

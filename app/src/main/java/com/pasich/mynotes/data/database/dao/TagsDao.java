@@ -8,6 +8,7 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.List;
 
@@ -24,13 +25,13 @@ public interface TagsDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   void addTags(List<Tag> tags);
 
-  @Query("SELECT * FROM tags where systemAction = 0")
+  @Query("SELECT * FROM tags where systemAction = " + SystemTagsManager.SYSTEM_ACTION_USER_TAG)
   Flowable<List<Tag>> getTagsUser();
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   void addTag(Tag tag);
 
-  @Query("SELECT COUNT(name) FROM tags WHERE systemAction = 0")
+  @Query("SELECT COUNT(name) FROM tags WHERE systemAction = " + SystemTagsManager.SYSTEM_ACTION_USER_TAG)
   int getCountAllTag();
 
   @Update

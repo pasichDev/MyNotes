@@ -1,7 +1,10 @@
 package com.pasich.mynotes.data.database;
 
+import androidx.annotation.NonNull;
 import androidx.room.AutoMigration;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.pasich.mynotes.data.database.dao.NoteDao;
 import com.pasich.mynotes.data.database.dao.TagsDao;
@@ -21,6 +24,14 @@ import javax.inject.Singleton;
         })
 @Singleton
 public abstract class AppDatabase extends RoomDatabase {
+
+    public static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("DELETE FROM tags WHERE name = '' AND visibility = 0 AND systemAction = 1");
+            database.execSQL("DELETE FROM tags WHERE name = 'allNotes' AND visibility = 0 AND systemAction = 2");
+        }
+    };
 
     public abstract TagsDao tagsDao();
 

@@ -41,7 +41,10 @@ public class ApplicationModule {
     @Provides
     @Singleton
     AppDatabase providesAppDatabase(@ApplicationContext Context context, RoomDatabase.Callback sRoomDatabaseCallback) {
-        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME).addCallback(sRoomDatabaseCallback).build();
+        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME)
+                .addCallback(sRoomDatabaseCallback)
+                .addMigrations(AppDatabase.MIGRATION_2_3)
+                .build();
     }
 
 
@@ -53,9 +56,7 @@ public class ApplicationModule {
             @Override
             public void onCreate(@NonNull SupportSQLiteDatabase db) {
                 super.onCreate(db);
-                db.execSQL("INSERT INTO  tags (name,visibility,systemAction) VALUES ('',0,1)");
-                db.execSQL("INSERT INTO  tags (name,visibility,systemAction) VALUES ('allNotes',0,2)");
-
+                // Системні мітки тепер управляються через SystemTagsManager
             }
 
 
