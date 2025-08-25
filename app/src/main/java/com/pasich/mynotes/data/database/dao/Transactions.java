@@ -46,6 +46,14 @@ public abstract class Transactions {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     public abstract long addNote(Note note);
 
+    /**
+     * Атомарне додавання нотатки з гарантією синхронізації Flowable
+     */
+    @Transaction
+    public long addNoteTransaction(Note note) {
+        return addNote(note);
+    }
+
     @Query("DELETE FROM trash WHERE value=:text ")
     public abstract void deleteNoteForText(String text);
 

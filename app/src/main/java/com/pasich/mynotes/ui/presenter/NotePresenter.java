@@ -72,7 +72,13 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void createNote(Note note) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> getView().editIdNoteCreated(aLong)));
+        getCompositeDisposable().add(getDataManager().addNote(note, false)
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(aLong -> {
+                note.setId(Math.toIntExact(aLong));
+                getView().editIdNoteCreated(aLong);
+            }));
     }
 
     @Override

@@ -156,7 +156,11 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Single<Long> addNote(Note note, boolean copyNote) {
-        return Single.fromCallable(() -> copyNote ? appDatabase.noteDao().addNoteCopy(note) : appDatabase.noteDao().addNote(note));
+        return Single.fromCallable(() -> {
+           return copyNote ?
+                appDatabase.noteDao().addNoteCopy(note) : 
+                appDatabase.transactionsNote().addNoteTransaction(note);
+        });
     }
 
     @Override

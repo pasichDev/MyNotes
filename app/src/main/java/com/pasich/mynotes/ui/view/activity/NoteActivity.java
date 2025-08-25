@@ -251,7 +251,10 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         imm.hideSoftInputFromWindow(binding.valueNote.getWindowToken(), 0);
 
         notePresenter.setExitNoSave(true);
-        if (binding.valueNote.getText().toString().trim().length() >= 2) saveNote(false);
+        String noteText = binding.valueNote.getText().toString().trim();
+        if (noteText.length() >= 2) {
+            saveNote(false);
+        }
         if (notePresenter.getShareText().length() >= 2)
             Toast.makeText(this, getString(R.string.noteSaved), Toast.LENGTH_SHORT).show();
         supportFinishAfterTransition();

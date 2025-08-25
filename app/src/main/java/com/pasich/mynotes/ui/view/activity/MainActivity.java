@@ -112,6 +112,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     private static final int REQUEST_UPDATE = 100;
     private AppUpdateManager appUpdateManager;
+    private int previousNotesCount = 0;
 
     // Ланчер для ActivityResult API
     private final ActivityResultLauncher<Intent> updateLauncher = registerForActivityResult(
@@ -280,21 +281,23 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void onClick(int position) {
                 if (!getAction()) {
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
-                    
+
                     // Якщо тег вже вибраний і це не спеціальний тег (не "створити новий")
                     if (clickedTag.getSelected() && clickedTag.getSystemAction() != 1) {
                         // Додаємо візуальний feedback - легке потрясіння
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
                         if (tagView != null) {
-                            android.view.animation.Animation shake = android.view.animation.AnimationUtils.loadAnimation(MainActivity.this, R.anim.shake_gentle);
+                            android.view.animation.Animation shake = android.view.animation.AnimationUtils
+                                    .loadAnimation(MainActivity.this, R.anim.shake_gentle);
                             tagView.startAnimation(shake);
                         } else {
-                            android.view.animation.Animation shake = android.view.animation.AnimationUtils.loadAnimation(MainActivity.this, R.anim.shake_gentle);
+                            android.view.animation.Animation shake = android.view.animation.AnimationUtils
+                                    .loadAnimation(MainActivity.this, R.anim.shake_gentle);
                             mActivityBinding.listTags.startAnimation(shake);
                         }
                         return;
                     }
-                    
+
                     mainPresenter.clickTag(clickedTag, position);
                 }
             }
@@ -423,17 +426,27 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void loadingNotes(List<Note> noteList) {
+        // Перевіряємо чи додалася нова нотатка
+        boolean isNewNoteAdded = noteList.size() > previousNotesCount;
+        if (isNewNoteAdded) {
+            // Встановлюємо флаг для прокручування до верху
+            mNoteAdapter.setScrollToTopOnNextUpdate(true);
+        }
+        
         int countNotes = mNoteAdapter.sortList(noteList, mainPresenter.getSortParam(),
                 tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
-        
+
+        // Оновлюємо лічильник для наступної перевірки
+        previousNotesCount = noteList.size();
+
         // Використовуємо анімований метод тільки якщо активність вже створена
-        if (mActivityBinding.listNotes.getAnimation() != null || 
-            mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
+        if (mActivityBinding.listNotes.getAnimation() != null ||
+                mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
             showEmptyNotesAnimated(!(countNotes >= 1));
         } else {
             showEmptyNotes(!(countNotes >= 1));
         }
-        
+
         searchNotesAdapter.setDefaultListNotes(noteList);
     }
 
@@ -443,8 +456,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         int countNotes = mNoteAdapter.setNameTagsHidden(tagList,
                 tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
 
-        if (mActivityBinding.listNotes.getAnimation() != null || 
-            mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
+        if (mActivityBinding.listNotes.getAnimation() != null ||
+                mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
             showEmptyNotesAnimated(!(countNotes >= 1));
         } else {
             showEmptyNotes(!(countNotes >= 1));
@@ -459,40 +472,42 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         if (flag) {
             Tag selectedTag = tagsAdapter.getTagSelected();
-            if (selectedTag != null && selectedTag.getSystemAction() != 2 && !selectedTag.getNameTag().equals("allNotes")) {
+            if (selectedTag != null && selectedTag.getSystemAction() != 2
+                    && !selectedTag.getNameTag().equals("allNotes")) {
                 // Якщо вибраний конкретний тег (не "Всі нотатки")
                 mActivityBinding.includeEmpty.emptyNotesText.setText(
-                    getString(R.string.emptyNotesForTag, selectedTag.getNameTag())
-                );
+                        getString(R.string.emptyNotesForTag, selectedTag.getNameTag()));
             } else {
                 // Якщо вибрано "Всі нотатки" або немає тегу
                 mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
             }
         }
     }
-    
+
     private void showEmptyNotesAnimated(boolean flag) {
         mActivityBinding.setEmptyNotes(flag);
         if (getResources().getDisplayMetrics().density < 2.2)
             mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
-        
-         if (flag) {
+
+        if (flag) {
             Tag selectedTag = tagsAdapter.getTagSelected();
-            if (selectedTag != null && selectedTag.getSystemAction() != 2 && !selectedTag.getNameTag().equals("allNotes")) {
+            if (selectedTag != null && selectedTag.getSystemAction() != 2
+                    && !selectedTag.getNameTag().equals("allNotes")) {
                 mActivityBinding.includeEmpty.emptyNotesText.setText(
-                    getString(R.string.emptyNotesForTag, selectedTag.getNameTag())
-                );
+                        getString(R.string.emptyNotesForTag, selectedTag.getNameTag()));
             } else {
                 mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
             }
-            
+
             mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.VISIBLE);
-            android.view.animation.Animation fadeIn = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fade_in);
+            android.view.animation.Animation fadeIn = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.fade_in);
             mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeIn);
         } else {
-           mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.GONE);
+            mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.GONE);
             mActivityBinding.listNotes.setVisibility(View.VISIBLE);
-            android.view.animation.Animation slideIn = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_fade_in);
+            android.view.animation.Animation slideIn = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.slide_fade_in);
             mActivityBinding.listNotes.startAnimation(slideIn);
         }
     }
@@ -652,19 +667,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             tagsAdapter.chooseTag(position);
 
             int noteCount = mNoteAdapter.filter(
-                    tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(), false);
+                    tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(),
+                    false);
 
             showNewContent(!(noteCount >= 1));
         });
     }
-    
+
     private void hideCurrentContent(Runnable onComplete) {
         if (mActivityBinding.listNotes.getVisibility() == View.VISIBLE) {
-            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_fade_out);
+            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.slide_fade_out);
             fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
                 @Override
-                public void onAnimationStart(android.view.animation.Animation animation) {}
-                
+                public void onAnimationStart(android.view.animation.Animation animation) {
+                }
+
                 @Override
                 public void onAnimationEnd(android.view.animation.Animation animation) {
                     mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
@@ -672,25 +690,29 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     mNoteAdapter.clearList();
                     onComplete.run();
                 }
-                
+
                 @Override
-                public void onAnimationRepeat(android.view.animation.Animation animation) {}
+                public void onAnimationRepeat(android.view.animation.Animation animation) {
+                }
             });
             mActivityBinding.listNotes.startAnimation(fadeOut);
         } else if (mActivityBinding.includeEmpty.emptyViewNote.getVisibility() == View.VISIBLE) {
-            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fade_out);
+            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.fade_out);
             fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
                 @Override
-                public void onAnimationStart(android.view.animation.Animation animation) {}
-                
+                public void onAnimationStart(android.view.animation.Animation animation) {
+                }
+
                 @Override
                 public void onAnimationEnd(android.view.animation.Animation animation) {
                     mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
                     onComplete.run();
                 }
-                
+
                 @Override
-                public void onAnimationRepeat(android.view.animation.Animation animation) {}
+                public void onAnimationRepeat(android.view.animation.Animation animation) {
+                }
             });
             mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeOut);
         } else {
@@ -698,14 +720,15 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             onComplete.run();
         }
     }
-    
+
     private void showNewContent(boolean showEmpty) {
         // Невелика затримка для плавності переходу
         mActivityBinding.getRoot().postDelayed(() -> {
             if (!showEmpty) {
                 // Оновлюємо список нотаток перед показом
                 mNoteAdapter.filter(
-                    tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(), true);
+                        tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(),
+                        true);
             }
             showEmptyNotesAnimated(showEmpty);
         }, 50);
