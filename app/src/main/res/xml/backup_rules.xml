@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Правила резервного копіювання для Android 12 (API 31) і вище
+    Цей файл визначає, які дані додатку включатимуться в автоматичне резервне копіювання
+-->
+<full-backup-content>
+    <!-- Включити всі файли бази даних нотаток -->
+    <include domain="database" />
+    
+    <!-- Включити файли налаштувань -->
+    <include domain="sharedpref" />
+    
+    <!-- Включити файли додатку (наприклад, кешовані зображення нотаток) -->
+    <include domain="file" />
+    
+    <!-- Виключити тимчасові файли -->
+    <exclude domain="file" path="temp/" />
+    <exclude domain="file" path="cache/" />
+    
+    <!-- Виключити файли логування -->
+    <exclude domain="file" path="logs/" />
+    
+    <!-- Виключити файли сесій -->
+    <exclude domain="file" path="sessions/" />
+    
+    <!-- Включити зовнішні файли (якщо використовуються) -->
+    <include domain="external" />
+    
+    <!-- Виключити тимчасові зовнішні файли -->
+    <exclude domain="external" path="Android/data/com.pasich.mynotes/cache/" />
+    <exclude domain="external" path="Android/data/com.pasich.mynotes/files/temp/" />
+</full-backup-content>

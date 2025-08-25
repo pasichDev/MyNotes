@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Правила передачі даних для Android 12 (API 31) і вище
+    Цей файл визначає, які дані можуть передаватися між пристроями
+    при міграції додатку або відновленні з резервної копії
+-->
+<data-extraction-rules>
+    <!-- Правила для хмарного резервного копіювання -->
+    <cloud-backup>
+        <!-- Включити базу даних нотаток -->
+        <include domain="database" />
+        
+        <!-- Включити налаштування користувача -->
+        <include domain="sharedpref" />
+        
+        <!-- Включити файли нотаток -->
+        <include domain="file" path="notes/" />
+        
+        <!-- Включити файли вкладень -->
+        <include domain="file" path="attachments/" />
+        
+        <!-- Виключити тимчасові та кешовані файли -->
+        <exclude domain="file" path="cache/" />
+        <exclude domain="file" path="temp/" />
+        <exclude domain="file" path="logs/" />
+        <exclude domain="file" path="crash_logs/" />
+        
+        <!-- Виключити конфіденційні дані -->
+        <exclude domain="sharedpref" path="device_info.xml" />
+        <exclude domain="sharedpref" path="analytics.xml" />
+    </cloud-backup>
+    
+    <!-- Правила для передачі даних між пристроями -->
+    <device-transfer>
+        <!-- Включити всі основні дані нотаток -->
+        <include domain="database" />
+        <include domain="sharedpref" />
+        <include domain="file" path="notes/" />
+        <include domain="file" path="attachments/" />
+        
+        <!-- Включити персоналізовані налаштування -->
+        <include domain="sharedpref" path="user_preferences.xml" />
+        <include domain="sharedpref" path="theme_settings.xml" />
+        <include domain="sharedpref" path="backup_settings.xml" />
+        
+        <!-- Виключити тимчасові дані -->
+        <exclude domain="file" path="cache/" />
+        <exclude domain="file" path="temp/" />
+        <exclude domain="file" path="logs/" />
+        
+        <!-- Виключити дані специфічні для пристрою -->
+        <exclude domain="sharedpref" path="device_specific.xml" />
+    </device-transfer>
+</data-extraction-rules>

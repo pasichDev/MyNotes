@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Сучасні правила передачі даних для Android 14+ (API 34+)
+    Підтримка Privacy Sandbox та enhanced security features
+-->
+<data-extraction-rules>
+    <!-- Правила для хмарного резервного копіювання з підвищеною безпекою -->
+    <cloud-backup>
+        <!-- Основні дані з шифруванням -->
+        <include domain="database" path="notes.db" requireFlags="clientSideEncryption" />
+        <include domain="database" path="categories.db" requireFlags="clientSideEncryption" />
+        <include domain="database" path="settings.db" />
+
+        <!-- Захищені налаштування -->
+        <include domain="sharedpref" path="privacy_settings.xml" requireFlags="clientSideEncryption" />
+        <include domain="sharedpref" path="security_settings.xml" requireFlags="clientSideEncryption" />
+        
+        <!-- Користувацькі файли -->
+        <include domain="file" path="notes_data/" requireFlags="clientSideEncryption" />
+        <include domain="file" path="attachments/" />
+        <include domain="file" path="user_media/" />
+        <include domain="file" path="templates/" />
+        <include domain="file" path="custom_themes/" />
+        
+        <!-- Зовнішні користувацькі файли -->
+        <include domain="external" path="MyNotes/backups/" />
+        <include domain="external" path="MyNotes/exports/" />
+        <include domain="external" path="Documents/MyNotes/" />
+
+            </cloud-backup>
+    
+    <!-- Правила для передачі між пристроями з розширеними можливостями -->
+    <device-transfer>
+        <!-- Включити всі користувацькі дані -->
+        <include domain="database" />
+        <include domain="sharedpref" />
+        <include domain="file" />
+        <include domain="external" />
+        
+        <!-- Спеціальні включення для міграції -->
+        <include domain="file" path="migration_data/" />
+        <include domain="file" path="transfer_cache/" />
+        <include domain="sharedpref" path="transfer_settings.xml" />
+        
+        <!-- Виключення системних та пристрій-специфічних даних -->
+        <exclude domain="file" path="cache/" />
+        <exclude domain="file" path="code_cache/" />
+        <exclude domain="file" path="temp/" />
+        <exclude domain="file" path="device_specific/" />
+        <exclude domain="file" path="hardware_cache/" />
+        
+        <!-- Виключення конфіденційних системних даних -->
+        <exclude domain="sharedpref" path="device_id.xml" />
+        <exclude domain="sharedpref" path="installation_id.xml" />
+        <exclude domain="sharedpref" path="hardware_info.xml" />
+        <exclude domain="sharedpref" path="system_info.xml" />
+        <exclude domain="sharedpref" path="network_info.xml" />
+        
+        <!-- Виключення аналітичних даних -->
+        <exclude domain="sharedpref" path="analytics.xml" />
+        <exclude domain="sharedpref" path="crash_analytics.xml" />
+        <exclude domain="sharedpref" path="performance_analytics.xml" />
+        <exclude domain="file" path="analytics_logs/" />
+        
+        <!-- Виключення зовнішніх системних файлів -->
+        <exclude domain="external" path="Android/data/com.pasich.mynotes/cache/" />
+        <exclude domain="external" path="Android/data/com.pasich.mynotes/files/temp/" />
+        <exclude domain="external" path="Android/data/com.pasich.mynotes/files/logs/" />
+        <exclude domain="external" path="Android/data/com.pasich.mynotes/files/system/" />
+    </device-transfer>
+</data-extraction-rules>
