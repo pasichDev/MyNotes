@@ -116,6 +116,16 @@ public class AppDataManger implements DataManager {
     }
 
     @Override
+    public String getLastKnownVersion() {
+        return preferencesHelper.getLastKnownVersion();
+    }
+
+    @Override
+    public void setLastKnownVersion(String version) {
+        preferencesHelper.setLastKnownVersion(version);
+    }
+
+    @Override
     public String getTypeFaceNoteActivity() {
         return preferencesHelper.getTypeFaceNoteActivity();
     }

@@ -4,6 +4,7 @@ package com.pasich.mynotes.data.database;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
+import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.ArrayList;
@@ -21,10 +22,12 @@ import io.reactivex.Single;
 public class AppDbHelper implements DbHelper {
 
     private final AppDatabase appDatabase;
+    private final UpdateChecker updateChecker;
 
     @Inject
-    AppDbHelper(AppDatabase appDatabase) {
+    AppDbHelper(AppDatabase appDatabase, UpdateChecker updateChecker) {
         this.appDatabase = appDatabase;
+        this.updateChecker = updateChecker;
     }
 
 
@@ -33,8 +36,10 @@ public class AppDbHelper implements DbHelper {
         return appDatabase.tagsDao().getTags()
                 .map(userTags -> {
                     List<Tag> allTags = new ArrayList<>();
-                    allTags.addAll(SystemTagsManager.getSystemTags());
+                    boolean showChangeLog = updateChecker.hasNewVersion();
+                    allTags.addAll(SystemTagsManager.getSystemTags(showChangeLog));
                     allTags.addAll(userTags);
+                    
                     return allTags;
                 });
     }

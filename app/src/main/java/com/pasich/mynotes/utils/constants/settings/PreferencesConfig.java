@@ -26,4 +26,6 @@ public class PreferencesConfig {
     //ScreenProtection
     public static final String ARGUMENT_PREFERENCE_SCREEN_PROTECTION = "screenProtectionEnable";
     public static final boolean ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE = false;
+    //LastKnownVersion
+    public static final String ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION = "lastKnownVersion";
 }

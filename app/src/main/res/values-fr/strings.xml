@@ -141,7 +141,11 @@
     <string name="contactDeveloper">Contacter le développeur</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Journal des modifications</string>
+    <string name="changelog">Quoi de neuf</string>
+    <string name="version_acknowledged">Compris !</string>
+    <string name="whats_new_title">Nouvelles fonctionnalités et améliorations</string>
+    <string name="whats_new_description">Découvrez les dernières mises à jour, nouvelles fonctionnalités et améliorations qui rendent votre expérience de prise de notes encore meilleure. Nous travaillons constamment à améliorer l\'application en fonction de vos commentaires !</string>
+    <string name="changelog_subtitle">Restez au courant de tous les changements et améliorations de cette version</string>
     <string name="errorLoadingChangelog">Erreur lors du chargement du journal des modifications</string>
     <string name="checkInternetConnection">Veuillez vérifier votre connexion internet</string>
     <string name="retry">Réessayer</string>

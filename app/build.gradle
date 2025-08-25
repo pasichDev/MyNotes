@@ -29,6 +29,7 @@ android {
                 arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
+        resValue "string", "whatNewVersion", "\"🔥 v${versionName}\""
     }
 
     buildTypes {

@@ -12,6 +12,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.ui.contract.MainContract;
+import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.ArrayList;
@@ -56,19 +57,19 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void clickTag(Tag tag, int position) {
-        if (tag.getSystemAction() == 1) {
+        if (SystemTagsManager.isAddTag(tag)) {
             getCompositeDisposable().add(getDataManager().getCountTagAll().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(integer -> {
                 if (integer >= MAX_TAG_COUNT) {
                     getView().startToastCheckCountTags();
                 } else getView().startCreateTagDialog();
             }));
-
-
+        } else if (SystemTagsManager.isChangeLogTag(tag)) {
+            // Відкриваємо ChangelogActivity для нового тегу "change"
+            getView().openChangelogActivity();
         } else {
             // Викликаємо selectTagUser тільки для не вибраних тегів
             // (перевірка вже виконана в MainActivity)
             getView().selectTagUser(position);
-
         }
     }
 

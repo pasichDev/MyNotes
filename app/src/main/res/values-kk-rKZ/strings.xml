@@ -149,7 +149,11 @@
     <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Өзгерістер тізімі</string>
+    <string name="changelog">Не жаңалық</string>
+    <string name="version_acknowledged">Түсінікті!</string>
+    <string name="whats_new_title">Жаңа функциялар мен жақсартулар</string>
+    <string name="whats_new_description">Жазбаларыңызбен жұмыс істеуді одан да жақсы ететін соңғы жаңартулар, жаңа функциялар мен жақсартуларды ашыңыз. Біз сіздің пікірлеріңіз негізінде қолданбаны үздіксіз жақсартып отырамыз!</string>
+    <string name="changelog_subtitle">Осы нұсқадағы барлық өзгерістер мен жақсартулардан хабардар болыңыз</string>
     <string name="errorLoadingChangelog">Өзгерістер тізімін жүктеу қатесі</string>
     <string name="checkInternetConnection">Интернет байланысын тексеріңіз</string>
     <string name="retry">Қайталау</string>

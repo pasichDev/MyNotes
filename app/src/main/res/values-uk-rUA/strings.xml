@@ -137,7 +137,11 @@
     <string name="contactDeveloper">Зв\'язатися з розробником</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Список змін</string>
+    <string name="changelog">Що нового</string>
+    <string name="version_acknowledged">Зрозуміло!</string>
+    <string name="whats_new_title">Нові функції та покращення</string>
+    <string name="whats_new_description">Відкрийте для себе останні оновлення, нові функції та покращення, які роблять роботу з нотатками ще кращою. Ми постійно працюємо над покращенням додатку на основі ваших відгуків!</string>
+    <string name="changelog_subtitle">Залишайтеся в курсі всіх змін та покращень у цій версії</string>
     <string name="errorLoadingChangelog">Помилка завантаження списку змін</string>
     <string name="checkInternetConnection">Будь ласка, перевірте підключення до інтернету</string>
     <string name="retry">Повторити</string>

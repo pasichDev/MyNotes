@@ -11,8 +11,10 @@ import android.view.View;
 import androidx.activity.OnBackPressedCallback;
 
 import com.google.android.material.transition.platform.MaterialFade;
+import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityChangelogBinding;
+import com.pasich.mynotes.utils.UpdateChecker;
 
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
@@ -28,6 +30,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -37,6 +41,9 @@ public class ChangelogActivity extends BaseActivity {
     private static final String CHANGELOG_URL = "https://raw.githubusercontent.com/pasichDev/MyNotes/refs/heads/v30/CHANGELOG.md";
     private ExecutorService executor;
     private Markwon markwon;
+    
+    @Inject
+    UpdateChecker updateChecker;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,8 +68,14 @@ public class ChangelogActivity extends BaseActivity {
     @Override
     public void initListeners() {
         binding.retryButton.setOnClickListener(v -> {
-            Log.d("ChangelogActivity", "Retry button clicked programmatically");
             retryLoad();
+        });
+
+        binding.acknowledgeButton.setOnClickListener(v -> {
+            updateChecker.markVersionAsRead();
+            binding.acknowledgeButton.setVisibility(View.GONE);
+            setResult(RESULT_OK);
+            finishActivity();
         });
     }
 
@@ -74,26 +87,32 @@ public class ChangelogActivity extends BaseActivity {
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(LinkifyPlugin.create())
                 .build();
+                
+        // Перевіряємо, чи потрібно показувати кнопку "Ознайомився"
+        updateAcknowledgeButtonVisibility();
+    }
+    
+    /**
+     * Оновлює видимість кнопки "Ознайомився" в залежності від того,
+     * чи користувач вже ознайомився з поточною версією
+     */
+    private void updateAcknowledgeButtonVisibility() {
+        boolean hasNewVersion = updateChecker.hasNewVersion();
+        binding.acknowledgeButton.setVisibility(hasNewVersion ? View.VISIBLE : View.GONE);
     }
 
     private void loadChangelog() {
-        Log.d("ChangelogActivity", "loadChangelog() called");
-        
-        // Check network connectivity first
         if (!isNetworkAvailable()) {
-            Log.d("ChangelogActivity", "No network available, showing error layout");
             binding.progressBar.setVisibility(View.GONE);
             binding.scrollView.setVisibility(View.GONE);
             binding.errorLayout.setVisibility(View.VISIBLE);
             return;
         }
 
-        Log.d("ChangelogActivity", "Network available, starting download");
         binding.progressBar.setVisibility(View.VISIBLE);
         binding.scrollView.setVisibility(View.GONE);
         binding.errorLayout.setVisibility(View.GONE);
 
-        // Recreate executor if it's shutdown
         if (executor == null || executor.isShutdown()) {
             Log.d("ChangelogActivity", "Recreating ExecutorService");
             executor = Executors.newSingleThreadExecutor();
@@ -102,10 +121,18 @@ public class ChangelogActivity extends BaseActivity {
         executor.execute(() -> {
             try {
                  String changelogContent = downloadChangelog();
+                 String parsedContent = parseChangelogContent(changelogContent);
                 runOnUiThread(() -> {
                     binding.progressBar.setVisibility(View.GONE);
                     binding.scrollView.setVisibility(View.VISIBLE);
-                    markwon.setMarkdown(binding.changelogText, changelogContent);
+                    
+                     String currentVersion = updateChecker.getCurrentAppVersion();
+                    binding.versionText.setText(getString(R.string.current_version, currentVersion));
+                    
+                    // Оновлюємо видимість кнопки "Ознайомився"
+                    updateAcknowledgeButtonVisibility();
+                    
+                    markwon.setMarkdown(binding.changelogText, parsedContent);
                     Log.d("ChangelogActivity", "UI updated with changelog content");
                 });
             } catch (Exception e) {
@@ -151,16 +178,35 @@ public class ChangelogActivity extends BaseActivity {
             connection.disconnect();
         }
     }
+    
+    /**
+     * Парсить контент changelog, залишаючи тільки те, що після заголовку "# CHANGELOG"
+     */
+    private String parseChangelogContent(String fullContent) {
+        String[] lines = fullContent.split("\n");
+        StringBuilder parsedContent = new StringBuilder();
+        boolean foundChangelogHeader = false;
+        
+        for (String line : lines) {
+            if (line.trim().equals("# CHANGELOG")) {
+                foundChangelogHeader = true;
+                continue; // Пропускаємо сам заголовок
+            }
+            
+            if (foundChangelogHeader) {
+                parsedContent.append(line).append("\n");
+            }
+        }
+        
+        return parsedContent.toString().trim();
+    }
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivityManager != null) {
             NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-            boolean isConnected = activeNetworkInfo != null && activeNetworkInfo.isConnected();
-            Log.d("ChangelogActivity", "Network available: " + isConnected);
-            return isConnected;
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
         }
-        Log.d("ChangelogActivity", "ConnectivityManager is null");
         return false;
     }
 

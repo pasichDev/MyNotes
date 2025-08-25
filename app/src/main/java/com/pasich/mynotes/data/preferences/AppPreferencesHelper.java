@@ -116,5 +116,14 @@ public class AppPreferencesHelper implements PreferenceHelper {
         getDefaultPreferences().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, enabled);
     }
 
+    @Override
+    public String getLastKnownVersion() {
+        return getDefaultPreferences().getString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "");
+    }
+
+    @Override
+    public void setLastKnownVersion(String version) {
+        getDefaultPreferences().setString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, version);
+    }
 
 }

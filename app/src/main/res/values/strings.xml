@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="NewNote"> Create note </string>
     <string name="trashNotes">Move to trash</string>
     <string name="trashClean">Trash Clean</string>
@@ -168,10 +168,16 @@
     <string name="contactDeveloper">Contact Developer</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Changelog</string>
+    <string name="changelog">What\'s New</string>
+    <string name="current_version" translatable="false">v%1$s</string>
+    <string name="version_acknowledged">Got it!</string>
+    <string name="whats_new_title">New Features &amp; Improvements</string>
+    <string name="whats_new_description">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
+    <string name="changelog_subtitle">Stay up to date with all the changes and improvements in this version</string>
     <string name="errorLoadingChangelog">Error loading changelog</string>
     <string name="checkInternetConnection">Please check your internet connection</string>
     <string name="retry">Retry</string>
+    <string name="whatNewVersion" translatable="false" tools:ignore="ResourceCycle">@string/whatNewVersion</string>
 
 
     <string name="leaveFeedback">Leave  feedback</string>

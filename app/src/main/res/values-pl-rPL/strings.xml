@@ -149,7 +149,11 @@
     <string name="contactDeveloper">Skontaktuj się z twórcą</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Lista zmian</string>
+    <string name="changelog">Co nowego</string>
+    <string name="version_acknowledged">Rozumiem!</string>
+    <string name="whats_new_title">Nowe funkcje i ulepszenia</string>
+    <string name="whats_new_description">Odkryj najnowsze aktualizacje, nowe funkcje i ulepszenia, które sprawiają, że robienie notatek jest jeszcze lepsze. Nieustannie pracujemy nad ulepszaniem aplikacji na podstawie Twoich opinii!</string>
+    <string name="changelog_subtitle">Bądź na bieżąco ze wszystkimi zmianami i ulepszeniami w tej wersji</string>
     <string name="errorLoadingChangelog">Błąd ładowania listy zmian</string>
     <string name="checkInternetConnection">Sprawdź połączenie internetowe</string>
     <string name="retry">Ponów</string>

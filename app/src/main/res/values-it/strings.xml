@@ -139,7 +139,11 @@
     <string name="contactDeveloper">Contatta lo sviluppatore</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Registro delle modifiche</string>
+    <string name="changelog">Novità</string>
+    <string name="version_acknowledged">Capito!</string>
+    <string name="whats_new_title">Nuove funzionalità e miglioramenti</string>
+    <string name="whats_new_description">Scopri gli ultimi aggiornamenti, nuove funzionalità e miglioramenti che rendono la tua esperienza di prendere appunti ancora migliore. Lavoriamo costantemente per migliorare l\'app basandoci sui tuoi feedback!</string>
+    <string name="changelog_subtitle">Rimani aggiornato su tutti i cambiamenti e miglioramenti di questa versione</string>
     <string name="errorLoadingChangelog">Errore nel caricamento del registro delle modifiche</string>
     <string name="checkInternetConnection">Controlla la connessione internet</string>
     <string name="retry">Riprova</string>

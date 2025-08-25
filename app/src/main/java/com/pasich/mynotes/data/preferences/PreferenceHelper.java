@@ -34,4 +34,8 @@ public interface PreferenceHelper {
     boolean isScreenProtectionEnabled();
 
     void setScreenProtectionEnabled(boolean enabled);
+
+    String getLastKnownVersion();
+
+    void setLastKnownVersion(String version);
 }

@@ -41,6 +41,7 @@ import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
+import com.pasich.mynotes.ui.view.activity.ChangelogActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.about.AboutDialog;
 import com.pasich.mynotes.ui.view.dialogs.about.AboutOpensActivity;
@@ -63,6 +64,8 @@ import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
+import com.pasich.mynotes.utils.UpdateChecker;
+import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.List;
 
@@ -109,6 +112,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Inject
     SearchNotesAdapter searchNotesAdapter;
+    
+    @Inject
+    UpdateChecker updateChecker;
 
     private static final int REQUEST_UPDATE = 100;
     private AppUpdateManager appUpdateManager;
@@ -138,6 +144,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
+
+        // Ініціалізуємо перевірку версій
+        updateChecker.initializeVersionCheck();
         actionUtils.setMangerView(mActivityBinding.getRoot());
 
         // Ініціалізуйте AppUpdateManager
@@ -282,8 +291,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 if (!getAction()) {
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
 
-                    // Якщо тег вже вибраний і це не спеціальний тег (не "створити новий")
-                    if (clickedTag.getSelected() && clickedTag.getSystemAction() != 1) {
+                    // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
+                    if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
                         // Додаємо візуальний feedback - легке потрясіння
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
                         if (tagView != null) {
@@ -756,5 +765,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         super.redrawActivity(themeStyle);
         setTheme(themeStyle);
         recreate();
+    }
+
+    @Override
+    public void openChangelogActivity() {
+        Intent intent = new Intent(this, ChangelogActivity.class);
+        startActivityForResult(intent, REQUEST_CODE_CHANGELOG);
+    }
+
+    private static final int REQUEST_CODE_CHANGELOG = 1001;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_CHANGELOG && resultCode == RESULT_OK) {
+            // Користувач ознайомився з оновленням, оновлюємо список тегів
+            mainPresenter.loadingData();
+        }
     }
 }

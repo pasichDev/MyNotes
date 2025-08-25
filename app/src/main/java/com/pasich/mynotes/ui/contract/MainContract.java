@@ -45,6 +45,8 @@ public interface MainContract {
         void finishActivityOtPresenter();
 
         void hideSearchView();
+        
+        void openChangelogActivity();
     }
 
 

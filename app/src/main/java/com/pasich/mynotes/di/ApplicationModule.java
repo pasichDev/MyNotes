@@ -41,6 +41,7 @@ public class ApplicationModule {
     @Provides
     @Singleton
     AppDatabase providesAppDatabase(@ApplicationContext Context context, RoomDatabase.Callback sRoomDatabaseCallback) {
+        AppDatabase.setContext(context);
         return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME)
                 .addCallback(sRoomDatabaseCallback)
                 .addMigrations(AppDatabase.MIGRATION_2_3)

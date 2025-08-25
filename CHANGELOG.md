@@ -1,10 +1,9 @@
 # CHANGELOG
 
-The change log begins with version 2.1.30.
-
 ## [2.1.30] - 2025-XX-XX
 
 ### Changed
+
 - Support for Android API 36
 - Added screen protection feature
 - Maximum number of tags increased to 25

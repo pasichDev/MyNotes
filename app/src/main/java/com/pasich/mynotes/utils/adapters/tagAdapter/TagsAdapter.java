@@ -55,8 +55,15 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
             view.itemView.setOnClickListener(v -> mOnItemClickListener.onClick(view.getAdapterPosition()));
 
             view.itemView.setOnLongClickListener(v -> {
-                mOnItemClickListener.onLongClick(view.getAdapterPosition(), view.itemView);
-                return false;
+                // Заборонити довге натискання на системні теги
+                int position = view.getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    Tag tag = getItem(position);
+                    if (!SystemTagsManager.isSystemTag(tag)) {
+                        mOnItemClickListener.onLongClick(position, view.itemView);
+                    }
+                }
+                return true; // Завжди повертаємо true, щоб поглинути подію
             });
 
         }
@@ -85,8 +92,16 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
             int x1 = o1.getSystemAction();
             int x2 = o2.getSystemAction();
 
+            // Спеціальне сортування для системних міток
+            if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100; // addTag завжди перший
+            if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
+            
+            if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_CHANGE_LOG) x1 = 99; // changeLog другий
+            if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_CHANGE_LOG) x2 = 99;
+            
+            if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES) x1 = 98; // allNotes третій
+            if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES) x2 = 98;
 
-            if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = x2 + 2;
             int sComp = Math.toIntExact(x2 - x1);
 
             if (sComp != 0) {
@@ -138,11 +153,18 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
      * @param position - позация метки которую выбрали
      */
     public void chooseTag(int position) {
+        Tag selectedTag = getItem(position);
+        
+        // Якщо це тег change - не дозволяємо його вибирати
+        if (SystemTagsManager.isChangeLogTag(selectedTag)) {
+            return;
+        }
+        
         Tag previousSelected = getTagSelected();
         int previousPosition = getCheckedPosition(previousSelected);
         
         // Встановлюємо новий вибраний тег
-        setTagSelected(getItem(position).setSelectedReturn(true));
+        setTagSelected(selectedTag.setSelectedReturn(true));
         
         // Оновлюємо відображення попереднього та нового тегів
         if (previousSelected != null) {

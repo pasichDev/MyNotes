@@ -140,7 +140,11 @@
     <string name="contactDeveloper">Entwickler kontaktieren</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Änderungsprotokoll</string>
+    <string name="changelog">Was ist neu</string>
+    <string name="version_acknowledged">Verstanden!</string>
+    <string name="whats_new_title">Neue Funktionen &amp; Verbesserungen</string>
+    <string name="whats_new_description">Entdecken Sie die neuesten Updates, neuen Funktionen und Verbesserungen, die Ihr Notiz-Erlebnis noch besser machen. Wir arbeiten kontinuierlich daran, die App basierend auf Ihrem Feedback zu verbessern!</string>
+    <string name="changelog_subtitle">Bleiben Sie über alle Änderungen und Verbesserungen in dieser Version auf dem Laufenden</string>
     <string name="errorLoadingChangelog">Fehler beim Laden des Änderungsprotokolls</string>
     <string name="checkInternetConnection">Bitte überprüfen Sie Ihre Internetverbindung</string>
     <string name="retry">Wiederholen</string>

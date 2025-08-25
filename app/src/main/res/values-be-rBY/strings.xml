@@ -147,7 +147,11 @@
     <string name="contactDeveloper">Звязацца з распрацоўшчыкам</string>
 
     <!-- Changelog Activity -->
-    <string name="changelog">Спіс змен</string>
+    <string name="changelog">Што новага</string>
+    <string name="version_acknowledged">Зразумела!</string>
+    <string name="whats_new_title">Новыя функцыі і паляпшэнні</string>
+    <string name="whats_new_description">Адкрыйце для сябе апошнія абнаўленні, новыя функцыі і паляпшэнні, якія робяць работу з нататкамі яшчэ лепшай. Мы пастаянна працуем над паляпшэннем прыкладання на аснове вашых водгукаў!</string>
+    <string name="changelog_subtitle">Заставайцеся ў курсе ўсіх змен і паляпшэнняў у гэтай версіі</string>
     <string name="errorLoadingChangelog">Памылка загрузкі спісу змен</string>
     <string name="checkInternetConnection">Калі ласка, праверце падключэнне да інтэрнэту</string>
     <string name="retry">Паўтарыць</string>
