@@ -2,6 +2,7 @@ package com.pasich.mynotes.ui.view.activity;
 
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -170,8 +172,51 @@ public class SettingsActivity extends BaseActivity {
         activitySettingsBinding.accentColorDescription.setTextColor(colorOnSurfaceVariant);
 
         // Update color preview
-        activitySettingsBinding.colorPreview.setBackgroundTintList(android.content.res.ColorStateList.valueOf(colorPrimary));
+        activitySettingsBinding.colorPreview.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
 
+        // Update switch styles with proper state colors
+        updateSwitchColors(activitySettingsBinding.dynamicColor, colorPrimary, colorOnSurfaceVariant);
+        updateSwitchColors(activitySettingsBinding.screenProtection, colorPrimary, colorOnSurfaceVariant);
+
+    }
+
+    /**
+     * Update switch colors for different states
+     */
+    private void updateSwitchColors(MaterialSwitch materialSwitch, int primaryColor, int surfaceVariantColor) {
+        // Create ColorStateList for thumb (the circle part)
+        int[][] thumbStates = new int[][]{
+            new int[]{android.R.attr.state_checked},  // checked state
+            new int[]{-android.R.attr.state_checked}  // unchecked state
+        };
+        int[] thumbColors = new int[]{
+            primaryColor,        // checked color
+            Color.WHITE          // unchecked color (white thumb)
+        };
+        ColorStateList thumbColorStateList = new ColorStateList(thumbStates, thumbColors);
+
+        // Create ColorStateList for track (the background)
+        int[][] trackStates = new int[][]{
+            new int[]{android.R.attr.state_checked},  // checked state
+            new int[]{-android.R.attr.state_checked}  // unchecked state
+        };
+        int[] trackColors = new int[]{
+            adjustAlpha(primaryColor, 0.5f),  // checked color with transparency
+            adjustAlpha(surfaceVariantColor, 0.3f)  // unchecked color with transparency
+        };
+        ColorStateList trackColorStateList = new ColorStateList(trackStates, trackColors);
+
+        // Apply the color state lists
+        materialSwitch.setThumbTintList(thumbColorStateList);
+        materialSwitch.setTrackTintList(trackColorStateList);
+    }
+
+    /**
+     * Adjust color alpha
+     */
+    private int adjustAlpha(int color, float alpha) {
+        int alphaValue = Math.round(Color.alpha(color) * alpha);
+        return Color.argb(alphaValue, Color.red(color), Color.green(color), Color.blue(color));
     }
 
 
@@ -218,7 +263,7 @@ public class SettingsActivity extends BaseActivity {
                     R.color.red_pale_theme_dark_primary,
                     R.color.yellow_theme_dark_primary,
                     R.color.purple_theme_dark_primary,
-                    R.color.red_pale_theme_dark_primary // Using red_pale as coral red for now
+                    R.color.red_pale_theme_dark_primary
             };
         }else {
             themeColorResources  = new int[]{
@@ -227,7 +272,7 @@ public class SettingsActivity extends BaseActivity {
                     R.color.red_pale_theme_light_primary,
                     R.color.yellow_theme_light_primary,
                     R.color.purple_theme_light_primary,
-                    R.color.red_pale_theme_light_primary // Using red_pale as coral red for now
+                    R.color.red_pale_theme_light_primary
             };
         }
 
