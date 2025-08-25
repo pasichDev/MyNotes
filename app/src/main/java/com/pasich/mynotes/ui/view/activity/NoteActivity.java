@@ -21,7 +21,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -35,7 +34,6 @@ import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
 import com.pasich.mynotes.ui.view.dialogs.note.popupWindowsTagNote.PopupWindowsTagNote;
 import com.pasich.mynotes.utils.CustomLinkMovementMethod;
 import com.pasich.mynotes.utils.constants.NameTransition;
-import com.pasich.mynotes.utils.constants.SnackBarInfo;
 
 import java.util.Date;
 import java.util.Objects;
@@ -359,17 +357,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void changeTextSizeOffline() {
         changeTextSizeOnline(notePresenter.getDataManager().getSizeTextNoteActivity());
-    }
-
-
-    @Override
-    public void createShortCut() {
-        onInfoSnack(R.string.addShortCutSuccessfully, binding.noteLayout, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
-    }
-
-    @Override
-    public void shortCutDouble() {
-        onInfoSnack(R.string.shortCutCreateFallDouble, binding.noteLayout, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
     }
 
 }

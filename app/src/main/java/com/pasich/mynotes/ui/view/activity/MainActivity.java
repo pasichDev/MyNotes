@@ -41,7 +41,6 @@ import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
-import com.pasich.mynotes.ui.view.activity.ChangelogActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.about.AboutDialog;
 import com.pasich.mynotes.ui.view.dialogs.about.AboutOpensActivity;
@@ -746,18 +745,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private void variablesNull() {
         mNoteAdapter = null;
         tagsAdapter = null;
-    }
-
-    @Override
-    public void createShortCut() {
-        onInfoSnack(R.string.addShortCutSuccessfully, mActivityBinding.newNotesButton, SnackBarInfo.Info,
-                Snackbar.LENGTH_LONG);
-    }
-
-    @Override
-    public void shortCutDouble() {
-        onInfoSnack(R.string.shortCutCreateFallDouble, mActivityBinding.newNotesButton, SnackBarInfo.Info,
-                Snackbar.LENGTH_LONG);
     }
 
     @Override
