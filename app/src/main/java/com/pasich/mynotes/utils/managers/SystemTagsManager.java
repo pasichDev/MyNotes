@@ -54,6 +54,7 @@ public class SystemTagsManager {
         allNotesTag.setNameTag("allNotes");
         allNotesTag.setVisibility(0);
         allNotesTag.setSystemAction(SYSTEM_ACTION_ALL_NOTES);
+        allNotesTag.setSelected(true);
         systemTags.add(allNotesTag);
         
         return systemTags;
@@ -116,6 +117,7 @@ public class SystemTagsManager {
         tag.setNameTag("allNotes");
         tag.setVisibility(0);
         tag.setSystemAction(SYSTEM_ACTION_ALL_NOTES);
+        tag.setSelected(true);
         return tag;
     }
 
@@ -128,6 +130,7 @@ public class SystemTagsManager {
         tag.setNameTag("change");
         tag.setVisibility(0);
         tag.setSystemAction(SYSTEM_ACTION_CHANGE_LOG);
+        tag.setSelected(true);
         return tag;
     }
 }

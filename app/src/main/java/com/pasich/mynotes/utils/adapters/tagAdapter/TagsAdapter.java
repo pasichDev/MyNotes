@@ -24,7 +24,7 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
 
     private OnItemClickListenerTag mOnItemClickListener;
     private Tag mTagSelected;
-    private boolean oneCheckedAllNotes = false;
+    private boolean isInitialized = false;
 
     @Inject
     public TagsAdapter(@NonNull @Named("Tag") DiffUtil.ItemCallback<Tag> diffCallback) {
@@ -37,7 +37,7 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
 
 
     public Tag getTagSelected() {
-        return this.mTagSelected == null ? new Tag().create("allNotes") : this.mTagSelected;
+        return this.mTagSelected;
     }
 
 
@@ -55,11 +55,11 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
             view.itemView.setOnClickListener(v -> mOnItemClickListener.onClick(view.getAdapterPosition()));
 
             view.itemView.setOnLongClickListener(v -> {
-                // Заборонити довге натискання на системні теги
+                // Заборонити довге натискання на системні теги (крім "всі нотатки")
                 int position = view.getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Tag tag = getItem(position);
-                    if (!SystemTagsManager.isSystemTag(tag)) {
+                    if (!SystemTagsManager.isSystemTag(tag) || SystemTagsManager.isAllNotesTag(tag)) {
                         mOnItemClickListener.onLongClick(position, view.itemView);
                     }
                 }
@@ -74,11 +74,6 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Tag tag = getItem(position);
         holder.ItemBinding.setTag(tag);
-        if (!oneCheckedAllNotes && SystemTagsManager.isAllNotesTag(tag)) {
-            mTagSelected = tag.setSelectedReturn(true);
-            oneCheckedAllNotes = true;
-        }
-
         holder.ItemBinding.setCheckedTag(tag.getSelected());
     }
 
@@ -110,6 +105,32 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
 
             return Math.toIntExact(o2.getId() - o1.getId());
         });
+        
+        // Встановлюємо "Всі нотатки" як вибраний тільки при першому завантаженні
+        // і тільки якщо немає іншого вибраного тегу
+        if (!isInitialized) {
+            boolean hasSelectedTag = false;
+            Tag allNotesTag = null;
+            
+            // Перевіряємо чи є вже вибраний тег і знаходимо тег "Всі нотатки"
+            for (Tag tag : list) {
+                if (tag.getSelected() && !SystemTagsManager.isAllNotesTag(tag) && !SystemTagsManager.isChangeLogTag(tag)) {
+                    hasSelectedTag = true;
+                    mTagSelected = tag;
+                }
+                if (SystemTagsManager.isAllNotesTag(tag)) {
+                    allNotesTag = tag;
+                }
+            }
+            
+            // Якщо немає вибраного тегу, вибираємо "Всі нотатки"
+            if (!hasSelectedTag && allNotesTag != null) {
+                mTagSelected = allNotesTag.setSelectedReturn(true);
+            }
+            
+            isInitialized = true;
+        }
+        
         super.submitList(list);
     }
 
@@ -141,37 +162,37 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
      * @return - позиция метки
      */
     public int getCheckedPosition(Tag tagSearch) {
+        if (tagSearch == null) return -1;
         for (int i = 0; i < getCurrentList().size(); i++)
             if (getItem(i).getId() == tagSearch.getId()) return i;
-        return 0;
+        return -1;
     }
 
 
     /**
-     * Метод который реализует выбор метки
+     * Метод який реалізує вибір тегу з логікою взаємовиключення
      *
-     * @param position - позация метки которую выбрали
+     * @param position - позація метки которую выбрали
      */
     public void chooseTag(int position) {
         Tag selectedTag = getItem(position);
         
-        // Якщо це тег change - не дозволяємо його вибирати
-        if (SystemTagsManager.isChangeLogTag(selectedTag)) {
+        // Якщо це тег change або addTag - не дозволяємо їх вибирати
+        if (SystemTagsManager.isChangeLogTag(selectedTag) || SystemTagsManager.isAddTag(selectedTag)) {
             return;
         }
         
-        Tag previousSelected = getTagSelected();
-        int previousPosition = getCheckedPosition(previousSelected);
+        // Знімаємо вибір з усіх тегів (включаючи "Всі нотатки"), крім changelog
+        for (int i = 0; i < getCurrentList().size(); i++) {
+            Tag tag = getItem(i);
+            if (tag.getSelected() && i != position && !SystemTagsManager.isChangeLogTag(tag)) {
+                tag.setSelectedReturn(false);
+                notifyItemChanged(i, AppPayloads.PAYLOADS_TAG_EDIT);
+            }
+        }
         
         // Встановлюємо новий вибраний тег
         setTagSelected(selectedTag.setSelectedReturn(true));
-        
-        // Оновлюємо відображення попереднього та нового тегів
-        if (previousSelected != null) {
-            previousSelected.setSelectedReturn(false);
-            notifyItemChanged(previousPosition, AppPayloads.PAYLOADS_TAG_EDIT);
-        }
-        
         notifyItemChanged(position, AppPayloads.PAYLOADS_TAG_EDIT);
     }
 
