@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.search.SearchView;
 import com.google.android.material.snackbar.Snackbar;
@@ -478,6 +479,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
         mActivityBinding.includeEmpty.emptyViewNote.setVisibility(flag ? View.VISIBLE : View.GONE);
 
+        // Управління поведінкою AppBar залежно від наявності нотаток
+        setAppBarScrollBehavior(!flag);
+
         if (flag) {
             Tag selectedTag = tagsAdapter.getTagSelected();
             if (selectedTag != null && selectedTag.getSystemAction() != 2
@@ -496,6 +500,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.setEmptyNotes(flag);
         if (getResources().getDisplayMetrics().density < 2.2)
             mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
+
+        // Управління поведінкою AppBar залежно від наявності нотаток
+        setAppBarScrollBehavior(!flag);
 
         if (flag) {
             Tag selectedTag = tagsAdapter.getTagSelected();
@@ -678,6 +685,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(),
                     false);
 
+            // Оновлюємо AppBar поведінку залежно від кількості нотаток
+            setAppBarScrollBehavior(noteCount >= 1);
+            
             showNewContent(!(noteCount >= 1));
         });
     }
@@ -745,6 +755,31 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private void variablesNull() {
         mNoteAdapter = null;
         tagsAdapter = null;
+    }
+
+    /**
+     * Управління поведінкою AppBar - дозволяє або забороняє прокручування
+     * @param canScroll true - дозволити прокручування, false - заборонити
+     */
+    private void setAppBarScrollBehavior(boolean canScroll) {
+        if (mActivityBinding.appBarMainActivity != null && mActivityBinding.actionSearch != null) {
+            AppBarLayout.LayoutParams params = 
+                (AppBarLayout.LayoutParams) mActivityBinding.actionSearch.getLayoutParams();
+            
+            if (canScroll) {
+                // Дозволяємо прокручування - встановлюємо scroll|enterAlways
+                params.setScrollFlags(
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS);
+            } else {
+                // Забороняємо прокручування - прибираємо всі scroll flags
+                params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL);
+                // Розширюємо AppBar до повного розміру
+                mActivityBinding.appBarMainActivity.setExpanded(true, true);
+            }
+            
+            mActivityBinding.actionSearch.setLayoutParams(params);
+        }
     }
 
     @Override
