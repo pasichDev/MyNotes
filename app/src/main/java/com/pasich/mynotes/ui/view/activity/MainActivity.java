@@ -247,15 +247,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void initListeners() {
-        // Налаштовуємо зв'язок між SearchBar та SearchView
+                // Налаштовуємо зв'язок між SearchBar та SearchView
         mActivityBinding.actionSearch.setOnClickListener(v -> {
+            Log.d("SearchBar", "SearchBar clicked");
             mActivityBinding.searchView.show();
-        });
-        
-        // Додатковий слухач для області SearchBar (може бути проблема з Material Design)
-        mActivityBinding.actionSearch.setOnTouchListener((v, event) -> {
-            mActivityBinding.searchView.show();
-            return true;
         });
         
         mActivityBinding.searchView.addTransitionListener(
