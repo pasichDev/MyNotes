@@ -41,7 +41,7 @@ android {
 
         }
         debug {
-            applicationIdSuffix  ".debug"
+           applicationIdSuffix  ".debug"
             versionNameSuffix  "-debug"
             debuggable true
             minifyEnabled false
@@ -102,6 +102,7 @@ dependencies {
     implementation 'com.google.api-client:google-api-client-android:1.26.0'
     implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
     implementation 'com.google.android.play:app-update:2.1.0'
+    implementation 'com.android.billingclient:billing:6.2.1'
 
 
     //Other lib (Gson/Glide/PowerPreferences)

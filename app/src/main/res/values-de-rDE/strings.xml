@@ -152,4 +152,26 @@
 
     <string name="leaveFeedback">Feedback hinterlassen</string>
 
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Samen der Ideen</string>
+    <string name="donation_seed_description">Pflanzen Sie den ersten Samen für zukünftige Innovationen</string>
+    <string name="donation_spark_title">Funke der Inspiration</string>
+    <string name="donation_spark_description">Entfachen Sie Kreativität und befeuern Sie die Entwicklung</string>
+    <string name="donation_midnight_title">Mitternachtsnotizbuch</string>
+    <string name="donation_midnight_description">Unterstützen Sie nächtliche Programmiersitzungen</string>
+    <string name="donation_wave_title">Welle der Unterstützung</string>
+    <string name="donation_wave_description">Senden Sie eine kraftvolle Welle der Ermutigung</string>
+    <string name="donation_universe_title">Universum der Inspiration</string>
+    <string name="donation_universe_description">Erschließen Sie unendliche Möglichkeiten für die Zukunft</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Vielen Dank! 💖</string>
+    <string name="purchase_success_message">Ihre Unterstützung bedeutet uns die Welt! Dank wunderbaren Menschen wie Ihnen können wir MyNotes weiterentwickeln und verbessern. Ihr Beitrag hilft uns dabei, neue Funktionen hinzuzufügen, Fehler zu beheben und die App noch besser zu machen.\n\nWir wünschen Ihnen alles Gute und hoffen, dass Sie MyNotes weiterhin gerne nutzen!</string>
+    <string name="purchase_success_button">Schließen</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Kauf fehlgeschlagen</string>
+    <string name="purchase_loading">Produkte werden geladen...</string>
+    <string name="purchase_error_no_products">Keine Spendenprodukte verfügbar</string>
+
 </resources>

@@ -136,7 +136,6 @@
     <string name="joinCommunity">Приєднатися до спільноти</string>
     <string name="joinCommunityDescription">Спілкуйтеся з іншими користувачами на Reddit</string>
     <string name="contactDeveloper">Зв\'язатися з розробником</string>
-    <string name="inAppPurchases">Покупки в додатку</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Що нового</string>
@@ -157,5 +156,27 @@
     <string name="themeCoralRed">Кораловий червоний</string>
 
     <string name="leaveFeedback">Залишити відгук</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Зерно ідей</string>
+    <string name="donation_seed_description">Посадіть перше зерно для майбутніх інновацій</string>
+    <string name="donation_spark_title">Іскра натхнення</string>
+    <string name="donation_spark_description">Запаліть творчість і підживіть розробку</string>
+    <string name="donation_midnight_title">Нічний блокнот</string>
+    <string name="donation_midnight_description">Підтримайте нічні сесії програмування</string>
+    <string name="donation_wave_title">Хвиля підтримки</string>
+    <string name="donation_wave_description">Надішліть потужну хвилю заохочення</string>
+    <string name="donation_universe_title">Всесвіт натхнення</string>
+    <string name="donation_universe_description">Відкрийте безмежні можливості для майбутнього</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Дякую! 💖</string>
+    <string name="purchase_success_message">Ваша підтримка означає для нас весь світ! Завдяки таким чудовим людям, як ви, ми можемо продовжувати розробляти й покращувати MyNotes. Ваш внесок допомагає нам додавати нові функції, виправляти помилки та робити додаток ще кращим.\n\nБажаємо вам усього найкращого і сподіваємося, що ви й надалі будете із задоволенням користуватися MyNotes!</string>
+    <string name="purchase_success_button">Закрити</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Помилка покупки</string>
+    <string name="purchase_loading">Завантаження товарів...</string>
+    <string name="purchase_error_no_products">Немає доступних товарів для донату</string>
 
 </resources>
