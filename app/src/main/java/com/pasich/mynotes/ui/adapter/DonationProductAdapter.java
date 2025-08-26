@@ -33,6 +33,13 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
         notifyDataSetChanged();
     }
 
+    public void updatePurchasedProducts(List<String> purchasedProductIds) {
+        for (DonationProduct product : products) {
+            product.setPurchased(purchasedProductIds.contains(product.getId()));
+        }
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -53,10 +60,10 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        private ImageView iconImageView;
-        private TextView titleTextView;
-        private TextView descriptionTextView;
-        private TextView priceTextView;
+        private final ImageView iconImageView;
+        private final TextView titleTextView;
+        private final TextView descriptionTextView;
+        private final TextView priceTextView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,62 +82,64 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
             int iconRes = getIconResource(product.getIconResource());
             iconImageView.setImageResource(iconRes);
 
-            itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onProductClick(product);
-                }
-            });
+            // Apply purchased state styling
+            if (product.isPurchased()) {
+                // Make item look purchased/disabled
+                itemView.setAlpha(0.5f);
+                priceTextView.setText(itemView.getContext().getString(R.string.purchased));
+                itemView.setOnClickListener(null); // Disable click
+            } else {
+                // Normal state
+                itemView.setAlpha(1.0f);
+                itemView.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onProductClick(product);
+                    }
+                });
+            }
         }
 
         private String getLocalizedTitle(String productId) {
-            switch (productId) {
-                case "donate_seed_of_ideas":
-                    return itemView.getContext().getString(R.string.donation_seed_title);
-                case "donate_spark_of_inspiration":
-                    return itemView.getContext().getString(R.string.donation_spark_title);
-                case "donate_midnight_notebook":
-                    return itemView.getContext().getString(R.string.donation_midnight_title);
-                case "donate_wave_of_support":
-                    return itemView.getContext().getString(R.string.donation_wave_title);
-                case "donate_universe_of_inspiration":
-                    return itemView.getContext().getString(R.string.donation_universe_title);
-                default:
-                    return "Unknown Product";
-            }
+            return switch (productId) {
+                case "donate_seed_of_ideas" ->
+                        itemView.getContext().getString(R.string.donation_seed_title);
+                case "donate_spark_of_inspiration" ->
+                        itemView.getContext().getString(R.string.donation_spark_title);
+                case "donate_midnight_notebook" ->
+                        itemView.getContext().getString(R.string.donation_midnight_title);
+                case "donate_wave_of_support" ->
+                        itemView.getContext().getString(R.string.donation_wave_title);
+                case "donate_universe_of_inspiration" ->
+                        itemView.getContext().getString(R.string.donation_universe_title);
+                default -> "Unknown Product";
+            };
         }
 
         private String getLocalizedDescription(String productId) {
-            switch (productId) {
-                case "donate_seed_of_ideas":
-                    return itemView.getContext().getString(R.string.donation_seed_description);
-                case "donate_spark_of_inspiration":
-                    return itemView.getContext().getString(R.string.donation_spark_description);
-                case "donate_midnight_notebook":
-                    return itemView.getContext().getString(R.string.donation_midnight_description);
-                case "donate_wave_of_support":
-                    return itemView.getContext().getString(R.string.donation_wave_description);
-                case "donate_universe_of_inspiration":
-                    return itemView.getContext().getString(R.string.donation_universe_description);
-                default:
-                    return "Support the developer";
-            }
+            return switch (productId) {
+                case "donate_seed_of_ideas" ->
+                        itemView.getContext().getString(R.string.donation_seed_description);
+                case "donate_spark_of_inspiration" ->
+                        itemView.getContext().getString(R.string.donation_spark_description);
+                case "donate_midnight_notebook" ->
+                        itemView.getContext().getString(R.string.donation_midnight_description);
+                case "donate_wave_of_support" ->
+                        itemView.getContext().getString(R.string.donation_wave_description);
+                case "donate_universe_of_inspiration" ->
+                        itemView.getContext().getString(R.string.donation_universe_description);
+                default -> "Support the developer";
+            };
         }
 
         private int getIconResource(String iconName) {
-            switch (iconName) {
-                case "ic_seed":
-                    return R.drawable.ic_seed;
-                case "ic_spark":
-                    return R.drawable.ic_spark;
-                case "ic_notebook":
-                    return R.drawable.ic_notebook;
-                case "ic_wave":
-                    return R.drawable.ic_wave;
-                case "ic_universe":
-                    return R.drawable.ic_universe;
-                default:
-                    return R.drawable.ic_heart;
-            }
+            return switch (iconName) {
+                case "ic_seed" -> R.drawable.ic_seed;
+                case "ic_spark" -> R.drawable.ic_spark;
+                case "ic_notebook" -> R.drawable.ic_notebook;
+                case "ic_wave" -> R.drawable.ic_wave;
+                case "ic_universe" -> R.drawable.ic_universe;
+                default -> R.drawable.ic_heart;
+            };
         }
     }
 }

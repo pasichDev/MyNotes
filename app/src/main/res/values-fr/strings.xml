@@ -153,4 +153,47 @@
 
     <string name="leaveFeedback">Laisser un commentaire</string>
 
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Graine d\'idées</string>
+    <string name="donation_seed_description">Plantez la première graine pour les innovations futures</string>
+    <string name="donation_spark_title">Étincelle d\'inspiration</string>
+    <string name="donation_spark_description">Allumez la créativité et alimentez le développement</string>
+    <string name="donation_midnight_title">Carnet de minuit</string>
+    <string name="donation_midnight_description">Soutenez les sessions de programmation nocturnes</string>
+    <string name="donation_wave_title">Vague de soutien</string>
+    <string name="donation_wave_description">Envoyez une puissante vague d\'encouragement</string>
+    <string name="donation_universe_title">Univers d\'inspiration</string>
+    <string name="donation_universe_description">Débloquez des possibilités infinies pour l\'avenir</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Merci ! 💖</string>
+    <string name="purchase_success_message">Votre soutien représente le monde pour nous ! Grâce à des personnes formidables comme vous, nous pouvons continuer à développer et améliorer MyNotes. Votre contribution nous aide à ajouter de nouvelles fonctionnalités, corriger les bugs et rendre l\'application encore meilleure.\n\nNous vous souhaitons tout le meilleur et espérons que vous continuerez à apprécier l\'utilisation de MyNotes !</string>
+    <string name="purchase_success_button">Fermer</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Achat échoué</string>
+    <string name="purchase_loading">Chargement des produits...</string>
+    <string name="purchase_error_no_products">Aucun produit de don disponible</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Soutenir le développeur</string>
+    <string name="support_solo_developer_description">Salut ! Je suis un développeur qui travaille sur MyNotes pendant mon temps libre. Toutes les fonctionnalités seront toujours gratuites, mais votre soutien m\'aide à consacrer plus de temps à améliorer cette application. Chaque contribution compte énormément pour moi ! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Supporter extraordinaire ! 🌟</string>
+    <string name="supporter_badge_subtitle">Votre collection de soutien</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Graine</string>
+    <string name="donation_spark_short">Étincelle</string>
+    <string name="donation_midnight_short">Carnet</string>
+    <string name="donation_wave_short">Vague</string>
+    <string name="donation_universe_short">Univers</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Ami fidèle</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Acheté</string>
+
 </resources>

@@ -178,5 +178,26 @@
     <string name="purchase_error_title">Помилка покупки</string>
     <string name="purchase_loading">Завантаження товарів...</string>
     <string name="purchase_error_no_products">Немає доступних товарів для донату</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Підтримати розробника</string>
+    <string name="support_solo_developer_description">Привіт! Я розробник, який працює над MyNotes у вільний час. Усі функції завжди будуть безкоштовними, але ваша підтримка допомагає мені приділяти більше часу для покращення цього додатку. Кожен внесок означає для мене цілий світ! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Дивовижний прихильник! 🌟</string>
+    <string name="supporter_badge_subtitle">Ваша колекція підтримки</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Зерно</string>
+    <string name="donation_spark_short">Іскра</string>
+    <string name="donation_midnight_short">Блокнот</string>
+    <string name="donation_wave_short">Хвиля</string>
+    <string name="donation_universe_short">Всесвіт</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Вірний друг</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Куплено</string>
 
 </resources>

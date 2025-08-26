@@ -162,4 +162,47 @@
 
     <string name="leaveFeedback">Dejar comentario</string>
 
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Semilla de ideas</string>
+    <string name="donation_seed_description">Planta la primera semilla para futuras innovaciones</string>
+    <string name="donation_spark_title">Chispa de inspiración</string>
+    <string name="donation_spark_description">Enciende la creatividad y alimenta el desarrollo</string>
+    <string name="donation_midnight_title">Cuaderno de medianoche</string>
+    <string name="donation_midnight_description">Apoya las sesiones de programación nocturnas</string>
+    <string name="donation_wave_title">Ola de apoyo</string>
+    <string name="donation_wave_description">Envía una poderosa ola de aliento</string>
+    <string name="donation_universe_title">Universo de inspiración</string>
+    <string name="donation_universe_description">Desbloquea posibilidades infinitas para el futuro</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">¡Gracias! 💖</string>
+    <string name="purchase_success_message">¡Tu apoyo significa el mundo para nosotros! Gracias a personas increíbles como tú, podemos continuar desarrollando y mejorando MyNotes. Tu contribución nos ayuda a agregar nuevas funciones, corregir errores y hacer la aplicación aún mejor.\n\n¡Te deseamos todo lo mejor y esperamos que continues disfrutando el uso de MyNotes!</string>
+    <string name="purchase_success_button">Cerrar</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Compra fallida</string>
+    <string name="purchase_loading">Cargando productos...</string>
+    <string name="purchase_error_no_products">No hay productos de donación disponibles</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Apoyar al desarrollador</string>
+    <string name="support_solo_developer_description">¡Hola! Soy un desarrollador que trabaja en MyNotes en mi tiempo libre. Todas las funciones siempre serán gratuitas, pero tu apoyo me ayuda a dedicar más tiempo a hacer esta aplicación aún mejor. ¡Cada contribución significa el mundo para mí! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">¡Supporter increíble! 🌟</string>
+    <string name="supporter_badge_subtitle">Tu colección de apoyo</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Semilla</string>
+    <string name="donation_spark_short">Chispa</string>
+    <string name="donation_midnight_short">Cuaderno</string>
+    <string name="donation_wave_short">Ola</string>
+    <string name="donation_universe_short">Universo</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Amigo fiel</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Comprado</string>
+
 </resources>

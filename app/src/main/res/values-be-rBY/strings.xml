@@ -158,4 +158,47 @@
     <string name="retry">Паўтарыць</string>
     <string name="leaveFeedback">Пакінуць водгук</string>
 
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Семя ідэй</string>
+    <string name="donation_seed_description">Пасадзіце першае семя для будучых інавацый</string>
+    <string name="donation_spark_title">Іскра натхнення</string>
+    <string name="donation_spark_description">Запаліце творчасць і падсілкуйте развіццё</string>
+    <string name="donation_midnight_title">Паўночны нататнік</string>
+    <string name="donation_midnight_description">Падтрымайце начныя сесіі праграмавання</string>
+    <string name="donation_wave_title">Хваля падтрымкі</string>
+    <string name="donation_wave_description">Дашліце магутную хвалю заахвочвання</string>
+    <string name="donation_universe_title">Сусвет натхнення</string>
+    <string name="donation_universe_description">Адкрыйце бязмежныя магчымасці для будучыні</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Дзякуй! 💖</string>
+    <string name="purchase_success_message">Ваша падтрымка азначае для нас увесь свет! Дзякуючы такім выдатным людзям, як вы, мы можам працягваць распрацоўваць і палепшваць MyNotes. Ваш унёсак дапамагае нам дадаваць новыя функцыі, выпраўляць памылкі і рабіць прыкладанне яшчэ лепшым.\n\nЖадаем вам усяго найлепшага і спадзяемся, што вы й надалей будзеце з задавальненнем карыстацца MyNotes!</string>
+    <string name="purchase_success_button">Закрыць</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Памылка пакупкі</string>
+    <string name="purchase_loading">Загрузка тавараў...</string>
+    <string name="purchase_error_no_products">Няма даступных тавараў для данату</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Падтрымаць распрацоўшчыка</string>
+    <string name="support_solo_developer_description">Прывітанне! Я распрацоўшчык, які працуе над MyNotes у свабодны час. Усе функцыі заўсёды будуць бясплатнымі, але ваша падтрымка дапамагае мне прысвячаць больш часу паляпшэнню гэтага прыкладання. Кожны ўнёсак азначае для мяне ўвесь свет! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Цудоўны прыхільнік! 🌟</string>
+    <string name="supporter_badge_subtitle">Ваша калекцыя падтрымкі</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Семя</string>
+    <string name="donation_spark_short">Іскра</string>
+    <string name="donation_midnight_short">Нататнік</string>
+    <string name="donation_wave_short">Хваля</string>
+    <string name="donation_universe_short">Сусвет</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Вернаы сябар</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Куплена</string>
+
 </resources>

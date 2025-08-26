@@ -161,4 +161,47 @@
 
     <string name="leaveFeedback">Пікір қалдыру</string>
 
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Идеялар тұқымы</string>
+    <string name="donation_seed_description">Болашақ инновациялар үшін алғашқы тұқымды егіңіз</string>
+    <string name="donation_spark_title">Шабыт ұшқыны</string>
+    <string name="donation_spark_description">Шығармашылықты қоздырып, дамуды жүретіңіз</string>
+    <string name="donation_midnight_title">Түн дәптері</string>
+    <string name="donation_midnight_description">Түнгі бағдарламалау сессияларын қолдаңыз</string>
+    <string name="donation_wave_title">Қолдау толқыны</string>
+    <string name="donation_wave_description">Күшті жігерлендіру толқынын жіберіңіз</string>
+    <string name="donation_universe_title">Шабыт ғаламы</string>
+    <string name="donation_universe_description">Болашақ үшін шексіз мүмкіндіктерді ашыңыз</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Рахмет! 💖</string>
+    <string name="purchase_success_message">Сіздің қолдауыңыз біз үшін бүкіл әлемді білдіреді! Сіз сияқты керемет адамдардың арқасында біз MyNotes қолданбасын дамытып, жақсартып отыра аламыз. Сіздің үлесіңіз бізге жаңа функциялар қосуға, қателерді түзетуге және қолданбаны одан да жақсы етуге көмектеседі.\n\nСізге барлық жақсылықты тілейміз және MyNotes қолданбасын пайдалануды жалғастыра беретініңізге үміттенеміз!</string>
+    <string name="purchase_success_button">Жабу</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Сатып алу қатесі</string>
+    <string name="purchase_loading">Өнімдер жүктелуде...</string>
+    <string name="purchase_error_no_products">Ауысым өнімдері жоқ</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Әзірлеушіні қолдау</string>
+    <string name="support_solo_developer_description">Сәлем! Мен бос уақытымда MyNotes үстінде жұмыс істейтін әзірлеушімін. Барлық функциялар әрқашан тегін болады, бірақ сіздің қолдауыңыз маған осы қолданбаны жақсартуға көбірек уақыт бөлуге көмектеседі. Әрбір үлес маған бүкіл әлемді білдіреді! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Керемет қолдаушы! 🌟</string>
+    <string name="supporter_badge_subtitle">Сіздің қолдау жинағыңыз</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Тұқым</string>
+    <string name="donation_spark_short">Ұшқын</string>
+    <string name="donation_midnight_short">Дәптер</string>
+    <string name="donation_wave_short">Толқын</string>
+    <string name="donation_universe_short">Ғалам</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Адал дос</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Сатып алынды</string>
+
 </resources>

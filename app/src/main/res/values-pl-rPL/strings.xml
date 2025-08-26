@@ -182,5 +182,26 @@
     <string name="purchase_error_title">Zakup nie powiódł się</string>
     <string name="purchase_loading">Ładowanie produktów...</string>
     <string name="purchase_error_no_products">Brak dostępnych produktów do darowizny</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Wspieraj dewelopera</string>
+    <string name="support_solo_developer_description">Cześć! Jestem deweloperem pracującym nad MyNotes w wolnym czasie. Wszystkie funkcje zawsze będą darmowe, ale Twoje wsparcie pomaga mi poświęcić więcej czasu na ulepszanie tej aplikacji. Każdy wkład znaczy dla mnie cały świat! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Niesamowity wspierający! 🌟</string>
+    <string name="supporter_badge_subtitle">Twoja kolekcja wsparcia</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Nasiono</string>
+    <string name="donation_spark_short">Iskra</string>
+    <string name="donation_midnight_short">Notatnik</string>
+    <string name="donation_wave_short">Fala</string>
+    <string name="donation_universe_short">Wszechświat</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Wierny przyjaciel</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Kupione</string>
 
 </resources>

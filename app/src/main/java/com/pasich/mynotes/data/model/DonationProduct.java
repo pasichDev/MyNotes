@@ -6,6 +6,7 @@ public class DonationProduct {
     private String description;
     private String price;
     private String iconResource;
+    private boolean isPurchased;
 
     public DonationProduct(String id, String title, String description, String price, String iconResource) {
         this.id = id;
@@ -13,6 +14,7 @@ public class DonationProduct {
         this.description = description;
         this.price = price;
         this.iconResource = iconResource;
+        this.isPurchased = false;
     }
 
     // Getters and setters
@@ -54,5 +56,13 @@ public class DonationProduct {
 
     public void setIconResource(String iconResource) {
         this.iconResource = iconResource;
+    }
+
+    public boolean isPurchased() {
+        return isPurchased;
+    }
+
+    public void setPurchased(boolean purchased) {
+        isPurchased = purchased;
     }
 }

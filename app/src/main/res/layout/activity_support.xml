@@ -35,54 +35,8 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Header with developer info -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="20dp">
-
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:src="@mipmap/ic_launcher"/>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/railway_medium"
-                                android:text="@string/thankYouTitle"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="@string/thankYouDescription"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="14sp" />
-
-                        </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                <!-- Gamification Header -->
+                <include layout="@layout/layout_gamification_header" />
 
                 <!-- Donation methods -->
                 <com.google.android.material.card.MaterialCardView
