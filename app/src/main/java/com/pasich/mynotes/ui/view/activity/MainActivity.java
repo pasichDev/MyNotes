@@ -9,12 +9,14 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.util.Pair;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -140,7 +142,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
 
-        setupEdgeToEdgeInsets(mActivityBinding.getRoot());
+        setupEdgeToEdgeInsets(mActivityBinding.activityMain);
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
@@ -245,13 +247,26 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void initListeners() {
+        // Налаштовуємо зв'язок між SearchBar та SearchView
+        mActivityBinding.actionSearch.setOnClickListener(v -> {
+            mActivityBinding.searchView.show();
+        });
+        
+        // Додатковий слухач для області SearchBar (може бути проблема з Material Design)
+        mActivityBinding.actionSearch.setOnTouchListener((v, event) -> {
+            mActivityBinding.searchView.show();
+            return true;
+        });
+        
         mActivityBinding.searchView.addTransitionListener(
                 (searchView, previousState, newState) -> {
+                    Log.d("SearchView", "State changed: " + previousState + " -> " + newState);
                     if (newState == SearchView.TransitionState.SHOWING) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(false);
+                        // Форсуємо повноекранний режим
+                        ensureSearchViewFullScreen();
                     } else if (newState == SearchView.TransitionState.HIDDEN) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(true);
-
                     }
                 });
 
@@ -290,7 +305,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void onClick(int position) {
                 if (!getAction()) {
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
-
                     // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
                     if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
                         // Додаємо візуальний feedback - легке потрясіння
@@ -380,7 +394,47 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void settingsSearchView() {
         formatList.init(mActivityBinding.actionSearch.getMenu().findItem(R.id.format));
+        // Додаткове налаштування для Material SearchBar та SearchView
+        setupSearchBarAndView();
+    }
+    
+    private void setupSearchBarAndView() {
+        try {
+            mActivityBinding.actionSearch.setHint(getString(R.string.search));
 
+            // Програмно налаштовуємо зв'язок без layout_anchor для повноекранного режиму
+            mActivityBinding.searchView.setupWithSearchBar(mActivityBinding.actionSearch);
+
+            // Переконуємося, що SearchView займає весь екран
+            ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
+            if (params instanceof CoordinatorLayout.LayoutParams coordinatorParams) {
+                // Видаляємо будь-які anchor behavior, щоб SearchView був повноекранним
+                coordinatorParams.setAnchorId(View.NO_ID);
+                coordinatorParams.setBehavior(null);
+
+                mActivityBinding.searchView.setLayoutParams(coordinatorParams);
+            }
+
+            Log.d("SearchSetup", "SearchBar and SearchView successfully configured for full screen");
+        } catch (Exception e) {
+            Log.e("SearchSetup", "Error setting up SearchBar and SearchView: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Забезпечує повноекранний режим для SearchView
+     */
+    private void ensureSearchViewFullScreen() {
+        // Переконуємося, що SearchView займає весь екран
+        ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
+        if (params != null) {
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            mActivityBinding.searchView.setLayoutParams(params);
+
+            // Форсуємо перерахунок layout
+            mActivityBinding.searchView.requestLayout();
+        }
     }
 
     @Override
@@ -397,6 +451,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 .setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
+        
+        // Додаткові налаштування для результатів пошуку в повноекранному SearchView
+        mActivityBinding.resultsSearchList.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        mActivityBinding.resultsSearchList.setNestedScrollingEnabled(true);
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean isItemViewSwipeEnabled() {

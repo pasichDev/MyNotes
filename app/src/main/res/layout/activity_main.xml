@@ -16,12 +16,16 @@
             type="boolean" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/activity_main"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?android:colorBackground"
-        tools:context=".ui.view.activity.MainActivity">
+        android:layout_height="match_parent">
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/activity_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?android:colorBackground"
+            tools:context=".ui.view.activity.MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarMainActivity"
@@ -40,6 +44,8 @@
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginBottom="15dp"
+                android:clickable="true"
+                android:focusable="true"
                 app:menu="@menu/menu_search_notes"
                 app:defaultMarginsEnabled="false"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
@@ -58,24 +64,6 @@
                 android:paddingEnd="0dp"
                 android:paddingBottom="7dp"
                 app:layout_scrollFlags="scroll|enterAlways" />
-
-            <com.google.android.material.search.SearchView
-                android:id="@+id/searchView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:autoShowKeyboard="true"
-                android:hint="@string/searchNotesFromTitle"
-                app:layout_anchor="@id/actionSearch"
-                app:layout_scrollFlags="scroll|enterAlways|snap">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/resultsSearchList"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="?android:colorBackground"
-                    app:layout_anchor="@id/actionSearch" />
-
-            </com.google.android.material.search.SearchView>
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -128,8 +116,30 @@
             app:layout_dodgeInsetEdges="bottom"
             app:srcCompat="@drawable/ic_add" />
 
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <com.google.android.material.search.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:autoShowKeyboard="true"
+            android:hint="@string/searchNotesFromTitle">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/resultsSearchList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?android:colorBackground"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:clipToPadding="false" />
+
+        </com.google.android.material.search.SearchView>
+
+    </FrameLayout>
 
 
 </layout>
