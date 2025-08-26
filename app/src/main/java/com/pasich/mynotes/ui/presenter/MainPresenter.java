@@ -68,7 +68,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             getView().openChangelogActivity();
         } else {
             // Викликаємо selectTagUser тільки для не вибраних тегів
-            // (перевірка вже виконана в MainActivity)
             getView().selectTagUser(position);
         }
     }

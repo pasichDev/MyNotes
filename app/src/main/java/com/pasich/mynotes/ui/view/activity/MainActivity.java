@@ -6,6 +6,8 @@ import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_CO
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.util.Log;
 import android.view.View;
@@ -637,7 +639,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void deleteTag() {
                 if (tagsAdapter.getTagSelected() == tag)
                     selectTagUser(tagsAdapter.getTagForName("allNotes"));
-                mainPresenter.deleteTag(tag);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    mainPresenter.deleteTag(tag);
+                }, 700);
+
+
             }
 
             @Override
