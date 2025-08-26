@@ -166,6 +166,7 @@
     <string name="joinCommunity">Join the Community</string>
     <string name="joinCommunityDescription">Connect with other users on Reddit</string>
     <string name="contactDeveloper">Contact Developer</string>
+    <string name="inAppPurchases">In-App Purchases</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">What\'s New</string>

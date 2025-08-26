@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -33,6 +36,7 @@ public class SupportActivity extends BaseActivity {
         setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);
         initActivity();
+        initListeners();
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -43,6 +47,49 @@ public class SupportActivity extends BaseActivity {
 
     @Override
     public void initListeners() {
+        setupExpandableSection(
+            findViewById(R.id.donation_header),
+            findViewById(R.id.donation_content),
+            findViewById(R.id.donation_arrow),
+            true
+        );
+
+        setupExpandableSection(
+            findViewById(R.id.purchases_header),
+            findViewById(R.id.purchases_content),
+            findViewById(R.id.purchases_arrow),
+            false
+        );
+
+        setupExpandableSection(
+            findViewById(R.id.contact_header),
+            findViewById(R.id.contact_content),
+            findViewById(R.id.contact_arrow),
+            false
+        );
+    }
+
+    private void setupExpandableSection(View header, LinearLayout content, ImageView arrow, boolean initiallyExpanded) {
+        if (header == null || content == null || arrow == null) {
+            return; // Якщо елементи не знайдені, виходимо
+        }
+
+        // Встановлюємо початковий стан
+        content.setVisibility(initiallyExpanded ? View.VISIBLE : View.GONE);
+        arrow.setRotation(initiallyExpanded ? 180f : 0f);
+
+        header.setOnClickListener(v -> {
+            boolean isExpanded = content.getVisibility() == View.VISIBLE;
+            if (isExpanded) {
+                // Приховуємо спойлер
+                content.setVisibility(View.GONE);
+                arrow.animate().rotation(0f).setDuration(200).start();
+            } else {
+                // Показуємо спойлер
+                content.setVisibility(View.VISIBLE);
+                arrow.animate().rotation(180f).setDuration(200).start();
+            }
+        });
     }
 
     private void initActivity() {

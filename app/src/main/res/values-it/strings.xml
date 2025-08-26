@@ -126,6 +126,7 @@
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Supporta lo sviluppatore</string>
+    <string name="inAppPurchases">Acquisti in-app</string>
     <string name="thankYouTitle">Grazie per aver utilizzato MyNotes!</string>
     <string name="thankYouDescription">Il tuo supporto ci aiuta a continuare lo sviluppo e migliorare l\'app</string>
     <string name="donationMethods">Metodi di donazione</string>

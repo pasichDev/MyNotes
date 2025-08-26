@@ -134,6 +134,7 @@
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Падтрымаць распрацоўшчыка</string>
+    <string name="inAppPurchases">Пакупкі ў дадатку</string>
     <string name="thankYouTitle">Дзякуй за выкарыстанне MyNotes!</string>
     <string name="thankYouDescription">Ваша падтрымка дапамагае нам працягваць распрацоўку і палепшваць дадатак</string>
     <string name="donationMethods">Спосабы падтрымкі</string>

@@ -136,6 +136,7 @@
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Әзірлеушіні қолдау</string>
+    <string name="inAppPurchases">Қолданба ішіндегі сатып алулар</string>
     <string name="thankYouTitle">MyNotes қолданғаныңыз үшін рақмет!</string>
     <string name="thankYouDescription">Сіздің қолдауыңыз бізге әзірлеуді жалғастыруға және қолданбаны жақсартуға көмектеседі</string>
     <string name="donationMethods">Қолдау көрсету әдістері</string>

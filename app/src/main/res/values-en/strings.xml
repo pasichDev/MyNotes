@@ -153,6 +153,7 @@
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Support Developer</string>
+    <string name="inAppPurchases">In-App Purchases</string>
     <string name="thankYouTitle">Thank you for using MyNotes!</string>
     <string name="thankYouDescription">Your support helps us continue developing and improving the app</string>
     <string name="donationMethods">Donation Methods</string>

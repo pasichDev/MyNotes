@@ -124,6 +124,7 @@
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Підтримати розробника</string>
+    <string name="inAppPurchases">Покупки в додатку</string>
     <string name="thankYouTitle">Дякуємо за використання MyNotes!</string>
     <string name="thankYouDescription">Ваша підтримка допомагає нам продовжувати розробку та покращувати додаток</string>
     <string name="donationMethods">Способи підтримки</string>
@@ -135,6 +136,7 @@
     <string name="joinCommunity">Приєднатися до спільноти</string>
     <string name="joinCommunityDescription">Спілкуйтеся з іншими користувачами на Reddit</string>
     <string name="contactDeveloper">Зв\'язатися з розробником</string>
+    <string name="inAppPurchases">Покупки в додатку</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Що нового</string>
