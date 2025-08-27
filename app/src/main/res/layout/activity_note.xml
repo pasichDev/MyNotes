@@ -117,6 +117,20 @@
 
                         </LinearLayout>
                     </LinearLayout>
+
+                    <!-- Індикатор прогресу скролу -->
+                    <ProgressBar
+                        android:id="@+id/scrollProgressIndicator"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="30dp"
+                        android:layout_height="10dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="5dp"
+                        android:progressDrawable="@drawable/scroll_progress_gradient"
+                        android:progress="0"
+                        android:max="100"
+                        android:visibility="gone" />
+
                 </com.google.android.material.appbar.MaterialToolbar>
             </com.google.android.material.appbar.AppBarLayout>
 

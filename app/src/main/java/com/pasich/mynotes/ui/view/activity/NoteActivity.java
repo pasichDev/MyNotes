@@ -165,15 +165,40 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 if (binding.centerContent.getVisibility() == View.VISIBLE) {
                     binding.centerContent.setVisibility(View.GONE);
                     binding.endContent.setVisibility(View.VISIBLE);
+                    binding.scrollProgressIndicator.setVisibility(View.VISIBLE);
                 }
+                
+                // Оновлюємо прогрес скролу
+                updateScrollProgress(scrollY);
             } else {
                 // Показуємо розгорнутий вигляд
                 if (binding.centerContent.getVisibility() == View.GONE) {
                     binding.centerContent.setVisibility(View.VISIBLE);
                     binding.endContent.setVisibility(View.GONE);
+                    binding.scrollProgressIndicator.setVisibility(View.GONE);
                 }
             }
         });
+    }
+
+    /**
+     * Оновлює індикатор прогресу скролу
+     */
+    private void updateScrollProgress(int scrollY) {
+        // Отримуємо загальну висоту контенту для скролу
+        View child = binding.scrollView.getChildAt(0);
+        if (child != null) {
+            int totalScrollableHeight = child.getHeight() - binding.scrollView.getHeight();
+            
+            if (totalScrollableHeight > 0) {
+                // Розраховуємо прогрес у відсотках (0-100)
+                int progress = (int) ((float) scrollY / totalScrollableHeight * 100);
+                progress = Math.max(0, Math.min(100, progress)); // Обмежуємо 0-100
+                
+                // Оновлюємо ProgressBar
+                binding.scrollProgressIndicator.setProgress(progress);
+            }
+        }
     }
 
 
@@ -389,8 +414,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         binding.titleToolbarTagCollapsed.setOnClickListener(null);
         binding.valueNote.setOnFocusChangeListener(null);
         binding.valueNote.setOnClickListener(null);
-        // Скидаємо позицію курсора
+        // Скидаємо позицію курсора та індикатор прогресу
         lastCursorPosition = -1;
+        binding.scrollProgressIndicator.setProgress(0);
     }
 
 
