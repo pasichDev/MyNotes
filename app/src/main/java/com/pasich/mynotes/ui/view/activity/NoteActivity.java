@@ -13,7 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
@@ -55,6 +54,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     // Змінна для відстеження останньої позиції курсора
     private int lastCursorPosition = -1;
 
+    private int scrollProgress = -1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -194,8 +194,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 // Розраховуємо прогрес у відсотках (0-100)
                 int progress = (int) ((float) scrollY / totalScrollableHeight * 100);
                 progress = Math.max(0, Math.min(100, progress)); // Обмежуємо 0-100
-                
-                // Оновлюємо ProgressBar
+                scrollProgress = progress;
                 binding.scrollProgressIndicator.setProgress(progress);
             }
         }
@@ -279,7 +278,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void initTypeActivity() {
         if (notePresenter.getNewNotesKey()) {
-            activatedActivity();
             if (notePresenter.getTagNote().length() >= 2)
                 changeTag(notePresenter.getTagNote(), false);
             
@@ -289,8 +287,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
             if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5)
                 binding.valueNote.setText(notePresenter.getShareText());
+
+            activatedActivity();
         } else if (notePresenter.getIdKey() >= 1) {
-            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
             notePresenter.loadingData(notePresenter.getIdKey());
         }
     }
@@ -311,21 +310,11 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             }
         });
 
-        // Додаємо обробник фокусу для поля вводу
-        binding.valueNote.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                // Скидаємо останню позицію курсора при отриманні фокусу
-                lastCursorPosition = -1;
-                // Прокручуємо до курсора при отриманні фокусу з невеликою затримкою
-                binding.valueNote.postDelayed(this::scrollToCursor, 300);
-            }
-        });
 
         // Додаємо обробник кліку для поля вводу - тільки для обробки переміщення курсора
         binding.valueNote.setOnClickListener(v -> {
-            if (binding.valueNote.isFocused()) {
-                // Невелика затримка для отримання нової позиції курсора
-                binding.valueNote.postDelayed(this::scrollToCursor, 50);
+            if (binding.valueNote.isFocused() && scrollProgress < 95) {
+            binding.valueNote.postDelayed(this::scrollToCursor, 50);
             }
         });
 
@@ -347,7 +336,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
     @Override
     public void activatedActivity() {
-
         binding.setActivateEdit(true);
         binding.valueNote.setEnabled(true);
         binding.valueNote.setFocusable(true);
@@ -358,19 +346,14 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
         if (notePresenter.getNewNotesKey()) {
             ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInputFromWindow(binding.valueNote.getApplicationWindowToken(), InputMethodManager.SHOW_IMPLICIT, 0);
-            
             // Прокручуємо до курсора після показу клавіатури для нової нотатки
-            lastCursorPosition = -1; // Скидаємо для гарантованого прокручування
+            lastCursorPosition = -1;
             binding.valueNote.postDelayed(this::scrollToCursor, 300);
 
         } else {
             if (binding.valueNote.requestFocus()) {
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(binding.valueNote, InputMethodManager.SHOW_IMPLICIT);
-                
-                // Прокручуємо до курсора після показу клавіатури для існуючої нотатки
-                lastCursorPosition = -1; // Скидаємо для гарантованого прокручування
-                binding.valueNote.postDelayed(this::scrollToCursor, 300);
             }
         }
 
@@ -414,7 +397,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         binding.titleToolbarTagCollapsed.setOnClickListener(null);
         binding.valueNote.setOnFocusChangeListener(null);
         binding.valueNote.setOnClickListener(null);
-        // Скидаємо позицію курсора та індикатор прогресу
         lastCursorPosition = -1;
         binding.scrollProgressIndicator.setProgress(0);
     }
