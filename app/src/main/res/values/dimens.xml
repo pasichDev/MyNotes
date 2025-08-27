@@ -8,4 +8,6 @@
     <dimen name="marginItemsNoteChip">5dp</dimen>
     <!-- Chip-->
     <dimen name="defaultCornerChip">10dp</dimen>
+    <!-- ScrollView margins -->
+    <dimen name="scroll_view_bottom_margin">16dp</dimen>
 </resources>

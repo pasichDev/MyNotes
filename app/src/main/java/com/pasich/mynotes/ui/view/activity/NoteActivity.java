@@ -18,8 +18,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.core.widget.NestedScrollView;
 
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
@@ -31,7 +36,6 @@ import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
-import com.pasich.mynotes.ui.view.dialogs.note.popupWindowsTagNote.PopupWindowsTagNote;
 import com.pasich.mynotes.utils.CustomLinkMovementMethod;
 import com.pasich.mynotes.utils.constants.NameTransition;
 
@@ -64,11 +68,13 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
 
-        setupEdgeToEdgeInsets(binding.getRoot());
+        setupEdgeToEdgeInsetsWithKeyboard(binding.getRoot());
         binding.setPresenter((NotePresenter) notePresenter);
         notePresenter.attachView(this);
         notePresenter.getLoadIntentData(getIntent());
         notePresenter.viewIsReady();
+
+        setupAppBarScrollListener();
 
         // Handle back button press with OnBackPressedDispatcher
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
@@ -79,6 +85,71 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         });
 
 
+    }
+
+
+    /**
+     * Налаштовує слухач скролінгу для AppBar
+     */
+    private void setupAppBarScrollListener() {
+        binding.scrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                // Отримуємо позицію заголовка нотатки
+                int[] titleLocation = new int[2];
+                binding.notesTitle.getLocationOnScreen(titleLocation);
+                
+                // Отримуємо позицію тулбара
+                int[] toolbarLocation = new int[2];
+                binding.toolbar.getLocationOnScreen(toolbarLocation);
+                
+                // Перевіряємо, чи заголовок знаходиться під тулбаром
+                boolean titleUnderToolbar = titleLocation[1] < (toolbarLocation[1] + binding.toolbar.getHeight());
+                
+                if (titleUnderToolbar) {
+                    // Показуємо згорнутий вигляд
+                    binding.centerContent.setVisibility(View.GONE);
+                    binding.endContent.setVisibility(View.VISIBLE);
+                } else {
+                    // Показуємо розгорнутий вигляд
+                    binding.centerContent.setVisibility(View.VISIBLE);
+                    binding.endContent.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+
+    /**
+     * Налаштовує відступи з урахуванням клавіатури для NoteActivity
+     */
+    private void setupEdgeToEdgeInsetsWithKeyboard(View rootView) {
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            // Отримуємо відступи для системних барів
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            
+            // Отримуємо відступи для клавіатури (IME)
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            
+            // Встановлюємо padding зверху для системних барів
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    systemBars.top,
+                    v.getPaddingRight(),
+                    0 // Не встановлюємо нижній padding тут
+            );
+            
+            // Встановлюємо padding для NestedScrollView з урахуванням клавіатури
+            int bottomPadding = imeInsets.bottom > 0 ? imeInsets.bottom : systemBars.bottom;
+            binding.scrollView.setPadding(
+                    binding.scrollView.getPaddingLeft(),
+                    binding.scrollView.getPaddingTop(),
+                    binding.scrollView.getPaddingRight(),
+                    bottomPadding + getResources().getDimensionPixelSize(R.dimen.scroll_view_bottom_margin)
+            );
+            
+            return insets;
+        });
     }
 
 
@@ -122,7 +193,10 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             activatedActivity();
             if (notePresenter.getTagNote().length() >= 2)
                 changeTag(notePresenter.getTagNote(), false);
-            binding.titleToolbarData.setText(getString(R.string.lastDateEditNote, lastDayEditNote(new Date().getTime())));
+            
+            String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(new Date().getTime()));
+            binding.titleToolbarDataCenter.setText(formattedDate);
+            binding.titleToolbarDataCollapsed.setText(lastDayEditNote(new Date().getTime()));
 
             if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5)
                 binding.valueNote.setText(notePresenter.getShareText());
@@ -142,10 +216,12 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                     binding.notesTitle.setText(s.toString().replace('\n', ' ').trim());
                     binding.valueNote.requestFocus();
                 }
+                // Оновлюємо заголовок у згорнутому вигляді
+                String title = s.toString().trim();
+                binding.titleToolbarCollapsed.setText(!title.isEmpty() ? title : getString(R.string.noteTitle));
             }
         });
 
-        binding.titleToolbarTag.setOnClickListener(v -> openPopupWindowsTag());
     }
 
     @Override
@@ -219,7 +295,8 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         super.onDestroy();
         notePresenter.detachView();
         binding.notesTitle.addTextChangedListener(null);
-        binding.titleToolbarTag.setOnClickListener(null);
+        binding.titleToolbarTagCenter.setOnClickListener(null);
+        binding.titleToolbarTagCollapsed.setOnClickListener(null);
     }
 
 
@@ -237,7 +314,16 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             }
 
         });
-        binding.titleToolbarData.setText(getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate())));
+        
+        String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate()));
+        
+        // Оновлюємо центровані елементи
+        binding.titleToolbarDataCenter.setText(formattedDate);
+        
+        // Оновлюємо згорнуті елементи
+        binding.titleToolbarCollapsed.setText(!note.getTitle().isEmpty() ? note.getTitle() : getString(R.string.noteTitle));
+        binding.titleToolbarDataCollapsed.setText(formattedDate);
+        
         changeTag(note.getTag(), false);
     }
 
@@ -316,23 +402,16 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             notePresenter.setTagNote(nameTag);
         }
         if (!nameTag.isEmpty()) {
-            binding.titleToolbarTag.setText(getString(R.string.tagHastag, nameTag));
-            binding.titleToolbarTag.setVisibility(View.VISIBLE);
+            String tagText = getString(R.string.tagHastag, nameTag);
+            // Оновлюємо центровані елементи
+            binding.titleToolbarTagCenter.setText(tagText);
+            binding.titleToolbarTagCenter.setVisibility(View.VISIBLE);
+            // Оновлюємо згорнуті елементи
+            binding.titleToolbarTagCollapsed.setText(tagText);
+            binding.titleToolbarTagCollapsed.setVisibility(View.VISIBLE);
         } else {
-            binding.titleToolbarTag.setVisibility(View.GONE);
-        }
-    }
-
-    private void openPopupWindowsTag() {
-        String noteTag = notePresenter.getTagNote().isEmpty() ? notePresenter.getNote().getTag() : notePresenter.getTagNote();
-        if (!noteTag.isEmpty()) {
-            new PopupWindowsTagNote(getLayoutInflater(), binding.titleToolbarTag, () -> {
-
-                finish();
-                startActivity(new Intent(NoteActivity.this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", noteTag));
-
-
-            });
+            binding.titleToolbarTagCenter.setVisibility(View.GONE);
+            binding.titleToolbarTagCollapsed.setVisibility(View.GONE);
         }
     }
 

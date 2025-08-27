@@ -36,22 +36,22 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent">
 
-
                 <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="@android:color/transparent"
-                    app:layout_collapseMode="pin">
+                    android:background="@android:color/transparent">
 
+                    <!-- Центрований контент (показується коли розгорнуто) -->
                     <LinearLayout
+                        android:id="@+id/centerContent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/title_toolbar_tag"
+                            android:id="@+id/title_toolbar_tag_center"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
@@ -61,23 +61,73 @@
                             tools:text="tag_name" />
 
                         <TextView
-                            android:id="@+id/title_toolbar_data"
+                            android:id="@+id/title_toolbar_data_center"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:textSize="14sp"
                             tools:text="data_name" />
                     </LinearLayout>
+
+                    <!-- Вміст зліва (показується коли згорнуто) -->
+                    <LinearLayout
+                        android:id="@+id/endContent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start|center_vertical"
+                        android:layout_marginEnd="16dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/title_toolbar_collapsed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="start"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            android:textColor="?attr/colorOnSurface"
+                            tools:text="Note Title" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:id="@+id/title_toolbar_data_collapsed"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                tools:text="date" />
+                            <TextView
+                                android:id="@+id/title_toolbar_tag_collapsed"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:visibility="gone"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginEnd="8dp"
+                                android:textColor="?attr/colorPrimary"
+                                tools:text="#tag" />
+
+
+                        </LinearLayout>
+                    </LinearLayout>
                 </com.google.android.material.appbar.MaterialToolbar>
             </com.google.android.material.appbar.AppBarLayout>
 
 
-            <ScrollView
+            <androidx.core.widget.NestedScrollView
                 android:id="@+id/scrollView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="16dp"
-                android:scrollbarSize="0dp">
+                android:scrollbarSize="0dp"
+                android:clipToPadding="false"
+                android:fillViewport="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -128,7 +178,7 @@
                         android:textColor="@drawable/selector_color_value" />
 
                 </LinearLayout>
-            </ScrollView>
+            </androidx.core.widget.NestedScrollView>
 
         </LinearLayout>
 
