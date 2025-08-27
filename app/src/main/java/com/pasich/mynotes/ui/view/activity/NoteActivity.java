@@ -18,7 +18,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -52,6 +51,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     public ActivityNoteBinding binding;
     @Inject
     public NoteContract.presenter notePresenter;
+    
+    // Змінна для відстеження останньої позиції курсора
+    private int lastCursorPosition = -1;
 
 
     @Override
@@ -89,29 +91,84 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
 
     /**
+     * Прокручує до позиції курсора в полі вводу
+     */
+    private void scrollToCursor() {
+        if (binding.valueNote.isFocused()) {
+            // Отримуємо позицію курсора
+            int cursorPosition = binding.valueNote.getSelectionStart();
+            
+            // Перевіряємо, чи змінилася позиція курсора
+            if (cursorPosition == lastCursorPosition) {
+                return; // Не прокручуємо, якщо курсор не змінив позицію
+            }
+            
+            // Отримуємо layout тексту
+            android.text.Layout layout = binding.valueNote.getLayout();
+            if (layout != null) {
+                // Знаходимо лінію курсора
+                int line = layout.getLineForOffset(cursorPosition);
+                
+                // Отримуємо Y координату лінії відносно EditText
+                int lineTop = layout.getLineTop(line);
+                
+                // Отримуємо позицію EditText відносно ScrollView
+                int editTextTop = binding.valueNote.getTop();
+                
+                // Розраховуємо абсолютну позицію лінії в ScrollView
+                int absoluteLineTop = editTextTop + lineTop;
+                
+                // Отримуємо поточну позицію прокрутки
+                int currentScrollY = binding.scrollView.getScrollY();
+                
+                // Отримуємо видиму висоту ScrollView
+                int scrollViewHeight = binding.scrollView.getHeight();
+                
+                // Отримуємо відступи для клавіатури
+                Insets imeInsets = Objects.requireNonNull(ViewCompat.getRootWindowInsets(binding.getRoot()))
+                    .getInsets(WindowInsetsCompat.Type.ime());
+                int availableHeight = scrollViewHeight - imeInsets.bottom;
+                
+                // Перевіряємо, чи курсор знаходиться у видимій області
+                int lineVisibleTop = absoluteLineTop - currentScrollY;
+                int lineHeight = layout.getLineBottom(line) - layout.getLineTop(line);
+                int lineVisibleBottom = lineVisibleTop + lineHeight;
+                
+                // Прокручуємо тільки якщо курсор не видно або знаходиться занадто близько до краю
+                if (lineVisibleTop < 100 || lineVisibleBottom > (availableHeight - 100)) {
+                    // Розраховуємо цільову позицію для прокрутки (курсор в центрі екрана)
+                    int targetScrollY = absoluteLineTop - (availableHeight / 2);
+                    
+                    binding.scrollView.smoothScrollTo(0, Math.max(0, targetScrollY));
+                }
+                
+                // Оновлюємо останню позицію курсора
+                lastCursorPosition = cursorPosition;
+            }
+        }
+    }
+
+
+    /**
      * Налаштовує слухач скролінгу для AppBar
      */
     private void setupAppBarScrollListener() {
-        binding.scrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                // Отримуємо позицію заголовка нотатки
-                int[] titleLocation = new int[2];
-                binding.notesTitle.getLocationOnScreen(titleLocation);
-                
-                // Отримуємо позицію тулбара
-                int[] toolbarLocation = new int[2];
-                binding.toolbar.getLocationOnScreen(toolbarLocation);
-                
-                // Перевіряємо, чи заголовок знаходиться під тулбаром
-                boolean titleUnderToolbar = titleLocation[1] < (toolbarLocation[1] + binding.toolbar.getHeight());
-                
-                if (titleUnderToolbar) {
-                    // Показуємо згорнутий вигляд
+        binding.scrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            // Отримуємо позицію заголовка нотатки відносно scrollView
+            int titleTop = binding.notesTitle.getTop();
+
+            // Простіша логіка: якщо прокрутили більше ніж висота заголовка
+            boolean shouldShowCollapsed = scrollY > titleTop;
+
+            if (shouldShowCollapsed) {
+                // Показуємо згорнутий вигляд
+                if (binding.centerContent.getVisibility() == View.VISIBLE) {
                     binding.centerContent.setVisibility(View.GONE);
                     binding.endContent.setVisibility(View.VISIBLE);
-                } else {
-                    // Показуємо розгорнутий вигляд
+                }
+            } else {
+                // Показуємо розгорнутий вигляд
+                if (binding.centerContent.getVisibility() == View.GONE) {
                     binding.centerContent.setVisibility(View.VISIBLE);
                     binding.endContent.setVisibility(View.GONE);
                 }
@@ -131,7 +188,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             // Отримуємо відступи для клавіатури (IME)
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
             
-            // Встановлюємо padding зверху для системних барів
+            // Встановлюємо padding зверху для системних барів тільки для кореневого view
             v.setPadding(
                     v.getPaddingLeft(),
                     systemBars.top,
@@ -140,13 +197,20 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             );
             
             // Встановлюємо padding для NestedScrollView з урахуванням клавіатури
-            int bottomPadding = imeInsets.bottom > 0 ? imeInsets.bottom : systemBars.bottom;
+            int bottomPadding = Math.max(imeInsets.bottom, systemBars.bottom);
             binding.scrollView.setPadding(
                     binding.scrollView.getPaddingLeft(),
                     binding.scrollView.getPaddingTop(),
                     binding.scrollView.getPaddingRight(),
                     bottomPadding + getResources().getDimensionPixelSize(R.dimen.scroll_view_bottom_margin)
             );
+            
+            // Якщо клавіатура щойно показана, прокручуємо до курсора
+            if (imeInsets.bottom > 0 && binding.valueNote.isFocused()) {
+                // Скидаємо останню позицію для примусового прокручування при показі клавіатури
+                lastCursorPosition = -1;
+                binding.valueNote.postDelayed(this::scrollToCursor, 200);
+            }
             
             return insets;
         });
@@ -222,6 +286,24 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             }
         });
 
+        // Додаємо обробник фокусу для поля вводу
+        binding.valueNote.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                // Скидаємо останню позицію курсора при отриманні фокусу
+                lastCursorPosition = -1;
+                // Прокручуємо до курсора при отриманні фокусу з невеликою затримкою
+                binding.valueNote.postDelayed(this::scrollToCursor, 300);
+            }
+        });
+
+        // Додаємо обробник кліку для поля вводу - тільки для обробки переміщення курсора
+        binding.valueNote.setOnClickListener(v -> {
+            if (binding.valueNote.isFocused()) {
+                // Невелика затримка для отримання нової позиції курсора
+                binding.valueNote.postDelayed(this::scrollToCursor, 50);
+            }
+        });
+
     }
 
     @Override
@@ -251,11 +333,19 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
         if (notePresenter.getNewNotesKey()) {
             ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInputFromWindow(binding.valueNote.getApplicationWindowToken(), InputMethodManager.SHOW_IMPLICIT, 0);
+            
+            // Прокручуємо до курсора після показу клавіатури для нової нотатки
+            lastCursorPosition = -1; // Скидаємо для гарантованого прокручування
+            binding.valueNote.postDelayed(this::scrollToCursor, 300);
 
         } else {
             if (binding.valueNote.requestFocus()) {
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(binding.valueNote, InputMethodManager.SHOW_IMPLICIT);
+                
+                // Прокручуємо до курсора після показу клавіатури для існуючої нотатки
+                lastCursorPosition = -1; // Скидаємо для гарантованого прокручування
+                binding.valueNote.postDelayed(this::scrollToCursor, 300);
             }
         }
 
@@ -297,6 +387,10 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         binding.notesTitle.addTextChangedListener(null);
         binding.titleToolbarTagCenter.setOnClickListener(null);
         binding.titleToolbarTagCollapsed.setOnClickListener(null);
+        binding.valueNote.setOnFocusChangeListener(null);
+        binding.valueNote.setOnClickListener(null);
+        // Скидаємо позицію курсора
+        lastCursorPosition = -1;
     }
 
 
