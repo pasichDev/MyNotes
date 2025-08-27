@@ -4,9 +4,12 @@
 
 ### Changed
 
-- Support for Android API 36
+- Added support for Android 16
 - Added screen protection feature
-- Maximum number of tags increased to 25
-- Removed support for creating shortcuts on the home screen
-- UI bug fixes and improved animations
-- Performance optimization and overall stability improvements
+- Added developer support
+- Code refactoring and preparation for upcoming large-scale features
+- Increased maximum number of tags to 25
+- Fixed a bug when adding tags with more than 15
+- Improved user experience when interacting with the interface
+- Optimized performance and overall stability
+- Removed support for creating home screen shortcuts
