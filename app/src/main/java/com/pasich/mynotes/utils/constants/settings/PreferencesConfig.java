@@ -28,4 +28,7 @@ public class PreferencesConfig {
     public static final boolean ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE = false;
     //LastKnownVersion
     public static final String ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION = "lastKnownVersion";
+    //ThemeMode
+    public static final String ARGUMENT_PREFERENCE_THEME_MODE = "themeMode";
+    public static final int ARGUMENT_DEFAULT_THEME_MODE_VALUE = 0; // 0 = Follow System, 1 = Light, 2 = Dark
 }

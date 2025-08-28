@@ -38,4 +38,8 @@ public interface PreferenceHelper {
     String getLastKnownVersion();
 
     void setLastKnownVersion(String version);
+
+    int getThemeMode();
+
+    void setThemeMode(int mode);
 }

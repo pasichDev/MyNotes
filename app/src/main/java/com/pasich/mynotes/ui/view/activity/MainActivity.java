@@ -88,7 +88,15 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 Intent data = result.getData();
                 if (result.getResultCode() == 11) {
                     assert data != null;
-                    this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+                    
+                    // Check if theme mode changed
+                    if (data.getBooleanExtra("updateThemeMode", false)) {
+                        // Theme mode changed, recreate the activity to apply new mode
+                        recreate();
+                    } else {
+                        // Only theme style changed
+                        this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+                    }
                 }
 
             });

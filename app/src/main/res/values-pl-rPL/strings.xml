@@ -83,6 +83,12 @@
     <string name="onDynamicColorDescription">Dostosowuje kolory aplikacji do tapety (Android 12+)</string>
     <string name="onScreenProtection">Włącz ochronę ekranu</string>
     <string name="onScreenProtectionDescription">Zapobiega wykonywaniu zrzutów ekranu i nagrywaniu. Wchodzi w życie po ponownym uruchomieniu aplikacji</string>
+    <string name="themeMode">Tryb motywu</string>
+    <string name="themeModeDescription">Wybierz między jasnym, ciemnym lub systemowym motywem</string>
+    <string name="selectThemeMode">Wybierz tryb motywu</string>
+    <string name="themeModeFollowSystem">Jak w systemie</string>
+    <string name="themeModeLight">Jasny</string>
+    <string name="themeModeDark">Ciemny</string>
     <string name="coffeeByPlay">Podziękuj deweloperowi</string>
     <string name="coffeeByTextInfo"><b>Moje notatki</b> to aplikacja bez reklam i jest rozprowadzana jako produkt bezpłatny. Aplikacja jest rozwijana przez jedną osobę, więc niektóre aktualizacje są dostarczane z opóźnieniem. Utrzymanie kondycji aplikacji i niektórych funkcji generuje koszty. Możesz podziękować deweloperowi, kupując mu kawę lub płacąc za wynajem serwera, a także przesłać darowiznę na wskazane linki, które zostaną wyświetlone poniżej. Dziękujemy za korzystanie z tej aplikacji!</string>
 

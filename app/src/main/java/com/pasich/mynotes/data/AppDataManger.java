@@ -126,6 +126,16 @@ public class AppDataManger implements DataManager {
     }
 
     @Override
+    public int getThemeMode() {
+        return preferencesHelper.getThemeMode();
+    }
+
+    @Override
+    public void setThemeMode(int mode) {
+        preferencesHelper.setThemeMode(mode);
+    }
+
+    @Override
     public String getTypeFaceNoteActivity() {
         return preferencesHelper.getTypeFaceNoteActivity();
     }

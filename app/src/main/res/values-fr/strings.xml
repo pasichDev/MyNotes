@@ -80,6 +80,12 @@
     <string name="onDynamicColorDescription">Adapte les couleurs de l\'app à votre fond d\'écran (Android 12+)</string>
     <string name="onScreenProtection">Activer la protection d\'écran</string>
     <string name="onScreenProtectionDescription">Empêche les captures d\'écran et l\'enregistrement. Prend effet après le redémarrage de l\'application</string>
+    <string name="themeMode">Mode thème</string>
+    <string name="themeModeDescription">Choisissez entre thème clair, sombre ou système</string>
+    <string name="selectThemeMode">Sélectionner le mode thème</string>
+    <string name="themeModeFollowSystem">Comme le système</string>
+    <string name="themeModeLight">Clair</string>
+    <string name="themeModeDark">Sombre</string>
     <string name="coffeeByPlay">Remercier le développeur</string>
     <string name="coffeeByTextInfo"><b>Mes notes</b> est une application sans publicité et distribuée en tant que produit gratuit. L\'application est développée par une seule personne, donc certaines mises à jour sont livrées en retard. Le maintien de la fonctionnalité du programme et de certaines fonctions crée des coûts. Vous pouvez remercier le développeur en lui achetant un café ou en payant la location d\'un serveur, ainsi qu\'en envoyant un don en utilisant les liens spécifiés qui seront affichés ci-dessous. Merci d\'utiliser cette application!</string>
     <string name="loginUser">Autorisation Google</string>

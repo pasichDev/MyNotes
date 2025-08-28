@@ -2,6 +2,7 @@ package com.pasich.mynotes.base.activity;
 
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -32,6 +34,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     @Override
     public void selectTheme() {
+        applyThemeMode();
         setTheme(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? R.style.AppThemeDynamic : getSelectedTheme());
         applyScreenProtection();
     }
@@ -59,6 +62,31 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     protected void updateScreenProtection() {
         applyScreenProtection();
+    }
+
+    /**
+     * Apply theme mode (light/dark/system)
+     */
+    private void applyThemeMode() {
+        int themeMode = PowerPreference.getDefaultFile().getInt(
+            PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, 
+            PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE
+        );
+        
+        switch (themeMode) {
+            case 0: // Follow System
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+            case 1: // Light
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case 2: // Dark
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+        }
     }
 
     private int getSelectedTheme() {

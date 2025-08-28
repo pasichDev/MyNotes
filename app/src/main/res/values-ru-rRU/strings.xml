@@ -84,6 +84,12 @@
     <string name="onDynamicColorDescription">Адаптирует цвета приложения к вашим обоям (Android 12+)</string>
     <string name="onScreenProtection">Включить защиту экрана</string>
     <string name="onScreenProtectionDescription">Предотвращает создание скриншотов и запись экрана. Вступит в силу после перезапуска приложения</string>
+    <string name="themeMode">Режим темы</string>
+    <string name="themeModeDescription">Выберите между светлой, тёмной или системной темой</string>
+    <string name="selectThemeMode">Выберите режим темы</string>
+    <string name="themeModeFollowSystem">Как в системе</string>
+    <string name="themeModeLight">Светлая</string>
+    <string name="themeModeDark">Тёмная</string>
     <string name="coffeeByPlay">Спасибо разработчику</string>
     <string name="coffeeByTextInfo"><b>Мои заметки</b> – это приложение без рекламы, которое распространяется как бесплатный продукт. Приложение разрабатывается одним человеком, поэтому некоторые обновления приходят с опозданием. Поддержание работоспособности приложения и некоторых функций требует затрат. Вы можете отблагодарить разработчика, купив ему кофе или оплатив аренду сервера, а также отправить пожертвование по указанным ссылкам, которые будут отображаться ниже. Спасибо за использование этого приложения!</string>
 

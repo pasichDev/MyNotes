@@ -74,6 +74,12 @@
     <string name="onDynamicColorDescription">Адаптує кольори додатку до вашої шпалери (Android 12+)</string>
     <string name="onScreenProtection">Увімкнути захист екрану</string>
     <string name="onScreenProtectionDescription">Запобігає створенню скріншотів та записуванню екрану. Вступить в силу після перезапуску додатку</string>
+    <string name="themeMode">Режим теми</string>
+    <string name="themeModeDescription">Оберіть між світлою, темною або системною темою</string>
+    <string name="selectThemeMode">Оберіть режим теми</string>
+    <string name="themeModeFollowSystem">Як в системі</string>
+    <string name="themeModeLight">Світла</string>
+    <string name="themeModeDark">Темна</string>
     <string name="coffeeByPlay">Подякувати розробнику</string>
     <string name="coffeeByTextInfo"><b>Мої нотатки</b> - це програма без реклами та поширюється як безкоштовний продукт. Додаток розробляє одна людина, тому деякі оновлення поставляються із запізненням. Підтримка працездатності програми та деяких функцій створює витрати. Ви можете подякувати розробнику, купивши йому каву або сплатити за оренду сервера, а також відправити донат за вказаними посиланнями, які будуть відображатися знизу. Дякую, що використовуєте цю програму!</string>
     <string name="loginUser">Авторизація Google</string>

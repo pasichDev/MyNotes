@@ -6,18 +6,20 @@ public class PreferencesBackup {
     private final int formatCount;
     private final int sizeTextNote;
     private final int themeValue;
+    private final int themeMode;
     private final boolean dynamicTheme;
     private final String typeFaceNoteActivity;
     private final String sortParam;
     private final boolean isCreated;
 
-    public PreferencesBackup(int fc, String tf, String sp, int st, int tv, boolean dt) {
+    public PreferencesBackup(int fc, String tf, String sp, int st, int tv, boolean dt, int tm) {
         this.formatCount = fc;
         this.typeFaceNoteActivity = tf;
         this.sortParam = sp;
         this.sizeTextNote = st;
         this.themeValue = tv;
         this.dynamicTheme = dt;
+        this.themeMode = tm;
         this.isCreated = true;
     }
 
@@ -28,6 +30,7 @@ public class PreferencesBackup {
         this.sizeTextNote = PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE;
         this.themeValue = PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE;
         this.dynamicTheme = PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE;
+        this.themeMode = PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE;
         this.isCreated = false;
     }
 
@@ -57,5 +60,9 @@ public class PreferencesBackup {
 
     public boolean isCreated() {
         return isCreated;
+    }
+
+    public int getThemeMode() {
+        return themeMode;
     }
 }

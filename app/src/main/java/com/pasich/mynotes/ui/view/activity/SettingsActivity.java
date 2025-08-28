@@ -18,6 +18,7 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
@@ -47,6 +48,7 @@ public class SettingsActivity extends BaseActivity {
     public ActivitySettingsBinding activitySettingsBinding;
     private int themeIdStartActivity;
     private boolean enableDynamic, themeDynamicStartActivity;
+    private int themeModeStartActivity;
 
 
     @Override
@@ -61,6 +63,7 @@ public class SettingsActivity extends BaseActivity {
         themeIdStartActivity = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
         enableDynamic = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
         themeDynamicStartActivity = enableDynamic;
+        themeModeStartActivity = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
         setSupportActionBar(activitySettingsBinding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         initFunctions();
@@ -80,6 +83,9 @@ public class SettingsActivity extends BaseActivity {
             activitySettingsBinding.dynamicColor.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE));
         }
         activitySettingsBinding.screenProtection.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE));
+        
+        // Initialize theme mode
+        updateThemeModeDisplay();
         
         // Initialize color preview and accent card state
         updateAccentCardState(enableDynamic);
@@ -106,6 +112,8 @@ public class SettingsActivity extends BaseActivity {
     private boolean finishActivity() {
         int currentThemeId = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
         boolean enableDynamicColor = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
+        int currentThemeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        
         if (themeIdStartActivity != currentThemeId) {
             int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
             setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
@@ -119,6 +127,11 @@ public class SettingsActivity extends BaseActivity {
                 setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
             }
         }
+        
+        if (themeModeStartActivity != currentThemeMode) {
+            // Theme mode changed, trigger recreation
+            setResult(11, new Intent().putExtra("updateThemeMode", true));
+        }
 
         supportFinishAfterTransition();
         return true;
@@ -126,6 +139,9 @@ public class SettingsActivity extends BaseActivity {
 
     @Override
     public void initListeners() {
+        // Theme Mode Card Click Listener
+        activitySettingsBinding.themeModeCard.setOnClickListener(v -> openThemeModeDialog());
+        
         // Accent Color Card Click Listener
         activitySettingsBinding.accentColorCard.setOnClickListener(v -> openAccentColorDialog());
         activitySettingsBinding.dynamicColor.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -170,6 +186,13 @@ public class SettingsActivity extends BaseActivity {
         // Accent Color Card
         activitySettingsBinding.accentColorCard.setCardBackgroundColor(colorSurfaceContainer);
         activitySettingsBinding.accentColorDescription.setTextColor(colorOnSurfaceVariant);
+
+        // Theme Mode Card
+        activitySettingsBinding.themeModeCard.setCardBackgroundColor(colorSurfaceContainer);
+        activitySettingsBinding.currentThemeModeText.setTextColor(colorOnSurfaceVariant);
+        
+        // Update theme mode icon color
+        activitySettingsBinding.themeModeIcon.setImageTintList(ColorStateList.valueOf(colorPrimary));
 
         // Update color preview
         activitySettingsBinding.colorPreview.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -372,6 +395,143 @@ public class SettingsActivity extends BaseActivity {
             activitySettingsBinding.accentColorCard.setAlpha(1.0f);
             activitySettingsBinding.accentColorCard.setClickable(true);
         }
+    }
+
+    /**
+     * Update theme mode display text and icon
+     */
+    private void updateThemeModeDisplay() {
+        int currentThemeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        
+        String[] themeModeNames = {
+            getString(R.string.themeModeFollowSystem),
+            getString(R.string.themeModeLight),
+            getString(R.string.themeModeDark)
+        };
+        
+        int[] themeModeIcons = {
+            R.drawable.ic_auto_mode,
+            R.drawable.ic_light_mode,
+            R.drawable.ic_dark_mode
+        };
+        
+        if (currentThemeMode >= 0 && currentThemeMode < themeModeNames.length) {
+            activitySettingsBinding.currentThemeModeText.setText(themeModeNames[currentThemeMode]);
+            activitySettingsBinding.themeModeIcon.setImageResource(themeModeIcons[currentThemeMode]);
+            
+            // Update icon color to match current theme
+            int colorPrimary = MaterialColors.getColor(this, R.attr.colorPrimary, Color.GRAY);
+            activitySettingsBinding.themeModeIcon.setImageTintList(ColorStateList.valueOf(colorPrimary));
+        }
+    }
+
+    /**
+     * Open theme mode selection dialog
+     */
+    private void openThemeModeDialog() {
+        int currentThemeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        
+        String[] themeModeNames = {
+            getString(R.string.themeModeFollowSystem),
+            getString(R.string.themeModeLight),
+            getString(R.string.themeModeDark)
+        };
+        
+        int[] themeModeIcons = {
+            R.drawable.ic_auto_mode,
+            R.drawable.ic_light_mode,
+            R.drawable.ic_dark_mode
+        };
+
+        final int[] selectedPosition = {currentThemeMode};
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                R.layout.item_theme_mode_dialog, R.id.themeModeName, themeModeNames) {
+            @NonNull
+            @Override
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+
+                ImageView themeModeIcon = view.findViewById(R.id.themeModeIcon);
+                ImageView selectedIndicator = view.findViewById(R.id.selectedModeIndicator);
+                TextView themeModeName = view.findViewById(R.id.themeModeName);
+                
+                if (position < themeModeIcons.length) {
+                    themeModeIcon.setImageResource(themeModeIcons[position]);
+                    
+                    // Set selection state
+                    boolean isSelected = position == selectedPosition[0];
+                    view.setSelected(isSelected);
+                    
+                    if (isSelected) {
+                        selectedIndicator.setVisibility(View.VISIBLE);
+                        themeModeName.setTypeface(themeModeName.getTypeface(), android.graphics.Typeface.BOLD);
+                        
+                        // Use primary color for selected text
+                        int primaryColor = MaterialColors.getColor(SettingsActivity.this, 
+                            R.attr.colorPrimary,
+                            ContextCompat.getColor(SettingsActivity.this, android.R.color.holo_blue_bright));
+                        themeModeName.setTextColor(primaryColor);
+                    } else {
+                        selectedIndicator.setVisibility(View.GONE);
+                        themeModeName.setTypeface(themeModeName.getTypeface(), android.graphics.Typeface.NORMAL);
+                        
+                        // Use default text color
+                        int textColor = MaterialColors.getColor(SettingsActivity.this,
+                            R.attr.colorOnSurface,
+                            ContextCompat.getColor(SettingsActivity.this, android.R.color.black));
+                        themeModeName.setTextColor(textColor);
+                    }
+                }
+
+                return view;
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.Theme_MyNotes_Dialog);
+        AlertDialog dialog = builder.setTitle(getString(R.string.selectThemeMode))
+               .setAdapter(adapter, (dialogInterface, which) -> {
+                   if (which >= 0 && which < themeModeNames.length) {
+                       selectedPosition[0] = which;
+                       PowerPreference.getDefaultFile().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, which);
+                       updateThemeModeDisplay();
+                       applyThemeMode(which);
+                   }
+               })
+               .setNegativeButton(getString(R.string.cancel), null)
+               .create();
+               
+        // Customize dialog appearance
+        dialog.show();
+        
+        // Make dialog corners rounded
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_rounded_background);
+        }
+    }
+
+    /**
+     * Apply theme mode and redraw activity
+     */
+    private void applyThemeMode(int themeMode) {
+        // First, apply the theme mode setting to AppCompatDelegate
+        switch (themeMode) {
+            case 0: // Follow System
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+            case 1: // Light
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case 2: // Dark
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+        }
+        
+        // Force recreate the activity to apply the new night mode immediately
+        recreate();
     }
 
 }

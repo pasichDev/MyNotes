@@ -37,6 +37,93 @@
                 />
 
 
+            <!-- Theme Mode Selection -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/themeModeCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        tools:ignore="UselessParent">
+
+                        <!-- Theme Mode Icon -->
+                        <ImageView
+                            android:id="@+id/themeModeIcon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="20dp"
+                            android:contentDescription="theme"
+                            android:src="@drawable/ic_brightness_6"
+                            app:tint="?attr/colorPrimary"
+                            tools:ignore="HardcodedText" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/themeMode"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:id="@+id/currentThemeModeText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/themeModeFollowSystem"  android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/railway_medium" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginStart="16dp">
+
+
+
+                            <!-- Arrow Icon -->
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_arrow_forward"
+                                android:contentDescription="@string/selectThemeMode"
+                                app:tint="?attr/colorOnSurfaceVariant" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Accent Color Selection -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/accentColorCard"
