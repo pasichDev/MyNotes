@@ -1,5 +1,6 @@
 package com.pasich.mynotes.data.model.backup;
 
+import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
@@ -9,19 +10,26 @@ import java.util.List;
 
 public class JsonBackup {
 
+    @SerializedName("a")
     private PreferencesBackup preferences;
+    
+    @SerializedName("b")
     private List<Note> notes;
+    
+    @SerializedName("c")
     private List<TrashNote> trashNotes;
 
+    @SerializedName("d")
     private List<Tag> tags;
 
+    @SerializedName("e")
     private boolean errorCode = false;
 
     public JsonBackup() {
         this.preferences = new PreferencesBackup();
-        this.notes = getNotes();
-        this.tags = getTags();
-        this.trashNotes = getTrashNotes();
+        this.notes = new ArrayList<>();
+        this.tags = new ArrayList<>();
+        this.trashNotes = new ArrayList<>();
     }
 
     public JsonBackup error() {

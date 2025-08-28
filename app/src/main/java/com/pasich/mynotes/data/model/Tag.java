@@ -6,23 +6,30 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.annotations.SerializedName;
+
 @Entity(tableName = "tags")
 public class Tag {
 
     @PrimaryKey(autoGenerate = true)
+    @SerializedName("a")
     public long id;
 
     @NonNull
     @ColumnInfo(name = "name")
+    @SerializedName("b")
     private String nameTag = "";
 
     @ColumnInfo(name = "visibility")
+    @SerializedName("c")
     private int visibility = 0;
+    
     /**
      * SystemAction - тип Системной метки (1) - добавить метку (2) - все заметки (0) -
      * пользовательский тэг
      */
     @ColumnInfo(name = "systemAction")
+    @SerializedName("d")
     private int systemAction = 0;
 
 

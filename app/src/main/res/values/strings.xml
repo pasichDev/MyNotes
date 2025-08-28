@@ -218,4 +218,19 @@
     
     <!-- Purchase status -->
     <string name="purchased">Purchased</string>
+    
+    <!-- Missing strings found in translations -->
+    <string name="addShortCutSuccessfully">Shortcut added successfully</string>
+    <string name="shortCutCreateFallDouble">A label has already been created for this note</string>
+    <string name="plus" translatable="false">+</string>
+    <string name="versionAndCodeApp" translatable="false">My notes (v%1$s)</string>
+    <string name="coffeeByPlay">Thank Developer</string>
+    <string name="coffeeByTextInfo"><b>My Notes</b> is an ad-free app and is distributed as a free product. The application is developed by one person, so some updates are delivered late. Maintaining the health of the application and some features generates costs. You can thank the developer by buying him a coffee or paying for the server rent, as well as send a donation to the specified links that will be displayed below. Thank you for using this app!</string>
+    <string name="thankYouTitle">Thank you for using MyNotes!</string>
+    <string name="thankYouDescription">Your support helps us continue developing and improving the app</string>
+    <string name="paypalDescription">Send a donation via PayPal</string>
+    <string name="githubSponsorsDescription">Become a GitHub sponsor</string>
+    <string name="otherWaysToSupport">Other Ways to Support</string>
+    <string name="joinCommunity">Join the Community</string>
+    <string name="joinCommunityDescription">Connect with other users on Reddit</string>
 </resources>

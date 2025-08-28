@@ -161,20 +161,25 @@ public class ApiBackup implements ApiHelper {
     public JsonBackup readBackupLocalFile(Uri uriLocalFile) {
         try {
             final ParcelFileDescriptor descriptor = mContext.getContentResolver().openFileDescriptor(uriLocalFile, "r");
+            if (descriptor == null) {
+                return new JsonBackup().error();
+            }
+            
             final StringBuilder jsonFile = new StringBuilder();
             final BufferedReader bufferedReader = new BufferedReader(new FileReader(descriptor.getFileDescriptor()));
             String line;
+            
             while ((line = bufferedReader.readLine()) != null) {
                 jsonFile.append(line);
                 jsonFile.append('\n');
             }
+            
             descriptor.close();
             bufferedReader.close();
 
             return ScramblerBackupHelper.decodeString(jsonFile.toString());
-        } catch (IOException e) {
-            Log.w("BACKUP", String.valueOf(e));
-
+            
+        } catch (Exception e) {
             return new JsonBackup().error();
         }
     }

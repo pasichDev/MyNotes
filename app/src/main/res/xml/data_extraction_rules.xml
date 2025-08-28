@@ -13,11 +13,8 @@
         <!-- Включити налаштування користувача -->
         <include domain="sharedpref" />
         
-        <!-- Включити файли нотаток -->
-        <include domain="file" path="notes/" />
-        
-        <!-- Включити файли вкладень -->
-        <include domain="file" path="attachments/" />
+        <!-- Включити всі файли спочатку -->
+        <include domain="file" />
         
         <!-- Виключити тимчасові та кешовані файли -->
         <exclude domain="file" path="cache/" />
@@ -35,13 +32,7 @@
         <!-- Включити всі основні дані нотаток -->
         <include domain="database" />
         <include domain="sharedpref" />
-        <include domain="file" path="notes/" />
-        <include domain="file" path="attachments/" />
-        
-        <!-- Включити персоналізовані налаштування -->
-        <include domain="sharedpref" path="user_preferences.xml" />
-        <include domain="sharedpref" path="theme_settings.xml" />
-        <include domain="sharedpref" path="backup_settings.xml" />
+        <include domain="file" />
         
         <!-- Виключити тимчасові дані -->
         <exclude domain="file" path="cache/" />

@@ -1,16 +1,33 @@
 package com.pasich.mynotes.data.model.backup;
+
+import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 
 public class PreferencesBackup {
 
+    @SerializedName("a")
     private final int formatCount;
+    
+    @SerializedName("b")
     private final int sizeTextNote;
+    
+    @SerializedName("c")
     private final int themeValue;
-    private final int themeMode;
+    
+    @SerializedName("d")
     private final boolean dynamicTheme;
+    
+    @SerializedName("e")
     private final String typeFaceNoteActivity;
+    
+    @SerializedName("f")
     private final String sortParam;
+    
+    @SerializedName("g")
     private final boolean isCreated;
+    
+    @SerializedName("h")
+    private final int themeMode;
 
     public PreferencesBackup(int fc, String tf, String sp, int st, int tv, boolean dt, int tm) {
         this.formatCount = fc;

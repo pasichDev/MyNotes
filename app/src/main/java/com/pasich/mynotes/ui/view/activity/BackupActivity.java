@@ -55,7 +55,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      */
     private final ActivityResultLauncher<Intent> startIntentImport = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK) {
-            if (result.getData() != null) {
+            if (result.getData() != null && result.getData().getData() != null) {
                 presenter.readFileBackupLocal(result.getData().getData());
             }
         }
@@ -237,7 +237,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      */
     @Override
     public void openIntentReadBackup() {
-        startIntentImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json"));
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("application/json");
+        startIntentImport.launch(intent);
     }
 
     /**
@@ -414,17 +417,22 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
     @Override
     public void restoreFinish(int infoCode) {
-        if (progressDialog != null) progressDialog.dismiss();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
         switch (infoCode) {
-            case CloudErrors.OKAY_RESTORE ->
-                    onInfoSnack(R.string.restoreDataOkay, null, SnackBarInfo.Success, Snackbar.LENGTH_LONG);
-            case CloudErrors.BACKUP_DESTROY ->
-                    onInfoSnack(R.string.restoreDataFall, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+            case CloudErrors.OKAY_RESTORE -> {
+                onInfoSnack(R.string.restoreDataOkay, null, SnackBarInfo.Success, Snackbar.LENGTH_LONG);
+            }
+            case CloudErrors.BACKUP_DESTROY -> {
+                onInfoSnack(R.string.restoreDataFall, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+            }
             case CloudErrors.NETWORK_ERROR -> {
                 goneProgressBarCLoud();
                 onInfoSnack(R.string.errorDriveSync, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             }
             default -> {
+                Log.w("BACKUP_ACTIVITY", "Unknown restore result code: " + infoCode);
             }
         }
     }

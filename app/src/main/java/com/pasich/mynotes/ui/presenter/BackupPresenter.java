@@ -112,13 +112,11 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
     public void readFileBackupLocal(Uri mUri) {
         getView().showProcessRestoreDialog();
         final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
-        Log.w("BACKUP", String.valueOf(jsonBackup.getNotes().size()));
         if (jsonBackup.isError()) {
             getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
         } else {
             restoreData(jsonBackup);
         }
-
     }
 
     /**
@@ -127,37 +125,27 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      * @param jsonBackup - data restore
      */
     private void restoreData(JsonBackup jsonBackup) {
-        try {
-
-            getDataManager().setListPreferences(jsonBackup.getPreferences());
-            getCompositeDisposable().add(
-                    Completable.mergeArray(
-                                   getDataManager().addNotes(jsonBackup.getNotes()),
-                                    getDataManager().addTags(jsonBackup.getTags()),
-                                    getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
-                            )
-                            .subscribeOn(getSchedulerProvider().io())
-                            .observeOn(getSchedulerProvider().ui())
-                            .doOnTerminate(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE))
-                            .subscribe(
-                                    () -> {
-                                        // Handle success case
-                                        Log.d("Restore", "Restore successful");
-                                    },
-                                    throwable -> {
-                                        // Handle error case
-                                        Log.e("Restore", "Error restoring data", throwable);
-                                        getView().showErrors(CloudErrors.BACKUP_DESTROY);
-                                    }
-                            )
-            );
-        } catch (Exception e) {
-            Log.e("restoreData", "restoreData: " + e.getMessage(), e);
-
-        }
-
-
-
+        getDataManager().setListPreferences(jsonBackup.getPreferences());
+        getCompositeDisposable().add(
+                Completable.mergeArray(
+                               getDataManager().addNotes(jsonBackup.getNotes()),
+                                getDataManager().addTags(jsonBackup.getTags()),
+                                getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
+                        )
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .doOnTerminate(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE))
+                        .subscribe(
+                                () -> {
+                                    // Handle success case
+                                },
+                                throwable -> {
+                                    // Handle error case
+                                    Log.e("RxError", "Error: ", throwable);
+                                    getView().showErrors(CloudErrors.BACKUP_DESTROY);
+                                }
+                        )
+        );
     }
 
 

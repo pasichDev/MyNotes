@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Objects;
 
 @Entity(tableName = "notes")
@@ -11,11 +13,19 @@ public class Note {
 
 
     @PrimaryKey(autoGenerate = true)
+    @SerializedName("a")
     public int id;
 
+    @SerializedName("b")
     private String title;
+    
+    @SerializedName("c")
     private String value;
+    
+    @SerializedName("d")
     private long date;
+    
+    @SerializedName("e")
     private String tag;
 
 
