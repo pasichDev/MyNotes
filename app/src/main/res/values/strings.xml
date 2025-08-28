@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="NewNote"> Create note </string>
     <string name="trashNotes">Move to trash</string>
     <string name="trashClean">Trash Clean</string>
@@ -37,8 +37,6 @@
     <string name="sortHead">Sort by:</string>
     <string name="shareApp">Share App</string>
     <string name="privacyApp">Privacy Policy</string>
-    <string name="addShortCutLauncher">Add shortcut to desktop</string>
-    <string name="addShortCutSuccessfully">Shortcut added successfully</string>
     <string name="translateNote">Translate note</string>
     <string name="hintTextNote">Text</string>
     <string name="notInstaledAppTranslate">Google Translator must be installed to use this feature</string>
@@ -49,6 +47,7 @@
     <string name="errorNewTagInput">Error: The maximum number of characters a tag name can contain is %1$d </string>
     <string name="emptyTrash">Your deleted notes are displayed here</string>
     <string name="emptyNotes">Notes you create will appear here</string>
+    <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
     <string name="chooseNote">Actions on the selected note</string>
     <string name="contentDescrChangeStyleText">Change text style</string>
     <string name="copyNoteEdits">Edit copy</string>
@@ -61,17 +60,12 @@
 
 
     <!-- Strings that are not translated  -->
-    <string name="plus" translatable="false">+</string>
     <string name="tagHastag" translatable="false">#%1$s</string>
     <string name="app_name"> My Notes </string>
     <string name="telegram_nick" translatable="false">"@"pasichDev</string>
-    <string name="email_address" translatable="false">pasichDev@gmail.com</string>
-    <string name="theme_demo" translatable="false">Demo Screen Theme</string>
+    <string name="email_address" translatable="false">pasichDev@outlook.com</string>
     <string name="editNoteButton" translatable="false">EditNote</string>
-    <string name="contentCoffee" translatable="false">Coffee</string>
     <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
-    <string name="versionAndCodeApp" translatable="false">My notes (v%1$s)</string>
-    <string name="MonoBank_Donate" translatable="false">MonoBank Donate</string>
     <string name="userAvatar" translatable="false">User Avatar</string>
     <string name="logOut" translatable="false">LogOut</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
@@ -79,23 +73,33 @@
 
     <string name="hiddeTag">Hide notes</string>
     <string name="visibleTag">Show notes</string>
-    <string name="hintNameLabel">Label name</string>
-    <string name="titleDialogShortCut">Create Shortcut</string>
-    <string name="functionNotSupport">This function is not supported by your device</string>
-    <string name="shortCutCreateFallDouble">A label has already been created for this note</string>
-    <string name="buttonCreateShortCut">Add shortcut to desktop</string>
-    <string name="errorMaxNameShortCut">Error in shortcut name</string>
     <string name="renameTag">Rename</string>
 
 
     <string name="settingsInterface">Interface settings</string>
+    <string name="settings">Settings</string>
     <string name="settingsBackups">Sync &amp; Backup</string>
     <string name="aboutApps">About App</string>
     <string name="trash">Trash</string>
-    <string name="themes">Themes</string>
+    <string name="themes">Theme</string>
+    <string name="themeBlue">Ocean Blue</string>
+    <string name="themeGreen">Emerald Green</string>
+    <string name="themeSunset">Sunset Orange</string>
+    <string name="themeYellow">Golden Yellow</string>
+    <string name="themePurple">Deep Purple</string>
+    <string name="themeCoralRed">Coral Red</string>
+    <string name="accentColorDescription">Select an accent color to build your theme around</string>
+    <string name="selectAccentColor">Select accent color</string>
     <string name="onDynamicColor">Enable Dynamic Color</string>
-    <string name="coffeeByPlay">Thank Developer</string>
-    <string name="coffeeByTextInfo"><b>My Notes</b> is an ad-free app and is distributed as a free product. The application is developed by one person, so some updates are delivered late. Maintaining the health of the application and some features generates costs. You can thank the developer by buying him a coffee or paying for the server rent, as well as send a donation to the specified links that will be displayed below. Thank you for using this app!</string>
+    <string name="onDynamicColorDescription">Adapts app colors to your wallpaper (Android 12+)</string>
+    <string name="onScreenProtection">Enable screen protection</string>
+    <string name="onScreenProtectionDescription">Prevents screenshots and screen recording. Takes effect after restarting the app</string>
+    <string name="themeMode">Theme Mode</string>
+    <string name="themeModeDescription">Choose between light, dark, or system theme</string>
+    <string name="selectThemeMode">Select theme mode</string>
+    <string name="themeModeFollowSystem">Follow System</string>
+    <string name="themeModeLight">Light</string>
+    <string name="themeModeDark">Dark</string>
 
     <string name="loginUser">Google Login</string>
     <string name="cloudBackup">Cloud</string>
@@ -139,9 +143,6 @@
 
 
     <!-- Product offer -->
-    <string name="byyError"> Error while purchasing.</string>
-    <string name="byyCancel">We will strive to be better.</string>
-    <string name="errorLoadingsProduct">Error, failed to load storefront</string>
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
 
@@ -151,4 +152,85 @@
     <string name="errorSyncDescrpt">With this version, we are discontinuing support for Google Drive synchronization. In future updates, we will introduce a more secure and efficient synchronization method, ensuring you a better user experience.</string>
 
     <string name="creteNoteToTag">Create  note</string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Support Developer</string>
+    <string name="donationMethods">Donation Methods</string>
+    <string name="kofiDescription">Buy me a coffee on Ko-Fi</string>
+    <string name="ratingAppDescription">Rate us 5 stars on Google Play</string>
+    <string name="contactDeveloper">Contact Developer</string>
+    <string name="inAppPurchases">In-App Purchases</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">What\'s New</string>
+    <string name="current_version" translatable="false">v%1$s</string>
+    <string name="version_acknowledged">Got it!</string>
+    <string name="whats_new_title">New Features &amp; Improvements</string>
+    <string name="whats_new_description">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
+    <string name="changelog_subtitle">Stay up to date with all the changes and improvements in this version</string>
+    <string name="errorLoadingChangelog">Error loading changelog</string>
+    <string name="checkInternetConnection">Please check your internet connection</string>
+    <string name="retry">Retry</string>
+    <string name="whatNewVersion" translatable="false" tools:ignore="ResourceCycle">@string/whatNewVersion</string>
+
+
+    <string name="leaveFeedback">Leave  feedback</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Seed of Ideas</string>
+    <string name="donation_seed_description">Plant the first seed for future innovations</string>
+    <string name="donation_spark_title">Spark of Inspiration</string>
+    <string name="donation_spark_description">Ignite creativity and fuel development</string>
+    <string name="donation_midnight_title">Midnight Notebook</string>
+    <string name="donation_midnight_description">Support late-night coding sessions</string>
+    <string name="donation_wave_title">Wave of Support</string>
+    <string name="donation_wave_description">Send a powerful wave of encouragement</string>
+    <string name="donation_universe_title">Universe of Inspiration</string>
+    <string name="donation_universe_description">Unlock infinite possibilities for the future</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Thank You! 💖</string>
+    <string name="purchase_success_message">Your support means the world to us! Thanks to amazing people like you, we can continue developing and improving MyNotes. Your contribution helps us add new features, fix bugs, and make the app even better.\n\nWe wish you all the best and hope you continue to enjoy using MyNotes!</string>
+    <string name="purchase_success_button">Close</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Purchase Failed</string>
+    <string name="purchase_loading">Loading products...</string>
+    <string name="purchase_error_no_products">No donation products available</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Support Developer</string>
+    <string name="support_solo_developer_description">Hi! I\'m a developer working on MyNotes in my free time. All features will always be free, but your support helps me dedicate more time to making this app even better. Every contribution means the world to me! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Amazing Supporter! 🌟</string>
+    <string name="supporter_badge_subtitle">Your support collection</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Seed</string>
+    <string name="donation_spark_short">Spark</string>
+    <string name="donation_midnight_short">Notebook</string>
+    <string name="donation_wave_short">Wave</string>
+    <string name="donation_universe_short">Universe</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Faithful Friend</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Purchased</string>
+    
+    <!-- Missing strings found in translations -->
+    <string name="addShortCutSuccessfully">Shortcut added successfully</string>
+    <string name="shortCutCreateFallDouble">A label has already been created for this note</string>
+    <string name="plus" translatable="false">+</string>
+    <string name="versionAndCodeApp" translatable="false">My notes (v%1$s)</string>
+    <string name="coffeeByPlay">Thank Developer</string>
+    <string name="coffeeByTextInfo"><b>My Notes</b> is an ad-free app and is distributed as a free product. The application is developed by one person, so some updates are delivered late. Maintaining the health of the application and some features generates costs. You can thank the developer by buying him a coffee or paying for the server rent, as well as send a donation to the specified links that will be displayed below. Thank you for using this app!</string>
+    <string name="thankYouTitle">Thank you for using MyNotes!</string>
+    <string name="thankYouDescription">Your support helps us continue developing and improving the app</string>
+    <string name="paypalDescription">Send a donation via PayPal</string>
+    <string name="githubSponsorsDescription">Become a GitHub sponsor</string>
+    <string name="otherWaysToSupport">Other Ways to Support</string>
+    <string name="joinCommunity">Join the Community</string>
+    <string name="joinCommunityDescription">Connect with other users on Reddit</string>
 </resources>

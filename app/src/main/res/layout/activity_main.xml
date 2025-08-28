@@ -16,20 +16,24 @@
             type="boolean" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/activity_main"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?android:colorBackground"
-        tools:context=".ui.view.activity.MainActivity">
+        android:layout_height="match_parent">
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/activity_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?android:colorBackground"
+            tools:context=".ui.view.activity.MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarMainActivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            android:background="@android:color/transparent"
-            app:layout_behavior="com.pasich.mynotes.utils.behavior.FixedAppBarLayoutBehavior">
+            android:background="?attr/colorSurface"
+            app:elevation="0dp"
+            app:liftOnScroll="false">
 
             <com.google.android.material.search.SearchBar
                 android:id="@+id/actionSearch"
@@ -38,13 +42,17 @@
                 android:hint="@string/search"
                 android:searchIcon="@drawable/ic_search"
                 android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                android:clickable="true"
+                android:focusable="true"
                 app:menu="@menu/menu_search_notes"
                 app:defaultMarginsEnabled="false"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
-                android:layout_margin="15dp"
                 android:backgroundTint="?attr/colorSurfaceVariant"
                 app:elevation="0dp"
-                app:navigationIconTint="?attr/colorPrimary" />
+                app:navigationIconTint="?attr/colorPrimary"
+                app:layout_scrollFlags="scroll|enterAlways" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_tags"
@@ -53,34 +61,17 @@
                 android:orientation="horizontal"
                 android:overScrollMode="never"
                 android:paddingStart="15dp"
-                android:paddingEnd="20dp"
-                android:paddingBottom="15dp"
-                app:layout_scrollFlags="noScroll" />
+                android:paddingEnd="0dp"
+                android:paddingBottom="7dp"
+                app:layout_scrollFlags="scroll|enterAlways" />
 
         </com.google.android.material.appbar.AppBarLayout>
-
-        <com.google.android.material.search.SearchView
-            android:id="@+id/searchView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:autoShowKeyboard="true"
-            android:hint="@string/searchNotesFromTitle"
-            app:layout_anchor="@id/actionSearch">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/resultsSearchList"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?android:colorBackground"
-                app:layout_anchor="@id/actionSearch" />
-
-        </com.google.android.material.search.SearchView>
-
 
         <FrameLayout
             android:id="@+id/notes_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:paddingTop="7dp"
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -106,7 +97,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_margin="15dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="30dp"
             android:visibility="gone"
             app:layout_anchor="@id/notes_layout"
             app:layout_anchorGravity="bottom|right|end" />
@@ -120,14 +112,34 @@
             android:layout_marginBottom="25dp"
             android:contentDescription="@string/NewNote"
             android:onClick="@{(view) -> presenter.newNotesClick()}"
-            app:layout_anchor="@id/notes_layout"
-            app:layout_anchorGravity="bottom|right|end"
-            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+            android:layout_gravity="bottom|end"
             app:layout_dodgeInsetEdges="bottom"
             app:srcCompat="@drawable/ic_add" />
 
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <com.google.android.material.search.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:autoShowKeyboard="true"
+            android:hint="@string/searchNotesFromTitle">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/resultsSearchList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?android:colorBackground"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:clipToPadding="false" />
+
+        </com.google.android.material.search.SearchView>
+
+    </FrameLayout>
 
 
 </layout>

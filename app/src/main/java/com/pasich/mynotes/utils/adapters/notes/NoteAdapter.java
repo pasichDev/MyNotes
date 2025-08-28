@@ -21,11 +21,32 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
 
     private final List<String> nameTagsHidden = new ArrayList<>();
     private List<Note> defaultList = new ArrayList<>();
+    private androidx.recyclerview.widget.RecyclerView recyclerView;
+    private boolean shouldScrollToTop = false;
 
 
     @Inject
     public NoteAdapter(@NonNull DiffUtilNote diffCallback, int layoutId, GenericAdapterCallback<VM, Note> bindingInterface) {
         super(diffCallback, layoutId, bindingInterface);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        this.recyclerView = recyclerView;
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        this.recyclerView = null;
+    }
+
+    /**
+     * Встановлює флаг для прокручування до верху при наступному оновленні списку
+     */
+    public void setScrollToTopOnNextUpdate(boolean scrollToTop) {
+        this.shouldScrollToTop = scrollToTop;
     }
 
 
@@ -55,7 +76,7 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
     public int updateFromVisibilityTags() {
 
         ArrayList<Note> newList = new ArrayList<>();
-        if (defaultList.size() >= 1) {
+        if (!defaultList.isEmpty()) {
             for (Note item : defaultList) {
                 if (!nameTagsHidden.contains(item.getTag())) {
                     newList.add(item);
@@ -69,6 +90,10 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
 
 
     public int filter(String tagSelected) {
+        return filter(tagSelected, true);
+    }
+    
+    public int filter(String tagSelected, boolean updateList) {
         ArrayList<Note> newFilter = new ArrayList<>();
 
         if (tagSelected.equals("allNotes")) {
@@ -78,11 +103,38 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
                 }
             }
 
-            if (nameTagsHidden.size() >= 1) {
-                submitList(newFilter);
+            if (!nameTagsHidden.isEmpty()) {
+                if (updateList) {
+                    submitList(newFilter);
+                }
                 return newFilter.size();
             } else {
-                submitList(defaultList);
+                if (updateList) {
+                    submitList(defaultList, () -> {
+                        // Прокручуємо до першого елемента тільки якщо це нова нотатка
+                        if (shouldScrollToTop && recyclerView != null && !getCurrentList().isEmpty()) {
+                            recyclerView.post(() -> {
+                                androidx.recyclerview.widget.StaggeredGridLayoutManager layoutManager = 
+                                    (androidx.recyclerview.widget.StaggeredGridLayoutManager) recyclerView.getLayoutManager();
+                                if (layoutManager != null) {
+                                    int[] firstVisibleItemPositions = layoutManager.findFirstVisibleItemPositions(null);
+                                    boolean isFirstItemVisible = false;
+                                    for (int pos : firstVisibleItemPositions) {
+                                        if (pos == 0) {
+                                            isFirstItemVisible = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (!isFirstItemVisible) {
+                                        layoutManager.scrollToPositionWithOffset(0, 0);
+                                    }
+                                }
+                            });
+                            shouldScrollToTop = false; // Скидаємо флаг після використання
+                        }
+                    });
+                }
                 return defaultList.size();
             }
         } else {
@@ -93,10 +145,16 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
                 }
             }
 
-            submitList(newFilter);
+            if (updateList) {
+                submitList(newFilter);
+            }
             return newFilter.size();
         }
 
+    }
+    
+    public void clearList() {
+        submitList(new ArrayList<>());
     }
 
 

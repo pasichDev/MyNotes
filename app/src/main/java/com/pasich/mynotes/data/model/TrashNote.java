@@ -4,15 +4,23 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.annotations.SerializedName;
+
 @Entity(
         tableName = "trash")
 public class TrashNote {
 
     @PrimaryKey(autoGenerate = true)
+    @SerializedName("a")
     public int id;
 
+    @SerializedName("b")
     private String title;
+    
+    @SerializedName("c")
     private String value;
+    
+    @SerializedName("d")
     private long date;
 
     @Ignore

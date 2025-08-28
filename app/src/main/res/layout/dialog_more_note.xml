@@ -35,11 +35,7 @@
                 android:id="@+id/settingsActivity"
                 layout="@layout/view_set_note_activity" />
 
-            <View
-                android:id="@+id/divider"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="?attr/colorControlHighlight" />
+
 
             <LinearLayout
                 android:id="@+id/groupLayouts"
@@ -56,7 +52,8 @@
                     android:id="@+id/action_panel_activate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="@drawable/bg_item_full"
+                    android:layout_marginHorizontal="20dp"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems"
                     android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}">
@@ -71,11 +68,15 @@
                         android:text="@string/selectAll" />
                 </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"/>
                 <LinearLayout
                     android:id="@+id/share"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="@drawable/bg_item_start"
+                    android:layout_marginHorizontal="20dp"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems"
                     android:visibility="@{valuesText ?  View.VISIBLE :View.GONE , default = gone}">
@@ -91,30 +92,16 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/addShortCutLauncher"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:orientation="horizontal"
-            android:padding="@dimen/paddingItems"
-            android:visibility="gone">
 
-            <ImageView
-                style="@style/iconDialogList"
-                android:contentDescription="@string/addShortCutLauncher"
-                android:src="@drawable/ic_label" />
-
-            <TextView
-                style="@style/itemTextBottomSheets"
-                android:text="@string/addShortCutLauncher" />
-        </LinearLayout>
-
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
                 <LinearLayout
                     android:id="@+id/translateNote"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="@drawable/bg_item_middle"
+                    android:layout_marginHorizontal="20dp"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems"
                     android:visibility="@{valuesText  &amp;&amp; activityNote ?  View.VISIBLE :View.GONE , default = gone}">
@@ -130,11 +117,15 @@
 
         </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
                 <LinearLayout
                     android:id="@+id/copyNote"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="@drawable/bg_item_middle"
+                    android:layout_marginHorizontal="20dp"
                     android:orientation="horizontal"
                     android:visibility="@{newNote ? View.GONE : View.VISIBLE, default = gone}"
                     android:padding="@dimen/paddingItems">
@@ -150,11 +141,15 @@
                 </LinearLayout>
 
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"/>
                 <LinearLayout
                     android:id="@+id/moveToTrash"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:background="@drawable/bg_item_end"
+                    android:layout_marginHorizontal="20dp"
                     android:orientation="horizontal"
                     android:visibility="@{newNote ? View.GONE : View.VISIBLE, default = gone}"
                     android:padding="@dimen/paddingItems">
@@ -170,11 +165,16 @@
         </LinearLayout>
 
 
+                <View
+                    android:id="@+id/spacerLast"
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"/>
             <LinearLayout
                 android:id="@+id/noSave"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?android:attr/selectableItemBackground"
+                android:background="@drawable/bg_item_full"
+                android:layout_marginHorizontal="20dp"
                 android:orientation="horizontal"
                 android:visibility="@{activityNote ? View.VISIBLE : View.GONE, default = gone}"
                 android:padding="@dimen/paddingItems">
@@ -189,12 +189,15 @@
                     android:text="@string/noSave" />
             </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"/>
 
                 <HorizontalScrollView
                     android:id="@+id/scrollChips"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
+                    android:paddingHorizontal="17dp"
                     android:paddingVertical="5dp"
                     android:scrollbars="none"
                     android:visibility="@{!newNote ?  View.VISIBLE :View.GONE , default = gone}">

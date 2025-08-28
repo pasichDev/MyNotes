@@ -36,7 +36,6 @@
     <string name="sortHead">Trier par:</string>
     <string name="shareApp">Partager l\'application</string>
     <string name="privacyApp">Politique de confidentialité</string>
-    <string name="addShortCutLauncher">Ajouter un raccourci sur le bureau</string>
     <string name="addShortCutSuccessfully">Ajouter un raccourci avec succès</string>
     <string name="translateNote">Traduire la note</string>
     <string name="hintTextNote">Texte</string>
@@ -48,6 +47,7 @@
     <string name="errorNewTagInput">Erreur: nombre maximal de caractères que le nom de balise %1$d peut contenir </string>
     <string name="emptyTrash">Vos notes supprimées seront affichées ici</string>
     <string name="emptyNotes">Les notes que vous avez créées seront affichées ici</string>
+    <string name="emptyNotesForTag">Ici seront affichées les notes que vous marquerez avec le tag "%1$s"</string>
     <string name="chooseNote">Actions sur la note sélectionnée</string>
     <string name="contentDescrChangeStyleText">Modifier le style de texte</string>
     <string name="copyNoteEdits">Modifier une copie d\'une note</string>
@@ -60,19 +60,32 @@
     <string name="button_url">Ouvrir le lien</string>
     <string name="hiddeTag">Masquer les notes</string>
     <string name="visibleTag">Afficher les notes</string>
-    <string name="hintNameLabel">Le nom de l\'étiquette</string>
-    <string name="titleDialogShortCut">Créer un raccourci</string>
-    <string name="functionNotSupport">Cette fonction n\'est pas prise en charge par votre appareil</string>
     <string name="shortCutCreateFallDouble">Le raccourci pour cette note a déjà été créé</string>
-    <string name="buttonCreateShortCut">Ajouter un raccourci sur le bureau</string>
-    <string name="errorMaxNameShortCut">Erreur dans le nom du raccourci</string>
     <string name="renameTag">Renommer</string>
     <string name="settingsInterface">Paramètres d\'interface</string>
+    <string name="settings">Paramètres</string>
     <string name="settingsBackups">Synchronisation et sauvegardes</string>
     <string name="aboutApps">À propos de l\'application</string>
     <string name="trash">Corbeille</string>
-    <string name="themes">Thèmes</string>
+    <string name="themes">Thème</string>
+    <string name="themeBlue">Bleu océan</string>
+    <string name="themeGreen">Vert émeraude</string>
+    <string name="themeSunset">Orange coucher de soleil</string>
+    <string name="themeYellow">Jaune doré</string>
+    <string name="themePurple">Violet profond</string>
+    <string name="themeCoralRed">Rouge corail</string>
+    <string name="accentColorDescription">Choisissez la couleur d\'accent à partir de laquelle le thème sera construit</string>
+    <string name="selectAccentColor">Sélectionner la couleur d\'accent</string>
     <string name="onDynamicColor">Activer la couleur dynamique</string>
+    <string name="onDynamicColorDescription">Adapte les couleurs de l\'app à votre fond d\'écran (Android 12+)</string>
+    <string name="onScreenProtection">Activer la protection d\'écran</string>
+    <string name="onScreenProtectionDescription">Empêche les captures d\'écran et l\'enregistrement. Prend effet après le redémarrage de l\'application</string>
+    <string name="themeMode">Mode thème</string>
+    <string name="themeModeDescription">Choisissez entre thème clair, sombre ou système</string>
+    <string name="selectThemeMode">Sélectionner le mode thème</string>
+    <string name="themeModeFollowSystem">Comme le système</string>
+    <string name="themeModeLight">Clair</string>
+    <string name="themeModeDark">Sombre</string>
     <string name="coffeeByPlay">Remercier le développeur</string>
     <string name="coffeeByTextInfo"><b>Mes notes</b> est une application sans publicité et distribuée en tant que produit gratuit. L\'application est développée par une seule personne, donc certaines mises à jour sont livrées en retard. Le maintien de la fonctionnalité du programme et de certaines fonctions crée des coûts. Vous pouvez remercier le développeur en lui achetant un café ou en payant la location d\'un serveur, ainsi qu\'en envoyant un don en utilisant les liens spécifiés qui seront affichés ci-dessous. Merci d\'utiliser cette application!</string>
     <string name="loginUser">Autorisation Google</string>
@@ -115,10 +128,78 @@
     <string name="errorSyncDescrpt">Avec cette version, nous arrêtons le support de la synchronisation avec Google Drive. Dans les futures mises à jour, nous introduirons une méthode de synchronisation plus sécurisée et efficace, garantissant une meilleure expérience utilisateur.</string>
 
     <!-- Offre produit -->
-    <string name="byyError">Erreur lors de l\'achat.</string>
-    <string name="byyCancel">Nous nous efforcerons de nous améliorer.</string>
-    <string name="errorLoadingsProduct">Erreur lors du chargement de la vitrine</string>
     <string name="thanks_title">Cher utilisateur</string>
     <string name="creteNoteToTag">Créer une note</string>
     <string name="thanks_donate">Le développeur du projet vous remercie pour votre achat. Nous nous efforcerons de devenir meilleurs et plus pratiques. \n <b>Cordialement, mes notes!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Soutenir le développeur</string>
+    <string name="inAppPurchases">Achats intégrés</string>
+    <string name="thankYouTitle">Merci d\'utiliser MyNotes!</string>
+    <string name="thankYouDescription">Votre soutien nous aide à continuer le développement et améliorer l\'application</string>
+    <string name="donationMethods">Méthodes de don</string>
+    <string name="kofiDescription">Offrez-moi un café sur Ko-Fi</string>
+    <string name="paypalDescription">Envoyez un don via PayPal</string>
+    <string name="githubSponsorsDescription">Devenez sponsor sur GitHub</string>
+    <string name="otherWaysToSupport">Autres moyens de soutenir</string>
+    <string name="ratingAppDescription">Notez-nous 5 étoiles sur Google Play</string>
+    <string name="joinCommunity">Rejoindre la communauté</string>
+    <string name="joinCommunityDescription">Connectez-vous avec d\'autres utilisateurs sur Reddit</string>
+    <string name="contactDeveloper">Contacter le développeur</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Quoi de neuf</string>
+    <string name="version_acknowledged">Compris !</string>
+    <string name="whats_new_title">Nouvelles fonctionnalités et améliorations</string>
+    <string name="whats_new_description">Découvrez les dernières mises à jour, nouvelles fonctionnalités et améliorations qui rendent votre expérience de prise de notes encore meilleure. Nous travaillons constamment à améliorer l\'application en fonction de vos commentaires !</string>
+    <string name="changelog_subtitle">Restez au courant de tous les changements et améliorations de cette version</string>
+    <string name="errorLoadingChangelog">Erreur lors du chargement du journal des modifications</string>
+    <string name="checkInternetConnection">Veuillez vérifier votre connexion internet</string>
+    <string name="retry">Réessayer</string>
+
+    <string name="leaveFeedback">Laisser un commentaire</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Graine d\'idées</string>
+    <string name="donation_seed_description">Plantez la première graine pour les innovations futures</string>
+    <string name="donation_spark_title">Étincelle d\'inspiration</string>
+    <string name="donation_spark_description">Allumez la créativité et alimentez le développement</string>
+    <string name="donation_midnight_title">Carnet de minuit</string>
+    <string name="donation_midnight_description">Soutenez les sessions de programmation nocturnes</string>
+    <string name="donation_wave_title">Vague de soutien</string>
+    <string name="donation_wave_description">Envoyez une puissante vague d\'encouragement</string>
+    <string name="donation_universe_title">Univers d\'inspiration</string>
+    <string name="donation_universe_description">Débloquez des possibilités infinies pour l\'avenir</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Merci ! 💖</string>
+    <string name="purchase_success_message">Votre soutien représente le monde pour nous ! Grâce à des personnes formidables comme vous, nous pouvons continuer à développer et améliorer MyNotes. Votre contribution nous aide à ajouter de nouvelles fonctionnalités, corriger les bugs et rendre l\'application encore meilleure.\n\nNous vous souhaitons tout le meilleur et espérons que vous continuerez à apprécier l\'utilisation de MyNotes !</string>
+    <string name="purchase_success_button">Fermer</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Achat échoué</string>
+    <string name="purchase_loading">Chargement des produits...</string>
+    <string name="purchase_error_no_products">Aucun produit de don disponible</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Soutenir le développeur</string>
+    <string name="support_solo_developer_description">Salut ! Je suis un développeur qui travaille sur MyNotes pendant mon temps libre. Toutes les fonctionnalités seront toujours gratuites, mais votre soutien m\'aide à consacrer plus de temps à améliorer cette application. Chaque contribution compte énormément pour moi ! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Supporter extraordinaire ! 🌟</string>
+    <string name="supporter_badge_subtitle">Votre collection de soutien</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Graine</string>
+    <string name="donation_spark_short">Étincelle</string>
+    <string name="donation_midnight_short">Carnet</string>
+    <string name="donation_wave_short">Vague</string>
+    <string name="donation_universe_short">Univers</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Ami fidèle</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Acheté</string>
+
 </resources>

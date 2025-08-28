@@ -7,12 +7,11 @@ import com.pasich.mynotes.base.view.ActionBar;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.base.view.MoreNoteNoteActivityView;
-import com.pasich.mynotes.base.view.ShortCutView;
 import com.pasich.mynotes.data.model.Note;
 
 public interface NoteContract {
 
-    interface view extends BaseView, ActionBar, MoreNoteNoteActivityView, ShortCutView {
+    interface view extends BaseView, ActionBar, MoreNoteNoteActivityView {
 
         void initParam();
 

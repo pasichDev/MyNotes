@@ -82,7 +82,8 @@ public class AppPreferencesHelper implements PreferenceHelper {
                 getTypeFaceNoteActivity(),
                 getSortParam(),
                 getSizeTextNoteActivity(), PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE),
-                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE));
+                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE),
+                PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE));
     }
 
 
@@ -96,7 +97,8 @@ public class AppPreferencesHelper implements PreferenceHelper {
                     .putString(ARGUMENT_PREFERENCE_SORT, preferences.getSortParam())
                     .putInt(ARGUMENT_PREFERENCE_TEXT_SIZE, preferences.getSizeTextNote())
                     .putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, preferences.getThemeValue())
-                    .putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, preferences.isDynamicTheme());
+                    .putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, preferences.isDynamicTheme())
+                    .putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
 
         }
     }
@@ -106,5 +108,34 @@ public class AppPreferencesHelper implements PreferenceHelper {
         return getDefaultPreferences().getString(ARGUMENT_PREFERENCE_TEXT_STYLE, ARGUMENT_DEFAULT_TEXT_STYLE);
     }
 
+    @Override
+    public boolean isScreenProtectionEnabled() {
+        return getDefaultPreferences().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
+    }
+
+    @Override
+    public void setScreenProtectionEnabled(boolean enabled) {
+        getDefaultPreferences().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, enabled);
+    }
+
+    @Override
+    public String getLastKnownVersion() {
+        return getDefaultPreferences().getString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "");
+    }
+
+    @Override
+    public void setLastKnownVersion(String version) {
+        getDefaultPreferences().setString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, version);
+    }
+
+    @Override
+    public int getThemeMode() {
+        return getDefaultPreferences().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+    }
+
+    @Override
+    public void setThemeMode(int mode) {
+        getDefaultPreferences().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, mode);
+    }
 
 }

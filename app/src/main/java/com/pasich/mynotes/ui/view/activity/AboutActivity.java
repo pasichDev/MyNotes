@@ -1,15 +1,16 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import static com.pasich.mynotes.utils.constants.ContactLink.LINK_APP_SITE;
+import static com.pasich.mynotes.utils.constants.ContactLink.LINK_GITHUB_REPO;
 import static com.pasich.mynotes.utils.constants.ContactLink.LINK_PRIVACY_POLICY;
-import static com.pasich.mynotes.utils.constants.ContactLink.LINK_TELEGRAM_DEVELOP;
+import static com.pasich.mynotes.utils.constants.ContactLink.SEND_FEEDBACK;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -50,6 +51,8 @@ public class AboutActivity extends BaseActivity {
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
+
+        setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);
         initActivity();
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
@@ -62,7 +65,6 @@ public class AboutActivity extends BaseActivity {
 
 
     private void startLoadingProducts() {
-
         initListeners();
     }
 
@@ -73,30 +75,12 @@ public class AboutActivity extends BaseActivity {
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void initActivity() {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        binding.versionApp.setText(getString(R.string.versionAndCodeApp, BuildConfig.VERSION_NAME));
+        binding.versionApp.setText(BuildConfig.VERSION_NAME + " ⦁ Apache-2.0");
         startLoadingProducts();
-    }
-
-    public void sendEmail() {
-        Intent intent = new Intent(Intent.ACTION_SENDTO).setData(Uri.parse("mailto:pasichDev@outlook.com"));
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        }
-
-    }
-
-    public void sendTelegram() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_TELEGRAM_DEVELOP)));
-    }
-    public void reddit() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.reddit.com/r/MyNotes_/")));
-    }
-
-    public void sendKoFi() {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://ko-fi.com/pasichdev")));
     }
 
     public void shareApp() {
@@ -107,13 +91,15 @@ public class AboutActivity extends BaseActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_PRIVACY_POLICY)));
     }
 
-    public void openRatingGooglePlay() {
-        final Intent rateAppIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName()));
-        if (!getPackageManager().queryIntentActivities(rateAppIntent, 0).isEmpty()) {
-            startActivity(rateAppIntent);
-        } else {
-            Toast.makeText(this, getString(R.string.notFoundPlayMarket), Toast.LENGTH_SHORT).show();
-        }
+    public void sendFeedback() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK)));
+    }
+
+    public void githubRepo() {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_GITHUB_REPO)));
+    }
+    public void openChangelog() {
+        startActivity(new Intent(this, ChangelogActivity.class));
     }
 
     @Override
@@ -123,13 +109,7 @@ public class AboutActivity extends BaseActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        finishActivity();
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         if (item.getItemId() == android.R.id.home) {
             finishActivity();
         }
@@ -142,5 +122,4 @@ public class AboutActivity extends BaseActivity {
         supportFinishAfterTransition();
         return true;
     }
-
 }

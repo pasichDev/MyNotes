@@ -6,7 +6,6 @@ import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.base.view.MainSortView;
 import com.pasich.mynotes.base.view.MoreNoteMainActivityView;
-import com.pasich.mynotes.base.view.ShortCutView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
@@ -18,7 +17,7 @@ import dagger.hilt.android.scopes.ActivityScoped;
 
 public interface MainContract {
 
-    interface view extends BaseView, MoreNoteMainActivityView, MainSortView, ManagerViewAction<Note>, ShortCutView {
+    interface view extends BaseView, MoreNoteMainActivityView, MainSortView, ManagerViewAction<Note>{
         void settingsSearchView();
         void settingsLists();
 
@@ -45,6 +44,8 @@ public interface MainContract {
         void finishActivityOtPresenter();
 
         void hideSearchView();
+        
+        void openChangelogActivity();
     }
 
 

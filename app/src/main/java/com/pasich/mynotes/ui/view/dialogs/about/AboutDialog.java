@@ -102,6 +102,12 @@ public class AboutDialog extends BaseDialogBottomSheets {
             aboutOpensActivity.openAboutActivity();
 
         });
+
+        binding.supportDev.setOnClickListener(v -> {
+            dismiss();
+            aboutOpensActivity.openSupportActivity();
+
+        });
     }
 
 
@@ -123,9 +129,6 @@ public class AboutDialog extends BaseDialogBottomSheets {
 
 
     }
-
-
-    // TODO: 20.01.2023 Добавить удаление фоновой службы AutoBackupWorker
     void signOut() {
         googleSignInClient.signOut().addOnCompleteListener(task -> {
             final Preference preference = PowerPreference.getFileByName(FIlE_NAME_PREFERENCE_BACKUP);

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Розширені правила передачі даних для Android 12+ (API 31+)
+    Підтримує новіші функції передачі даних між пристроями
+-->
+<data-extraction-rules>
+    <!-- Правила для хмарного резервного копіювання -->
+    <cloud-backup>
+        <!-- Основна база даних нотаток -->
+        <include domain="database" path="notes.db" />
+        <include domain="database" path="notes.db-shm" />
+        <include domain="database" path="notes.db-wal" />
+        
+        <!-- Файли налаштувань користувача -->
+        <include domain="sharedpref" path="com.pasich.mynotes_preferences.xml" />
+        
+        <!-- Користувацькі файли нотаток -->
+        <include domain="file" path="notes_data/" />
+        <include domain="file" path="attachments/" />
+        <include domain="file" path="images/" />
+        <include domain="file" path="audio/" />
+        <include domain="file" path="documents/" />
+        
+        <!-- Користувацькі теми та налаштування -->
+        <include domain="file" path="custom_themes/" />
+        <include domain="file" path="templates/" />
+        <include domain="file" path="shortcuts/" />
+        
+        <!-- Зовнішні користувацькі файли -->
+        <include domain="external" path="MyNotes/" />
+        <include domain="external" path="Documents/MyNotes/" />
+
+    </cloud-backup>
+    
+    <!-- Правила для передачі між пристроями -->
+    <device-transfer>
+        <!-- Включити всі користувацькі дані -->
+        <include domain="database" />
+        <include domain="sharedpref" />
+        <include domain="file" />
+        <include domain="external" />
+        
+        <!-- Специфічні включення -->
+        <include domain="file" path="user_data/" />
+        <include domain="file" path="backups/" />
+        <include domain="file" path="exports/" />
+        
+        <!-- Виключення системних файлів -->
+        <exclude domain="file" path="cache/" />
+        <exclude domain="file" path="code_cache/" />
+        <exclude domain="file" path="temp/" />
+        <exclude domain="file" path="logs/" />
+        <exclude domain="file" path="crash_reports/" />
+        
+        <!-- Виключення специфічних для пристрою налаштувань -->
+        <exclude domain="sharedpref" path="device_specific.xml" />
+        <exclude domain="sharedpref" path="hardware_info.xml" />
+        <exclude domain="sharedpref" path="display_settings.xml" />
+        
+        <!-- Виключення зовнішніх тимчасових файлів -->
+        <exclude domain="external" path="Android/data/com.pasich.mynotes/cache/" />
+        <exclude domain="external" path="Android/data/com.pasich.mynotes/files/temp/" />
+    </device-transfer>
+</data-extraction-rules>

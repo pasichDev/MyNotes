@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Правила резервного копіювання для Android 6.0 (API 23) - Android 11 (API 30)
+    Цей файл використовується для Auto Backup для додатків
+-->
+<full-backup-content>
+    <!-- Включити базу даних додатку -->
+    <include domain="database" path="." />
+    
+    <!-- Включити налаштування користувача -->
+    <include domain="sharedpref" path="." />
+    
+    <!-- Включити внутрішні файли додатку -->
+    <include domain="file" path="." />
+    
+    <!-- Включити зовнішні файли (на SD карті) -->
+    <include domain="external" path="." />
+    
+    <!-- Виключення тимчасових та кешованих файлів -->
+    <exclude domain="file" path="cache" />
+    <exclude domain="file" path="code_cache" />
+    <exclude domain="file" path="no_backup" />
+    <exclude domain="file" path="temp" />
+    <exclude domain="file" path="tmp" />
+    
+    <!-- Виключити файли логів -->
+    <exclude domain="file" path="logs" />
+    <exclude domain="file" path="crash_logs" />
+    <exclude domain="file" path="error_logs" />
+    
+    <!-- Виключити конфіденційні файли -->
+    <exclude domain="sharedpref" path="device_token.xml" />
+    <exclude domain="sharedpref" path="analytics_data.xml" />
+    <exclude domain="sharedpref" path="crash_data.xml" />
+    
+    <!-- Виключити зовнішні кешовані файли -->
+    <exclude domain="external" path="Android/data/com.pasich.mynotes/cache" />
+    <exclude domain="external" path="Android/data/com.pasich.mynotes/files/temp" />
+    
+    <!-- Включити важливі користувацькі файли -->
+    <include domain="external" path="Android/data/com.pasich.mynotes/files/backups" />
+    <include domain="external" path="Android/data/com.pasich.mynotes/files/exports" />
+</full-backup-content>

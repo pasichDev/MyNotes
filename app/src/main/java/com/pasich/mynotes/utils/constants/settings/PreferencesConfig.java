@@ -19,8 +19,16 @@ public class PreferencesConfig {
     //THEME
     public static final String ARGUMENT_PREFERENCE_THEME = "appTheme";
     public static final int ARGUMENT_DEFAULT_THEME_VALUE = 0;
-    public static final Theme Theme_DEFAULT = new Theme(R.drawable.ic_theme_darkblue, 0, R.style.DefaultTheme, R.drawable.item_theme_check_blue);
+    public static final Theme Theme_DEFAULT = new Theme(0, R.style.DefaultTheme);
     //DynamicColors
     public static final String ARGUMENT_PREFERENCE_DYNAMIC_COLOR = "dynamicColorEnable";
     public static final boolean ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE = false;
+    //ScreenProtection
+    public static final String ARGUMENT_PREFERENCE_SCREEN_PROTECTION = "screenProtectionEnable";
+    public static final boolean ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE = false;
+    //LastKnownVersion
+    public static final String ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION = "lastKnownVersion";
+    //ThemeMode
+    public static final String ARGUMENT_PREFERENCE_THEME_MODE = "themeMode";
+    public static final int ARGUMENT_DEFAULT_THEME_MODE_VALUE = 0; // 0 = Follow System, 1 = Light, 2 = Dark
 }

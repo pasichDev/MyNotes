@@ -6,14 +6,21 @@ import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_CO
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.util.Pair;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -22,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.search.SearchView;
 import com.google.android.material.snackbar.Snackbar;
@@ -62,6 +70,8 @@ import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
+import com.pasich.mynotes.utils.UpdateChecker;
+import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.List;
 
@@ -73,15 +83,23 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
 
+    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                Intent data = result.getData();
+                if (result.getResultCode() == 11) {
+                    assert data != null;
+                    
+                    // Check if theme mode changed
+                    if (data.getBooleanExtra("updateThemeMode", false)) {
+                        // Theme mode changed, recreate the activity to apply new mode
+                        recreate();
+                    } else {
+                        // Only theme style changed
+                        this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+                    }
+                }
 
-    final private ActivityResultLauncher<Intent> startThemeActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        Intent data = result.getData();
-        if (result.getResultCode() == 11) {
-            assert data != null;
-            this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
-        }
-
-    });
+            });
     public ActivityMainBinding mActivityBinding;
     @Inject
     public MainContract.presenter mainPresenter;
@@ -108,16 +126,20 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Inject
     SearchNotesAdapter searchNotesAdapter;
+    
+    @Inject
+    UpdateChecker updateChecker;
 
     private static final int REQUEST_UPDATE = 100;
     private AppUpdateManager appUpdateManager;
+    private int previousNotesCount = 0;
 
     // Ланчер для ActivityResult API
-    private final ActivityResultLauncher<Intent> updateLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    private final ActivityResultLauncher<Intent> updateLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() != RESULT_OK) {
                     Toast.makeText(this, "Оновлення не вдалося!", Toast.LENGTH_SHORT).show();
-                    checkForUpdate(); // Можна спробувати ще раз або повідомити користувача
+                    checkForUpdate();
                 }
             });
 
@@ -131,13 +153,18 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         super.onCreate(savedInstanceState);
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
+
+        setupEdgeToEdgeInsets(mActivityBinding.activityMain);
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
+
+        // Ініціалізуємо перевірку версій
+        updateChecker.initializeVersionCheck();
         actionUtils.setMangerView(mActivityBinding.getRoot());
 
         // Ініціалізуйте AppUpdateManager
-     appUpdateManager = AppUpdateManagerFactory.create(this);
+        appUpdateManager = AppUpdateManagerFactory.create(this);
 
         // Перевірте доступність оновлення
         checkForUpdate();
@@ -161,7 +188,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         super.onPause();
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -175,57 +201,41 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     protected void onResume() {
         super.onResume();
-        // Перевірка, якщо оновлення було відкладене
-      appUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
+        appUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                // Розпочати процес оновлення, якщо воно ще не завершене
                 startUpdateFlow(appUpdateInfo);
             }
         });
-
 
     }
 
     private void checkForUpdate() {
-        // Отримайте інформацію про оновлення
-     Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
-
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-            // Додати журнали для відстеження стану оновлення (для налагодження)
-            //    Log.d("AppUpdate", "Update availability: " + appUpdateInfo.updateAvailability());
-            //    Log.d("AppUpdate", "Update type allowed: " + appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE));
+            Log.d("AppUpdate", "Update availability: " +
+                    appUpdateInfo.updateAvailability());
 
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
-                // Запустіть процес оновлення
                 startUpdateFlow(appUpdateInfo);
             }
         }).addOnFailureListener(e -> {
-            //        Log.d("AppUpdate", "Помилка перевірки оновлень: " + e.getMessage());
-            //   Toast.makeText(this, "Помилка перевірки оновлень: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.d("AppUpdate", "Error checking for updates: " + e.getMessage());
         });
-
 
     }
 
     private void startUpdateFlow(AppUpdateInfo appUpdateInfo) {
         try {
-            // Використовуємо новий метод для запуску оновлення
             appUpdateManager.startUpdateFlowForResult(
                     appUpdateInfo,
                     AppUpdateType.IMMEDIATE,
                     this,
-                    REQUEST_UPDATE
-            );
+                    REQUEST_UPDATE);
         } catch (Exception e) {
-            e.printStackTrace();
-            //   Log.d("AppUpdate", "Не вдалося розпочати оновлення: " + e.getMessage());
-            //  Toast.makeText(this, "Не вдалося розпочати оновлення: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.d("AppUpdate", "Unable to start the update: " + e.getMessage());
         }
     }
-
-
-
 
     @Override
     public void startDeleteTagDialog(Tag tag) {
@@ -247,25 +257,32 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.searchView.hide();
     }
 
-
     @Override
     public void initListeners() {
+                // Налаштовуємо зв'язок між SearchBar та SearchView
+        mActivityBinding.actionSearch.setOnClickListener(v -> {
+            Log.d("SearchBar", "SearchBar clicked");
+            mActivityBinding.searchView.show();
+        });
+        
         mActivityBinding.searchView.addTransitionListener(
                 (searchView, previousState, newState) -> {
+                    Log.d("SearchView", "State changed: " + previousState + " -> " + newState);
                     if (newState == SearchView.TransitionState.SHOWING) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(false);
+                        // Форсуємо повноекранний режим
+                        ensureSearchViewFullScreen();
                     } else if (newState == SearchView.TransitionState.HIDDEN) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(true);
-
                     }
                 });
-
 
         searchNotesAdapter.setItemClickListener((idNote, view) -> openNoteEdit(idNote, (MaterialCardView) view));
         mActivityBinding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
-                if (s.length() >= 2) searchNotesAdapter.filter(s.toString());
+                if (s.length() >= 2)
+                    searchNotesAdapter.filter(s.toString());
                 else {
                     searchNotesAdapter.cleanResult();
                 }
@@ -287,16 +304,31 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                         openMoreActivity();
                     }
 
-
                     return true;
                 });
-
 
         tagsAdapter.setOnItemClickListener(new OnItemClickListenerTag() {
             @Override
             public void onClick(int position) {
-                if (!getAction())
-                    mainPresenter.clickTag(tagsAdapter.getCurrentList().get(position), position);
+                if (!getAction()) {
+                    Tag clickedTag = tagsAdapter.getCurrentList().get(position);
+                    // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
+                    if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
+                        // Додаємо візуальний feedback - легке потрясіння
+                        assert mActivityBinding.listTags.getLayoutManager() != null;
+                        View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
+                        Animation shake = AnimationUtils
+                                  .loadAnimation(MainActivity.this, R.anim.shake_gentle);
+                        if (tagView != null) {
+                            tagView.startAnimation(shake);
+                        } else {
+                            mActivityBinding.listTags.startAnimation(shake);
+                        }
+                        return;
+                    }
+
+                    mainPresenter.clickTag(clickedTag, position);
+                }
             }
 
             @Override
@@ -312,28 +344,30 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 if (!getAction()) {
                     openNoteEdit(model.id,
                             (MaterialCardView) staggeredGridLayoutManager.findViewByPosition(position));
-                } else selectItemAction(model, position, true);
+                } else
+                    selectItemAction(model, position, true);
 
             }
 
             @Override
             public void onLongClick(int position, Note model) {
-                if (!getAction()) choiceNoteDialog(model, position);
+                if (!getAction())
+                    choiceNoteDialog(model, position);
             }
 
         });
 
-
     }
 
-
     private void openMoreActivity() {
-        if (getAction()) actionUtils.closeActionPanel();
+        if (getAction())
+            actionUtils.closeActionPanel();
         new AboutDialog(new AboutOpensActivity() {
             @Override
             protected void openThemeActivity() {
-                startThemeActivity.launch(new Intent(MainActivity.this, ThemeActivity.class),
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, (Pair<View, String>[]) null));
+                startSettingsActivity.launch(new Intent(MainActivity.this, SettingsActivity.class),
+                        ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,
+                                (Pair<View, String>[]) null));
             }
 
             @Override
@@ -354,13 +388,59 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 startActivity(new Intent(MainActivity.this, BackupActivity.class),
                         ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
             }
+
+            @Override
+            protected void openSupportActivity() {
+                startActivity(new Intent(MainActivity.this, SupportActivity.class),
+                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
+            }
         }).show(getSupportFragmentManager(), "MoreActivity");
     }
 
     @Override
     public void settingsSearchView() {
         formatList.init(mActivityBinding.actionSearch.getMenu().findItem(R.id.format));
+        // Додаткове налаштування для Material SearchBar та SearchView
+        setupSearchBarAndView();
+    }
+    
+    private void setupSearchBarAndView() {
+        try {
+            mActivityBinding.actionSearch.setHint(getString(R.string.search));
 
+            // Програмно налаштовуємо зв'язок без layout_anchor для повноекранного режиму
+            mActivityBinding.searchView.setupWithSearchBar(mActivityBinding.actionSearch);
+
+            // Переконуємося, що SearchView займає весь екран
+            ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
+            if (params instanceof CoordinatorLayout.LayoutParams coordinatorParams) {
+                // Видаляємо будь-які anchor behavior, щоб SearchView був повноекранним
+                coordinatorParams.setAnchorId(View.NO_ID);
+                coordinatorParams.setBehavior(null);
+
+                mActivityBinding.searchView.setLayoutParams(coordinatorParams);
+            }
+
+            Log.d("SearchSetup", "SearchBar and SearchView successfully configured for full screen");
+        } catch (Exception e) {
+            Log.e("SearchSetup", "Error setting up SearchBar and SearchView: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Забезпечує повноекранний режим для SearchView
+     */
+    private void ensureSearchViewFullScreen() {
+        // Переконуємося, що SearchView займає весь екран
+        ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
+        if (params != null) {
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            mActivityBinding.searchView.setLayoutParams(params);
+
+            // Форсуємо перерахунок layout
+            mActivityBinding.searchView.requestLayout();
+        }
     }
 
     @Override
@@ -371,12 +451,16 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listNotes.addItemDecoration(itemDecorationNotes);
         mActivityBinding.listNotes.setLayoutManager(staggeredGridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
-        mActivityBinding.resultsSearchList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
+        mActivityBinding.listNotes.setItemAnimator(new androidx.recyclerview.widget.DefaultItemAnimator());
+        mActivityBinding.resultsSearchList
+                .setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
-        mActivityBinding.searchView.findViewById(R.id.search_view_divider).setVisibility(View.GONE);
-
-
+        
+        // Додаткові налаштування для результатів пошуку в повноекранному SearchView
+        mActivityBinding.resultsSearchList.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        mActivityBinding.resultsSearchList.setNestedScrollingEnabled(true);
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean isItemViewSwipeEnabled() {
@@ -389,7 +473,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
                 if (direction == ItemTouchHelper.LEFT) {
                     selectItemAction(mNoteAdapter.getCurrentList().get(position), position, false);
-
 
                 } else {
 
@@ -404,8 +487,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     public void snackBarRestoreNote() {
-        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, getString(R.string.noteMoveTrashSnackbar), Snackbar.LENGTH_LONG);
-        snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNote(mainPresenter.getBackupDeleteNote()));
+        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, getString(R.string.noteMoveTrashSnackbar),
+                Snackbar.LENGTH_LONG);
+        snackbar.setAction(getString(R.string.restore),
+                view -> mainPresenter.restoreNote(mainPresenter.getBackupDeleteNote()));
         if (mActivityBinding.newNotesButton.getY() >= mActivityBinding.activityMain.getHeight()) {
             snackbar.setAnchorView(mActivityBinding.newNotesButton);
         }
@@ -414,32 +499,102 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void loadingNotes(List<Note> noteList) {
+        // Перевіряємо чи додалася нова нотатка
+        boolean isNewNoteAdded = noteList.size() > previousNotesCount;
+        if (isNewNoteAdded) {
+            // Встановлюємо флаг для прокручування до верху
+            mNoteAdapter.setScrollToTopOnNextUpdate(true);
+        }
+        
         int countNotes = mNoteAdapter.sortList(noteList, mainPresenter.getSortParam(),
                 tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
-        showEmptyNotes(!(countNotes >= 1));
+
+        // Оновлюємо лічильник для наступної перевірки
+        previousNotesCount = noteList.size();
+
+        // Використовуємо анімований метод тільки якщо активність вже створена
+        if (mActivityBinding.listNotes.getAnimation() != null ||
+                mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
+            showEmptyNotesAnimated(!(countNotes >= 1));
+        } else {
+            showEmptyNotes(!(countNotes >= 1));
+        }
+
         searchNotesAdapter.setDefaultListNotes(noteList);
     }
 
     @Override
     public void loadingTags(List<Tag> tagList) {
         tagsAdapter.submitList(tagList);
-        int countNotes = mNoteAdapter.setNameTagsHidden(tagList, tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
-        showEmptyNotes(!(countNotes >= 1));
-    }
+        int countNotes = mNoteAdapter.setNameTagsHidden(tagList,
+                tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
 
+        if (mActivityBinding.listNotes.getAnimation() != null ||
+                mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
+            showEmptyNotesAnimated(!(countNotes >= 1));
+        } else {
+            showEmptyNotes(!(countNotes >= 1));
+        }
+    }
 
     private void showEmptyNotes(boolean flag) {
         mActivityBinding.setEmptyNotes(flag);
         if (getResources().getDisplayMetrics().density < 2.2)
             mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
         mActivityBinding.includeEmpty.emptyViewNote.setVisibility(flag ? View.VISIBLE : View.GONE);
+
+        // Управління поведінкою AppBar залежно від наявності нотаток
+        setAppBarScrollBehavior(!flag);
+
+        if (flag) {
+            Tag selectedTag = tagsAdapter.getTagSelected();
+            if (selectedTag != null && selectedTag.getSystemAction() != 2
+                    && !selectedTag.getNameTag().equals("allNotes")) {
+                // Якщо вибраний конкретний тег (не "Всі нотатки")
+                mActivityBinding.includeEmpty.emptyNotesText.setText(
+                        getString(R.string.emptyNotesForTag, selectedTag.getNameTag()));
+            } else {
+                // Якщо вибрано "Всі нотатки" або немає тегу
+                mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
+            }
+        }
+    }
+
+    private void showEmptyNotesAnimated(boolean flag) {
+        mActivityBinding.setEmptyNotes(flag);
+        if (getResources().getDisplayMetrics().density < 2.2)
+            mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
+
+        // Управління поведінкою AppBar залежно від наявності нотаток
+        setAppBarScrollBehavior(!flag);
+
+        if (flag) {
+            Tag selectedTag = tagsAdapter.getTagSelected();
+            if (selectedTag != null && selectedTag.getSystemAction() != 2
+                    && !selectedTag.getNameTag().equals("allNotes")) {
+                mActivityBinding.includeEmpty.emptyNotesText.setText(
+                        getString(R.string.emptyNotesForTag, selectedTag.getNameTag()));
+            } else {
+                mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
+            }
+
+            mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.VISIBLE);
+            android.view.animation.Animation fadeIn = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.fade_in);
+            mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeIn);
+        } else {
+            mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.GONE);
+            mActivityBinding.listNotes.setVisibility(View.VISIBLE);
+            android.view.animation.Animation slideIn = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.slide_fade_in);
+            mActivityBinding.listNotes.startAnimation(slideIn);
+        }
     }
 
     @Override
     public void actionStartNote(Note note, int position) {
         selectItemAction(note, position, true);
     }
-
 
     @Override
     public void openCopyNote(long idNote) {
@@ -457,26 +612,28 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         snackBarRestoreNote();
     }
 
-
     public void openNoteEdit(long idNote, MaterialCardView materialCardView) {
         startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false)
-                        .putExtra("idNote", idNote).putExtra("shareText", "")
-                        .putExtra("tagNote", ""),
+                .putExtra("idNote", idNote).putExtra("shareText", "")
+                .putExtra("tagNote", ""),
                 ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView,
                         String.valueOf(idNote)).toBundle());
     }
 
     @Override
     public void startToastCheckCountTags() {
-        onInfoSnack(Integer.parseInt(getString(R.string.countTagsError, String.valueOf(MAX_TAG_COUNT))), mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+        String message = getString(R.string.countTagsError, String.valueOf(MAX_TAG_COUNT));
+        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, message, Snackbar.LENGTH_LONG);
+        snackbar.show();
     }
-
 
     @Override
     public void newNotesButton() {
         Tag tagSelected = tagsAdapter.getTagSelected();
         String tagName = tagSelected == null ? "" : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
-        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName),
+                ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton,
+                        NameTransition.fabTransaction).toBundle());
     }
 
     @Override
@@ -491,7 +648,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void deleteTag() {
                 if (tagsAdapter.getTagSelected() == tag)
                     selectTagUser(tagsAdapter.getTagForName("allNotes"));
-                mainPresenter.deleteTag(tag);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    mainPresenter.deleteTag(tag);
+                }, 700);
+
+
             }
 
             @Override
@@ -505,20 +666,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }
         });
 
-
     }
 
     @Override
     public void choiceNoteDialog(Note note, int position) {
         new MoreNoteDialog(note, false, false, position).show(getSupportFragmentManager(), "ChoiceDialog");
     }
-
-
-    @Override
-    public void onBackPressed() {
-        finishActivity();
-    }
-
 
     private boolean finishActivity() {
         if (getAction()) {
@@ -545,7 +698,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.newNotesButton.setVisibility(View.VISIBLE);
     }
 
-
     @Override
     public void deleteNotes() {
         if (noteActionTool.getArrayChecked().size() == mNoteAdapter.getItemCount()) {
@@ -556,12 +708,13 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         actionUtils.closeActionPanel();
     }
 
-
     @Override
     public void shareNotes() {
         StringBuilder valueShare = new StringBuilder();
         for (Note note : noteActionTool.getArrayChecked()) {
-            valueShare.append(note.getTitle()).append(System.getProperty("line.separator")).append(System.getProperty("line.separator")).append(note.getValue()).append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+            valueShare.append(note.getTitle()).append(System.lineSeparator())
+                    .append(System.lineSeparator()).append(note.getValue())
+                    .append(System.lineSeparator()).append(System.lineSeparator());
         }
         ShareUtils.shareNotes(this, valueShare.toString());
         actionUtils.closeActionPanel();
@@ -572,15 +725,18 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         if (note.getChecked()) {
             note.setChecked(false);
-            if (!noteActionTool.isCheckedItemFalse(note)) actionUtils.closeActionPanel();
+            if (!noteActionTool.isCheckedItemFalse(note))
+                actionUtils.closeActionPanel();
         } else {
             noteActionTool.isCheckedItem(note);
             note.setChecked(true);
         }
 
         actionUtils.manageActionPanel(noteActionTool.getCountCheckedItem());
-        if (payloads) mNoteAdapter.notifyItemChanged(position, 22);
-        else mNoteAdapter.notifyItemChanged(position);
+        if (payloads)
+            mNoteAdapter.notifyItemChanged(position, 22);
+        else
+            mNoteAdapter.notifyItemChanged(position);
     }
 
     @Override
@@ -590,24 +746,106 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void selectTagUser(int position) {
-        tagsAdapter.chooseTag(position);
-        showEmptyNotes(!(mNoteAdapter.filter(tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag()) >= 1));
+        hideCurrentContent(() -> {
+            tagsAdapter.chooseTag(position);
+
+            int noteCount = mNoteAdapter.filter(
+                    tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(),
+                    false);
+
+            // Оновлюємо AppBar поведінку залежно від кількості нотаток
+            setAppBarScrollBehavior(noteCount >= 1);
+            
+            showNewContent(!(noteCount >= 1));
+        });
     }
 
+    private void hideCurrentContent(Runnable onComplete) {
+        if (mActivityBinding.listNotes.getVisibility() == View.VISIBLE) {
+            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.slide_fade_out);
+            fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(android.view.animation.Animation animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(android.view.animation.Animation animation) {
+                    mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
+                    // Очищаємо список після приховування, щоб запобігти миготінню
+                    mNoteAdapter.clearList();
+                    onComplete.run();
+                }
+
+                @Override
+                public void onAnimationRepeat(android.view.animation.Animation animation) {
+                }
+            });
+            mActivityBinding.listNotes.startAnimation(fadeOut);
+        } else if (mActivityBinding.includeEmpty.emptyViewNote.getVisibility() == View.VISIBLE) {
+            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
+                    R.anim.fade_out);
+            fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(android.view.animation.Animation animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(android.view.animation.Animation animation) {
+                    mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
+                    onComplete.run();
+                }
+
+                @Override
+                public void onAnimationRepeat(android.view.animation.Animation animation) {
+                }
+            });
+            mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeOut);
+        } else {
+            mNoteAdapter.clearList();
+            onComplete.run();
+        }
+    }
+
+    private void showNewContent(boolean showEmpty) {
+        // Невелика затримка для плавності переходу
+        mActivityBinding.getRoot().postDelayed(() -> {
+            if (!showEmpty) {
+                // Оновлюємо список нотаток перед показом
+                mNoteAdapter.filter(
+                        tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(),
+                        true);
+            }
+            showEmptyNotesAnimated(showEmpty);
+        }, 50);
+    }
 
     private void variablesNull() {
         mNoteAdapter = null;
         tagsAdapter = null;
     }
 
-    @Override
-    public void createShortCut() {
-        onInfoSnack(R.string.addShortCutSuccessfully, mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
-    }
+    /**
+     * Управління поведінкою AppBar - дозволяє або забороняє прокручування
+     * @param canScroll true - дозволити прокручування, false - заборонити
+     */
+    private void setAppBarScrollBehavior(boolean canScroll) {
+        AppBarLayout.LayoutParams params =
+                (AppBarLayout.LayoutParams) mActivityBinding.actionSearch.getLayoutParams();
 
-    @Override
-    public void shortCutDouble() {
-        onInfoSnack(R.string.shortCutCreateFallDouble, mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+        if (canScroll) {
+            // Дозволяємо прокручування - встановлюємо scroll|enterAlways
+            params.setScrollFlags(
+                AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
+                AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS);
+        } else {
+            // Забороняємо прокручування - прибираємо всі scroll flags
+            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL);
+            // Розширюємо AppBar до повного розміру
+            mActivityBinding.appBarMainActivity.setExpanded(true, true);
+        }
+
+        mActivityBinding.actionSearch.setLayoutParams(params);
     }
 
     @Override
@@ -615,5 +853,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         super.redrawActivity(themeStyle);
         setTheme(themeStyle);
         recreate();
+    }
+
+    @Override
+    public void openChangelogActivity() {
+        Intent intent = new Intent(this, ChangelogActivity.class);
+        startActivityForResult(intent, REQUEST_CODE_CHANGELOG);
+    }
+
+    private static final int REQUEST_CODE_CHANGELOG = 1001;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_CHANGELOG && resultCode == RESULT_OK) {
+            // Користувач ознайомився з оновленням, оновлюємо список тегів
+            mainPresenter.loadingData();
+        }
     }
 }

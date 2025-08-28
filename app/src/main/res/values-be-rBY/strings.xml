@@ -38,7 +38,6 @@
     <string name="sortHead">Картаваць па:</string>
     <string name="shareApp">Падзяліцца дадаткам</string>
     <string name="privacyApp">Палітыка прыватнасці</string>
-    <string name="addShortCutLauncher">Дадаць ярлык на працоўны стол</string>
     <string name="addShortCutSuccessfully">Дадаванні ярлыка выканана паспяхова</string>
     <string name="translateNote">Перавесці нататку</string>
     <string name="hintTextNote">Тэкст</string>
@@ -50,6 +49,7 @@
     <string name="errorNewTagInput">Памылка: Максімальная колькасць знакаў якая можа змяшчаць назву пазнакі %1$d </string>
     <string name="emptyTrash">Тут адлюстроўваюцца выдаленыя вамі нататкі</string>
     <string name="emptyNotes">Тут будуць адлюстроўвацца створаныя вамі нататкі</string>
+    <string name="emptyNotesForTag">Тут будуць адлюстроўвацца нататкі якія вы пазначыце тэгам "%1$s"</string>
     <string name="chooseNote">Дзеянні над абранай нататкай</string>
     <string name="contentDescrChangeStyleText">Змяніць стыль тэксту</string>
     <string name="copyNoteEdits">Рэдагаваць копію</string>
@@ -59,23 +59,35 @@
     <string name="button_phone">Патэлефанаваць</string>
     <string name="button_mail">Напісаць</string>
     <string name="button_url">Перайсці</string>
-    <!-- Clean next version -->
     <string name="hiddeTag">Схаваць нататкі</string>
     <string name="visibleTag">Адлюстроўваць нататкі</string>
-    <string name="hintNameLabel">Назва ярлыка</string>
-    <string name="titleDialogShortCut">Стварыць ярлык</string>
-    <string name="functionNotSupport">Гэтая функцыя не падтрымліваецца вашай прыладай</string>
     <string name="shortCutCreateFallDouble">Ярлык для дадзенай нататкі ўжо створаны</string>
-    <string name="buttonCreateShortCut">Дадаць ярлык на працоўны стол</string>
-    <string name="errorMaxNameShortCut">Памылка ў назве ярлыка</string>
     <string name="renameTag">Перайменаваць</string>
 
     <string name="settingsInterface">Налады інтэрфейсу</string>
+    <string name="settings">Налады</string>
     <string name="settingsBackups">Сінхранізацыя і рэз.копіі</string>
     <string name="aboutApps">Аб дадатку</string>
     <string name="trash">Кошык</string>
-    <string name="themes">Тэмы</string>
+    <string name="themes">Тэма</string>
+    <string name="themeBlue">Акеанскі сіні</string>
+    <string name="themeGreen">Смарагдавы зялёны</string>
+    <string name="themeSunset">Аранжавы захад</string>
+    <string name="themeYellow">Залацісты жоўты</string>
+    <string name="themePurple">Глыбокі фіялетавы</string>
+    <string name="themeCoralRed">Каралавы чырвоны</string>
+    <string name="accentColorDescription">Выберыце акцэнтны колер з якога збудуецца тэма</string>
+    <string name="selectAccentColor">Выбраць акцэнтны колер</string>
     <string name="onDynamicColor">Уключыць Dynamic Color</string>
+    <string name="onDynamicColorDescription">Адаптуе колеры дадатка да вашай шпалеры (Android 12+)</string>
+    <string name="onScreenProtection">Уключыць абарону экрана</string>
+        <string name="onScreenProtectionDescription">Перашкаджае стварэнню скрыншотаў і запісу экрана. Уступае ў сілу пасля перазапуску прыкладання</string>
+    <string name="themeMode">Рэжым тэмы</string>
+    <string name="themeModeDescription">Выберыце паміж светлай, цёмнай або сістэмнай тэмай</string>
+    <string name="selectThemeMode">Выберыце рэжым тэмы</string>
+    <string name="themeModeFollowSystem">Як у сістэме</string>
+    <string name="themeModeLight">Светлая</string>
+    <string name="themeModeDark">Цёмная</string>
     <string name="coffeeByPlay">Падзякаваць распрацоўшчыку</string>
     <string name="coffeeByTextInfo"><b>Мае нататкі</b> - гэта дадатак без рэкламы і распаўсюджваецца як бясплатны прадукт. Дадатак распрацоўвае адзін чалавек, таму некаторыя абнаўленне пастаўляюцца са спазненнем. Падтрымка працаздольнасці дадатку і некаторых функцый стварае выдаткі. Вы можаце падзякаваць распрацоўшчыку, купіўшы яму каву або аплаціць арэнду сервера, а таксама адправіць донат па ўказаных спасылках, якія будуць адлюстроўвацца знізу. Дзякуй, што карыстаецеся гэта дадатак!</string>
 
@@ -101,8 +113,6 @@
     <string name="autoCloudVariantsMonth">Кожны месяц</string>
     <string name="autoCloudVariantsOff">Выкл.</string>
 
-    <!-- AutoBackup strings -->
-
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">Няма дадзеных, для стварэння рэзервовай копіі</string>
@@ -121,13 +131,80 @@
     <string name="percentProgress">Рэзервовае капіраванне (%d%%)</string>
 
     <!-- Product offer -->
-    <string name="byyError">Памылка пры набыцці.</string>
-    <string name="byyCancel">Мы будзем імкнуцца стаць лепшымі.</string>
-    <string name="errorLoadingsProduct">Памылка, не атрымалася загрузіць вітрыну</string>
     <string name="thanks_title">Паважаны карыстальнік</string>
     <string name="creteNoteToTag">Стварыце нататку</string>
     <string name="errorSyncTitle">Звярніце ўвагу!</string>
     <string name="errorSyncDescrpt">З гэтай версіяй мы спыняем падтрымку сінхранізацыі з Google Дыскам. У будучых абнаўленнях мы ўвядзем больш бяспечны і эфектыўны метад сінхранізацыі, які забяспечыць вам лепшы карыстальніцкі досвед.</string>
 
     <string name="thanks_donate">Распрацоўшчык праекту кажа вам дзякуй за вашу куплю. Мы будзем імкнуцца стаць лепшымі і зручнейшымі. \n <b>З павагай, мае нататкі!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Падтрымаць распрацоўшчыка</string>
+    <string name="inAppPurchases">Пакупкі ў дадатку</string>
+    <string name="thankYouTitle">Дзякуй за выкарыстанне MyNotes!</string>
+    <string name="thankYouDescription">Ваша падтрымка дапамагае нам працягваць распрацоўку і палепшваць дадатак</string>
+    <string name="donationMethods">Спосабы падтрымкі</string>
+    <string name="kofiDescription">Пачасціце мяне кавай на Ko-Fi</string>
+    <string name="paypalDescription">Адпраўце данат праз PayPal</string>
+    <string name="githubSponsorsDescription">Станьце спонсарам на GitHub</string>
+    <string name="otherWaysToSupport">Іншыя спосабы падтрымкі</string>
+    <string name="ratingAppDescription">Пастаўце нам 5 зорак у Google Play</string>
+    <string name="joinCommunity">Далучыцца да супольнасці</string>
+    <string name="joinCommunityDescription">Зносьцеся з іншымі карыстальнікамі на Reddit</string>
+    <string name="contactDeveloper">Звязацца з распрацоўшчыкам</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Што новага</string>
+    <string name="version_acknowledged">Зразумела!</string>
+    <string name="whats_new_title">Новыя функцыі і паляпшэнні</string>
+    <string name="whats_new_description">Адкрыйце для сябе апошнія абнаўленні, новыя функцыі і паляпшэнні, якія робяць работу з нататкамі яшчэ лепшай. Мы пастаянна працуем над паляпшэннем прыкладання на аснове вашых водгукаў!</string>
+    <string name="changelog_subtitle">Заставайцеся ў курсе ўсіх змен і паляпшэнняў у гэтай версіі</string>
+    <string name="errorLoadingChangelog">Памылка загрузкі спісу змен</string>
+    <string name="checkInternetConnection">Калі ласка, праверце падключэнне да інтэрнэту</string>
+    <string name="retry">Паўтарыць</string>
+    <string name="leaveFeedback">Пакінуць водгук</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Семя ідэй</string>
+    <string name="donation_seed_description">Пасадзіце першае семя для будучых інавацый</string>
+    <string name="donation_spark_title">Іскра натхнення</string>
+    <string name="donation_spark_description">Запаліце творчасць і падсілкуйте развіццё</string>
+    <string name="donation_midnight_title">Паўночны нататнік</string>
+    <string name="donation_midnight_description">Падтрымайце начныя сесіі праграмавання</string>
+    <string name="donation_wave_title">Хваля падтрымкі</string>
+    <string name="donation_wave_description">Дашліце магутную хвалю заахвочвання</string>
+    <string name="donation_universe_title">Сусвет натхнення</string>
+    <string name="donation_universe_description">Адкрыйце бязмежныя магчымасці для будучыні</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Дзякуй! 💖</string>
+    <string name="purchase_success_message">Ваша падтрымка азначае для нас увесь свет! Дзякуючы такім выдатным людзям, як вы, мы можам працягваць распрацоўваць і палепшваць MyNotes. Ваш унёсак дапамагае нам дадаваць новыя функцыі, выпраўляць памылкі і рабіць прыкладанне яшчэ лепшым.\n\nЖадаем вам усяго найлепшага і спадзяемся, што вы й надалей будзеце з задавальненнем карыстацца MyNotes!</string>
+    <string name="purchase_success_button">Закрыць</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Памылка пакупкі</string>
+    <string name="purchase_loading">Загрузка тавараў...</string>
+    <string name="purchase_error_no_products">Няма даступных тавараў для данату</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Падтрымаць распрацоўшчыка</string>
+    <string name="support_solo_developer_description">Прывітанне! Я распрацоўшчык, які працуе над MyNotes у свабодны час. Усе функцыі заўсёды будуць бясплатнымі, але ваша падтрымка дапамагае мне прысвячаць больш часу паляпшэнню гэтага прыкладання. Кожны ўнёсак азначае для мяне ўвесь свет! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Цудоўны прыхільнік! 🌟</string>
+    <string name="supporter_badge_subtitle">Ваша калекцыя падтрымкі</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Семя</string>
+    <string name="donation_spark_short">Іскра</string>
+    <string name="donation_midnight_short">Нататнік</string>
+    <string name="donation_wave_short">Хваля</string>
+    <string name="donation_universe_short">Сусвет</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Вернаы сябар</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Куплена</string>
+
 </resources>

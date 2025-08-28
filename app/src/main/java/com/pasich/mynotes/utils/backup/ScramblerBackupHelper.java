@@ -11,16 +11,40 @@ import java.nio.charset.StandardCharsets;
 public class ScramblerBackupHelper {
 
     public static String encodeString(JsonBackup jsonBackup) {
-        return Base64.encodeToString(new Gson().toJson(jsonBackup).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
+        try {
+            String jsonString = new Gson().toJson(jsonBackup);
+            return Base64.encodeToString(jsonString.getBytes(StandardCharsets.UTF_8), Base64.DEFAULT);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public static String getStringJson(String string){
-        return new String(Base64.decode(string, Base64.DEFAULT), StandardCharsets.UTF_8);
+        try {
+            return new String(Base64.decode(string, Base64.DEFAULT), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public static JsonBackup decodeString(String string) {
         try {
-            return new Gson().fromJson(new String(Base64.decode(string, Base64.DEFAULT), StandardCharsets.UTF_8), JsonBackup.class).setError(false);
+            // First decode Base64
+            byte[] decodedBytes = Base64.decode(string, Base64.DEFAULT);
+            
+            // Convert to string
+            String jsonString = new String(decodedBytes, StandardCharsets.UTF_8);
+            
+            // Parse JSON
+            JsonBackup result = new Gson().fromJson(jsonString, JsonBackup.class);
+            
+            if (result != null) {
+                result.setError(false);
+            } else {
+                return new JsonBackup().error();
+            }
+            
+            return result;
         } catch (Exception e) {
             return new JsonBackup().error();
         }

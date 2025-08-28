@@ -112,13 +112,11 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
     public void readFileBackupLocal(Uri mUri) {
         getView().showProcessRestoreDialog();
         final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
-        Log.w("BACKUP", String.valueOf(jsonBackup.getNotes().size()));
         if (jsonBackup.isError()) {
             getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
         } else {
             restoreData(jsonBackup);
         }
-
     }
 
     /**
@@ -127,36 +125,27 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      * @param jsonBackup - data restore
      */
     private void restoreData(JsonBackup jsonBackup) {
-        try {
-
-            getDataManager().setListPreferences(jsonBackup.getPreferences());
-            getCompositeDisposable().add(
-                    Completable.mergeArray(
-                                   getDataManager().addNotes(jsonBackup.getNotes()),
-                                    getDataManager().addTags(jsonBackup.getTags()),
-                                    getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
-                            )
-                            .subscribeOn(getSchedulerProvider().io())
-                            .observeOn(getSchedulerProvider().ui())
-                            .doOnTerminate(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE))
-                            .subscribe(
-                                    () -> {
-                                        // Handle success case
-                                        Log.d("Restore", "Restore successful");
-                                    },
-                                    throwable -> {
-                                        // Handle error case
-                                        Log.e("Restore", "Error restoring data", throwable);
-                                        getView().showErrors(CloudErrors.BACKUP_DESTROY);
-                                    }
-                            )
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-
+        getDataManager().setListPreferences(jsonBackup.getPreferences());
+        getCompositeDisposable().add(
+                Completable.mergeArray(
+                               getDataManager().addNotes(jsonBackup.getNotes()),
+                                getDataManager().addTags(jsonBackup.getTags()),
+                                getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
+                        )
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .doOnTerminate(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE))
+                        .subscribe(
+                                () -> {
+                                    // Handle success case
+                                },
+                                throwable -> {
+                                    // Handle error case
+                                    Log.e("RxError", "Error: ", throwable);
+                                    getView().showErrors(CloudErrors.BACKUP_DESTROY);
+                                }
+                        )
+        );
     }
 
 
@@ -243,17 +232,21 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
     @Override
     public void saveDataLoadingLastBackup(Drive mDriveCredential) {
         getDataManager().getLastBackupInfo(mDriveCredential).addOnSuccessListener(lastInfo -> {
-            if (lastInfo.getErrorCode() == 0) {
-                getDataManager().getBackupCloudInfoPreference().setString(ARGUMENT_LAST_BACKUP_ID, lastInfo.getId());
-                getDataManager().getBackupCloudInfoPreference().setLong(ARGUMENT_LAST_BACKUP_TIME, lastInfo.getLastDate());
+            if (lastInfo != null) {
+                if (lastInfo.getErrorCode() == 0) {
+                    getDataManager().getBackupCloudInfoPreference().setString(ARGUMENT_LAST_BACKUP_ID, lastInfo.getId());
+                    getDataManager().getBackupCloudInfoPreference().setLong(ARGUMENT_LAST_BACKUP_TIME, lastInfo.getLastDate());
+                } else {
+                    getView().showErrors(CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW);
+                }
+                getView().editLastDataEditBackupCloud(lastInfo.getLastDate(), lastInfo.getErrorCode() != 0);
             } else {
-                getView().showErrors(CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW);
+                Log.e("BackupPresenter", "LastBackupInfo is null");
+                getView().showErrors(CloudErrors.ERROR_LOAD_LAST_INFO_BACKUP);
             }
-            getView().editLastDataEditBackupCloud(lastInfo.getLastDate(), lastInfo.getErrorCode() != 0);
         }).addOnFailureListener(stack ->
                 {
-                    stack.printStackTrace();
-                    Log.d("Drive", stack.getMessage());
+                    Log.e("BackupPresenter", "Error loading last backup info: " + stack.getMessage(), stack);
                     getView().showErrors(CloudErrors.ERROR_LOAD_LAST_INFO_BACKUP);
                 }
 

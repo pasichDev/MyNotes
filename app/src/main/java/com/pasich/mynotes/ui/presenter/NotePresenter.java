@@ -3,6 +3,7 @@ package com.pasich.mynotes.ui.presenter;
 
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.util.Log;
 
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
@@ -71,17 +72,33 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void createNote(Note note) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> getView().editIdNoteCreated(aLong)));
+        getCompositeDisposable().add(getDataManager().addNote(note, false)
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(aLong -> {
+                note.setId(Math.toIntExact(aLong));
+                getView().editIdNoteCreated(aLong);
+            }));
     }
 
     @Override
     public void saveNote(Note note) {
-        getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).subscribe());
+        getCompositeDisposable().add(getDataManager().updateNote(note)
+            .subscribeOn(getSchedulerProvider().io())
+            .subscribe(
+                () -> {}, // onComplete
+                throwable -> Log.e("NotePresenter", "Error saving note", throwable)
+            ));
     }
 
     @Override
     public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().deleteNote(note).subscribeOn(getSchedulerProvider().io()).subscribe());
+        getCompositeDisposable().add(getDataManager().deleteNote(note)
+            .subscribeOn(getSchedulerProvider().io())
+            .subscribe(
+                () -> {}, // onComplete  
+                throwable -> Log.e("NotePresenter", "Error deleting note", throwable)
+            ));
     }
 
     public String getShareText() {

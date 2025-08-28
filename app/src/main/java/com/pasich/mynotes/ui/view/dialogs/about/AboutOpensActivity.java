@@ -8,4 +8,6 @@ public abstract class AboutOpensActivity {
     protected abstract void openAboutActivity();
 
     protected abstract void openBackupActivity();
+
+    protected abstract void openSupportActivity();
 }

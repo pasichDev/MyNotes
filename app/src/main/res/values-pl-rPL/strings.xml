@@ -38,7 +38,6 @@
     <string name="sortHead">Sortuj według:</string>
     <string name="shareApp">Udostępnij aplikację</string>
     <string name="privacyApp">Polityka prywatności</string>
-    <string name="addShortCutLauncher">Dodaj skrót do pulpitu</string>
     <string name="addShortCutSuccessfully">Skrót został pomyślnie dodany</string>
     <string name="translateNote">Przetłumacz notatkę</string>
     <string name="hintTextNote">Tekst</string>
@@ -50,6 +49,7 @@
     <string name="errorNewTagInput">Błąd: Maksymalna liczba znaków, jaką może zawierać nazwa znacznika, to %1$d </string>
     <string name="emptyTrash">Twoje usunięte notatki są wyświetlane tutaj</string>
     <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
+    <string name="emptyNotesForTag">Tutaj będą wyświetlane notatki które oznaczysz tagiem "%1$s"</string>
     <string name="chooseNote">Działania na wybranej notatce</string>
     <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
     <string name="copyNoteEdits">Edytuj kopię</string>
@@ -62,20 +62,33 @@
     <!-- Wyczyść następną wersję -->
     <string name="hiddeTag">Ukryj notatki</string>
     <string name="visibleTag">Pokaż notatki</string>
-    <string name="hintNameLabel">Nazwa etykiety</string>
-    <string name="titleDialogShortCut">Utwórz skrót</string>
-    <string name="functionNotSupport">Ta funkcja nie jest obsługiwana przez Twoje urządzenie</string>
     <string name="shortCutCreateFallDouble">Etykieta została już utworzona dla tej notatki</string>
-    <string name="buttonCreateShortCut">Dodaj skrót do pulpitu</string>
-    <string name="errorMaxNameShortCut">Błąd w nazwie skrótu</string>
     <string name="renameTag">Zmień nazwę</string>
 
     <string name="settingsInterface">Ustawienia interfejsu</string>
+    <string name="settings">Ustawienia</string>
     <string name="settingsBackups">Synchronizacja i kopia zapasowa</string>
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>
-    <string name="themes">Motywy</string>
+    <string name="themes">Motyw</string>
+    <string name="themeBlue">Niebieski oceanu</string>
+    <string name="themeGreen">Szmaragdowa zieleń</string>
+    <string name="themeSunset">Pomarańczowy zachód</string>
+    <string name="themeYellow">Złocista żółć</string>
+    <string name="themePurple">Głęboki fiolet</string>
+    <string name="themeCoralRed">Koralowa czerwień</string>
+    <string name="accentColorDescription">Wybierz kolor akcentu z którego zostanie zbudowany motyw</string>
+    <string name="selectAccentColor">Wybierz kolor akcentu</string>
     <string name="onDynamicColor">Włącz kolor dynamiczny</string>
+    <string name="onDynamicColorDescription">Dostosowuje kolory aplikacji do tapety (Android 12+)</string>
+    <string name="onScreenProtection">Włącz ochronę ekranu</string>
+    <string name="onScreenProtectionDescription">Zapobiega wykonywaniu zrzutów ekranu i nagrywaniu. Wchodzi w życie po ponownym uruchomieniu aplikacji</string>
+    <string name="themeMode">Tryb motywu</string>
+    <string name="themeModeDescription">Wybierz między jasnym, ciemnym lub systemowym motywem</string>
+    <string name="selectThemeMode">Wybierz tryb motywu</string>
+    <string name="themeModeFollowSystem">Jak w systemie</string>
+    <string name="themeModeLight">Jasny</string>
+    <string name="themeModeDark">Ciemny</string>
     <string name="coffeeByPlay">Podziękuj deweloperowi</string>
     <string name="coffeeByTextInfo"><b>Moje notatki</b> to aplikacja bez reklam i jest rozprowadzana jako produkt bezpłatny. Aplikacja jest rozwijana przez jedną osobę, więc niektóre aktualizacje są dostarczane z opóźnieniem. Utrzymanie kondycji aplikacji i niektórych funkcji generuje koszty. Możesz podziękować deweloperowi, kupując mu kawę lub płacąc za wynajem serwera, a także przesłać darowiznę na wskazane linki, które zostaną wyświetlone poniżej. Dziękujemy za korzystanie z tej aplikacji!</string>
 
@@ -124,9 +137,77 @@
 
     <string name="creteNoteToTag">Utwórz notatkę</string>
     <!-- Oferta produktowa -->
-    <string name="byyError">Błąd podczas zakupu.</string>
-    <string name="byyCancel">Będziemy starać się być lepsi.</string>
-    <string name="errorLoadingsProduct">Błąd, nie udało się załadować witryny sklepowej</string>
     <string name="thanks_title">Drogi użytkowniku</string>
     <string name="thanks_donate">Twórca projektu dziękuje za zakup. Będziemy dążyć do tego, aby stać się lepszymi i wygodniejszymi. \n <b>Z wyrazami szacunku, moje notatki!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Wspieraj twórcę</string>
+    <string name="inAppPurchases">Zakupy w aplikacji</string>
+    <string name="thankYouTitle">Dziękujemy za korzystanie z MyNotes!</string>
+    <string name="thankYouDescription">Twoje wsparcie pomaga nam kontynuować rozwój i ulepszanie aplikacji</string>
+    <string name="donationMethods">Metody wsparcia</string>
+    <string name="kofiDescription">Postaw mi kawę na Ko-Fi</string>
+    <string name="paypalDescription">Wyślij darowiznę przez PayPal</string>
+    <string name="githubSponsorsDescription">Zostań sponsorem na GitHub</string>
+    <string name="otherWaysToSupport">Inne sposoby wsparcia</string>
+    <string name="ratingAppDescription">Oceń nas na 5 gwiazdek w Google Play</string>
+    <string name="joinCommunity">Dołącz do społeczności</string>
+    <string name="joinCommunityDescription">Połącz się z innymi użytkownikami na Reddit</string>
+    <string name="contactDeveloper">Skontaktuj się z twórcą</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Co nowego</string>
+    <string name="version_acknowledged">Rozumiem!</string>
+    <string name="whats_new_title">Nowe funkcje i ulepszenia</string>
+    <string name="whats_new_description">Odkryj najnowsze aktualizacje, nowe funkcje i ulepszenia, które sprawiają, że robienie notatek jest jeszcze lepsze. Nieustannie pracujemy nad ulepszaniem aplikacji na podstawie Twoich opinii!</string>
+    <string name="changelog_subtitle">Bądź na bieżąco ze wszystkimi zmianami i ulepszeniami w tej wersji</string>
+    <string name="errorLoadingChangelog">Błąd ładowania listy zmian</string>
+    <string name="checkInternetConnection">Sprawdź połączenie internetowe</string>
+    <string name="retry">Ponów</string>
+
+    <string name="leaveFeedback">Zostaw opinię</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Nasiono pomysłów</string>
+    <string name="donation_seed_description">Zasiej pierwsze nasiono przyszłych innowacji</string>
+    <string name="donation_spark_title">Iskra inspiracji</string>
+    <string name="donation_spark_description">Rozpal kreatywność i napędzaj rozwój</string>
+    <string name="donation_midnight_title">Północny notatnik</string>
+    <string name="donation_midnight_description">Wspieraj nocne sesje programowania</string>
+    <string name="donation_wave_title">Fala wsparcia</string>
+    <string name="donation_wave_description">Wyślij potężną falę zachęty</string>
+    <string name="donation_universe_title">Wszechświat inspiracji</string>
+    <string name="donation_universe_description">Odblokuj nieskończone możliwości na przyszłość</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Dziękuję! 💖</string>
+    <string name="purchase_success_message">Twoje wsparcie znaczy dla nas cały świat! Dzięki wspaniałym ludziom takim jak Ty możemy kontynuować rozwój i ulepszanie MyNotes. Twój wkład pomaga nam dodawać nowe funkcje, naprawiać błędy i czynić aplikację jeszcze lepszą.\n\nŻyczymy Ci wszystkiego najlepszego i mamy nadzieję, że nadal będziesz cieszyć się korzystaniem z MyNotes!</string>
+    <string name="purchase_success_button">Zamknij</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Zakup nie powiódł się</string>
+    <string name="purchase_loading">Ładowanie produktów...</string>
+    <string name="purchase_error_no_products">Brak dostępnych produktów do darowizny</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Wspieraj dewelopera</string>
+    <string name="support_solo_developer_description">Cześć! Jestem deweloperem pracującym nad MyNotes w wolnym czasie. Wszystkie funkcje zawsze będą darmowe, ale Twoje wsparcie pomaga mi poświęcić więcej czasu na ulepszanie tej aplikacji. Każdy wkład znaczy dla mnie cały świat! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Niesamowity wspierający! 🌟</string>
+    <string name="supporter_badge_subtitle">Twoja kolekcja wsparcia</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Nasiono</string>
+    <string name="donation_spark_short">Iskra</string>
+    <string name="donation_midnight_short">Notatnik</string>
+    <string name="donation_wave_short">Fala</string>
+    <string name="donation_universe_short">Wszechświat</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Wierny przyjaciel</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Kupione</string>
+
 </resources>

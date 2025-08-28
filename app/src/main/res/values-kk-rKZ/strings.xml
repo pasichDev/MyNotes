@@ -37,7 +37,6 @@
     <string name="sortHead">Сұрыптау:</string>
     <string name="shareApp">Қолданбаны ортақ пайдалану</string>
     <string name="privacyApp">Құпиялылық саясаты</string>
-    <string name="addShortCutLauncher">Жұмыс үстеліне төте жол қосу</string>
     <string name="addShortCutSuccessfully">Таңбаша сәтті қосылды</string>
     <string name="translateNote">Ескертуді аудару</string>
     <string name="hintTextNote">Мәтін</string>
@@ -49,6 +48,7 @@
     <string name="errorNewTagInput">Қате: тег атауында болуы мүмкін таңбалардың ең көп саны – %1$d </string>
     <string name="emptyTrash">Жойылған ескертпелер осы жерде көрсетіледі</string>
     <string name="emptyNotes">Сіз жасаған ескертпелер осы жерде пайда болады</string>
+    <string name="emptyNotesForTag">Мұнда сіз "%1$s" тегімен белгілейтін ескертпелер көрсетіледі</string>
     <string name="chooseNote">Таңдалған ескертпедегі әрекеттер</string>
     <string name="contentDescrChangeStyleText">Мәтін мәнерін өзгерту</string>
     <string name="copyNoteEdits">Көшірмені өңдеу</string>
@@ -61,20 +61,33 @@
     <!-- Келесі нұсқаны тазалау -->
     <string name="hiddeTag">Ескертпелерді жасыру</string>
     <string name="visibleTag">Ескертпелерді көрсету</string>
-    <string name="hintNameLabel">Жапсырма аты</string>
-    <string name="titleDialogShortCut">Таңбаша жасау</string>
-    <string name="functionNotSupport">Бұл функцияға құрылғыңыз қолдау көрсетпейді</string>
     <string name="shortCutCreateFallDouble">Бұл ескертпе үшін белгі әлдеқашан жасалған</string>
-    <string name="buttonCreateShortCut">Жұмыс үстеліне төте жолды қосу</string>
-    <string name="errorMaxNameShortCut">Таңбаша атауындағы қате</string>
     <string name="renameTag">Атын өзгерту</string>
 
     <string name="settingsInterface">Интерфейс параметрлері</string>
+    <string name="settings">Параметрлер</string>
     <string name="settingsBackups">Синхрондау және сақтық көшірме</string>
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>
-    <string name="themes">Тақырыптар</string>
+    <string name="themes">Тақырып</string>
+    <string name="themeBlue">Мұхиттық көк</string>
+    <string name="themeGreen">Зұбаржат жасыл</string>
+    <string name="themeSunset">Күн батысының сарғыш</string>
+    <string name="themeYellow">Алтын сары</string>
+    <string name="themePurple">Терең күлгін</string>
+    <string name="themeCoralRed">Маржан қызыл</string>
+    <string name="accentColorDescription">Тақырып құрылатын акцент түсін таңдаңыз</string>
+    <string name="selectAccentColor">Акцент түсін таңдау</string>
     <string name="onDynamicColor">Динамикалық түсті қосу</string>
+    <string name="onDynamicColorDescription">Қолданба түстерін тұсқағазыңызға бейімдейді (Android 12+)</string>
+    <string name="onScreenProtection">Экран қорғанысын қосу</string>
+    <string name="onScreenProtectionDescription">Экран суретін түсіру мен жазып алуды болдырмайды. Қолданбаны қайта іске қосқаннан кейін күшіне енеді</string>
+    <string name="themeMode">Тақырып режимі</string>
+    <string name="themeModeDescription">Ашық, қараңғы немесе жүйелік тақырыпты таңдаңыз</string>
+    <string name="selectThemeMode">Тақырып режимін таңдаңыз</string>
+    <string name="themeModeFollowSystem">Жүйе сияқты</string>
+    <string name="themeModeLight">Ашық</string>
+    <string name="themeModeDark">Қараңғы</string>
     <string name="coffeeByPlay">Әзірлеушіге рахмет</string>
     <string name="coffeeByTextInfo"><b>Менің жазбаларым</b> - бұл жарнамасыз қолданба және тегін өнім ретінде таратылады. Қолданбаны бір адам әзірлеген, сондықтан кейбір жаңартулар кеш жеткізіледі. Қолданбаның және кейбір мүмкіндіктердің денсаулығын сақтау шығындарды тудырады. Сіз әзірлеушіге кофе сатып алу немесе сервер жалдау ақысын төлеу арқылы алғыс айта аласыз, сонымен қатар төменде көрсетілетін сілтемелерге қайырымдылық жібере аласыз. Осы қолданбаны пайдаланғаныңызға рахмет!</string>
 
@@ -120,13 +133,81 @@
     <string name="percentProgress">Сақтық көшірме (%d%%)</string>
 
     <!-- Өнім ұсынысы -->
-    <string name="byyError">Сатып алу кезіндегі қате.</string>
-    <string name="byyCancel">Біз жақсырақ болуға тырысамыз.</string>
-    <string name="errorLoadingsProduct">Қате, дүкен сөресі жүктелмеді</string>
     <string name="errorSyncTitle">Назар аударыңыз!</string>
     <string name="errorSyncDescrpt">Осы нұсқамен біз Google Дискісімен синхрондауды қолдауды тоқтатамыз. Келесі жаңартуларда біз қауіпсіз және тиімдірек синхрондау әдісін енгіземіз, бұл сізге жақсы пайдаланушы тәжірибесін қамтамасыз етеді.</string>
 
     <string name="creteNoteToTag">Жазба жасаңыз</string>
     <string name="thanks_title">Құрметті пайдаланушы</string>
     <string name="thanks_donate">Жоба әзірлеушісі сатып алғаныңыз үшін алғыс білдіреді. Біз жақсырақ және ыңғайлырақ болуға тырысамыз. \n <b>Құрметпен, менің жазбаларым!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Әзірлеушіні қолдау</string>
+    <string name="inAppPurchases">Қолданба ішіндегі сатып алулар</string>
+    <string name="thankYouTitle">MyNotes қолданғаныңыз үшін рақмет!</string>
+    <string name="thankYouDescription">Сіздің қолдауыңыз бізге әзірлеуді жалғастыруға және қолданбаны жақсартуға көмектеседі</string>
+    <string name="donationMethods">Қолдау көрсету әдістері</string>
+    <string name="kofiDescription">Ko-Fi-да маған кофе сыйлаңыз</string>
+    <string name="paypalDescription">PayPal арқылы ақша жіберіңіз</string>
+    <string name="githubSponsorsDescription">GitHub-та демеуші болыңыз</string>
+    <string name="otherWaysToSupport">Қолдаудың басқа жолдары</string>
+    <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
+    <string name="joinCommunity">Қауымдастыққа қосылу</string>
+    <string name="joinCommunityDescription">Reddit-те басқа пайдаланушылармен байланысыңыз</string>
+    <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Не жаңалық</string>
+    <string name="version_acknowledged">Түсінікті!</string>
+    <string name="whats_new_title">Жаңа функциялар мен жақсартулар</string>
+    <string name="whats_new_description">Жазбаларыңызбен жұмыс істеуді одан да жақсы ететін соңғы жаңартулар, жаңа функциялар мен жақсартуларды ашыңыз. Біз сіздің пікірлеріңіз негізінде қолданбаны үздіксіз жақсартып отырамыз!</string>
+    <string name="changelog_subtitle">Осы нұсқадағы барлық өзгерістер мен жақсартулардан хабардар болыңыз</string>
+    <string name="errorLoadingChangelog">Өзгерістер тізімін жүктеу қатесі</string>
+    <string name="checkInternetConnection">Интернет байланысын тексеріңіз</string>
+    <string name="retry">Қайталау</string>
+
+    <string name="leaveFeedback">Пікір қалдыру</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Идеялар тұқымы</string>
+    <string name="donation_seed_description">Болашақ инновациялар үшін алғашқы тұқымды егіңіз</string>
+    <string name="donation_spark_title">Шабыт ұшқыны</string>
+    <string name="donation_spark_description">Шығармашылықты қоздырып, дамуды жүретіңіз</string>
+    <string name="donation_midnight_title">Түн дәптері</string>
+    <string name="donation_midnight_description">Түнгі бағдарламалау сессияларын қолдаңыз</string>
+    <string name="donation_wave_title">Қолдау толқыны</string>
+    <string name="donation_wave_description">Күшті жігерлендіру толқынын жіберіңіз</string>
+    <string name="donation_universe_title">Шабыт ғаламы</string>
+    <string name="donation_universe_description">Болашақ үшін шексіз мүмкіндіктерді ашыңыз</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Рахмет! 💖</string>
+    <string name="purchase_success_message">Сіздің қолдауыңыз біз үшін бүкіл әлемді білдіреді! Сіз сияқты керемет адамдардың арқасында біз MyNotes қолданбасын дамытып, жақсартып отыра аламыз. Сіздің үлесіңіз бізге жаңа функциялар қосуға, қателерді түзетуге және қолданбаны одан да жақсы етуге көмектеседі.\n\nСізге барлық жақсылықты тілейміз және MyNotes қолданбасын пайдалануды жалғастыра беретініңізге үміттенеміз!</string>
+    <string name="purchase_success_button">Жабу</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Сатып алу қатесі</string>
+    <string name="purchase_loading">Өнімдер жүктелуде...</string>
+    <string name="purchase_error_no_products">Ауысым өнімдері жоқ</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Әзірлеушіні қолдау</string>
+    <string name="support_solo_developer_description">Сәлем! Мен бос уақытымда MyNotes үстінде жұмыс істейтін әзірлеушімін. Барлық функциялар әрқашан тегін болады, бірақ сіздің қолдауыңыз маған осы қолданбаны жақсартуға көбірек уақыт бөлуге көмектеседі. Әрбір үлес маған бүкіл әлемді білдіреді! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Керемет қолдаушы! 🌟</string>
+    <string name="supporter_badge_subtitle">Сіздің қолдау жинағыңыз</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Тұқым</string>
+    <string name="donation_spark_short">Ұшқын</string>
+    <string name="donation_midnight_short">Дәптер</string>
+    <string name="donation_wave_short">Толқын</string>
+    <string name="donation_universe_short">Ғалам</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Адал дос</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Сатып алынды</string>
+
 </resources>

@@ -18,11 +18,21 @@ public class DiffUtilNote extends DiffUtil.ItemCallback<Note> {
 
     @Override
     public boolean areItemsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
+        // Якщо один з елементів має ID = 0, порівнюємо за датою та вмістом
+        if (oldItem.getId() == 0 || newItem.getId() == 0) {
+            return oldItem.getDate() == newItem.getDate() && 
+                   oldItem.getTitle().equals(newItem.getTitle()) &&
+                   oldItem.getValue().equals(newItem.getValue());
+        }
         return oldItem.getId() == newItem.getId();
     }
 
     @Override
     public boolean areContentsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
-        return oldItem.getTitle().equals(newItem.getTitle()) && oldItem.getValue().equals(newItem.getValue()) && oldItem.getTag().equals(newItem.getTag());
+        return oldItem.getId() == newItem.getId() &&
+               oldItem.getTitle().equals(newItem.getTitle()) && 
+               oldItem.getValue().equals(newItem.getValue()) && 
+               oldItem.getTag().equals(newItem.getTag()) &&
+               oldItem.getDate() == newItem.getDate();
     }
 }

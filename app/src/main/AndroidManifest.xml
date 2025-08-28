@@ -30,10 +30,13 @@
     <application
         android:name=".MyApp"
         android:allowBackup="true"
+        android:backupAgent="android.app.backup.BackupAgent"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_rounder"
+        android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/DefaultTheme"
         tools:targetApi="tiramisu">
         <activity
@@ -43,7 +46,13 @@
             android:name=".ui.view.activity.AboutActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.view.activity.ThemeActivity"
+            android:name=".ui.view.activity.SupportActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.ChangelogActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.SettingsActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -63,9 +72,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <meta-data
-                android:name="android.app.shortcuts"
-                android:resource="@xml/shortcuts" />
         </activity>
         <activity
             android:name=".ui.view.activity.MainActivity"
@@ -89,7 +95,7 @@
         <activity
             android:name=".ui.view.activity.NoteActivity"
             android:exported="true"
-            android:windowSoftInputMode="stateVisible|adjustResize"
+            android:windowSoftInputMode="stateHidden|adjustNothing"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.view.activity.ShareActivity"

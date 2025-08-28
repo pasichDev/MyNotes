@@ -20,6 +20,8 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.AppDbHelper;
 import com.pasich.mynotes.data.database.DbHelper;
+import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
+import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.utils.backup.CloudCacheHelper;
 import com.pasich.mynotes.utils.constants.Database;
 import com.pasich.mynotes.utils.constants.DriveScope;
@@ -39,7 +41,11 @@ public class ApplicationModule {
     @Provides
     @Singleton
     AppDatabase providesAppDatabase(@ApplicationContext Context context, RoomDatabase.Callback sRoomDatabaseCallback) {
-        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME).addCallback(sRoomDatabaseCallback).build();
+        AppDatabase.setContext(context);
+        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME)
+                .addCallback(sRoomDatabaseCallback)
+                .addMigrations(AppDatabase.MIGRATION_2_3)
+                .build();
     }
 
 
@@ -51,9 +57,7 @@ public class ApplicationModule {
             @Override
             public void onCreate(@NonNull SupportSQLiteDatabase db) {
                 super.onCreate(db);
-                db.execSQL("INSERT INTO  tags (name,visibility,systemAction) VALUES ('',0,1)");
-                db.execSQL("INSERT INTO  tags (name,visibility,systemAction) VALUES ('allNotes',0,2)");
-
+                // Системні мітки тепер управляються через SystemTagsManager
             }
 
 
@@ -76,6 +80,12 @@ public class ApplicationModule {
     @Singleton
     DataManager providesDataManager(AppDataManger appDataManager) {
         return appDataManager;
+    }
+
+    @Provides
+    @Singleton
+    PreferenceHelper providesPreferenceHelper(AppPreferencesHelper appPreferencesHelper) {
+        return appPreferencesHelper;
     }
 
 

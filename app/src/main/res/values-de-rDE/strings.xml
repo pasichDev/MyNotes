@@ -36,7 +36,6 @@
     <string name="sortHead">Sortieren nach:</string>
     <string name="shareApp">App teilen</string>
     <string name="privacyApp">Datenschutzerklärung</string>
-    <string name="addShortCutLauncher">Verknüpfung zum Desktop hinzufügen</string>
     <string name="addShortCutSuccessfully">Shortcut erfolgreich hinzugefügt</string>
     <string name="translateNote">Notiz übersetzen</string>
     <string name="hintTextNote">Text</string>
@@ -48,6 +47,7 @@
     <string name="errorNewTagInput">Fehler: Maximale Anzahl an Zeichen, die der Tag-Name %1$d enthalten kann </string>
     <string name="emptyTrash">Deine gelöschten Notizen werden hier angezeigt</string>
     <string name="emptyNotes">Die von dir erstellten Notizen werden hier angezeigt</string>
+    <string name="emptyNotesForTag">Hier werden Notizen angezeigt, die du mit dem Tag "%1$s" markierst</string>
     <string name="chooseNote">Aktionen für die ausgewählte Notiz</string>
     <string name="contentDescrChangeStyleText">Textstil ändern</string>
     <string name="copyNoteEdits">Bearbeite eine Kopie einer Notiz</string>
@@ -59,19 +59,32 @@
     <string name="button_url">Link öffnen</string>
     <string name="hiddeTag">Notizen ausblenden</string>
     <string name="visibleTag">Notizen anzeigen</string>
-    <string name="hintNameLabel">Der Name des Labels</string>
-    <string name="titleDialogShortCut">Verknüpfung erstellen</string>
-    <string name="functionNotSupport">Diese Funktion wird von deinem Gerät nicht unterstützt</string>
     <string name="shortCutCreateFallDouble">Verknüpfung für diese Notiz wurde bereits erstellt</string>
-    <string name="buttonCreateShortCut">Verknüpfung zum Desktop hinzufügen</string>
-    <string name="errorMaxNameShortCut">Fehler im Verknüpfungsnamen</string>
     <string name="renameTag">Umbenennen</string>
     <string name="settingsInterface">Schnittstelleneinstellungen</string>
+    <string name="settings">Einstellungen</string>
     <string name="settingsBackups">Synchronisation und Backups</string>
     <string name="aboutApps">Über die App</string>
     <string name="trash">Papierkorb</string>
-    <string name="themes">Designs</string>
+    <string name="themes">Design</string>
+    <string name="themeBlue">Ozeanblau</string>
+    <string name="themeGreen">Smaragdgrün</string>
+    <string name="themeSunset">Sonnenuntergang Orange</string>
+    <string name="themeYellow">Goldgelb</string>
+    <string name="themePurple">Tiefviolett</string>
+    <string name="themeCoralRed">Korallenrot</string>
+    <string name="accentColorDescription">Akzentfarbe wählen, aus der das Design erstellt wird</string>
+    <string name="selectAccentColor">Akzentfarbe auswählen</string>
     <string name="onDynamicColor">Dynamische Farbe aktivieren</string>
+    <string name="onDynamicColorDescription">Passt App-Farben an Ihr Hintergrundbild an (Android 12+)</string>
+    <string name="onScreenProtection">Bildschirmschutz aktivieren</string>
+    <string name="onScreenProtectionDescription">Verhindert Screenshots und Bildschirmaufnahmen. Wird nach dem Neustart der App wirksam</string>
+    <string name="themeMode">Design-Modus</string>
+    <string name="themeModeDescription">Wählen Sie zwischen hellem, dunklem oder System-Design</string>
+    <string name="selectThemeMode">Design-Modus auswählen</string>
+    <string name="themeModeFollowSystem">Wie im System</string>
+    <string name="themeModeLight">Hell</string>
+    <string name="themeModeDark">Dunkel</string>
     <string name="coffeeByPlay">Danke dem Entwickler</string>
     <string name="coffeeByTextInfo"><b>Meine Notizen</b> ist eine werbefreie Anwendung und wird als kostenloses Produkt vertrieben. Die App wird von einer Person entwickelt, daher werden einige Updates verspätet geliefert. Die Aufrechterhaltung der Funktionalität des Programms und einiger Funktionen verursacht Kosten. Sie können dem Entwickler danken, indem Sie ihm einen Kaffee kaufen oder für eine Servermiete bezahlen, sowie eine Spende über die angegebenen Links senden, die unten angezeigt werden. Vielen Dank, dass Sie diese App verwenden!</string>
     <string name="loginUser">Google-Autorisierung</string>
@@ -114,10 +127,78 @@
     <string name="errorSyncDescrpt">Mit dieser Version stellen wir die Unterstützung der Google Drive-Synchronisierung ein. In zukünftigen Updates werden wir eine sicherere und effizientere Synchronisierungsmethode einführen, die Ihnen ein besseres Benutzererlebnis bietet.</string>
 
     <!-- Produktangebot -->
-    <string name="byyError">Fehler beim Kauf.</string>
-    <string name="byyCancel">Wir werden uns bemühen, besser zu werden.</string>
-    <string name="errorLoadingsProduct">Fehler beim Laden der Storefront</string>
     <string name="thanks_title">Lieber Benutzer</string>
     <string name="creteNoteToTag">Notiz erstellen</string>
     <string name="thanks_donate">Der Projektentwickler dankt Ihnen für Ihren Einkauf. Wir werden uns bemühen, besser und bequemer zu werden. \n <b>Grüße, meine Notizen!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Entwickler unterstützen</string>
+    <string name="inAppPurchases">In-App-Käufe</string>
+    <string name="thankYouTitle">Vielen Dank für die Nutzung von MyNotes!</string>
+    <string name="thankYouDescription">Ihre Unterstützung hilft uns bei der Weiterentwicklung und Verbesserung der App</string>
+    <string name="donationMethods">Spendenmöglichkeiten</string>
+    <string name="kofiDescription">Kaufen Sie mir einen Kaffee auf Ko-Fi</string>
+    <string name="paypalDescription">Senden Sie eine Spende über PayPal</string>
+    <string name="githubSponsorsDescription">Werden Sie GitHub-Sponsor</string>
+    <string name="otherWaysToSupport">Andere Unterstützungsmöglichkeiten</string>
+    <string name="ratingAppDescription">Bewerten Sie uns mit 5 Sternen im Google Play Store</string>
+    <string name="joinCommunity">Der Community beitreten</string>
+    <string name="joinCommunityDescription">Verbinden Sie sich mit anderen Nutzern auf Reddit</string>
+    <string name="contactDeveloper">Entwickler kontaktieren</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Was ist neu</string>
+    <string name="version_acknowledged">Verstanden!</string>
+    <string name="whats_new_title">Neue Funktionen &amp; Verbesserungen</string>
+    <string name="whats_new_description">Entdecken Sie die neuesten Updates, neuen Funktionen und Verbesserungen, die Ihr Notiz-Erlebnis noch besser machen. Wir arbeiten kontinuierlich daran, die App basierend auf Ihrem Feedback zu verbessern!</string>
+    <string name="changelog_subtitle">Bleiben Sie über alle Änderungen und Verbesserungen in dieser Version auf dem Laufenden</string>
+    <string name="errorLoadingChangelog">Fehler beim Laden des Änderungsprotokolls</string>
+    <string name="checkInternetConnection">Bitte überprüfen Sie Ihre Internetverbindung</string>
+    <string name="retry">Wiederholen</string>
+
+    <string name="leaveFeedback">Feedback hinterlassen</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Samen der Ideen</string>
+    <string name="donation_seed_description">Pflanzen Sie den ersten Samen für zukünftige Innovationen</string>
+    <string name="donation_spark_title">Funke der Inspiration</string>
+    <string name="donation_spark_description">Entfachen Sie Kreativität und befeuern Sie die Entwicklung</string>
+    <string name="donation_midnight_title">Mitternachtsnotizbuch</string>
+    <string name="donation_midnight_description">Unterstützen Sie nächtliche Programmiersitzungen</string>
+    <string name="donation_wave_title">Welle der Unterstützung</string>
+    <string name="donation_wave_description">Senden Sie eine kraftvolle Welle der Ermutigung</string>
+    <string name="donation_universe_title">Universum der Inspiration</string>
+    <string name="donation_universe_description">Erschließen Sie unendliche Möglichkeiten für die Zukunft</string>
+    
+    <!-- Purchase Success -->
+    <string name="purchase_success_title">Vielen Dank! 💖</string>
+    <string name="purchase_success_message">Ihre Unterstützung bedeutet uns die Welt! Dank wunderbaren Menschen wie Ihnen können wir MyNotes weiterentwickeln und verbessern. Ihr Beitrag hilft uns dabei, neue Funktionen hinzuzufügen, Fehler zu beheben und die App noch besser zu machen.\n\nWir wünschen Ihnen alles Gute und hoffen, dass Sie MyNotes weiterhin gerne nutzen!</string>
+    <string name="purchase_success_button">Schließen</string>
+    
+    <!-- Purchase Error Messages -->
+    <string name="purchase_error_title">Kauf fehlgeschlagen</string>
+    <string name="purchase_loading">Produkte werden geladen...</string>
+    <string name="purchase_error_no_products">Keine Spendenprodukte verfügbar</string>
+    
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Entwickler unterstützen</string>
+    <string name="support_solo_developer_description">Hallo! Ich bin ein Entwickler, der in seiner Freizeit an MyNotes arbeitet. Alle Funktionen werden immer kostenlos sein, aber Ihre Unterstützung hilft mir, mehr Zeit für die Verbesserung dieser App aufzuwenden. Jeder Beitrag bedeutet mir die Welt! 💖</string>
+    
+    <!-- Supporter Gamification -->
+    <string name="supporter_badge_title">Fantastischer Unterstützer! 🌟</string>
+    <string name="supporter_badge_subtitle">Ihre Unterstützungssammlung</string>
+    
+    <!-- Short donation names for collection -->
+    <string name="donation_seed_short">Samen</string>
+    <string name="donation_spark_short">Funke</string>
+    <string name="donation_midnight_short">Notizbuch</string>
+    <string name="donation_wave_short">Welle</string>
+    <string name="donation_universe_short">Universum</string>
+    
+    <!-- Legacy product friendly name -->
+    <string name="donation_legacy_friend">Treuer Freund</string>
+    
+    <!-- Purchase status -->
+    <string name="purchased">Gekauft</string>
+
 </resources>
