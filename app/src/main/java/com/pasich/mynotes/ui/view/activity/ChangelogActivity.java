@@ -38,7 +38,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ChangelogActivity extends BaseActivity {
 
     public ActivityChangelogBinding binding;
-    private static final String CHANGELOG_URL = "https://raw.githubusercontent.com/pasichDev/MyNotes/refs/heads/v30/CHANGELOG.md";
+    private static final String CHANGELOG_URL = "https://raw.githubusercontent.com/pasichDev/MyNotes/refs/heads/master/CHANGELOG.md";
     private ExecutorService executor;
     private Markwon markwon;
     
