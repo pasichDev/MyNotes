@@ -12,6 +12,8 @@ import android.text.Editable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -305,14 +307,13 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
                     if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
                         // Додаємо візуальний feedback - легке потрясіння
+                        assert mActivityBinding.listTags.getLayoutManager() != null;
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
+                        Animation shake = AnimationUtils
+                                  .loadAnimation(MainActivity.this, R.anim.shake_gentle);
                         if (tagView != null) {
-                            android.view.animation.Animation shake = android.view.animation.AnimationUtils
-                                    .loadAnimation(MainActivity.this, R.anim.shake_gentle);
                             tagView.startAnimation(shake);
                         } else {
-                            android.view.animation.Animation shake = android.view.animation.AnimationUtils
-                                    .loadAnimation(MainActivity.this, R.anim.shake_gentle);
                             mActivityBinding.listTags.startAnimation(shake);
                         }
                         return;
@@ -821,24 +822,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      * @param canScroll true - дозволити прокручування, false - заборонити
      */
     private void setAppBarScrollBehavior(boolean canScroll) {
-        if (mActivityBinding.appBarMainActivity != null && mActivityBinding.actionSearch != null) {
-            AppBarLayout.LayoutParams params = 
+        AppBarLayout.LayoutParams params =
                 (AppBarLayout.LayoutParams) mActivityBinding.actionSearch.getLayoutParams();
-            
-            if (canScroll) {
-                // Дозволяємо прокручування - встановлюємо scroll|enterAlways
-                params.setScrollFlags(
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS);
-            } else {
-                // Забороняємо прокручування - прибираємо всі scroll flags
-                params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL);
-                // Розширюємо AppBar до повного розміру
-                mActivityBinding.appBarMainActivity.setExpanded(true, true);
-            }
-            
-            mActivityBinding.actionSearch.setLayoutParams(params);
+
+        if (canScroll) {
+            // Дозволяємо прокручування - встановлюємо scroll|enterAlways
+            params.setScrollFlags(
+                AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
+                AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS);
+        } else {
+            // Забороняємо прокручування - прибираємо всі scroll flags
+            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL);
+            // Розширюємо AppBar до повного розміру
+            mActivityBinding.appBarMainActivity.setExpanded(true, true);
         }
+
+        mActivityBinding.actionSearch.setLayoutParams(params);
     }
 
     @Override

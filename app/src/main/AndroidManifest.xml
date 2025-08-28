@@ -98,7 +98,7 @@
         <activity
             android:name=".ui.view.activity.NoteActivity"
             android:exported="true"
-            android:windowSoftInputMode="stateHidden|adjustResize"
+            android:windowSoftInputMode="stateHidden|adjustNothing"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.view.activity.ShareActivity"
