@@ -30,7 +30,6 @@
     <application
         android:name=".MyApp"
         android:allowBackup="true"
-        android:backupAgent="android.app.backup.BackupAgent"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
