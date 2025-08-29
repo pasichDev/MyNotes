@@ -10,6 +10,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -22,15 +24,23 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.util.Pair;
+import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.search.SearchView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
@@ -46,8 +56,16 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
+import com.pasich.mynotes.databinding.ViewLoginPageBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
+import com.pasich.mynotes.ui.view.activity.AboutActivity;
+import com.pasich.mynotes.ui.view.activity.BackupActivity;
+import com.pasich.mynotes.ui.view.activity.ChangelogActivity;
+import com.pasich.mynotes.ui.view.activity.NoteActivity;
+import com.pasich.mynotes.ui.view.activity.SettingsActivity;
+import com.pasich.mynotes.ui.view.activity.SupportActivity;
+import com.pasich.mynotes.ui.view.activity.TrashActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.about.AboutDialog;
 import com.pasich.mynotes.ui.view.dialogs.about.AboutOpensActivity;
@@ -67,11 +85,14 @@ import com.pasich.mynotes.utils.adapters.tagAdapter.OnItemClickListenerTag;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
+import com.pasich.mynotes.utils.constants.settings.BackupPreferences;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
 import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
+import com.preference.PowerPreference;
+import com.preference.Preference;
 
 import java.util.List;
 
@@ -130,6 +151,19 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     UpdateChecker updateChecker;
 
+    // Navigation Drawer variables
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private int pendingNavigationMenuItemId = -1; // Для зберігання обраного пункту меню
+
+    // Google Sign-In variables (moved from AboutDialog)
+    @Inject
+    public com.google.android.gms.auth.api.signin.GoogleSignInClient googleSignInClient;
+    @Inject
+    public com.pasich.mynotes.utils.backup.CloudCacheHelper cloudCacheHelper;
+    @Inject
+    public com.pasich.mynotes.utils.backup.CloudAuthHelper cloudAuthHelper;
+
     private static final int REQUEST_UPDATE = 100;
     private AppUpdateManager appUpdateManager;
     private int previousNotesCount = 0;
@@ -140,6 +174,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 if (result.getResultCode() != RESULT_OK) {
                     Toast.makeText(this, "Оновлення не вдалося!", Toast.LENGTH_SHORT).show();
                     checkForUpdate();
+                }
+            });
+
+    // Google Sign-In launcher
+    final private ActivityResultLauncher<Intent> startAuthIntent = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    cloudAuthHelper.getResultAuth(result.getData())
+                            .addOnFailureListener((GoogleSignInAccount) -> 
+                                    onInfoSnack(R.string.errorAuth, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG))
+                            .addOnSuccessListener((GoogleSignInAccount) -> {
+                                cloudCacheHelper.update(GoogleSignInAccount, 
+                                        com.google.android.gms.auth.api.signin.GoogleSignIn.hasPermissions(GoogleSignInAccount, 
+                                                com.pasich.mynotes.utils.constants.DriveScope.ACCESS_DRIVE_SCOPE), true);
+                                loadingDataUser(true);
+                            });
                 }
             });
 
@@ -154,7 +204,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
 
-        setupEdgeToEdgeInsets(mActivityBinding.activityMain);
+        setupEdgeToEdgeForDrawer();
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
@@ -169,10 +219,17 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         // Перевірте доступність оновлення
         checkForUpdate();
 
+        // Ініціалізуємо Navigation Drawer
+        setupNavigationDrawer();
+
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                setEnabled(finishActivity());
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    setEnabled(finishActivity());
+                }
             }
         });
 
@@ -300,8 +357,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                             formatList.formatNote(menuItem);
                             staggeredGridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
                         }
-                    } else if (idItem == R.id.more) {
-                        openMoreActivity();
                     }
 
                     return true;
@@ -357,44 +412,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         });
 
-    }
-
-    private void openMoreActivity() {
-        if (getAction())
-            actionUtils.closeActionPanel();
-        new AboutDialog(new AboutOpensActivity() {
-            @Override
-            protected void openThemeActivity() {
-                startSettingsActivity.launch(new Intent(MainActivity.this, SettingsActivity.class),
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,
-                                (Pair<View, String>[]) null));
-            }
-
-            @Override
-            protected void openTrash() {
-                startActivity(new Intent(MainActivity.this, TrashActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-
-            }
-
-            @Override
-            protected void openAboutActivity() {
-                startActivity(new Intent(MainActivity.this, AboutActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-            }
-
-            @Override
-            protected void openBackupActivity() {
-                startActivity(new Intent(MainActivity.this, BackupActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-            }
-
-            @Override
-            protected void openSupportActivity() {
-                startActivity(new Intent(MainActivity.this, SupportActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-            }
-        }).show(getSupportFragmentManager(), "MoreActivity");
     }
 
     @Override
@@ -877,4 +894,179 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             mainPresenter.loadingData();
         }
     }
+
+    /**
+     * Налаштування Navigation Drawer
+     */
+    private void setupNavigationDrawer() {
+        drawerLayout = mActivityBinding.drawerLayout;
+        navigationView = mActivityBinding.navigationView;
+
+        // Налаштовуємо burger іконку для відкриття drawer
+        mActivityBinding.actionSearch.setNavigationOnClickListener(v -> {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+
+        // Налаштовуємо menu click listener для Navigation Drawer
+        navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
+
+        // Додаємо DrawerListener для обробки завершення анімації
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                // Коли drawer закрився, відкриваємо активність
+                if (pendingNavigationMenuItemId != -1) {
+                    // Невелика затримка для плавності
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        handleNavigationItemAction(pendingNavigationMenuItemId);
+                        pendingNavigationMenuItemId = -1; // Скидаємо
+                    }, 50); // Мінімальна затримка
+                }
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
+
+        // Ініціалізуємо дані користувача в header
+        initNavigationHeader();
+    }
+
+    /**
+     * Обробка кліків по пунктах меню Navigation Drawer
+     */
+    private boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Зберігаємо ID обраного пункту та закриваємо drawer
+        pendingNavigationMenuItemId = item.getItemId();
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    /**
+     * Виконання дії після закриття drawer'а
+     */
+    private void handleNavigationItemAction(int itemId) {
+        if (itemId == R.id.nav_trash) {
+            startActivity(new Intent(this, TrashActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        } else if (itemId == R.id.nav_settings) {
+            startSettingsActivity.launch(new Intent(this, SettingsActivity.class),
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(this,
+                            (Pair<View, String>[]) null));
+        } else if (itemId == R.id.nav_backups) {
+            startActivity(new Intent(this, BackupActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        } else if (itemId == R.id.nav_about) {
+            startActivity(new Intent(this, AboutActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        } else if (itemId == R.id.nav_support) {
+            startActivity(new Intent(this, SupportActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        }
+    }
+
+    /**
+     * Ініціалізація header Navigation Drawer з інформацією користувача
+     */
+    private void initNavigationHeader() {
+        View headerView = navigationView.getHeaderView(0);
+        com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding = 
+                com.pasich.mynotes.databinding.ViewLoginPageBinding.bind(headerView.findViewById(R.id.login_page));
+
+        // Налаштовуємо видимість елементів для Google Play Market
+        loginPageBinding.viewLoginRoot.setVisibility(cloudCacheHelper.isInstallPlayMarket() ? View.VISIBLE : View.GONE);
+        
+        // Завантажуємо дані користувача
+        loadingDataUser(cloudCacheHelper.isAuth(), loginPageBinding);
+
+        // Налаштовуємо listeners
+        setupNavigationHeaderListeners(loginPageBinding);
+    }
+
+    /**
+     * Налаштування listeners для header Navigation Drawer
+     */
+    private void setupNavigationHeaderListeners(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
+        loginPageBinding.exitUser.setOnClickListener(v -> signOut(loginPageBinding));
+        loginPageBinding.loginUser.setOnClickListener(v -> startAuthIntent.launch(googleSignInClient.getSignInIntent()));
+    }
+
+    /**
+     * Завантаження даних користувача
+     * TODO Update logic
+     */
+    private void loadingDataUser(boolean isAuth, com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
+        if (isAuth) {
+            String nameUser = cloudCacheHelper.getGoogleSignInAccount().getDisplayName();
+            loginPageBinding.nameUser.setText(nameUser);
+            loginPageBinding.emailUSer.setText(cloudCacheHelper.getGoogleSignInAccount().getEmail());
+            Glide.with(this)
+                    .load(cloudCacheHelper.getGoogleSignInAccount().getPhotoUrl())
+                    .placeholder(R.drawable.ic_no_avatar)
+                    .into(loginPageBinding.userAvatar);
+            loginPageBinding.loginUser.setVisibility(View.GONE);
+            loginPageBinding.loginPageRoot.setVisibility(View.VISIBLE);
+        } else {
+            loginPageBinding.loginPageRoot.setVisibility(View.GONE);
+            loginPageBinding.loginUser.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     *
+     */
+    private void loadingDataUser(boolean isAuth) {
+        if (navigationView != null) {
+            View headerView = navigationView.getHeaderView(0);
+            ViewLoginPageBinding loginPageBinding =
+                   ViewLoginPageBinding.bind(headerView.findViewById(R.id.login_page));
+            loadingDataUser(isAuth, loginPageBinding);
+        }
+    }
+
+    /**
+     * Вихід з Google акаунта
+     * TODO Update logic
+     */
+    private void signOut(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
+        googleSignInClient.signOut().addOnCompleteListener(task -> {
+            final Preference preference = PowerPreference.getFileByName(
+                    com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP);
+            loginPageBinding.loginUser.setVisibility(View.VISIBLE);
+            loginPageBinding.loginPageRoot.setVisibility(View.GONE);
+            preference.removeAsync(BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD);
+            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_ID);
+            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_TIME);
+            cloudCacheHelper.clean();
+        });
+    }
+
+    /**
+     * Налаштовує Edge-to-Edge для DrawerLayout
+     */
+    private void setupEdgeToEdgeForDrawer() {
+        ViewCompat.setOnApplyWindowInsetsListener(mActivityBinding.getRoot(), (v, insets) -> {
+            ViewCompat.setOnApplyWindowInsetsListener(mActivityBinding.activityMain, (mainView, mainInsets) -> {
+                Insets systemBars = mainInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                mainView.setPadding(0, systemBars.top, 0, systemBars.bottom);
+                return WindowInsetsCompat.CONSUMED;
+            });
+
+            return insets;
+        });
+    }
+
 }

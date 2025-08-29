@@ -395,4 +395,5 @@
         <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
     </style>
 
+
 </resources>

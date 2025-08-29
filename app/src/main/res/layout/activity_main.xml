@@ -16,6 +16,12 @@
             type="boolean" />
     </data>
 
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -25,6 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?android:colorBackground"
+            android:animateLayoutChanges="true"
             tools:context=".ui.view.activity.MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
@@ -51,6 +58,7 @@
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
                 android:backgroundTint="?attr/colorSurfaceVariant"
                 app:elevation="0dp"
+                app:navigationIcon="@drawable/ic_menu"
                 app:navigationIconTint="?attr/colorPrimary"
                 app:layout_scrollFlags="scroll|enterAlways" />
 
@@ -140,6 +148,21 @@
         </com.google.android.material.search.SearchView>
 
     </FrameLayout>
+
+    <!-- Navigation Drawer -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navigation_view"
+            style="@style/NavigationViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:fitsSystemWindows="true"
+            app:menu="@menu/activity_main_drawer"
+            app:headerLayout="@layout/nav_header_main"
+            app:itemIconSize="24dp" />
+
+
+    </androidx.drawerlayout.widget.DrawerLayout>
 
 
 </layout>

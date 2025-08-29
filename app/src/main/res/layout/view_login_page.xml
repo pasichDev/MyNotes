@@ -11,13 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:padding="20dp">
+        android:gravity="center">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/userAvatar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:contentDescription="@string/userAvatar"
             tools:src="@drawable/demo_avatar_user"
             app:shapeAppearanceOverlay="@style/circleUserAvatar" />
@@ -48,12 +47,23 @@
                 android:textColor="?attr/colorOutline" />
         </LinearLayout>
 
-        <ImageView
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/exitUser"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_exit"
-            android:contentDescription="@string/logOut" />
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:backgroundTint="?attr/colorPrimaryContainer"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_exit"
+            app:iconTint="?attr/colorOnPrimaryContainer"
+            app:rippleColor="?attr/colorControlHighlight"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp" />
+
 
     </LinearLayout>
 

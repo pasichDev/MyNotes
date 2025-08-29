@@ -42,8 +42,8 @@ android {
 
         }
         debug {
-            applicationIdSuffix  ".debug"
-            versionNameSuffix  "-debug"
+          //  applicationIdSuffix  ".debug"
+          //  versionNameSuffix  "-debug"
             debuggable true
             minifyEnabled false
             shrinkResources false
