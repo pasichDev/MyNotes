@@ -9,11 +9,9 @@
         <item name="itemIconTint">?attr/colorPrimary</item>
         <item name="itemTextColor">?attr/colorOnSurface</item>
         <item name="itemBackground">@drawable/nav_item_background</item>
-        <item name="itemHorizontalPadding">5dp</item>
-        <item name="itemVerticalPadding">12dp</item>
+        <item name="itemHorizontalPadding">20dp</item>
+        <item name="itemVerticalPadding">14dp</item>
         <item name="itemIconPadding">24dp</item>
-        <item name="android:paddingStart">20dp</item>
-        <item name="android:paddingEnd">20dp</item>
 
     </style>
 
