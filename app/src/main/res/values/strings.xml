@@ -211,9 +211,62 @@
     
     <!-- Legacy product friendly name -->
     <string name="donation_legacy_friend">Faithful Friend</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Help</string>
+    <string name="help_subtitle">Learn how to get the most out of MyNotes features</string>
+    <string name="help_section_icon">Section icon</string>
+    <string name="help_feature_icon">Feature icon</string>
     
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Tags</string>
+    <string name="help_tags_create_title">Creating Tags</string>
+    <string name="help_tags_create_description">At the beginning of the tags list, press the + button to create a new tag</string>
+    <string name="help_tags_edit_title">Editing Tags</string>
+    <string name="help_tags_edit_description">Hold a tag to open the context menu. Here you can delete the tag, rename it, or hide notes associated with it.</string>
+    <string name="help_tags_hide_title">Hiding Notes</string>
+    <string name="help_tags_hide_description">Use the hide function to temporarily remove tagged notes from the main view while keeping access to them through the tag</string>
+    <string name="help_tags_limit_title">Tag Limit</string>
+    <string name="help_tags_limit_description">You can create up to 25 tags for effective organization of your notes</string>
+    <string name="help_tags_assign_title">Assigning Tags</string>
+    <string name="help_tags_assign_description">Tags can be assigned to notes from the main screen and when editing a note</string>
+    <string name="help_tags_update_title">Updating Tags</string>
+    <string name="help_tags_update_description">Describes tag updates and how to hide notes from the main view</string>
+    
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Navigation</string>
+    <string name="help_navigation_drawer_title">Main Menu</string>
+    <string name="help_navigation_drawer_description">Access the main menu by tapping the hamburger icon in the top left corner.</string>
+    <string name="help_navigation_search_title">Search</string>
+    <string name="help_navigation_search_description">Use the search bar to quickly find your notes by title or content</string>
+    <string name="help_navigation_sort_title">Sorting</string>
+    <string name="help_navigation_sort_description">Sort your notes by last modified date or name in ascending or descending order</string>
+    <string name="help_navigation_format_title">Display Format</string>
+    <string name="help_navigation_format_description">Switch between list and grid to display your notes in a layout convenient for you</string>
+    
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Swipe Gestures</string>
+    <string name="help_navigation_swipe_description">Manage notes intuitively! Swipe left to activate multiple note selection mode for quick bulk operations, or swipe right to instantly delete a note and send it to trash. Gestures are only available in single-column mode.</string>
+    
+    <!-- Other Section -->
+    <string name="help_other_title">Other</string>
+    <string name="help_other_security_title">Screen Protection</string>
+    <string name="help_other_security_description">When enabled in settings, this feature protects your notes from unauthorized viewing by hiding app content in recent apps overview, preventing screenshots, and blocking screen recording. This security feature activates after restarting the app.</string>
+    
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Notes Features</string>
+    <string name="help_notes_limit_title">Text Limit</string>
+    <string name="help_notes_limit_description">Each note can contain up to 20,000 characters, providing ample space for detailed content.</string>
+    <string name="help_notes_translate_title">Translation</string>
+    <string name="help_notes_translate_description">Translate your notes directly within the app. Google Translate must be installed on your device to use this feature.</string>
+    <string name="help_notes_text_size_title">Text Size</string>
+    <string name="help_notes_text_size_description">Adjust text size while editing notes using the text size dialog accessible directly from the note editing screen.</string>
+    <string name="help_notes_copy_title">Edit Copy</string>
+    <string name="help_notes_copy_description">Create an editable copy of any note to make modifications while keeping the original intact.</string>
+
     <!-- Purchase status -->
     <string name="purchased">Purchased</string>
-    
-    <!-- Missing strings found in translations -->
+
+    <string name="actual_version">Up to date for version %1$s</string>
+
 </resources>

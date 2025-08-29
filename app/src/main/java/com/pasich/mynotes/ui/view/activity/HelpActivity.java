@@ -258,7 +258,7 @@ public class HelpActivity extends BaseActivity {
             HelpSection.TYPE_SECTION_TITLE,
             getString(R.string.help_other_title),
             null,
-            R.drawable.ic_security,
+            R.drawable.ic_other,
             null
         ));
 

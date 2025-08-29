@@ -37,7 +37,6 @@
     <string name="sortHead">Сұрыптау:</string>
     <string name="shareApp">Қолданбаны ортақ пайдалану</string>
     <string name="privacyApp">Құпиялылық саясаты</string>
-    <string name="addShortCutSuccessfully">Таңбаша сәтті қосылды</string>
     <string name="translateNote">Ескертуді аудару</string>
     <string name="hintTextNote">Мәтін</string>
     <string name="notInstaledAppTranslate">Бұл мүмкіндікті пайдалану үшін Google Translator орнатылуы керек</string>
@@ -61,7 +60,6 @@
     <!-- Келесі нұсқаны тазалау -->
     <string name="hiddeTag">Ескертпелерді жасыру</string>
     <string name="visibleTag">Ескертпелерді көрсету</string>
-    <string name="shortCutCreateFallDouble">Бұл ескертпе үшін белгі әлдеқашан жасалған</string>
     <string name="renameTag">Атын өзгерту</string>
 
     <string name="settingsInterface">Интерфейс параметрлері</string>
@@ -83,13 +81,10 @@
     <string name="onScreenProtection">Экран қорғанысын қосу</string>
     <string name="onScreenProtectionDescription">Экран суретін түсіру мен жазып алуды болдырмайды. Қолданбаны қайта іске қосқаннан кейін күшіне енеді</string>
     <string name="themeMode">Тақырып режимі</string>
-    <string name="themeModeDescription">Ашық, қараңғы немесе жүйелік тақырыпты таңдаңыз</string>
     <string name="selectThemeMode">Тақырып режимін таңдаңыз</string>
     <string name="themeModeFollowSystem">Жүйе сияқты</string>
     <string name="themeModeLight">Ашық</string>
     <string name="themeModeDark">Қараңғы</string>
-    <string name="coffeeByPlay">Әзірлеушіге рахмет</string>
-    <string name="coffeeByTextInfo"><b>Менің жазбаларым</b> - бұл жарнамасыз қолданба және тегін өнім ретінде таратылады. Қолданбаны бір адам әзірлеген, сондықтан кейбір жаңартулар кеш жеткізіледі. Қолданбаның және кейбір мүмкіндіктердің денсаулығын сақтау шығындарды тудырады. Сіз әзірлеушіге кофе сатып алу немесе сервер жалдау ақысын төлеу арқылы алғыс айта аласыз, сонымен қатар төменде көрсетілетін сілтемелерге қайырымдылық жібере аласыз. Осы қолданбаны пайдаланғаныңызға рахмет!</string>
 
     <string name="loginUser">Google жүйесіне кіру</string>
     <string name="cloudBackup">Бұлт</string>
@@ -136,23 +131,15 @@
     <string name="errorSyncTitle">Назар аударыңыз!</string>
     <string name="errorSyncDescrpt">Осы нұсқамен біз Google Дискісімен синхрондауды қолдауды тоқтатамыз. Келесі жаңартуларда біз қауіпсіз және тиімдірек синхрондау әдісін енгіземіз, бұл сізге жақсы пайдаланушы тәжірибесін қамтамасыз етеді.</string>
 
-    <string name="creteNoteToTag">Жазба жасаңыз</string>
     <string name="thanks_title">Құрметті пайдаланушы</string>
     <string name="thanks_donate">Жоба әзірлеушісі сатып алғаныңыз үшін алғыс білдіреді. Біз жақсырақ және ыңғайлырақ болуға тырысамыз. \n <b>Құрметпен, менің жазбаларым!</b></string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Әзірлеушіні қолдау</string>
     <string name="inAppPurchases">Қолданба ішіндегі сатып алулар</string>
-    <string name="thankYouTitle">MyNotes қолданғаныңыз үшін рақмет!</string>
-    <string name="thankYouDescription">Сіздің қолдауыңыз бізге әзірлеуді жалғастыруға және қолданбаны жақсартуға көмектеседі</string>
     <string name="donationMethods">Қолдау көрсету әдістері</string>
     <string name="kofiDescription">Ko-Fi-да маған кофе сыйлаңыз</string>
-    <string name="paypalDescription">PayPal арқылы ақша жіберіңіз</string>
-    <string name="githubSponsorsDescription">GitHub-та демеуші болыңыз</string>
-    <string name="otherWaysToSupport">Қолдаудың басқа жолдары</string>
-    <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
-    <string name="joinCommunity">Қауымдастыққа қосылу</string>
-    <string name="joinCommunityDescription">Reddit-те басқа пайдаланушылармен байланысыңыз</string>
+   <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
     <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
 
     <!-- Changelog Activity -->
@@ -209,5 +196,59 @@
     
     <!-- Purchase status -->
     <string name="purchased">Сатып алынды</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Анықтама</string>
+    <string name="help_subtitle">MyNotes функцияларын барынша пайдалану жолдарын біліңіз</string>
+    <string name="help_section_icon">Бөлім белгішесі</string>
+    <string name="help_feature_icon">Функция белгішесі</string>
+    
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Тегтер</string>
+    <string name="help_tags_create_title">Тегтер жасау</string>
+    <string name="help_tags_create_description">Тегтер тізімінің басында жаңа тег жасау үшін + түймесін басыңыз</string>
+    <string name="help_tags_edit_title">Тегтерді өңдеу</string>
+    <string name="help_tags_edit_description">Өңдеу контекст мәзірін ашу үшін тегті ұстап тұрыңыз. Мұнда сіз тегті жоя аласыз, атын өзгерте аласыз немесе онымен байланысты жазбаларды жасыра аласыз.</string>
+    <string name="help_tags_hide_title">Жазбаларды жасыру</string>
+    <string name="help_tags_hide_description">Белгіленген жазбаларды негізгі көрінісінен уақытша жою үшін жасыру функциясын пайдаланыңыз, тег арқылы оларға қол жетімділікті сақтай отырып</string>
+    <string name="help_tags_limit_title">Тег шектеуі</string>
+    <string name="help_tags_limit_description">Жазбаларыңызды тиімді ұйымдастыру үшін 25-ке дейін тег жасай аласыз</string>
+    <string name="help_tags_assign_title">Тегтерді тағайындау</string>
+    <string name="help_tags_assign_description">Тегтерді негізгі экраннан және жазбаны өңдеу кезінде жазбаларға тағайындауға болады</string>
+    <string name="help_tags_update_title">Тегтерді жаңарту</string>
+    <string name="help_tags_update_description">Тег жаңартуларын және негізгі көрінісінен жазбаларды қалай жасыруды сипаттайды</string>
+    
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Навигация</string>
+    <string name="help_navigation_drawer_title">Негізгі мәзір</string>
+    <string name="help_navigation_drawer_description">Жоғарғы сол жақ бұрыштағы гамбургер белгішесін басу арқылы негізгі мәзірге қол жеткізіңіз.</string>
+    <string name="help_navigation_search_title">Іздеу</string>
+    <string name="help_navigation_search_description">Жазбаларыңызды атауы немесе мазмұны бойынша тез табу үшін іздеу жолағын пайдаланыңыз</string>
+    <string name="help_navigation_sort_title">Сұрыптау</string>
+    <string name="help_navigation_sort_description">Жазбаларыңызды соңғы өзгерту күні немесе атауы бойынша өсу немесе кему ретімен сұрыптаңыз</string>
+    <string name="help_navigation_format_title">Көрсету форматы</string>
+    <string name="help_navigation_format_description">Жазбаларыңызды өзіңізге ыңғайлы орналасуда көрсету үшін тізім мен тор арасында ауысыңыз</string>
+    
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Сырғыту жестері</string>
+    <string name="help_navigation_swipe_description">Жазбаларды интуитивті басқарыңыз! Жылдам жаппай операциялар үшін бірнеше жазбаны таңдау режимін қосу үшін солға сырғытыңыз немесе жазбаны лезде жою және қоқыс жәшігіне жіберу үшін оңға сырғытыңыз. Жестер тек бір баған режимінде қолжетімді.</string>
+    
+    <!-- Other Section -->
+    <string name="help_other_title">Басқа</string>
+    <string name="help_other_security_title">Экранды қорғау</string>
+    <string name="help_other_security_description">Параметрлерде қосылған кезде, бұл функция жазбаларыңызды рұқсатсыз қарауден қорғайды: соңғы қолданбалар шолуында қолданба мазмұнын жасырады, скриншот алуды болдырмайды және экранды жазуды блоктайды. Бұл қауіпсіздік функциясы қолданбаны қайта іске қосқаннан кейін белсендіріледі.</string>
+    
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Жазбалар функциялары</string>
+    <string name="help_notes_limit_title">Мәтін шектеуі</string>
+    <string name="help_notes_limit_description">Әр жазба 20,000 символға дейін болуы мүмкін, бұл толық мазмұн үшін жеткілікті орын береді.</string>
+    <string name="help_notes_translate_title">Аударма</string>
+    <string name="help_notes_translate_description">Жазбаларыңызды тікелей қолданбада аударыңыз. Бұл функцияны пайдалану үшін сіздің құрылғыңызда Google Аудармашы орнатылған болуы керек.</string>
+    <string name="help_notes_text_size_title">Мәтін өлшемі</string>
+    <string name="help_notes_text_size_description">Жазба өңдеу экранынан тікелей қол жетімді мәтін өлшемі диалогын пайдаланып жазбаларды өңдеу кезінде мәтін өлшемін реттеңіз.</string>
+    <string name="help_notes_copy_title">Көшірмені өңдеу</string>
+    <string name="help_notes_copy_description">Түпнұсқасын бұзбай өзгерістер енгізу үшін кез келген жазбаның өңделетін көшірмесін жасаңыз.</string>
+
+    <string name="actual_version">%1$s нұсқасы үшін өзекті</string>
 
 </resources>

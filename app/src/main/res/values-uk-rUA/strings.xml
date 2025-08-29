@@ -36,7 +36,6 @@
     <string name="sortHead">Сортувати за:</string>
     <string name="shareApp">Поділитись додатком</string>
     <string name="privacyApp">Політика конфіденційності</string>
-    <string name="addShortCutSuccessfully">Додавання ярлика виконано успішно</string>
     <string name="translateNote">Зробити переклад нотатки</string>
     <string name="hintTextNote">Текст</string>
     <string name="notInstaledAppTranslate">Для використання цієї функції потрібно встановити Google Translator</string>
@@ -60,7 +59,6 @@
     <string name="button_url">Відкрити посилання</string>
     <string name="hiddeTag">Приховати нотатки</string>
     <string name="visibleTag">Відображати нотатки</string>
-    <string name="shortCutCreateFallDouble">Ярлик для цієї нотатки вже створено</string>
     <string name="renameTag">Перейменувати</string>
     <string name="settingsInterface">Налаштування інтерфейсу</string>
     <string name="settings">Налаштування</string>
@@ -75,13 +73,10 @@
     <string name="onScreenProtection">Увімкнути захист екрану</string>
     <string name="onScreenProtectionDescription">Запобігає створенню скріншотів та записуванню екрану. Вступить в силу після перезапуску додатку</string>
     <string name="themeMode">Режим теми</string>
-    <string name="themeModeDescription">Оберіть між світлою, темною або системною темою</string>
     <string name="selectThemeMode">Оберіть режим теми</string>
     <string name="themeModeFollowSystem">Як в системі</string>
     <string name="themeModeLight">Світла</string>
     <string name="themeModeDark">Темна</string>
-    <string name="coffeeByPlay">Подякувати розробнику</string>
-    <string name="coffeeByTextInfo"><b>Мої нотатки</b> - це програма без реклами та поширюється як безкоштовний продукт. Додаток розробляє одна людина, тому деякі оновлення поставляються із запізненням. Підтримка працездатності програми та деяких функцій створює витрати. Ви можете подякувати розробнику, купивши йому каву або сплатити за оренду сервера, а також відправити донат за вказаними посиланнями, які будуть відображатися знизу. Дякую, що використовуєте цю програму!</string>
     <string name="loginUser">Авторизація Google</string>
     <string name="cloudBackup">Хмара</string>
     <string name="localBackup">Пристрій</string>
@@ -121,7 +116,6 @@
 
     <!-- Product offer -->
     <string name="thanks_title">Шановний користувач</string>
-    <string name="creteNoteToTag">Створити нотатку</string>
     <string name="thanks_donate">Розробник проекту каже вам спасибі за вашу покупку. Ми будемо прагнути стати кращими і зручнішими. \n <b>З повагою, мої нотатки!</b></string>
 
 
@@ -131,16 +125,9 @@
     <!-- Support Activity -->
     <string name="supportDeveloper">Підтримати розробника</string>
     <string name="inAppPurchases">Покупки в додатку</string>
-    <string name="thankYouTitle">Дякуємо за використання MyNotes!</string>
-    <string name="thankYouDescription">Ваша підтримка допомагає нам продовжувати розробку та покращувати додаток</string>
     <string name="donationMethods">Способи підтримки</string>
     <string name="kofiDescription">Частуйте мене кавою на Ko-Fi</string>
-    <string name="paypalDescription">Надішліть донат через PayPal</string>
-    <string name="githubSponsorsDescription">Станьте спонсором на GitHub</string>
-    <string name="otherWaysToSupport">Інші способи підтримки</string>
     <string name="ratingAppDescription">Поставте нам 5 зірок в Google Play</string>
-    <string name="joinCommunity">Приєднатися до спільноти</string>
-    <string name="joinCommunityDescription">Спілкуйтеся з іншими користувачами на Reddit</string>
     <string name="contactDeveloper">Зв\'язатися з розробником</string>
 
     <!-- Changelog Activity -->
@@ -182,7 +169,7 @@
     
     <!-- Purchase Error Messages -->
     <string name="purchase_error_title">Помилка покупки</string>
-    <string name="purchase_loading">Завантаження товарів...</string>
+    <string name="purchase_loading">Завантаження товарів…</string>
     <string name="purchase_error_no_products">Немає доступних товарів для донату</string>
     
     <!-- Developer Support -->
@@ -202,8 +189,59 @@
     
     <!-- Legacy product friendly name -->
     <string name="donation_legacy_friend">Вірний друг</string>
-    
-    <!-- Purchase status -->
-    <string name="purchased">Куплено</string>
 
+
+    <!-- Help Activity -->
+    <string name="help_title">Довідка</string>
+    <string name="help_subtitle">Дізнайтеся, як максимально використовувати функції MyNotes</string>
+    <string name="help_section_icon">Іконка розділу</string>
+    <string name="help_feature_icon">Іконка функції</string>
+    
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Теги</string>
+    <string name="help_tags_create_title">Створення тегів</string>
+    <string name="help_tags_create_description">На початку списку тегів натисніть кнопку + щоб створити новий тег</string>
+    <string name="help_tags_edit_title">Редагування тегів</string>
+    <string name="help_tags_edit_description">Утримуйте тег, щоб відкрити контекстне меню редагування. Тут ви можете видалити тег, перейменувати його або приховати нотатки, пов’язані з ним.</string>
+    <string name="help_tags_hide_title">Приховування нотаток</string>
+    <string name="help_tags_hide_description">Використовуйте функцію приховування, щоб тимчасово видалити позначені нотатки з головного виду, зберігаючи доступ до них через тег</string>
+    <string name="help_tags_limit_title">Обмеження тегів</string>
+    <string name="help_tags_limit_description">Можна створити не більше 25 тегів для ефективної організації ваших нотаток</string>
+    <string name="help_tags_assign_title">Призначення тегів</string>
+    <string name="help_tags_assign_description">Теги нотаткам можна вішати на головному екрані та при редагуванні нотатки</string>
+    <string name="help_tags_update_title">Оновлення тегів</string>
+    <string name="help_tags_update_description">Описує оновлення тегів і як сховати нотатки з головного виду</string>
+    
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Навігація</string>
+    <string name="help_navigation_drawer_title">Головне меню</string>
+    <string name="help_navigation_drawer_description">Отримайте доступ до головного меню, натиснувши іконку бургера у верхньому лівому куті.</string>
+    <string name="help_navigation_search_title">Пошук</string>
+    <string name="help_navigation_search_description">Використовуйте панель пошуку для швидкого знаходження ваших нотаток за назвою або змістом</string>
+    <string name="help_navigation_sort_title">Сортування</string>
+    <string name="help_navigation_sort_description">Сортуйте ваші нотатки за датою останньої зміни або назвою у висхідному чи спадному порядку</string>
+    <string name="help_navigation_format_title">Формат відображення</string>
+    <string name="help_navigation_format_description">Переключайтеся між списком та сіткою для відображення ваших нотаток у зручному для вас макеті</string>
+    
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Жести свайп</string>
+    <string name="help_navigation_swipe_description">Керуйте нотатками інтуїтивно! Проведіть пальцем ліворуч, щоб увімкнути режим вибору кількох нотаток для швидких масових операцій, або вправо — щоб миттєво видалити нотатку та відправити її в кошик. Жести доступні лише в одноколонковому режимі.</string>
+    
+    <!-- Other Section -->
+    <string name="help_other_title">Інше</string>
+    <string name="help_other_security_title">Захист екрану</string>
+    <string name="help_other_security_description">Коли увімкнено в налаштуваннях, ця функція захищає ваші нотатки від несанкціонованого перегляду: приховує вміст додатку в огляді нещодавніх додатків, забороняє створення скріншотів та запис екрану. Функція безпеки активується після перезапуску додатку.</string>
+    
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Функції нотаток</string>
+    <string name="help_notes_limit_title">Обмеження тексту</string>
+    <string name="help_notes_limit_description">Кожна нотатка може містити до 20,000 символів, що забезпечує достатньо місця для детального контенту.</string>
+    <string name="help_notes_translate_title">Переклад</string>
+    <string name="help_notes_translate_description">Перекладайте ваші нотатки прямо в додатку. Для використання цієї функції на вашому пристрої повинен бути встановлений Google Перекладач.</string>
+    <string name="help_notes_text_size_title">Розмір тексту</string>
+    <string name="help_notes_text_size_description">Змінюйте розмір тексту під час редагування нотаток за допомогою діалогового вікна розміру тексту, доступного прямо з екрану редагування нотатки.</string>
+    <string name="help_notes_copy_title">Редагувати копію</string>
+    <string name="help_notes_copy_description">Створюйте редаговану копію будь-якої нотатки для внесення змін, зберігаючи оригінал недоторканим.</string>
+
+    <string name="actual_version">Актуально для версії %1$s</string>
 </resources>

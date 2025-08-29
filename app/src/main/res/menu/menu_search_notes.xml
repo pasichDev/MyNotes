@@ -3,14 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
     <item
-        android:id="@+id/format"
-        android:icon="@drawable/ic_edit_format_list"
-        android:title="@string/cd_format"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/sort"
         android:icon="@drawable/ic_sort"
         android:title="@string/sortNotes"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/format"
+        android:icon="@drawable/ic_edit_format_list"
+        android:title="@string/cd_format"
         app:showAsAction="ifRoom" />
 </menu>

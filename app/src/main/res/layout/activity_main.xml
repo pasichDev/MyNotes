@@ -90,6 +90,7 @@
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:paddingBottom="15dp"
+                tools:listitem="@layout/item_help_feature"
                 android:visibility="@{emptyNotes ? View.GONE : View.VISIBLE,  default=visible}" />
 
             <include
