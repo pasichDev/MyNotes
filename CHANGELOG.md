@@ -2,6 +2,10 @@
 
 ## [2.1.32] - XX.XX.2025
 
+- Added a Help section with detailed information about the app’s features
+- Fixed an issue with BackupAgent
+- Optimized app performance and improved stability
+- Added a navigation drawer for easier interface interaction
 
 ## [2.1.30 - 2.1.31] - 28.08.2025
 
