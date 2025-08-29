@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pasich.mynotes.R;
@@ -22,22 +23,43 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
     }
 
     private List<DonationProduct> products = new ArrayList<>();
-    private OnProductClickListener listener;
+    private final OnProductClickListener listener;
 
     public DonationProductAdapter(OnProductClickListener listener) {
         this.listener = listener;
     }
 
-    public void setProducts(List<DonationProduct> products) {
-        this.products = products;
-        notifyDataSetChanged();
+    public void setProducts(List<DonationProduct> newProducts) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return products.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return newProducts.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return products.get(oldItemPosition).getId().equals(newProducts.get(newItemPosition).getId());
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                DonationProduct oldProduct = products.get(oldItemPosition);
+                DonationProduct newProduct = newProducts.get(newItemPosition);
+                return oldProduct.equals(newProduct);
+            }
+        });
+
+        this.products = new ArrayList<>(newProducts);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     public void updatePurchasedProducts(List<String> purchasedProductIds) {
-        for (DonationProduct product : products) {
-            product.setPurchased(purchasedProductIds.contains(product.getId()));
-        }
-        notifyDataSetChanged();
+        setProducts(new ArrayList<>(products));
     }
 
     @NonNull

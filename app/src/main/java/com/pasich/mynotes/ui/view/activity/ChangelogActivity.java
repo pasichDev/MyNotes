@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -232,6 +233,17 @@ public class ChangelogActivity extends BaseActivity {
         super.onDestroy();
         if (executor != null && !executor.isShutdown()) {
             executor.shutdown();
+            try {
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                    if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
+                        Log.w("ChangelogActivity", "ExecutorService did not terminate gracefully");
+                    }
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }

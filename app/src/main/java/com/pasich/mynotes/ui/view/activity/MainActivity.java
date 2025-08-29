@@ -578,16 +578,21 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
             }
 
+            // Використовуємо ViewPropertyAnimator для кращої продуктивності
             mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.VISIBLE);
-            android.view.animation.Animation fadeIn = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.fade_in);
-            mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeIn);
+            mActivityBinding.includeEmpty.emptyViewNote.setAlpha(0f);
+            mActivityBinding.includeEmpty.emptyViewNote.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start();
         } else {
             mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.GONE);
             mActivityBinding.listNotes.setVisibility(View.VISIBLE);
-            android.view.animation.Animation slideIn = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.slide_fade_in);
-            mActivityBinding.listNotes.startAnimation(slideIn);
+            mActivityBinding.listNotes.setAlpha(0f);
+            mActivityBinding.listNotes.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start();
         }
     }
 
@@ -762,48 +767,38 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     private void hideCurrentContent(Runnable onComplete) {
         if (mActivityBinding.listNotes.getVisibility() == View.VISIBLE) {
-            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.slide_fade_out);
-            fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(android.view.animation.Animation animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(android.view.animation.Animation animation) {
-                    mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
-                    // Очищаємо список після приховування, щоб запобігти миготінню
-                    mNoteAdapter.clearList();
-                    onComplete.run();
-                }
-
-                @Override
-                public void onAnimationRepeat(android.view.animation.Animation animation) {
-                }
-            });
-            mActivityBinding.listNotes.startAnimation(fadeOut);
+            // Використовуємо ViewPropertyAnimator замість Animation
+            mActivityBinding.listNotes.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction(() -> {
+                        mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
+                        mActivityBinding.listNotes.setAlpha(1f); // Скидаємо alpha
+                        // Очищаємо список після приховування, щоб запобігти миготінню
+                        mNoteAdapter.clearList();
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    })
+                    .start();
         } else if (mActivityBinding.includeEmpty.emptyViewNote.getVisibility() == View.VISIBLE) {
-            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.fade_out);
-            fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(android.view.animation.Animation animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(android.view.animation.Animation animation) {
-                    mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
-                    onComplete.run();
-                }
-
-                @Override
-                public void onAnimationRepeat(android.view.animation.Animation animation) {
-                }
-            });
-            mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeOut);
+            // Використовуємо ViewPropertyAnimator замість Animation
+            mActivityBinding.includeEmpty.emptyViewNote.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction(() -> {
+                        mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
+                        mActivityBinding.includeEmpty.emptyViewNote.setAlpha(1f); // Скидаємо alpha
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    })
+                    .start();
         } else {
             mNoteAdapter.clearList();
-            onComplete.run();
+            if (onComplete != null) {
+                onComplete.run();
+            }
         }
     }
 
@@ -821,8 +816,19 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     private void variablesNull() {
+        if (mNoteAdapter != null) {
+            mNoteAdapter.setOnItemClickListener(null);
+        }
+        if (tagsAdapter != null) {
+            tagsAdapter.setOnItemClickListener(null);
+        }
+        if (searchNotesAdapter != null) {
+            searchNotesAdapter.setItemClickListener(null);
+        }
+
         mNoteAdapter = null;
         tagsAdapter = null;
+        searchNotesAdapter = null;
     }
 
     /**

@@ -101,34 +101,50 @@ public class SearchNotesAdapter extends RecyclerView.Adapter<SearchNotesAdapter.
     }
 
     public void filter(String text) {
-        ArrayList<Note> newFilter = new ArrayList<>();
-        ArrayList<IndexFilter> indexFilter = new ArrayList<>();
-        for (Note item : defaultListNotes) {
-            int indexTitle = item.getTitle().toLowerCase().indexOf(text.toLowerCase());
-            int indexValue = item.getValue().toLowerCase().indexOf(text.toLowerCase());
-            int countArrays = indexFilter.size();
-            while (indexTitle != -1) {
-                indexFilter.add(new IndexFilter(item.id, indexTitle, -1));
-                indexTitle = item.getTitle().toLowerCase().indexOf(text.toLowerCase(), indexTitle + 1);
+        if (text == null || text.trim().isEmpty()) {
+            cleanResult();
+            return;
+        }
+        
+        // Нормалізуємо текст пошуку
+        String searchText = text.toLowerCase().trim();
+        
+        // Ініціалізуємо колекції з початковою ємністю для оптимізації
+        ArrayList<Note> filteredNotes = new ArrayList<>();
+        ArrayList<IndexFilter> indices = new ArrayList<>();
+        
+        // Проходимо по всіх нотатках один раз
+        for (Note note : defaultListNotes) {
+            String title = note.getTitle().toLowerCase();
+            String content = note.getValue().toLowerCase();
+            boolean found = false;
+            
+            // Пошук в заголовку
+            int titleIndex = title.indexOf(searchText);
+            if (titleIndex != -1) {
+                indices.add(new IndexFilter(note.id, titleIndex, -1));
+                found = true;
             }
-
-            while (indexValue != -1) {
-                indexFilter.add(new IndexFilter(item.id, -1, indexValue));
-                indexValue = item.getValue().toLowerCase().indexOf(text.toLowerCase(), indexValue + 1);
+            
+            // Пошук в контенті
+            int contentIndex = content.indexOf(searchText);
+            if (contentIndex != -1) {
+                indices.add(new IndexFilter(note.id, -1, contentIndex));
+                found = true;
             }
-
-
-            if (indexFilter.size() != countArrays) {
-                newFilter.add(item);
+            
+            // Додаємо нотатку тільки якщо знайдено збіг
+            if (found) {
+                filteredNotes.add(note);
             }
         }
-        if (newFilter.isEmpty()) {
+        
+        // Обробляємо результат пошуку
+        if (filteredNotes.isEmpty()) {
             cleanResult();
         } else {
-
-            filterList(newFilter, text, indexFilter);
+            filterList(filteredNotes, text, indices);
         }
-
     }
 
 

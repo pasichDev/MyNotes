@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pasich.mynotes.R;
@@ -19,9 +20,33 @@ public class PurchasedItemsAdapter extends RecyclerView.Adapter<PurchasedItemsAd
 
     private List<PurchasedItem> items = new ArrayList<>();
 
-    public void setItems(List<PurchasedItem> items) {
-        this.items = items;
-        notifyDataSetChanged();
+    public void setItems(List<PurchasedItem> newItems) {
+         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return items.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return newItems.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return items.get(oldItemPosition).getProductId().equals(newItems.get(newItemPosition).getProductId());
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                PurchasedItem oldItem = items.get(oldItemPosition);
+                PurchasedItem newItem = newItems.get(newItemPosition);
+                return oldItem.equals(newItem);
+            }
+        });
+
+        this.items = new ArrayList<>(newItems);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull

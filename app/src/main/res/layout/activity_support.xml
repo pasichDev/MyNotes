@@ -38,6 +38,105 @@
                 <!-- Gamification Header -->
                 <include layout="@layout/layout_gamification_header" />
 
+                <!-- In-App Purchases section -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header for in-app purchases -->
+                        <LinearLayout
+                            android:id="@+id/purchases_header"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="?android:attr/selectableItemBackground"
+                            android:orientation="horizontal"
+                            android:padding="16dp"
+                            android:gravity="center_vertical"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/railway_medium"
+                                android:text="@string/inAppPurchases"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:id="@+id/purchases_arrow"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_arrow_drop_down"
+                                android:rotation="0"
+                                app:tint="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+
+                        <!-- In-app purchases content (expandable) -->
+                        <LinearLayout
+                            android:id="@+id/purchases_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <!-- Loading indicator -->
+                            <LinearLayout
+                                android:id="@+id/purchases_loading"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center"
+                                android:padding="24dp"
+                                android:visibility="visible">
+
+                                <ProgressBar
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_marginEnd="12dp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/purchase_loading"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+
+                            <!-- RecyclerView for donation products -->
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/donation_products_recycler"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:visibility="gone" />
+
+                            <!-- Empty state -->
+                            <TextView
+                                android:id="@+id/purchases_empty"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_margin="24dp"
+                                android:text="@string/purchase_error_no_products"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="14sp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- Donation methods -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
@@ -198,104 +297,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- In-App Purchases section -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="1dp"
-                    app:strokeWidth="0dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <!-- Header for in-app purchases -->
-                        <LinearLayout
-                            android:id="@+id/purchases_header"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="?android:attr/selectableItemBackground"
-                            android:orientation="horizontal"
-                            android:padding="16dp"
-                            android:gravity="center_vertical"
-                            android:clickable="true"
-                            android:focusable="true">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:fontFamily="@font/railway_medium"
-                                android:text="@string/inAppPurchases"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-
-                            <ImageView
-                                android:id="@+id/purchases_arrow"
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_arrow_drop_down"
-                                android:rotation="0"
-                                app:tint="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
-
-                        <!-- In-app purchases content (expandable) -->
-                        <LinearLayout
-                            android:id="@+id/purchases_content"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:visibility="gone">
-
-                            <!-- Loading indicator -->
-                            <LinearLayout
-                                android:id="@+id/purchases_loading"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center"
-                                android:padding="24dp"
-                                android:visibility="visible">
-
-                                <ProgressBar
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:layout_marginEnd="12dp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/purchase_loading"
-                                    android:textColor="?attr/colorOnSurfaceVariant"
-                                    android:textSize="14sp" />
-                            </LinearLayout>
-
-                            <!-- RecyclerView for donation products -->
-                            <androidx.recyclerview.widget.RecyclerView
-                                android:id="@+id/donation_products_recycler"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="8dp"
-                                android:visibility="gone" />
-
-                            <!-- Empty state -->
-                            <TextView
-                                android:id="@+id/purchases_empty"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:layout_margin="24dp"
-                                android:text="@string/purchase_error_no_products"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="14sp"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Contact developer -->
                 <com.google.android.material.card.MaterialCardView
