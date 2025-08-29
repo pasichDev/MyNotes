@@ -39,6 +39,9 @@
         android:theme="@style/DefaultTheme"
         tools:targetApi="tiramisu">
         <activity
+            android:name=".ui.view.activity.HelpActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.view.activity.BackupActivity"
             android:exported="true" />
         <activity

@@ -36,7 +36,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.card.MaterialCardView;
@@ -959,6 +958,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                             (Pair<View, String>[]) null));
         } else if (itemId == R.id.nav_backups) {
             startActivity(new Intent(this, BackupActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        } else if (itemId == R.id.nav_help) {
+            startActivity(new Intent(this, HelpActivity.class),
                     ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
         } else if (itemId == R.id.nav_about) {
             startActivity(new Intent(this, AboutActivity.class),
