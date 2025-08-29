@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## [2.1.30 - 2.1.31] - 28.08.2025
+## [2.1.32] - XX.XX.2025
 
-### Changed
+
+## [2.1.30 - 2.1.31] - 28.08.2025
 
 - Added support for Android 16
 - Added screen protection feature
