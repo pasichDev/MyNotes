@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [2.1.32] - XX.XX.2025
+## [2.1.32] - 30.08.2025
 
 - Added support for quick actions Create note, Search
 - Added Help section with detailed information about the app’s features
