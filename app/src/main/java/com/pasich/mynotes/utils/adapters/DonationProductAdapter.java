@@ -1,4 +1,4 @@
-package com.pasich.mynotes.ui.adapter;
+package com.pasich.mynotes.utils.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;

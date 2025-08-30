@@ -43,7 +43,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         this.listener = listener;
         billingClient = BillingClient.newBuilder(context)
                 .setListener(this)
-                .enablePendingPurchases()
+                .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
                 .build();
         
         startServiceConnection();
@@ -58,13 +58,55 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
             isServiceConnected = true;
             Log.d(TAG, "Billing service connected successfully");
-            listener.onBillingInitialized();
-            queryProductDetails();
-            queryPurchases(); // Додаємо запит покупок
+            
+            // Спочатку споживаємо всі наявні покупки
+            consumeAllExistingPurchases(() -> {
+                listener.onBillingInitialized();
+                queryProductDetails();
+                queryPurchases();
+            });
         } else {
             Log.e(TAG, "Failed to connect to billing service: " + billingResult.getDebugMessage());
             listener.onBillingError("Failed to connect to billing service");
         }
+    }
+
+    private void consumeAllExistingPurchases(Runnable onComplete) {
+        QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build();
+
+        billingClient.queryPurchasesAsync(params, (billingResult, purchasesList) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                if (purchasesList.isEmpty()) {
+                    Log.d(TAG, "No existing purchases to consume");
+                    onComplete.run();
+                    return;
+                }
+
+                Log.d(TAG, "Found " + purchasesList.size() + " existing purchases, consuming them");
+                int[] remainingPurchases = {purchasesList.size()};
+
+                for (Purchase purchase : purchasesList) {
+                    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                        consumePurchase(purchase, () -> {
+                            remainingPurchases[0]--;
+                            if (remainingPurchases[0] <= 0) {
+                                onComplete.run();
+                            }
+                        });
+                    } else {
+                        remainingPurchases[0]--;
+                        if (remainingPurchases[0] <= 0) {
+                            onComplete.run();
+                        }
+                    }
+                }
+            } else {
+                Log.e(TAG, "Failed to query existing purchases for consumption: " + billingResult.getDebugMessage());
+                onComplete.run();
+            }
+        });
     }
 
     @Override
@@ -97,7 +139,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                 (billingResult, productDetailsList) -> {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         List<DonationProduct> products = new ArrayList<>();
-                        for (ProductDetails productDetails : productDetailsList) {
+                        for (ProductDetails productDetails : productDetailsList.getProductDetailsList()) {
                             DonationProduct product = createDonationProduct(productDetails);
                             products.add(product);
                         }
@@ -157,6 +199,48 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
             return;
         }
 
+        // Спочатку перевіряємо і споживаємо наявні покупки цього товару
+        queryAndConsumeExistingPurchases(productId, () -> {
+            // Після споживання запускаємо новий billing flow
+            proceedWithBillingFlow(activity, productId);
+        });
+    }
+
+    private void queryAndConsumeExistingPurchases(String productId, Runnable onComplete) {
+        QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build();
+
+        billingClient.queryPurchasesAsync(params, (billingResult, purchasesList) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                boolean foundExisting = false;
+                for (Purchase purchase : purchasesList) {
+                    if (purchase.getProducts().contains(productId) && 
+                        purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                        foundExisting = true;
+                        Log.d(TAG, "Found existing purchase for " + productId + ", consuming it first");
+                        consumePurchase(purchase, onComplete);
+                        break;
+                    }
+                }
+                if (!foundExisting) {
+                    // Немає наявних покупок, можемо продовжувати
+                    onComplete.run();
+                }
+            } else {
+                Log.e(TAG, "Failed to query existing purchases: " + billingResult.getDebugMessage());
+                // Пробуємо продовжити навіть при помилці
+                onComplete.run();
+            }
+        });
+    }
+
+    private void proceedWithBillingFlow(Activity activity, String productId) {
+        if (!isServiceConnected) {
+            listener.onBillingError("Billing service not connected");
+            return;
+        }
+
         List<QueryProductDetailsParams.Product> productList = List.of(
                 QueryProductDetailsParams.Product.newBuilder()
                         .setProductId(productId)
@@ -170,9 +254,9 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
         billingClient.queryProductDetailsAsync(queryProductDetailsParams,
                 (billingResult, productDetailsList) -> {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && !productDetailsList.isEmpty()) {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && !productDetailsList.getProductDetailsList().isEmpty()) {
                         
-                        ProductDetails productDetails = productDetailsList.get(0);
+                        ProductDetails productDetails = productDetailsList.getProductDetailsList().get(0);
                         List<BillingFlowParams.ProductDetailsParams> productDetailsParamsList = List.of(
                                 BillingFlowParams.ProductDetailsParams.newBuilder()
                                         .setProductDetails(productDetails)
@@ -204,34 +288,68 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
             Log.d(TAG, "User canceled the purchase");
             listener.onPurchaseFailed(billingResult.getResponseCode(), "Purchase canceled by user");
+        } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            Log.d(TAG, "Item already owned, attempting to consume existing purchase");
+            // Спробуємо знайти і спожити наявну покупку
+            queryAndConsumeAllPurchases();
+            listener.onBillingError("Item already owned. Please try again in a moment.");
         } else {
             Log.e(TAG, "Purchase failed: " + billingResult.getDebugMessage());
             listener.onPurchaseFailed(billingResult.getResponseCode(), billingResult.getDebugMessage());
         }
     }
 
+    private void queryAndConsumeAllPurchases() {
+        QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build();
+
+        billingClient.queryPurchasesAsync(params, (billingResult, purchasesList) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                for (Purchase purchase : purchasesList) {
+                    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                        consumePurchase(purchase);
+                    }
+                }
+            }
+        });
+    }
+
     private void handlePurchase(Purchase purchase) {
         if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-            // Acknowledge the purchase if it hasn't been acknowledged yet
-            if (!purchase.isAcknowledged()) {
-                AcknowledgePurchaseParams acknowledgePurchaseParams =
-                        AcknowledgePurchaseParams.newBuilder()
-                                .setPurchaseToken(purchase.getPurchaseToken())
-                                .build();
-                
-                billingClient.acknowledgePurchase(acknowledgePurchaseParams, billingResult -> {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        Log.d(TAG, "Purchase acknowledged successfully");
-                    }
-                });
-            }
-            
             // Get the first product ID from the purchase
             List<String> products = purchase.getProducts();
             if (!products.isEmpty()) {
-                listener.onPurchaseSuccessful(products.get(0));
+                String productId = products.get(0);
+                listener.onPurchaseSuccessful(productId);
+                
+                // Consume the purchase immediately to allow repeated purchases
+                consumePurchase(purchase);
             }
         }
+    }
+
+    private void consumePurchase(Purchase purchase) {
+        consumePurchase(purchase, null);
+    }
+
+    private void consumePurchase(Purchase purchase, Runnable onComplete) {
+        ConsumeParams consumeParams = ConsumeParams.newBuilder()
+                .setPurchaseToken(purchase.getPurchaseToken())
+                .build();
+
+        billingClient.consumeAsync(consumeParams, (billingResult, purchaseToken) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                Log.d(TAG, "Purchase consumed successfully, can be purchased again");
+            } else {
+                Log.e(TAG, "Failed to consume purchase: " + billingResult.getDebugMessage());
+            }
+            
+            // Викликаємо callback незалежно від результату
+            if (onComplete != null) {
+                onComplete.run();
+            }
+        });
     }
 
     public void destroy() {
@@ -316,5 +434,20 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                         listener.onPurchasesLoaded(new ArrayList<>());
                     }
                 });
+    }
+
+    /**
+     * Публічний метод для очищення всіх наявних покупок
+     * Використовувати в налагодженні або для вирішення проблем
+     */
+    public void consumeAllPurchases() {
+        if (!isServiceConnected) {
+            Log.w(TAG, "Billing service not connected, can't consume purchases");
+            return;
+        }
+        
+        consumeAllExistingPurchases(() -> {
+            Log.d(TAG, "All purchases consumed successfully");
+        });
     }
 }
