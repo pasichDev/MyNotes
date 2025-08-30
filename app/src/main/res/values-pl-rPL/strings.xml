@@ -251,4 +251,11 @@
 
     <string name="actual_version">Aktualne dla wersji %1$s</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Nowa notatka</string>
+    <string name="shortcut_new_note_long">Utwórz nową notatkę</string>
+    <string name="shortcut_search_short">Szukaj</string>
+    <string name="shortcut_search_long">Szukaj w notatkach</string>
+    <string name="shortcut_disabled_message">Ta funkcja jest niedostępna</string>
+
 </resources>

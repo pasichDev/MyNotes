@@ -242,4 +242,11 @@
 
     <string name="actual_version">Aktuell für Version %1$s</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Neue Notiz</string>
+    <string name="shortcut_new_note_long">Neue Notiz erstellen</string>
+    <string name="shortcut_search_short">Suchen</string>
+    <string name="shortcut_search_long">Notizen durchsuchen</string>
+    <string name="shortcut_disabled_message">Diese Funktion ist nicht verfügbar</string>
+
 </resources>

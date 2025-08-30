@@ -264,4 +264,11 @@
 
     <string name="actual_version">Up to date for version %1$s</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">New Note</string>
+    <string name="shortcut_new_note_long">Create New Note</string>
+    <string name="shortcut_search_short">Search</string>
+    <string name="shortcut_search_long">Search Notes</string>
+    <string name="shortcut_disabled_message">This feature is unavailable</string>
+
 </resources>

@@ -252,4 +252,11 @@
 
     <string name="actual_version">Actualizado para la versión %1$s</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Nueva nota</string>
+    <string name="shortcut_new_note_long">Crear nueva nota</string>
+    <string name="shortcut_search_short">Buscar</string>
+    <string name="shortcut_search_long">Buscar en notas</string>
+    <string name="shortcut_disabled_message">Esta función no está disponible</string>
+
 </resources>

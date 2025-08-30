@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Shortcut для створення нової нотатки -->
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_add">
+        
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.pasich.mynotes"
+            android:targetClass="com.pasich.mynotes.ui.view.activity.NoteActivity">
+            <extra
+                android:name="NewNote"
+                android:value="true" />
+            <extra
+                android:name="idNote"
+                android:value="0" />
+            <extra
+                android:name="shareText"
+                android:value="" />
+            <extra
+                android:name="tagNote"
+                android:value="" />
+        </intent>
+        
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    
+    <!-- Shortcut для пошуку в нотатках -->
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_search">
+        
+        <intent
+            android:action="android.intent.action.SEARCH"
+            android:targetPackage="com.pasich.mynotes"
+            android:targetClass="com.pasich.mynotes.ui.view.activity.MainActivity">
+            <extra
+                android:name="open_search"
+                android:value="true" />
+        </intent>
+        
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    
+</shortcuts>

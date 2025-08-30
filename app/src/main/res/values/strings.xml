@@ -255,4 +255,11 @@
 
     <string name="actual_version">Up to date for version %1$s</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Нова нотатка</string>
+    <string name="shortcut_new_note_long">Створити нову нотатку</string>
+    <string name="shortcut_search_short">Пошук</string>
+    <string name="shortcut_search_long">Пошук в нотатках</string>
+    <string name="shortcut_disabled_message">Ця функція недоступна</string>
+
 </resources>

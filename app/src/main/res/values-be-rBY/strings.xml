@@ -248,4 +248,11 @@
 
     <string name="actual_version">Актуальна для версіі %1$s</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Новая нататка</string>
+    <string name="shortcut_new_note_long">Стварыць новую нататку</string>
+    <string name="shortcut_search_short">Пошук</string>
+    <string name="shortcut_search_long">Пошук у нататках</string>
+    <string name="shortcut_disabled_message">Гэтая функцыя недаступная</string>
+
 </resources>

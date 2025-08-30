@@ -171,21 +171,7 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Soutenir le développeur</string>
     <string name="support_solo_developer_description">Salut ! Je suis un développeur qui travaille sur MyNotes pendant mon temps libre. Toutes les fonctionnalités seront toujours gratuites, mais votre soutien m\'aide à consacrer plus de temps à améliorer cette application. Chaque contribution compte énormément pour moi ! 💖</string>
-    
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Supporter extraordinaire ! 🌟</string>
-    <string name="supporter_badge_subtitle">Votre collection de soutien</string>
-    
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Graine</string>
-    <string name="donation_spark_short">Étincelle</string>
-    <string name="donation_midnight_short">Carnet</string>
-    <string name="donation_wave_short">Vague</string>
-    <string name="donation_universe_short">Univers</string>
-    
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Ami fidèle</string>
-    
+
     <!-- Purchase status -->
     <string name="purchased">Acheté</string>
 
@@ -242,5 +228,12 @@
     <string name="help_notes_copy_description">Créez une copie modifiable de n\'importe quelle note pour apporter des modifications tout en gardant l\'original intact.</string>
 
     <string name="actual_version">À jour pour la version %1$s</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Nouvelle note</string>
+    <string name="shortcut_new_note_long">Créer une nouvelle note</string>
+    <string name="shortcut_search_short">Rechercher</string>
+    <string name="shortcut_search_long">Rechercher dans les notes</string>
+    <string name="shortcut_disabled_message">Cette fonction n\'est pas disponible</string>
 
 </resources>

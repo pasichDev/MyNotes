@@ -213,16 +213,33 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }
         });
 
+        handleShortcuts(getIntent());
+
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleShortcuts(intent);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    /**
+     * Обробка App Shortcuts
+     */
+    private void handleShortcuts(Intent intent) {
+        if (intent != null) {
+            // Обробка пошукового shortcuts
+            if (intent.getBooleanExtra("open_search", false)) {
+
+                // Відкриваємо пошук з невеликою затримкою після створення активності
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (mActivityBinding != null) {
+                        mActivityBinding.searchView.show();
+                    }
+                }, 100);
+            }
+        }
     }
 
     @Override

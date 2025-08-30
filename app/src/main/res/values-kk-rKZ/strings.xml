@@ -251,4 +251,11 @@
 
     <string name="actual_version">%1$s нұсқасы үшін өзекті</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Жаңа жазба</string>
+    <string name="shortcut_new_note_long">Жаңа жазба жасау</string>
+    <string name="shortcut_search_short">Іздеу</string>
+    <string name="shortcut_search_long">Жазбалардан іздеу</string>
+    <string name="shortcut_disabled_message">Бұл функция қол жетімсіз</string>
+
 </resources>

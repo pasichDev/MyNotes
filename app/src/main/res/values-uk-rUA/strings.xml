@@ -244,4 +244,12 @@
     <string name="help_notes_copy_description">Створюйте редаговану копію будь-якої нотатки для внесення змін, зберігаючи оригінал недоторканим.</string>
 
     <string name="actual_version">Актуально для версії %1$s</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Нова нотатка</string>
+    <string name="shortcut_new_note_long">Створити нову нотатку</string>
+    <string name="shortcut_search_short">Пошук</string>
+    <string name="shortcut_search_long">Пошук у нотатках</string>
+    <string name="shortcut_disabled_message">Ця функція недоступна</string>
+
 </resources>

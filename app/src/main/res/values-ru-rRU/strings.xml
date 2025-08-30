@@ -253,4 +253,11 @@
 
     <string name="actual_version">Актуально для версии %1$s</string>
 
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Новая заметка</string>
+    <string name="shortcut_new_note_long">Создать новую заметку</string>
+    <string name="shortcut_search_short">Поиск</string>
+    <string name="shortcut_search_long">Поиск в заметках</string>
+    <string name="shortcut_disabled_message">Эта функция недоступна</string>
+
 </resources>
