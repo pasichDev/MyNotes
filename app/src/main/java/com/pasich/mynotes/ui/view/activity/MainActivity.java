@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -158,15 +157,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private AppUpdateManager appUpdateManager;
     private int previousNotesCount = 0;
 
-    // Ланчер для ActivityResult API
-    private final ActivityResultLauncher<Intent> updateLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() != RESULT_OK) {
-                    Toast.makeText(this, "Update failed!", Toast.LENGTH_SHORT).show();
-                    checkForUpdate();
-                }
-            });
-
     // Google Sign-In launcher
     final private ActivityResultLauncher<Intent> startAuthIntent = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -266,9 +256,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
                 startUpdateFlow(appUpdateInfo);
             }
-        }).addOnFailureListener(e -> {
-            Log.d("AppUpdate", "Error checking for updates: " + e.getMessage());
-        });
+        }).addOnFailureListener(e -> Log.d("AppUpdate", "Error checking for updates: " + e.getMessage()));
 
     }
 
@@ -647,9 +635,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void deleteTag() {
                 if (tagsAdapter.getTagSelected() == tag)
                     selectTagUser(tagsAdapter.getTagForName("allNotes"));
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    mainPresenter.deleteTag(tag);
-                }, 700);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> mainPresenter.deleteTag(tag), 700);
 
 
             }
@@ -988,7 +974,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      * Завантаження даних користувача
      * TODO Update logic
      */
-    private void loadingDataUser(boolean isAuth, com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
+    private void loadingDataUser(boolean isAuth, ViewLoginPageBinding loginPageBinding) {
         if (isAuth) {
             String nameUser = cloudCacheHelper.getGoogleSignInAccount().getDisplayName();
             loginPageBinding.nameUser.setText(nameUser);
