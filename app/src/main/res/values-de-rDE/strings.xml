@@ -212,6 +212,8 @@
     <string name="help_other_title">Sonstiges</string>
     <string name="help_other_security_title">Bildschirmschutz</string>
     <string name="help_other_security_description">Wenn in den Einstellungen aktiviert, schützt diese Funktion Ihre Notizen vor unbefugter Einsicht: verbirgt App-Inhalte in der Übersicht der letzten Apps, verhindert Screenshots und blockiert Bildschirmaufnahmen. Diese Sicherheitsfunktion wird nach dem Neustart der App aktiviert.</string>
+    <string name="help_other_shortcuts_title">App-Verknüpfungen</string>
+    <string name="help_other_shortcuts_description">Halten Sie das App-Symbol gedrückt, um schnell auf Verknüpfungen zum Erstellen einer neuen Notiz oder zum Durchsuchen Ihrer Notizen zuzugreifen. Verfügbar ab Android 7.1 und höher.</string>
     
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Notizen-Funktionen</string>

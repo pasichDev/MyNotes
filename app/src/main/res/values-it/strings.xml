@@ -210,6 +210,8 @@
     <string name="help_other_title">Altro</string>
     <string name="help_other_security_title">Protezione schermo</string>
     <string name="help_other_security_description">Quando abilitata nelle impostazioni, questa funzione protegge le tue note dalla visualizzazione non autorizzata: nasconde il contenuto dell\'app nella panoramica delle app recenti, impedisce gli screenshot e blocca la registrazione dello schermo. Questa funzione di sicurezza si attiva dopo il riavvio dell\'app.</string>
+    <string name="help_other_shortcuts_title">Scorciatoie app</string>
+    <string name="help_other_shortcuts_description">Tieni premuta l\'icona dell\'app per accedere rapidamente alle scorciatoie per creare una nuova nota o cercare tra le tue note. Disponibile su Android 7.1 e superiori.</string>
     
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Funzionalità note</string>

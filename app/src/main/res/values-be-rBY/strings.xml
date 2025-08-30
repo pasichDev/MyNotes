@@ -217,6 +217,8 @@
     <string name="help_other_title">Іншае</string>
     <string name="help_other_security_title">Абарона экрана</string>
     <string name="help_other_security_description">Калі ўключана ў наладах, гэтая функцыя абараняе вашы нататкі ад несанкцыянаванага прагляду: хавае змесціва прыкладання ў агляды апошніх прыкладанняў, забараняе стварэнне скрыншотаў і запіс экрана. Функцыя бяспекі актывуецца пасля перазапуску прыкладання.</string>
+    <string name="help_other_shortcuts_title">Хуткія дзеянні</string>
+    <string name="help_other_shortcuts_description">Утрымлівайце іконку прыкладання для хуткага доступу да стварэння новай нататкі або пошуку ў вашых нататках. Даступна на Android 7.1 і вышэй.</string>
     
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функцыі нататак</string>

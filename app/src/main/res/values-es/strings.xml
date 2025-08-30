@@ -221,6 +221,8 @@
     <string name="help_other_title">Otro</string>
     <string name="help_other_security_title">Protección de pantalla</string>
     <string name="help_other_security_description">Cuando está habilitada en configuración, esta función protege tus notas de visualización no autorizada: oculta el contenido de la aplicación en la vista de aplicaciones recientes, previene capturas de pantalla y bloquea la grabación de pantalla. Esta función de seguridad se activa después de reiniciar la aplicación.</string>
+    <string name="help_other_shortcuts_title">Accesos directos de la app</string>
+    <string name="help_other_shortcuts_description">Mantén presionado el ícono de la aplicación para acceder rápidamente a accesos directos para crear una nueva nota o buscar entre tus notas. Disponible en Android 7.1 y superior.</string>
     
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Funciones de notas</string>

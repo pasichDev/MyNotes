@@ -271,6 +271,15 @@ public class HelpActivity extends BaseActivity {
             null
         ));
 
+        // App Shortcuts
+        sections.add(new HelpSection(
+            HelpSection.TYPE_FEATURE,
+            getString(R.string.help_other_shortcuts_title),
+            getString(R.string.help_other_shortcuts_description),
+            R.drawable.ic_button_help,
+            null
+        ));
+
         return sections;
     }
 

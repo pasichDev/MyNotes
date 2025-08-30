@@ -220,6 +220,8 @@
     <string name="help_other_title">Inne</string>
     <string name="help_other_security_title">Ochrona ekranu</string>
     <string name="help_other_security_description">Po włączeniu w ustawieniach, ta funkcja chroni twoje notatki przed nieautoryzowanym przeglądaniem: ukrywa zawartość aplikacji w przeglądzie ostatnich aplikacji, zapobiega zrzutom ekranu i blokuje nagrywanie ekranu. Ta funkcja bezpieczeństwa aktywuje się po ponownym uruchomieniu aplikacji.</string>
+    <string name="help_other_shortcuts_title">Skróty aplikacji</string>
+    <string name="help_other_shortcuts_description">Przytrzymaj ikonę aplikacji, aby szybko uzyskać dostęp do skrótów tworzenia nowej notatki lub wyszukiwania w twoich notatkach. Dostępne na Androidzie 7.1 i wyższym.</string>
     
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Funkcje notatek</string>

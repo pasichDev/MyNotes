@@ -211,12 +211,7 @@
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жести свайп</string>
     <string name="help_navigation_swipe_description">Керуйте нотатками інтуїтивно! Проведіть пальцем ліворуч, щоб увімкнути режим вибору кількох нотаток для швидких масових операцій, або вправо — щоб миттєво видалити нотатку та відправити її в кошик. Жести доступні лише в одноколонковому режимі.</string>
-    
-    <!-- Other Section -->
-    <string name="help_other_title">Інше</string>
-    <string name="help_other_security_title">Захист екрану</string>
-    <string name="help_other_security_description">Коли увімкнено в налаштуваннях, ця функція захищає ваші нотатки від несанкціонованого перегляду: приховує вміст додатку в огляді нещодавніх додатків, забороняє створення скріншотів та запис екрану. Функція безпеки активується після перезапуску додатку.</string>
-    
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функції нотаток</string>
     <string name="help_notes_limit_title">Обмеження тексту</string>
@@ -229,6 +224,13 @@
     <string name="help_notes_copy_description">Створюйте редаговану копію будь-якої нотатки для внесення змін, зберігаючи оригінал недоторканим.</string>
 
     <string name="actual_version">Актуально для версії %1$s</string>
+
+    <!-- Other Section -->
+    <string name="help_other_title">Інше</string>
+    <string name="help_other_security_title">Захист екрану</string>
+    <string name="help_other_security_description">Коли увімкнено в налаштуваннях, ця функція захищає ваші нотатки від несанкціонованого перегляду, приховуючи вміст додатку в огляді останніх програм, запобігаючи скріншотам та блокуючи запис екрану. Ця функція безпеки активується після перезапуску додатку.</string>
+    <string name="help_other_shortcuts_title">Швидкі дії</string>
+    <string name="help_other_shortcuts_description">Утримуйте іконку додатку для швидкого доступу до створення нової нотатки або пошуку серед ваших нотаток. Доступно на Android 7.1 і вище.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Нова нотатка</string>

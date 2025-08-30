@@ -222,6 +222,8 @@
     <string name="help_other_title">Прочее</string>
     <string name="help_other_security_title">Защита экрана</string>
     <string name="help_other_security_description">Когда включено в настройках, эта функция защищает ваши заметки от несанкционированного просмотра: скрывает содержимое приложения в обзоре последних приложений, запрещает создание скриншотов и запись экрана. Функция безопасности активируется после перезапуска приложения.</string>
+    <string name="help_other_shortcuts_title">Быстрые действия</string>
+    <string name="help_other_shortcuts_description">Удерживайте иконку приложения для быстрого доступа к созданию новой заметки или поиску среди ваших заметок. Доступно на Android 7.1 и выше.</string>
     
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функции заметок</string>

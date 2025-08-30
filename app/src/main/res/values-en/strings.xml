@@ -233,6 +233,8 @@
     <string name="help_other_title">Other</string>
     <string name="help_other_security_title">Screen Protection</string>
     <string name="help_other_security_description">When enabled in settings, this feature protects your notes from unauthorized viewing by hiding app content in recent apps overview, preventing screenshots, and blocking screen recording. This security feature activates after restarting the app.</string>
+    <string name="help_other_shortcuts_title">App Shortcuts</string>
+    <string name="help_other_shortcuts_description">Long press the app icon to quickly access shortcuts for creating a new note or searching through your notes. Available on Android 7.1 and higher.</string>
 
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Notes Features</string>

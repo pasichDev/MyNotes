@@ -220,6 +220,8 @@
     <string name="help_other_title">Басқа</string>
     <string name="help_other_security_title">Экранды қорғау</string>
     <string name="help_other_security_description">Параметрлерде қосылған кезде, бұл функция жазбаларыңызды рұқсатсыз қарауден қорғайды: соңғы қолданбалар шолуында қолданба мазмұнын жасырады, скриншот алуды болдырмайды және экранды жазуды блоктайды. Бұл қауіпсіздік функциясы қолданбаны қайта іске қосқаннан кейін белсендіріледі.</string>
+    <string name="help_other_shortcuts_title">Қолданба жылдам әрекеттері</string>
+    <string name="help_other_shortcuts_description">Жаңа жазба жасау немесе жазбаларыңыздан іздеу үшін жылдам қол жеткізу үшін қолданба белгішесін басып ұстаңыз. Android 7.1 және одан жоғары нұсқаларда қол жетімді.</string>
     
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Жазбалар функциялары</string>
