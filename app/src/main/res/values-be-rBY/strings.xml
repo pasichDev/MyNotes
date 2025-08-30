@@ -176,23 +176,6 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Падтрымаць распрацоўшчыка</string>
     <string name="support_solo_developer_description">Прывітанне! Я распрацоўшчык, які працуе над MyNotes у свабодны час. Усе функцыі заўсёды будуць бясплатнымі, але ваша падтрымка дапамагае мне прысвячаць больш часу паляпшэнню гэтага прыкладання. Кожны ўнёсак азначае для мяне ўвесь свет! 💖</string>
-    
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Цудоўны прыхільнік! 🌟</string>
-    <string name="supporter_badge_subtitle">Ваша калекцыя падтрымкі</string>
-    
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Семя</string>
-    <string name="donation_spark_short">Іскра</string>
-    <string name="donation_midnight_short">Нататнік</string>
-    <string name="donation_wave_short">Хваля</string>
-    <string name="donation_universe_short">Сусвет</string>
-    
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Вернаы сябар</string>
-    
-    <!-- Purchase status -->
-    <string name="purchased">Куплена</string>
 
     <!-- Help Activity -->
     <string name="help_title">Даведка</string>

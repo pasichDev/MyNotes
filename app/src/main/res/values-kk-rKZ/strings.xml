@@ -179,23 +179,6 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Әзірлеушіні қолдау</string>
     <string name="support_solo_developer_description">Сәлем! Мен бос уақытымда MyNotes үстінде жұмыс істейтін әзірлеушімін. Барлық функциялар әрқашан тегін болады, бірақ сіздің қолдауыңыз маған осы қолданбаны жақсартуға көбірек уақыт бөлуге көмектеседі. Әрбір үлес маған бүкіл әлемді білдіреді! 💖</string>
-    
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Керемет қолдаушы! 🌟</string>
-    <string name="supporter_badge_subtitle">Сіздің қолдау жинағыңыз</string>
-    
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Тұқым</string>
-    <string name="donation_spark_short">Ұшқын</string>
-    <string name="donation_midnight_short">Дәптер</string>
-    <string name="donation_wave_short">Толқын</string>
-    <string name="donation_universe_short">Ғалам</string>
-    
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Адал дос</string>
-    
-    <!-- Purchase status -->
-    <string name="purchased">Сатып алынды</string>
 
     <!-- Help Activity -->
     <string name="help_title">Анықтама</string>

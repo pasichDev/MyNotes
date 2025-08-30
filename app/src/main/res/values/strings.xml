@@ -250,9 +250,6 @@
     <string name="help_notes_copy_title">Edit Copy</string>
     <string name="help_notes_copy_description">Create an editable copy of any note to make modifications while keeping the original intact.</string>
 
-    <!-- Purchase status -->
-    <string name="purchased">Purchased</string>
-
     <string name="actual_version">Up to date for version %1$s</string>
 
     <!-- App Shortcuts -->

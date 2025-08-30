@@ -172,9 +172,6 @@
     <string name="support_solo_developer_title">Soutenir le développeur</string>
     <string name="support_solo_developer_description">Salut ! Je suis un développeur qui travaille sur MyNotes pendant mon temps libre. Toutes les fonctionnalités seront toujours gratuites, mais votre soutien m\'aide à consacrer plus de temps à améliorer cette application. Chaque contribution compte énormément pour moi ! 💖</string>
 
-    <!-- Purchase status -->
-    <string name="purchased">Acheté</string>
-
     <!-- Help Activity -->
     <string name="help_title">Aide</string>
     <string name="help_subtitle">Apprenez à tirer le meilleur parti des fonctionnalités de MyNotes</string>

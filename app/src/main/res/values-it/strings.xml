@@ -169,23 +169,6 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Supporta lo sviluppatore</string>
     <string name="support_solo_developer_description">Ciao! Sono uno sviluppatore che lavora su MyNotes nel tempo libero. Tutte le funzionalità saranno sempre gratuite, ma il tuo supporto mi aiuta a dedicare più tempo a migliorare questa app. Ogni contributo significa il mondo per me! 💖</string>
-    
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Supporter incredibile! 🌟</string>
-    <string name="supporter_badge_subtitle">La tua collezione di supporto</string>
-    
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Seme</string>
-    <string name="donation_spark_short">Scintilla</string>
-    <string name="donation_midnight_short">Quaderno</string>
-    <string name="donation_wave_short">Onda</string>
-    <string name="donation_universe_short">Universo</string>
-    
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Amico fedele</string>
-    
-    <!-- Purchase status -->
-    <string name="purchased">Acquistato</string>
 
     <!-- Help Activity -->
     <string name="help_title">Aiuto</string>
