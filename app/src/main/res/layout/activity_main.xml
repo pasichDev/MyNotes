@@ -48,6 +48,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/search"
                 android:searchIcon="@drawable/ic_search"
+                android:paddingEnd="10dp"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginBottom="15dp"
