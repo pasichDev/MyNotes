@@ -10,27 +10,35 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Toast;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.util.Pair;
+import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.search.SearchView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
@@ -46,11 +54,10 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
+import com.pasich.mynotes.databinding.ViewLoginPageBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
-import com.pasich.mynotes.ui.view.dialogs.about.AboutDialog;
-import com.pasich.mynotes.ui.view.dialogs.about.AboutOpensActivity;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
@@ -65,13 +72,19 @@ import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
 import com.pasich.mynotes.utils.adapters.tagAdapter.OnItemClickListenerTag;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
+import com.pasich.mynotes.utils.backup.CloudAuthHelper;
+import com.pasich.mynotes.utils.backup.CloudCacheHelper;
+import com.pasich.mynotes.utils.constants.DriveScope;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
+import com.pasich.mynotes.utils.constants.settings.BackupPreferences;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
 import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
+import com.preference.PowerPreference;
+import com.preference.Preference;
 
 import java.util.List;
 
@@ -88,13 +101,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 Intent data = result.getData();
                 if (result.getResultCode() == 11) {
                     assert data != null;
-                    
-                    // Check if theme mode changed
                     if (data.getBooleanExtra("updateThemeMode", false)) {
-                        // Theme mode changed, recreate the activity to apply new mode
                         recreate();
                     } else {
-                        // Only theme style changed
                         this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
                     }
                 }
@@ -130,16 +139,36 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     UpdateChecker updateChecker;
 
+    // Navigation Drawer variables
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+    private int pendingNavigationMenuItemId = -1;
+
+    // Google Sign-In variables (moved from AboutDialog)
+    @Inject
+    public GoogleSignInClient googleSignInClient;
+    @Inject
+    public CloudCacheHelper cloudCacheHelper;
+    @Inject
+    public CloudAuthHelper cloudAuthHelper;
+
     private static final int REQUEST_UPDATE = 100;
     private AppUpdateManager appUpdateManager;
     private int previousNotesCount = 0;
 
-    // Ланчер для ActivityResult API
-    private final ActivityResultLauncher<Intent> updateLauncher = registerForActivityResult(
+    // Google Sign-In launcher
+    final private ActivityResultLauncher<Intent> startAuthIntent = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() != RESULT_OK) {
-                    Toast.makeText(this, "Оновлення не вдалося!", Toast.LENGTH_SHORT).show();
-                    checkForUpdate();
+                if (result.getResultCode() == RESULT_OK) {
+                    cloudAuthHelper.getResultAuth(result.getData())
+                            .addOnFailureListener((GoogleSignInAccount) -> 
+                                    onInfoSnack(R.string.errorAuth, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG))
+                            .addOnSuccessListener((GoogleSignInAccount) -> {
+                                cloudCacheHelper.update(GoogleSignInAccount, 
+                                       GoogleSignIn.hasPermissions(GoogleSignInAccount,
+                                               DriveScope.ACCESS_DRIVE_SCOPE), true);
+                                loadingDataUser(true);
+                            });
                 }
             });
 
@@ -154,7 +183,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
 
-        setupEdgeToEdgeInsets(mActivityBinding.activityMain);
+        setupEdgeToEdgeForDrawer();
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
@@ -169,23 +198,47 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         // Перевірте доступність оновлення
         checkForUpdate();
 
+        // Ініціалізуємо Navigation Drawer
+        setupNavigationDrawer();
+
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                setEnabled(finishActivity());
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    setEnabled(finishActivity());
+                }
             }
         });
 
+        handleShortcuts(getIntent());
+
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleShortcuts(intent);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    /**
+     * Обробка App Shortcuts
+     */
+    private void handleShortcuts(Intent intent) {
+        if (intent != null) {
+            // Обробка пошукового shortcuts
+            if (intent.getBooleanExtra("open_search", false)) {
+
+                // Відкриваємо пошук з невеликою затримкою після створення активності
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (mActivityBinding != null) {
+                        mActivityBinding.searchView.show();
+                    }
+                }, 100);
+            }
+        }
     }
 
     @Override
@@ -219,9 +272,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
                 startUpdateFlow(appUpdateInfo);
             }
-        }).addOnFailureListener(e -> {
-            Log.d("AppUpdate", "Error checking for updates: " + e.getMessage());
-        });
+        }).addOnFailureListener(e -> Log.d("AppUpdate", "Error checking for updates: " + e.getMessage()));
 
     }
 
@@ -259,18 +310,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void initListeners() {
-                // Налаштовуємо зв'язок між SearchBar та SearchView
-        mActivityBinding.actionSearch.setOnClickListener(v -> {
-            Log.d("SearchBar", "SearchBar clicked");
-            mActivityBinding.searchView.show();
-        });
+        mActivityBinding.actionSearch.setOnClickListener(v -> mActivityBinding.searchView.show());
         
         mActivityBinding.searchView.addTransitionListener(
                 (searchView, previousState, newState) -> {
-                    Log.d("SearchView", "State changed: " + previousState + " -> " + newState);
                     if (newState == SearchView.TransitionState.SHOWING) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(false);
-                        // Форсуємо повноекранний режим
                         ensureSearchViewFullScreen();
                     } else if (newState == SearchView.TransitionState.HIDDEN) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(true);
@@ -300,8 +345,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                             formatList.formatNote(menuItem);
                             staggeredGridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
                         }
-                    } else if (idItem == R.id.more) {
-                        openMoreActivity();
                     }
 
                     return true;
@@ -314,7 +357,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
                     // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
                     if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
-                        // Додаємо візуальний feedback - легке потрясіння
                         assert mActivityBinding.listTags.getLayoutManager() != null;
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
                         Animation shake = AnimationUtils
@@ -359,48 +401,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     }
 
-    private void openMoreActivity() {
-        if (getAction())
-            actionUtils.closeActionPanel();
-        new AboutDialog(new AboutOpensActivity() {
-            @Override
-            protected void openThemeActivity() {
-                startSettingsActivity.launch(new Intent(MainActivity.this, SettingsActivity.class),
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this,
-                                (Pair<View, String>[]) null));
-            }
-
-            @Override
-            protected void openTrash() {
-                startActivity(new Intent(MainActivity.this, TrashActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-
-            }
-
-            @Override
-            protected void openAboutActivity() {
-                startActivity(new Intent(MainActivity.this, AboutActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-            }
-
-            @Override
-            protected void openBackupActivity() {
-                startActivity(new Intent(MainActivity.this, BackupActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-            }
-
-            @Override
-            protected void openSupportActivity() {
-                startActivity(new Intent(MainActivity.this, SupportActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-            }
-        }).show(getSupportFragmentManager(), "MoreActivity");
-    }
-
     @Override
     public void settingsSearchView() {
         formatList.init(mActivityBinding.actionSearch.getMenu().findItem(R.id.format));
-        // Додаткове налаштування для Material SearchBar та SearchView
         setupSearchBarAndView();
     }
     
@@ -420,8 +423,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
                 mActivityBinding.searchView.setLayoutParams(coordinatorParams);
             }
-
-            Log.d("SearchSetup", "SearchBar and SearchView successfully configured for full screen");
         } catch (Exception e) {
             Log.e("SearchSetup", "Error setting up SearchBar and SearchView: " + e.getMessage());
         }
@@ -431,14 +432,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      * Забезпечує повноекранний режим для SearchView
      */
     private void ensureSearchViewFullScreen() {
-        // Переконуємося, що SearchView займає весь екран
         ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
         if (params != null) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT;
             params.height = ViewGroup.LayoutParams.MATCH_PARENT;
             mActivityBinding.searchView.setLayoutParams(params);
-
-            // Форсуємо перерахунок layout
             mActivityBinding.searchView.requestLayout();
         }
     }
@@ -578,16 +576,21 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
             }
 
+            // Використовуємо ViewPropertyAnimator для кращої продуктивності
             mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.VISIBLE);
-            android.view.animation.Animation fadeIn = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.fade_in);
-            mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeIn);
+            mActivityBinding.includeEmpty.emptyViewNote.setAlpha(0f);
+            mActivityBinding.includeEmpty.emptyViewNote.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start();
         } else {
             mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.GONE);
             mActivityBinding.listNotes.setVisibility(View.VISIBLE);
-            android.view.animation.Animation slideIn = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.slide_fade_in);
-            mActivityBinding.listNotes.startAnimation(slideIn);
+            mActivityBinding.listNotes.setAlpha(0f);
+            mActivityBinding.listNotes.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start();
         }
     }
 
@@ -648,9 +651,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void deleteTag() {
                 if (tagsAdapter.getTagSelected() == tag)
                     selectTagUser(tagsAdapter.getTagForName("allNotes"));
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    mainPresenter.deleteTag(tag);
-                }, 700);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> mainPresenter.deleteTag(tag), 700);
 
 
             }
@@ -762,48 +763,38 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     private void hideCurrentContent(Runnable onComplete) {
         if (mActivityBinding.listNotes.getVisibility() == View.VISIBLE) {
-            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.slide_fade_out);
-            fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(android.view.animation.Animation animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(android.view.animation.Animation animation) {
-                    mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
-                    // Очищаємо список після приховування, щоб запобігти миготінню
-                    mNoteAdapter.clearList();
-                    onComplete.run();
-                }
-
-                @Override
-                public void onAnimationRepeat(android.view.animation.Animation animation) {
-                }
-            });
-            mActivityBinding.listNotes.startAnimation(fadeOut);
+            // Використовуємо ViewPropertyAnimator замість Animation
+            mActivityBinding.listNotes.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction(() -> {
+                        mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
+                        mActivityBinding.listNotes.setAlpha(1f); // Скидаємо alpha
+                        // Очищаємо список після приховування, щоб запобігти миготінню
+                        mNoteAdapter.clearList();
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    })
+                    .start();
         } else if (mActivityBinding.includeEmpty.emptyViewNote.getVisibility() == View.VISIBLE) {
-            android.view.animation.Animation fadeOut = android.view.animation.AnimationUtils.loadAnimation(this,
-                    R.anim.fade_out);
-            fadeOut.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(android.view.animation.Animation animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(android.view.animation.Animation animation) {
-                    mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
-                    onComplete.run();
-                }
-
-                @Override
-                public void onAnimationRepeat(android.view.animation.Animation animation) {
-                }
-            });
-            mActivityBinding.includeEmpty.emptyViewNote.startAnimation(fadeOut);
+            // Використовуємо ViewPropertyAnimator замість Animation
+            mActivityBinding.includeEmpty.emptyViewNote.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction(() -> {
+                        mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
+                        mActivityBinding.includeEmpty.emptyViewNote.setAlpha(1f); // Скидаємо alpha
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    })
+                    .start();
         } else {
             mNoteAdapter.clearList();
-            onComplete.run();
+            if (onComplete != null) {
+                onComplete.run();
+            }
         }
     }
 
@@ -821,8 +812,19 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     private void variablesNull() {
+        if (mNoteAdapter != null) {
+            mNoteAdapter.setOnItemClickListener(null);
+        }
+        if (tagsAdapter != null) {
+            tagsAdapter.setOnItemClickListener(null);
+        }
+        if (searchNotesAdapter != null) {
+            searchNotesAdapter.setItemClickListener(null);
+        }
+
         mNoteAdapter = null;
         tagsAdapter = null;
+        searchNotesAdapter = null;
     }
 
     /**
@@ -851,7 +853,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void redrawActivity(int themeStyle) {
         super.redrawActivity(themeStyle);
-        setTheme(themeStyle);
+        selectTheme();
         recreate();
     }
 
@@ -871,4 +873,189 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             mainPresenter.loadingData();
         }
     }
+
+    /**
+     * Налаштування Navigation Drawer
+     */
+    private void setupNavigationDrawer() {
+        drawerLayout = mActivityBinding.drawerLayout;
+        navigationView = mActivityBinding.navigationView;
+
+        // Налаштовуємо burger іконку для відкриття drawer
+        mActivityBinding.actionSearch.setNavigationOnClickListener(v -> {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+
+        // Налаштовуємо menu click listener для Navigation Drawer
+        navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
+
+        // Додаємо DrawerListener для обробки завершення анімації
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                // Коли drawer закрився, відкриваємо активність
+                if (pendingNavigationMenuItemId != -1) {
+                    // Невелика затримка для плавності
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        handleNavigationItemAction(pendingNavigationMenuItemId);
+                        pendingNavigationMenuItemId = -1; // Скидаємо
+                    }, 50); // Мінімальна затримка
+                }
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
+
+        // Ініціалізуємо дані користувача в header
+        initNavigationHeader();
+    }
+
+    /**
+     * Обробка кліків по пунктах меню Navigation Drawer
+     */
+    private boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Зберігаємо ID обраного пункту та закриваємо drawer
+        pendingNavigationMenuItemId = item.getItemId();
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    /**
+     * Виконання дії після закриття drawer'а
+     */
+    private void handleNavigationItemAction(int itemId) {
+        if (itemId == R.id.nav_trash) {
+            startActivity(new Intent(this, TrashActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        } else if (itemId == R.id.nav_settings) {
+            startSettingsActivity.launch(new Intent(this, SettingsActivity.class),
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(this,
+                            (Pair<View, String>[]) null));
+        } else if (itemId == R.id.nav_backups) {
+            startActivity(new Intent(this, BackupActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        } else if (itemId == R.id.nav_help) {
+            startActivity(new Intent(this, HelpActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        } else if (itemId == R.id.nav_about) {
+            startActivity(new Intent(this, AboutActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+        }
+    }
+
+    /**
+     * Ініціалізація header Navigation Drawer з інформацією користувача
+     */
+    private void initNavigationHeader() {
+        View headerView = navigationView.getHeaderView(0);
+        com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding = 
+                com.pasich.mynotes.databinding.ViewLoginPageBinding.bind(headerView.findViewById(R.id.login_page));
+
+        // Налаштовуємо видимість елементів для Google Play Market
+        loginPageBinding.viewLoginRoot.setVisibility(cloudCacheHelper.isInstallPlayMarket() ? View.VISIBLE : View.GONE);
+        
+        // Завантажуємо дані користувача
+        loadingDataUser(cloudCacheHelper.isAuth(), loginPageBinding);
+
+        // Налаштовуємо listeners
+        setupNavigationHeaderListeners(loginPageBinding);
+    }
+
+    /**
+     * Налаштування listeners для header Navigation Drawer
+     */
+    private void setupNavigationHeaderListeners(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
+        loginPageBinding.exitUser.setOnClickListener(v -> signOut(loginPageBinding));
+        loginPageBinding.loginUser.setOnClickListener(v -> startAuthIntent.launch(googleSignInClient.getSignInIntent()));
+        
+        // Отримуємо доступ до nav_support через headerView
+        navigationView.getHeaderView(0).findViewById(R.id.nav_support).setOnClickListener(v -> {
+            // Закриваємо drawer і відкриваємо SupportActivity
+            drawerLayout.closeDrawer(GravityCompat.START);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                startActivity(new Intent(this, SupportActivity.class),
+                        ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            }, 100);
+        });
+    }
+
+    /**
+     * Завантаження даних користувача
+     * TODO Update logic
+     */
+    private void loadingDataUser(boolean isAuth, ViewLoginPageBinding loginPageBinding) {
+        if (isAuth) {
+            String nameUser = cloudCacheHelper.getGoogleSignInAccount().getDisplayName();
+            loginPageBinding.nameUser.setText(nameUser);
+            loginPageBinding.emailUSer.setText(cloudCacheHelper.getGoogleSignInAccount().getEmail());
+            Glide.with(this)
+                    .load(cloudCacheHelper.getGoogleSignInAccount().getPhotoUrl())
+                    .placeholder(R.drawable.ic_no_avatar)
+                    .into(loginPageBinding.userAvatar);
+            loginPageBinding.loginUser.setVisibility(View.GONE);
+            loginPageBinding.loginPageRoot.setVisibility(View.VISIBLE);
+        } else {
+            loginPageBinding.loginPageRoot.setVisibility(View.GONE);
+            loginPageBinding.loginUser.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     *
+     */
+    private void loadingDataUser(boolean isAuth) {
+        if (navigationView != null) {
+            View headerView = navigationView.getHeaderView(0);
+            ViewLoginPageBinding loginPageBinding =
+                   ViewLoginPageBinding.bind(headerView.findViewById(R.id.login_page));
+            loadingDataUser(isAuth, loginPageBinding);
+        }
+    }
+
+    /**
+     * Вихід з Google акаунта
+     * TODO Update logic
+     */
+    private void signOut(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
+        googleSignInClient.signOut().addOnCompleteListener(task -> {
+            final Preference preference = PowerPreference.getFileByName(
+                    com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP);
+            loginPageBinding.loginUser.setVisibility(View.VISIBLE);
+            loginPageBinding.loginPageRoot.setVisibility(View.GONE);
+            preference.removeAsync(BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD);
+            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_ID);
+            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_TIME);
+            cloudCacheHelper.clean();
+        });
+    }
+
+    /**
+     * Налаштовує Edge-to-Edge для DrawerLayout
+     */
+    private void setupEdgeToEdgeForDrawer() {
+        ViewCompat.setOnApplyWindowInsetsListener(mActivityBinding.getRoot(), (v, insets) -> {
+            ViewCompat.setOnApplyWindowInsetsListener(mActivityBinding.activityMain, (mainView, mainInsets) -> {
+                Insets systemBars = mainInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                mainView.setPadding(0, systemBars.top, 0, systemBars.bottom);
+                return WindowInsetsCompat.CONSUMED;
+            });
+
+            return insets;
+        });
+    }
+
 }

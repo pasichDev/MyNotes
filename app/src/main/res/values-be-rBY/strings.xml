@@ -38,7 +38,6 @@
     <string name="sortHead">Картаваць па:</string>
     <string name="shareApp">Падзяліцца дадаткам</string>
     <string name="privacyApp">Палітыка прыватнасці</string>
-    <string name="addShortCutSuccessfully">Дадаванні ярлыка выканана паспяхова</string>
     <string name="translateNote">Перавесці нататку</string>
     <string name="hintTextNote">Тэкст</string>
     <string name="notInstaledAppTranslate">Для выкарыстання гэтай функцыі трэба ўсталяваць Google Translator</string>
@@ -61,7 +60,6 @@
     <string name="button_url">Перайсці</string>
     <string name="hiddeTag">Схаваць нататкі</string>
     <string name="visibleTag">Адлюстроўваць нататкі</string>
-    <string name="shortCutCreateFallDouble">Ярлык для дадзенай нататкі ўжо створаны</string>
     <string name="renameTag">Перайменаваць</string>
 
     <string name="settingsInterface">Налады інтэрфейсу</string>
@@ -83,13 +81,10 @@
     <string name="onScreenProtection">Уключыць абарону экрана</string>
         <string name="onScreenProtectionDescription">Перашкаджае стварэнню скрыншотаў і запісу экрана. Уступае ў сілу пасля перазапуску прыкладання</string>
     <string name="themeMode">Рэжым тэмы</string>
-    <string name="themeModeDescription">Выберыце паміж светлай, цёмнай або сістэмнай тэмай</string>
     <string name="selectThemeMode">Выберыце рэжым тэмы</string>
     <string name="themeModeFollowSystem">Як у сістэме</string>
     <string name="themeModeLight">Светлая</string>
     <string name="themeModeDark">Цёмная</string>
-    <string name="coffeeByPlay">Падзякаваць распрацоўшчыку</string>
-    <string name="coffeeByTextInfo"><b>Мае нататкі</b> - гэта дадатак без рэкламы і распаўсюджваецца як бясплатны прадукт. Дадатак распрацоўвае адзін чалавек, таму некаторыя абнаўленне пастаўляюцца са спазненнем. Падтрымка працаздольнасці дадатку і некаторых функцый стварае выдаткі. Вы можаце падзякаваць распрацоўшчыку, купіўшы яму каву або аплаціць арэнду сервера, а таксама адправіць донат па ўказаных спасылках, якія будуць адлюстроўвацца знізу. Дзякуй, што карыстаецеся гэта дадатак!</string>
 
     <string name="loginUser">Аўтарызацыя Google</string>
     <string name="cloudBackup">Хмара</string>
@@ -132,7 +127,6 @@
 
     <!-- Product offer -->
     <string name="thanks_title">Паважаны карыстальнік</string>
-    <string name="creteNoteToTag">Стварыце нататку</string>
     <string name="errorSyncTitle">Звярніце ўвагу!</string>
     <string name="errorSyncDescrpt">З гэтай версіяй мы спыняем падтрымку сінхранізацыі з Google Дыскам. У будучых абнаўленнях мы ўвядзем больш бяспечны і эфектыўны метад сінхранізацыі, які забяспечыць вам лепшы карыстальніцкі досвед.</string>
 
@@ -141,16 +135,9 @@
     <!-- Support Activity -->
     <string name="supportDeveloper">Падтрымаць распрацоўшчыка</string>
     <string name="inAppPurchases">Пакупкі ў дадатку</string>
-    <string name="thankYouTitle">Дзякуй за выкарыстанне MyNotes!</string>
-    <string name="thankYouDescription">Ваша падтрымка дапамагае нам працягваць распрацоўку і палепшваць дадатак</string>
     <string name="donationMethods">Спосабы падтрымкі</string>
     <string name="kofiDescription">Пачасціце мяне кавай на Ko-Fi</string>
-    <string name="paypalDescription">Адпраўце данат праз PayPal</string>
-    <string name="githubSponsorsDescription">Станьце спонсарам на GitHub</string>
-    <string name="otherWaysToSupport">Іншыя спосабы падтрымкі</string>
     <string name="ratingAppDescription">Пастаўце нам 5 зорак у Google Play</string>
-    <string name="joinCommunity">Далучыцца да супольнасці</string>
-    <string name="joinCommunityDescription">Зносьцеся з іншымі карыстальнікамі на Reddit</string>
     <string name="contactDeveloper">Звязацца з распрацоўшчыкам</string>
 
     <!-- Changelog Activity -->
@@ -189,22 +176,68 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Падтрымаць распрацоўшчыка</string>
     <string name="support_solo_developer_description">Прывітанне! Я распрацоўшчык, які працуе над MyNotes у свабодны час. Усе функцыі заўсёды будуць бясплатнымі, але ваша падтрымка дапамагае мне прысвячаць больш часу паляпшэнню гэтага прыкладання. Кожны ўнёсак азначае для мяне ўвесь свет! 💖</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Даведка</string>
+    <string name="help_subtitle">Даведайцеся, як максімальна выкарыстоўваць функцыі MyNotes</string>
+    <string name="help_section_icon">Іконка раздзела</string>
+    <string name="help_feature_icon">Іконка функцыі</string>
     
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Цудоўны прыхільнік! 🌟</string>
-    <string name="supporter_badge_subtitle">Ваша калекцыя падтрымкі</string>
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Тэгі</string>
+    <string name="help_tags_create_title">Стварэнне тэгаў</string>
+    <string name="help_tags_create_description">У пачатку спіса тэгаў націсніце кнопку + каб стварыць новы тэг</string>
+    <string name="help_tags_edit_title">Рэдагаванне тэгаў</string>
+    <string name="help_tags_edit_description">Утрымлівайце тэг, каб адкрыць кантэкстнае меню рэдагавання. Тут вы можаце выдаліць тэг, перайменаваць яго або схаваць нататкі, звязаныя з ім.</string>
+    <string name="help_tags_hide_title">Схаванне нататак</string>
+    <string name="help_tags_hide_description">Выкарыстоўвайце функцыю схавання, каб часова выдаліць пазначаныя нататкі з галоўнага выгляду, захоўваючы доступ да іх праз тэг</string>
+    <string name="help_tags_limit_title">Абмежаванне тэгаў</string>
+    <string name="help_tags_limit_description">Можна стварыць не больш за 25 тэгаў для эфектыўнай арганізацыі вашых нататак</string>
+    <string name="help_tags_assign_title">Прызначэнне тэгаў</string>
+    <string name="help_tags_assign_description">Тэгі нататкам можна прызначаць на галоўным экране і пры рэдагаванні нататкі</string>
+    <string name="help_tags_update_title">Абнаўленне тэгаў</string>
+    <string name="help_tags_update_description">Апісвае абнаўленне тэгаў і як схаваць нататкі з галоўнага выгляду</string>
     
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Семя</string>
-    <string name="donation_spark_short">Іскра</string>
-    <string name="donation_midnight_short">Нататнік</string>
-    <string name="donation_wave_short">Хваля</string>
-    <string name="donation_universe_short">Сусвет</string>
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Навігацыя</string>
+    <string name="help_navigation_drawer_title">Галоўнае меню</string>
+    <string name="help_navigation_drawer_description">Атрымайце доступ да галоўнага меню, націснуўшы іконку бургера ў верхнім левым куце.</string>
+    <string name="help_navigation_search_title">Пошук</string>
+    <string name="help_navigation_search_description">Выкарыстоўвайце панэль пошуку для хуткага знаходжання вашых нататак па назве або змесце</string>
+    <string name="help_navigation_sort_title">Сартаванне</string>
+    <string name="help_navigation_sort_description">Сартуйце вашы нататкі па даце апошняй змены або назве ў ўзыходным ці спадным парадку</string>
+    <string name="help_navigation_format_title">Фармат адлюстравання</string>
+    <string name="help_navigation_format_description">Пераключайцеся паміж спісам і сеткай для адлюстравання вашых нататак у зручным для вас макеце</string>
     
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Вернаы сябар</string>
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Жэсты свайп</string>
+    <string name="help_navigation_swipe_description">Кіруйце нататкамі інтуітыўна! Правядзіце пальцам улева, каб уключыць рэжым выбару некалькіх нататак для хуткіх масавых аперацый, або ўправа — каб імгненна выдаліць нататку і адправіць яе ў кош. Жэсты даступны толькі ў адноколонкавым рэжыме.</string>
     
-    <!-- Purchase status -->
-    <string name="purchased">Куплена</string>
+    <!-- Other Section -->
+    <string name="help_other_title">Іншае</string>
+    <string name="help_other_security_title">Абарона экрана</string>
+    <string name="help_other_security_description">Калі ўключана ў наладах, гэтая функцыя абараняе вашы нататкі ад несанкцыянаванага прагляду: хавае змесціва прыкладання ў агляды апошніх прыкладанняў, забараняе стварэнне скрыншотаў і запіс экрана. Функцыя бяспекі актывуецца пасля перазапуску прыкладання.</string>
+    <string name="help_other_shortcuts_title">Хуткія дзеянні</string>
+    <string name="help_other_shortcuts_description">Утрымлівайце іконку прыкладання для хуткага доступу да стварэння новай нататкі або пошуку ў вашых нататках. Даступна на Android 7.1 і вышэй.</string>
+    
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Функцыі нататак</string>
+    <string name="help_notes_limit_title">Абмежаванне тэксту</string>
+    <string name="help_notes_limit_description">Кожная нататка можа ўтрымліваць да 20,000 сімвалаў, што забяспечвае дастаткова месца для дэтальнага змесціва.</string>
+    <string name="help_notes_translate_title">Пераклад</string>
+    <string name="help_notes_translate_description">Перакладайце вашы нататкі прама ў прыкладанні. Для выкарыстання гэтай функцыі на вашай прыладзе павінен быць усталяваны Google Перакладчык.</string>
+    <string name="help_notes_text_size_title">Памер тэксту</string>
+    <string name="help_notes_text_size_description">Змяняйце памер тэксту падчас рэдагавання нататак з дапамогай дыялогавага акна памеру тэксту, даступнага прама з экрана рэдагавання нататкі.</string>
+    <string name="help_notes_copy_title">Рэдагаваць копію</string>
+    <string name="help_notes_copy_description">Ствараць рэдагавальную копію любой нататкі для ўнясення змен, захоўваючы арыгінал недакрануты.</string>
+
+    <string name="actual_version">Актуальна для версіі %1$s</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Новая нататка</string>
+    <string name="shortcut_new_note_long">Стварыць новую нататку</string>
+    <string name="shortcut_search_short">Пошук</string>
+    <string name="shortcut_search_long">Пошук у нататках</string>
+    <string name="shortcut_disabled_message">Гэтая функцыя недаступная</string>
 
 </resources>

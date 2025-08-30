@@ -3,6 +3,7 @@ package com.pasich.mynotes.ui.presenter;
 import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_COUNT;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
@@ -27,6 +28,8 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     private Note backupDeleteNote;
     private int mSwipe = 0;
+    private Handler uiHandler = new Handler(Looper.getMainLooper());
+    private Runnable swipeResetRunnable;
 
     @Inject
     public MainPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
@@ -187,12 +190,17 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             if (mSwipe == 1) {
                 getView().exitWhat();
 
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
+                // Очищаємо попередній callback якщо він існує
+                if (swipeResetRunnable != null) {
+                    uiHandler.removeCallbacks(swipeResetRunnable);
+                }
+                
+                swipeResetRunnable = () -> {
                     if (mSwipe == 1) {
                         mSwipe = 0;
                     }
-                }, 5000);
+                };
+                uiHandler.postDelayed(swipeResetRunnable, 5000);
 
                 return false;
             } else if (mSwipe == 2) {
@@ -210,7 +218,11 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void detachView() {
+        if (uiHandler != null && swipeResetRunnable != null) {
+            uiHandler.removeCallbacks(swipeResetRunnable);
+        }
         super.detachView();
         backupDeleteNote = null;
+        swipeResetRunnable = null;
     }
 }

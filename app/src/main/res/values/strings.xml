@@ -67,7 +67,6 @@
     <string name="editNoteButton" translatable="false">EditNote</string>
     <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
     <string name="userAvatar" translatable="false">User Avatar</string>
-    <string name="logOut" translatable="false">LogOut</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
 
@@ -95,7 +94,6 @@
     <string name="onScreenProtection">Enable screen protection</string>
     <string name="onScreenProtectionDescription">Prevents screenshots and screen recording. Takes effect after restarting the app</string>
     <string name="themeMode">Theme Mode</string>
-    <string name="themeModeDescription">Choose between light, dark, or system theme</string>
     <string name="selectThemeMode">Select theme mode</string>
     <string name="themeModeFollowSystem">Follow System</string>
     <string name="themeModeLight">Light</string>
@@ -146,12 +144,10 @@
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
 
-    <string name="percentProgress">Backup (%d%%)</string>
+    <string name="percentProgress" translatable="false">Backup (%d%%)</string>
 
     <string name="errorSyncTitle">Attention!</string>
     <string name="errorSyncDescrpt">With this version, we are discontinuing support for Google Drive synchronization. In future updates, we will introduce a more secure and efficient synchronization method, ensuring you a better user experience.</string>
-
-    <string name="creteNoteToTag">Create  note</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Support Developer</string>
@@ -166,7 +162,7 @@
     <string name="current_version" translatable="false">v%1$s</string>
     <string name="version_acknowledged">Got it!</string>
     <string name="whats_new_title">New Features &amp; Improvements</string>
-    <string name="whats_new_description">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
+    <string name="whats_new_description" translatable="false">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
     <string name="changelog_subtitle">Stay up to date with all the changes and improvements in this version</string>
     <string name="errorLoadingChangelog">Error loading changelog</string>
     <string name="checkInternetConnection">Please check your internet connection</string>
@@ -201,36 +197,68 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Support Developer</string>
     <string name="support_solo_developer_description">Hi! I\'m a developer working on MyNotes in my free time. All features will always be free, but your support helps me dedicate more time to making this app even better. Every contribution means the world to me! 💖</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Help</string>
+    <string name="help_subtitle">Learn how to get the most out of MyNotes features</string>
+    <string name="help_section_icon">Section icon</string>
+    <string name="help_feature_icon">Feature icon</string>
     
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Amazing Supporter! 🌟</string>
-    <string name="supporter_badge_subtitle">Your support collection</string>
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Tags</string>
+    <string name="help_tags_create_title">Creating Tags</string>
+    <string name="help_tags_create_description">At the beginning of the tags list, press the + button to create a new tag</string>
+    <string name="help_tags_edit_title">Editing Tags</string>
+    <string name="help_tags_edit_description">Hold a tag to open the context menu. Here you can delete the tag, rename it, or hide notes associated with it.</string>
+    <string name="help_tags_hide_title">Hiding Notes</string>
+    <string name="help_tags_hide_description">Use the hide function to temporarily remove tagged notes from the main view while keeping access to them through the tag</string>
+    <string name="help_tags_limit_title">Tag Limit</string>
+    <string name="help_tags_limit_description">You can create up to 25 tags for effective organization of your notes</string>
+    <string name="help_tags_assign_title">Assigning Tags</string>
+    <string name="help_tags_assign_description">Tags can be assigned to notes from the main screen and when editing a note</string>
+    <string name="help_tags_update_title">Updating Tags</string>
+    <string name="help_tags_update_description">Describes tag updates and how to hide notes from the main view</string>
     
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Seed</string>
-    <string name="donation_spark_short">Spark</string>
-    <string name="donation_midnight_short">Notebook</string>
-    <string name="donation_wave_short">Wave</string>
-    <string name="donation_universe_short">Universe</string>
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Navigation</string>
+    <string name="help_navigation_drawer_title">Main Menu</string>
+    <string name="help_navigation_drawer_description">Access the main menu by tapping the hamburger icon in the top left corner.</string>
+    <string name="help_navigation_search_title">Search</string>
+    <string name="help_navigation_search_description">Use the search bar to quickly find your notes by title or content</string>
+    <string name="help_navigation_sort_title">Sorting</string>
+    <string name="help_navigation_sort_description">Sort your notes by last modified date or name in ascending or descending order</string>
+    <string name="help_navigation_format_title">Display Format</string>
+    <string name="help_navigation_format_description">Switch between list and grid to display your notes in a layout convenient for you</string>
     
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Faithful Friend</string>
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Swipe Gestures</string>
+    <string name="help_navigation_swipe_description">Manage notes intuitively! Swipe left to activate multiple note selection mode for quick bulk operations, or swipe right to instantly delete a note and send it to trash. Gestures are only available in single-column mode.</string>
     
-    <!-- Purchase status -->
-    <string name="purchased">Purchased</string>
+    <!-- Other Section -->
+    <string name="help_other_title">Other</string>
+    <string name="help_other_security_title">Screen Protection</string>
+    <string name="help_other_security_description">When enabled in settings, this feature protects your notes from unauthorized viewing by hiding app content in recent apps overview, preventing screenshots, and blocking screen recording. This security feature activates after restarting the app.</string>
+    <string name="help_other_shortcuts_title">App Shortcuts</string>
+    <string name="help_other_shortcuts_description">Long press the app icon to quickly access shortcuts for creating a new note or searching through your notes. Available on Android 7.1 and higher.</string>
     
-    <!-- Missing strings found in translations -->
-    <string name="addShortCutSuccessfully">Shortcut added successfully</string>
-    <string name="shortCutCreateFallDouble">A label has already been created for this note</string>
-    <string name="plus" translatable="false">+</string>
-    <string name="versionAndCodeApp" translatable="false">My notes (v%1$s)</string>
-    <string name="coffeeByPlay">Thank Developer</string>
-    <string name="coffeeByTextInfo"><b>My Notes</b> is an ad-free app and is distributed as a free product. The application is developed by one person, so some updates are delivered late. Maintaining the health of the application and some features generates costs. You can thank the developer by buying him a coffee or paying for the server rent, as well as send a donation to the specified links that will be displayed below. Thank you for using this app!</string>
-    <string name="thankYouTitle">Thank you for using MyNotes!</string>
-    <string name="thankYouDescription">Your support helps us continue developing and improving the app</string>
-    <string name="paypalDescription">Send a donation via PayPal</string>
-    <string name="githubSponsorsDescription">Become a GitHub sponsor</string>
-    <string name="otherWaysToSupport">Other Ways to Support</string>
-    <string name="joinCommunity">Join the Community</string>
-    <string name="joinCommunityDescription">Connect with other users on Reddit</string>
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Notes Features</string>
+    <string name="help_notes_limit_title">Text Limit</string>
+    <string name="help_notes_limit_description">Each note can contain up to 20,000 characters, providing ample space for detailed content.</string>
+    <string name="help_notes_translate_title">Translation</string>
+    <string name="help_notes_translate_description">Translate your notes directly within the app. Google Translate must be installed on your device to use this feature.</string>
+    <string name="help_notes_text_size_title">Text Size</string>
+    <string name="help_notes_text_size_description">Adjust text size while editing notes using the text size dialog accessible directly from the note editing screen.</string>
+    <string name="help_notes_copy_title">Edit Copy</string>
+    <string name="help_notes_copy_description">Create an editable copy of any note to make modifications while keeping the original intact.</string>
+
+    <string name="actual_version">Up to date for version %1$s</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Нова нотатка</string>
+    <string name="shortcut_new_note_long">Створити нову нотатку</string>
+    <string name="shortcut_search_short">Пошук</string>
+    <string name="shortcut_search_long">Пошук в нотатках</string>
+    <string name="shortcut_disabled_message">Ця функція недоступна</string>
+
 </resources>

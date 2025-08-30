@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'com.google.dagger.hilt.android'
+
 }
 
 apply plugin: 'com.android.application'
@@ -22,8 +23,8 @@ android {
         applicationId "com.pasich.mynotes"
         minSdkVersion 23
         targetSdkVersion 36
-        versionCode 31
-        versionName '2.1.31'
+        versionCode 32
+        versionName '2.1.32'
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
@@ -41,8 +42,8 @@ android {
 
         }
         debug {
-           applicationIdSuffix  ".debug"
-            versionNameSuffix  "-debug"
+          //  applicationIdSuffix  ".debug"
+          //  versionNameSuffix  "-debug"
             debuggable true
             minifyEnabled false
             shrinkResources false
@@ -73,8 +74,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.2"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.20"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.3"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.21"
     implementation 'androidx.core:core-splashscreen:1.0.1'
     
     // EdgeToEdge support for API 35+
@@ -102,7 +103,7 @@ dependencies {
     implementation 'com.google.api-client:google-api-client-android:1.26.0'
     implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
     implementation 'com.google.android.play:app-update:2.1.0'
-    implementation 'com.android.billingclient:billing:6.2.1'
+    implementation 'com.android.billingclient:billing:8.0.0'
 
 
     //Other lib (Gson/Glide/PowerPreferences)

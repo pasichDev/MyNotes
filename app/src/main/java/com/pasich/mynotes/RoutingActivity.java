@@ -4,22 +4,28 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
+import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.ui.view.activity.MainActivity;
 
 
-public class RoutingActivity extends AppCompatActivity {
+public class RoutingActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        selectTheme();
+        
         EdgeToEdge.enable(this);
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
 
         splashScreen.setKeepOnScreenCondition(() -> true);
         startNextActivity();
+    }
+
+    @Override
+    public void initListeners() {
     }
 
     private void startNextActivity() {

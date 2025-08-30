@@ -36,7 +36,6 @@
     <string name="sortHead">Trier par:</string>
     <string name="shareApp">Partager l\'application</string>
     <string name="privacyApp">Politique de confidentialité</string>
-    <string name="addShortCutSuccessfully">Ajouter un raccourci avec succès</string>
     <string name="translateNote">Traduire la note</string>
     <string name="hintTextNote">Texte</string>
     <string name="notInstaledAppTranslate">Google Translator doit être installé pour utiliser cette fonctionnalité</string>
@@ -60,7 +59,6 @@
     <string name="button_url">Ouvrir le lien</string>
     <string name="hiddeTag">Masquer les notes</string>
     <string name="visibleTag">Afficher les notes</string>
-    <string name="shortCutCreateFallDouble">Le raccourci pour cette note a déjà été créé</string>
     <string name="renameTag">Renommer</string>
     <string name="settingsInterface">Paramètres d\'interface</string>
     <string name="settings">Paramètres</string>
@@ -81,14 +79,11 @@
     <string name="onScreenProtection">Activer la protection d\'écran</string>
     <string name="onScreenProtectionDescription">Empêche les captures d\'écran et l\'enregistrement. Prend effet après le redémarrage de l\'application</string>
     <string name="themeMode">Mode thème</string>
-    <string name="themeModeDescription">Choisissez entre thème clair, sombre ou système</string>
     <string name="selectThemeMode">Sélectionner le mode thème</string>
     <string name="themeModeFollowSystem">Comme le système</string>
     <string name="themeModeLight">Clair</string>
     <string name="themeModeDark">Sombre</string>
-    <string name="coffeeByPlay">Remercier le développeur</string>
-    <string name="coffeeByTextInfo"><b>Mes notes</b> est une application sans publicité et distribuée en tant que produit gratuit. L\'application est développée par une seule personne, donc certaines mises à jour sont livrées en retard. Le maintien de la fonctionnalité du programme et de certaines fonctions crée des coûts. Vous pouvez remercier le développeur en lui achetant un café ou en payant la location d\'un serveur, ainsi qu\'en envoyant un don en utilisant les liens spécifiés qui seront affichés ci-dessous. Merci d\'utiliser cette application!</string>
-    <string name="loginUser">Autorisation Google</string>
+     <string name="loginUser">Autorisation Google</string>
     <string name="cloudBackup">Cloud</string>
     <string name="localBackup">Périphérique</string>
     <string name="importLocalBackup">Restauration à l\'aide de res. copies</string>
@@ -129,22 +124,14 @@
 
     <!-- Offre produit -->
     <string name="thanks_title">Cher utilisateur</string>
-    <string name="creteNoteToTag">Créer une note</string>
-    <string name="thanks_donate">Le développeur du projet vous remercie pour votre achat. Nous nous efforcerons de devenir meilleurs et plus pratiques. \n <b>Cordialement, mes notes!</b></string>
+      <string name="thanks_donate">Le développeur du projet vous remercie pour votre achat. Nous nous efforcerons de devenir meilleurs et plus pratiques. \n <b>Cordialement, mes notes!</b></string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Soutenir le développeur</string>
     <string name="inAppPurchases">Achats intégrés</string>
-    <string name="thankYouTitle">Merci d\'utiliser MyNotes!</string>
-    <string name="thankYouDescription">Votre soutien nous aide à continuer le développement et améliorer l\'application</string>
-    <string name="donationMethods">Méthodes de don</string>
+     <string name="donationMethods">Méthodes de don</string>
     <string name="kofiDescription">Offrez-moi un café sur Ko-Fi</string>
-    <string name="paypalDescription">Envoyez un don via PayPal</string>
-    <string name="githubSponsorsDescription">Devenez sponsor sur GitHub</string>
-    <string name="otherWaysToSupport">Autres moyens de soutenir</string>
-    <string name="ratingAppDescription">Notez-nous 5 étoiles sur Google Play</string>
-    <string name="joinCommunity">Rejoindre la communauté</string>
-    <string name="joinCommunityDescription">Connectez-vous avec d\'autres utilisateurs sur Reddit</string>
+   <string name="ratingAppDescription">Notez-nous 5 étoiles sur Google Play</string>
     <string name="contactDeveloper">Contacter le développeur</string>
 
     <!-- Changelog Activity -->
@@ -184,22 +171,68 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Soutenir le développeur</string>
     <string name="support_solo_developer_description">Salut ! Je suis un développeur qui travaille sur MyNotes pendant mon temps libre. Toutes les fonctionnalités seront toujours gratuites, mais votre soutien m\'aide à consacrer plus de temps à améliorer cette application. Chaque contribution compte énormément pour moi ! 💖</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Aide</string>
+    <string name="help_subtitle">Apprenez à tirer le meilleur parti des fonctionnalités de MyNotes</string>
+    <string name="help_section_icon">Icône de section</string>
+    <string name="help_feature_icon">Icône de fonction</string>
     
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Supporter extraordinaire ! 🌟</string>
-    <string name="supporter_badge_subtitle">Votre collection de soutien</string>
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Étiquettes</string>
+    <string name="help_tags_create_title">Créer des étiquettes</string>
+    <string name="help_tags_create_description">Au début de la liste des étiquettes, appuyez sur le bouton + pour créer une nouvelle étiquette</string>
+    <string name="help_tags_edit_title">Modifier les étiquettes</string>
+    <string name="help_tags_edit_description">Maintenez une étiquette enfoncée pour ouvrir le menu contextuel d\'édition. Ici, vous pouvez supprimer l\'étiquette, la renommer ou masquer les notes qui lui sont associées.</string>
+    <string name="help_tags_hide_title">Masquer les notes</string>
+    <string name="help_tags_hide_description">Utilisez la fonction de masquage pour supprimer temporairement les notes étiquetées de la vue principale tout en conservant l\'accès via l\'étiquette</string>
+    <string name="help_tags_limit_title">Limite d\'étiquettes</string>
+    <string name="help_tags_limit_description">Vous pouvez créer jusqu\'à 25 étiquettes pour une organisation efficace de vos notes</string>
+    <string name="help_tags_assign_title">Assigner des étiquettes</string>
+    <string name="help_tags_assign_description">Les étiquettes peuvent être assignées aux notes depuis l\'écran principal et lors de l\'édition d\'une note</string>
+    <string name="help_tags_update_title">Mise à jour des étiquettes</string>
+    <string name="help_tags_update_description">Décrit les mises à jour d\'étiquettes et comment masquer les notes de la vue principale</string>
     
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Graine</string>
-    <string name="donation_spark_short">Étincelle</string>
-    <string name="donation_midnight_short">Carnet</string>
-    <string name="donation_wave_short">Vague</string>
-    <string name="donation_universe_short">Univers</string>
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Navigation</string>
+    <string name="help_navigation_drawer_title">Menu principal</string>
+    <string name="help_navigation_drawer_description">Accédez au menu principal en appuyant sur l\'icône hamburger dans le coin supérieur gauche.</string>
+    <string name="help_navigation_search_title">Recherche</string>
+    <string name="help_navigation_search_description">Utilisez la barre de recherche pour trouver rapidement vos notes par titre ou contenu</string>
+    <string name="help_navigation_sort_title">Tri</string>
+    <string name="help_navigation_sort_description">Triez vos notes par date de dernière modification ou nom dans l\'ordre croissant ou décroissant</string>
+    <string name="help_navigation_format_title">Format d\'affichage</string>
+    <string name="help_navigation_format_description">Basculez entre la liste et la grille pour afficher vos notes dans une mise en page qui vous convient</string>
     
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Ami fidèle</string>
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Gestes de balayage</string>
+    <string name="help_navigation_swipe_description">Gérez les notes intuitivement ! Balayez vers la gauche pour activer le mode de sélection multiple pour des opérations en masse rapides, ou vers la droite pour supprimer instantanément une note et l\'envoyer à la corbeille. Les gestes ne sont disponibles qu\'en mode une colonne.</string>
     
-    <!-- Purchase status -->
-    <string name="purchased">Acheté</string>
+    <!-- Other Section -->
+    <string name="help_other_title">Autre</string>
+    <string name="help_other_security_title">Protection d\'écran</string>
+    <string name="help_other_security_description">Lorsqu\'elle est activée dans les paramètres, cette fonction protège vos notes contre la visualisation non autorisée : masque le contenu de l\'application dans l\'aperçu des applications récentes, empêche les captures d\'écran et bloque l\'enregistrement d\'écran. Cette fonction de sécurité s\'active après le redémarrage de l\'application.</string>
+    <string name="help_other_shortcuts_title">Raccourcis d\'application</string>
+    <string name="help_other_shortcuts_description">Maintenez l\'icône de l\'application enfoncée pour accéder rapidement aux raccourcis de création d\'une nouvelle note ou de recherche dans vos notes. Disponible sur Android 7.1 et plus.</string>
+    
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Fonctionnalités des notes</string>
+    <string name="help_notes_limit_title">Limite de texte</string>
+    <string name="help_notes_limit_description">Chaque note peut contenir jusqu\'à 20 000 caractères, offrant amplement d\'espace pour un contenu détaillé.</string>
+    <string name="help_notes_translate_title">Traduction</string>
+    <string name="help_notes_translate_description">Traduisez vos notes directement dans l\'application. Google Traduction doit être installé sur votre appareil pour utiliser cette fonction.</string>
+    <string name="help_notes_text_size_title">Taille du texte</string>
+    <string name="help_notes_text_size_description">Ajustez la taille du texte lors de l\'édition de notes à l\'aide de la boîte de dialogue de taille de texte accessible directement depuis l\'écran d\'édition de note.</string>
+    <string name="help_notes_copy_title">Modifier la copie</string>
+    <string name="help_notes_copy_description">Créez une copie modifiable de n\'importe quelle note pour apporter des modifications tout en gardant l\'original intact.</string>
+
+    <string name="actual_version">À jour pour la version %1$s</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Nouvelle note</string>
+    <string name="shortcut_new_note_long">Créer une nouvelle note</string>
+    <string name="shortcut_search_short">Rechercher</string>
+    <string name="shortcut_search_long">Rechercher dans les notes</string>
+    <string name="shortcut_disabled_message">Cette fonction n\'est pas disponible</string>
 
 </resources>

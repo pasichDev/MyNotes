@@ -38,7 +38,6 @@
     <string name="sortHead">Sortuj według:</string>
     <string name="shareApp">Udostępnij aplikację</string>
     <string name="privacyApp">Polityka prywatności</string>
-    <string name="addShortCutSuccessfully">Skrót został pomyślnie dodany</string>
     <string name="translateNote">Przetłumacz notatkę</string>
     <string name="hintTextNote">Tekst</string>
     <string name="notInstaledAppTranslate">Tłumacz Google musi być zainstalowany, aby korzystać z tej funkcji</string>
@@ -62,7 +61,6 @@
     <!-- Wyczyść następną wersję -->
     <string name="hiddeTag">Ukryj notatki</string>
     <string name="visibleTag">Pokaż notatki</string>
-    <string name="shortCutCreateFallDouble">Etykieta została już utworzona dla tej notatki</string>
     <string name="renameTag">Zmień nazwę</string>
 
     <string name="settingsInterface">Ustawienia interfejsu</string>
@@ -84,13 +82,10 @@
     <string name="onScreenProtection">Włącz ochronę ekranu</string>
     <string name="onScreenProtectionDescription">Zapobiega wykonywaniu zrzutów ekranu i nagrywaniu. Wchodzi w życie po ponownym uruchomieniu aplikacji</string>
     <string name="themeMode">Tryb motywu</string>
-    <string name="themeModeDescription">Wybierz między jasnym, ciemnym lub systemowym motywem</string>
     <string name="selectThemeMode">Wybierz tryb motywu</string>
     <string name="themeModeFollowSystem">Jak w systemie</string>
     <string name="themeModeLight">Jasny</string>
     <string name="themeModeDark">Ciemny</string>
-    <string name="coffeeByPlay">Podziękuj deweloperowi</string>
-    <string name="coffeeByTextInfo"><b>Moje notatki</b> to aplikacja bez reklam i jest rozprowadzana jako produkt bezpłatny. Aplikacja jest rozwijana przez jedną osobę, więc niektóre aktualizacje są dostarczane z opóźnieniem. Utrzymanie kondycji aplikacji i niektórych funkcji generuje koszty. Możesz podziękować deweloperowi, kupując mu kawę lub płacąc za wynajem serwera, a także przesłać darowiznę na wskazane linki, które zostaną wyświetlone poniżej. Dziękujemy za korzystanie z tej aplikacji!</string>
 
     <string name="loginUser">Logowanie Google</string>
     <string name="cloudBackup">Chmura</string>
@@ -135,24 +130,16 @@
     <string name="errorSyncTitle">Uwaga!</string>
     <string name="errorSyncDescrpt">W tej wersji przestajemy wspierać synchronizację z Google Drive. W przyszłych aktualizacjach wprowadzimy bezpieczniejszą i bardziej wydajną metodę synchronizacji, zapewniając lepsze doświadczenie użytkownika.</string>
 
-    <string name="creteNoteToTag">Utwórz notatkę</string>
-    <!-- Oferta produktowa -->
+     <!-- Oferta produktowa -->
     <string name="thanks_title">Drogi użytkowniku</string>
     <string name="thanks_donate">Twórca projektu dziękuje za zakup. Będziemy dążyć do tego, aby stać się lepszymi i wygodniejszymi. \n <b>Z wyrazami szacunku, moje notatki!</b></string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Wspieraj twórcę</string>
     <string name="inAppPurchases">Zakupy w aplikacji</string>
-    <string name="thankYouTitle">Dziękujemy za korzystanie z MyNotes!</string>
-    <string name="thankYouDescription">Twoje wsparcie pomaga nam kontynuować rozwój i ulepszanie aplikacji</string>
     <string name="donationMethods">Metody wsparcia</string>
     <string name="kofiDescription">Postaw mi kawę na Ko-Fi</string>
-    <string name="paypalDescription">Wyślij darowiznę przez PayPal</string>
-    <string name="githubSponsorsDescription">Zostań sponsorem na GitHub</string>
-    <string name="otherWaysToSupport">Inne sposoby wsparcia</string>
     <string name="ratingAppDescription">Oceń nas na 5 gwiazdek w Google Play</string>
-    <string name="joinCommunity">Dołącz do społeczności</string>
-    <string name="joinCommunityDescription">Połącz się z innymi użytkownikami na Reddit</string>
     <string name="contactDeveloper">Skontaktuj się z twórcą</string>
 
     <!-- Changelog Activity -->
@@ -192,22 +179,68 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Wspieraj dewelopera</string>
     <string name="support_solo_developer_description">Cześć! Jestem deweloperem pracującym nad MyNotes w wolnym czasie. Wszystkie funkcje zawsze będą darmowe, ale Twoje wsparcie pomaga mi poświęcić więcej czasu na ulepszanie tej aplikacji. Każdy wkład znaczy dla mnie cały świat! 💖</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Pomoc</string>
+    <string name="help_subtitle">Dowiedz się, jak maksymalnie wykorzystać funkcje MyNotes</string>
+    <string name="help_section_icon">Ikona sekcji</string>
+    <string name="help_feature_icon">Ikona funkcji</string>
     
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Niesamowity wspierający! 🌟</string>
-    <string name="supporter_badge_subtitle">Twoja kolekcja wsparcia</string>
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Tagi</string>
+    <string name="help_tags_create_title">Tworzenie tagów</string>
+    <string name="help_tags_create_description">Na początku listy tagów naciśnij przycisk + aby utworzyć nowy tag</string>
+    <string name="help_tags_edit_title">Edytowanie tagów</string>
+    <string name="help_tags_edit_description">Przytrzymaj tag, aby otworzyć menu kontekstowe edycji. Tutaj możesz usunąć tag, zmienić jego nazwę lub ukryć notatki z nim powiązane.</string>
+    <string name="help_tags_hide_title">Ukrywanie notatek</string>
+    <string name="help_tags_hide_description">Użyj funkcji ukrywania, aby tymczasowo usunąć oznaczone notatki z głównego widoku, zachowując dostęp do nich przez tag</string>
+    <string name="help_tags_limit_title">Limit tagów</string>
+    <string name="help_tags_limit_description">Możesz utworzyć do 25 tagów dla efektywnej organizacji swoich notatek</string>
+    <string name="help_tags_assign_title">Przypisywanie tagów</string>
+    <string name="help_tags_assign_description">Tagi można przypisywać do notatek z ekranu głównego i podczas edytowania notatki</string>
+    <string name="help_tags_update_title">Aktualizacja tagów</string>
+    <string name="help_tags_update_description">Opisuje aktualizacje tagów i jak ukryć notatki z głównego widoku</string>
     
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Nasiono</string>
-    <string name="donation_spark_short">Iskra</string>
-    <string name="donation_midnight_short">Notatnik</string>
-    <string name="donation_wave_short">Fala</string>
-    <string name="donation_universe_short">Wszechświat</string>
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Nawigacja</string>
+    <string name="help_navigation_drawer_title">Menu główne</string>
+    <string name="help_navigation_drawer_description">Uzyskaj dostęp do menu głównego, dotykając ikony hamburgera w lewym górnym rogu.</string>
+    <string name="help_navigation_search_title">Wyszukiwanie</string>
+    <string name="help_navigation_search_description">Użyj paska wyszukiwania, aby szybko znaleźć swoje notatki według tytułu lub zawartości</string>
+    <string name="help_navigation_sort_title">Sortowanie</string>
+    <string name="help_navigation_sort_description">Sortuj swoje notatki według daty ostatniej modyfikacji lub nazwy w kolejności rosnącej lub malejącej</string>
+    <string name="help_navigation_format_title">Format wyświetlania</string>
+    <string name="help_navigation_format_description">Przełączaj między listą a siatką, aby wyświetlać swoje notatki w wygodnym dla siebie układzie</string>
     
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Wierny przyjaciel</string>
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Gesty przesuwania</string>
+    <string name="help_navigation_swipe_description">Zarządzaj notatkami intuicyjnie! Przesuń w lewo, aby aktywować tryb wielokrotnego wyboru dla szybkich operacji masowych, lub w prawo, aby natychmiast usunąć notatkę i wysłać ją do kosza. Gesty są dostępne tylko w trybie jednokolumnowym.</string>
     
-    <!-- Purchase status -->
-    <string name="purchased">Kupione</string>
+    <!-- Other Section -->
+    <string name="help_other_title">Inne</string>
+    <string name="help_other_security_title">Ochrona ekranu</string>
+    <string name="help_other_security_description">Po włączeniu w ustawieniach, ta funkcja chroni twoje notatki przed nieautoryzowanym przeglądaniem: ukrywa zawartość aplikacji w przeglądzie ostatnich aplikacji, zapobiega zrzutom ekranu i blokuje nagrywanie ekranu. Ta funkcja bezpieczeństwa aktywuje się po ponownym uruchomieniu aplikacji.</string>
+    <string name="help_other_shortcuts_title">Skróty aplikacji</string>
+    <string name="help_other_shortcuts_description">Przytrzymaj ikonę aplikacji, aby szybko uzyskać dostęp do skrótów tworzenia nowej notatki lub wyszukiwania w twoich notatkach. Dostępne na Androidzie 7.1 i wyższym.</string>
+    
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Funkcje notatek</string>
+    <string name="help_notes_limit_title">Limit tekstu</string>
+    <string name="help_notes_limit_description">Każda notatka może zawierać do 20 000 znaków, zapewniając wystarczająco miejsca na szczegółową zawartość.</string>
+    <string name="help_notes_translate_title">Tłumaczenie</string>
+    <string name="help_notes_translate_description">Tłumacz swoje notatki bezpośrednio w aplikacji. Tłumacz Google musi być zainstalowany na twoim urządzeniu, aby korzystać z tej funkcji.</string>
+    <string name="help_notes_text_size_title">Rozmiar tekstu</string>
+    <string name="help_notes_text_size_description">Dostosuj rozmiar tekstu podczas edytowania notatek za pomocą okna dialogowego rozmiaru tekstu dostępnego bezpośrednio z ekranu edycji notatki.</string>
+    <string name="help_notes_copy_title">Edytuj kopię</string>
+    <string name="help_notes_copy_description">Utwórz edytowalną kopię dowolnej notatki, aby wprowadzić zmiany, zachowując oryginalną w nienaruszonym stanie.</string>
+
+    <string name="actual_version">Aktualne dla wersji %1$s</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Nowa notatka</string>
+    <string name="shortcut_new_note_long">Utwórz nową notatkę</string>
+    <string name="shortcut_search_short">Szukaj</string>
+    <string name="shortcut_search_long">Szukaj w notatkach</string>
+    <string name="shortcut_disabled_message">Ta funkcja jest niedostępna</string>
 
 </resources>

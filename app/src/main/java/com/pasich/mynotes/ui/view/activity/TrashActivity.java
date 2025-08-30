@@ -105,8 +105,9 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     protected void onDestroy() {
         super.onDestroy();
         trashPresenter.detachView();
-        mNotesTrashAdapter.setOnItemClickListener(null);
-
+        if (mNotesTrashAdapter != null) {
+            mNotesTrashAdapter.setOnItemClickListener(null);
+        }
     }
 
 
@@ -145,7 +146,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     @Override
     public void loadData(List<TrashNote> trashList) {
         mNotesTrashAdapter.sortListTrash(trashList);
-        if (trashList.size() == 0) showEmptyTrash();
+        if (trashList.isEmpty()) showEmptyTrash();
     }
 
 

@@ -30,7 +30,6 @@
     <application
         android:name=".MyApp"
         android:allowBackup="true"
-        android:backupAgent="android.app.backup.BackupAgent"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
@@ -39,6 +38,9 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/DefaultTheme"
         tools:targetApi="tiramisu">
+        <activity
+            android:name=".ui.view.activity.HelpActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.view.activity.BackupActivity"
             android:exported="true" />
@@ -53,8 +55,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.SettingsActivity"
-            android:exported="true"
-            android:screenOrientation="portrait">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -64,7 +65,6 @@
         <activity
             android:name=".RoutingActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.App.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -72,11 +72,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+
         </activity>
         <activity
             android:name=".ui.view.activity.MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
@@ -84,8 +88,7 @@
         </activity>
         <activity
             android:name=".ui.view.activity.TrashActivity"
-            android:exported="true"
-            android:screenOrientation="portrait">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -96,12 +99,11 @@
             android:name=".ui.view.activity.NoteActivity"
             android:exported="true"
             android:windowSoftInputMode="stateHidden|adjustNothing"
-            android:screenOrientation="portrait" />
+           />
         <activity
             android:name=".ui.view.activity.ShareActivity"
             android:exported="true"
-            android:label="@string/NewNote"
-            android:screenOrientation="portrait">
+            android:label="@string/NewNote">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
 

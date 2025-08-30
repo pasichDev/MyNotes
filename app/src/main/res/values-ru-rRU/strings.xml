@@ -48,7 +48,6 @@
     <string name="sortHead">Cортировать по:</string>
     <string name="shareApp">Поделиться приложением</string>
     <string name="privacyApp">Политика Конфиденциальности</string>
-    <string name="addShortCutSuccessfully">Добавления ярлыка выполнено успешно</string>
     <string name="translateNote">Перевести заметку</string>
     <string name="hintTextNote">Текст</string>
     <string name="notInstaledAppTranslate">Для использования этой функции нужно установить Google Translator</string>
@@ -72,7 +71,6 @@
 
     <string name="hiddeTag">Скрыть заметки</string>
     <string name="visibleTag">Отображать заметки</string>
-    <string name="shortCutCreateFallDouble">Ярлык для данной заметки уже создан</string>
     <string name="renameTag">Переименовать</string>
 
     <string name="settingsInterface">Настройки интерфейса</string>
@@ -85,13 +83,10 @@
     <string name="onScreenProtection">Включить защиту экрана</string>
     <string name="onScreenProtectionDescription">Предотвращает создание скриншотов и запись экрана. Вступит в силу после перезапуска приложения</string>
     <string name="themeMode">Режим темы</string>
-    <string name="themeModeDescription">Выберите между светлой, тёмной или системной темой</string>
     <string name="selectThemeMode">Выберите режим темы</string>
     <string name="themeModeFollowSystem">Как в системе</string>
     <string name="themeModeLight">Светлая</string>
     <string name="themeModeDark">Тёмная</string>
-    <string name="coffeeByPlay">Спасибо разработчику</string>
-    <string name="coffeeByTextInfo"><b>Мои заметки</b> – это приложение без рекламы, которое распространяется как бесплатный продукт. Приложение разрабатывается одним человеком, поэтому некоторые обновления приходят с опозданием. Поддержание работоспособности приложения и некоторых функций требует затрат. Вы можете отблагодарить разработчика, купив ему кофе или оплатив аренду сервера, а также отправить пожертвование по указанным ссылкам, которые будут отображаться ниже. Спасибо за использование этого приложения!</string>
 
     <string name="loginUser">Вход через Google</string>
     <string name="cloudBackup">Облако</string>
@@ -138,22 +133,14 @@
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
 
-    <string name="creteNoteToTag">Создать заметку</string>
-    <string name="errorSyncTitle">Внимание!</string>
+     <string name="errorSyncTitle">Внимание!</string>
     <string name="errorSyncDescrpt">С этой версией мы прекращаем поддержку синхронизации с Google Диском. В будущих обновлениях мы внедрим более безопасный и эффективный метод синхронизации, что обеспечит вам лучший пользовательский опыт.</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Поддержать разработчика</string>
-    <string name="thankYouTitle">Спасибо за использование MyNotes!</string>
-    <string name="thankYouDescription">Ваша поддержка помогает нам продолжать разработку и улучшение приложения</string>
-    <string name="donationMethods">Способы поддержки</string>
+     <string name="donationMethods">Способы поддержки</string>
     <string name="kofiDescription">Угостите меня кофе на Ko-Fi</string>
-    <string name="paypalDescription">Отправьте донат через PayPal</string>
-    <string name="githubSponsorsDescription">Станьте спонсором на GitHub</string>
-    <string name="otherWaysToSupport">Другие способы поддержки</string>
-    <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
-    <string name="joinCommunity">Присоединиться к сообществу</string>
-    <string name="joinCommunityDescription">Общайтесь с другими пользователями на Reddit</string>
+   <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
     <string name="contactDeveloper">Связаться с разработчиком</string>
     <string name="inAppPurchases">Покупки в приложении</string>
 
@@ -194,22 +181,68 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Поддержать разработчика</string>
     <string name="support_solo_developer_description">Привет! Я разработчик, работающий над MyNotes в свободное время. Все функции всегда будут бесплатными, но ваша поддержка помогает мне уделять больше времени улучшению этого приложения. Каждый вклад значит для меня целый мир! 💖</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Справка</string>
+    <string name="help_subtitle">Узнайте, как максимально использовать функции MyNotes</string>
+    <string name="help_section_icon">Иконка раздела</string>
+    <string name="help_feature_icon">Иконка функции</string>
     
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Потрясающий сторонник! 🌟</string>
-    <string name="supporter_badge_subtitle">Ваша коллекция поддержки</string>
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Теги</string>
+    <string name="help_tags_create_title">Создание тегов</string>
+    <string name="help_tags_create_description">В начале списка тегов нажмите кнопку + чтобы создать новый тег</string>
+    <string name="help_tags_edit_title">Редактирование тегов</string>
+    <string name="help_tags_edit_description">Удерживайте тег, чтобы открыть контекстное меню редактирования. Здесь вы можете удалить тег, переименовать его или скрыть заметки, связанные с ним.</string>
+    <string name="help_tags_hide_title">Скрытие заметок</string>
+    <string name="help_tags_hide_description">Используйте функцию скрытия, чтобы временно удалить отмеченные заметки из основного вида, сохраняя доступ к ним через тег</string>
+    <string name="help_tags_limit_title">Ограничение тегов</string>
+    <string name="help_tags_limit_description">Можно создать не более 25 тегов для эффективной организации ваших заметок</string>
+    <string name="help_tags_assign_title">Назначение тегов</string>
+    <string name="help_tags_assign_description">Теги заметкам можно назначать на главном экране и при редактировании заметки</string>
+    <string name="help_tags_update_title">Обновление тегов</string>
+    <string name="help_tags_update_description">Описывает обновление тегов и как скрыть заметки из основного вида</string>
     
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Семя</string>
-    <string name="donation_spark_short">Искра</string>
-    <string name="donation_midnight_short">Блокнот</string>
-    <string name="donation_wave_short">Волна</string>
-    <string name="donation_universe_short">Вселенная</string>
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Навигация</string>
+    <string name="help_navigation_drawer_title">Главное меню</string>
+    <string name="help_navigation_drawer_description">Получите доступ к главному меню, нажав иконку бургера в верхнем левом углу.</string>
+    <string name="help_navigation_search_title">Поиск</string>
+    <string name="help_navigation_search_description">Используйте панель поиска для быстрого нахождения ваших заметок по названию или содержимому</string>
+    <string name="help_navigation_sort_title">Сортировка</string>
+    <string name="help_navigation_sort_description">Сортируйте ваши заметки по дате последнего изменения или названию в восходящем или нисходящем порядке</string>
+    <string name="help_navigation_format_title">Формат отображения</string>
+    <string name="help_navigation_format_description">Переключайтесь между списком и сеткой для отображения ваших заметок в удобном для вас макете</string>
     
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Старый друг</string>
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Жесты свайп</string>
+    <string name="help_navigation_swipe_description">Управляйте заметками интуитивно! Проведите пальцем влево, чтобы включить режим выбора нескольких заметок для быстрых массовых операций, или вправо — чтобы мгновенно удалить заметку и отправить её в корзину. Жесты доступны только в одноколоночном режиме.</string>
     
-    <!-- Purchase status -->
-    <string name="purchased">Куплено</string>
+    <!-- Other Section -->
+    <string name="help_other_title">Прочее</string>
+    <string name="help_other_security_title">Защита экрана</string>
+    <string name="help_other_security_description">Когда включено в настройках, эта функция защищает ваши заметки от несанкционированного просмотра: скрывает содержимое приложения в обзоре последних приложений, запрещает создание скриншотов и запись экрана. Функция безопасности активируется после перезапуска приложения.</string>
+    <string name="help_other_shortcuts_title">Быстрые действия</string>
+    <string name="help_other_shortcuts_description">Удерживайте иконку приложения для быстрого доступа к созданию новой заметки или поиску среди ваших заметок. Доступно на Android 7.1 и выше.</string>
+    
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Функции заметок</string>
+    <string name="help_notes_limit_title">Ограничение текста</string>
+    <string name="help_notes_limit_description">Каждая заметка может содержать до 20,000 символов, что обеспечивает достаточно места для детального контента.</string>
+    <string name="help_notes_translate_title">Перевод</string>
+    <string name="help_notes_translate_description">Переводите ваши заметки прямо в приложении. Для использования этой функции на вашем устройстве должен быть установлен Google Переводчик.</string>
+    <string name="help_notes_text_size_title">Размер текста</string>
+    <string name="help_notes_text_size_description">Изменяйте размер текста во время редактирования заметок с помощью диалогового окна размера текста, доступного прямо с экрана редактирования заметки.</string>
+    <string name="help_notes_copy_title">Редактировать копию</string>
+    <string name="help_notes_copy_description">Создавайте редактируемую копию любой заметки для внесения изменений, сохраняя оригинал нетронутым.</string>
+
+    <string name="actual_version">Актуально для версии %1$s</string>
+
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Новая заметка</string>
+    <string name="shortcut_new_note_long">Создать новую заметку</string>
+    <string name="shortcut_search_short">Поиск</string>
+    <string name="shortcut_search_long">Поиск в заметках</string>
+    <string name="shortcut_disabled_message">Эта функция недоступна</string>
 
 </resources>

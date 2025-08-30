@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Shortcut для створення нової нотатки -->
+    <shortcut
+        android:shortcutId="new_note"
+        android:enabled="true"
+        android:icon="@drawable/ic_add"
+        android:shortcutShortLabel="@string/shortcut_new_note_short"
+        android:shortcutLongLabel="@string/shortcut_new_note_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled_message">
+        
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.pasich.mynotes"
+            android:targetClass="com.pasich.mynotes.ui.view.activity.NoteActivity">
+            <extra
+                android:name="NewNote"
+                android:value="true" />
+            <extra
+                android:name="idNote"
+                android:value="0" />
+            <extra
+                android:name="shareText"
+                android:value="" />
+            <extra
+                android:name="tagNote"
+                android:value="" />
+        </intent>
+        
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    
+    <!-- Shortcut для пошуку в нотатках -->
+    <shortcut
+        android:shortcutId="search_notes"
+        android:enabled="true"
+        android:icon="@drawable/ic_search"
+        android:shortcutShortLabel="@string/shortcut_search_short"
+        android:shortcutLongLabel="@string/shortcut_search_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled_message">
+        
+        <intent
+            android:action="android.intent.action.SEARCH"
+            android:targetPackage="com.pasich.mynotes"
+            android:targetClass="com.pasich.mynotes.ui.view.activity.MainActivity">
+            <extra
+                android:name="open_search"
+                android:value="true" />
+        </intent>
+        
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    
+</shortcuts>
