@@ -162,7 +162,7 @@
     <string name="current_version" translatable="false">v%1$s</string>
     <string name="version_acknowledged">Got it!</string>
     <string name="whats_new_title">New Features &amp; Improvements</string>
-    <string name="whats_new_description">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
+    <string name="whats_new_description" translatable="false">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
     <string name="changelog_subtitle">Stay up to date with all the changes and improvements in this version</string>
     <string name="errorLoadingChangelog">Error loading changelog</string>
     <string name="checkInternetConnection">Please check your internet connection</string>
@@ -197,20 +197,6 @@
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Support Developer</string>
     <string name="support_solo_developer_description">Hi! I\'m a developer working on MyNotes in my free time. All features will always be free, but your support helps me dedicate more time to making this app even better. Every contribution means the world to me! 💖</string>
-    
-    <!-- Supporter Gamification -->
-    <string name="supporter_badge_title">Amazing Supporter! 🌟</string>
-    <string name="supporter_badge_subtitle">Your support collection</string>
-    
-    <!-- Short donation names for collection -->
-    <string name="donation_seed_short">Seed</string>
-    <string name="donation_spark_short">Spark</string>
-    <string name="donation_midnight_short">Notebook</string>
-    <string name="donation_wave_short">Wave</string>
-    <string name="donation_universe_short">Universe</string>
-    
-    <!-- Legacy product friendly name -->
-    <string name="donation_legacy_friend">Faithful Friend</string>
 
     <!-- Help Activity -->
     <string name="help_title">Help</string>
