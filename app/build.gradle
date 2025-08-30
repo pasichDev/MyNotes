@@ -23,8 +23,8 @@ android {
         applicationId "com.pasich.mynotes"
         minSdkVersion 23
         targetSdkVersion 36
-        versionCode 32
-        versionName '2.1.32'
+        versionCode 33
+        versionName '2.1.33'
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
@@ -42,8 +42,6 @@ android {
 
         }
         debug {
-          //  applicationIdSuffix  ".debug"
-          //  versionNameSuffix  "-debug"
             debuggable true
             minifyEnabled false
             shrinkResources false

@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## [2.1.33] - XX.XX.2025
+
 ## [2.1.32] - 30.08.2025
 
 - Added support for quick actions Create note, Search
