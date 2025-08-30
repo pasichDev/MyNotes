@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingBottom="10dp"
     android:fitsSystemWindows="true">
 
     <include
@@ -16,5 +16,28 @@
         layout="@layout/view_login_page"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/nav_support"
+        android:layout_marginTop="25dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_item_accent"
+        android:layout_marginHorizontal="20dp"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+
+        <ImageView
+            style="@style/iconDialogList"
+            android:contentDescription="@string/supportDeveloper"
+            android:src="@drawable/ic_heart_support"
+            app:tint="?attr/colorOnPrimary" />
+
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnPrimary"
+            android:text="@string/supportDeveloper" />
+    </LinearLayout>
 
 </LinearLayout>

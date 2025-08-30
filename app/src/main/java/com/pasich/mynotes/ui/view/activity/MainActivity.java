@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -955,9 +954,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         } else if (itemId == R.id.nav_about) {
             startActivity(new Intent(this, AboutActivity.class),
                     ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-        } else if (itemId == R.id.nav_support) {
-            startActivity(new Intent(this, SupportActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
         }
     }
 
@@ -985,6 +981,16 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private void setupNavigationHeaderListeners(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
         loginPageBinding.exitUser.setOnClickListener(v -> signOut(loginPageBinding));
         loginPageBinding.loginUser.setOnClickListener(v -> startAuthIntent.launch(googleSignInClient.getSignInIntent()));
+        
+        // Отримуємо доступ до nav_support через headerView
+        navigationView.getHeaderView(0).findViewById(R.id.nav_support).setOnClickListener(v -> {
+            // Закриваємо drawer і відкриваємо SupportActivity
+            drawerLayout.closeDrawer(GravityCompat.START);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                startActivity(new Intent(this, SupportActivity.class),
+                        ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            }, 100);
+        });
     }
 
     /**

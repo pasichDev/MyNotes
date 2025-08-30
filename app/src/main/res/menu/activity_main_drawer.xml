@@ -17,20 +17,14 @@
         android:icon="@drawable/ic_backup_restore"
         android:title="@string/settingsBackups" />
 
-
-    <item
-        android:id="@+id/nav_about"
-        android:icon="@drawable/ic_about"
-        android:title="@string/aboutApps" />
-
     <item
         android:id="@+id/nav_help"
         android:icon="@drawable/ic_help"
         android:title="@string/help_title" />
 
     <item
-        android:id="@+id/nav_support"
-        android:icon="@drawable/ic_heart_support"
-        android:title="@string/supportDeveloper" />
+        android:id="@+id/nav_about"
+        android:icon="@drawable/ic_about"
+        android:title="@string/aboutApps" />
 
 </menu>

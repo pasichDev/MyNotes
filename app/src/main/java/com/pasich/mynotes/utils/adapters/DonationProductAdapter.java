@@ -108,7 +108,7 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
             if (product.isPurchased()) {
                 // Make item look purchased/disabled
                 itemView.setAlpha(0.5f);
-                priceTextView.setText(itemView.getContext().getString(R.string.purchased));
+              //  priceTextView.setText(itemView.getContext().getString(R.string.purchased));
                 itemView.setOnClickListener(null); // Disable click
             } else {
                 // Normal state
