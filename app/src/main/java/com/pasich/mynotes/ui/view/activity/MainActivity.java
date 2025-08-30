@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +35,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.card.MaterialCardView;
@@ -73,6 +74,9 @@ import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
 import com.pasich.mynotes.utils.adapters.tagAdapter.OnItemClickListenerTag;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
+import com.pasich.mynotes.utils.backup.CloudAuthHelper;
+import com.pasich.mynotes.utils.backup.CloudCacheHelper;
+import com.pasich.mynotes.utils.constants.DriveScope;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.constants.settings.BackupPreferences;
@@ -99,13 +103,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 Intent data = result.getData();
                 if (result.getResultCode() == 11) {
                     assert data != null;
-                    
-                    // Check if theme mode changed
                     if (data.getBooleanExtra("updateThemeMode", false)) {
-                        // Theme mode changed, recreate the activity to apply new mode
                         recreate();
                     } else {
-                        // Only theme style changed
                         this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
                     }
                 }
@@ -144,15 +144,15 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     // Navigation Drawer variables
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private int pendingNavigationMenuItemId = -1; // Для зберігання обраного пункту меню
+    private int pendingNavigationMenuItemId = -1;
 
     // Google Sign-In variables (moved from AboutDialog)
     @Inject
-    public com.google.android.gms.auth.api.signin.GoogleSignInClient googleSignInClient;
+    public GoogleSignInClient googleSignInClient;
     @Inject
-    public com.pasich.mynotes.utils.backup.CloudCacheHelper cloudCacheHelper;
+    public CloudCacheHelper cloudCacheHelper;
     @Inject
-    public com.pasich.mynotes.utils.backup.CloudAuthHelper cloudAuthHelper;
+    public CloudAuthHelper cloudAuthHelper;
 
     private static final int REQUEST_UPDATE = 100;
     private AppUpdateManager appUpdateManager;
@@ -162,7 +162,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private final ActivityResultLauncher<Intent> updateLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() != RESULT_OK) {
-                    Toast.makeText(this, "Оновлення не вдалося!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Update failed!", Toast.LENGTH_SHORT).show();
                     checkForUpdate();
                 }
             });
@@ -176,8 +176,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                                     onInfoSnack(R.string.errorAuth, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG))
                             .addOnSuccessListener((GoogleSignInAccount) -> {
                                 cloudCacheHelper.update(GoogleSignInAccount, 
-                                        com.google.android.gms.auth.api.signin.GoogleSignIn.hasPermissions(GoogleSignInAccount, 
-                                                com.pasich.mynotes.utils.constants.DriveScope.ACCESS_DRIVE_SCOPE), true);
+                                       GoogleSignIn.hasPermissions(GoogleSignInAccount,
+                                               DriveScope.ACCESS_DRIVE_SCOPE), true);
                                 loadingDataUser(true);
                             });
                 }
@@ -306,18 +306,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void initListeners() {
-                // Налаштовуємо зв'язок між SearchBar та SearchView
-        mActivityBinding.actionSearch.setOnClickListener(v -> {
-            Log.d("SearchBar", "SearchBar clicked");
-            mActivityBinding.searchView.show();
-        });
+        mActivityBinding.actionSearch.setOnClickListener(v -> mActivityBinding.searchView.show());
         
         mActivityBinding.searchView.addTransitionListener(
                 (searchView, previousState, newState) -> {
-                    Log.d("SearchView", "State changed: " + previousState + " -> " + newState);
                     if (newState == SearchView.TransitionState.SHOWING) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(false);
-                        // Форсуємо повноекранний режим
                         ensureSearchViewFullScreen();
                     } else if (newState == SearchView.TransitionState.HIDDEN) {
                         mActivityBinding.listNotes.setNestedScrollingEnabled(true);
@@ -359,7 +353,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
                     // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
                     if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
-                        // Додаємо візуальний feedback - легке потрясіння
                         assert mActivityBinding.listTags.getLayoutManager() != null;
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
                         Animation shake = AnimationUtils
@@ -407,7 +400,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void settingsSearchView() {
         formatList.init(mActivityBinding.actionSearch.getMenu().findItem(R.id.format));
-        // Додаткове налаштування для Material SearchBar та SearchView
         setupSearchBarAndView();
     }
     
@@ -427,8 +419,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
                 mActivityBinding.searchView.setLayoutParams(coordinatorParams);
             }
-
-            Log.d("SearchSetup", "SearchBar and SearchView successfully configured for full screen");
         } catch (Exception e) {
             Log.e("SearchSetup", "Error setting up SearchBar and SearchView: " + e.getMessage());
         }
@@ -438,14 +428,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      * Забезпечує повноекранний режим для SearchView
      */
     private void ensureSearchViewFullScreen() {
-        // Переконуємося, що SearchView займає весь екран
         ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
         if (params != null) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT;
             params.height = ViewGroup.LayoutParams.MATCH_PARENT;
             mActivityBinding.searchView.setLayoutParams(params);
-
-            // Форсуємо перерахунок layout
             mActivityBinding.searchView.requestLayout();
         }
     }
@@ -864,7 +851,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void redrawActivity(int themeStyle) {
         super.redrawActivity(themeStyle);
-        setTheme(themeStyle);
+        selectTheme();
         recreate();
     }
 
