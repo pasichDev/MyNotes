@@ -4,8 +4,6 @@ package com.pasich.mynotes.ui.view.dialogs;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ShortcutInfo;
-import android.content.pm.ShortcutManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,7 +13,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
@@ -30,11 +27,9 @@ import com.pasich.mynotes.databinding.DialogMoreNoteBinding;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
 import com.pasich.mynotes.utils.GoogleTranslationIntent;
-import com.pasich.mynotes.utils.ShareUtils;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
 
 import java.util.List;
-import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -186,7 +181,9 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         if (mNote.getValue().length() >= 2) {
             binding.share.setVisibility(View.VISIBLE);
             binding.share.setOnClickListener(v -> {
-                ShareUtils.shareNotes(requireActivity(), mNote.getValue());
+                // Open share options dialog
+                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mNote);
+                shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
                 dismiss();
             });
 
@@ -278,21 +275,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
         setRippleBottomLayout();
 
-    }
-
-
-    private boolean isCreateShortCutId() {
-        List<ShortcutInfo> shortcutInfo;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
-            shortcutInfo = Objects.requireNonNull(ContextCompat.getSystemService(requireContext(), ShortcutManager.class)).getPinnedShortcuts();
-
-            for (ShortcutInfo info : shortcutInfo) {
-                if (Long.parseLong(info.getId()) == mNote.getId()) return true;
-            }
-        } else {
-            return false;
-        }
-        return false;
     }
 
     private void selectedTag(String nameChip, boolean checked) {

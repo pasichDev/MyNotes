@@ -61,9 +61,9 @@ import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
+import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTag;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTagOnClickListener;
-import com.pasich.mynotes.utils.ShareUtils;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 import com.pasich.mynotes.utils.actionPanel.tool.NoteActionTool;
@@ -711,13 +711,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void shareNotes() {
-        StringBuilder valueShare = new StringBuilder();
-        for (Note note : noteActionTool.getArrayChecked()) {
-            valueShare.append(note.getTitle()).append(System.lineSeparator())
-                    .append(System.lineSeparator()).append(note.getValue())
-                    .append(System.lineSeparator()).append(System.lineSeparator());
+        List<Note> selectedNotes = noteActionTool.getArrayChecked();
+        if (!selectedNotes.isEmpty()) {
+            ShareOptionsDialog shareDialog = new ShareOptionsDialog(selectedNotes);
+            shareDialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
         }
-        ShareUtils.shareNotes(this, valueShare.toString());
         actionUtils.closeActionPanel();
     }
 
