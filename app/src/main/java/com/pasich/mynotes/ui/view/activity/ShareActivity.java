@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.pasich.mynotes.R;
 
 import java.io.BufferedReader;
@@ -23,18 +22,20 @@ public class ShareActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         final Intent intent = getIntent();
 
-        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            try {
-                startNoteActivityIntent(readFile(getIntent().getData()));
-            } catch (IOException e) {
-                e.printStackTrace();
+        try {
+            if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+                try {
+                    startNoteActivityIntent(readFile(getIntent().getData()));
+                } catch (IOException e) {
+                    Toast.makeText(this, "Error reading file", Toast.LENGTH_LONG).show();
+                }
+            } else if (intent.getType() != null && intent.getType().equals("text/plain")) {
+                startNoteActivityIntent(handleSendText());
+            } else {
+                Toast.makeText(this, getString(R.string.notSupportedShare), Toast.LENGTH_LONG).show();
             }
-        } else if (intent.getType().equals("text/plain")) {
-
-            startNoteActivityIntent(handleSendText());
-
-        } else {
-            Toast.makeText(this, getString(R.string.notSupportedShare), Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Error processing shared content", Toast.LENGTH_LONG).show();
         }
 
         finish();
@@ -47,7 +48,27 @@ public class ShareActivity extends AppCompatActivity {
      * @param textShare - The text that we fumble in a note
      */
     private void startNoteActivityIntent(String textShare) {
-        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", "").putExtra("shareText", textShare));
+        try {
+            if (textShare == null) {
+                textShare = "";
+            }
+            
+            // Перевіряємо розмір тексту (500KB для безпеки)
+            if (textShare.getBytes().length > 500000) {
+                Toast.makeText(this, "Text is too large to share", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+            
+            startActivity(new Intent(this, NoteActivity.class)
+                .putExtra("NewNote", true)
+                .putExtra("tagNote", "")
+                .putExtra("shareText", textShare));
+            finish();
+        } catch (Exception e) {
+            Toast.makeText(this, "Error sharing data", Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
 
@@ -60,11 +81,17 @@ public class ShareActivity extends AppCompatActivity {
      */
     private String readFile(Uri uri) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(uri)));
-        String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line);
-            stringBuilder.append('\n');
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(uri)))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+                stringBuilder.append('\n');
+
+                // Обмежуємо розмір файлу при читанні
+                if (stringBuilder.length() > 500000) {
+                    break;
+                }
+            }
         }
 
         return stringBuilder.toString();
