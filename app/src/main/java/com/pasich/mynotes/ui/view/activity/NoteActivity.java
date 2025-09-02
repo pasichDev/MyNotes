@@ -309,10 +309,12 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void onPause() {
         super.onPause();
-        if (!notePresenter.getExitNoteSave() && binding.valueNote.getText().toString().trim().length() >= 2) {
+        if (binding != null && notePresenter != null && 
+            !notePresenter.getExitNoteSave() && 
+            binding.valueNote != null && 
+            binding.valueNote.getText().toString().trim().length() >= 2) {
             saveNote(false);
         }
-
     }
 
 
@@ -437,12 +439,24 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        notePresenter.detachView();
-        binding.notesTitle.addTextChangedListener(null);
-        binding.titleToolbarTagCenter.setOnClickListener(null);
-        binding.titleToolbarTagCollapsed.setOnClickListener(null);
-        binding.valueNote.setOnFocusChangeListener(null);
-        binding.valueNote.setOnClickListener(null);
+        if (notePresenter != null) {
+            notePresenter.detachView();
+        }
+        if (binding != null) {
+            if (binding.notesTitle != null) {
+                binding.notesTitle.addTextChangedListener(null);
+            }
+            if (binding.titleToolbarTagCenter != null) {
+                binding.titleToolbarTagCenter.setOnClickListener(null);
+            }
+            if (binding.titleToolbarTagCollapsed != null) {
+                binding.titleToolbarTagCollapsed.setOnClickListener(null);
+            }
+            if (binding.valueNote != null) {
+                binding.valueNote.setOnFocusChangeListener(null);
+                binding.valueNote.setOnClickListener(null);
+            }
+        }
         lastCursorPosition = -1;
         savedScrollPosition = -1;
         isKeyboardVisible = false;
@@ -481,14 +495,23 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
     @Override
     public void closeNoteActivity() {
+        if (binding == null || notePresenter == null) {
+            supportFinishAfterTransition();
+            return;
+        }
+        
         binding.getRoot().clearFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(binding.valueNote.getWindowToken(), 0);
+        if (binding.valueNote != null) {
+            imm.hideSoftInputFromWindow(binding.valueNote.getWindowToken(), 0);
+        }
 
         notePresenter.setExitNoSave(true);
-        String noteText = binding.valueNote.getText().toString().trim();
-        if (noteText.length() >= 2) {
-            saveNote(false);
+        if (binding.valueNote != null) {
+            String noteText = binding.valueNote.getText().toString().trim();
+            if (noteText.length() >= 2) {
+                saveNote(false);
+            }
         }
         if (notePresenter.getShareText().length() >= 2)
             Toast.makeText(this, getString(R.string.noteSaved), Toast.LENGTH_SHORT).show();
@@ -496,6 +519,11 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     }
 
     private void saveNote(boolean saveLocal) {
+        // Перевіряємо чи binding та notePresenter ініціалізовані
+        if (binding == null || binding.notesTitle == null || binding.valueNote == null || notePresenter == null) {
+            return;
+        }
+        
         long mThisDate = new Date().getTime();
         String mTitle = binding.notesTitle.getText().toString();
         String mValue = binding.valueNote.getText().toString();
