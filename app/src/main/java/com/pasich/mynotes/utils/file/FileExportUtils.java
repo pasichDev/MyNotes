@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.pasich.mynotes.R;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -35,6 +36,7 @@ public class FileExportUtils {
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
         
         return intent;
     }
@@ -95,13 +97,26 @@ public class FileExportUtils {
     /**
      * Save TXT content to selected URI
      */
-    public static void saveTxtToUri(Context context, Uri uri, String content) {
+    public static void saveTxtToUri(Context context, Uri uri, String noteTitle, String noteContent) {
         try {
+            String formattedContent = formatNoteContent(noteTitle, noteContent);
+
             OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
+
             if (outputStream != null) {
-                outputStream.write(content.getBytes());
+                // Add UTF-8 BOM for better compatibility
+                byte[] bom = new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+                outputStream.write(bom);
+                
+                byte[] contentBytes = formattedContent.getBytes(StandardCharsets.UTF_8);
+                
+                outputStream.write(contentBytes);
+                outputStream.flush();
                 outputStream.close();
+
                 Toast.makeText(context, context.getString(R.string.fileSavedSuccessfully), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             Log.e(TAG, "Error saving TXT file", e);
@@ -125,85 +140,121 @@ public class FileExportUtils {
             paint.setTextSize(12);
             paint.setAntiAlias(true);
             
+            int y = 50;
+            int lineHeight = 20;
+            int maxWidth = 500;
+            
             // Title
+            String title = (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
+            
             paint.setTextSize(16);
             paint.setFakeBoldText(true);
-            canvas.drawText(noteTitle, 50, 50, paint);
+            canvas.drawText(title, 50, y, paint);
+            y += 30; // Extra space after title
             
             // Content
             paint.setTextSize(12);
             paint.setFakeBoldText(false);
             
-            String[] lines = noteContent.split("\n");
-            int y = 80;
-            int lineHeight = 20;
-            int maxWidth = 500;
-            
-            for (String line : lines) {
-                if (y > 800) { // Start new page if needed
-                    pdfDocument.finishPage(page);
-                    pageInfo = new PdfDocument.PageInfo.Builder(595, 842, pdfDocument.getPages().size() + 1).create();
-                    page = pdfDocument.startPage(pageInfo);
-                    canvas = page.getCanvas();
-                    y = 50;
-                }
+            if (noteContent != null && !noteContent.trim().isEmpty()) {
+                String[] lines = noteContent.trim().split("\n");
                 
-                // Handle line wrapping
-                if (paint.measureText(line) > maxWidth) {
-                    String[] words = line.split(" ");
-                    StringBuilder currentLine = new StringBuilder();
-                    
-                    for (String word : words) {
-                        if (paint.measureText(currentLine + word + " ") > maxWidth) {
-                            if (currentLine.length() > 0) {
-                                canvas.drawText(currentLine.toString(), 50, y, paint);
-                                y += lineHeight;
-                                currentLine = new StringBuilder(word + " ");
-                            }
-                        } else {
-                            currentLine.append(word).append(" ");
-                        }
+                for (String line : lines) {
+                    if (y > 800) { // Start new page if needed
+                        pdfDocument.finishPage(page);
+                        pageInfo = new PdfDocument.PageInfo.Builder(595, 842, pdfDocument.getPages().size() + 1).create();
+                        page = pdfDocument.startPage(pageInfo);
+                        canvas = page.getCanvas();
+                        y = 50;
                     }
                     
-                    if (currentLine.length() > 0) {
-                        canvas.drawText(currentLine.toString(), 50, y, paint);
+                    // Handle line wrapping
+                    if (paint.measureText(line) > maxWidth) {
+                        String[] words = line.split(" ");
+                        StringBuilder currentLine = new StringBuilder();
+                        
+                        for (String word : words) {
+                            if (paint.measureText(currentLine + word + " ") > maxWidth) {
+                                if (currentLine.length() > 0) {
+                                    canvas.drawText(currentLine.toString(), 50, y, paint);
+                                    y += lineHeight;
+                                    currentLine = new StringBuilder(word + " ");
+                                }
+                            } else {
+                                currentLine.append(word).append(" ");
+                            }
+                        }
+                        
+                        if (currentLine.length() > 0) {
+                            canvas.drawText(currentLine.toString(), 50, y, paint);
+                            y += lineHeight;
+                        }
+                    } else {
+                        canvas.drawText(line, 50, y, paint);
                         y += lineHeight;
                     }
-                } else {
-                    canvas.drawText(line, 50, y, paint);
-                    y += lineHeight;
                 }
+            } else {
+                Log.d(TAG, "PDF Content is empty");
             }
             
             pdfDocument.finishPage(page);
             
             // Save PDF to selected URI
             OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
+            Log.d(TAG, "PDF OutputStream opened: " + (outputStream != null));
+            
             if (outputStream != null) {
                 pdfDocument.writeTo(outputStream);
+                outputStream.flush();
                 outputStream.close();
+                
+                Log.d(TAG, "PDF written successfully");
                 Toast.makeText(context, context.getString(R.string.fileSavedSuccessfully), Toast.LENGTH_SHORT).show();
+            } else {
+                Log.e(TAG, "PDF OutputStream is null");
+                Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
             }
             
             pdfDocument.close();
             
         } catch (Exception e) {
-            Log.e(TAG, "Error saving PDF file", e);
             Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
         }
     }
     
     /**
-     * Generate file name with timestamp
+     * Generate file name with timestamp and handle empty titles
      */
     private static String generateFileName(String noteTitle, String extension) {
-        String sanitizedTitle = noteTitle.replaceAll("[^a-zA-Z0-9.-]", "_");
+        // Handle empty or null title
+        String title = (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
+        
+        String sanitizedTitle = title.replaceAll("[^a-zA-Z0-9\\u0400-\\u04FF.-]", "_");
         if (sanitizedTitle.length() > 50) {
             sanitizedTitle = sanitizedTitle.substring(0, 50);
         }
         
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         return sanitizedTitle + "_" + timestamp + "." + extension;
+    }
+    
+    /**
+     * Format note content with title and text properly
+     */
+    public static String formatNoteContent(String noteTitle, String noteContent) {
+        StringBuilder formattedContent = new StringBuilder();
+        
+        // Handle title
+        String title = (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
+        formattedContent.append(title).append("\n\n");
+        
+        // Add content if exists
+        if (noteContent != null && !noteContent.trim().isEmpty()) {
+            formattedContent.append(noteContent.trim());
+        }
+        
+        return formattedContent.toString();
     }
     
     /**

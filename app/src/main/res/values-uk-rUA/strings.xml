@@ -48,6 +48,16 @@
     <string name="emptyNotes">Тут відображатимуться створені вами нотатки</string>
     <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
     <string name="chooseNote">Дії над вибраною нотаткою</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Опції поділитися</string>
+    <string name="saveToGoogleDrive">Зберегти в Google Drive</string>
+    <string name="saveAsTxt">Зберегти як TXT</string>
+    <string name="saveAsPdf">Зберегти як PDF</string>
+    <string name="shareViaApps">Поділитися через інші додатки</string>
+    <string name="errorSavingFile">Помилка збереження файлу</string>
+    <string name="fileSavedSuccessfully">Файл успішно збережено</string>
+    <string name="googleDriveNotInstalled">Google Drive не встановлено</string>
     <string name="contentDescrChangeStyleText">Змінити стиль тексту</string>
     <string name="copyNoteEdits">Редагувати копію нотатки</string>
     <string name="noteMoveTrashSnackbar">Нотатку переміщена в кошик</string>

@@ -60,6 +60,16 @@
     <string name="emptyNotes">Здесь будут отображаться созданные вами заметки</string>
     <string name="emptyNotesForTag">Здесь будут отображаться заметки которые вы отметите тегом "%1$s"</string>
     <string name="chooseNote">Действия над выбраной заметкой</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Опции поделиться</string>
+    <string name="saveToGoogleDrive">Сохранить в Google Drive</string>
+    <string name="saveAsTxt">Сохранить как TXT</string>
+    <string name="saveAsPdf">Сохранить как PDF</string>
+    <string name="shareViaApps">Поделиться через другие приложения</string>
+    <string name="errorSavingFile">Ошибка сохранения файла</string>
+    <string name="fileSavedSuccessfully">Файл успешно сохранен</string>
+    <string name="googleDriveNotInstalled">Google Drive не установлен</string>
     <string name="contentDescrChangeStyleText">Изменить стиль текста</string>
     <string name="copyNoteEdits">Редактировать копию</string>
     <string name="noteMoveTrashSnackbar">Заметку перемещено в корзину</string>

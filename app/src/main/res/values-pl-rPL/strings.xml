@@ -50,6 +50,16 @@
     <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
     <string name="emptyNotesForTag">Tutaj będą wyświetlane notatki które oznaczysz tagiem "%1$s"</string>
     <string name="chooseNote">Działania na wybranej notatce</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Opcje udostępniania</string>
+    <string name="saveToGoogleDrive">Zapisz w Google Drive</string>
+    <string name="saveAsTxt">Zapisz jako TXT</string>
+    <string name="saveAsPdf">Zapisz jako PDF</string>
+    <string name="shareViaApps">Udostępnij przez inne aplikacje</string>
+    <string name="errorSavingFile">Błąd podczas zapisywania pliku</string>
+    <string name="fileSavedSuccessfully">Plik zapisany pomyślnie</string>
+    <string name="googleDriveNotInstalled">Google Drive nie jest zainstalowany</string>
     <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
     <string name="copyNoteEdits">Edytuj kopię</string>
     <string name="noteMoveTrashSnackbar">Notatka przeniesiona do kosza</string>

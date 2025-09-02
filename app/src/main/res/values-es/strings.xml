@@ -51,6 +51,16 @@
     <string name="emptyNotes">Las notas que cree aparecerán aquí</string>
     <string name="emptyNotesForTag">Aquí se mostrarán las notas que marques con la etiqueta "%1$s"</string>
     <string name="chooseNote">Acciones en la nota seleccionada</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Opciones de compartir</string>
+    <string name="saveToGoogleDrive">Guardar en Google Drive</string>
+    <string name="saveAsTxt">Guardar como TXT</string>
+    <string name="saveAsPdf">Guardar como PDF</string>
+    <string name="shareViaApps">Compartir a través de otras aplicaciones</string>
+    <string name="errorSavingFile">Error al guardar el archivo</string>
+    <string name="fileSavedSuccessfully">Archivo guardado exitosamente</string>
+    <string name="googleDriveNotInstalled">Google Drive no está instalado</string>
     <string name="contentDescrChangeStyleText">Cambiar estilo de texto</string>
     <string name="copyNoteEdits">Editar copia</string>
     <string name="noteMoveTrashSnackbar">Nota movida a la papelera</string>

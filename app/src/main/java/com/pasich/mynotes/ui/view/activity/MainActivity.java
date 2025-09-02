@@ -15,6 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -85,8 +90,6 @@ import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.preference.PowerPreference;
 import com.preference.Preference;
-
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -361,11 +364,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
                         Animation shake = AnimationUtils
                                   .loadAnimation(MainActivity.this, R.anim.shake_gentle);
-                        if (tagView != null) {
-                            tagView.startAnimation(shake);
-                        } else {
-                            mActivityBinding.listTags.startAnimation(shake);
-                        }
+                        Objects.requireNonNullElseGet(tagView, () -> mActivityBinding.listTags).startAnimation(shake);
                         return;
                     }
 
@@ -713,10 +712,17 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void shareNotes() {
         List<Note> selectedNotes = noteActionTool.getArrayChecked();
         if (!selectedNotes.isEmpty()) {
-            ShareOptionsDialog shareDialog = new ShareOptionsDialog(selectedNotes);
+            // Create a copy of the list to avoid issues with clearing
+            List<Note> notesCopy = new ArrayList<>(selectedNotes);
+            ShareOptionsDialog shareDialog = new ShareOptionsDialog(notesCopy);
             shareDialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
+            
+            // Close action panel after dialog is shown
+            actionUtils.closeActionPanel();
+        } else {
+            Log.w("MainActivity", "No notes selected for sharing");
+            actionUtils.closeActionPanel();
         }
-        actionUtils.closeActionPanel();
     }
 
     @Override
@@ -984,10 +990,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         navigationView.getHeaderView(0).findViewById(R.id.nav_support).setOnClickListener(v -> {
             // Закриваємо drawer і відкриваємо SupportActivity
             drawerLayout.closeDrawer(GravityCompat.START);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(this, SupportActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-            }, 100);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, SupportActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle()), 100);
         });
     }
 

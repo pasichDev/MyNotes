@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,8 @@ import java.util.List;
  */
 public class ShareOptionsDialog extends BaseDialogBottomSheets {
 
+    private static final String TAG = "ShareOptionsDialog";
+    
     private final Note mNote;
     private final List<Note> mSelectedNotes;
     private DialogShareOptionsBinding binding;
@@ -57,12 +60,16 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
         saveTxtLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     Uri uri = result.getData().getData();
-                    if (uri != null) {
-                        FileExportUtils.saveTxtToUri(requireContext(), uri, currentNoteContent);
+
+                    if (uri != null && currentNoteTitle != null && currentNoteContent != null) {
+                        FileExportUtils.saveTxtToUri(requireContext(), uri, currentNoteTitle, currentNoteContent);
+                    } else {
+                        Log.e(TAG, "Missing data for TXT save - URI: " + uri + ", Title: " + currentNoteTitle + ", Content: " + (currentNoteContent != null ? "available" : "null"));
                     }
                 }
+                dismiss(); // Dismiss after handling result
             }
         );
         
@@ -75,6 +82,7 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
                         FileExportUtils.savePdfToUri(requireContext(), uri, currentNoteTitle, currentNoteContent);
                     }
                 }
+                dismiss(); // Dismiss after handling result
             }
         );
     }
@@ -97,77 +105,28 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
     @Override
     public void initListeners() {
         binding.saveToGoogleDrive.setOnClickListener(v -> {
-            if (mNote != null) {
-                FileExportUtils.saveToGoogleDrive(requireContext(), mNote.getTitle(), mNote.getValue());
-            } else if (mSelectedNotes != null && !mSelectedNotes.isEmpty()) {
-                StringBuilder combinedContent = new StringBuilder();
-                String combinedTitle = "Multiple_Notes";
-                
-                for (int i = 0; i < mSelectedNotes.size(); i++) {
-                    Note note = mSelectedNotes.get(i);
-                    combinedContent.append("=== ").append(note.getTitle()).append(" === ");
-                    combinedContent.append(note.getValue());
-                    if (i < mSelectedNotes.size() - 1) {
-                        combinedContent.append(" ");
-                    }
-                }
-                
-                FileExportUtils.saveToGoogleDrive(requireContext(), combinedTitle, combinedContent.toString());
-            }
+            prepareNoteData();
+            String formattedContent = FileExportUtils.formatNoteContent(currentNoteTitle, currentNoteContent);
+            FileExportUtils.saveToGoogleDrive(requireContext(), currentNoteTitle, formattedContent);
             dismiss();
         });
 
         binding.saveAsTxt.setOnClickListener(v -> {
-            if (mNote != null) {
-                currentNoteTitle = mNote.getTitle();
-                currentNoteContent = mNote.getValue();
-            } else if (mSelectedNotes != null && !mSelectedNotes.isEmpty()) {
-                StringBuilder combinedContent = new StringBuilder();
-                currentNoteTitle = "Multiple_Notes";
-                
-                for (int i = 0; i < mSelectedNotes.size(); i++) {
-                    Note note = mSelectedNotes.get(i);
-                    combinedContent.append("=== ").append(note.getTitle()).append(" === ");
-                    combinedContent.append(note.getValue());
-                    if (i < mSelectedNotes.size() - 1) {
-                        combinedContent.append(" ");
-                    }
-                }
-                currentNoteContent = combinedContent.toString();
-            }
-            
+            prepareNoteData();
             Intent intent = FileExportUtils.createSaveTxtIntent(currentNoteTitle);
             saveTxtLauncher.launch(intent);
-            dismiss();
         });
 
         binding.saveAsPdf.setOnClickListener(v -> {
-            if (mNote != null) {
-                currentNoteTitle = mNote.getTitle();
-                currentNoteContent = mNote.getValue();
-            } else if (mSelectedNotes != null && !mSelectedNotes.isEmpty()) {
-                StringBuilder combinedContent = new StringBuilder();
-                currentNoteTitle = "Multiple_Notes";
-                
-                for (int i = 0; i < mSelectedNotes.size(); i++) {
-                    Note note = mSelectedNotes.get(i);
-                    combinedContent.append("=== ").append(note.getTitle()).append(" === ");
-                    combinedContent.append(note.getValue());
-                    if (i < mSelectedNotes.size() - 1) {
-                        combinedContent.append(" ");
-                    }
-                }
-                currentNoteContent = combinedContent.toString();
-            }
-            
+             prepareNoteData();
             Intent intent = FileExportUtils.createSavePdfIntent(currentNoteTitle);
             savePdfLauncher.launch(intent);
-            dismiss();
         });
 
         binding.shareViaOtherApps.setOnClickListener(v -> {
             prepareNoteData();
-            FileExportUtils.shareViaOtherApps(requireActivity(), currentNoteTitle, currentNoteContent);
+            String formattedContent = FileExportUtils.formatNoteContent(currentNoteTitle, currentNoteContent);
+            FileExportUtils.shareViaOtherApps(requireActivity(), currentNoteTitle, formattedContent);
             dismiss();
         });
     }
@@ -186,26 +145,34 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
     }
 
     private void prepareNoteData() {
-        if (mNote != null) {
-            currentNoteTitle = mNote.getTitle();
+          if (mNote != null) {
+             currentNoteTitle = (mNote.getTitle() == null || mNote.getTitle().isEmpty()) ? "***" : mNote.getTitle();
             currentNoteContent = mNote.getValue();
+
         } else if (mSelectedNotes != null && !mSelectedNotes.isEmpty()) {
-            StringBuilder combinedContent = new StringBuilder();
+
             currentNoteTitle = "Multiple_Notes";
-            
-                for (int i = 0; i < mSelectedNotes.size(); i++) {
-                    Note note = mSelectedNotes.get(i);
-                    combinedContent.append("=== ").append(note.getTitle()).append(" ===\n");
+            StringBuilder combinedContent = new StringBuilder();
+
+            for (int i = 0; i < mSelectedNotes.size(); i++) {
+                Note note = mSelectedNotes.get(i);
+                String noteTitle = (note.getTitle() == null || note.getTitle().isEmpty()) ? "***" : note.getTitle();
+
+
+                combinedContent.append(noteTitle).append("\n\n");
+                if (note.getValue() != null) {
                     combinedContent.append(note.getValue());
-                    if (i < mSelectedNotes.size() - 1) {
-                        combinedContent.append("\n\n");
-                    }
-                }            currentNoteContent = combinedContent.toString();
+                }
+                if (i < mSelectedNotes.size() - 1) {
+                    combinedContent.append("\n\n\n===================\n\n");
+                }
+            }
+            currentNoteContent = combinedContent.toString();
+            
+             } else {
+            currentNoteTitle = "***";
+            currentNoteContent = "";
         }
     }
 
-    @Override
-    public void selectTheme() {
-        // No specific theme handling needed
-    }
 }

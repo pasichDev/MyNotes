@@ -49,6 +49,16 @@
     <string name="emptyNotes">Сіз жасаған ескертпелер осы жерде пайда болады</string>
     <string name="emptyNotesForTag">Мұнда сіз "%1$s" тегімен белгілейтін ескертпелер көрсетіледі</string>
     <string name="chooseNote">Таңдалған ескертпедегі әрекеттер</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Бөлісу опциялары</string>
+    <string name="saveToGoogleDrive">Google Drive-ға сақтау</string>
+    <string name="saveAsTxt">TXT ретінде сақтау</string>
+    <string name="saveAsPdf">PDF ретінде сақтау</string>
+    <string name="shareViaApps">Басқа қолданбалар арқылы бөлісу</string>
+    <string name="errorSavingFile">Файлды сақтау қатесі</string>
+    <string name="fileSavedSuccessfully">Файл сәтті сақталды</string>
+    <string name="googleDriveNotInstalled">Google Drive орнатылмаған</string>
     <string name="contentDescrChangeStyleText">Мәтін мәнерін өзгерту</string>
     <string name="copyNoteEdits">Көшірмені өңдеу</string>
     <string name="noteMoveTrashSnackbar">Ескертпе себетке жіберілді</string>
