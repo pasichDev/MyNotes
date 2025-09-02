@@ -242,6 +242,13 @@
     <string name="help_notes_copy_description">Crea una copia modificabile di qualsiasi nota per apportare modifiche mantenendo l\'originale intatto.</string>
 
     <string name="actual_version">Aggiornato per la versione %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Sincronizzazione ed esportazione dati</string>
+    <string name="help_other_backup_export_description">Nella sezione «Sincronizzazione e backup» puoi esportare tutte le tue note in vari formati (TXT, PDF, HTML) per la visualizzazione e il backup.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Condividi ed esporta note</string>
+    <string name="help_notes_share_description">Condividi una o più note tramite altre app, salvale su Google Drive o esportale come file TXT, PDF o HTML con formattazione stilizzata.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Nuova nota</string>

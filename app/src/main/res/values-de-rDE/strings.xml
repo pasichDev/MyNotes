@@ -228,6 +228,13 @@
     <string name="help_other_shortcuts_title">App-Verknüpfungen</string>
     <string name="help_other_shortcuts_description">Halten Sie das App-Symbol gedrückt, um schnell auf Verknüpfungen zum Erstellen einer neuen Notiz oder zum Durchsuchen Ihrer Notizen zuzugreifen. Verfügbar ab Android 7.1 und höher.</string>
 
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Synchronisation und Datenexport</string>
+    <string name="help_other_backup_export_description">Im Abschnitt „Synchronisation und Backup“ können Sie alle Ihre Notizen in verschiedenen Formaten (TXT, PDF, HTML) exportieren, um sie anzuzeigen oder zu sichern.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Notizen teilen und exportieren</string>
+    <string name="help_notes_share_description">Teilen Sie eine oder mehrere Notizen über andere Apps, speichern Sie sie auf Google Drive oder exportieren Sie sie als TXT-, PDF- oder HTML-Dateien mit Formatierung.</string>
 
     <!-- Data Export Section -->
     <string name="dataExport">Datenexport</string>
@@ -244,6 +251,8 @@
     <string name="help_notes_text_size_description">Passen Sie die Textgröße beim Bearbeiten von Notizen über den Textgrößen-Dialog an, der direkt vom Notizbearbeitungsbildschirm zugänglich ist.</string>
     <string name="help_notes_copy_title">Kopie bearbeiten</string>
     <string name="help_notes_copy_description">Erstellen Sie eine bearbeitbare Kopie jeder Notiz, um Änderungen vorzunehmen, während das Original unberührt bleibt.</string>
+    
+
 
     <string name="actual_version">Aktuell für Version %1$s</string>
 

@@ -242,6 +242,10 @@
     <string name="help_other_shortcuts_title">Быстрые действия</string>
     <string name="help_other_shortcuts_description">Удерживайте иконку приложения для быстрого доступа к созданию новой заметки или поиску среди ваших заметок. Доступно на Android 7.1 и выше.</string>
     
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Синхронизация и экспорт данных</string>
+    <string name="help_other_backup_export_description">В разделе "Синхронизация и резервные копии" вы можете экспортировать все свои заметки в различных форматах (TXT, PDF, HTML) для просмотра и создания резервных копий.</string>
+    
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функции заметок</string>
     <string name="help_notes_limit_title">Ограничение текста</string>
@@ -252,6 +256,10 @@
     <string name="help_notes_text_size_description">Изменяйте размер текста во время редактирования заметок с помощью диалогового окна размера текста, доступного прямо с экрана редактирования заметки.</string>
     <string name="help_notes_copy_title">Редактировать копию</string>
     <string name="help_notes_copy_description">Создавайте редактируемую копию любой заметки для внесения изменений, сохраняя оригинал нетронутым.</string>
+    
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Поделиться и экспорт заметок</string>
+    <string name="help_notes_share_description">Делитесь одной или несколькими заметками через другие приложения, сохраняйте на Google Drive или экспортируйте как TXT, PDF или HTML файлы со стилизованным форматированием.</string>
 
     <string name="actual_version">Актуально для версии %1$s</string>
 

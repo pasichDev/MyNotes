@@ -239,6 +239,10 @@
     <string name="help_notes_text_size_description">Змінюйте розмір тексту під час редагування нотаток за допомогою діалогового вікна розміру тексту, доступного прямо з екрану редагування нотатки.</string>
     <string name="help_notes_copy_title">Редагувати копію</string>
     <string name="help_notes_copy_description">Створюйте редаговану копію будь-якої нотатки для внесення змін, зберігаючи оригінал недоторканим.</string>
+    
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Поділитися та експорт нотаток</string>
+    <string name="help_notes_share_description">Діліться однією або кількома нотатками через інші додатки, зберігайте на Google Drive або експортуйте як TXT, PDF чи HTML файли зі стилізованим форматуванням.</string>
 
     <string name="actual_version">Актуально для версії %1$s</string>
 
@@ -248,6 +252,10 @@
     <string name="help_other_security_description">Коли увімкнено в налаштуваннях, ця функція захищає ваші нотатки від несанкціонованого перегляду, приховуючи вміст додатку в огляді останніх програм, запобігаючи скріншотам та блокуючи запис екрану. Ця функція безпеки активується після перезапуску додатку.</string>
     <string name="help_other_shortcuts_title">Швидкі дії</string>
     <string name="help_other_shortcuts_description">Утримуйте іконку додатку для швидкого доступу до створення нової нотатки або пошуку серед ваших нотаток. Доступно на Android 7.1 і вище.</string>
+    
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Синхронізація та експорт даних</string>
+    <string name="help_other_backup_export_description">У розділі "Синхронізація та резервні копії" ви можете експортувати всі свої нотатки в різних форматах (TXT, PDF, HTML) для перегляду та створення резервних копій.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Нова нотатка</string>

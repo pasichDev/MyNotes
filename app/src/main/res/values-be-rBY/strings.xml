@@ -249,6 +249,13 @@
     <string name="help_notes_copy_description">Ствараць рэдагавальную копію любой нататкі для ўнясення змен, захоўваючы арыгінал недакрануты.</string>
 
     <string name="actual_version">Актуальна для версіі %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Сінхранізацыя і экспарт даных</string>
+    <string name="help_other_backup_export_description">У раздзеле «Сінхранізацыя і рэзервовае капіраванне» вы можаце экспартаваць усе свае нататкі ў розных фарматах (TXT, PDF, HTML) для прагляду і рэзервовага капіравання.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Абагуліць і экспартаваць нататкі</string>
+    <string name="help_notes_share_description">Абагулюйце адну або некалькі нататак праз іншыя праграмы, захоўвайце ў Google Drive або экспартуйце як TXT, PDF ці HTML-файлы са стылем.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Новая нататка</string>

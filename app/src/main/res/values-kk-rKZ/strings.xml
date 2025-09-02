@@ -252,6 +252,13 @@
     <string name="help_notes_copy_description">Түпнұсқасын бұзбай өзгерістер енгізу үшін кез келген жазбаның өңделетін көшірмесін жасаңыз.</string>
 
     <string name="actual_version">%1$s нұсқасы үшін өзекті</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Синхрондау және деректерді экспорттау</string>
+    <string name="help_other_backup_export_description">«Синхрондау және сақтық көшірме» бөлімінде барлық жазбаларыңызды әртүрлі форматтарда (TXT, PDF, HTML) көру және сақтық көшірме жасау үшін экспорттай аласыз.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Жазбаларды бөлісу және экспорттау</string>
+    <string name="help_notes_share_description">Бір немесе бірнеше жазбаны басқа қолданбалар арқылы бөлісіңіз, Google Drive-қа сақтаңыз немесе TXT, PDF, HTML форматында стильді пішімдеумен экспорттаңыз.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Жаңа жазба</string>

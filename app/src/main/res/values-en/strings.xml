@@ -263,6 +263,14 @@
 
     <string name="actual_version">Up to date for version %1$s</string>
 
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Sync and Data Export</string>
+    <string name="help_other_backup_export_description">In the Synchronization and Backup section, you can export all your notes in various formats (TXT, PDF, HTML) for viewing and backup purposes.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Share and Export Notes</string>
+    <string name="help_notes_share_description">Share single or multiple notes via other apps, save to Google Drive, or export as TXT, PDF, or HTML files with styled formatting.</string>
+
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">New Note</string>
     <string name="shortcut_new_note_long">Create New Note</string>

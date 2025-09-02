@@ -30,7 +30,7 @@ public class HelpActivity extends BaseActivity {
     @Named("NotesItemSpaceDecoration")
     public SpacesItemDecoration itemDecoration;
 
-    private final String actualVersionHelp = "2.1.32";
+    private final String actualVersionHelp = "2.1.33";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -253,6 +253,15 @@ public class HelpActivity extends BaseActivity {
             null
         ));
 
+        // Поділитися та експорт
+        sections.add(new HelpSection(
+            HelpSection.TYPE_FEATURE,
+            getString(R.string.help_notes_share_title),
+            getString(R.string.help_notes_share_description),
+            R.drawable.ic_share_app,
+            null
+        ));
+
         // Розділ "Інше"
         sections.add(new HelpSection(
             HelpSection.TYPE_SECTION_TITLE,
@@ -277,6 +286,15 @@ public class HelpActivity extends BaseActivity {
             getString(R.string.help_other_shortcuts_title),
             getString(R.string.help_other_shortcuts_description),
             R.drawable.ic_button_help,
+            null
+        ));
+
+        // Синхронізація та експорт даних
+        sections.add(new HelpSection(
+            HelpSection.TYPE_FEATURE,
+            getString(R.string.help_other_backup_export_title),
+            getString(R.string.help_other_backup_export_description),
+            R.drawable.ic_export,
             null
         ));
 

@@ -253,6 +253,13 @@
     <string name="help_notes_copy_description">Crea una copia editable de cualquier nota para hacer modificaciones manteniendo el original intacto.</string>
 
     <string name="actual_version">Actualizado para la versión %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Synchronizacja i eksport danych</string>
+    <string name="help_other_backup_export_description">W sekcji „Synchronizacja i kopie zapasowe” możesz eksportować wszystkie swoje notatki w różnych formatach (TXT, PDF, HTML) do podglądu i tworzenia kopii zapasowych.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Udostępnianie i eksport notatek</string>
+    <string name="help_notes_share_description">Udostępniaj jedną lub wiele notatek za pomocą innych aplikacji, zapisuj je na Dysku Google lub eksportuj jako pliki TXT, PDF czy HTML z formatowaniem.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Nueva nota</string>
