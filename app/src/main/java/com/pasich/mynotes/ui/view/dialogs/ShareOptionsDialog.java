@@ -37,6 +37,7 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
     // Activity result launchers for file saving
     private ActivityResultLauncher<Intent> saveTxtLauncher;
     private ActivityResultLauncher<Intent> savePdfLauncher;
+    private ActivityResultLauncher<Intent> saveHtmlLauncher;
     
     // Current data for saving
     private String currentNoteTitle;
@@ -85,6 +86,19 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
                 dismiss(); // Dismiss after handling result
             }
         );
+        
+        saveHtmlLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        FileExportUtils.saveHtmlToUri(requireContext(), uri, currentNoteTitle, currentNoteContent, mSelectedNotes);
+                    }
+                }
+                dismiss(); // Dismiss after handling result
+            }
+        );
     }
 
     @Override
@@ -123,6 +137,12 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
             savePdfLauncher.launch(intent);
         });
 
+        binding.saveAsHtml.setOnClickListener(v -> {
+            prepareNoteData();
+            Intent intent = FileExportUtils.createSaveHtmlIntent(currentNoteTitle);
+            saveHtmlLauncher.launch(intent);
+        });
+
         binding.shareViaOtherApps.setOnClickListener(v -> {
             prepareNoteData();
             String formattedContent = FileExportUtils.formatNoteContent(currentNoteTitle, currentNoteContent);
@@ -141,6 +161,7 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
         binding.saveToGoogleDrive.setOnClickListener(null);
         binding.saveAsTxt.setOnClickListener(null);
         binding.saveAsPdf.setOnClickListener(null);
+        binding.saveAsHtml.setOnClickListener(null);
         binding.shareViaOtherApps.setOnClickListener(null);
     }
 

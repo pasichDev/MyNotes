@@ -2,7 +2,7 @@
 
 ## [2.1.33] - XX.XX.2025
 
-- Now you can easily share your notes or save them locally! TXT and PDF formats are available, as well as the option to send them via Google Drive or other applications.
+- Now you can easily share your notes or save them locally! TXT, PDF, and HTML formats are available, as well as the option to send them via Google Drive or other applications.
 - Fixed main thread operations that could cause the app to freeze or crash.
 - Fixed data retrieval when sharing content from other apps.
 - Minimum Android support has been increased: the app now works on Android 8.0 (API 26) and above.

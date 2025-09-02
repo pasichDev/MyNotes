@@ -11,11 +11,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.pasich.mynotes.R;
+import com.pasich.mynotes.data.model.Note;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -50,6 +52,20 @@ public class FileExportUtils {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("application/pdf");
+        intent.putExtra(Intent.EXTRA_TITLE, fileName);
+        
+        return intent;
+    }
+    
+    /**
+     * Create intent for saving HTML file with system file picker
+     */
+    public static Intent createSaveHtmlIntent(String noteTitle) {
+        String fileName = generateFileName(noteTitle, "html");
+        
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/html");
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
         
         return intent;
@@ -219,6 +235,36 @@ public class FileExportUtils {
             pdfDocument.close();
             
         } catch (Exception e) {
+            Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * Save HTML content to selected URI
+     */
+    public static void saveHtmlToUri(Context context, Uri uri, String noteTitle, String noteContent, List<Note> notes) {
+        try {
+            String htmlContent = HtmlTemplateGenerator.generateHtmlContent(context, noteTitle, noteContent, notes);
+
+            OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
+
+            if (outputStream != null) {
+                // Add UTF-8 BOM for better compatibility
+                byte[] bom = new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+                outputStream.write(bom);
+                
+                byte[] contentBytes = htmlContent.getBytes(StandardCharsets.UTF_8);
+                
+                outputStream.write(contentBytes);
+                outputStream.flush();
+                outputStream.close();
+
+                Toast.makeText(context, context.getString(R.string.fileSavedSuccessfully), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving HTML file", e);
             Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
         }
     }

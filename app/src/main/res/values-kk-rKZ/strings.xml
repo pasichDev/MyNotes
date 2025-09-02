@@ -55,6 +55,7 @@
     <string name="saveToGoogleDrive">Google Drive-ға сақтау</string>
     <string name="saveAsTxt">TXT ретінде сақтау</string>
     <string name="saveAsPdf">PDF ретінде сақтау</string>
+    <string name="saveAsHtml">HTML ретінде сақтау</string>
     <string name="shareViaApps">Басқа қолданбалар арқылы бөлісу</string>
     <string name="errorSavingFile">Файлды сақтау қатесі</string>
     <string name="fileSavedSuccessfully">Файл сәтті сақталды</string>

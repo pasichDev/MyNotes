@@ -54,6 +54,7 @@
     <string name="saveToGoogleDrive">Salva su Google Drive</string>
     <string name="saveAsTxt">Salva come TXT</string>
     <string name="saveAsPdf">Salva come PDF</string>
+    <string name="saveAsHtml">Salva come HTML</string>
     <string name="shareViaApps">Condividi tramite altre app</string>
     <string name="errorSavingFile">Errore nel salvataggio del file</string>
     <string name="fileSavedSuccessfully">File salvato con successo</string>

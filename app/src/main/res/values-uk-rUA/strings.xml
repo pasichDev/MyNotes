@@ -54,6 +54,7 @@
     <string name="saveToGoogleDrive">Зберегти в Google Drive</string>
     <string name="saveAsTxt">Зберегти як TXT</string>
     <string name="saveAsPdf">Зберегти як PDF</string>
+    <string name="saveAsHtml">Зберегти як HTML</string>
     <string name="shareViaApps">Поділитися через інші додатки</string>
     <string name="errorSavingFile">Помилка збереження файлу</string>
     <string name="fileSavedSuccessfully">Файл успішно збережено</string>
