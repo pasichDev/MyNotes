@@ -80,6 +80,7 @@
     <string name="userAvatar" translatable="false">User Avatar</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
+    <string name="save_to_notes">Save to My Notes</string>
 
     <string name="hiddeTag">Hide notes</string>
     <string name="visibleTag">Show notes</string>

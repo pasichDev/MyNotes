@@ -73,6 +73,7 @@
     <!-- Strings that are not translated  -->
     <string name="tagHastag" translatable="false">#%1$s</string>
     <string name="app_name"> My Notes </string>
+    <string name="save_to_notes">Save to My Notes</string>
     <string name="telegram_nick" translatable="false">"@"pasichDev</string>
     <string name="email_address" translatable="false">pasichDev@gmail.com</string>
     <string name="editNoteButton" translatable="false">EditNote</string>

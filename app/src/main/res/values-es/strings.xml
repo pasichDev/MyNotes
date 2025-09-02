@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mis notas</string>
+    <string name="save_to_notes">Guardar en Mis Notas</string>
     <string name="NewNote">Nueva nota</string>
     <string name="trashNotes">Mover a la papelera</string>
     <string name="trashClean">Vaciar Papelera</string>

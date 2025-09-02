@@ -259,7 +259,7 @@
     <!-- Share and Export Help -->
     <string name="help_notes_share_title">Жазбаларды бөлісу және экспорттау</string>
     <string name="help_notes_share_description">Бір немесе бірнеше жазбаны басқа қолданбалар арқылы бөлісіңіз, Google Drive-қа сақтаңыз немесе TXT, PDF, HTML форматында стильді пішімдеумен экспорттаңыз.</string>
-
+    <string name="save_to_notes">Менің Жазбаларыма сақтау</string>
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Жаңа жазба</string>
     <string name="shortcut_new_note_long">Жаңа жазба жасау</string>

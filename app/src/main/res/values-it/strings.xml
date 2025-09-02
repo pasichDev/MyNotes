@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name"> Le mie note </string>
+    <string name="save_to_notes">Salva in Le Mie Note</string>
     <string name="NewNote"> Crea una nota </string>
     <string name="trashNotes">Sposta nel Cestino</string>
     <string name="trashClean">Pulisci il cestino</string>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Мои Заметки</string>
+    <string name="save_to_notes">Сохранить в Мои Заметки</string>
     <string name="themeBlue">Океанский синий</string>
     <string name="themeGreen">Изумрудно-зелёный</string>
     <string name="themeSunset">Оранжевый закат</string>

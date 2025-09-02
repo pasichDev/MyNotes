@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 
 /**
  * An activity that is a gateway to save a note via the save button
+ * or from text selection context menu
  */
 public class ShareActivity extends AppCompatActivity {
 
@@ -23,7 +24,18 @@ public class ShareActivity extends AppCompatActivity {
         final Intent intent = getIntent();
 
         try {
-            if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            // Обрабатываем выделенный текст из контекстного меню
+            if (Intent.ACTION_PROCESS_TEXT.equals(intent.getAction())) {
+                CharSequence text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+                if (text != null) {
+                    startNoteActivityIntent(text.toString());
+                } else {
+                    Toast.makeText(this, "No text selected", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+            // Обрабатываем открытие файла
+            else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
                 readFileAsync(getIntent().getData(), new FileReadCallback() {
                     @Override
                     public void onSuccess(String content) {
@@ -37,7 +49,9 @@ public class ShareActivity extends AppCompatActivity {
                     }
                 });
                 return;
-            } else if (intent.getType() != null && intent.getType().equals("text/plain")) {
+            } 
+            // Обрабатываем стандартное действие отправки
+            else if (intent.getType() != null && intent.getType().equals("text/plain")) {
                 startNoteActivityIntent(handleSendText());
             } else {
                 Toast.makeText(this, getString(R.string.notSupportedShare), Toast.LENGTH_LONG).show();

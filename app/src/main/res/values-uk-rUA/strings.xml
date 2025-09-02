@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name"> Мої Нотатки </string>
+    <string name="save_to_notes">Зберегти в Мої Нотатки</string>
     <string name="NewNote"> Створити нотатку </string>
     <string name="trashNotes">Перемістити до корзини</string>
     <string name="trashClean">Очистити корзину</string>

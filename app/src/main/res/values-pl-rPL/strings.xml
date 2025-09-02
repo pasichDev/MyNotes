@@ -259,7 +259,7 @@
     <!-- Share and Export Help -->
     <string name="help_notes_share_title">Udostępnianie i eksport notatek</string>
     <string name="help_notes_share_description">Udostępniaj jedną lub wiele notatek za pomocą innych aplikacji, zapisuj je na Dysku Google lub eksportuj jako pliki TXT, PDF czy HTML z formatowaniem.</string>
-
+    <string name="save_to_notes">Zapisz w Moich Notatkach</string>
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Nowa notatka</string>
     <string name="shortcut_new_note_long">Utwórz nową notatkę</string>

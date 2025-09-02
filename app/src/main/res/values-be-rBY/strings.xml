@@ -247,7 +247,7 @@
     <string name="help_notes_text_size_description">Змяняйце памер тэксту падчас рэдагавання нататак з дапамогай дыялогавага акна памеру тэксту, даступнага прама з экрана рэдагавання нататкі.</string>
     <string name="help_notes_copy_title">Рэдагаваць копію</string>
     <string name="help_notes_copy_description">Ствараць рэдагавальную копію любой нататкі для ўнясення змен, захоўваючы арыгінал недакрануты.</string>
-
+    <string name="save_to_notes">Захаваць у Мае Нататкі</string>
     <string name="actual_version">Актуальна для версіі %1$s</string>
     <!-- Backup and Export Help -->
     <string name="help_other_backup_export_title">Сінхранізацыя і экспарт даных</string>
