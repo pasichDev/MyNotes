@@ -24,11 +24,19 @@ public class ShareActivity extends AppCompatActivity {
 
         try {
             if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-                try {
-                    startNoteActivityIntent(readFile(getIntent().getData()));
-                } catch (IOException e) {
-                    Toast.makeText(this, "Error reading file", Toast.LENGTH_LONG).show();
-                }
+                readFileAsync(getIntent().getData(), new FileReadCallback() {
+                    @Override
+                    public void onSuccess(String content) {
+                        startNoteActivityIntent(content);
+                    }
+
+                    @Override
+                    public void onError(IOException error) {
+                        Toast.makeText(ShareActivity.this, "Error reading file", Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                });
+                return;
             } else if (intent.getType() != null && intent.getType().equals("text/plain")) {
                 startNoteActivityIntent(handleSendText());
             } else {
@@ -76,25 +84,41 @@ public class ShareActivity extends AppCompatActivity {
      * The method that opens the file from which we want to take the text for sharing
      *
      * @param uri - uri file
-     * @return - text files share
-     * @throws IOException - errors
+     * @param callback - callback for async result
      */
-    private String readFile(Uri uri) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(uri)))) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line);
-                stringBuilder.append('\n');
+    private void readFileAsync(Uri uri, FileReadCallback callback) {
+        // Виконуємо читання файлу в фоновому потоці
+        new Thread(() -> {
+            try {
+                StringBuilder stringBuilder = new StringBuilder();
+                try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getContentResolver().openInputStream(uri)))) {
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line);
+                        stringBuilder.append('\n');
 
-                // Обмежуємо розмір файлу при читанні
-                if (stringBuilder.length() > 500000) {
-                    break;
+                        // Обмежуємо розмір файлу при читанні
+                        if (stringBuilder.length() > 500000) {
+                            break;
+                        }
+                    }
                 }
+                
+                // Повертаємо результат в UI потік
+                runOnUiThread(() -> callback.onSuccess(stringBuilder.toString()));
+                
+            } catch (IOException e) {
+                runOnUiThread(() -> callback.onError(e));
             }
-        }
+        }).start();
+    }
 
-        return stringBuilder.toString();
+    /**
+     * Callback interface for async file reading
+     */
+    private interface FileReadCallback {
+        void onSuccess(String content);
+        void onError(IOException error);
     }
 
 

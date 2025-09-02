@@ -20,8 +20,11 @@ import javax.inject.Inject;
 import dagger.hilt.android.scopes.ActivityScoped;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableSingleObserver;
+
+import java.util.AbstractMap;
 
 @ActivityScoped
 public class BackupPresenter extends BasePresenter<BackupContract.view> implements BackupContract.presenter {
@@ -72,27 +75,51 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
     /**
      * Save backup data algorithm and navigator
+     * Оптимізовано для великих об'ємів даних
      *
      * @param local - check repository
      */
     @Override
     public void saveBackupPresenter(boolean local) {
-        JsonBackup jsonBackupTemp = new JsonBackup();
-        getCompositeDisposable().add(Flowable.zip(getDataManager().getNotes(), getDataManager().getTrashNotesLoad(), getDataManager().getTagsUser(), (noteList, trashNoteList, tagList) -> {
-            jsonBackupTemp.setNotes(noteList);
-            jsonBackupTemp.setTrashNotes(trashNoteList);
-            jsonBackupTemp.setTags(tagList);
-            return noteList.size() + trashNoteList.size() + tagList.size();
-        }).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(countData -> {
-            if (countData != 0) {
-                jsonBackupTemp.setPreferences(getDataManager().getListPreferences());
-                if (local) getView().openIntentSaveBackup(jsonBackupTemp);
-                else getView().startWriteBackupCloud(jsonBackupTemp);
-            } else {
-                getView().emptyDataToBackup();
-            }
-        },
-                throwable -> {  Log.e("RxError", "Error: ", throwable); }));
+        getCompositeDisposable().add(
+            Single.fromCallable(JsonBackup::new)
+            .flatMap(jsonBackupTemp -> 
+                Flowable.zip(
+                    getDataManager().getNotes(),
+                    getDataManager().getTrashNotesLoad(), 
+                    getDataManager().getTagsUser(), 
+                    (noteList, trashNoteList, tagList) -> {
+                        jsonBackupTemp.setNotes(noteList);
+                        jsonBackupTemp.setTrashNotes(trashNoteList);
+                        jsonBackupTemp.setTags(tagList);
+                        return noteList.size() + trashNoteList.size() + tagList.size();
+                    }
+                ).firstOrError()
+                .map(countData -> {
+                    if (countData != 0) {
+                        jsonBackupTemp.setPreferences(getDataManager().getListPreferences());
+                    }
+                    return new AbstractMap.SimpleEntry<>(jsonBackupTemp, countData);
+                })
+            )
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(result -> {
+                JsonBackup jsonBackup = result.getKey();
+                Integer countData = result.getValue();
+                
+                if (countData != 0) {
+                    if (local) {
+                        getView().openIntentSaveBackup(jsonBackup);
+                    } else {
+                        getView().startWriteBackupCloud(jsonBackup);
+                    }
+                } else {
+                    getView().emptyDataToBackup();
+                }
+            },
+            throwable -> Log.e("RxError", "Error: ", throwable))
+        );
     }
 
 
@@ -125,26 +152,26 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      * @param jsonBackup - data restore
      */
     private void restoreData(JsonBackup jsonBackup) {
-        getDataManager().setListPreferences(jsonBackup.getPreferences());
         getCompositeDisposable().add(
+            Completable.fromAction(() -> 
+                getDataManager().setListPreferences(jsonBackup.getPreferences())
+            ).subscribeOn(getSchedulerProvider().io())
+            .andThen(
                 Completable.mergeArray(
-                               getDataManager().addNotes(jsonBackup.getNotes()),
-                                getDataManager().addTags(jsonBackup.getTags()),
-                                getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
-                        )
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .doOnTerminate(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE))
-                        .subscribe(
-                                () -> {
-                                    // Handle success case
-                                },
-                                throwable -> {
-                                    // Handle error case
-                                    Log.e("RxError", "Error: ", throwable);
-                                    getView().showErrors(CloudErrors.BACKUP_DESTROY);
-                                }
-                        )
+                    getDataManager().addNotes(jsonBackup.getNotes()),
+                    getDataManager().addTags(jsonBackup.getTags()),
+                    getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
+                )
+            )
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe(
+                () -> getView().restoreFinish(CloudErrors.OKAY_RESTORE),
+                throwable -> {
+                    Log.e("RxError", "Error: ", throwable);
+                    getView().showErrors(CloudErrors.BACKUP_DESTROY);
+                }
+            )
         );
     }
 

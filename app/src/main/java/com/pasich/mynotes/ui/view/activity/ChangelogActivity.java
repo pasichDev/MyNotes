@@ -61,7 +61,8 @@ public class ChangelogActivity extends BaseActivity {
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                setEnabled(finishActivity());
+                setEnabled(true);
+                finish();
             }
         });
     }
@@ -76,7 +77,7 @@ public class ChangelogActivity extends BaseActivity {
             updateChecker.markVersionAsRead();
             binding.acknowledgeButton.setVisibility(View.GONE);
             setResult(RESULT_OK);
-            finishActivity();
+            finish();
         });
     }
 
@@ -121,13 +122,14 @@ public class ChangelogActivity extends BaseActivity {
 
         executor.execute(() -> {
             try {
-                 String changelogContent = downloadChangelog();
-                 String parsedContent = parseChangelogContent(changelogContent);
+                String changelogContent = downloadChangelog();
+                String parsedContent = parseChangelogContent(changelogContent);
+                
                 runOnUiThread(() -> {
                     binding.progressBar.setVisibility(View.GONE);
                     binding.scrollView.setVisibility(View.VISIBLE);
                     
-                     String currentVersion = updateChecker.getCurrentAppVersion();
+                    String currentVersion = updateChecker.getCurrentAppVersion();
                     binding.versionText.setText(getString(R.string.current_version, currentVersion));
                     
                     // Оновлюємо видимість кнопки "Ознайомився"
@@ -182,20 +184,35 @@ public class ChangelogActivity extends BaseActivity {
     
     /**
      * Парсить контент changelog, залишаючи тільки те, що після заголовку "# CHANGELOG"
+     * Оптимізовано для роботи в фоновому потоці
      */
     private String parseChangelogContent(String fullContent) {
+        if (fullContent == null || fullContent.isEmpty()) {
+            return "";
+        }
+        
         String[] lines = fullContent.split("\n");
         StringBuilder parsedContent = new StringBuilder();
         boolean foundChangelogHeader = false;
-        
-        for (String line : lines) {
-            if (line.trim().equals("# CHANGELOG")) {
-                foundChangelogHeader = true;
-                continue; // Пропускаємо сам заголовок
-            }
-            
-            if (foundChangelogHeader) {
+
+        int maxLines = Math.min(lines.length, 1000);
+        for (int i = 0; i < maxLines; i++) {
+            String line = lines[i];
+            if (!foundChangelogHeader) {
+                if (line.trim().equalsIgnoreCase("# CHANGELOG") || 
+                    line.trim().equalsIgnoreCase("## CHANGELOG") ||
+                    line.contains("CHANGELOG")) {
+                    foundChangelogHeader = true;
+                    continue; // Пропускаємо сам заголовок
+                }
+            } else {
                 parsedContent.append(line).append("\n");
+                
+                // Обмежуємо розмір результату
+                if (parsedContent.length() > 50000) {
+                    parsedContent.append("\n... (content truncated)");
+                    break;
+                }
             }
         }
         
@@ -218,12 +235,12 @@ public class ChangelogActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finishActivity();
+            finish();
         }
         return true;
     }
 
-    private boolean finishActivity() {
+    private boolean finishActivitySafely() {
         supportFinishAfterTransition();
         return true;
     }
