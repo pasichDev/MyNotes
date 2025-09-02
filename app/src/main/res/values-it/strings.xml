@@ -98,6 +98,12 @@
     <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Ripristina usando res. copie</string>
     <string name="exportLocalBackup">Crea backup</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Esportazione dati</string>
+    <string name="important">Importante</string>
+    <string name="dataExportDescription">Puoi esportare tutte le tue note attuali per la visualizzazione. Questa funzione esporta solo note attive, escludendo note dal cestino, senza considerare tag o altri filtri.</string>
+    <string name="exportAllNotes">Esporta tutte le note</string>
     <string name="lastCloudCopy">Ultimo backup: %1$s</string>
     <string name="errorDriveAuth">Ospite</string>
     <string name="autoCloudBackupTitle">Backup automatico</string>

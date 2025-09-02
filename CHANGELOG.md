@@ -2,6 +2,7 @@
 
 ## [2.1.33] - XX.XX.2025
 
+- Added the ability to export notes for viewing or quick sharing with others.
 - Now you can easily share your notes or save them locally! TXT, PDF, and HTML formats are available, as well as the option to send them via Google Drive or other applications.
 - Fixed main thread operations that could cause the app to freeze or crash.
 - Fixed data retrieval when sharing content from other apps.

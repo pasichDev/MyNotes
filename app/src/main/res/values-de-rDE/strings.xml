@@ -108,6 +108,8 @@
     <string name="messageRestoreProcess"><b>Daten wiederherstellen</b> \nDieses Fenster wird nach Abschluss automatisch geschlossen.</string>
     <string name="emptyBackups">Keine Backups gefunden</string>
     <string name="checkLastBackupsCloud">Bitte warten, Daten werden geladen...</string>
+
+
     <!-- Arrays AutoBackup -->
     <string name="autoCloudVariantsDay">Jeden Tag</string>
     <string name="autoCloudVariantsWeek">Jede Woche</string>
@@ -225,7 +227,13 @@
     <string name="help_other_security_description">Wenn in den Einstellungen aktiviert, schützt diese Funktion Ihre Notizen vor unbefugter Einsicht: verbirgt App-Inhalte in der Übersicht der letzten Apps, verhindert Screenshots und blockiert Bildschirmaufnahmen. Diese Sicherheitsfunktion wird nach dem Neustart der App aktiviert.</string>
     <string name="help_other_shortcuts_title">App-Verknüpfungen</string>
     <string name="help_other_shortcuts_description">Halten Sie das App-Symbol gedrückt, um schnell auf Verknüpfungen zum Erstellen einer neuen Notiz oder zum Durchsuchen Ihrer Notizen zuzugreifen. Verfügbar ab Android 7.1 und höher.</string>
-    
+
+
+    <!-- Data Export Section -->
+    <string name="dataExport">Datenexport</string>
+    <string name="important">Wichtig</string>
+    <string name="dataExportDescription">Sie können alle Ihre aktuellen Notizen zum Anzeigen exportieren. Diese Funktion exportiert nur aktive Notizen, ausgenommen Notizen aus dem Papierkorb, ohne Berücksichtigung von Tags oder anderen Filtern.</string>
+    <string name="exportAllNotes">Alle Notizen exportieren</string>
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Notizen-Funktionen</string>
     <string name="help_notes_limit_title">Textbegrenzung</string>

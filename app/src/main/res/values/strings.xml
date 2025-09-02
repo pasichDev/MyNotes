@@ -115,6 +115,12 @@
     <string name="localBackup">Device</string>
     <string name="importLocalBackup">Restore with Res. copies</string>
     <string name="exportLocalBackup">Create backup</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Data Export</string>
+    <string name="important">Important</string>
+    <string name="dataExportDescription">You can export all your current notes for viewing. This feature exports only active notes, excluding notes from trash, without considering tags or other filters.</string>
+    <string name="exportAllNotes">Export all notes</string>
     <string name="lastCloudCopy">Last backup: %1$s</string>
     <string name="errorDriveAuth">Guest</string>
     <string name="autoCloudBackupTitle">Auto Backup</string>

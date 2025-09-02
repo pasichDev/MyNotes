@@ -104,6 +104,12 @@
     <string name="localBackup">Устройство</string>
     <string name="importLocalBackup">Восстановить с Рез. копии</string>
     <string name="exportLocalBackup">Создать резервную копию</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Экспорт данных</string>
+    <string name="important">Важно</string>
+    <string name="dataExportDescription">Вы можете экспортировать все свои текущие заметки для просмотра. Эта функция экспортирует только активные заметки, исключая заметки из корзины, не учитывая теги или другие фильтры.</string>
+    <string name="exportAllNotes">Экспортировать все заметки</string>
     <string name="lastCloudCopy">Последняя резервная копия: %1$s</string>
     <string name="errorDriveAuth">Гость</string>
     <string name="autoCloudBackupTitle">Автоматическое резервное копирование</string>
@@ -144,14 +150,14 @@
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
 
-     <string name="errorSyncTitle">Внимание!</string>
+    <string name="errorSyncTitle">Внимание!</string>
     <string name="errorSyncDescrpt">С этой версией мы прекращаем поддержку синхронизации с Google Диском. В будущих обновлениях мы внедрим более безопасный и эффективный метод синхронизации, что обеспечит вам лучший пользовательский опыт.</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Поддержать разработчика</string>
-     <string name="donationMethods">Способы поддержки</string>
+    <string name="donationMethods">Способы поддержки</string>
     <string name="kofiDescription">Угостите меня кофе на Ko-Fi</string>
-   <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
+    <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
     <string name="contactDeveloper">Связаться с разработчиком</string>
     <string name="inAppPurchases">Покупки в приложении</string>
 

@@ -90,7 +90,7 @@
     <string name="onDynamicColor">Уключыць Dynamic Color</string>
     <string name="onDynamicColorDescription">Адаптуе колеры дадатка да вашай шпалеры (Android 12+)</string>
     <string name="onScreenProtection">Уключыць абарону экрана</string>
-        <string name="onScreenProtectionDescription">Перашкаджае стварэнню скрыншотаў і запісу экрана. Уступае ў сілу пасля перазапуску прыкладання</string>
+    <string name="onScreenProtectionDescription">Перашкаджае стварэнню скрыншотаў і запісу экрана. Уступае ў сілу пасля перазапуску прыкладання</string>
     <string name="themeMode">Рэжым тэмы</string>
     <string name="selectThemeMode">Выберыце рэжым тэмы</string>
     <string name="themeModeFollowSystem">Як у сістэме</string>
@@ -102,6 +102,12 @@
     <string name="localBackup">Прылада</string>
     <string name="importLocalBackup">Аднавіць з дапамогай рэз. копіі</string>
     <string name="exportLocalBackup">Стварыць рэзервовую копію</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Экспарт даных</string>
+    <string name="important">Важна</string>
+    <string name="dataExportDescription">Вы можаце экспартаваць усе свае бягучыя нататкі для прагляду. Гэтая функцыя экспартуе толькі актыўныя нататкі, выключаючы нататкі з сметніцы, не ўлічваючы тэгі або іншыя фільтры.</string>
+    <string name="exportAllNotes">Экспартаваць усе нататкі</string>
     <string name="lastCloudCopy">Апошняя рэзервовая копія: %1$s</string>
     <string name="errorDriveAuth">Госць</string>
     <string name="autoCloudBackupTitle">Аўтаматычнае рэзервовае капіраванне</string>

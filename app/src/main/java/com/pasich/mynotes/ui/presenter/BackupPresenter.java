@@ -280,5 +280,27 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
         );
     }
+    
+    /**
+     * Export all notes data
+     */
+    @Override
+    public void exportAllNotesPresenter() {
+        getCompositeDisposable().add(getDataManager().getNotes()
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(notes -> {
+                    if (notes != null && !notes.isEmpty()) {
+                        // Sort notes by creation date - newest first
+                        notes.sort((note1, note2) -> Long.compare(note2.getDate(), note1.getDate()));
+                        getView().openShareOptionsDialog(notes, true);
+                    } else {
+                        getView().showErrors(CloudErrors.NETWORK_ERROR);
+                    }
+                }, throwable -> {
+                    Log.e("BackupPresenter", "Error loading notes for export", throwable);
+                    getView().showErrors(CloudErrors.NETWORK_ERROR);
+                }));
+    }
 
 }

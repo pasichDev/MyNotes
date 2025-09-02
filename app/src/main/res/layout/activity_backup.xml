@@ -47,6 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -120,50 +121,50 @@
 
                 </LinearLayout>
 
-
-
-                <TextView
-                    style="@style/paragraphText"
-                    android:layout_marginHorizontal="20dp"
-                    android:layout_marginVertical="10dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="@{isPlayService ? View.VISIBLE : View.GONE}"
-                    android:padding="6dp"
-                    android:text="@string/cloudBackup" />
-
+                <!-- Important Warning -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="20dp"
-                    android:paddingVertical="10dp"
-                    >
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginVertical="10dp"
+                    android:background="@drawable/warning_background"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_warning"
+                            app:tint="?attr/colorOnError"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="@string/important" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/important"
+                            android:textColor="?attr/colorOnError"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/errorTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="18sp"
-                        style="@style/itemNoteTitle"
-                        android:text="@string/errorSyncTitle" />
-
-                    <TextView
-                        android:id="@+id/errorText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:visibility="@{isVisibleProgressCloud ? View.GONE : View.VISIBLE}"
-                        android:paddingVertical="2dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text="@string/errorSyncDescrpt"
-                        android:textColor="?attr/colorOutline"
-                        style="@style/itemNotePreview"
-                        android:textSize="14sp" />
-
+                        android:textColor="?attr/colorOnError"
+                        android:textSize="14sp"
+                        android:lineSpacingMultiplier="1.2" />
                 </LinearLayout>
 
-                <!--   android:visibility="@{isPlayService ? View.VISIBLE : View.GONE}" -->
-                <LinearLayout
+                 <LinearLayout
                     android:id="@+id/autoBackup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -297,6 +298,54 @@
                         android:text="@string/importLocalBackup" />
 
                 </LinearLayout>
+
+                <!-- Data Export Section -->
+                <TextView
+                    style="@style/paragraphText"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp"
+                    android:text="@string/dataExport" />
+
+                <!-- Important Warning -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginHorizontal="20dp"
+                    android:paddingHorizontal="10dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dataExportDescription"
+                        android:textSize="14sp"
+                        android:lineSpacingMultiplier="1.2" />
+                </LinearLayout>
+
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/exportAllNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:text="@string/exportAllNotes"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:layout_margin="20dp"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:backgroundTint="?attr/colorPrimary"
+                    app:cornerRadius="10dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconTint="@android:color/white"
+                    android:paddingStart="16dp"
+                    android:onClick="@{(view) -> presenter.exportAllNotesPresenter()}"
+                    android:paddingEnd="16dp"/>
+
+
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

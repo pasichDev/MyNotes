@@ -104,6 +104,12 @@
     <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Restaurar desde Res. copias</string>
     <string name="exportLocalBackup">Crear una copia de seguridad</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Exportación de datos</string>
+    <string name="important">Importante</string>
+    <string name="dataExportDescription">Puede exportar todas sus notas actuales para visualización. Esta función exporta solo notas activas, excluyendo notas de la papelera, sin considerar etiquetas u otros filtros.</string>
+    <string name="exportAllNotes">Exportar todas las notas</string>
     <string name="lastCloudCopy">Última copia de seguridad: %1$s</string>
     <string name="errorDriveAuth">Invitado</string>
     <string name="autoCloudBackupTitle">Copia de seguridad automática</string>

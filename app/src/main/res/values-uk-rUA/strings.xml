@@ -93,6 +93,12 @@
     <string name="localBackup">Пристрій</string>
     <string name="importLocalBackup">Відновити за допомогою рез. копії</string>
     <string name="exportLocalBackup">Створити резервну копію</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Експорт даних</string>
+    <string name="important">Важливо</string>
+    <string name="dataExportDescription">Ви можете експортувати всі свої наявні нотатки для перегляду. Ця функція експортує лише активні нотатки, виключаючи нотатки з корзини, не враховуючи теги чи інші фільтри.</string>
+    <string name="exportAllNotes">Експортувати всі нотатки</string>
     <string name="lastCloudCopy">Остання резервна копія: %1$s</string>
     <string name="errorDriveAuth">Гість</string>
     <string name="autoCloudBackupTitle">Автоматичне резервне копіювання</string>

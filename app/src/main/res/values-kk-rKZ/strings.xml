@@ -102,6 +102,12 @@
     <string name="localBackup">Құрылғы</string>
     <string name="importLocalBackup">Res. көшірмелер</string>
     <string name="exportLocalBackup">Сақтық көшірме жасау</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Деректерді экспорттау</string>
+    <string name="important">Маңызды</string>
+    <string name="dataExportDescription">Сіз өзіңіздің барлық ағымдағы жазбаларыңызды көру үшін экспорттай аласыз. Бұл функция тек белсенді жазбаларды экспорттайды, қоқыс жәшігіндегі жазбаларды алып тастап, тегтер немесе басқа сүзгілерді ескермейді.</string>
+    <string name="exportAllNotes">Барлық жазбаларды экспорттау</string>
     <string name="lastCloudCopy">Соңғы сақтық көшірме: %1$s</string>
     <string name="errorDriveAuth">Қонақ</string>
     <string name="autoCloudBackupTitle">Сақтық көшірмені автоматты түрде жасау</string>
@@ -150,7 +156,7 @@
     <string name="inAppPurchases">Қолданба ішіндегі сатып алулар</string>
     <string name="donationMethods">Қолдау көрсету әдістері</string>
     <string name="kofiDescription">Ko-Fi-да маған кофе сыйлаңыз</string>
-   <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
+    <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
     <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
 
     <!-- Changelog Activity -->

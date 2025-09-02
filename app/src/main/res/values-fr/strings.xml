@@ -99,6 +99,12 @@
     <string name="localBackup">Périphérique</string>
     <string name="importLocalBackup">Restauration à l\'aide de res. copies</string>
     <string name="exportLocalBackup">Créer une sauvegarde</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Export de données</string>
+    <string name="important">Important</string>
+    <string name="dataExportDescription">Vous pouvez exporter toutes vos notes actuelles pour les consulter. Cette fonctionnalité exporte uniquement les notes actives, en excluant les notes de la corbeille, sans tenir compte des étiquettes ou autres filtres.</string>
+    <string name="exportAllNotes">Exporter toutes les notes</string>
     <string name="lastCloudCopy">Dernière sauvegarde: %1$s</string>
     <string name="errorDriveAuth">Invité</string>
     <string name="autoCloudBackupTitle">Sauvegarde automatique</string>

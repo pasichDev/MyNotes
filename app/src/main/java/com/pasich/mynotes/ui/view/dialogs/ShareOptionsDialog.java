@@ -32,6 +32,7 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
     
     private final Note mNote;
     private final List<Note> mSelectedNotes;
+    private final boolean isDataExport;
     private DialogShareOptionsBinding binding;
     
     // Activity result launchers for file saving
@@ -46,11 +47,19 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
     public ShareOptionsDialog(Note note) {
         this.mNote = note;
         this.mSelectedNotes = null;
+        this.isDataExport = false;
     }
 
     public ShareOptionsDialog(List<Note> selectedNotes) {
         this.mNote = null;
         this.mSelectedNotes = selectedNotes;
+        this.isDataExport = false;
+    }
+    
+    public ShareOptionsDialog(List<Note> selectedNotes, boolean isDataExport) {
+        this.mNote = null;
+        this.mSelectedNotes = selectedNotes;
+        this.isDataExport = isDataExport;
     }
 
     @Override
@@ -171,8 +180,14 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
             currentNoteContent = mNote.getValue();
 
         } else if (mSelectedNotes != null && !mSelectedNotes.isEmpty()) {
-
-            currentNoteTitle = "Multiple_Notes";
+            
+            // Set title based on whether this is data export or regular share
+            if (isDataExport) {
+                currentNoteTitle = "Data_Export";
+            } else {
+                currentNoteTitle = "Multiple_Notes";
+            }
+            
             StringBuilder combinedContent = new StringBuilder();
 
             for (int i = 0; i < mSelectedNotes.size(); i++) {

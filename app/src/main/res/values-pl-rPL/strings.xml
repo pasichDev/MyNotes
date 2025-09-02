@@ -103,6 +103,12 @@
     <string name="localBackup">Urządzenie</string>
     <string name="importLocalBackup">Przywróć z Res. kopie</string>
     <string name="exportLocalBackup">Utwórz kopię zapasową</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Eksport danych</string>
+    <string name="important">Ważne</string>
+    <string name="dataExportDescription">Możesz wyeksportować wszystkie swoje obecne notatki do przeglądania. Ta funkcja eksportuje tylko aktywne notatki, wykluczając notatki z kosza, bez uwzględniania tagów lub innych filtrów.</string>
+    <string name="exportAllNotes">Eksportuj wszystkie notatki</string>
     <string name="lastCloudCopy">Ostatnia kopia zapasowa: %1$s</string>
     <string name="errorDriveAuth">Gość</string>
     <string name="autoCloudBackupTitle">Automatyczna kopia zapasowa</string>
