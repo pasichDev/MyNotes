@@ -3,6 +3,8 @@
 ## [2.1.33] - XX.XX.2025
 
 - Update minSdkVersion = 26
+- Fixed main thread operations that could cause the app to freeze or crash.
+- Fixed data retrieval when sharing content from other apps.
 
 ## [2.1.32] - 30.08.2025
 
