@@ -265,4 +265,7 @@
     <string name="saveStatusPending">Modifications non enregistrées</string>
     <string name="saveStatusSaving">Enregistrement…</string>
     <string name="saveStatusError">Erreur d’enregistrement</string>
+    <string name="help_notes_autosave_title">Enregistrement automatique</string>
+    <string name="help_notes_autosave_description">Les notes sont enregistrées automatiquement 2 secondes après avoir arrêté de taper. Dans la barre supérieure, un indicateur s’affiche : point bleu — modifications non enregistrées, icône animée — enregistrement en cours, coche verte — enregistré avec succès. Même si vous fermez l’application ou qu’elle plante, vos dernières modifications ne seront pas perdues.</string>
+
 </resources>

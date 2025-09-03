@@ -285,4 +285,8 @@
     <string name="saveStatusSaving">Saving…</string>
     <string name="saveStatusError">Save error</string>
 
+    <string name="help_notes_autosave_title">Auto-save</string>
+    <string name="help_notes_autosave_description">Notes are automatically saved 2 seconds after you stop typing. A status indicator in the top bar shows: blue dot for unsaved changes, animated icon for saving in progress, green checkmark for successfully saved. Even if you close the app or it crashes, your latest changes won\'t be lost.</string>
+
+
 </resources>

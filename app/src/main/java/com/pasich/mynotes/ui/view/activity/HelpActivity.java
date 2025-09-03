@@ -217,6 +217,15 @@ public class HelpActivity extends BaseActivity {
             null
         ));
 
+        // Автозбереження
+        sections.add(new HelpSection(
+            HelpSection.TYPE_FEATURE,
+            getString(R.string.help_notes_autosave_title),
+            getString(R.string.help_notes_autosave_description),
+            R.drawable.ic_save_success,
+            null
+        ));
+
         // Обмеження тексту
         sections.add(new HelpSection(
             HelpSection.TYPE_FEATURE,

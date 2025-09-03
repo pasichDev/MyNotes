@@ -274,4 +274,7 @@
     <string name="saveStatusPending">Cambios no guardados</string>
     <string name="saveStatusSaving">Guardando…</string>
     <string name="saveStatusError">Error al guardar</string>
+    <string name="help_notes_autosave_title">Guardado automático</string>
+    <string name="help_notes_autosave_description">Las notas se guardan automáticamente 2 segundos después de dejar de escribir. En la barra superior aparece un indicador: punto azul — cambios no guardados, icono animado — guardando, marca verde — guardado con éxito. Incluso si cierras la app o se bloquea, tus últimos cambios no se perderán.</string>
+
 </resources>

@@ -271,5 +271,8 @@
     <string name="saveStatusPending">Niezapisane zmiany</string>
     <string name="saveStatusSaving">Zapisywanie…</string>
     <string name="saveStatusError">Błąd zapisu</string>
+    <string name="help_notes_autosave_title">Autosave</string>
+    <string name="help_notes_autosave_description">Notatki są automatycznie zapisywane 2 sekundy po zakończeniu pisania. Na górnym pasku pojawia się wskaźnik: niebieska kropka — niezapisane zmiany, animowana ikona — zapisywanie w toku, zielony haczyk — zapisano pomyślnie. Nawet jeśli zamkniesz aplikację lub się zawiesi, ostatnie zmiany nie zostaną utracone.</string>
+
 
 </resources>
