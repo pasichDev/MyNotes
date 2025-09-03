@@ -818,6 +818,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         // Small delay for smooth transition
         mActivityBinding.getRoot().postDelayed(() -> {
             if (!showEmpty) {
+                mNoteAdapter.filter(
+                        tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(),
+                        true);
                 // Show notes list
                 mActivityBinding.listNotes.setVisibility(View.VISIBLE);
                 mActivityBinding.listNotes.setAlpha(0f);
