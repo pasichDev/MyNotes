@@ -316,6 +316,23 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        // КРИТИЧНО: Екстрене збереження при зупинці Activity
+        if (notePresenter != null && notePresenter.getNote() != null) {
+            String currentTitle = binding != null ? binding.notesTitle.getText().toString() : "";
+            String currentValue = binding != null ? binding.valueNote.getText().toString() : "";
+            
+            // Оновлюємо дані в моделі
+            notePresenter.getNote().setTitle(currentTitle);
+            notePresenter.getNote().setValue(currentValue);
+            
+            // Якщо є незбережені зміни - робимо екстрене збереження
+            ((NotePresenter) notePresenter).performEmergencySaveIfNeeded();
+        }
+    }
+
+    @Override
     public void initParam() {
 
     }
@@ -489,8 +506,10 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     public void onDestroy() {
         super.onDestroy();
         if (notePresenter != null) {
+            ((NotePresenter) notePresenter).cleanupHandlers();
             notePresenter.detachView();
         }
+        
         if (binding != null) {
             binding.notesTitle.addTextChangedListener(null);
             binding.titleToolbarTagCenter.setOnClickListener(null);

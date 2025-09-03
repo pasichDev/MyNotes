@@ -45,6 +45,15 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void onTextChanged() {
+        // КРИТИЧНО: Перевіряємо чи Activity ще живе
+        if (getView() == null) {
+            // Activity знищується, але є зміни - робимо екстрене збереження
+            if (hasValidContent(mNote)) {
+                performEmergencySave(mNote);
+            }
+            return;
+        }
+        
         // Перевіряємо чи є контент для збереження
         if (!hasValidContent(mNote)) {
             // Якщо нотатка пуста, приховуємо індикатор і не запускаємо збереження
@@ -95,6 +104,13 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public void autoSaveNote(Note note, NoteContract.AutoSaveCallback callback) {
         if (note == null) {
             callback.onError(new Exception("Note is null"));
+            return;
+        }
+
+        // КРИТИЧНО: Перевіряємо чи Activity ще живе перед збереженням
+        if (getView() == null) {
+            // Activity знищене, але все одно зберігаємо дані синхронно
+            performEmergencySave(note);
             return;
         }
 
@@ -398,5 +414,70 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             case "bold-italic" -> Typeface.BOLD_ITALIC;
             default -> Typeface.NORMAL;
         };
+    }
+    
+    /**
+     * Очищаємо Handler та callbacks при знищенні Activity
+     * КРИТИЧНО для уникнення memory leaks та крашів
+     */
+    public void cleanupHandlers() {
+        if (autoSaveHandler != null && autoSaveRunnable != null) {
+            autoSaveHandler.removeCallbacks(autoSaveRunnable);
+            autoSaveRunnable = null;
+        }
+        pendingClose = false;
+        isSavingInProgress = false;
+    }
+    
+    /**
+     * Публічний метод для екстреного збереження з Activity
+     */
+    public void performEmergencySaveIfNeeded() {
+        if (mNote != null && hasUnsavedChanges()) {
+            performEmergencySave(mNote);
+        }
+    }
+    
+    /**
+     * Екстрене збереження коли Activity знищується але є незбережені дані
+     * Виконується синхронно для гарантії збереження
+     */
+    private void performEmergencySave(Note note) {
+        try {
+            if (note.getId() == 0) {
+                // Нова нотатка - створюємо синхронно
+                if (newNoteKey && hasValidContent(note)) {
+                    getDataManager().addNote(note, false)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .subscribe(
+                            aLong -> {
+                                note.setId(Math.toIntExact(aLong));
+                                lastSavedTitle = note.getTitle();
+                                lastSavedValue = note.getValue();
+                                setNewNoteKey(false);
+                            },
+                            throwable -> Log.e("NotePresenter", "Emergency save failed", throwable)
+                        );
+                }
+            } else {
+                // Існуюча нотатка - оновлюємо синхронно
+                boolean hasChanges = !note.getTitle().equals(lastSavedTitle) || 
+                                    !note.getValue().equals(lastSavedValue);
+                if (hasChanges && hasValidContent(note)) {
+                    note.setDate(new Date().getTime());
+                    getDataManager().updateNote(note)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .subscribe(
+                            () -> {
+                                lastSavedTitle = note.getTitle();
+                                lastSavedValue = note.getValue();
+                            },
+                            throwable -> Log.e("NotePresenter", "Emergency update failed", throwable)
+                        );
+                }
+            }
+        } catch (Exception e) {
+            Log.e("NotePresenter", "Critical: Emergency save crashed", e);
+        }
     }
 }
