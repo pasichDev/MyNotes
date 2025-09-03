@@ -684,8 +684,15 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void sortList(String arg) {
-        mNoteAdapter.sortList(arg);
-
+        // Анімація при зміні сортування, як при перемиканні між тегами
+        hideCurrentContent(() -> {
+            mNoteAdapter.setScrollToTopOnNextUpdate(true);
+            String selectedTag = tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag();
+            mNoteAdapter.sortList(arg);
+            int noteCount = mNoteAdapter.getCurrentList().size();
+            setAppBarScrollBehavior(noteCount >= 1);
+            showNewContent(!(noteCount >= 1));
+        });
     }
 
     @Override
@@ -767,35 +774,31 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     private void hideCurrentContent(Runnable onComplete) {
         if (mActivityBinding.listNotes.getVisibility() == View.VISIBLE) {
-            // Використовуємо ViewPropertyAnimator замість Animation
+            // Use ViewPropertyAnimator instead of Animation
             mActivityBinding.listNotes.animate()
                     .alpha(0f)
-                    .setDuration(300)
+                    .setDuration(200)
                     .withEndAction(() -> {
                         mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
-                        mActivityBinding.listNotes.setAlpha(1f); // Скидаємо alpha
-                        // Очищаємо список після приховування, щоб запобігти миготінню
-                        mNoteAdapter.clearList();
+                        // Don't clear the list here to prevent flickering
                         if (onComplete != null) {
                             onComplete.run();
                         }
                     })
                     .start();
         } else if (mActivityBinding.includeEmpty.emptyViewNote.getVisibility() == View.VISIBLE) {
-            // Використовуємо ViewPropertyAnimator замість Animation
+            // Use ViewPropertyAnimator instead of Animation
             mActivityBinding.includeEmpty.emptyViewNote.animate()
                     .alpha(0f)
-                    .setDuration(300)
+                    .setDuration(200)
                     .withEndAction(() -> {
                         mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
-                        mActivityBinding.includeEmpty.emptyViewNote.setAlpha(1f); // Скидаємо alpha
                         if (onComplete != null) {
                             onComplete.run();
                         }
                     })
                     .start();
         } else {
-            mNoteAdapter.clearList();
             if (onComplete != null) {
                 onComplete.run();
             }
@@ -803,15 +806,20 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     private void showNewContent(boolean showEmpty) {
-        // Невелика затримка для плавності переходу
+        // Small delay for smooth transition
         mActivityBinding.getRoot().postDelayed(() -> {
             if (!showEmpty) {
-                // Оновлюємо список нотаток перед показом
-                mNoteAdapter.filter(
-                        tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(),
-                        true);
+                // Show notes list
+                mActivityBinding.listNotes.setVisibility(View.VISIBLE);
+                mActivityBinding.listNotes.setAlpha(0f);
+                mActivityBinding.listNotes.animate()
+                        .alpha(1f)
+                        .setDuration(200)
+                        .start();
+            } else {
+                // Show empty view
+                showEmptyNotesAnimated(true);
             }
-            showEmptyNotesAnimated(showEmpty);
         }, 50);
     }
 
