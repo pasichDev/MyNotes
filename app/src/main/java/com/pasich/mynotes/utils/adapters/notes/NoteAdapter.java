@@ -62,11 +62,10 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
     public void sortList(String arg) {
         ArrayList<Note> newList = new ArrayList<>(getCurrentList());
         newList.sort(new NoteComparator().getComparator(arg));
-        submitList(newList);
         submitList(newList, () -> {
             if (shouldScrollToTop && recyclerView != null && !newList.isEmpty()) {
                 recyclerView.post(() -> {
-                    androidx.recyclerview.widget.StaggeredGridLayoutManager layoutManager =
+                    androidx.recyclerview.widget.StaggeredGridLayoutManager layoutManager = 
                         (androidx.recyclerview.widget.StaggeredGridLayoutManager) recyclerView.getLayoutManager();
                     if (layoutManager != null) {
                         layoutManager.scrollToPositionWithOffset(0, 0);
