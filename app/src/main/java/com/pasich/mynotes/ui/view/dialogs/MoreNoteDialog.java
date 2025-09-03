@@ -267,7 +267,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                     binding.chipGroupSystem.addView(newChip);
                 }
 
-                newChip.setOnCheckedChangeListener(((buttonView, isChecked) -> selectedTag(tag.getNameTag(), isChecked)));
+                newChip.setOnCheckedChangeListener(((buttonView, isChecked) -> selectedTag(tag, isChecked)));
             }
         } else {
             binding.scrollChips.setVisibility(View.GONE);
@@ -277,15 +277,17 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     }
 
-    private void selectedTag(String nameChip, boolean checked) {
+    private void selectedTag(Tag tag, boolean checked) {
         if (checked) {
-
-            mPresenter.editTagNote(nameChip, mNote.getId());
-            if (activityNote) noteActivity.changeTag(nameChip, true);
+            mPresenter.editTagNote(tag.getNameTag(), mNote.getId());
+            if (activityNote) noteActivity.changeTag(tag.getNameTag(), true);
         } else {
-
             mPresenter.removeTagNote(mNote.getId());
             if (activityNote) noteActivity.changeTag("", true);
+        }
+
+        if(tag.getVisibility() == 1 && !activityNote){
+            dismiss();
         }
     }
 
