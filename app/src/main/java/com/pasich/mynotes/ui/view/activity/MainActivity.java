@@ -663,7 +663,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             @Override
             public void visibleEditTag() {
                 mainPresenter.editVisibleTag(tag.setVisibilityReturn(tag.getVisibility() == 1 ? 0 : 1));
-                scrollToTop();
             }
         });
 
@@ -694,14 +693,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             setAppBarScrollBehavior(noteCount >= 1);
             showNewContent(!(noteCount >= 1));
         });
-    }
-
-    public void scrollToTop() {
-        // Прокручуємо до початку списку
-        if (mActivityBinding.listNotes.getAdapter() != null && 
-            mActivityBinding.listNotes.getAdapter().getItemCount() > 0) {
-            mActivityBinding.listNotes.smoothScrollToPosition(0);
-        }
     }
 
     @Override
