@@ -266,5 +266,10 @@
     <string name="shortcut_search_short">Szukaj</string>
     <string name="shortcut_search_long">Szukaj w notatkach</string>
     <string name="shortcut_disabled_message">Ta funkcja jest niedostępna</string>
+    <string name="saveStatus">Status zapisu</string>
+    <string name="saveStatusSaved">Zapisano</string>
+    <string name="saveStatusPending">Niezapisane zmiany</string>
+    <string name="saveStatusSaving">Zapisywanie…</string>
+    <string name="saveStatusError">Błąd zapisu</string>
 
 </resources>

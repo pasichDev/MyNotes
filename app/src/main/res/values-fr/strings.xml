@@ -260,4 +260,9 @@
     <string name="shortcut_search_long">Rechercher dans les notes</string>
     <string name="shortcut_disabled_message">Cette fonction n\'est pas disponible</string>
 
+    <string name="saveStatus">État de l’enregistrement</string>
+    <string name="saveStatusSaved">Enregistré</string>
+    <string name="saveStatusPending">Modifications non enregistrées</string>
+    <string name="saveStatusSaving">Enregistrement…</string>
+    <string name="saveStatusError">Erreur d’enregistrement</string>
 </resources>

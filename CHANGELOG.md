@@ -2,11 +2,13 @@
 
 ## [2.1.33] - XX.XX.2025
 
+- Added auto-save when editing notes
 - Added the ability to save selected text via the context menu
 - Added the ability to export notes for viewing or quick sharing with others.
 - Now you can easily share your notes or save them locally! TXT, PDF, and HTML formats are available, as well as the option to send them via Google Drive or other applications.
 - Fixed main thread operations that could cause the app to freeze or crash.
 - Fixed data retrieval when sharing content from other apps.
+- Fixed saving notes when there are many changes in processing
 - Minimum Android support has been increased: the app now works on Android 8.0 (API 26) and above.
 
 ## [2.1.32] - 30.08.2025

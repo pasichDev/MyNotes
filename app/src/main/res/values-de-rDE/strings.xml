@@ -264,4 +264,9 @@
     <string name="shortcut_search_long">Notizen durchsuchen</string>
     <string name="shortcut_disabled_message">Diese Funktion ist nicht verfügbar</string>
 
+    <string name="saveStatus">Speicherstatus</string>
+    <string name="saveStatusSaved">Gespeichert</string>
+    <string name="saveStatusPending">Nicht gespeicherte Änderungen</string>
+    <string name="saveStatusSaving">Speichern…</string>
+    <string name="saveStatusError">Speicherfehler</string>
 </resources>

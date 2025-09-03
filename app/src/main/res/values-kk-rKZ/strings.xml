@@ -267,4 +267,9 @@
     <string name="shortcut_search_long">Жазбалардан іздеу</string>
     <string name="shortcut_disabled_message">Бұл функция қол жетімсіз</string>
 
+    <string name="saveStatus">Сақтау күйі</string>
+    <string name="saveStatusSaved">Сақталды</string>
+    <string name="saveStatusPending">Сақталмаған өзгерістер</string>
+    <string name="saveStatusSaving">Сақталуда…</string>
+    <string name="saveStatusError">Сақтау қатесі</string>
 </resources>

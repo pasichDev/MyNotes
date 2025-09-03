@@ -258,4 +258,9 @@
     <string name="shortcut_search_long">Cerca nelle note</string>
     <string name="shortcut_disabled_message">Questa funzione non è disponibile</string>
 
+    <string name="saveStatus">Stato di salvataggio</string>
+    <string name="saveStatusSaved">Salvato</string>
+    <string name="saveStatusPending">Modifiche non salvate</string>
+    <string name="saveStatusSaving">Salvataggio…</string>
+    <string name="saveStatusError">Errore di salvataggio</string>
 </resources>

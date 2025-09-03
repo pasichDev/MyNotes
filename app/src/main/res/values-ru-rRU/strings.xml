@@ -271,4 +271,10 @@
     <string name="shortcut_search_long">Поиск в заметках</string>
     <string name="shortcut_disabled_message">Эта функция недоступна</string>
 
+    <string name="saveStatus">Статус сохранения</string>
+    <string name="saveStatusSaved">Сохранено</string>
+    <string name="saveStatusPending">Несохранённые изменения</string>
+    <string name="saveStatusSaving">Сохранение…</string>
+    <string name="saveStatusError">Ошибка сохранения</string>
+
 </resources>

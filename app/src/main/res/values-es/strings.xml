@@ -269,4 +269,9 @@
     <string name="shortcut_search_long">Buscar en notas</string>
     <string name="shortcut_disabled_message">Esta función no está disponible</string>
 
+    <string name="saveStatus">Estado de guardado</string>
+    <string name="saveStatusSaved">Guardado</string>
+    <string name="saveStatusPending">Cambios no guardados</string>
+    <string name="saveStatusSaving">Guardando…</string>
+    <string name="saveStatusError">Error al guardar</string>
 </resources>

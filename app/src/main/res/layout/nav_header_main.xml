@@ -20,7 +20,7 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/nav_support"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_marginTop="25dp"
         android:layout_marginHorizontal="20dp"
         android:padding="@dimen/paddingItems"

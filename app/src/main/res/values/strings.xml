@@ -280,6 +280,13 @@
 
     <string name="actual_version">Up to date for version %1$s</string>
 
+    <!-- Save Status -->
+    <string name="saveStatus">Save Status</string>
+    <string name="saveStatusSaved">Saved</string>
+    <string name="saveStatusPending">Unsaved changes</string>
+    <string name="saveStatusSaving">Saving…</string>
+    <string name="saveStatusError">Save error</string>
+
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Нова нотатка</string>
     <string name="shortcut_new_note_long">Створити нову нотатку</string>

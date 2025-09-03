@@ -265,4 +265,11 @@
     <string name="shortcut_search_long">Пошук у нотатках</string>
     <string name="shortcut_disabled_message">Ця функція недоступна</string>
 
+    <string name="saveStatus">Статус збереження</string>
+    <string name="saveStatusSaved">Збережено</string>
+    <string name="saveStatusPending">Незбережені зміни</string>
+    <string name="saveStatusSaving">Збереження…</string>
+    <string name="saveStatusError">Помилка збереження</string>
+
+
 </resources>

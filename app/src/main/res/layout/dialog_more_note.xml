@@ -163,8 +163,6 @@
                         style="@style/itemTextBottomSheets"
                         android:text="@string/trashNotes" />
         </LinearLayout>
-
-
                 <View
                     android:id="@+id/spacerLast"
                     android:layout_width="match_parent"
@@ -176,7 +174,7 @@
                 android:background="@drawable/bg_item_full"
                 android:layout_marginHorizontal="20dp"
                 android:orientation="horizontal"
-                android:visibility="@{activityNote ? View.VISIBLE : View.GONE, default = gone}"
+                android:visibility="@{View.GONE}"
                 android:padding="@dimen/paddingItems">
 
                 <ImageView

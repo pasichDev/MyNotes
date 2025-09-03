@@ -279,4 +279,10 @@
     <string name="shortcut_search_long">Search Notes</string>
     <string name="shortcut_disabled_message">This feature is unavailable</string>
 
+    <string name="saveStatus">Save Status</string>
+    <string name="saveStatusSaved">Saved</string>
+    <string name="saveStatusPending">Unsaved changes</string>
+    <string name="saveStatusSaving">Saving…</string>
+    <string name="saveStatusError">Save error</string>
+
 </resources>
