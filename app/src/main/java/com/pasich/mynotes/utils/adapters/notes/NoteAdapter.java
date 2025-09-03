@@ -144,7 +144,6 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
         }
 
     }
-    
     public void clearList() {
         submitList(new ArrayList<>());
     }
