@@ -149,7 +149,7 @@
     <!-- Oferta de productos -->
     <string name="thanks_title">Estimado usuario</string>
     <string name="errorSyncTitle">¡Atención!</string>
-    <string name="errorSyncDescrpt">Con esta versión, dejamos de ofrecer soporte para la sincronización con Google Drive. En futuras actualizaciones, implementaremos un método de sincronización más seguro y eficiente, lo que garantizará una mejor experiencia de usuario.</string>
+    <string name="errorSyncDescrpt">La copia de seguridad en la nube no está disponible temporalmente</string>
 
     <string name="thanks_donate">El desarrollador del proyecto le agradece su compra. Nos esforzaremos por ser mejores y más convenientes. \n <b>¡Respetuosamente, mis notas!</b></string>
 

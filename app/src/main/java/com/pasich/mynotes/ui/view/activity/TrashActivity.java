@@ -1,7 +1,5 @@
 package com.pasich.mynotes.ui.view.activity;
 
-import static com.pasich.mynotes.utils.actionPanel.ActionUtils.getAction;
-
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,7 +8,6 @@ import android.view.View;
 import androidx.activity.OnBackPressedCallback;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.TrashNote;
@@ -65,7 +62,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (getAction()) {
+                if (actionUtils.getAction()) {
                     actionUtils.closeActionPanel();
                 } else {
                     finishActivity();
@@ -117,7 +114,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == android.R.id.home) {
-            if (getAction()) {
+            if (actionUtils.getAction()) {
                 actionUtils.closeActionPanel();
             } else {
                 finishActivity();

@@ -104,14 +104,12 @@
         <include
             android:id="@+id/actionInclude"
             layout="@layout/action_panel"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginBottom="30dp"
             android:visibility="gone"
             app:layout_anchor="@id/notes_layout"
-            app:layout_anchorGravity="bottom|right|end" />
+            app:layout_anchorGravity="bottom" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/newNotesButton"

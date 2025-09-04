@@ -133,7 +133,7 @@
     <string name="sortNotes">Notizen sortieren</string>
     <string name="percentProgress" translateable="false">Sicherung läuft (%d%%)</string>
     <string name="errorSyncTitle">Achtung!</string>
-    <string name="errorSyncDescrpt">Mit dieser Version stellen wir die Unterstützung der Google Drive-Synchronisierung ein. In zukünftigen Updates werden wir eine sicherere und effizientere Synchronisierungsmethode einführen, die Ihnen ein besseres Benutzererlebnis bietet.</string>
+    <string name="errorSyncDescrpt">Die Sicherung in der Cloud ist vorübergehend nicht verfügbar</string>
 
     <!-- Produktangebot -->
     <string name="thanks_title">Lieber Benutzer</string>

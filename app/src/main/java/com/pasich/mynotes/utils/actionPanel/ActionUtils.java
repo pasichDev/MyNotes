@@ -12,7 +12,7 @@ import dagger.hilt.android.scopes.ActivityScoped;
 
 @ActivityScoped
 public class ActionUtils {
-    private static boolean ACTION_ON = false;
+    private boolean actionOn = false;
     private ActionPanelBinding binding;
     private View mViewRoot;
     private ManagerViewAction managerViewAction;
@@ -29,32 +29,32 @@ public class ActionUtils {
 
 
     /**
-     * @return - Returns the value of ACTION_ON
+     * @return - Returns the value of actionOn
      */
-    public static boolean getAction() {
-        return ACTION_ON;
+    public boolean getAction() {
+        return actionOn;
     }
 
     /**
-     * Set value to ACTION_ON
+     * Set value to actionOn
      *
      * @param arg - (boolean) true/false
      */
-    public static void setAction(boolean arg) {
-        ACTION_ON = arg;
+    public void setAction(boolean arg) {
+        actionOn = arg;
     }
 
     private void setListener() {
-        binding.closeActionPanel.setOnClickListener(v -> closeActionPanel());
-        binding.actionPanelDelete.setOnClickListener(v -> managerViewAction.deleteNotes());
-        binding.actionPanelShare.setOnClickListener(v -> managerViewAction.shareNotes());
-        binding.actionPanelRestore.setOnClickListener(v -> managerViewAction.restoreNotes());
+        binding.actionClose.setOnClickListener(v -> closeActionPanel());
+        binding.actionDelete.setOnClickListener(v -> managerViewAction.deleteNotes());
+        binding.actionShare.setOnClickListener(v -> managerViewAction.shareNotes());
+        binding.actionRestore.setOnClickListener(v -> managerViewAction.restoreNotes());
     }
 
     public void setTrash() {
-        binding.actionPanelShare.setVisibility(View.GONE);
-        binding.actionPanelDelete.setVisibility(View.GONE);
-        binding.actionPanelRestore.setVisibility(View.VISIBLE);
+        binding.actionShare.setVisibility(View.GONE);
+        binding.actionDelete.setVisibility(View.GONE);
+        binding.actionRestore.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -83,12 +83,32 @@ public class ActionUtils {
     }
 
     public void closeActionPanel() {
-        binding.closeActionPanel.setOnClickListener(null);
-        binding.actionPanelDelete.setOnClickListener(null);
-        binding.actionPanelShare.setOnClickListener(null);
-        binding.actionPanelRestore.setOnClickListener(null);
+        clearListeners();
         managerViewAction.toolCleanChecked();
         deactivationActionPanel();
+        setAction(false);
+    }
+
+    /**
+     * Очистка всех listeners
+     */
+    private void clearListeners() {
+        if (binding != null) {
+            binding.actionClose.setOnClickListener(null);
+            binding.actionDelete.setOnClickListener(null);
+            binding.actionShare.setOnClickListener(null);
+            binding.actionRestore.setOnClickListener(null);
+        }
+    }
+
+    /**
+     * Должна вызываться в onDestroy активности
+     */
+    public void cleanup() {
+        clearListeners();
+        binding = null;
+        mViewRoot = null;
+        managerViewAction = null;
         setAction(false);
     }
 }

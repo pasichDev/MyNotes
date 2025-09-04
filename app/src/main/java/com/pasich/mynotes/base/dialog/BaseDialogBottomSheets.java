@@ -1,7 +1,7 @@
 package com.pasich.mynotes.base.dialog;
 
-
 import android.content.Context;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.view.View;
 
@@ -39,16 +39,23 @@ public abstract class BaseDialogBottomSheets extends BottomSheetDialogFragment i
         super.onDestroy();
     }
 
+
+
     @Override
     public void vibrateOpenDialog(boolean vibrate) {
         if (vibrate) {
             Vibrator vibrator = (Vibrator) requireActivity().getSystemService(Context.VIBRATOR_SERVICE);
 
-            if (vibrator.hasVibrator()) {
-                vibrator.vibrate(50L);
+            if (vibrator != null && vibrator.hasVibrator()) {
+                VibrationEffect effect = VibrationEffect.createOneShot(
+                        50,
+                        VibrationEffect.DEFAULT_AMPLITUDE
+                );
+                vibrator.vibrate(effect);
             }
         }
     }
+
 
 
     @Override

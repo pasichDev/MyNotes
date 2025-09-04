@@ -145,7 +145,7 @@
     <string name="sortNotes">Sortuj notatki</string>
     <string name="percentProgress">Kopia zapasowa (%d%%)</string>
     <string name="errorSyncTitle">Uwaga!</string>
-    <string name="errorSyncDescrpt">W tej wersji przestajemy wspierać synchronizację z Google Drive. W przyszłych aktualizacjach wprowadzimy bezpieczniejszą i bardziej wydajną metodę synchronizacji, zapewniając lepsze doświadczenie użytkownika.</string>
+    <string name="errorSyncDescrpt">Tworzenie kopii zapasowej w chmurze jest tymczasowo niedostępne.</string>
 
      <!-- Oferta produktowa -->
     <string name="thanks_title">Drogi użytkowniku</string>
