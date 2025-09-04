@@ -27,7 +27,6 @@ import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.graphics.Insets;
-import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -1032,14 +1031,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      */
     private void signOut(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
         googleSignInClient.signOut().addOnCompleteListener(task -> {
-            final Preference preference = PowerPreference.getFileByName(
-                    com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP);
+            // Оновлюємо UI в main потоці
             loginPageBinding.loginUser.setVisibility(View.VISIBLE);
             loginPageBinding.loginPageRoot.setVisibility(View.GONE);
-            preference.removeAsync(BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD);
-            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_ID);
-            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_TIME);
-            cloudCacheHelper.clean();
+            // Виконуємо операції з preferences асинхронно
+            new Thread(() -> {
+                try {
+                    final Preference preference = PowerPreference.getFileByName(
+                            com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP);
+                    preference.removeAsync(BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD);
+                    preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_ID);
+                    preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_TIME);
+                    cloudCacheHelper.clean();
+                } catch (Exception e) {
+                    Log.e("MainActivity", "Error during sign out preferences cleanup", e);
+                }
+            }).start();
         });
     }
 

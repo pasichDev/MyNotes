@@ -120,16 +120,18 @@ public class ApplicationModule {
     @Provides
     @Singleton
     CloudCacheHelper providesCloudCacheHelper(@ApplicationContext Context mContext, Scope accessDrive, boolean isPlayMarketInstall) {
-        if (isPlayMarketInstall) {
-            GoogleSignInAccount mLastAccount = GoogleSignIn.getLastSignedInAccount(mContext);
-            if (mLastAccount != null) {
-                return new CloudCacheHelper().build(mLastAccount, GoogleSignIn.hasPermissions(mLastAccount, accessDrive));
-            } else {
-                return new CloudCacheHelper();
-            }
-        } else {
-            return new CloudCacheHelper().playMarketNoInstall();
-        }
+        CloudCacheHelper helper = new CloudCacheHelper();
+        // Запускаємо асинхронну ініціалізацію Google Services
+        helper.initializeAsync(mContext, accessDrive, isPlayMarketInstall)
+            .whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    android.util.Log.e("ApplicationModule", "Failed to initialize Google Services asynchronously", throwable);
+                } else {
+                    android.util.Log.d("ApplicationModule", "Google Services initialized asynchronously");
+                }
+            });
+        
+        return helper;
     }
 
     @Provides
