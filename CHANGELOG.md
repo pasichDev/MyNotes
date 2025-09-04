@@ -2,6 +2,9 @@
 
 ## [2.2.34] - XX.XX.2025
 
+- Interface updates on some screens
+- Fixed: obtaining a backup copy from the cloud
+
 ## [2.2.33] - 04.09.2025
 
 - Added auto-save when editing notes
