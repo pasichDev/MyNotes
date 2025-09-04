@@ -87,6 +87,6 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             app:layout_anchor="@id/trash_notes_layout"
-            app:layout_anchorGravity="bottom|right|end" />
+            app:layout_anchorGravity="bottom" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

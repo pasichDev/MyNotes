@@ -109,7 +109,7 @@
             android:layout_gravity="bottom|end"
             android:visibility="gone"
             app:layout_anchor="@id/notes_layout"
-            app:layout_anchorGravity="bottom|right|end" />
+            app:layout_anchorGravity="bottom" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/newNotesButton"
