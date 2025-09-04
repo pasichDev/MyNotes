@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [2.1.33] - XX.XX.2025
+## [2.2.33] - 04.09.2025
 
 - Added auto-save when editing notes
 - Added the ability to save selected text via the context menu
