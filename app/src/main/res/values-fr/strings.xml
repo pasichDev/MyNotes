@@ -138,7 +138,7 @@
     <string name="sortNotes">Trier les notes</string>
     <string name="percentProgress" translatable="false">Sauvegarde (%d%%)</string>
     <string name="errorSyncTitle">Attention!</string>
-    <string name="errorSyncDescrpt">Avec cette version, nous arrêtons le support de la synchronisation avec Google Drive. Dans les futures mises à jour, nous introduirons une méthode de synchronisation plus sécurisée et efficace, garantissant une meilleure expérience utilisateur.</string>
+    <string name="errorSyncDescrpt">La sauvegarde dans le cloud est temporairement indisponible</string>
 
     <!-- Offre produit -->
     <string name="thanks_title">Cher utilisateur</string>

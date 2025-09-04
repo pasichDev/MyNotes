@@ -138,7 +138,7 @@
 
 
     <string name="errorSyncTitle">Зверніть увагу!</string>
-    <string name="errorSyncDescrpt">З цією версією ми припиняємо підтримку синхронізації з Google Диском. У майбутніх оновленнях ми запровадимо більш безпечний і ефективний метод синхронізації, що забезпечить вам ще кращий досвід використання.</string>
+    <string name="errorSyncDescrpt">Створення резервної копії в хмарі наразі тимчасово недоступне</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Підтримати розробника</string>

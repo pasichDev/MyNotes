@@ -165,7 +165,7 @@
     <string name="percentProgress" translatable="false">Backup (%d%%)</string>
 
     <string name="errorSyncTitle">Attention!</string>
-    <string name="errorSyncDescrpt">With this version, we are discontinuing support for Google Drive synchronization. In future updates, we will introduce a more secure and efficient synchronization method, ensuring you a better user experience.</string>
+    <string name="errorSyncDescrpt">Cloud backup is temporarily unavailable</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Support Developer</string>

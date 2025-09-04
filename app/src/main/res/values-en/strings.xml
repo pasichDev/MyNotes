@@ -159,7 +159,7 @@
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
     <string name="errorSyncTitle">Attention!</string>
-    <string name="errorSyncDescrpt">With this version, we are discontinuing support for Google Drive synchronization. In future updates, we will introduce a more secure and efficient synchronization method, ensuring you a better user experience.</string>
+    <string name="errorSyncDescrpt">Cloud backup is temporarily unavailable</string>
 
     <string name="percentProgress">Backup (%d%%)</string>
 

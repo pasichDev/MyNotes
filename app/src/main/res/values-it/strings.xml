@@ -136,7 +136,7 @@
     <string name="sortNotes">Ordina note</string>
     <string name="percentProgress" translatable="false">Backup (%d%%)</string>
     <string name="errorSyncTitle">Attenzione!</string>
-    <string name="errorSyncDescrpt">Con questa versione, interrompiamo il supporto per la sincronizzazione con Google Drive. Nei futuri aggiornamenti introdurremo un metodo di sincronizzazione più sicuro ed efficiente, garantendo un\'esperienza utente migliore.</string>
+    <string name="errorSyncDescrpt">Il backup cloud non è temporaneamente disponibile</string>
 
     <!-- Offerta prodotto -->
     <string name="thanks_title">Gentile utente</string>
