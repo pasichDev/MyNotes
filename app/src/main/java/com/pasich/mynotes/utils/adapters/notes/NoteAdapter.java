@@ -11,7 +11,6 @@ import com.pasich.mynotes.utils.adapters.baseGenericAdapter.GenericAdapterCallba
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilNote;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -62,12 +61,12 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
 
     public void sortList(String arg) {
         ArrayList<Note> newList = new ArrayList<>(getCurrentList());
-        Collections.sort(newList, new NoteComparator().getComparator(arg));
+        newList.sort(new NoteComparator().getComparator(arg));
         submitList(newList);
     }
 
     public int sortList(List<Note> notesList, String arg, String tagSelected) {
-        Collections.sort(notesList, new NoteComparator().getComparator(arg));
+        notesList.sort(new NoteComparator().getComparator(arg));
         defaultList = notesList;
         return filter(tagSelected);
     }
@@ -111,26 +110,19 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
             } else {
                 if (updateList) {
                     submitList(defaultList, () -> {
-                        // Прокручуємо до першого елемента тільки якщо це нова нотатка
-                        if (shouldScrollToTop && recyclerView != null && !getCurrentList().isEmpty()) {
-                            recyclerView.post(() -> {
+                       if (shouldScrollToTop && recyclerView != null && !getCurrentList().isEmpty()) {
+                            recyclerView.postDelayed(() -> {
                                 androidx.recyclerview.widget.StaggeredGridLayoutManager layoutManager = 
                                     (androidx.recyclerview.widget.StaggeredGridLayoutManager) recyclerView.getLayoutManager();
                                 if (layoutManager != null) {
                                     int[] firstVisibleItemPositions = layoutManager.findFirstVisibleItemPositions(null);
-                                    boolean isFirstItemVisible = false;
-                                    for (int pos : firstVisibleItemPositions) {
-                                        if (pos == 0) {
-                                            isFirstItemVisible = true;
-                                            break;
-                                        }
-                                    }
+                                    boolean isFirstItemVisible = firstVisibleItemPositions.length > 0 && firstVisibleItemPositions[0] == 0;
                                     
                                     if (!isFirstItemVisible) {
                                         layoutManager.scrollToPositionWithOffset(0, 0);
                                     }
                                 }
-                            });
+                            }, 50); // Зменшили затримку для швидшої реакції
                             shouldScrollToTop = false; // Скидаємо флаг після використання
                         }
                     });
@@ -152,7 +144,6 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
         }
 
     }
-    
     public void clearList() {
         submitList(new ArrayList<>());
     }

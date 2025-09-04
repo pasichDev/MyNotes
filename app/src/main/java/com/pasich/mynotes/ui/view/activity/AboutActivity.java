@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import androidx.activity.OnBackPressedCallback;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.BuildConfig;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -47,11 +46,8 @@ public class AboutActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
         binding = ActivityAboutBinding.inflate(getLayoutInflater());
-        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activityAbout));
-        getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
-
         setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);
         initActivity();

@@ -49,6 +49,17 @@
     <string name="emptyNotes">Сіз жасаған ескертпелер осы жерде пайда болады</string>
     <string name="emptyNotesForTag">Мұнда сіз "%1$s" тегімен белгілейтін ескертпелер көрсетіледі</string>
     <string name="chooseNote">Таңдалған ескертпедегі әрекеттер</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Бөлісу опциялары</string>
+    <string name="saveToGoogleDrive">Google Drive-ға сақтау</string>
+    <string name="saveAsTxt">TXT ретінде сақтау</string>
+    <string name="saveAsPdf">PDF ретінде сақтау</string>
+    <string name="saveAsHtml">HTML ретінде сақтау</string>
+    <string name="shareViaApps">Басқа қолданбалар арқылы бөлісу</string>
+    <string name="errorSavingFile">Файлды сақтау қатесі</string>
+    <string name="fileSavedSuccessfully">Файл сәтті сақталды</string>
+    <string name="googleDriveNotInstalled">Google Drive орнатылмаған</string>
     <string name="contentDescrChangeStyleText">Мәтін мәнерін өзгерту</string>
     <string name="copyNoteEdits">Көшірмені өңдеу</string>
     <string name="noteMoveTrashSnackbar">Ескертпе себетке жіберілді</string>
@@ -91,6 +102,12 @@
     <string name="localBackup">Құрылғы</string>
     <string name="importLocalBackup">Res. көшірмелер</string>
     <string name="exportLocalBackup">Сақтық көшірме жасау</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Деректерді экспорттау</string>
+    <string name="important">Маңызды</string>
+    <string name="dataExportDescription">Сіз өзіңіздің барлық ағымдағы жазбаларыңызды көру үшін экспорттай аласыз. Бұл функция тек белсенді жазбаларды экспорттайды, қоқыс жәшігіндегі жазбаларды алып тастап, тегтер немесе басқа сүзгілерді ескермейді.</string>
+    <string name="exportAllNotes">Барлық жазбаларды экспорттау</string>
     <string name="lastCloudCopy">Соңғы сақтық көшірме: %1$s</string>
     <string name="errorDriveAuth">Қонақ</string>
     <string name="autoCloudBackupTitle">Сақтық көшірмені автоматты түрде жасау</string>
@@ -139,7 +156,7 @@
     <string name="inAppPurchases">Қолданба ішіндегі сатып алулар</string>
     <string name="donationMethods">Қолдау көрсету әдістері</string>
     <string name="kofiDescription">Ko-Fi-да маған кофе сыйлаңыз</string>
-   <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
+    <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
     <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
 
     <!-- Changelog Activity -->
@@ -235,12 +252,27 @@
     <string name="help_notes_copy_description">Түпнұсқасын бұзбай өзгерістер енгізу үшін кез келген жазбаның өңделетін көшірмесін жасаңыз.</string>
 
     <string name="actual_version">%1$s нұсқасы үшін өзекті</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Синхрондау және деректерді экспорттау</string>
+    <string name="help_other_backup_export_description">«Синхрондау және сақтық көшірме» бөлімінде барлық жазбаларыңызды әртүрлі форматтарда (TXT, PDF, HTML) көру және сақтық көшірме жасау үшін экспорттай аласыз.</string>
 
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Жазбаларды бөлісу және экспорттау</string>
+    <string name="help_notes_share_description">Бір немесе бірнеше жазбаны басқа қолданбалар арқылы бөлісіңіз, Google Drive-қа сақтаңыз немесе TXT, PDF, HTML форматында стильді пішімдеумен экспорттаңыз.</string>
+    <string name="save_to_notes">Менің Жазбаларыма сақтау</string>
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Жаңа жазба</string>
     <string name="shortcut_new_note_long">Жаңа жазба жасау</string>
     <string name="shortcut_search_short">Іздеу</string>
     <string name="shortcut_search_long">Жазбалардан іздеу</string>
     <string name="shortcut_disabled_message">Бұл функция қол жетімсіз</string>
+
+    <string name="saveStatus">Сақтау күйі</string>
+    <string name="saveStatusSaved">Сақталды</string>
+    <string name="saveStatusPending">Сақталмаған өзгерістер</string>
+    <string name="saveStatusSaving">Сақталуда…</string>
+    <string name="saveStatusError">Сақтау қатесі</string>
+    <string name="help_notes_autosave_title">Автоматты сақтау</string>
+    <string name="help_notes_autosave_description">Жазбалар мәтінді енгізуді тоқтатқаннан кейін 2 секундтан соң автоматты түрде сақталады. Жоғарғы тақтада индикатор көрсетіледі: көк нүкте — сақталмаған өзгерістер, анимациялық белгіше — сақтау жүріп жатыр, жасыл құсбелгі — сәтті сақталды. Қолданбаны жапсаңыз да немесе ол істен шықса да, соңғы өзгерістер жоғалмайды.</string>
 
 </resources>

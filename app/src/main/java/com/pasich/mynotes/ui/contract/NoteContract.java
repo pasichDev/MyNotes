@@ -8,6 +8,7 @@ import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.base.view.MoreNoteNoteActivityView;
 import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.utils.enums.SaveState;
 
 public interface NoteContract {
 
@@ -24,6 +25,8 @@ public interface NoteContract {
         void loadingNote(Note note);
 
         void editIdNoteCreated(long idNote);
+        
+        void updateSaveStatus(SaveState saveState);
     }
 
     interface presenter extends BasePresenter<view> {
@@ -38,6 +41,8 @@ public interface NoteContract {
         void createNote(Note note);
 
         void saveNote(Note note);
+        
+        void autoSaveNote(Note note, AutoSaveCallback callback);
 
         void deleteNote(Note note);
 
@@ -66,5 +71,12 @@ public interface NoteContract {
         void setNewNoteKey(boolean newNoteKey);
 
         int getTypeFace(String textStyle);
+        
+        void onTextChanged();
+    }
+    
+    interface AutoSaveCallback {
+        void onSuccess();
+        void onError(Throwable error);
     }
 }

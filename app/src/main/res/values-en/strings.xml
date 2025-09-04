@@ -49,6 +49,17 @@
     <string name="emptyNotes">Notes you create will appear here</string>
     <string name="emptyNotesForTag">Here will be displayed notes that you mark with the tag "%1$s"</string>
     <string name="chooseNote">Actions on the selected note</string>
+
+    <!-- Share Dialog -->
+    <string name="shareOptions">Share options</string>
+    <string name="saveToGoogleDrive">Save to Google Drive</string>
+    <string name="saveAsTxt">Save as TXT</string>
+    <string name="saveAsPdf">Save as PDF</string>
+    <string name="saveAsHtml">Save as HTML</string>
+    <string name="shareViaApps">Share via other apps</string>
+    <string name="errorSavingFile">Error saving file</string>
+    <string name="fileSavedSuccessfully">File saved successfully</string>
+    <string name="googleDriveNotInstalled">Google Drive is not installed</string>
     <string name="contentDescrChangeStyleText">Change text style</string>
     <string name="copyNoteEdits">Edit copy</string>
     <string name="noteMoveTrashSnackbar">Note moved to trash</string>
@@ -62,6 +73,7 @@
     <!-- Strings that are not translated  -->
     <string name="tagHastag" translatable="false">#%1$s</string>
     <string name="app_name"> My Notes </string>
+    <string name="save_to_notes">Save to My Notes</string>
     <string name="telegram_nick" translatable="false">"@"pasichDev</string>
     <string name="email_address" translatable="false">pasichDev@gmail.com</string>
     <string name="editNoteButton" translatable="false">EditNote</string>
@@ -104,6 +116,12 @@
     <string name="localBackup">Device</string>
     <string name="importLocalBackup">Restore with Res. copies</string>
     <string name="exportLocalBackup">Create backup</string>
+
+    <!-- Data Export Section -->
+    <string name="dataExport">Data Export</string>
+    <string name="important">Important</string>
+    <string name="dataExportDescription">You can export all your current notes for viewing. This feature exports only active notes, excluding notes from trash, without considering tags or other filters.</string>
+    <string name="exportAllNotes">Export all notes</string>
     <string name="lastCloudCopy">Last backup: %1$s</string>
     <string name="errorDriveAuth">Guest</string>
     <string name="autoCloudBackupTitle">Auto Backup</string>
@@ -120,9 +138,6 @@
     <string name="autoCloudVariantsWeek">Every week</string>
     <string name="autoCloudVariantsMonth">Every month</string>
     <string name="autoCloudVariantsOff">Off</string>
-
-    <!-- AutoBackup strings -->
-
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">No data to backup</string>
@@ -179,17 +194,17 @@
     <string name="donation_wave_description">Send a powerful wave of encouragement</string>
     <string name="donation_universe_title">Universe of Inspiration</string>
     <string name="donation_universe_description">Unlock infinite possibilities for the future</string>
-    
+
     <!-- Purchase Success -->
     <string name="purchase_success_title">Thank You! 💖</string>
     <string name="purchase_success_message">Your support means the world to us! Thanks to amazing people like you, we can continue developing and improving MyNotes. Your contribution helps us add new features, fix bugs, and make the app even better.\n\nWe wish you all the best and hope you continue to enjoy using MyNotes!</string>
     <string name="purchase_success_button">Close</string>
-    
+
     <!-- Purchase Error Messages -->
     <string name="purchase_error_title">Purchase Failed</string>
     <string name="purchase_loading">Loading products...</string>
     <string name="purchase_error_no_products">No donation products available</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Support Developer</string>
     <string name="support_solo_developer_description">Hi! I\'m a developer working on MyNotes in my free time. All features will always be free, but your support helps me dedicate more time to making this app even better. Every contribution means the world to me! 💖</string>
@@ -249,11 +264,29 @@
 
     <string name="actual_version">Up to date for version %1$s</string>
 
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Sync and Data Export</string>
+    <string name="help_other_backup_export_description">In the Synchronization and Backup section, you can export all your notes in various formats (TXT, PDF, HTML) for viewing and backup purposes.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Share and Export Notes</string>
+    <string name="help_notes_share_description">Share single or multiple notes via other apps, save to Google Drive, or export as TXT, PDF, or HTML files with styled formatting.</string>
+
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">New Note</string>
     <string name="shortcut_new_note_long">Create New Note</string>
     <string name="shortcut_search_short">Search</string>
     <string name="shortcut_search_long">Search Notes</string>
     <string name="shortcut_disabled_message">This feature is unavailable</string>
+
+    <string name="saveStatus">Save Status</string>
+    <string name="saveStatusSaved">Saved</string>
+    <string name="saveStatusPending">Unsaved changes</string>
+    <string name="saveStatusSaving">Saving…</string>
+    <string name="saveStatusError">Save error</string>
+
+    <string name="help_notes_autosave_title">Auto-save</string>
+    <string name="help_notes_autosave_description">Notes are automatically saved 2 seconds after you stop typing. A status indicator in the top bar shows: blue dot for unsaved changes, animated icon for saving in progress, green checkmark for successfully saved. Even if you close the app or it crashes, your latest changes won\'t be lost.</string>
+
 
 </resources>

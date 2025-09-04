@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name"> Mes notes </string>
+    <string name="save_to_notes">Enregistrer dans Mes Notes</string>
     <string name="NewNote"> Créer une note </string>
     <string name="trashNotes">Déplacer vers la corbeille</string>
     <string name="trashClean">Nettoyer la corbeille</string>
@@ -48,6 +49,17 @@
     <string name="emptyNotes">Les notes que vous avez créées seront affichées ici</string>
     <string name="emptyNotesForTag">Ici seront affichées les notes que vous marquerez avec le tag "%1$s"</string>
     <string name="chooseNote">Actions sur la note sélectionnée</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Options de partage</string>
+    <string name="saveToGoogleDrive">Enregistrer dans Google Drive</string>
+    <string name="saveAsTxt">Enregistrer en TXT</string>
+    <string name="saveAsPdf">Enregistrer en PDF</string>
+    <string name="saveAsHtml">Enregistrer en HTML</string>
+    <string name="shareViaApps">Partager via d\'autres applications</string>
+    <string name="errorSavingFile">Erreur lors de l\'enregistrement du fichier</string>
+    <string name="fileSavedSuccessfully">Fichier enregistré avec succès</string>
+    <string name="googleDriveNotInstalled">Google Drive n\'est pas installé</string>
     <string name="contentDescrChangeStyleText">Modifier le style de texte</string>
     <string name="copyNoteEdits">Modifier une copie d\'une note</string>
     <string name="noteMoveTrashSnackbar">Note déplacée vers la corbeille</string>
@@ -88,6 +100,12 @@
     <string name="localBackup">Périphérique</string>
     <string name="importLocalBackup">Restauration à l\'aide de res. copies</string>
     <string name="exportLocalBackup">Créer une sauvegarde</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Export de données</string>
+    <string name="important">Important</string>
+    <string name="dataExportDescription">Vous pouvez exporter toutes vos notes actuelles pour les consulter. Cette fonctionnalité exporte uniquement les notes actives, en excluant les notes de la corbeille, sans tenir compte des étiquettes ou autres filtres.</string>
+    <string name="exportAllNotes">Exporter toutes les notes</string>
     <string name="lastCloudCopy">Dernière sauvegarde: %1$s</string>
     <string name="errorDriveAuth">Invité</string>
     <string name="autoCloudBackupTitle">Sauvegarde automatique</string>
@@ -227,6 +245,13 @@
     <string name="help_notes_copy_description">Créez une copie modifiable de n\'importe quelle note pour apporter des modifications tout en gardant l\'original intact.</string>
 
     <string name="actual_version">À jour pour la version %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Synchronisation et exportation des données</string>
+    <string name="help_other_backup_export_description">Dans la section « Synchronisation et sauvegarde », vous pouvez exporter toutes vos notes dans divers formats (TXT, PDF, HTML) pour les consulter et les sauvegarder.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Partager et exporter des notes</string>
+    <string name="help_notes_share_description">Partagez une ou plusieurs notes via d’autres applications, enregistrez-les sur Google Drive ou exportez-les au format TXT, PDF ou HTML avec mise en forme.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Nouvelle note</string>
@@ -234,5 +259,13 @@
     <string name="shortcut_search_short">Rechercher</string>
     <string name="shortcut_search_long">Rechercher dans les notes</string>
     <string name="shortcut_disabled_message">Cette fonction n\'est pas disponible</string>
+
+    <string name="saveStatus">État de l’enregistrement</string>
+    <string name="saveStatusSaved">Enregistré</string>
+    <string name="saveStatusPending">Modifications non enregistrées</string>
+    <string name="saveStatusSaving">Enregistrement…</string>
+    <string name="saveStatusError">Erreur d’enregistrement</string>
+    <string name="help_notes_autosave_title">Enregistrement automatique</string>
+    <string name="help_notes_autosave_description">Les notes sont enregistrées automatiquement 2 secondes après avoir arrêté de taper. Dans la barre supérieure, un indicateur s’affiche : point bleu — modifications non enregistrées, icône animée — enregistrement en cours, coche verte — enregistré avec succès. Même si vous fermez l’application ou qu’elle plante, vos dernières modifications ne seront pas perdues.</string>
 
 </resources>

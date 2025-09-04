@@ -7,6 +7,7 @@ import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
 import com.google.api.services.drive.Drive;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
+import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 
@@ -55,6 +56,8 @@ public interface BackupContract {
         void getClickedOffUpdate();
 
         MediaHttpUploaderProgressListener getProcessListener();
+        
+        void openShareOptionsDialog(java.util.List<Note> notes, boolean isDataExport);
 
     }
 
@@ -79,5 +82,7 @@ public interface BackupContract {
         void readFileBackupCloud(Drive mDriveCredential);
 
         void saveDataLoadingLastBackup(Drive mDriveCredential);
+        
+        void exportAllNotesPresenter();
     }
 }

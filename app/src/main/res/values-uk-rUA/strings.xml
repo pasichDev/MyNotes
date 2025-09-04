@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name"> Мої Нотатки </string>
+    <string name="save_to_notes">Зберегти в Мої Нотатки</string>
     <string name="NewNote"> Створити нотатку </string>
     <string name="trashNotes">Перемістити до корзини</string>
     <string name="trashClean">Очистити корзину</string>
@@ -48,6 +49,17 @@
     <string name="emptyNotes">Тут відображатимуться створені вами нотатки</string>
     <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
     <string name="chooseNote">Дії над вибраною нотаткою</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Опції поділитися</string>
+    <string name="saveToGoogleDrive">Зберегти в Google Drive</string>
+    <string name="saveAsTxt">Зберегти як TXT</string>
+    <string name="saveAsPdf">Зберегти як PDF</string>
+    <string name="saveAsHtml">Зберегти як HTML</string>
+    <string name="shareViaApps">Поділитися через інші додатки</string>
+    <string name="errorSavingFile">Помилка збереження файлу</string>
+    <string name="fileSavedSuccessfully">Файл успішно збережено</string>
+    <string name="googleDriveNotInstalled">Google Drive не встановлено</string>
     <string name="contentDescrChangeStyleText">Змінити стиль тексту</string>
     <string name="copyNoteEdits">Редагувати копію нотатки</string>
     <string name="noteMoveTrashSnackbar">Нотатку переміщена в кошик</string>
@@ -82,6 +94,12 @@
     <string name="localBackup">Пристрій</string>
     <string name="importLocalBackup">Відновити за допомогою рез. копії</string>
     <string name="exportLocalBackup">Створити резервну копію</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Експорт даних</string>
+    <string name="important">Важливо</string>
+    <string name="dataExportDescription">Ви можете експортувати всі свої наявні нотатки для перегляду. Ця функція експортує лише активні нотатки, виключаючи нотатки з корзини, не враховуючи теги чи інші фільтри.</string>
+    <string name="exportAllNotes">Експортувати всі нотатки</string>
     <string name="lastCloudCopy">Остання резервна копія: %1$s</string>
     <string name="errorDriveAuth">Гість</string>
     <string name="autoCloudBackupTitle">Автоматичне резервне копіювання</string>
@@ -222,6 +240,10 @@
     <string name="help_notes_text_size_description">Змінюйте розмір тексту під час редагування нотаток за допомогою діалогового вікна розміру тексту, доступного прямо з екрану редагування нотатки.</string>
     <string name="help_notes_copy_title">Редагувати копію</string>
     <string name="help_notes_copy_description">Створюйте редаговану копію будь-якої нотатки для внесення змін, зберігаючи оригінал недоторканим.</string>
+    
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Поділитися та експорт нотаток</string>
+    <string name="help_notes_share_description">Діліться однією або кількома нотатками через інші додатки, зберігайте на Google Drive або експортуйте як TXT, PDF чи HTML файли зі стилізованим форматуванням.</string>
 
     <string name="actual_version">Актуально для версії %1$s</string>
 
@@ -231,6 +253,10 @@
     <string name="help_other_security_description">Коли увімкнено в налаштуваннях, ця функція захищає ваші нотатки від несанкціонованого перегляду, приховуючи вміст додатку в огляді останніх програм, запобігаючи скріншотам та блокуючи запис екрану. Ця функція безпеки активується після перезапуску додатку.</string>
     <string name="help_other_shortcuts_title">Швидкі дії</string>
     <string name="help_other_shortcuts_description">Утримуйте іконку додатку для швидкого доступу до створення нової нотатки або пошуку серед ваших нотаток. Доступно на Android 7.1 і вище.</string>
+    
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Синхронізація та експорт даних</string>
+    <string name="help_other_backup_export_description">У розділі "Синхронізація та резервні копії" ви можете експортувати всі свої нотатки в різних форматах (TXT, PDF, HTML) для перегляду та створення резервних копій.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Нова нотатка</string>
@@ -238,5 +264,14 @@
     <string name="shortcut_search_short">Пошук</string>
     <string name="shortcut_search_long">Пошук у нотатках</string>
     <string name="shortcut_disabled_message">Ця функція недоступна</string>
+
+    <string name="saveStatus">Статус збереження</string>
+    <string name="saveStatusSaved">Збережено</string>
+    <string name="saveStatusPending">Незбережені зміни</string>
+    <string name="saveStatusSaving">Збереження…</string>
+    <string name="saveStatusError">Помилка збереження</string>
+    <string name="help_notes_autosave_title">Автозбереження</string>
+    <string name="help_notes_autosave_description">Нотатки автоматично зберігаються через 2 секунди після завершення вводу. У верхній панелі відображається індикатор: синя крапка — незбережені зміни, анімована іконка — процес збереження, зелена галочка — успішно збережено. Навіть якщо ви закриєте додаток або він аварійно завершиться, останні зміни не буде втрачено.</string>
+
 
 </resources>

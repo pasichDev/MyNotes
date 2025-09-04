@@ -15,6 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -22,7 +27,6 @@ import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.graphics.Insets;
-import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -61,9 +65,9 @@ import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
+import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTag;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTagOnClickListener;
-import com.pasich.mynotes.utils.ShareUtils;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 import com.pasich.mynotes.utils.actionPanel.tool.NoteActionTool;
@@ -85,8 +89,6 @@ import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.preference.PowerPreference;
 import com.preference.Preference;
-
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -361,11 +363,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
                         Animation shake = AnimationUtils
                                   .loadAnimation(MainActivity.this, R.anim.shake_gentle);
-                        if (tagView != null) {
-                            tagView.startAnimation(shake);
-                        } else {
-                            mActivityBinding.listTags.startAnimation(shake);
-                        }
+                        Objects.requireNonNullElseGet(tagView, () -> mActivityBinding.listTags).startAnimation(shake);
                         return;
                     }
 
@@ -711,14 +709,19 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void shareNotes() {
-        StringBuilder valueShare = new StringBuilder();
-        for (Note note : noteActionTool.getArrayChecked()) {
-            valueShare.append(note.getTitle()).append(System.lineSeparator())
-                    .append(System.lineSeparator()).append(note.getValue())
-                    .append(System.lineSeparator()).append(System.lineSeparator());
+        List<Note> selectedNotes = noteActionTool.getArrayChecked();
+        if (!selectedNotes.isEmpty()) {
+            // Create a copy of the list to avoid issues with clearing
+            List<Note> notesCopy = new ArrayList<>(selectedNotes);
+            ShareOptionsDialog shareDialog = new ShareOptionsDialog(notesCopy);
+            shareDialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
+            
+            // Close action panel after dialog is shown
+            actionUtils.closeActionPanel();
+        } else {
+            Log.w("MainActivity", "No notes selected for sharing");
+            actionUtils.closeActionPanel();
         }
-        ShareUtils.shareNotes(this, valueShare.toString());
-        actionUtils.closeActionPanel();
     }
 
     @Override
@@ -939,21 +942,19 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      */
     private void handleNavigationItemAction(int itemId) {
         if (itemId == R.id.nav_trash) {
-            startActivity(new Intent(this, TrashActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, TrashActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_settings) {
-            startSettingsActivity.launch(new Intent(this, SettingsActivity.class),
-                    ActivityOptionsCompat.makeSceneTransitionAnimation(this,
-                            (Pair<View, String>[]) null));
+            startSettingsActivity.launch(new Intent(this, SettingsActivity.class));
         } else if (itemId == R.id.nav_backups) {
-            startActivity(new Intent(this, BackupActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, BackupActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_help) {
-            startActivity(new Intent(this, HelpActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, HelpActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_about) {
-            startActivity(new Intent(this, AboutActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, AboutActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         }
     }
 
@@ -986,10 +987,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         navigationView.getHeaderView(0).findViewById(R.id.nav_support).setOnClickListener(v -> {
             // Закриваємо drawer і відкриваємо SupportActivity
             drawerLayout.closeDrawer(GravityCompat.START);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(this, SupportActivity.class),
-                        ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-            }, 100);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, SupportActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle()), 100);
         });
     }
 
@@ -1032,14 +1031,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      */
     private void signOut(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
         googleSignInClient.signOut().addOnCompleteListener(task -> {
-            final Preference preference = PowerPreference.getFileByName(
-                    com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP);
+            // Оновлюємо UI в main потоці
             loginPageBinding.loginUser.setVisibility(View.VISIBLE);
             loginPageBinding.loginPageRoot.setVisibility(View.GONE);
-            preference.removeAsync(BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD);
-            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_ID);
-            preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_TIME);
-            cloudCacheHelper.clean();
+            // Виконуємо операції з preferences асинхронно
+            new Thread(() -> {
+                try {
+                    final Preference preference = PowerPreference.getFileByName(
+                            com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP);
+                    preference.removeAsync(BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD);
+                    preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_ID);
+                    preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_TIME);
+                    cloudCacheHelper.clean();
+                } catch (Exception e) {
+                    Log.e("MainActivity", "Error during sign out preferences cleanup", e);
+                }
+            }).start();
         });
     }
 

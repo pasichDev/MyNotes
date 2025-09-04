@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mis notas</string>
+    <string name="save_to_notes">Guardar en Mis Notas</string>
     <string name="NewNote">Nueva nota</string>
     <string name="trashNotes">Mover a la papelera</string>
     <string name="trashClean">Vaciar Papelera</string>
@@ -51,6 +52,17 @@
     <string name="emptyNotes">Las notas que cree aparecerán aquí</string>
     <string name="emptyNotesForTag">Aquí se mostrarán las notas que marques con la etiqueta "%1$s"</string>
     <string name="chooseNote">Acciones en la nota seleccionada</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Opciones de compartir</string>
+    <string name="saveToGoogleDrive">Guardar en Google Drive</string>
+    <string name="saveAsTxt">Guardar como TXT</string>
+    <string name="saveAsPdf">Guardar como PDF</string>
+    <string name="saveAsHtml">Guardar como HTML</string>
+    <string name="shareViaApps">Compartir a través de otras aplicaciones</string>
+    <string name="errorSavingFile">Error al guardar el archivo</string>
+    <string name="fileSavedSuccessfully">Archivo guardado exitosamente</string>
+    <string name="googleDriveNotInstalled">Google Drive no está instalado</string>
     <string name="contentDescrChangeStyleText">Cambiar estilo de texto</string>
     <string name="copyNoteEdits">Editar copia</string>
     <string name="noteMoveTrashSnackbar">Nota movida a la papelera</string>
@@ -93,6 +105,12 @@
     <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Restaurar desde Res. copias</string>
     <string name="exportLocalBackup">Crear una copia de seguridad</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Exportación de datos</string>
+    <string name="important">Importante</string>
+    <string name="dataExportDescription">Puede exportar todas sus notas actuales para visualización. Esta función exporta solo notas activas, excluyendo notas de la papelera, sin considerar etiquetas u otros filtros.</string>
+    <string name="exportAllNotes">Exportar todas las notas</string>
     <string name="lastCloudCopy">Última copia de seguridad: %1$s</string>
     <string name="errorDriveAuth">Invitado</string>
     <string name="autoCloudBackupTitle">Copia de seguridad automática</string>
@@ -236,6 +254,13 @@
     <string name="help_notes_copy_description">Crea una copia editable de cualquier nota para hacer modificaciones manteniendo el original intacto.</string>
 
     <string name="actual_version">Actualizado para la versión %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Synchronizacja i eksport danych</string>
+    <string name="help_other_backup_export_description">W sekcji „Synchronizacja i kopie zapasowe” możesz eksportować wszystkie swoje notatki w różnych formatach (TXT, PDF, HTML) do podglądu i tworzenia kopii zapasowych.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Udostępnianie i eksport notatek</string>
+    <string name="help_notes_share_description">Udostępniaj jedną lub wiele notatek za pomocą innych aplikacji, zapisuj je na Dysku Google lub eksportuj jako pliki TXT, PDF czy HTML z formatowaniem.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Nueva nota</string>
@@ -243,5 +268,13 @@
     <string name="shortcut_search_short">Buscar</string>
     <string name="shortcut_search_long">Buscar en notas</string>
     <string name="shortcut_disabled_message">Esta función no está disponible</string>
+
+    <string name="saveStatus">Estado de guardado</string>
+    <string name="saveStatusSaved">Guardado</string>
+    <string name="saveStatusPending">Cambios no guardados</string>
+    <string name="saveStatusSaving">Guardando…</string>
+    <string name="saveStatusError">Error al guardar</string>
+    <string name="help_notes_autosave_title">Guardado automático</string>
+    <string name="help_notes_autosave_description">Las notas se guardan automáticamente 2 segundos después de dejar de escribir. En la barra superior aparece un indicador: punto azul — cambios no guardados, icono animado — guardando, marca verde — guardado con éxito. Incluso si cierras la app o se bloquea, tus últimos cambios no se perderán.</string>
 
 </resources>

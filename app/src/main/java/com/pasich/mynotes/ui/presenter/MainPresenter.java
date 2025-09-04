@@ -28,7 +28,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     private Note backupDeleteNote;
     private int mSwipe = 0;
-    private Handler uiHandler = new Handler(Looper.getMainLooper());
+    private final Handler uiHandler = new Handler(Looper.getMainLooper());
     private Runnable swipeResetRunnable;
 
     @Inject
@@ -87,14 +87,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     public void deleteNotesArray(ArrayList<Note> notes) {
         for (Note note : notes) {
-            getCompositeDisposable().add(getDataManager().moveNoteToTrash(
-                new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note)
-                .subscribeOn(getSchedulerProvider().io())
-                .observeOn(getSchedulerProvider().ui())
-                .subscribe(
-                    () -> {}, // onComplete
-                    throwable -> Log.e("MainPresenter", "Error deleting note", throwable)
-                ));
+            deleteNote(note);
         }
     }
 
@@ -195,16 +188,16 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                     uiHandler.removeCallbacks(swipeResetRunnable);
                 }
                 
-                swipeResetRunnable = () -> {
-                    if (mSwipe == 1) {
-                        mSwipe = 0;
-                    }
-                };
-                uiHandler.postDelayed(swipeResetRunnable, 5000);
+                // Оптимізовано: зменшуємо затримку та спрощуємо логіку
+                swipeResetRunnable = () -> mSwipe = 0;
+                uiHandler.postDelayed(swipeResetRunnable, 3000); // Зменшили з 5000 до 3000
 
                 return false;
             } else if (mSwipe == 2) {
-
+                // Очищаємо callback перед завершенням
+                if (swipeResetRunnable != null) {
+                    uiHandler.removeCallbacks(swipeResetRunnable);
+                }
                 getView().finishActivityOtPresenter();
                 mSwipe = 0;
                 return true;
@@ -218,7 +211,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void detachView() {
-        if (uiHandler != null && swipeResetRunnable != null) {
+        if (swipeResetRunnable != null) {
             uiHandler.removeCallbacks(swipeResetRunnable);
         }
         super.detachView();

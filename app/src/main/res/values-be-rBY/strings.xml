@@ -50,6 +50,17 @@
     <string name="emptyNotes">Тут будуць адлюстроўвацца створаныя вамі нататкі</string>
     <string name="emptyNotesForTag">Тут будуць адлюстроўвацца нататкі якія вы пазначыце тэгам "%1$s"</string>
     <string name="chooseNote">Дзеянні над абранай нататкай</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Опцыі падзелу</string>
+    <string name="saveToGoogleDrive">Захаваць у Google Drive</string>
+    <string name="saveAsTxt">Захаваць як TXT</string>
+    <string name="saveAsPdf">Захаваць як PDF</string>
+    <string name="saveAsHtml">Захаваць як HTML</string>
+    <string name="shareViaApps">Падзяліцца праз іншыя прыкладанні</string>
+    <string name="errorSavingFile">Памылка захавання файла</string>
+    <string name="fileSavedSuccessfully">Файл паспяхова захаваны</string>
+    <string name="googleDriveNotInstalled">Google Drive не ўстаноўлены</string>
     <string name="contentDescrChangeStyleText">Змяніць стыль тэксту</string>
     <string name="copyNoteEdits">Рэдагаваць копію</string>
     <string name="noteMoveTrashSnackbar">Нататку перамешчана ў кошык</string>
@@ -79,7 +90,7 @@
     <string name="onDynamicColor">Уключыць Dynamic Color</string>
     <string name="onDynamicColorDescription">Адаптуе колеры дадатка да вашай шпалеры (Android 12+)</string>
     <string name="onScreenProtection">Уключыць абарону экрана</string>
-        <string name="onScreenProtectionDescription">Перашкаджае стварэнню скрыншотаў і запісу экрана. Уступае ў сілу пасля перазапуску прыкладання</string>
+    <string name="onScreenProtectionDescription">Перашкаджае стварэнню скрыншотаў і запісу экрана. Уступае ў сілу пасля перазапуску прыкладання</string>
     <string name="themeMode">Рэжым тэмы</string>
     <string name="selectThemeMode">Выберыце рэжым тэмы</string>
     <string name="themeModeFollowSystem">Як у сістэме</string>
@@ -91,6 +102,12 @@
     <string name="localBackup">Прылада</string>
     <string name="importLocalBackup">Аднавіць з дапамогай рэз. копіі</string>
     <string name="exportLocalBackup">Стварыць рэзервовую копію</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Экспарт даных</string>
+    <string name="important">Важна</string>
+    <string name="dataExportDescription">Вы можаце экспартаваць усе свае бягучыя нататкі для прагляду. Гэтая функцыя экспартуе толькі актыўныя нататкі, выключаючы нататкі з сметніцы, не ўлічваючы тэгі або іншыя фільтры.</string>
+    <string name="exportAllNotes">Экспартаваць усе нататкі</string>
     <string name="lastCloudCopy">Апошняя рэзервовая копія: %1$s</string>
     <string name="errorDriveAuth">Госць</string>
     <string name="autoCloudBackupTitle">Аўтаматычнае рэзервовае капіраванне</string>
@@ -230,8 +247,15 @@
     <string name="help_notes_text_size_description">Змяняйце памер тэксту падчас рэдагавання нататак з дапамогай дыялогавага акна памеру тэксту, даступнага прама з экрана рэдагавання нататкі.</string>
     <string name="help_notes_copy_title">Рэдагаваць копію</string>
     <string name="help_notes_copy_description">Ствараць рэдагавальную копію любой нататкі для ўнясення змен, захоўваючы арыгінал недакрануты.</string>
-
+    <string name="save_to_notes">Захаваць у Мае Нататкі</string>
     <string name="actual_version">Актуальна для версіі %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Сінхранізацыя і экспарт даных</string>
+    <string name="help_other_backup_export_description">У раздзеле «Сінхранізацыя і рэзервовае капіраванне» вы можаце экспартаваць усе свае нататкі ў розных фарматах (TXT, PDF, HTML) для прагляду і рэзервовага капіравання.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Абагуліць і экспартаваць нататкі</string>
+    <string name="help_notes_share_description">Абагулюйце адну або некалькі нататак праз іншыя праграмы, захоўвайце ў Google Drive або экспартуйце як TXT, PDF ці HTML-файлы са стылем.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Новая нататка</string>
@@ -239,5 +263,12 @@
     <string name="shortcut_search_short">Пошук</string>
     <string name="shortcut_search_long">Пошук у нататках</string>
     <string name="shortcut_disabled_message">Гэтая функцыя недаступная</string>
+    <string name="saveStatus">Статус захавання</string>
+    <string name="saveStatusSaved">Захавана</string>
+    <string name="saveStatusPending">Незахаваныя змены</string>
+    <string name="saveStatusSaving">Захаванне…</string>
+    <string name="saveStatusError">Памылка захавання</string>
+    <string name="help_notes_autosave_title">Аўтазахаванне</string>
+    <string name="help_notes_autosave_description">Нататкі аўтаматычна захоўваюцца праз 2 секунды пасля завяршэння ўводу. У верхняй панэлі адлюстроўваецца індыкатар: сіняя кропка — незахаваныя змены, анімаваная іконка — ідзе захаванне, зялёная галачка — паспяхова захавана. Нават калі вы зачыніце дадатак або ён аварыйна завершиться, апошнія змены не будуць страчаны.</string>
 
 </resources>

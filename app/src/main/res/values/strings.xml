@@ -47,8 +47,19 @@
     <string name="errorNewTagInput">Error: The maximum number of characters a tag name can contain is %1$d </string>
     <string name="emptyTrash">Your deleted notes are displayed here</string>
     <string name="emptyNotes">Notes you create will appear here</string>
-    <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
+    <string name="emptyNotesForTag">Notes marked with the tag will be displayed here "%1$s"</string>
     <string name="chooseNote">Actions on the selected note</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Share options</string>
+    <string name="saveToGoogleDrive">Save to Google Drive</string>
+    <string name="saveAsTxt">Save as TXT</string>
+    <string name="saveAsPdf">Save as PDF</string>
+    <string name="saveAsHtml">Save as HTML</string>
+    <string name="shareViaApps">Share via other apps</string>
+    <string name="errorSavingFile">Error saving file</string>
+    <string name="fileSavedSuccessfully">File saved successfully</string>
+    <string name="googleDriveNotInstalled">Google Drive not installed</string>
     <string name="contentDescrChangeStyleText">Change text style</string>
     <string name="copyNoteEdits">Edit copy</string>
     <string name="noteMoveTrashSnackbar">Note moved to trash</string>
@@ -69,6 +80,7 @@
     <string name="userAvatar" translatable="false">User Avatar</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
+    <string name="save_to_notes">Save to My Notes</string>
 
     <string name="hiddeTag">Hide notes</string>
     <string name="visibleTag">Show notes</string>
@@ -104,6 +116,12 @@
     <string name="localBackup">Device</string>
     <string name="importLocalBackup">Restore with Res. copies</string>
     <string name="exportLocalBackup">Create backup</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Data Export</string>
+    <string name="important">Important</string>
+    <string name="dataExportDescription">You can export all your current notes for viewing. This feature exports only active notes, excluding notes from trash, without considering tags or other filters.</string>
+    <string name="exportAllNotes">Export all notes</string>
     <string name="lastCloudCopy">Last backup: %1$s</string>
     <string name="errorDriveAuth">Guest</string>
     <string name="autoCloudBackupTitle">Auto Backup</string>
@@ -191,7 +209,7 @@
     
     <!-- Purchase Error Messages -->
     <string name="purchase_error_title">Purchase Failed</string>
-    <string name="purchase_loading">Loading products...</string>
+    <string name="purchase_loading">Loading products…</string>
     <string name="purchase_error_no_products">No donation products available</string>
     
     <!-- Developer Support -->
@@ -241,6 +259,10 @@
     <string name="help_other_shortcuts_title">App Shortcuts</string>
     <string name="help_other_shortcuts_description">Long press the app icon to quickly access shortcuts for creating a new note or searching through your notes. Available on Android 7.1 and higher.</string>
     
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Sync and Data Export</string>
+    <string name="help_other_backup_export_description">In the Synchronization and Backup section, you can export all your notes in various formats (TXT, PDF, HTML) for viewing and backup purposes.</string>
+    
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Notes Features</string>
     <string name="help_notes_limit_title">Text Limit</string>
@@ -251,8 +273,23 @@
     <string name="help_notes_text_size_description">Adjust text size while editing notes using the text size dialog accessible directly from the note editing screen.</string>
     <string name="help_notes_copy_title">Edit Copy</string>
     <string name="help_notes_copy_description">Create an editable copy of any note to make modifications while keeping the original intact.</string>
+    
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Share and Export Notes</string>
+    <string name="help_notes_share_description">Share single or multiple notes via other apps, save to Google Drive, or export as TXT, PDF, or HTML files with styled formatting.</string>
+
+    <!-- Auto-save Help -->
+    <string name="help_notes_autosave_title">Auto-save</string>
+    <string name="help_notes_autosave_description">Notes are automatically saved 2 seconds after you stop typing. A status indicator in the top bar shows: blue dot for unsaved changes, animated icon for saving in progress, green checkmark for successfully saved. Even if you close the app or it crashes, your latest changes won\'t be lost.</string>
 
     <string name="actual_version">Up to date for version %1$s</string>
+
+    <!-- Save Status -->
+    <string name="saveStatus">Save Status</string>
+    <string name="saveStatusSaved">Saved</string>
+    <string name="saveStatusPending">Unsaved changes</string>
+    <string name="saveStatusSaving">Saving…</string>
+    <string name="saveStatusError">Save error</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Нова нотатка</string>

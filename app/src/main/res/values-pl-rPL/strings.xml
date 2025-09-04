@@ -50,6 +50,17 @@
     <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
     <string name="emptyNotesForTag">Tutaj będą wyświetlane notatki które oznaczysz tagiem "%1$s"</string>
     <string name="chooseNote">Działania na wybranej notatce</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Opcje udostępniania</string>
+    <string name="saveToGoogleDrive">Zapisz w Google Drive</string>
+    <string name="saveAsTxt">Zapisz jako TXT</string>
+    <string name="saveAsPdf">Zapisz jako PDF</string>
+    <string name="saveAsHtml">Zapisz jako HTML</string>
+    <string name="shareViaApps">Udostępnij przez inne aplikacje</string>
+    <string name="errorSavingFile">Błąd podczas zapisywania pliku</string>
+    <string name="fileSavedSuccessfully">Plik zapisany pomyślnie</string>
+    <string name="googleDriveNotInstalled">Google Drive nie jest zainstalowany</string>
     <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
     <string name="copyNoteEdits">Edytuj kopię</string>
     <string name="noteMoveTrashSnackbar">Notatka przeniesiona do kosza</string>
@@ -92,6 +103,12 @@
     <string name="localBackup">Urządzenie</string>
     <string name="importLocalBackup">Przywróć z Res. kopie</string>
     <string name="exportLocalBackup">Utwórz kopię zapasową</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Eksport danych</string>
+    <string name="important">Ważne</string>
+    <string name="dataExportDescription">Możesz wyeksportować wszystkie swoje obecne notatki do przeglądania. Ta funkcja eksportuje tylko aktywne notatki, wykluczając notatki z kosza, bez uwzględniania tagów lub innych filtrów.</string>
+    <string name="exportAllNotes">Eksportuj wszystkie notatki</string>
     <string name="lastCloudCopy">Ostatnia kopia zapasowa: %1$s</string>
     <string name="errorDriveAuth">Gość</string>
     <string name="autoCloudBackupTitle">Automatyczna kopia zapasowa</string>
@@ -235,12 +252,27 @@
     <string name="help_notes_copy_description">Utwórz edytowalną kopię dowolnej notatki, aby wprowadzić zmiany, zachowując oryginalną w nienaruszonym stanie.</string>
 
     <string name="actual_version">Aktualne dla wersji %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Synchronizacja i eksport danych</string>
+    <string name="help_other_backup_export_description">W sekcji „Synchronizacja i kopie zapasowe” możesz eksportować wszystkie swoje notatki w różnych formatach (TXT, PDF, HTML) do podglądu i tworzenia kopii zapasowych.</string>
 
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Udostępnianie i eksport notatek</string>
+    <string name="help_notes_share_description">Udostępniaj jedną lub wiele notatek za pomocą innych aplikacji, zapisuj je na Dysku Google lub eksportuj jako pliki TXT, PDF czy HTML z formatowaniem.</string>
+    <string name="save_to_notes">Zapisz w Moich Notatkach</string>
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Nowa notatka</string>
     <string name="shortcut_new_note_long">Utwórz nową notatkę</string>
     <string name="shortcut_search_short">Szukaj</string>
     <string name="shortcut_search_long">Szukaj w notatkach</string>
     <string name="shortcut_disabled_message">Ta funkcja jest niedostępna</string>
+    <string name="saveStatus">Status zapisu</string>
+    <string name="saveStatusSaved">Zapisano</string>
+    <string name="saveStatusPending">Niezapisane zmiany</string>
+    <string name="saveStatusSaving">Zapisywanie…</string>
+    <string name="saveStatusError">Błąd zapisu</string>
+    <string name="help_notes_autosave_title">Autosave</string>
+    <string name="help_notes_autosave_description">Notatki są automatycznie zapisywane 2 sekundy po zakończeniu pisania. Na górnym pasku pojawia się wskaźnik: niebieska kropka — niezapisane zmiany, animowana ikona — zapisywanie w toku, zielony haczyk — zapisano pomyślnie. Nawet jeśli zamkniesz aplikację lub się zawiesi, ostatnie zmiany nie zostaną utracone.</string>
+
 
 </resources>

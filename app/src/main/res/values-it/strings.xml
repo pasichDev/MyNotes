@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name"> Le mie note </string>
+    <string name="save_to_notes">Salva in Le Mie Note</string>
     <string name="NewNote"> Crea una nota </string>
     <string name="trashNotes">Sposta nel Cestino</string>
     <string name="trashClean">Pulisci il cestino</string>
@@ -48,6 +49,17 @@
     <string name="emptyNotes">Le note che hai creato verranno visualizzate qui</string>
     <string name="emptyNotesForTag">Qui verranno visualizzate le note che contrassegni con il tag "%1$s"</string>
     <string name="chooseNote">Azioni sulla nota selezionata</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Opzioni di condivisione</string>
+    <string name="saveToGoogleDrive">Salva su Google Drive</string>
+    <string name="saveAsTxt">Salva come TXT</string>
+    <string name="saveAsPdf">Salva come PDF</string>
+    <string name="saveAsHtml">Salva come HTML</string>
+    <string name="shareViaApps">Condividi tramite altre app</string>
+    <string name="errorSavingFile">Errore nel salvataggio del file</string>
+    <string name="fileSavedSuccessfully">File salvato con successo</string>
+    <string name="googleDriveNotInstalled">Google Drive non è installato</string>
     <string name="contentDescrChangeStyleText">Cambia lo stile del testo</string>
     <string name="copyNoteEdits">Modifica una copia di una nota</string>
     <string name="noteMoveTrashSnackbar">Nota spostata nel cestino</string>
@@ -87,6 +99,12 @@
     <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Ripristina usando res. copie</string>
     <string name="exportLocalBackup">Crea backup</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Esportazione dati</string>
+    <string name="important">Importante</string>
+    <string name="dataExportDescription">Puoi esportare tutte le tue note attuali per la visualizzazione. Questa funzione esporta solo note attive, escludendo note dal cestino, senza considerare tag o altri filtri.</string>
+    <string name="exportAllNotes">Esporta tutte le note</string>
     <string name="lastCloudCopy">Ultimo backup: %1$s</string>
     <string name="errorDriveAuth">Ospite</string>
     <string name="autoCloudBackupTitle">Backup automatico</string>
@@ -225,6 +243,13 @@
     <string name="help_notes_copy_description">Crea una copia modificabile di qualsiasi nota per apportare modifiche mantenendo l\'originale intatto.</string>
 
     <string name="actual_version">Aggiornato per la versione %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Sincronizzazione ed esportazione dati</string>
+    <string name="help_other_backup_export_description">Nella sezione «Sincronizzazione e backup» puoi esportare tutte le tue note in vari formati (TXT, PDF, HTML) per la visualizzazione e il backup.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Condividi ed esporta note</string>
+    <string name="help_notes_share_description">Condividi una o più note tramite altre app, salvale su Google Drive o esportale come file TXT, PDF o HTML con formattazione stilizzata.</string>
 
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Nuova nota</string>
@@ -232,5 +257,13 @@
     <string name="shortcut_search_short">Cerca</string>
     <string name="shortcut_search_long">Cerca nelle note</string>
     <string name="shortcut_disabled_message">Questa funzione non è disponibile</string>
+
+    <string name="saveStatus">Stato di salvataggio</string>
+    <string name="saveStatusSaved">Salvato</string>
+    <string name="saveStatusPending">Modifiche non salvate</string>
+    <string name="saveStatusSaving">Salvataggio…</string>
+    <string name="saveStatusError">Errore di salvataggio</string>
+    <string name="help_notes_autosave_title">Salvataggio automatico</string>
+    <string name="help_notes_autosave_description">Le note vengono salvate automaticamente 2 secondi dopo aver smesso di digitare. Nella barra superiore appare un indicatore: punto blu — modifiche non salvate, icona animata — salvataggio in corso, segno di spunta verde — salvataggio riuscito. Anche se chiudi l\'app o si blocca, le ultime modifiche non andranno perse.</string>
 
 </resources>

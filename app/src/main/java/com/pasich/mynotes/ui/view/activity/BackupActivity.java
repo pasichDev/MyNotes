@@ -5,6 +5,7 @@ import static com.pasich.mynotes.utils.constants.DriveScope.ACCESS_DRIVE_SCOPE;
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD;
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.FILE_NAME_BACKUP;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -23,15 +24,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.transition.platform.MaterialFade;
 import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
 import com.google.api.services.drive.Drive;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
+import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
+import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.CloudAuthHelper;
 import com.pasich.mynotes.utils.backup.CloudCacheHelper;
@@ -96,8 +98,6 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
         binding = ActivityBackupBinding.inflate(getLayoutInflater());
-        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activityBackup));
-        getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
 
@@ -153,6 +153,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         }
     }
 
+    @SuppressLint("StringFormatInvalid")
     @Override
     public void editLastDataEditBackupCloud(long lastDate, boolean error) {
         if (error) {
@@ -500,5 +501,12 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
     @Override
     public void initListeners() {
+    }
+    
+    @Override
+    public void openShareOptionsDialog(java.util.List<Note> notes, boolean isDataExport) {
+        ShareOptionsDialog shareOptionsDialog =
+            new ShareOptionsDialog(notes, isDataExport);
+        shareOptionsDialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
     }
 }

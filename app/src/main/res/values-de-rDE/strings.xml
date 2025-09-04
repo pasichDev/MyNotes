@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name"> Meine Notizen </string>
+    <string name="save_to_notes">In Meine Notizen speichern</string>
     <string name="NewNote"> Notiz erstellen </string>
     <string name="trashNotes">In den Papierkorb verschieben</string>
     <string name="trashClean">Müll leeren</string>
@@ -48,6 +49,17 @@
     <string name="emptyNotes">Die von dir erstellten Notizen werden hier angezeigt</string>
     <string name="emptyNotesForTag">Hier werden Notizen angezeigt, die du mit dem Tag "%1$s" markierst</string>
     <string name="chooseNote">Aktionen für die ausgewählte Notiz</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Freigabeoptionen</string>
+    <string name="saveToGoogleDrive">In Google Drive speichern</string>
+    <string name="saveAsTxt">Als TXT speichern</string>
+    <string name="saveAsPdf">Als PDF speichern</string>
+    <string name="saveAsHtml">Als HTML speichern</string>
+    <string name="shareViaApps">Über andere Apps teilen</string>
+    <string name="errorSavingFile">Fehler beim Speichern der Datei</string>
+    <string name="fileSavedSuccessfully">Datei erfolgreich gespeichert</string>
+    <string name="googleDriveNotInstalled">Google Drive ist nicht installiert</string>
     <string name="contentDescrChangeStyleText">Textstil ändern</string>
     <string name="copyNoteEdits">Bearbeite eine Kopie einer Notiz</string>
     <string name="noteMoveTrashSnackbar">Notiz in den Papierkorb verschoben</string>
@@ -97,6 +109,8 @@
     <string name="messageRestoreProcess"><b>Daten wiederherstellen</b> \nDieses Fenster wird nach Abschluss automatisch geschlossen.</string>
     <string name="emptyBackups">Keine Backups gefunden</string>
     <string name="checkLastBackupsCloud">Bitte warten, Daten werden geladen...</string>
+
+
     <!-- Arrays AutoBackup -->
     <string name="autoCloudVariantsDay">Jeden Tag</string>
     <string name="autoCloudVariantsWeek">Jede Woche</string>
@@ -214,7 +228,20 @@
     <string name="help_other_security_description">Wenn in den Einstellungen aktiviert, schützt diese Funktion Ihre Notizen vor unbefugter Einsicht: verbirgt App-Inhalte in der Übersicht der letzten Apps, verhindert Screenshots und blockiert Bildschirmaufnahmen. Diese Sicherheitsfunktion wird nach dem Neustart der App aktiviert.</string>
     <string name="help_other_shortcuts_title">App-Verknüpfungen</string>
     <string name="help_other_shortcuts_description">Halten Sie das App-Symbol gedrückt, um schnell auf Verknüpfungen zum Erstellen einer neuen Notiz oder zum Durchsuchen Ihrer Notizen zuzugreifen. Verfügbar ab Android 7.1 und höher.</string>
-    
+
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Synchronisation und Datenexport</string>
+    <string name="help_other_backup_export_description">Im Abschnitt „Synchronisation und Backup“ können Sie alle Ihre Notizen in verschiedenen Formaten (TXT, PDF, HTML) exportieren, um sie anzuzeigen oder zu sichern.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Notizen teilen und exportieren</string>
+    <string name="help_notes_share_description">Teilen Sie eine oder mehrere Notizen über andere Apps, speichern Sie sie auf Google Drive oder exportieren Sie sie als TXT-, PDF- oder HTML-Dateien mit Formatierung.</string>
+
+    <!-- Data Export Section -->
+    <string name="dataExport">Datenexport</string>
+    <string name="important">Wichtig</string>
+    <string name="dataExportDescription">Sie können alle Ihre aktuellen Notizen zum Anzeigen exportieren. Diese Funktion exportiert nur aktive Notizen, ausgenommen Notizen aus dem Papierkorb, ohne Berücksichtigung von Tags oder anderen Filtern.</string>
+    <string name="exportAllNotes">Alle Notizen exportieren</string>
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Notizen-Funktionen</string>
     <string name="help_notes_limit_title">Textbegrenzung</string>
@@ -225,6 +252,8 @@
     <string name="help_notes_text_size_description">Passen Sie die Textgröße beim Bearbeiten von Notizen über den Textgrößen-Dialog an, der direkt vom Notizbearbeitungsbildschirm zugänglich ist.</string>
     <string name="help_notes_copy_title">Kopie bearbeiten</string>
     <string name="help_notes_copy_description">Erstellen Sie eine bearbeitbare Kopie jeder Notiz, um Änderungen vorzunehmen, während das Original unberührt bleibt.</string>
+    
+
 
     <string name="actual_version">Aktuell für Version %1$s</string>
 
@@ -234,5 +263,13 @@
     <string name="shortcut_search_short">Suchen</string>
     <string name="shortcut_search_long">Notizen durchsuchen</string>
     <string name="shortcut_disabled_message">Diese Funktion ist nicht verfügbar</string>
+
+    <string name="saveStatus">Speicherstatus</string>
+    <string name="saveStatusSaved">Gespeichert</string>
+    <string name="saveStatusPending">Nicht gespeicherte Änderungen</string>
+    <string name="saveStatusSaving">Speichern…</string>
+    <string name="saveStatusError">Speicherfehler</string>
+    <string name="help_notes_autosave_title">Automatisches Speichern</string>
+    <string name="help_notes_autosave_description">Notizen werden automatisch 2 Sekunden nach dem Ende der Eingabe gespeichert. In der oberen Leiste wird ein Status angezeigt: blauer Punkt — ungespeicherte Änderungen, animiertes Symbol — Speichern läuft, grünes Häkchen — erfolgreich gespeichert. Selbst wenn die App geschlossen oder abgestürzt wird, gehen die letzten Änderungen nicht verloren.</string>
 
 </resources>

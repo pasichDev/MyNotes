@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Мои Заметки</string>
+    <string name="save_to_notes">Сохранить в Мои Заметки</string>
     <string name="themeBlue">Океанский синий</string>
     <string name="themeGreen">Изумрудно-зелёный</string>
     <string name="themeSunset">Оранжевый закат</string>
@@ -60,6 +61,17 @@
     <string name="emptyNotes">Здесь будут отображаться созданные вами заметки</string>
     <string name="emptyNotesForTag">Здесь будут отображаться заметки которые вы отметите тегом "%1$s"</string>
     <string name="chooseNote">Действия над выбраной заметкой</string>
+    
+    <!-- Share Dialog -->
+    <string name="shareOptions">Опции поделиться</string>
+    <string name="saveToGoogleDrive">Сохранить в Google Drive</string>
+    <string name="saveAsTxt">Сохранить как TXT</string>
+    <string name="saveAsPdf">Сохранить как PDF</string>
+    <string name="saveAsHtml">Сохранить как HTML</string>
+    <string name="shareViaApps">Поделиться через другие приложения</string>
+    <string name="errorSavingFile">Ошибка сохранения файла</string>
+    <string name="fileSavedSuccessfully">Файл успешно сохранен</string>
+    <string name="googleDriveNotInstalled">Google Drive не установлен</string>
     <string name="contentDescrChangeStyleText">Изменить стиль текста</string>
     <string name="copyNoteEdits">Редактировать копию</string>
     <string name="noteMoveTrashSnackbar">Заметку перемещено в корзину</string>
@@ -93,6 +105,12 @@
     <string name="localBackup">Устройство</string>
     <string name="importLocalBackup">Восстановить с Рез. копии</string>
     <string name="exportLocalBackup">Создать резервную копию</string>
+    
+    <!-- Data Export Section -->
+    <string name="dataExport">Экспорт данных</string>
+    <string name="important">Важно</string>
+    <string name="dataExportDescription">Вы можете экспортировать все свои текущие заметки для просмотра. Эта функция экспортирует только активные заметки, исключая заметки из корзины, не учитывая теги или другие фильтры.</string>
+    <string name="exportAllNotes">Экспортировать все заметки</string>
     <string name="lastCloudCopy">Последняя резервная копия: %1$s</string>
     <string name="errorDriveAuth">Гость</string>
     <string name="autoCloudBackupTitle">Автоматическое резервное копирование</string>
@@ -133,14 +151,14 @@
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
 
-     <string name="errorSyncTitle">Внимание!</string>
+    <string name="errorSyncTitle">Внимание!</string>
     <string name="errorSyncDescrpt">С этой версией мы прекращаем поддержку синхронизации с Google Диском. В будущих обновлениях мы внедрим более безопасный и эффективный метод синхронизации, что обеспечит вам лучший пользовательский опыт.</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Поддержать разработчика</string>
-     <string name="donationMethods">Способы поддержки</string>
+    <string name="donationMethods">Способы поддержки</string>
     <string name="kofiDescription">Угостите меня кофе на Ko-Fi</string>
-   <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
+    <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
     <string name="contactDeveloper">Связаться с разработчиком</string>
     <string name="inAppPurchases">Покупки в приложении</string>
 
@@ -225,6 +243,10 @@
     <string name="help_other_shortcuts_title">Быстрые действия</string>
     <string name="help_other_shortcuts_description">Удерживайте иконку приложения для быстрого доступа к созданию новой заметки или поиску среди ваших заметок. Доступно на Android 7.1 и выше.</string>
     
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Синхронизация и экспорт данных</string>
+    <string name="help_other_backup_export_description">В разделе "Синхронизация и резервные копии" вы можете экспортировать все свои заметки в различных форматах (TXT, PDF, HTML) для просмотра и создания резервных копий.</string>
+    
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функции заметок</string>
     <string name="help_notes_limit_title">Ограничение текста</string>
@@ -235,6 +257,10 @@
     <string name="help_notes_text_size_description">Изменяйте размер текста во время редактирования заметок с помощью диалогового окна размера текста, доступного прямо с экрана редактирования заметки.</string>
     <string name="help_notes_copy_title">Редактировать копию</string>
     <string name="help_notes_copy_description">Создавайте редактируемую копию любой заметки для внесения изменений, сохраняя оригинал нетронутым.</string>
+    
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Поделиться и экспорт заметок</string>
+    <string name="help_notes_share_description">Делитесь одной или несколькими заметками через другие приложения, сохраняйте на Google Drive или экспортируйте как TXT, PDF или HTML файлы со стилизованным форматированием.</string>
 
     <string name="actual_version">Актуально для версии %1$s</string>
 
@@ -244,5 +270,14 @@
     <string name="shortcut_search_short">Поиск</string>
     <string name="shortcut_search_long">Поиск в заметках</string>
     <string name="shortcut_disabled_message">Эта функция недоступна</string>
+
+    <string name="saveStatus">Статус сохранения</string>
+    <string name="saveStatusSaved">Сохранено</string>
+    <string name="saveStatusPending">Несохранённые изменения</string>
+    <string name="saveStatusSaving">Сохранение…</string>
+    <string name="saveStatusError">Ошибка сохранения</string>
+    <string name="help_notes_autosave_title">Автосохранение</string>
+    <string name="help_notes_autosave_description">Заметки автоматически сохраняются через 2 секунды после окончания ввода. В верхней панели отображается индикатор: синяя точка — несохранённые изменения, анимированная иконка — идёт сохранение, зелёная галочка — успешно сохранено. Даже если вы закроете приложение или оно завершится аварийно, последние изменения не будут потеряны.</string>
+
 
 </resources>

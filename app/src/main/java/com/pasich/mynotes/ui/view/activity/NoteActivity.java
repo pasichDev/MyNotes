@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.graphics.Insets;
@@ -37,6 +36,7 @@ import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
 import com.pasich.mynotes.utils.CustomLinkMovementMethod;
 import com.pasich.mynotes.utils.constants.NameTransition;
+import com.pasich.mynotes.utils.enums.SaveState;
 
 import java.util.Date;
 import java.util.Objects;
@@ -51,6 +51,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     public ActivityNoteBinding binding;
     @Inject
     public NoteContract.presenter notePresenter;
+    
+    // Меню для індикатора стану збереження
+    private MenuItem saveStatusMenuItem;
     
     // Змінна для відстеження останньої позиції курсора
     private int lastCursorPosition = -1;
@@ -309,12 +312,25 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void onPause() {
         super.onPause();
-        if (!notePresenter.getExitNoteSave() && binding.valueNote.getText().toString().trim().length() >= 2) {
-            saveNote(false);
-        }
-
+        // Auto-save is now handled through TextWatcher and NotePresenter
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        // КРИТИЧНО: Екстрене збереження при зупинці Activity
+        if (notePresenter != null && notePresenter.getNote() != null) {
+            String currentTitle = binding != null ? binding.notesTitle.getText().toString() : "";
+            String currentValue = binding != null ? binding.valueNote.getText().toString() : "";
+            
+            // Оновлюємо дані в моделі
+            notePresenter.getNote().setTitle(currentTitle);
+            notePresenter.getNote().setValue(currentValue);
+            
+            // Якщо є незбережені зміни - робимо екстрене збереження
+            ((NotePresenter) notePresenter).performEmergencySaveIfNeeded();
+        }
+    }
 
     @Override
     public void initParam() {
@@ -353,9 +369,25 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 // Оновлюємо заголовок у згорнутому вигляді
                 String title = s.toString().trim();
                 binding.titleToolbarCollapsed.setText(!title.isEmpty() ? title : getString(R.string.noteTitle));
+                
+                // Викликаємо автозбереження при зміні заголовка
+                if (notePresenter != null && notePresenter.getNote() != null) {
+                    notePresenter.getNote().setTitle(title);
+                    notePresenter.onTextChanged();
+                }
             }
         });
 
+        binding.valueNote.addTextChangedListener(new TextWatcher() {
+            @Override
+            protected void changeText(Editable s) {
+                // Викликаємо автозбереження при зміні тексту
+                if (notePresenter != null && notePresenter.getNote() != null) {
+                    notePresenter.getNote().setValue(s.toString());
+                    notePresenter.onTextChanged();
+                }
+            }
+        });
 
         // Додаємо обробник кліку для поля вводу - тільки для обробки переміщення курсора
         binding.valueNote.setOnClickListener(v -> {
@@ -415,7 +447,43 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_activity_toolbar_note, menu);
+        saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
         return true;
+    }
+
+    @Override
+    public void updateSaveStatus(SaveState saveState) {
+        if (saveStatusMenuItem == null) return;
+        
+        switch (saveState) {
+            case IDLE:
+                saveStatusMenuItem.setVisible(false);
+                break;
+                
+            case PENDING:
+                saveStatusMenuItem.setVisible(true);
+                saveStatusMenuItem.setIcon(R.drawable.ic_save_pending);
+                saveStatusMenuItem.setTitle(getString(R.string.saveStatusPending));
+                break;
+                
+            case SAVING:
+                saveStatusMenuItem.setVisible(true);
+                saveStatusMenuItem.setIcon(R.drawable.ic_save_saving_animated);
+                saveStatusMenuItem.setTitle(getString(R.string.saveStatusSaving));
+                break;
+                
+            case SAVED:
+                saveStatusMenuItem.setVisible(true);
+                saveStatusMenuItem.setIcon(R.drawable.ic_save_success);
+                saveStatusMenuItem.setTitle(getString(R.string.saveStatusSaved));
+                break;
+                
+            case ERROR:
+                saveStatusMenuItem.setVisible(true);
+                saveStatusMenuItem.setIcon(R.drawable.ic_save_error);
+                saveStatusMenuItem.setTitle(getString(R.string.saveStatusError));
+                break;
+        }
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -424,7 +492,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
         }
         if (item.getItemId() == R.id.moreBut) {
-            if (!notePresenter.getNewNotesKey()) saveNote(true);
+            if (!notePresenter.getNewNotesKey()) saveNote();
             new MoreNoteDialog(notePresenter.getNewNotesKey() ? new Note().create(binding.notesTitle.getText().toString(), binding.valueNote.getText().toString(), new Date().getTime()) : notePresenter.getNote(), notePresenter.getNewNotesKey(), true, 0).show(getSupportFragmentManager(), "MoreNote");
 
         }
@@ -437,17 +505,23 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        notePresenter.detachView();
-        binding.notesTitle.addTextChangedListener(null);
-        binding.titleToolbarTagCenter.setOnClickListener(null);
-        binding.titleToolbarTagCollapsed.setOnClickListener(null);
-        binding.valueNote.setOnFocusChangeListener(null);
-        binding.valueNote.setOnClickListener(null);
+        if (notePresenter != null) {
+            ((NotePresenter) notePresenter).cleanupHandlers();
+            notePresenter.detachView();
+        }
+        
+        if (binding != null) {
+            binding.notesTitle.addTextChangedListener(null);
+            binding.titleToolbarTagCenter.setOnClickListener(null);
+            binding.titleToolbarTagCollapsed.setOnClickListener(null);
+            binding.valueNote.setOnFocusChangeListener(null);
+            binding.valueNote.setOnClickListener(null);
+            binding.scrollProgressIndicator.setProgress(0);
+        }
         lastCursorPosition = -1;
         savedScrollPosition = -1;
         isKeyboardVisible = false;
         lastImeInsets = 0;
-        binding.scrollProgressIndicator.setProgress(0);
     }
 
 
@@ -481,21 +555,25 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
     @Override
     public void closeNoteActivity() {
+        if (binding == null || notePresenter == null) {
+            supportFinishAfterTransition();
+            return;
+        }
+        
         binding.getRoot().clearFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(binding.valueNote.getWindowToken(), 0);
-
-        notePresenter.setExitNoSave(true);
-        String noteText = binding.valueNote.getText().toString().trim();
-        if (noteText.length() >= 2) {
-            saveNote(false);
+        if (binding != null) {
+            imm.hideSoftInputFromWindow(binding.valueNote.getWindowToken(), 0);
         }
-        if (notePresenter.getShareText().length() >= 2)
-            Toast.makeText(this, getString(R.string.noteSaved), Toast.LENGTH_SHORT).show();
         supportFinishAfterTransition();
     }
 
-    private void saveNote(boolean saveLocal) {
+    private void saveNote() {
+        // Check if binding and notePresenter are initialized
+        if (binding == null || notePresenter == null) {
+            return;
+        }
+        
         long mThisDate = new Date().getTime();
         String mTitle = binding.notesTitle.getText().toString();
         String mValue = binding.valueNote.getText().toString();
@@ -512,7 +590,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             notePresenter.setNewNoteKey(false);
 
         } else {
-            if (saveNoteToLocal(mValue, mTitle, mNoteValue, mThisDate) && !saveLocal) {
+            if (saveNoteToLocal(mValue, mTitle, mNoteValue, mThisDate)) {
                 notePresenter.saveNote(notePresenter.getNote());
             }
         }

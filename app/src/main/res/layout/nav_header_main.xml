@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/nav_header_height"
-    android:gravity="bottom"
+    android:gravity="center"
     android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -17,27 +17,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <LinearLayout
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/nav_support"
-        android:layout_marginTop="25dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_item_accent"
+        android:layout_height="60dp"
+        android:layout_marginTop="25dp"
         android:layout_marginHorizontal="20dp"
-        android:orientation="horizontal"
-        android:padding="@dimen/paddingItems">
+        android:padding="@dimen/paddingItems"
+        android:text="@string/supportDeveloper"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnPrimary"
+        app:cornerRadius="10dp"
+        app:icon="@drawable/ic_heart_support"
+        app:iconTint="?attr/colorOnPrimary"
+        app:iconGravity="textStart"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="?attr/colorPrimary" />
 
-        <ImageView
-            style="@style/iconDialogList"
-            android:contentDescription="@string/supportDeveloper"
-            android:src="@drawable/ic_heart_support"
-            app:tint="?attr/colorOnPrimary" />
-
-        <TextView
-            style="@style/itemTextBottomSheets"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnPrimary"
-            android:text="@string/supportDeveloper" />
-    </LinearLayout>
 
 </LinearLayout>

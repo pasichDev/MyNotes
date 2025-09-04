@@ -23,15 +23,13 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.materialswitch.MaterialSwitch;
-import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Theme;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
-import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.themes.ThemesArray;
-import com.preference.PowerPreference;
+import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -44,6 +42,9 @@ public class SettingsActivity extends BaseActivity {
 
     @Inject
     PreferenceHelper mPreferenceHelper;
+    
+    @Inject
+    ThemePreferencesCache themePreferencesCache;
 
     public ActivitySettingsBinding activitySettingsBinding;
     private int themeIdStartActivity;
@@ -55,15 +56,13 @@ public class SettingsActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
         activitySettingsBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
-        getWindow().setEnterTransition(new MaterialFade().addTarget(activitySettingsBinding.activitySettings));
-        getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(activitySettingsBinding.getRoot());
         setupEdgeToEdgeInsets(activitySettingsBinding.getRoot());
-        themeIdStartActivity = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
-        enableDynamic = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
+        themeIdStartActivity = themePreferencesCache.getThemeId();
+        enableDynamic = themePreferencesCache.isDynamicColorEnabled();
         themeDynamicStartActivity = enableDynamic;
-        themeModeStartActivity = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        themeModeStartActivity = themePreferencesCache.getThemeMode();
         setSupportActionBar(activitySettingsBinding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         initFunctions();
@@ -80,9 +79,9 @@ public class SettingsActivity extends BaseActivity {
     private void initFunctions() {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             activitySettingsBinding.dynamicColor.setEnabled(true);
-            activitySettingsBinding.dynamicColor.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE));
+            activitySettingsBinding.dynamicColor.setChecked(themePreferencesCache.isDynamicColorEnabled());
         }
-        activitySettingsBinding.screenProtection.setChecked(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE));
+        activitySettingsBinding.screenProtection.setChecked(themePreferencesCache.isScreenProtectionEnabled());
         
         // Initialize theme mode
         updateThemeModeDisplay();
@@ -110,9 +109,9 @@ public class SettingsActivity extends BaseActivity {
 
 
     private boolean finishActivity() {
-        int currentThemeId = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
-        boolean enableDynamicColor = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
-        int currentThemeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        int currentThemeId = themePreferencesCache.getThemeId();
+        boolean enableDynamicColor = themePreferencesCache.isDynamicColorEnabled();
+        int currentThemeMode = themePreferencesCache.getThemeMode();
         
         if (themeIdStartActivity != currentThemeId) {
             int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
@@ -138,6 +137,12 @@ public class SettingsActivity extends BaseActivity {
     }
 
     @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
+    }
+
+    @Override
     public void initListeners() {
         // Theme Mode Card Click Listener
         activitySettingsBinding.themeModeCard.setOnClickListener(v -> openThemeModeDialog());
@@ -149,15 +154,16 @@ public class SettingsActivity extends BaseActivity {
                 if (isChecked) {
                     redrawActivity(R.style.AppThemeDynamic);
                 } else {
-                    redrawActivity(new ThemesArray().getThemeStyle(PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE)));
+                    redrawActivity(new ThemesArray().getThemeStyle(themePreferencesCache.getThemeId()));
                 }
-                PowerPreference.getDefaultFile().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, isChecked);
+                themePreferencesCache.setDynamicColor(isChecked);
                 enableDynamic = isChecked;
                 updateAccentCardState(isChecked);
             }
         });
         
-        activitySettingsBinding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) -> PowerPreference.getDefaultFile().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, isChecked));
+        activitySettingsBinding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) -> 
+            themePreferencesCache.setScreenProtection(isChecked));
     }
 
 
@@ -266,7 +272,7 @@ public class SettingsActivity extends BaseActivity {
      */
     private void showThemeSelectionDialog(ArrayList<Theme> themes) {
         int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        int currentThemeId = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, 0);
+        int currentThemeId = themePreferencesCache.getThemeId();
 
         String[] themeNames = {
             getString(R.string.themeBlue),
@@ -368,7 +374,7 @@ public class SettingsActivity extends BaseActivity {
                        Theme selectedTheme = themes.get(which);
                        selectedPosition[0] = which;
 
-                       PowerPreference.getDefaultFile().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, selectedTheme.getId());
+                       themePreferencesCache.setThemeId(selectedTheme.getId());
                        redrawActivity(selectedTheme.getTHEME_STYLE());
                    }
                })
@@ -401,7 +407,7 @@ public class SettingsActivity extends BaseActivity {
      * Update theme mode display text and icon
      */
     private void updateThemeModeDisplay() {
-        int currentThemeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        int currentThemeMode = themePreferencesCache.getThemeMode();
         
         String[] themeModeNames = {
             getString(R.string.themeModeFollowSystem),
@@ -429,7 +435,7 @@ public class SettingsActivity extends BaseActivity {
      * Open theme mode selection dialog
      */
     private void openThemeModeDialog() {
-        int currentThemeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        int currentThemeMode = themePreferencesCache.getThemeMode();
         
         String[] themeModeNames = {
             getString(R.string.themeModeFollowSystem),
@@ -493,9 +499,10 @@ public class SettingsActivity extends BaseActivity {
                .setAdapter(adapter, (dialogInterface, which) -> {
                    if (which >= 0 && which < themeModeNames.length) {
                        selectedPosition[0] = which;
-                       PowerPreference.getDefaultFile().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, which);
+                       themePreferencesCache.setThemeMode(which);
                        updateThemeModeDisplay();
-                       applyThemeMode(which);
+                       // Use cache method instead of local applyThemeMode to avoid recreate()
+                       themePreferencesCache.applyCurrentThemeMode();
                    }
                })
                .setNegativeButton(getString(R.string.cancel), null)
@@ -509,29 +516,4 @@ public class SettingsActivity extends BaseActivity {
             dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_rounded_background);
         }
     }
-
-    /**
-     * Apply theme mode and redraw activity
-     */
-    private void applyThemeMode(int themeMode) {
-        // First, apply the theme mode setting to AppCompatDelegate
-        switch (themeMode) {
-            case 0: // Follow System
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-            case 1: // Light
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                break;
-            case 2: // Dark
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
-            default:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-        }
-        
-        // Force recreate the activity to apply the new night mode immediately
-        recreate();
-    }
-
 }
