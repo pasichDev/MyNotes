@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [2.2.34] - XX.XX.2025
+## [2.2.34] - 05.09.2025
 
 - Interface updates on some screens
 - Fixed obtaining a backup copy from the cloud
