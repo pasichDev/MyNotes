@@ -1,10 +1,8 @@
 package com.pasich.mynotes.utils.actionPanel.tool;
 
-import static com.pasich.mynotes.utils.actionPanel.ActionUtils.getAction;
-import static com.pasich.mynotes.utils.actionPanel.ActionUtils.setAction;
-
 import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.databinding.ItemNoteTrashBinding;
+import com.pasich.mynotes.utils.actionPanel.ActionUtils;
 import com.pasich.mynotes.utils.adapters.baseGenericAdapter.GenericAdapter;
 import com.pasich.mynotes.utils.adapters.notes.TrashAdapter;
 
@@ -17,10 +15,12 @@ public class TrashNoteActionTool {
 
     private final ArrayList<TrashNote> ArrayChecked = new ArrayList<>();
     private final GenericAdapter tAdapter;
+    private final ActionUtils actionUtils;
 
     @Inject
-    public TrashNoteActionTool(TrashAdapter<ItemNoteTrashBinding> adapter) {
+    public TrashNoteActionTool(TrashAdapter<ItemNoteTrashBinding> adapter, ActionUtils actionUtils) {
         this.tAdapter = adapter;
+        this.actionUtils = actionUtils;
     }
 
     public ArrayList<TrashNote> getArrayChecked() {
@@ -48,18 +48,23 @@ public class TrashNoteActionTool {
     public void isCheckedItem(TrashNote note) {
         if (!getArrayChecked().contains(note)) getArrayChecked().add(note);
         else getArrayChecked().remove(note);
-        if (!(getAction())) setAction(true);
+        if (!actionUtils.getAction()) actionUtils.setAction(true);
     }
 
     public boolean isCheckedItemFalse(TrashNote note) {
         if (getCountCheckedItem() == 0) {
             getArrayChecked().clear();
-            setAction(false);
+            actionUtils.setAction(false);
             return false;
         } else {
             getArrayChecked().remove(note);
             return true;
         }
+    }
+
+    public void cleanup() {
+        ArrayChecked.clear();
+        actionUtils.setAction(false);
     }
 
 }

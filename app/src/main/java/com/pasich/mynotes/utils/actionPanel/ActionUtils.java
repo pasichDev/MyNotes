@@ -12,7 +12,7 @@ import dagger.hilt.android.scopes.ActivityScoped;
 
 @ActivityScoped
 public class ActionUtils {
-    private static boolean ACTION_ON = false;
+    private boolean actionOn = false;
     private ActionPanelBinding binding;
     private View mViewRoot;
     private ManagerViewAction managerViewAction;
@@ -29,19 +29,19 @@ public class ActionUtils {
 
 
     /**
-     * @return - Returns the value of ACTION_ON
+     * @return - Returns the value of actionOn
      */
-    public static boolean getAction() {
-        return ACTION_ON;
+    public boolean getAction() {
+        return actionOn;
     }
 
     /**
-     * Set value to ACTION_ON
+     * Set value to actionOn
      *
      * @param arg - (boolean) true/false
      */
-    public static void setAction(boolean arg) {
-        ACTION_ON = arg;
+    public void setAction(boolean arg) {
+        actionOn = arg;
     }
 
     private void setListener() {
@@ -83,12 +83,32 @@ public class ActionUtils {
     }
 
     public void closeActionPanel() {
-        binding.actionClose.setOnClickListener(null);
-        binding.actionDelete.setOnClickListener(null);
-        binding.actionShare.setOnClickListener(null);
-        binding.actionRestore.setOnClickListener(null);
+        clearListeners();
         managerViewAction.toolCleanChecked();
         deactivationActionPanel();
+        setAction(false);
+    }
+
+    /**
+     * Очистка всех listeners
+     */
+    private void clearListeners() {
+        if (binding != null) {
+            binding.actionClose.setOnClickListener(null);
+            binding.actionDelete.setOnClickListener(null);
+            binding.actionShare.setOnClickListener(null);
+            binding.actionRestore.setOnClickListener(null);
+        }
+    }
+
+    /**
+     * Должна вызываться в onDestroy активности
+     */
+    public void cleanup() {
+        clearListeners();
+        binding = null;
+        mViewRoot = null;
+        managerViewAction = null;
         setAction(false);
     }
 }

@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.view.activity;
 
-import static com.pasich.mynotes.utils.actionPanel.ActionUtils.getAction;
 import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_COUNT;
 
 import android.app.ActivityOptions;
@@ -340,10 +339,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 menuItem -> {
                     int idItem = menuItem.getItemId();
                     if (idItem == R.id.sort) {
-                        if (!getAction())
+                        if (!actionUtils.getAction())
                             new SortDialog().show(getSupportFragmentManager(), "sortDialog");
                     } else if (idItem == R.id.format) {
-                        if (!getAction()) {
+                        if (!actionUtils.getAction()) {
                             formatList.formatNote(menuItem);
                             staggeredGridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
                         }
@@ -355,7 +354,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         tagsAdapter.setOnItemClickListener(new OnItemClickListenerTag() {
             @Override
             public void onClick(int position) {
-                if (!getAction()) {
+                if (!actionUtils.getAction()) {
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
                     // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
                     if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
@@ -373,7 +372,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
             @Override
             public void onLongClick(int position, View mView) {
-                if (!getAction())
+                if (!actionUtils.getAction())
                     mainPresenter.clickLongTag(tagsAdapter.getCurrentList().get(position), mView);
             }
         });
@@ -381,7 +380,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mNoteAdapter.setOnItemClickListener(new OnItemClickListener<>() {
             @Override
             public void onClick(int position, Note model) {
-                if (!getAction()) {
+                if (!actionUtils.getAction()) {
                     openNoteEdit(model.id,
                             (MaterialCardView) staggeredGridLayoutManager.findViewByPosition(position));
                 } else
@@ -391,7 +390,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
             @Override
             public void onLongClick(int position, Note model) {
-                if (!getAction())
+                if (!actionUtils.getAction())
                     choiceNoteDialog(model, position);
             }
 
@@ -460,7 +459,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean isItemViewSwipeEnabled() {
-                return !getAction() && mainPresenter.getDataManager().getFormatCount() == 1;
+                return !actionUtils.getAction() && mainPresenter.getDataManager().getFormatCount() == 1;
             }
 
             @Override
@@ -673,7 +672,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     private boolean finishActivity() {
-        if (getAction()) {
+        if (actionUtils.getAction()) {
             actionUtils.closeActionPanel();
             return false;
         } else {
@@ -823,6 +822,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         }
         if (searchNotesAdapter != null) {
             searchNotesAdapter.setItemClickListener(null);
+        }
+
+        // Очистка ActionPanel ресурсов
+        if (actionUtils != null) {
+            actionUtils.cleanup();
+        }
+        if (noteActionTool != null) {
+            noteActionTool.cleanup();
         }
 
         mNoteAdapter = null;
