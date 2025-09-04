@@ -7,6 +7,9 @@ plugins {
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.dagger.hilt.android'
 
+def appVersionCode = 34
+def appVersionName = "2.2.${appVersionCode}"
+
 android {
     compileSdkVersion 36
     buildFeatures {
@@ -14,16 +17,7 @@ android {
         dataBinding true
         buildConfig true
     }
-    
-    // Налаштування source sets для різних build variants
-    sourceSets {
-        debug {
-            java.srcDirs += 'src/debug/java'
-        }
-        release {
-            java.srcDirs += 'src/release/java'
-        }
-    }
+
     
     packagingOptions {
         resources {
@@ -34,8 +28,10 @@ android {
         applicationId "com.pasich.mynotes"
         minSdkVersion 26
         targetSdkVersion 36
-        versionCode 33
-        versionName '2.2.33'
+
+        versionCode appVersionCode
+        versionName appVersionName
+
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
