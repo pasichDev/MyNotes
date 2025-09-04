@@ -23,7 +23,6 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.materialswitch.MaterialSwitch;
-import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Theme;
@@ -57,8 +56,6 @@ public class SettingsActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
         activitySettingsBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
-        getWindow().setEnterTransition(new MaterialFade().addTarget(activitySettingsBinding.activitySettings));
-        getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(activitySettingsBinding.getRoot());
         setupEdgeToEdgeInsets(activitySettingsBinding.getRoot());
@@ -137,6 +134,12 @@ public class SettingsActivity extends BaseActivity {
 
         supportFinishAfterTransition();
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
     }
 
     @Override
@@ -498,7 +501,8 @@ public class SettingsActivity extends BaseActivity {
                        selectedPosition[0] = which;
                        themePreferencesCache.setThemeMode(which);
                        updateThemeModeDisplay();
-                       applyThemeMode(which);
+                       // Use cache method instead of local applyThemeMode to avoid recreate()
+                       themePreferencesCache.applyCurrentThemeMode();
                    }
                })
                .setNegativeButton(getString(R.string.cancel), null)
@@ -512,29 +516,4 @@ public class SettingsActivity extends BaseActivity {
             dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_rounded_background);
         }
     }
-
-    /**
-     * Apply theme mode and redraw activity
-     */
-    private void applyThemeMode(int themeMode) {
-        // First, apply the theme mode setting to AppCompatDelegate
-        switch (themeMode) {
-            case 0: // Follow System
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-            case 1: // Light
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                break;
-            case 2: // Dark
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
-            default:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-        }
-        
-        // Force recreate the activity to apply the new night mode immediately
-        recreate();
-    }
-
 }

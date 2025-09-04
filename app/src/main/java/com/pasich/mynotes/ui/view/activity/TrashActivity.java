@@ -54,12 +54,8 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
         binding = ActivityTrashBinding.inflate(getLayoutInflater());
-        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activityTrash));
-        getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
-
-
         setupEdgeToEdgeInsets(binding.getRoot());
         trashPresenter.attachView(this);
         trashPresenter.viewIsReady();

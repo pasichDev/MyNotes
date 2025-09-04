@@ -943,21 +943,19 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      */
     private void handleNavigationItemAction(int itemId) {
         if (itemId == R.id.nav_trash) {
-            startActivity(new Intent(this, TrashActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, TrashActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_settings) {
-            startSettingsActivity.launch(new Intent(this, SettingsActivity.class),
-                    ActivityOptionsCompat.makeSceneTransitionAnimation(this,
-                            (Pair<View, String>[]) null));
+            startSettingsActivity.launch(new Intent(this, SettingsActivity.class));
         } else if (itemId == R.id.nav_backups) {
-            startActivity(new Intent(this, BackupActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, BackupActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_help) {
-            startActivity(new Intent(this, HelpActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, HelpActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_about) {
-            startActivity(new Intent(this, AboutActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            startActivity(new Intent(this, AboutActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         }
     }
 

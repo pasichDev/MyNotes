@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityHelpBinding;
@@ -36,10 +35,6 @@ public class HelpActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         selectTheme();
         binding = ActivityHelpBinding.inflate(getLayoutInflater());
-        
-        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activityHelp));
-        getWindow().setAllowEnterTransitionOverlap(true);
-        
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
         

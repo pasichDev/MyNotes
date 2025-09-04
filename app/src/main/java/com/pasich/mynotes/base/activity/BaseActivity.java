@@ -60,6 +60,24 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         super.onCreate(savedInstanceState);
     }
 
+    @Override
+    protected void onDestroy() {
+        // Clear exit transition coordinator
+        try {
+            getWindow().setExitTransition(null);
+            getWindow().setEnterTransition(null);
+            getWindow().setReturnTransition(null);
+            getWindow().setReenterTransition(null);
+            getWindow().setSharedElementExitTransition(null);
+            getWindow().setSharedElementEnterTransition(null);
+            getWindow().setSharedElementReturnTransition(null);
+            getWindow().setSharedElementReenterTransition(null);
+        } catch (Exception e) {
+            // Ignore exceptions during cleanup
+        }
+        super.onDestroy();
+    }
+
     private void applyScreenProtection() {
         // Безпечна перевірка для ранніх викликів до ініціалізації DI
         boolean isScreenProtectionEnabled = (themePreferencesCache != null) ?
