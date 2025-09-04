@@ -45,16 +45,16 @@ public class ActionUtils {
     }
 
     private void setListener() {
-        binding.closeActionPanel.setOnClickListener(v -> closeActionPanel());
-        binding.actionPanelDelete.setOnClickListener(v -> managerViewAction.deleteNotes());
-        binding.actionPanelShare.setOnClickListener(v -> managerViewAction.shareNotes());
-        binding.actionPanelRestore.setOnClickListener(v -> managerViewAction.restoreNotes());
+        binding.actionClose.setOnClickListener(v -> closeActionPanel());
+        binding.actionDelete.setOnClickListener(v -> managerViewAction.deleteNotes());
+        binding.actionShare.setOnClickListener(v -> managerViewAction.shareNotes());
+        binding.actionRestore.setOnClickListener(v -> managerViewAction.restoreNotes());
     }
 
     public void setTrash() {
-        binding.actionPanelShare.setVisibility(View.GONE);
-        binding.actionPanelDelete.setVisibility(View.GONE);
-        binding.actionPanelRestore.setVisibility(View.VISIBLE);
+        binding.actionShare.setVisibility(View.GONE);
+        binding.actionDelete.setVisibility(View.GONE);
+        binding.actionRestore.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -83,10 +83,10 @@ public class ActionUtils {
     }
 
     public void closeActionPanel() {
-        binding.closeActionPanel.setOnClickListener(null);
-        binding.actionPanelDelete.setOnClickListener(null);
-        binding.actionPanelShare.setOnClickListener(null);
-        binding.actionPanelRestore.setOnClickListener(null);
+        binding.actionClose.setOnClickListener(null);
+        binding.actionDelete.setOnClickListener(null);
+        binding.actionShare.setOnClickListener(null);
+        binding.actionRestore.setOnClickListener(null);
         managerViewAction.toolCleanChecked();
         deactivationActionPanel();
         setAction(false);
