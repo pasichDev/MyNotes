@@ -25,6 +25,7 @@ import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.utils.backup.CloudCacheHelper;
 import com.pasich.mynotes.utils.constants.Database;
 import com.pasich.mynotes.utils.constants.DriveScope;
+import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
 
 import javax.inject.Singleton;
 
@@ -129,7 +130,13 @@ public class ApplicationModule {
         } else {
             return new CloudCacheHelper().playMarketNoInstall();
         }
+    }
 
-
+    @Provides
+    @Singleton
+    ThemePreferencesCache providesThemePreferencesCache(@ApplicationContext Context context) {
+        final ThemePreferencesCache themePreferencesCache = new ThemePreferencesCache(context);
+        themePreferencesCache.initialize();
+        return themePreferencesCache;
     }
 }

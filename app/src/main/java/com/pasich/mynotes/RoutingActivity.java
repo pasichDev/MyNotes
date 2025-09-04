@@ -9,7 +9,9 @@ import androidx.core.splashscreen.SplashScreen;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.ui.view.activity.MainActivity;
 
+import dagger.hilt.android.AndroidEntryPoint;
 
+@AndroidEntryPoint
 public class RoutingActivity extends BaseActivity {
 
     @Override

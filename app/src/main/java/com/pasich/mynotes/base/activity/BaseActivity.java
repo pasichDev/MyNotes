@@ -1,11 +1,7 @@
 package com.pasich.mynotes.base.activity;
 
-
-import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -28,17 +24,35 @@ import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.themes.ThemesArray;
+import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
 import com.preference.PowerPreference;
+
+import javax.inject.Inject;
 
 public abstract class BaseActivity extends AppCompatActivity implements BaseView {
 
+    @Inject
+    ThemePreferencesCache themePreferencesCache;
+
     @Override
     public void selectTheme() {
-        applyThemeMode();
-        setTheme(PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? R.style.AppThemeDynamic : getSelectedTheme());
+        // Безпечний виклик applyCurrentThemeMode з fallback
+        if (themePreferencesCache != null) {
+            themePreferencesCache.applyCurrentThemeMode();
+        } else {
+            // Fallback для раннього виклику до ініціалізації DI
+            applyThemeMode();
+        }
+
+        // Безпечна перевірка для ранніх викликів до ініціалізації DI
+        boolean isDynamicEnabled = (themePreferencesCache != null) ?
+                themePreferencesCache.isDynamicColorEnabled() :
+                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
+
+        setTheme(isDynamicEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?
+                R.style.AppThemeDynamic : getSelectedTheme());
         applyScreenProtection();
     }
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,13 +60,12 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         super.onCreate(savedInstanceState);
     }
 
-
     private void applyScreenProtection() {
-        boolean isScreenProtectionEnabled = PowerPreference.getDefaultFile().getBoolean(
-            PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, 
-            PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE
-        );
-        
+        // Безпечна перевірка для ранніх викликів до ініціалізації DI
+        boolean isScreenProtectionEnabled = (themePreferencesCache != null) ?
+                themePreferencesCache.isScreenProtectionEnabled() :
+                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
+
         if (isScreenProtectionEnabled) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         } else {
@@ -60,19 +73,15 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         }
     }
 
-    protected void updateScreenProtection() {
-        applyScreenProtection();
-    }
-
     /**
      * Apply theme mode (light/dark/system)
      */
     private void applyThemeMode() {
-        int themeMode = PowerPreference.getDefaultFile().getInt(
-            PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, 
-            PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE
-        );
-        
+        // Безпечна перевірка для ранніх викликів до ініціалізації DI
+        int themeMode = (themePreferencesCache != null) ?
+                themePreferencesCache.getThemeMode() :
+                PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+
         switch (themeMode) {
             case 0: // Follow System
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
@@ -90,10 +99,15 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     }
 
     private int getSelectedTheme() {
-        return new ThemesArray().getThemeStyle(PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE));
+        // Безпечна перевірка для ранніх викликів до ініціалізації DI
+        int themeId = (themePreferencesCache != null) ?
+                themePreferencesCache.getThemeId() :
+                PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
+
+        return new ThemesArray().getThemeStyle(themeId);
     }
 
-    // Метод для ресурсів
+    // Метод для ресурсов
     public void onInfoSnack(int resID, View view, int typeInfo, int time) {
         onInfoSnack(getString(resID), view, typeInfo, time);
     }
@@ -128,24 +142,16 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         snackbar.show();
     }
 
-
-    @Override
-    public boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
-    }
-
     /**
      * Налаштовує відступи для кореневого view з урахуванням системних барів
      * Викликайте цей метод після setContentView() у дочірніх Activity
      */
     protected void setupEdgeToEdgeInsets(View rootView) {
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-           WindowInsetsCompat windowInsets = insets;
 
             // Отримуємо відступи для системних барів
-            Insets systemBars = windowInsets.getInsets(
-                   WindowInsetsCompat.Type.systemBars()
+            Insets systemBars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
             );
 
             // Встановлюємо padding тільки зверху та знизу
@@ -159,6 +165,4 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
             return insets;
         });
     }
-
-
 }
