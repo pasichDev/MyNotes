@@ -7,7 +7,7 @@ plugins {
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.dagger.hilt.android'
 
-def appVersionCode = 34
+def appVersionCode = 35
 def appVersionName = "2.2.${appVersionCode}"
 
 android {
