@@ -141,5 +141,13 @@ public class Note {
         this.background = background;
         this.backgroundData = background != null ? background.toJson() : "";
     }
+    
+    /**
+     * Перевіряє чи встановлено кастомний фон (не DEFAULT)
+     */
+    public boolean hasCustomBackground() {
+        NoteBackground bg = getBackground();
+        return bg != null && bg.getType() != NoteBackground.BackgroundType.DEFAULT;
+    }
 
 }

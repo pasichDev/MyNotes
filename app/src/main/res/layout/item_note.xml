@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
         app:cardBackgroundColor="@{Note.checked ? @color/item_bindig_note_surface_variant : @color/item_bindig_note_surface}"
-        app:strokeColor="@{Note.checked ? @color/item_bindig_note_primary :  @color/item_bindig_note_surface_variant}"
+        app:strokeColor="@{Note.checked ? @color/item_bindig_note_primary : (Note.hasCustomBackground() ? @android:color/transparent : @color/item_bindig_note_surface_variant)}"
         app:noteBackground="@{Note.background}">
 
         <LinearLayout
