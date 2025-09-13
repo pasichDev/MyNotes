@@ -1,5 +1,7 @@
 package com.pasich.mynotes.base.view;
 
+import com.pasich.mynotes.data.model.NoteBackground;
+
 public interface MoreNoteNoteActivityView {
 
     void changeTextStyle();
@@ -13,4 +15,6 @@ public interface MoreNoteNoteActivityView {
     void changeTag(String nameTag, boolean change);
 
     void openCopyNote(long idNote);
+    
+    void changeBackground(NoteBackground background);
 }

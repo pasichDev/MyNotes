@@ -27,10 +27,16 @@ public class Note {
     
     @SerializedName("e")
     private String tag;
+    
+    @SerializedName("f")
+    private String backgroundData;
 
 
     @Ignore
     private boolean Checked;
+    
+    @Ignore
+    private NoteBackground background;
 
     public Note create(String title, String value, long date, String tag) {
         this.title = title;
@@ -38,6 +44,8 @@ public class Note {
         this.value = value;
         this.date = date;
         this.Checked = false;
+        this.backgroundData = "";
+        this.background = null;
         return this;
     }
 
@@ -47,6 +55,8 @@ public class Note {
         this.value = value;
         this.date = date;
         this.Checked = false;
+        this.backgroundData = "";
+        this.background = null;
         return this;
     }
 
@@ -105,6 +115,31 @@ public class Note {
 
     public void setDate(long date) {
         this.date = date;
+    }
+    
+    // Методи для роботи з фоном
+    public String getBackgroundData() {
+        return this.backgroundData != null ? this.backgroundData : "";
+    }
+    
+    public void setBackgroundData(String backgroundData) {
+        this.backgroundData = backgroundData;
+        this.background = null; // Скидаємо кешований об'єкт
+    }
+    
+    public NoteBackground getBackground() {
+        if (background == null && backgroundData != null && !backgroundData.isEmpty()) {
+            background = NoteBackground.fromJson(backgroundData);
+        }
+        if (background == null) {
+            background = NoteBackground.createDefault();
+        }
+        return background;
+    }
+    
+    public void setBackground(NoteBackground background) {
+        this.background = background;
+        this.backgroundData = background != null ? background.toJson() : "";
     }
 
 }

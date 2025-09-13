@@ -28,6 +28,7 @@ import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
 import com.pasich.mynotes.utils.GoogleTranslationIntent;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
+import com.pasich.mynotes.ui.view.dialogs.note.NoteBackgroundDialog;
 
 import java.util.List;
 
@@ -76,6 +77,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
         addTitle();
         binding.settingsActivity.rootView.setVisibility(activityNote ? View.VISIBLE : View.GONE);
+        
+        // Ініціалізуємо інтерфейси
+        initInterfaces();
+        
         return binding.getRoot();
     }
 
@@ -125,12 +130,25 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     @Override
     public void initInterfaces() {
-        if (activityNote) {
-            noteActivity = (MoreNoteNoteActivityView) requireActivity();
-            mainActivity = null;
-        } else {
-            mainActivity = (MoreNoteMainActivityView) requireActivity();
+        try {
+            if (activityNote) {
+                if (requireActivity() instanceof MoreNoteNoteActivityView) {
+                    noteActivity = (MoreNoteNoteActivityView) requireActivity();
+                    mainActivity = null;
+                } else {
+                    noteActivity = null;
+                }
+            } else {
+                if (requireActivity() instanceof MoreNoteMainActivityView) {
+                    mainActivity = (MoreNoteMainActivityView) requireActivity();
+                    noteActivity = null;
+                } else {
+                    mainActivity = null;
+                }
+            }
+        } catch (Exception e) {
             noteActivity = null;
+            mainActivity = null;
         }
     }
 
@@ -167,6 +185,27 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             binding.settingsActivity.textStyleItem.setOnClickListener(v -> {
                 textStylePreferences.changeArgument();
                 noteActivity.changeTextStyle();
+            });
+            
+            // Обробник для вибору фону нотатки
+            binding.noteBackground.setOnClickListener(v -> {
+                if (noteActivity != null) {
+                    // Зберігаємо посилання на активність
+                    final MoreNoteNoteActivityView activityRef = noteActivity;
+                    
+                    NoteBackgroundDialog backgroundDialog = new NoteBackgroundDialog(mNote, background -> {
+                        // Встановлюємо новий фон для нотатки
+                        mNote.setBackground(background);
+                        // Повідомляємо активність про зміну фону
+                        activityRef.changeBackground(background);
+                        
+                        // Закриваємо діалог з невеликою затримкою, щоб дати час на збереження
+                        getView().postDelayed(() -> dismiss(), 100);
+                    });
+                    backgroundDialog.show(getParentFragmentManager(), "NoteBackgroundDialog");
+                } else {
+                    Log.w("MoreNoteDialog", "noteActivity is null, cannot open background dialog");
+                }
             });
 
         } else {

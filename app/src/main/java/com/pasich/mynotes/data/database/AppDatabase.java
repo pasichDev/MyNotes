@@ -51,6 +51,14 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Додаємо нове поле backgroundData до таблиці notes
+            database.execSQL("ALTER TABLE notes ADD COLUMN backgroundData TEXT DEFAULT ''");
+        }
+    };
+
     public abstract TagsDao tagsDao();
 
     public abstract NoteDao noteDao();

@@ -33,6 +33,6 @@ public class DiffUtilNote extends DiffUtil.ItemCallback<Note> {
                oldItem.getTitle().equals(newItem.getTitle()) && 
                oldItem.getValue().equals(newItem.getValue()) && 
                oldItem.getTag().equals(newItem.getTag()) &&
-               oldItem.getDate() == newItem.getDate();
+               oldItem.getDate() == newItem.getDate() && oldItem.getBackground().equals(newItem.getBackground());
     }
 }
