@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [2.2.35] - XX.XX.2025
+
+- Added the ability to customize note appearance (background, color, gradient).
+
+
 ## [2.2.34] - 05.09.2025
 
 - Interface updates on some screens
