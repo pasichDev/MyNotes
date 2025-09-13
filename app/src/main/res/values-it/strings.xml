@@ -266,4 +266,10 @@
     <string name="help_notes_autosave_title">Salvataggio automatico</string>
     <string name="help_notes_autosave_description">Le note vengono salvate automaticamente 2 secondi dopo aver smesso di digitare. Nella barra superiore appare un indicatore: punto blu — modifiche non salvate, icona animata — salvataggio in corso, segno di spunta verde — salvataggio riuscito. Anche se chiudi l\'app o si blocca, le ultime modifiche non andranno perse.</string>
 
+    <!-- Note Background -->
+    <string name="note_background_title">Sfondo della nota</string>
+    <string name="note_background">Sfondo</string>
+    <string name="background_colors">Colori</string>
+    <string name="background_gradients">Gradienti</string>
+
 </resources>
