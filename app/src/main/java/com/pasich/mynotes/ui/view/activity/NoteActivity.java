@@ -6,9 +6,7 @@ import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerT
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Layout;
@@ -18,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ProgressBar;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.graphics.Insets;
@@ -58,21 +55,21 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
     public ActivityNoteBinding binding;
     @Inject
     public NoteContract.presenter notePresenter;
-
+    
     // Меню для індикатора стану збереження
     private MenuItem saveStatusMenuItem;
-
+    
     // Змінна для відстеження останньої позиції курсора
     private int lastCursorPosition = -1;
 
     private int scrollProgress = -1;
-
+    
     // Змінна для збереження позиції скролу при роботі з клавіатурою
     private int savedScrollPosition = -1;
-
+    
     // Змінна для збереження початкового фону нотатки
     private NoteBackground originalBackground;
-
+    
     // Змінні для точного відстеження стану клавіатури
     private boolean isKeyboardVisible = false;
     private int lastImeInsets = 0;
@@ -118,50 +115,50 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         if (binding.valueNote.isFocused()) {
             // Отримуємо позицію курсора
             int cursorPosition = binding.valueNote.getSelectionStart();
-
+            
             // Перевіряємо, чи змінилася позиція курсора
             if (cursorPosition == lastCursorPosition) {
                 return; // Не прокручуємо, якщо курсор не змінив позицію
             }
             // Отримуємо layout тексту
-            Layout layout = binding.valueNote.getLayout();
+           Layout layout = binding.valueNote.getLayout();
             if (layout != null) {
                 // Знаходимо лінію курсора
                 int line = layout.getLineForOffset(cursorPosition);
-
+                
                 // Отримуємо Y координату лінії відносно EditText
                 int lineTop = layout.getLineTop(line);
-
+                
                 // Отримуємо позицію EditText відносно ScrollView
                 int editTextTop = binding.valueNote.getTop();
-
+                
                 // Розраховуємо абсолютну позицію лінії в ScrollView
                 int absoluteLineTop = editTextTop + lineTop;
-
+                
                 // Отримуємо поточну позицію прокрутки
                 int currentScrollY = binding.scrollView.getScrollY();
-
+                
                 // Отримуємо видиму висоту ScrollView
                 int scrollViewHeight = binding.scrollView.getHeight();
-
+                
                 // Отримуємо відступи для клавіатури
                 Insets imeInsets = Objects.requireNonNull(ViewCompat.getRootWindowInsets(binding.getRoot()))
-                        .getInsets(WindowInsetsCompat.Type.ime());
+                    .getInsets(WindowInsetsCompat.Type.ime());
                 int availableHeight = scrollViewHeight - imeInsets.bottom;
-
+                
                 // Перевіряємо, чи курсор знаходиться у видимій області
                 int lineVisibleTop = absoluteLineTop - currentScrollY;
                 int lineHeight = layout.getLineBottom(line) - layout.getLineTop(line);
                 int lineVisibleBottom = lineVisibleTop + lineHeight;
-
+                
                 // Прокручуємо тільки якщо курсор не видно або знаходиться занадто близько до краю
                 if (lineVisibleTop < 100 || lineVisibleBottom > (availableHeight - 100)) {
                     // Розраховуємо цільову позицію для прокрутки (курсор в центрі екрана)
                     int targetScrollY = absoluteLineTop - (availableHeight / 2);
-
+                    
                     binding.scrollView.smoothScrollTo(0, Math.max(0, targetScrollY));
                 }
-
+                
                 // Оновлюємо останню позицію курсора
                 lastCursorPosition = cursorPosition;
             }
@@ -187,7 +184,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
                     binding.endContent.setVisibility(View.VISIBLE);
                     binding.scrollProgressIndicator.setVisibility(View.VISIBLE);
                 }
-
+                
                 // Оновлюємо прогрес скролу
                 updateScrollProgress(scrollY);
             } else {
@@ -209,7 +206,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         View child = binding.scrollView.getChildAt(0);
         if (child != null) {
             int totalScrollableHeight = child.getHeight() - binding.scrollView.getHeight();
-
+            
             if (totalScrollableHeight > 0) {
                 // Розраховуємо прогрес у відсотках (0-100)
                 int progress = (int) ((float) scrollY / totalScrollableHeight * 100);
@@ -231,21 +228,21 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
 
             // Отримуємо відступи для клавіатури (IME)
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
-
+            
             // Точно визначаємо стан клавіатури
             boolean keyboardWasVisible = isKeyboardVisible;
             boolean keyboardWillBeVisible = imeInsets.bottom > 100; // Мінімальна висота для клавіатури
-
+            
             // Обробляємо зміну стану клавіатури
             if (!keyboardWasVisible && keyboardWillBeVisible) {
                 // Клавіатура тільки з'являється - зберігаємо поточну позицію
                 savedScrollPosition = binding.scrollView.getScrollY();
             }
-
+            
             // Оновлюємо стан
             isKeyboardVisible = keyboardWillBeVisible;
             lastImeInsets = imeInsets.bottom;
-
+            
             // Встановлюємо padding зверху для системних барів тільки для кореневого view
             v.setPadding(
                     v.getPaddingLeft(),
@@ -253,24 +250,24 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
                     v.getPaddingRight(),
                     0
             );
-
+            
             // Встановлюємо нижній margin для scrollView з урахуванням клавіатури
             int bottomMargin = Math.max(imeInsets.bottom, systemBars.bottom);
-
+            
             // Отримуємо LayoutParams для scrollView (він в LinearLayout)
-            android.widget.LinearLayout.LayoutParams params =
-                    (android.widget.LinearLayout.LayoutParams) binding.scrollView.getLayoutParams();
-
+            android.widget.LinearLayout.LayoutParams params = 
+                (android.widget.LinearLayout.LayoutParams) binding.scrollView.getLayoutParams();
+            
             // При ховані клавіатури - спочатку встановлюємо правильну позицію скролу
             if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
                 // Встановлюємо позицію ДО зміни розміру
                 binding.scrollView.scrollTo(0, savedScrollPosition);
             }
-
+            
             // Встановлюємо нижній margin
             params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, bottomMargin);
             binding.scrollView.setLayoutParams(params);
-
+            
             // Встановлюємо додатковий padding для scrollView
             binding.scrollView.setPadding(
                     binding.scrollView.getPaddingLeft(),
@@ -278,13 +275,13 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
                     binding.scrollView.getPaddingRight(),
                     getResources().getDimensionPixelSize(R.dimen.scroll_view_bottom_margin)
             );
-
+            
             // Обробляємо появу клавіатури
             if (!keyboardWasVisible && keyboardWillBeVisible && binding.valueNote.isFocused()) {
                 // Клавіатура з'являється - прокручуємо до курсора
                 lastCursorPosition = -1;
                 binding.valueNote.postDelayed(this::scrollToCursor, 200);
-            }
+            } 
             // Додаткове закріплення позиції після ховання клавіатури
             else if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
                 // Ще раз встановлюємо позицію ПІСЛЯ зміни розміру
@@ -294,7 +291,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
                     }
                 });
             }
-
+            
             return insets;
         });
     }
@@ -332,11 +329,11 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         if (notePresenter != null && notePresenter.getNote() != null) {
             String currentTitle = binding != null ? binding.notesTitle.getText().toString() : "";
             String currentValue = binding != null ? binding.valueNote.getText().toString() : "";
-
+            
             // Оновлюємо дані в моделі
             notePresenter.getNote().setTitle(currentTitle);
             notePresenter.getNote().setValue(currentValue);
-
+            
             // Якщо є незбережені зміни - робимо екстрене збереження
             ((NotePresenter) notePresenter).performEmergencySaveIfNeeded();
         }
@@ -352,7 +349,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         if (notePresenter.getNewNotesKey()) {
             if (notePresenter.getTagNote().length() >= 2)
                 changeTag(notePresenter.getTagNote(), false);
-
+            
             String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(new Date().getTime()));
             binding.titleToolbarDataCenter.setText(formattedDate);
             binding.titleToolbarDataCollapsed.setText(lastDayEditNote(new Date().getTime()));
@@ -379,7 +376,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
                 // Оновлюємо заголовок у згорнутому вигляді
                 String title = s.toString().trim();
                 binding.titleToolbarCollapsed.setText(!title.isEmpty() ? title : getString(R.string.noteTitle));
-
+                
                 // Викликаємо автозбереження при зміні заголовка
                 if (notePresenter != null && notePresenter.getNote() != null) {
                     notePresenter.getNote().setTitle(title);
@@ -402,7 +399,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         // Додаємо обробник кліку для поля вводу - тільки для обробки переміщення курсора
         binding.valueNote.setOnClickListener(v -> {
             if (binding.valueNote.isFocused() && scrollProgress < 95) {
-                binding.valueNote.postDelayed(this::scrollToCursor, 50);
+            binding.valueNote.postDelayed(this::scrollToCursor, 50);
             }
         });
 
@@ -464,30 +461,30 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
     @Override
     public void updateSaveStatus(SaveState saveState) {
         if (saveStatusMenuItem == null) return;
-
+        
         switch (saveState) {
             case IDLE:
                 saveStatusMenuItem.setVisible(false);
                 break;
-
+                
             case PENDING:
                 saveStatusMenuItem.setVisible(true);
                 saveStatusMenuItem.setIcon(R.drawable.ic_save_pending);
                 saveStatusMenuItem.setTitle(getString(R.string.saveStatusPending));
                 break;
-
+                
             case SAVING:
                 saveStatusMenuItem.setVisible(true);
                 saveStatusMenuItem.setIcon(R.drawable.ic_save_saving_animated);
                 saveStatusMenuItem.setTitle(getString(R.string.saveStatusSaving));
                 break;
-
+                
             case SAVED:
                 saveStatusMenuItem.setVisible(true);
                 saveStatusMenuItem.setIcon(R.drawable.ic_save_success);
                 saveStatusMenuItem.setTitle(getString(R.string.saveStatusSaved));
                 break;
-
+                
             case ERROR:
                 saveStatusMenuItem.setVisible(true);
                 saveStatusMenuItem.setIcon(R.drawable.ic_save_error);
@@ -519,7 +516,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
             ((NotePresenter) notePresenter).cleanupHandlers();
             notePresenter.detachView();
         }
-
+        
         if (binding != null) {
             binding.notesTitle.addTextChangedListener(null);
             binding.titleToolbarTagCenter.setOnClickListener(null);
@@ -549,31 +546,30 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
             }
 
         });
-
+        
         String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate()));
-
+        
         // Оновлюємо центровані елементи
         binding.titleToolbarDataCenter.setText(formattedDate);
-
+        
         // Зберігаємо початковий фон для перевірки змін
         originalBackground = note.getBackground();
-
+        
         // Застосовуємо збережений фон нотатки
         if (note.getBackground() != null) {
             BackgroundApplier.applyBackground(binding.noteLayout, note.getBackground(), this);
         }
-
+        
         // Оновлюємо згорнуті елементи
         binding.titleToolbarCollapsed.setText(!note.getTitle().isEmpty() ? note.getTitle() : getString(R.string.noteTitle));
         binding.titleToolbarDataCollapsed.setText(formattedDate);
-
+        
         changeTag(note.getTag(), false);
-
+        
         // Застосовуємо фон нотатки
         NoteBackground background = note.getBackground();
         if (background != null) {
             BackgroundApplier.applyBackground(binding.noteLayout, background, this);
-            updateUIColors(background);
         }
     }
 
@@ -584,13 +580,13 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
             supportFinishAfterTransition();
             return;
         }
-
+        
         binding.getRoot().clearFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (binding != null) {
             imm.hideSoftInputFromWindow(binding.valueNote.getWindowToken(), 0);
         }
-        supportFinishAfterTransition();
+       supportFinishAfterTransition();
     }
 
     private void saveNote() {
@@ -599,7 +595,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         if (binding == null || notePresenter == null) {
             return;
         }
-
+        
         long mThisDate = new Date().getTime();
         String mTitle = binding.notesTitle.getText().toString();
         String mValue = binding.valueNote.getText().toString();
@@ -631,13 +627,13 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
             notePresenter.getNote().setTitle(mTitle);
             hasChanges = true;
         }
-
+        
         // Перевіряємо зміни тексту
         if (!mNoteValue.contentEquals(mValue)) {
             notePresenter.getNote().setValue(mValue);
             hasChanges = true;
         }
-
+        
         // Перевіряємо зміни фону
         boolean backgroundChanged = isBackgroundChanged(originalBackground, notePresenter.getNote().getBackground());
 
@@ -665,7 +661,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         if (originalBackground == null) {
             return false;
         }
-
+        
         // Якщо обидва не null — порівнюємо JSON
         try {
             String originalJson = originalBackground.toJson();
@@ -725,71 +721,23 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
     public void changeTextSizeOffline() {
         changeTextSizeOnline(notePresenter.getDataManager().getSizeTextNoteActivity());
     }
-
+    
     @Override
     public void changeBackground(NoteBackground background) {
+        Log.e("NoteActivity", "changeBackground called with: " + background);
         if (background != null && binding != null) {
             // Встановлюємо фон для кореневого макету активності
             BackgroundApplier.applyBackground(binding.noteLayout, background, this);
-
+            
             // Зберігаємо фон в нотатці
             if (notePresenter != null && notePresenter.getNote() != null) {
                 notePresenter.getNote().setBackground(background);
-                // Відразу викликаємо збереження при зміні фону
-                saveNote();
+               // Відразу викликаємо збереження при зміні фону
+                  saveNote();
             }
-
-            // Оновлюємо кольори UI елементів
-            updateUIColors(background);
         } else {
             Log.w("NoteActivity", "Cannot apply background: background=" + background + ", binding=" + binding);
         }
-    }
-
-    /**
-     * Оновлює кольори UI елементів на основі фону нотатки
-     */
-    private void updateUIColors(NoteBackground background) {
-        if (binding == null) {
-            return;
-        }
-
-        // Отримуємо акцентні кольори на основі фону
-        int accentColor = BackgroundApplier.getAccentColor(background, this);
-        int progressBarColor = BackgroundApplier.getProgressBarColor(background, this);
-
-        // Оновлюємо колір FloatingActionButton
-        updateFloatingActionButtonColor(accentColor);
-
-        // Оновлюємо колір ProgressBar
-        updateProgressBarColor(progressBarColor);
-    }
-
-    /**
-     * Оновлює колір FloatingActionButton
-     */
-    private void updateFloatingActionButtonColor(int color) {
-        binding.editActive.post(() -> {
-            // Очищуємо попередній tint і встановлюємо новий для фону
-            binding.editActive.setBackgroundTintList(null);
-            binding.editActive.setBackgroundTintList(ColorStateList.valueOf(color));
-            binding.editActive.setBackgroundTintMode(PorterDuff.Mode.SRC_IN);
-
-            // Визначаємо контрастний колір для іконки
-            int iconColor = BackgroundApplier.isColorDark(color) ? Color.WHITE : Color.BLACK;
-
-            // Встановлюємо колір іконки
-            binding.editActive.setImageTintList(ColorStateList.valueOf(iconColor));
-        });
-
-    }
-
-    /**
-     * Оновлює колір ProgressBar
-     */
-    private void updateProgressBarColor(int color) {
-        ProgressBar progressBar = findViewById(R.id.scrollProgressIndicator);
-        progressBar.setProgressTintList(ColorStateList.valueOf(color));
     }
 
 }
