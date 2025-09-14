@@ -21,6 +21,7 @@ public class BackgroundApplier {
     public static void applyBackground(View view, NoteBackground background, Context context) {
 
         if (view == null || background == null || context == null) {
+            android.util.Log.w("BackgroundApplier", "Null parameter detected");
             return;
         }
 
