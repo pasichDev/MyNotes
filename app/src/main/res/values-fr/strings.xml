@@ -268,9 +268,4 @@
     <string name="help_notes_autosave_title">Enregistrement automatique</string>
     <string name="help_notes_autosave_description">Les notes sont enregistrées automatiquement 2 secondes après avoir arrêté de taper. Dans la barre supérieure, un indicateur s’affiche : point bleu — modifications non enregistrées, icône animée — enregistrement en cours, coche verte — enregistré avec succès. Même si vous fermez l’application ou qu’elle plante, vos dernières modifications ne seront pas perdues.</string>
 
-    <!-- Note Background -->
-    <string name="note_background_title">Arrière-plan de la note</string>
-    <string name="note_background">Arrière-plan</string>
-    <string name="background_colors">Couleurs</string>
-    <string name="background_gradients">Dégradés</string>
 </resources>

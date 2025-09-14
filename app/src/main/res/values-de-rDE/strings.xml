@@ -272,10 +272,4 @@
     <string name="help_notes_autosave_title">Automatisches Speichern</string>
     <string name="help_notes_autosave_description">Notizen werden automatisch 2 Sekunden nach dem Ende der Eingabe gespeichert. In der oberen Leiste wird ein Status angezeigt: blauer Punkt — ungespeicherte Änderungen, animiertes Symbol — Speichern läuft, grünes Häkchen — erfolgreich gespeichert. Selbst wenn die App geschlossen oder abgestürzt wird, gehen die letzten Änderungen nicht verloren.</string>
 
-    <!-- Note Background -->
-    <string name="note_background_title">Notiz-Hintergrund</string>
-    <string name="note_background">Hintergrund</string>
-    <string name="background_colors">Farben</string>
-    <string name="background_gradients">Verläufe</string>
-
 </resources>

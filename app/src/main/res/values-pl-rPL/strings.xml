@@ -274,10 +274,5 @@
     <string name="help_notes_autosave_title">Autosave</string>
     <string name="help_notes_autosave_description">Notatki są automatycznie zapisywane 2 sekundy po zakończeniu pisania. Na górnym pasku pojawia się wskaźnik: niebieska kropka — niezapisane zmiany, animowana ikona — zapisywanie w toku, zielony haczyk — zapisano pomyślnie. Nawet jeśli zamkniesz aplikację lub się zawiesi, ostatnie zmiany nie zostaną utracone.</string>
 
-    <!-- Note Background -->
-    <string name="note_background_title">Tło notatki</string>
-    <string name="note_background">Tło</string>
-    <string name="background_colors">Kolory</string>
-    <string name="background_gradients">Gradienty</string>
 
 </resources>

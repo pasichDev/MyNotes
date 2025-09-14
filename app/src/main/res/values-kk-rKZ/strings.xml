@@ -275,10 +275,4 @@
     <string name="help_notes_autosave_title">Автоматты сақтау</string>
     <string name="help_notes_autosave_description">Жазбалар мәтінді енгізуді тоқтатқаннан кейін 2 секундтан соң автоматты түрде сақталады. Жоғарғы тақтада индикатор көрсетіледі: көк нүкте — сақталмаған өзгерістер, анимациялық белгіше — сақтау жүріп жатыр, жасыл құсбелгі — сәтті сақталды. Қолданбаны жапсаңыз да немесе ол істен шықса да, соңғы өзгерістер жоғалмайды.</string>
 
-    <!-- Note Background -->
-    <string name="note_background_title">Жазба фоны</string>
-    <string name="note_background">Фон</string>
-    <string name="background_colors">Түстер</string>
-    <string name="background_gradients">Градиенттер</string>
-
 </resources>

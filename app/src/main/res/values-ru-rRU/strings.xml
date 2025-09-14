@@ -279,11 +279,5 @@
     <string name="help_notes_autosave_title">Автосохранение</string>
     <string name="help_notes_autosave_description">Заметки автоматически сохраняются через 2 секунды после окончания ввода. В верхней панели отображается индикатор: синяя точка — несохранённые изменения, анимированная иконка — идёт сохранение, зелёная галочка — успешно сохранено. Даже если вы закроете приложение или оно завершится аварийно, последние изменения не будут потеряны.</string>
 
-    <!-- Note Background -->
-    <string name="note_background_title">Фон заметки</string>
-    <string name="note_background">Фон</string>
-    <string name="background_colors">Цвета</string>
-    <string name="background_gradients">Градиенты</string>
-
 
 </resources>

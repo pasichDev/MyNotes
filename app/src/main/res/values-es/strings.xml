@@ -277,10 +277,4 @@
     <string name="help_notes_autosave_title">Guardado automático</string>
     <string name="help_notes_autosave_description">Las notas se guardan automáticamente 2 segundos después de dejar de escribir. En la barra superior aparece un indicador: punto azul — cambios no guardados, icono animado — guardando, marca verde — guardado con éxito. Incluso si cierras la app o se bloquea, tus últimos cambios no se perderán.</string>
 
-    <!-- Note Background -->
-    <string name="note_background_title">Fondo de nota</string>
-    <string name="note_background">Fondo</string>
-    <string name="background_colors">Colores</string>
-    <string name="background_gradients">Degradados</string>
-
 </resources>
