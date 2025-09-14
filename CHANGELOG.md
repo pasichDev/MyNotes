@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [2.2.35] - XX.XX.2025
+
+- Fixed MainDrawer display
+- General UI improvements and bug fixes
+- Updated website and privacy policy links
+
 ## [2.2.34] - 05.09.2025
 
 - Interface updates on some screens
