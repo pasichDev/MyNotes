@@ -7,6 +7,7 @@
         android:icon="@drawable/ic_save_pending"
         android:title="@string/saveStatus"
         android:visible="false"
+        app:iconTint="?attr/colorOnBackground"
         app:showAsAction="ifRoom" />
 
     <item

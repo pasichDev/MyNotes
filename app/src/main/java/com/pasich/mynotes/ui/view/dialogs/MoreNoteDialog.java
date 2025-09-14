@@ -200,7 +200,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                         activityRef.changeBackground(background);
                         
                         // Закриваємо діалог з невеликою затримкою, щоб дати час на збереження
-                        getView().postDelayed(() -> dismiss(), 100);
+                        assert getView() != null;
+                        getView().postDelayed(this::dismiss, 100);
                     });
                     backgroundDialog.show(getParentFragmentManager(), "NoteBackgroundDialog");
                 } else {

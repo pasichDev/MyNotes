@@ -19,7 +19,6 @@ public class BackgroundPresets {
         "#FFE5F5", // Light magenta
         "#E5FFF5", // Light mint
         "#F5FFE5", // Light lime
-        "#FFE5E5", // Light coral
         "#E5E5FF", // Light indigo
         "#FFECB3", // Light amber
         "#E8F5E8", // Light emerald
@@ -38,7 +37,6 @@ public class BackgroundPresets {
         "#4D2640", // Dark magenta
         "#264D40", // Dark mint
         "#404D26", // Dark lime
-        "#4D2626", // Dark coral
         "#26264D", // Dark indigo
         "#5D4037", // Dark amber
         "#2E4A2E", // Dark emerald

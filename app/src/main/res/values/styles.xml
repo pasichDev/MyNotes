@@ -31,8 +31,6 @@
 
 
     <style name="fab_custom" parent="Widget.Material3.FloatingActionButton.Primary">
-        <item name="android:backgroundTint">?attr/colorPrimary</item>
-        <item name="tint">?attr/colorOnPrimary</item>
         <item name="android:layout_marginBottom">15dp</item>
         <item name="android:layout_marginEnd">20dp</item>
         <item name="elevation">7dp</item>

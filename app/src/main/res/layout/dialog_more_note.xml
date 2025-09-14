@@ -67,6 +67,31 @@
                         style="@style/itemTextBottomSheets"
                         android:text="@string/selectAll" />
                 </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"/>
+
+                <!-- Пункт для вибору фону нотатки -->
+                <LinearLayout
+                    android:id="@+id/noteBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_item_full"
+                    android:layout_marginHorizontal="20dp"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems"
+                    android:visibility="@{activityNote ? View.VISIBLE : View.GONE, default = gone}">
+
+                    <ImageView
+                        style="@style/iconDialogList"
+                        android:contentDescription="@string/note_background"
+                        android:src="@drawable/ic_palette" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/note_background" />
+
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -121,27 +146,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"/>
                     
-                <!-- Пункт для вибору фону нотатки -->
-                <LinearLayout
-                    android:id="@+id/noteBackground"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_item_middle"
-                    android:layout_marginHorizontal="20dp"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="@{activityNote ? View.VISIBLE : View.GONE, default = gone}">
 
-                    <ImageView
-                        style="@style/iconDialogList"
-                        android:contentDescription="@string/note_background"
-                        android:src="@drawable/ic_palette" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/note_background" />
-
-                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
