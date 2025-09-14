@@ -521,7 +521,25 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void loadingTags(List<Tag> tagList) {
         tagsAdapter.submitList(tagList);
-        int countNotes = mNoteAdapter.setNameTagsHidden(tagList,
+
+        // Перевіряємо чи є користувацькі теги для відображення
+        boolean hasUserTags = false;
+        if (tagList != null) {
+            for (Tag tag : tagList) {
+                if (!SystemTagsManager.isSystemTag(tag)) {
+                    hasUserTags = true;
+                    break;
+                }
+            }
+        }
+        // Приховуємо або показуємо список тегів залежно від наявності користувацьких тегів
+        if (hasUserTags) {
+            mActivityBinding.listTags.setVisibility(View.VISIBLE);
+        } else {
+            mActivityBinding.listTags.setVisibility(View.GONE);
+        }
+        
+        int countNotes = mNoteAdapter.setNameTagsHidden(Objects.requireNonNull(tagList),
                 tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
 
         if (mActivityBinding.listNotes.getAnimation() != null ||

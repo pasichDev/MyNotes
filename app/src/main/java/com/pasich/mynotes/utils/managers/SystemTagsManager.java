@@ -18,6 +18,7 @@ public class SystemTagsManager {
 
     /**
      * Отримати список системних міток
+     * 
      * @return Список системних міток
      */
     public static List<Tag> getSystemTags() {
@@ -26,19 +27,13 @@ public class SystemTagsManager {
 
     /**
      * Отримати список системних міток з опціональним тегом оновлень
+     * 
      * @param includeChangeLog чи включати тег оновлень
      * @return Список системних міток
      */
     public static List<Tag> getSystemTags(boolean includeChangeLog) {
         List<Tag> systemTags = new ArrayList<>();
-        
-        // Системна мітка для додавання нової мітки
-        Tag addTag = new Tag();
-        addTag.setNameTag("");
-        addTag.setVisibility(0);
-        addTag.setSystemAction(SYSTEM_ACTION_ADD_TAG);
-        systemTags.add(addTag);
-        
+
         // Опціонально додаємо тег оновлень
         if (includeChangeLog) {
             Tag changeLogTag = new Tag();
@@ -48,7 +43,7 @@ public class SystemTagsManager {
             changeLogTag.setSelected(true);
             systemTags.add(changeLogTag);
         }
-        
+
         // Системна мітка "всі нотатки"
         Tag allNotesTag = new Tag();
         allNotesTag.setNameTag("allNotes");
@@ -56,12 +51,13 @@ public class SystemTagsManager {
         allNotesTag.setSystemAction(SYSTEM_ACTION_ALL_NOTES);
         allNotesTag.setSelected(true);
         systemTags.add(allNotesTag);
-        
+
         return systemTags;
     }
 
     /**
      * Перевірити, чи є мітка системною
+     * 
      * @param tag Мітка для перевірки
      * @return true, якщо мітка системна
      */
@@ -71,6 +67,7 @@ public class SystemTagsManager {
 
     /**
      * Перевірити, чи є мітка міткою для додавання нової мітки
+     * 
      * @param tag Мітка для перевірки
      * @return true, якщо це мітка для додавання
      */
@@ -80,6 +77,7 @@ public class SystemTagsManager {
 
     /**
      * Перевірити, чи є мітка міткою "всі нотатки"
+     * 
      * @param tag Мітка для перевірки
      * @return true, якщо це мітка "всі нотатки"
      */
@@ -89,6 +87,7 @@ public class SystemTagsManager {
 
     /**
      * Перевірити, чи є мітка міткою "changelog/оновлення"
+     * 
      * @param tag Мітка для перевірки
      * @return true, якщо це мітка changelog
      */
@@ -98,6 +97,7 @@ public class SystemTagsManager {
 
     /**
      * Створити системну мітку для додавання нової мітки
+     * 
      * @return Системна мітка для додавання
      */
     public static Tag createAddTag() {
@@ -110,6 +110,7 @@ public class SystemTagsManager {
 
     /**
      * Створити системну мітку "всі нотатки"
+     * 
      * @return Системна мітка "всі нотатки"
      */
     public static Tag createAllNotesTag() {
@@ -123,6 +124,7 @@ public class SystemTagsManager {
 
     /**
      * Створити системну мітку "changelog/оновлення"
+     * 
      * @return Системна мітка changelog
      */
     public static Tag createChangeLogTag() {
