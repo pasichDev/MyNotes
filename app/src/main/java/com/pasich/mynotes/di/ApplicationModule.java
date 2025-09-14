@@ -44,7 +44,7 @@ public class ApplicationModule {
         AppDatabase.setContext(context);
         return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME)
                 .addCallback(sRoomDatabaseCallback)
-                .addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
+                .addMigrations(AppDatabase.MIGRATION_2_3)
                 .build();
     }
 

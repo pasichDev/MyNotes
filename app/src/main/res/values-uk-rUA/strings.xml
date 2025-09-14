@@ -270,13 +270,6 @@
     <string name="saveStatusPending">Незбережені зміни</string>
     <string name="saveStatusSaving">Збереження…</string>
     <string name="saveStatusError">Помилка збереження</string>
-    
-    <!-- Note Background -->
-    <string name="note_background_title">Фон нотатки</string>
-    <string name="note_background">Фон</string>
-    <string name="background_colors">Кольори</string>
-    <string name="background_gradients">Градієнти</string>
-    
     <string name="help_notes_autosave_title">Автозбереження</string>
     <string name="help_notes_autosave_description">Нотатки автоматично зберігаються через 2 секунди після завершення вводу. У верхній панелі відображається індикатор: синя крапка — незбережені зміни, анімована іконка — процес збереження, зелена галочка — успішно збережено. Навіть якщо ви закриєте додаток або він аварійно завершиться, останні зміни не буде втрачено.</string>
 

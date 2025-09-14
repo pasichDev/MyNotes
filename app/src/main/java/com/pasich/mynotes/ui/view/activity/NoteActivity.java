@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Layout;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,13 +33,10 @@ import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
-import com.pasich.mynotes.base.view.MoreNoteNoteActivityView;
 import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
 import com.pasich.mynotes.utils.CustomLinkMovementMethod;
-import com.pasich.mynotes.utils.backgrounds.BackgroundApplier;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.enums.SaveState;
-import com.pasich.mynotes.data.model.NoteBackground;
 
 import java.util.Date;
 import java.util.Objects;
@@ -50,7 +46,7 @@ import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class NoteActivity extends BaseActivity implements NoteContract.view, MoreNoteNoteActivityView {
+public class NoteActivity extends BaseActivity implements NoteContract.view {
 
     public ActivityNoteBinding binding;
     @Inject
@@ -66,9 +62,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
     
     // Змінна для збереження позиції скролу при роботі з клавіатурою
     private int savedScrollPosition = -1;
-    
-    // Змінна для збереження початкового фону нотатки
-    private NoteBackground originalBackground;
     
     // Змінні для точного відстеження стану клавіатури
     private boolean isKeyboardVisible = false;
@@ -552,25 +545,11 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         // Оновлюємо центровані елементи
         binding.titleToolbarDataCenter.setText(formattedDate);
         
-        // Зберігаємо початковий фон для перевірки змін
-        originalBackground = note.getBackground();
-        
-        // Застосовуємо збережений фон нотатки
-        if (note.getBackground() != null) {
-            BackgroundApplier.applyBackground(binding.noteLayout, note.getBackground(), this);
-        }
-        
         // Оновлюємо згорнуті елементи
         binding.titleToolbarCollapsed.setText(!note.getTitle().isEmpty() ? note.getTitle() : getString(R.string.noteTitle));
         binding.titleToolbarDataCollapsed.setText(formattedDate);
         
         changeTag(note.getTag(), false);
-        
-        // Застосовуємо фон нотатки
-        NoteBackground background = note.getBackground();
-        if (background != null) {
-            BackgroundApplier.applyBackground(binding.noteLayout, background, this);
-        }
     }
 
 
@@ -586,11 +565,10 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
         if (binding != null) {
             imm.hideSoftInputFromWindow(binding.valueNote.getWindowToken(), 0);
         }
-       supportFinishAfterTransition();
+        supportFinishAfterTransition();
     }
 
     private void saveNote() {
-        Log.e("lll", "Save Notes");
         // Check if binding and notePresenter are initialized
         if (binding == null || notePresenter == null) {
             return;
@@ -620,58 +598,25 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
 
 
     private boolean saveNoteToLocal(String mValue, String mTitle, String mNoteValue, long mThisDate) {
-        boolean hasChanges = false;
+        if (!mValue.equals(mNoteValue) || !mTitle.equals(notePresenter.getNote().getTitle())) {
+            boolean x1 = false;
+            if (!notePresenter.getNote().getTitle().contentEquals(mTitle)) {
+                notePresenter.getNote().setTitle(mTitle);
+                x1 = true;
+            }
+            if (!mNoteValue.contentEquals(mValue)) {
+                notePresenter.getNote().setValue(mValue);
+                x1 = true;
+            }
 
-        // Перевіряємо зміни заголовка
-        if (!notePresenter.getNote().getTitle().contentEquals(mTitle)) {
-            notePresenter.getNote().setTitle(mTitle);
-            hasChanges = true;
+            if (x1) {
+                notePresenter.getNote().setDate(mThisDate);
+                return true;
+            }
+
         }
-        
-        // Перевіряємо зміни тексту
-        if (!mNoteValue.contentEquals(mValue)) {
-            notePresenter.getNote().setValue(mValue);
-            hasChanges = true;
-        }
-        
-        // Перевіряємо зміни фону
-        boolean backgroundChanged = isBackgroundChanged(originalBackground, notePresenter.getNote().getBackground());
-
-
-        if (backgroundChanged) {
-            Log.e("NoteActivity", "Background changed - saving note");
-            return true;
-        }
-
-        if (hasChanges) {
-            notePresenter.getNote().setDate(mThisDate);
-            return true;
-        }
-
         return false;
     }
-
-    private boolean isBackgroundChanged(NoteBackground originalBackground, NoteBackground currentBackground) {
-        if (originalBackground == null && currentBackground != null) {
-            return true;
-        }
-        if (originalBackground != null && currentBackground == null) {
-            return true;
-        }
-        if (originalBackground == null) {
-            return false;
-        }
-        
-        // Якщо обидва не null — порівнюємо JSON
-        try {
-            String originalJson = originalBackground.toJson();
-            String currentJson = currentBackground.toJson();
-            return !Objects.equals(originalJson, currentJson);
-        } catch (Exception e) {
-            return false; // краще вважати, що не змінилось, ніж кидати креш
-        }
-    }
-
 
     @Override
     public void closeActivityNotSaved() {
@@ -720,24 +665,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view, Mor
     @Override
     public void changeTextSizeOffline() {
         changeTextSizeOnline(notePresenter.getDataManager().getSizeTextNoteActivity());
-    }
-    
-    @Override
-    public void changeBackground(NoteBackground background) {
-        Log.e("NoteActivity", "changeBackground called with: " + background);
-        if (background != null && binding != null) {
-            // Встановлюємо фон для кореневого макету активності
-            BackgroundApplier.applyBackground(binding.noteLayout, background, this);
-            
-            // Зберігаємо фон в нотатці
-            if (notePresenter != null && notePresenter.getNote() != null) {
-                notePresenter.getNote().setBackground(background);
-               // Відразу викликаємо збереження при зміні фону
-                  saveNote();
-            }
-        } else {
-            Log.w("NoteActivity", "Cannot apply background: background=" + background + ", binding=" + binding);
-        }
     }
 
 }

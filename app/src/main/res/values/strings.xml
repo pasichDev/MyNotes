@@ -291,12 +291,6 @@
     <string name="saveStatusSaving">Saving…</string>
     <string name="saveStatusError">Save error</string>
 
-    <!-- Note Background -->
-    <string name="note_background_title">Note Background</string>
-    <string name="note_background">Background</string>
-    <string name="background_colors">Colors</string>
-    <string name="background_gradients">Gradients</string>
-
     <!-- App Shortcuts -->
     <string name="shortcut_new_note_short">Нова нотатка</string>
     <string name="shortcut_new_note_long">Створити нову нотатку</string>
