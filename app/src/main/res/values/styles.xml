@@ -11,21 +11,34 @@
     </style>
 
     <!-- Navigation Drawer styles -->
-    <style name="NavigationViewStyle" parent="Widget.MaterialComponents.NavigationView">
+    <style name="NavigationViewStyle" parent="Widget.Material3.NavigationView">
         <item name="android:layout_gravity">start</item>
         <item name="android:fitsSystemWindows">true</item>
         <item name="itemTextAppearance">@style/NavigationViewTextAppearance</item>
         <item name="itemIconTint">?attr/colorPrimary</item>
         <item name="itemTextColor">?attr/colorOnSurface</item>
         <item name="itemBackground">@drawable/nav_item_background</item>
-        <item name="itemHorizontalPadding">20dp</item>
-        <item name="itemVerticalPadding">14dp</item>
-        <item name="itemIconPadding">24dp</item>
-
+        <item name="itemHorizontalPadding">16dp</item>
+        <item name="itemVerticalPadding">12dp</item>
+        <item name="itemIconPadding">32dp</item>
+        <item name="itemMinHeight">56dp</item>
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="elevation">0dp</item>
+        <item name="itemShapeAppearance">@style/NavigationItemShapeAppearance</item>
+        <item name="itemShapeInsetStart">12dp</item>
+        <item name="itemShapeInsetEnd">12dp</item>
+        <item name="itemShapeInsetTop">4dp</item>
+        <item name="itemShapeInsetBottom">4dp</item>
     </style>
 
-    <style name="NavigationViewTextAppearance" parent="TextAppearance.Material3.BodyLarge">
-        <item name="android:textSize">16sp</item>
+    <style name="NavigationViewTextAppearance" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="fontFamily">@font/ptsans_regular</item>
+    </style>
+
+    <style name="NavigationItemShapeAppearance" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
     </style>
     <!-- Toolbar title style -->
 

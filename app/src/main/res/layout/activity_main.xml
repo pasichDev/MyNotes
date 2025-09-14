@@ -153,13 +153,16 @@
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/navigation_view"
             style="@style/NavigationViewStyle"
-            android:layout_width="match_parent"
+            android:layout_width="320dp"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
             app:menu="@menu/activity_main_drawer"
             app:headerLayout="@layout/nav_header_main"
-            app:itemIconSize="24dp" />
+            app:itemIconSize="24dp"
+            app:itemMaxLines="1"
+            app:dividerInsetStart="16dp"
+            app:dividerInsetEnd="16dp" />
 
 
     </androidx.drawerlayout.widget.DrawerLayout>
