@@ -158,6 +158,9 @@
     <string name="kofiDescription">Ko-Fi-да маған кофе сыйлаңыз</string>
     <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
     <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
+    <string name="inAppPurchasesDescription">Қолданба ішіндегі сатып алулар арқылы қолданба дамуын қолдаңыз</string>
+    <string name="viewDonationProducts">Қолдау көрсету нұсқаларын көру</string>
+    <string name="purchaseBottomSheetDescription">Қолданба дамуын қолдаудың ыңғайлы жолын таңдаңыз. Барлық қаражат функционалдылықты жақсартуға және жаңа мүмкіндіктерді қосуға жұмсалады.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Не жаңалық</string>

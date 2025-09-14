@@ -158,6 +158,9 @@
     <string name="kofiDescription">Postaw mi kawę na Ko-Fi</string>
     <string name="ratingAppDescription">Oceń nas na 5 gwiazdek w Google Play</string>
     <string name="contactDeveloper">Skontaktuj się z twórcą</string>
+    <string name="inAppPurchasesDescription">Wspieraj rozwój aplikacji poprzez zakupy w aplikacji</string>
+    <string name="viewDonationProducts">Zobacz opcje wsparcia</string>
+    <string name="purchaseBottomSheetDescription">Wybierz wygodny sposób wsparcia rozwoju aplikacji. Wszystkie środki idą na poprawę funkcjonalności i dodawanie nowych możliwości.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Co nowego</string>

@@ -161,6 +161,9 @@
     <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
     <string name="contactDeveloper">Связаться с разработчиком</string>
     <string name="inAppPurchases">Покупки в приложении</string>
+    <string name="inAppPurchasesDescription">Поддержите разработку приложения через внутренние покупки</string>
+    <string name="viewDonationProducts">Просмотреть варианты поддержки</string>
+    <string name="purchaseBottomSheetDescription">Выберите удобный для вас способ поддержки разработки приложения. Все средства идут на улучшение функциональности и добавление новых возможностей.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Что нового</string>

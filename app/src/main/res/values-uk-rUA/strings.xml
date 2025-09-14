@@ -147,6 +147,9 @@
     <string name="kofiDescription">Частуйте мене кавою на Ko-Fi</string>
     <string name="ratingAppDescription">Поставте нам 5 зірок в Google Play</string>
     <string name="contactDeveloper">Зв\'язатися з розробником</string>
+    <string name="inAppPurchasesDescription">Підтримайте розробку додатку через внутрішні покупки</string>
+    <string name="viewDonationProducts">Переглянути варіанти підтримки</string>
+    <string name="purchaseBottomSheetDescription">Оберіть зручний для вас спосіб підтримки розробки додатку. Всі кошти йдуть на покращення функціональності та додавання нових можливостей.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Що нового</string>

@@ -160,6 +160,9 @@
     <string name="kofiDescription">Cómprame un café en Ko-Fi</string>
     <string name="ratingAppDescription">Califícanos con 5 estrellas en Google Play</string>
    <string name="contactDeveloper">Contactar al desarrollador</string>
+    <string name="inAppPurchasesDescription">Apoya el desarrollo de la aplicación a través de compras dentro de la aplicación</string>
+    <string name="viewDonationProducts">Ver opciones de apoyo</string>
+    <string name="purchaseBottomSheetDescription">Elige una forma conveniente de apoyar el desarrollo de la aplicación. Todos los fondos van hacia la mejora de funcionalidades y la adición de nuevas características.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Qué hay de nuevo</string>

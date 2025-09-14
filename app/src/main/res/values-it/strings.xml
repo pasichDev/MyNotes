@@ -149,6 +149,9 @@
     <string name="kofiDescription">Offrimi un caffè su Ko-Fi</string>
     <string name="ratingAppDescription">Valutaci con 5 stelle su Google Play</string>
    <string name="contactDeveloper">Contatta lo sviluppatore</string>
+    <string name="inAppPurchasesDescription">Supporta lo sviluppo dell\'app tramite acquisti in-app</string>
+    <string name="viewDonationProducts">Visualizza opzioni di supporto</string>
+    <string name="purchaseBottomSheetDescription">Scegli un modo conveniente per supportare lo sviluppo dell\'app. Tutti i fondi vanno verso il miglioramento delle funzionalità e l\'aggiunta di nuove caratteristiche.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Novità</string>
