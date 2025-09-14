@@ -2,6 +2,7 @@
 
 ## [2.2.35] - XX.XX.2025
 
+- Updated logic for interacting with tags
 - Fixed MainDrawer display
 - General UI improvements and bug fixes
 - Updated website and privacy policy links
