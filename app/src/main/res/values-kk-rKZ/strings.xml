@@ -278,4 +278,12 @@
     <string name="help_notes_autosave_title">Автоматты сақтау</string>
     <string name="help_notes_autosave_description">Жазбалар мәтінді енгізуді тоқтатқаннан кейін 2 секундтан соң автоматты түрде сақталады. Жоғарғы тақтада индикатор көрсетіледі: көк нүкте — сақталмаған өзгерістер, анимациялық белгіше — сақтау жүріп жатыр, жасыл құсбелгі — сәтті сақталды. Қолданбаны жапсаңыз да немесе ол істен шықса да, соңғы өзгерістер жоғалмайды.</string>
 
+    <string name="tags_management">Тегтер</string>
+    <string name="no_tags_yet">Әзірге тегтер жоқ</string>
+    <string name="create_first_tag">Алғашқы тегіңізді жасау үшін осы батырманы басыңыз.</string>
+    <string name="tag_options">Тег параметрлері</string>
+    <string name="createTag">Тег жасау</string>
+    <string name="toastTagVisible">Осы тегпен белгіленген жазбалар жалпы тізімде көрсетіледі.</string>
+    <string name="toastTagHidde">Осы тегпен белгіленген жазбалар жалпы тізімде жасырылған.</string>
+
 </resources>

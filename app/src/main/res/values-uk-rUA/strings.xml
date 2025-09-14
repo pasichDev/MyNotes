@@ -276,5 +276,12 @@
     <string name="help_notes_autosave_title">Автозбереження</string>
     <string name="help_notes_autosave_description">Нотатки автоматично зберігаються через 2 секунди після завершення вводу. У верхній панелі відображається індикатор: синя крапка — незбережені зміни, анімована іконка — процес збереження, зелена галочка — успішно збережено. Навіть якщо ви закриєте додаток або він аварійно завершиться, останні зміни не буде втрачено.</string>
 
+    <string name="tags_management">Теги</string>
+    <string name="no_tags_yet">Ще немає тегів</string>
+    <string name="create_first_tag">Натисніть цю кнопку, щоб створити свій перший тег.</string>
+    <string name="tag_options">Налаштування тегу</string>
+    <string name="createTag">Створити тег</string>
+    <string name="toastTagVisible">Нотатки з цим тегом відображаються у загальному списку.</string>
+    <string name="toastTagHidde">Нотатки з цим тегом приховані у загальному списку.</string>
 
 </resources>

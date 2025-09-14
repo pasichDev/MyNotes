@@ -7,6 +7,11 @@
         android:title="@string/trash" />
 
     <item
+        android:id="@+id/nav_tags"
+        android:icon="@drawable/ic_tag"
+        android:title="@string/tags_management" />
+
+    <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/ic_interface_set"
         android:title="@string/settings" />

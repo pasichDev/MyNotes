@@ -95,6 +95,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.view.activity.TagsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.view.activity.NoteActivity"
             android:exported="true"
             android:windowSoftInputMode="stateHidden|adjustNothing"

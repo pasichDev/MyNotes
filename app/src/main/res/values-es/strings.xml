@@ -280,4 +280,12 @@
     <string name="help_notes_autosave_title">Guardado automático</string>
     <string name="help_notes_autosave_description">Las notas se guardan automáticamente 2 segundos después de dejar de escribir. En la barra superior aparece un indicador: punto azul — cambios no guardados, icono animado — guardando, marca verde — guardado con éxito. Incluso si cierras la app o se bloquea, tus últimos cambios no se perderán.</string>
 
+    <string name="tags_management">Etiquetas</string>
+    <string name="no_tags_yet">Aún no hay etiquetas</string>
+    <string name="create_first_tag">Pulsa este botón para crear tu primera etiqueta.</string>
+    <string name="tag_options">Opciones de etiqueta</string>
+    <string name="createTag">Crear etiqueta</string>
+    <string name="toastTagVisible">Las notas con esta etiqueta se muestran en la lista general.</string>
+    <string name="toastTagHidde">Las notas con esta etiqueta están ocultas en la lista general.</string>
+
 </resources>

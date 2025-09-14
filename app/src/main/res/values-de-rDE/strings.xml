@@ -275,4 +275,13 @@
     <string name="help_notes_autosave_title">Automatisches Speichern</string>
     <string name="help_notes_autosave_description">Notizen werden automatisch 2 Sekunden nach dem Ende der Eingabe gespeichert. In der oberen Leiste wird ein Status angezeigt: blauer Punkt — ungespeicherte Änderungen, animiertes Symbol — Speichern läuft, grünes Häkchen — erfolgreich gespeichert. Selbst wenn die App geschlossen oder abgestürzt wird, gehen die letzten Änderungen nicht verloren.</string>
 
+
+    <string name="tags_management">Tags</string>
+    <string name="no_tags_yet">Noch keine Tags</string>
+    <string name="create_first_tag">Drücken Sie diese Schaltfläche, um Ihren ersten Tag zu erstellen.</string>
+    <string name="tag_options">Tag-Optionen</string>
+    <string name="createTag">Tag erstellen</string>
+    <string name="toastTagVisible">Notizen mit diesem Tag werden in der Gesamtliste angezeigt.</string>
+    <string name="toastTagHidde">Notizen mit diesem Tag sind in der Gesamtliste verborgen.</string>
+
 </resources>

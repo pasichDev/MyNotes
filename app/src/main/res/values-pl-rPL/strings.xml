@@ -278,4 +278,12 @@
     <string name="help_notes_autosave_description">Notatki są automatycznie zapisywane 2 sekundy po zakończeniu pisania. Na górnym pasku pojawia się wskaźnik: niebieska kropka — niezapisane zmiany, animowana ikona — zapisywanie w toku, zielony haczyk — zapisano pomyślnie. Nawet jeśli zamkniesz aplikację lub się zawiesi, ostatnie zmiany nie zostaną utracone.</string>
 
 
+    <string name="tags_management">Tagi</string>
+    <string name="no_tags_yet">Brak tagów</string>
+    <string name="create_first_tag">Naciśnij ten przycisk, aby utworzyć swój pierwszy tag.</string>
+    <string name="tag_options">Opcje tagu</string>
+    <string name="createTag">Utwórz tag</string>
+    <string name="toastTagVisible">Notatki z tym tagiem są wyświetlane na liście ogólnej.</string>
+    <string name="toastTagHidde">Notatki z tym tagiem są ukryte na liście ogólnej.</string>
+
 </resources>

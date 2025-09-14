@@ -50,6 +50,8 @@
     <string name="emptyNotesForTag">Notes marked with the tag will be displayed here "%1$s"</string>
     <string name="chooseNote">Actions on the selected note</string>
     
+
+    
     <!-- Share Dialog -->
     <string name="shareOptions">Share options</string>
     <string name="saveToGoogleDrive">Save to Google Drive</string>
@@ -82,8 +84,6 @@
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
     <string name="save_to_notes">Save to My Notes</string>
 
-    <string name="hiddeTag">Hide notes</string>
-    <string name="visibleTag">Show notes</string>
     <string name="renameTag">Rename</string>
 
 
@@ -295,10 +295,21 @@
     <string name="saveStatusError">Save error</string>
 
     <!-- App Shortcuts -->
-    <string name="shortcut_new_note_short">Нова нотатка</string>
-    <string name="shortcut_new_note_long">Створити нову нотатку</string>
-    <string name="shortcut_search_short">Пошук</string>
-    <string name="shortcut_search_long">Пошук в нотатках</string>
-    <string name="shortcut_disabled_message">Ця функція недоступна</string>
+    <string name="shortcut_new_note_short">New Note</string>
+    <string name="shortcut_new_note_long">Create New Note</string>
+    <string name="shortcut_search_short">Search</string>
+    <string name="shortcut_search_long">Search Notes</string>
+    <string name="shortcut_disabled_message">This feature is unavailable</string>
 
+
+    <!-- Tags Management -->
+    <string name="tags_management">Tags</string>
+    <string name="no_tags_yet">No tags yet</string>
+    <string name="create_first_tag">Press this button to create your first tag.</string>
+    <string name="tag_options">Tag options</string>
+    <string name="createTag">Create Tag</string>
+    <string name="toastTagVisible">Notes marked with this tag are displayed in the general list.</string>
+    <string name="toastTagHidde">Notes marked with this tag are hidden in the general list.</string>
+    <string name="visibleTag">Show tag</string>
+    <string name="hiddeTag">Hide tag</string>
 </resources>

@@ -291,5 +291,11 @@
     <string name="help_notes_autosave_title">Auto-save</string>
     <string name="help_notes_autosave_description">Notes are automatically saved 2 seconds after you stop typing. A status indicator in the top bar shows: blue dot for unsaved changes, animated icon for saving in progress, green checkmark for successfully saved. Even if you close the app or it crashes, your latest changes won\'t be lost.</string>
 
-
+    <string name="tags_management">Tags</string>
+    <string name="no_tags_yet">No tags yet</string>
+    <string name="create_first_tag">Press this button to create your first tag.</string>
+    <string name="tag_options">Tag options</string>
+    <string name="createTag">Create Tag</string>
+    <string name="toastTagVisible">Notes marked with this tag are displayed in the general list.</string>
+    <string name="toastTagHidde">Notes marked with this tag are hidden in the general list.</string>
 </resources>

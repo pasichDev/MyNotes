@@ -274,4 +274,12 @@
     <string name="help_notes_autosave_title">Аўтазахаванне</string>
     <string name="help_notes_autosave_description">Нататкі аўтаматычна захоўваюцца праз 2 секунды пасля завяршэння ўводу. У верхняй панэлі адлюстроўваецца індыкатар: сіняя кропка — незахаваныя змены, анімаваная іконка — ідзе захаванне, зялёная галачка — паспяхова захавана. Нават калі вы зачыніце дадатак або ён аварыйна завершиться, апошнія змены не будуць страчаны.</string>
 
+    <string name="tags_management">Тэгі</string>
+    <string name="no_tags_yet">Пакуль няма тэгаў</string>
+    <string name="create_first_tag">Націсніце гэтую кнопку, каб стварыць свой першы тэг.</string>
+    <string name="tag_options">Налады тэга</string>
+    <string name="createTag">Стварыць тэг</string>
+    <string name="toastTagVisible">Нататкі з гэтым тэгам адлюстроўваюцца ў агульным спісе.</string>
+    <string name="toastTagHidde">Нататкі з гэтым тэгам схаваныя ў агульным спісе.</string>
+
 </resources>
