@@ -78,7 +78,7 @@
 
     <string name="settingsInterface">Configuración de la interfaz</string>
     <string name="settings">Configuración</string>
-    <string name="settingsBackups">Sincronización y copia de seguridad</string>
+    <string name="settingsBackups">Copias de seguridad</string>
     <string name="aboutApps">Acerca de la aplicación</string>
     <string name="trash">Papelera</string>
     <string name="themes">Tema</string>

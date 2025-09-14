@@ -87,7 +87,7 @@
 
     <string name="settingsInterface">Настройки интерфейса</string>
     <string name="settings">Настройки</string>
-    <string name="settingsBackups">Синхронизация и резервное копирование</string>
+    <string name="settingsBackups">Резервные копии</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>
     <string name="themes">Тема</string>

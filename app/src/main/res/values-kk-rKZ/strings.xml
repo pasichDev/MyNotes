@@ -75,7 +75,7 @@
 
     <string name="settingsInterface">Интерфейс параметрлері</string>
     <string name="settings">Параметрлер</string>
-    <string name="settingsBackups">Синхрондау және сақтық көшірме</string>
+    <string name="settingsBackups">Сақтық көшірмелер</string>
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>
     <string name="themes">Тақырып</string>

@@ -17,7 +17,6 @@
         <item name="itemTextAppearance">@style/NavigationViewTextAppearance</item>
         <item name="itemIconTint">?attr/colorPrimary</item>
         <item name="itemTextColor">?attr/colorOnSurface</item>
-        <item name="itemBackground">@drawable/nav_item_background</item>
         <item name="itemHorizontalPadding">16dp</item>
         <item name="itemVerticalPadding">12dp</item>
         <item name="itemIconPadding">32dp</item>
@@ -32,7 +31,7 @@
     </style>
 
     <style name="NavigationViewTextAppearance" parent="TextAppearance.Material3.LabelLarge">
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">16sp</item>
         <item name="fontFamily">@font/ptsans_regular</item>
     </style>
 

@@ -76,7 +76,7 @@
 
     <string name="settingsInterface">Ustawienia interfejsu</string>
     <string name="settings">Ustawienia</string>
-    <string name="settingsBackups">Synchronizacja i kopia zapasowa</string>
+    <string name="settingsBackups">Kopie zapasowe</string>
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>
     <string name="themes">Motyw</string>
