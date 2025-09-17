@@ -283,5 +283,6 @@
     <string name="createTag">Tag erstellen</string>
     <string name="toastTagVisible">Notizen mit diesem Tag werden in der Gesamtliste angezeigt.</string>
     <string name="toastTagHidde">Notizen mit diesem Tag sind in der Gesamtliste verborgen.</string>
-
+    <string name="sort_tags_position">Benutzerdefiniert</string>
+    <string name="sort_tags_creation_date">Nach Erstellungsdatum</string>
 </resources>

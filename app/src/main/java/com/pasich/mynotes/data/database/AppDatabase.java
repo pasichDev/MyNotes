@@ -51,6 +51,14 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Додаємо поле position до таблиці tags
+            database.execSQL("ALTER TABLE tags ADD COLUMN position INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
     public abstract TagsDao tagsDao();
 
     public abstract NoteDao noteDao();

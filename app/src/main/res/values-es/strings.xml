@@ -287,5 +287,6 @@
     <string name="createTag">Crear etiqueta</string>
     <string name="toastTagVisible">Las notas con esta etiqueta se muestran en la lista general.</string>
     <string name="toastTagHidde">Las notas con esta etiqueta están ocultas en la lista general.</string>
-
+    <string name="sort_tags_position">Personalizado</string>
+    <string name="sort_tags_creation_date">Por fecha de creación</string>
 </resources>

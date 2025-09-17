@@ -13,6 +13,9 @@ public class PreferencesConfig {
     //SortPrefix
     public static final String ARGUMENT_PREFERENCE_SORT = "sortPref";
     public static final String ARGUMENT_DEFAULT_SORT_PREF = "DataSort";
+    //TagsSortPrefix
+    public static final String ARGUMENT_PREFERENCE_TAGS_SORT = "tagsSortPref";
+    public static final String ARGUMENT_DEFAULT_TAGS_SORT_PREF = "TagsCreationDateSort";
     //FormatPrefix
     public static final String ARGUMENT_PREFERENCE_FORMAT = "formatParam";
     public static final int ARGUMENT_DEFAULT_FORMAT_VALUE = 1;

@@ -25,8 +25,11 @@ public interface TagsDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   void addTags(List<Tag> tags);
 
+  @Update
+  void updateTags(List<Tag> tags);
   @Query("SELECT * FROM tags where systemAction = " + SystemTagsManager.SYSTEM_ACTION_USER_TAG)
   Flowable<List<Tag>> getTagsUser();
+
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   void addTag(Tag tag);

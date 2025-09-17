@@ -27,7 +27,8 @@
                 android:background="@android:color/transparent"
                 app:titleTextColor="?attr/colorOnSurface"
                 app:navigationIcon="@drawable/ic_arrow_back"
-                app:title="@string/tags_management" />
+                app:title="@string/tags_management"
+                app:menu="@menu/tags_menu" />
 
         </com.google.android.material.appbar.AppBarLayout>
 

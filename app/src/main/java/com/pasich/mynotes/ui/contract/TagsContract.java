@@ -29,12 +29,12 @@ public interface TagsContract {
         
         void showTagOptionsDialog(Tag tag, View anchorView);
         
-        void refreshTagsList();
-        
         void showToastMessage(String message);
 
         void showToastMessage(@StringRes int message);
         void showToastCheckCountTags();
+
+        void showSortDialog();
     }
 
     @ActivityScoped
@@ -43,9 +43,7 @@ public interface TagsContract {
         void loadTags();
         
         void createTag(String tagName);
-        
-        void editTag(Tag tag, String newName);
-        
+
         void deleteTag(Tag tag);
         
         void toggleTagVisibility(Tag tag);
@@ -53,6 +51,13 @@ public interface TagsContract {
         void onAddTagClick();
         
         void onTagLongClick(Tag tag, View anchorView);
+
+        void sortTags(String sortParam);
+
+        void onDragCompleted(List<Tag> currentTagOrder);
+
+        void onSortMenuClick();
+
 
     }
 }

@@ -32,6 +32,12 @@ public class Tag {
     @SerializedName("d")
     private int systemAction = 0;
 
+    /**
+     * Position - позиція тегу для кастомного сортування
+     */
+    @ColumnInfo(name = "position")
+    @SerializedName("e")
+    private int position = 0;
 
     @Ignore
     private boolean selected = false;
@@ -44,6 +50,7 @@ public class Tag {
 
     public Tag create(String nameTag) {
         this.nameTag = nameTag;
+        this.position = -1;
         return this;
     }
 
@@ -93,4 +100,13 @@ public class Tag {
         this.visibility = arg0;
         return this;
     }
+
+    public int getPosition() {
+        return this.position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
 }

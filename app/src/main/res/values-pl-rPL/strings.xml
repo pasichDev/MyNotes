@@ -285,5 +285,6 @@
     <string name="createTag">Utwórz tag</string>
     <string name="toastTagVisible">Notatki z tym tagiem są wyświetlane na liście ogólnej.</string>
     <string name="toastTagHidde">Notatki z tym tagiem są ukryte na liście ogólnej.</string>
-
+    <string name="sort_tags_position">Własny</string>
+    <string name="sort_tags_creation_date">Według daty utworzenia</string>
 </resources>

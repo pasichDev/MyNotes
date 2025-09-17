@@ -312,4 +312,8 @@
     <string name="toastTagHidde">Notes marked with this tag are hidden in the general list.</string>
     <string name="visibleTag">Show tag</string>
     <string name="hiddeTag">Hide tag</string>
+
+    <string name="sort" translatable="false">Sort</string>
+    <string name="sort_tags_position">Custom</string>
+    <string name="sort_tags_creation_date">By creation date</string>
 </resources>

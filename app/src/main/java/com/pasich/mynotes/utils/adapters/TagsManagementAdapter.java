@@ -1,5 +1,6 @@
 package com.pasich.mynotes.utils.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,9 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagManagementBinding;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapter.TagViewHolder> {
 
     public interface OnTagClickListener {
@@ -21,7 +25,12 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
         void onOptionsClick(Tag tag, View anchorView);
     }
 
+    public interface OnTagMoveListener {
+        void onDragCompleted(List<Tag> currentTagOrder);
+    }
+
     private OnTagClickListener clickListener;
+    private OnTagMoveListener moveListener;
 
     public TagsManagementAdapter() {
         super(new TagDiffCallback());
@@ -29,6 +38,32 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
 
     public void setOnTagClickListener(OnTagClickListener listener) {
         this.clickListener = listener;
+    }
+
+    public void setOnTagMoveListener(OnTagMoveListener listener) {
+        this.moveListener = listener;
+    }
+
+    // Method for UI-only movement (used during drag)
+    public void moveItemUI(int fromPosition, int toPosition) {
+        if (fromPosition == 0 || toPosition == 0) return;
+
+        List<Tag> newList = new ArrayList<>(getCurrentList());
+        Tag moved = newList.remove(fromPosition);
+        newList.add(toPosition, moved);
+
+        submitList(newList);
+    }
+
+
+    // Method called when drag operation is complete - save to database
+    public void saveDragChangesToDatabase() {
+        if (moveListener != null) {
+            List<Tag> currentTags = getCurrentList();
+            moveListener.onDragCompleted(currentTags);
+        } else {
+            Log.e("TagsAdapter", "moveListener is null! Cannot call onDragCompleted()");
+        }
     }
 
     @NonNull
@@ -93,7 +128,7 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
         public boolean areContentsTheSame(@NonNull Tag oldItem, @NonNull Tag newItem) {
             return oldItem.getNameTag().equals(newItem.getNameTag()) &&
                    oldItem.getVisibility() == newItem.getVisibility() &&
-                   oldItem.getSystemAction() == newItem.getSystemAction();
+                   oldItem.getSystemAction() == newItem.getSystemAction() && oldItem.getPosition() == newItem.getPosition();
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.presenter;
 
 import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_COUNT;
+import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT;
+import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -15,8 +17,11 @@ import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
+import com.preference.PowerPreference;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -46,8 +51,35 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void loadingData() {
-        getCompositeDisposable().add(getDataManager().getTags().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((tagList) -> getView().loadingTags(tagList), throwable -> Log.e("com.pasich.myNotes", "loadTags", throwable)));
-        getCompositeDisposable().add(getDataManager().getNotes().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((noteList) -> getView().loadingNotes(noteList), throwable -> Log.e("com.pasich.myNotes", "loadNotes", throwable)));
+        getCompositeDisposable().add(getDataManager().getTags()
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe((tagList) -> {
+                List<Tag> sortedTags = sortTagsList(tagList);
+                getView().loadingTags(sortedTags);
+            }, throwable -> Log.e("com.pasich.myNotes", "loadTags", throwable)));
+        
+        getCompositeDisposable().add(getDataManager().getNotes()
+            .subscribeOn(getSchedulerProvider().io())
+            .observeOn(getSchedulerProvider().ui())
+            .subscribe((noteList) -> getView().loadingNotes(noteList), 
+                throwable -> Log.e("com.pasich.myNotes", "loadNotes", throwable)));
+    }
+
+    private List<Tag> sortTagsList(List<Tag> tagList) {
+        String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
+        
+        List<Tag> sortedList = new ArrayList<>(tagList);
+        
+        if ("TagsPositionSort".equals(sortParam)) {
+            // Sort by position (custom sorting)
+            sortedList.sort(Comparator.comparingInt(Tag::getPosition));
+        } else {
+            // Sort by creation date (ID - higher is newer)
+            sortedList.sort((tag1, tag2) -> Long.compare(tag2.getId(), tag1.getId()));
+        }
+        
+        return sortedList;
     }
 
 

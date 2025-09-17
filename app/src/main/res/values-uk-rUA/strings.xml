@@ -284,4 +284,7 @@
     <string name="toastTagVisible">Нотатки з цим тегом відображаються у загальному списку.</string>
     <string name="toastTagHidde">Нотатки з цим тегом приховані у загальному списку.</string>
 
+    <string name="sort_tags_position">Власний порядок</string>
+    <string name="sort_tags_creation_date">За датою створення</string>
+
 </resources>

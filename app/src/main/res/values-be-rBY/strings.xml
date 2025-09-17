@@ -281,5 +281,7 @@
     <string name="createTag">Стварыць тэг</string>
     <string name="toastTagVisible">Нататкі з гэтым тэгам адлюстроўваюцца ў агульным спісе.</string>
     <string name="toastTagHidde">Нататкі з гэтым тэгам схаваныя ў агульным спісе.</string>
+    <string name="sort_tags_position">Карыстальніцкі</string>
+    <string name="sort_tags_creation_date">Па даце стварэння</string>
 
 </resources>

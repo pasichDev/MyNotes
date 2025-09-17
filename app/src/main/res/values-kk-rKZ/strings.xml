@@ -285,5 +285,7 @@
     <string name="createTag">Тег жасау</string>
     <string name="toastTagVisible">Осы тегпен белгіленген жазбалар жалпы тізімде көрсетіледі.</string>
     <string name="toastTagHidde">Осы тегпен белгіленген жазбалар жалпы тізімде жасырылған.</string>
+    <string name="sort_tags_position">Пайдаланушы реті</string>
+    <string name="sort_tags_creation_date">Құрылу күні бойынша</string>
 
 </resources>

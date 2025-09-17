@@ -298,4 +298,7 @@
     <string name="createTag">Create Tag</string>
     <string name="toastTagVisible">Notes marked with this tag are displayed in the general list.</string>
     <string name="toastTagHidde">Notes marked with this tag are hidden in the general list.</string>
+
+    <string name="sort_tags_position">Custom</string>
+    <string name="sort_tags_creation_date">By creation date</string>
 </resources>

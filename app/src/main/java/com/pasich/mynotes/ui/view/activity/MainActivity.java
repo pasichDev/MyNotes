@@ -173,6 +173,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 }
             });
 
+    // Tags Activity launcher - reloads data when tags are modified
+    final private ActivityResultLauncher<Intent> startTagsActivity = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (mainPresenter != null) {
+                    mainPresenter.loadingData();
+                }
+            });
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -260,7 +268,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 startUpdateFlow(appUpdateInfo);
             }
         });
-
     }
 
     private void checkForUpdate() {
@@ -970,7 +977,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             startActivity(new Intent(this, TrashActivity.class));
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_tags) {
-            startActivity(new Intent(this, TagsActivity.class));
+            startTagsActivity.launch(new Intent(this, TagsActivity.class));
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         } else if (itemId == R.id.nav_settings) {
             startSettingsActivity.launch(new Intent(this, SettingsActivity.class));

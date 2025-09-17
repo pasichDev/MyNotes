@@ -13,12 +13,16 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagBinding;
 import com.pasich.mynotes.utils.constants.AppPayloads;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
+import com.preference.PowerPreference;
 
 import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT;
+import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
 
 public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
 
@@ -88,8 +92,8 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
             int x2 = o2.getSystemAction();
 
             // Спеціальне сортування для системних міток
-            if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100; // addTag завжди перший
-            if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
+           // if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100; // addTag завжди перший
+           // if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
             
             if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_CHANGE_LOG) x1 = 99; // changeLog другий
             if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_CHANGE_LOG) x2 = 99;
@@ -103,6 +107,20 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
                 return sComp;
             }
 
+            // Для користувацьких тегів використовуємо налаштування сортування
+            if (o1.getSystemAction() == 0 && o2.getSystemAction() == 0) {
+                String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
+                
+                if (ARGUMENT_DEFAULT_TAGS_SORT_PREF.equals(sortParam)) {
+                    // Сортування за позицією (спеціальне)
+                    return Integer.compare(o1.getPosition(), o2.getPosition());
+                } else {
+                    // Сортування за датою створення (ID - новіші вгорі)
+                    return Long.compare(o2.getId(), o1.getId());
+                }
+            }
+
+            // Для системних тегів за замовчуванням сортуємо за ID
             return Math.toIntExact(o2.getId() - o1.getId());
         });
         
