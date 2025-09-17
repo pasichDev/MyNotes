@@ -273,7 +273,7 @@
 
     <string name="tags_management">Étiquettes</string>
     <string name="no_tags_yet">Aucune étiquette pour l’instant</string>
-    <string name="create_first_tag">Appuyez sur ce bouton pour créer votre première étiquette.</string>
+    <string name="create_first_tag">Appuyez sur ce bouton pour créer votre étiquette.</string>
     <string name="tag_options">Options de l’étiquette</string>
     <string name="createTag">Créer une étiquette</string>
     <string name="toastTagVisible">Les notes marquées avec cette étiquette apparaissent dans la liste générale.</string>

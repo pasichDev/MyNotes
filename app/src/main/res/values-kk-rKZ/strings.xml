@@ -280,7 +280,7 @@
 
     <string name="tags_management">Тегтер</string>
     <string name="no_tags_yet">Әзірге тегтер жоқ</string>
-    <string name="create_first_tag">Алғашқы тегіңізді жасау үшін осы батырманы басыңыз.</string>
+    <string name="create_first_tag">Алғашқы тегіңізді жасау үшін осы басыңыз.</string>
     <string name="tag_options">Тег параметрлері</string>
     <string name="createTag">Тег жасау</string>
     <string name="toastTagVisible">Осы тегпен белгіленген жазбалар жалпы тізімде көрсетіледі.</string>

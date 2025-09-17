@@ -271,7 +271,7 @@
 
     <string name="tags_management">Tag</string>
     <string name="no_tags_yet">Ancora nessun tag</string>
-    <string name="create_first_tag">Premi questo pulsante per creare il tuo primo tag.</string>
+    <string name="create_first_tag">Premi questo pulsante per creare il tuo tag.</string>
     <string name="tag_options">Opzioni del tag</string>
     <string name="createTag">Crea tag</string>
     <string name="toastTagVisible">Le note con questo tag vengono visualizzate nell’elenco generale.</string>

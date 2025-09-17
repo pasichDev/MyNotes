@@ -305,7 +305,7 @@
     <!-- Tags Management -->
     <string name="tags_management">Tags</string>
     <string name="no_tags_yet">No tags yet</string>
-    <string name="create_first_tag">Press this button to create your first tag.</string>
+    <string name="create_first_tag">Press this button to create your tag.</string>
     <string name="tag_options">Tag options</string>
     <string name="createTag">Create Tag</string>
     <string name="toastTagVisible">Notes marked with this tag are displayed in the general list.</string>

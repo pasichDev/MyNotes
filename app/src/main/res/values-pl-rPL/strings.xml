@@ -280,7 +280,7 @@
 
     <string name="tags_management">Tagi</string>
     <string name="no_tags_yet">Brak tagów</string>
-    <string name="create_first_tag">Naciśnij ten przycisk, aby utworzyć swój pierwszy tag.</string>
+    <string name="create_first_tag">Naciśnij ten przycisk, aby utworzyć swój tag.</string>
     <string name="tag_options">Opcje tagu</string>
     <string name="createTag">Utwórz tag</string>
     <string name="toastTagVisible">Notatki z tym tagiem są wyświetlane na liście ogólnej.</string>

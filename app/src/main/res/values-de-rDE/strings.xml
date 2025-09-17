@@ -278,7 +278,7 @@
 
     <string name="tags_management">Tags</string>
     <string name="no_tags_yet">Noch keine Tags</string>
-    <string name="create_first_tag">Drücken Sie diese Schaltfläche, um Ihren ersten Tag zu erstellen.</string>
+    <string name="create_first_tag">Klicken Sie auf diese Schaltfläche, um Ihren eigenen Tag zu erstellen.</string>
     <string name="tag_options">Tag-Optionen</string>
     <string name="createTag">Tag erstellen</string>
     <string name="toastTagVisible">Notizen mit diesem Tag werden in der Gesamtliste angezeigt.</string>
