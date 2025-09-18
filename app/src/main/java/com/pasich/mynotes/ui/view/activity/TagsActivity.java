@@ -110,8 +110,8 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
     }
 
     @Override
-    public void showCreateTagDialog() {
-        new NameTagDialog().show(getSupportFragmentManager(), "CreateTagDialog");
+    public void showCreateTagDialog(int newPosition) {
+        new NameTagDialog(newPosition).show(getSupportFragmentManager(), "CreateTagDialog");
     }
 
     @Override

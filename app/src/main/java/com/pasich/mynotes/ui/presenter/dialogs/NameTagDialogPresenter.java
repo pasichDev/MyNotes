@@ -26,8 +26,8 @@ public class NameTagDialogPresenter extends BasePresenter<NameTagDialogContract.
 
 
     @Override
-    public void saveTag(String nameNewTag) {
-        getCompositeDisposable().add(getDataManager().addTag(new Tag().create(nameNewTag))
+    public void saveTag(Tag nameTag) {
+        getCompositeDisposable().add(getDataManager().addTag(nameTag)
                 .subscribeOn(getSchedulerProvider().io())
                 .observeOn(getSchedulerProvider().ui())
                 .subscribe(

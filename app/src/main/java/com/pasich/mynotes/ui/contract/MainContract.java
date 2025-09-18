@@ -19,6 +19,7 @@ public interface MainContract {
 
     interface view extends BaseView, MoreNoteMainActivityView, MainSortView, ManagerViewAction<Note>{
         void settingsSearchView();
+
         void settingsLists();
 
         void newNotesButton();

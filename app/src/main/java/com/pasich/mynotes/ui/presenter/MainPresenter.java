@@ -68,9 +68,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     private List<Tag> sortTagsList(List<Tag> tagList) {
         String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
-        
         List<Tag> sortedList = new ArrayList<>(tagList);
-        
         if ("TagsPositionSort".equals(sortParam)) {
             // Sort by position (custom sorting)
             sortedList.sort(Comparator.comparingInt(Tag::getPosition));

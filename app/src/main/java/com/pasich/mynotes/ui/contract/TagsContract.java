@@ -21,7 +21,7 @@ public interface TagsContract {
         
         void loadTags(List<Tag> tags);
         
-        void showCreateTagDialog();
+        void showCreateTagDialog(int newPosition);
         
         void showEditTagDialog(Tag tag);
         
@@ -41,11 +41,7 @@ public interface TagsContract {
     interface presenter extends BasePresenter<view> {
         
         void loadTags();
-        
-        void createTag(String tagName);
 
-        void deleteTag(Tag tag);
-        
         void toggleTagVisibility(Tag tag);
         
         void onAddTagClick();

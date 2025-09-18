@@ -87,7 +87,7 @@
                 android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 app:visibilityForNonAddTag="@{tag}"
-                android:src="@{tag.visibility == 1 ? @drawable/ic_show : @drawable/ic_hide}"
+                android:src="@{tag.visibility == 0 ? @drawable/ic_show : @drawable/ic_hide}"
                 app:tint="?attr/colorOnSurfaceVariant"
                 android:alpha="0.7" />
 

@@ -16,7 +16,6 @@ import com.pasich.mynotes.utils.rx.SchedulerProvider;
 import com.preference.PowerPreference;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,7 +49,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
         getCompositeDisposable().add(getDataManager().getTagsUser().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(tagList -> {
             if (isViewAttached()) {
                 // Створюємо спеціальний тег для кнопки "Додати"
-                tagList.add(0, SystemTagsManager.createAddTag());
+               tagList.add(0, SystemTagsManager.createAddTag());
 
                 // Зберігаємо в локальному кеші
                 cachedTags = new ArrayList<>(tagList);
@@ -66,62 +65,49 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
         }));
     }
 
-    private void displayTags() {
+    public void displayTags() {
         if (!isViewAttached() || cachedTags.isEmpty()) return;
         // Сортуємо локальний кеш згідно з налаштуваннями
         getView().loadTags(sortTagsList(cachedTags));
     }
 
+
     private List<Tag> sortTagsList(List<Tag> tagList) {
         String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
         List<Tag> sortedList = new ArrayList<>(tagList);
 
-        if (ARGUMENT_DEFAULT_TAGS_SORT_PREF.equals(sortParam)) {
-            // Сортуємо за position (спеціальне сортування)
-            sortedList.sort(Comparator.comparingInt(Tag::getPosition));
-        } else {
-            // Сортуємо за датою створення (ID - чим більший, тим новіший)
-            sortedList.sort((tag1, tag2) -> Long.compare(tag2.getId(), tag1.getId()));
-        }
+        sortedList.sort((o1, o2) -> {
+
+            int x1 = o1.getSystemAction();
+            int x2 = o2.getSystemAction();
+
+            // Спеціальне сортування для системних міток
+             if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100; // addTag завжди перший
+             if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
+
+
+            int sComp = Math.toIntExact(x2 - x1);
+
+            if (sComp != 0) {
+                return sComp;
+            }
+
+            // Для користувацьких тегів використовуємо налаштування сортування
+            if (o1.getSystemAction() == 0 && o2.getSystemAction() == 0) {
+                if ("TagsPositionSort".equals(sortParam)) {
+                    // Сортування за позицією (спеціальне)
+                    return Integer.compare(o1.getPosition(), o2.getPosition());
+                } else {
+                    // Сортування за датою створення (ID - новіші вгорі)
+                    return Long.compare(o2.getId(), o1.getId());
+                }
+            }
+
+            // Для системних тегів за замовчуванням сортуємо за ID
+            return Math.toIntExact(o2.getId() - o1.getId());
+        });
 
         return sortedList;
-    }
-
-    @Override
-    public void createTag(String tagName) {
-        if (!isViewAttached() || tagName == null || tagName.trim().isEmpty()) return;
-        Tag newTag = new Tag().create(tagName.trim());
-        newTag.setVisibility(1);
-
-        getCompositeDisposable().add(getDataManager().addTag(newTag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-            if (isViewAttached()) {
-                cachedTags.add(newTag);
-                displayTags();
-            }
-        }, throwable -> {
-            Log.e("TagsPresenter", "Error creating tag", throwable);
-            if (isViewAttached()) {
-                getView().showToastMessage("Error creating tag");
-            }
-        }));
-    }
-
-
-    @Override
-    public void deleteTag(Tag tag) {
-        if (!isViewAttached() || tag == null) return;
-
-        getCompositeDisposable().add(getDataManager().deleteTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-            if (isViewAttached()) {
-                cachedTags.removeIf(t -> t.getId() == tag.getId());
-                displayTags();
-            }
-        }, throwable -> {
-            Log.e("TagsPresenter", "Error deleting tag", throwable);
-            if (isViewAttached()) {
-                getView().showToastMessage("Error deleting tag");
-            }
-        }));
     }
 
     @Override
@@ -132,7 +118,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
 
         getCompositeDisposable().add(getDataManager().updateTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
             if (isViewAttached()) {
-                String message = tag.getVisibility() == 1 ? "Tag visible" : "Tag hidden";
+                String message = tag.getVisibility() == 0 ? "Tag visible" : "Tag hidden";
                 getView().showToastMessage(message);
                 updateTagInCache(tag);
                 displayTags();
@@ -143,10 +129,15 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
     @Override
     public void onAddTagClick() {
         if (isViewAttached()) {
+            int minPosition = cachedTags.stream()
+                    .mapToInt(Tag::getPosition)
+                    .min()
+                    .orElse(0);
+
             if (cachedTags.size() >= MAX_TAG_COUNT) {
                 getView().showToastCheckCountTags();
             } else {
-                getView().showCreateTagDialog();
+                getView().showCreateTagDialog(minPosition - 1);
             }
         }
     }
