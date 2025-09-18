@@ -7,6 +7,7 @@ import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGU
 import android.util.Log;
 import android.view.View;
 
+import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
@@ -116,8 +117,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
 
         getCompositeDisposable().add(getDataManager().updateTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
             if (isViewAttached()) {
-                String message = tag.getVisibility() == 0 ? "Tag visible" : "Tag hidden";
-                getView().showToastMessage(message);
+                getView().showToastMessage(tag.getVisibility() == 0 ? R.string.toastTagVisible :  R.string.toastTagHidde);
                 updateTagInCache(tag);
                 displayTags();
             }
