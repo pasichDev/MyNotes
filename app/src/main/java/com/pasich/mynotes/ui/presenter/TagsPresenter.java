@@ -179,7 +179,23 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
         }
     }
 
-    // Допоміжні методи
+    @Override
+    public void getTagNotesCount(Tag tag, TagsContract.TagNotesCountCallback callback) {
+        if (tag == null || callback == null) return;
+        
+        getCompositeDisposable().add(getDataManager()
+                .getCountNotesTag(tag.getNameTag())
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(
+                        callback::onTagNotesCountReceived,
+                        throwable -> {
+                            Log.e("TagsPresenter", "Error getting notes count for tag", throwable);
+                            callback.onTagNotesCountReceived(0);
+                        }
+                ));
+    }
+
     private void updateTagInCache(Tag updatedTag) {
         for (int i = 0; i < cachedTags.size(); i++) {
             if (cachedTags.get(i).getId() == updatedTag.getId()) {

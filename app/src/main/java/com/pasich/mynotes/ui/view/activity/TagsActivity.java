@@ -23,8 +23,7 @@ import com.pasich.mynotes.utils.recycler.TagDragCallback;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
-import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTag;
-import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTagOnClickListener;
+import com.pasich.mynotes.ui.view.dialogs.main.TagOptionsBottomSheet;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.List;
@@ -126,21 +125,25 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
 
     @Override
     public void showTagOptionsDialog(Tag tag, View anchorView) {
-        new PopupWindowsTag(getLayoutInflater(), anchorView, tag, new PopupWindowsTagOnClickListener() {
-            @Override
-            public void deleteTag() {
-                showDeleteTagDialog(tag);
-            }
+        // Получаем количество заметок для этого тега
+        presenter.getTagNotesCount(tag, count -> {
+            TagOptionsBottomSheet bottomSheet = new TagOptionsBottomSheet(tag, count, new TagOptionsBottomSheet.TagOptionsListener() {
+                @Override
+                public void onDeleteTagClick(Tag tag) {
+                    showDeleteTagDialog(tag);
+                }
 
-            @Override
-            public void renameTag() {
-                showEditTagDialog(tag);
-            }
+                @Override
+                public void onRenameTagClick(Tag tag) {
+                    showEditTagDialog(tag);
+                }
 
-            @Override
-            public void visibleEditTag() {
-                presenter.toggleTagVisibility(tag);
-            }
+                @Override
+                public void onToggleVisibilityClick(Tag tag) {
+                    presenter.toggleTagVisibility(tag);
+                }
+            });
+            bottomSheet.show(getSupportFragmentManager(), "TagOptionsBottomSheet");
         });
     }
 

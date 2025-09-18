@@ -54,6 +54,10 @@ public interface TagsContract {
 
         void onSortMenuClick();
 
-
+        void getTagNotesCount(Tag tag, TagNotesCountCallback callback);
+    }
+    
+    interface TagNotesCountCallback {
+        void onTagNotesCountReceived(int count);
     }
 }
