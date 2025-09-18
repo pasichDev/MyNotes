@@ -9,6 +9,7 @@ import android.util.Log;
 import com.google.api.services.drive.Drive;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
+import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
@@ -152,23 +153,35 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      * @param jsonBackup - data restore
      */
     private void restoreData(JsonBackup jsonBackup) {
+        // Проверяем и модифицируем теги из старых резервных копий
+        // чтобы поле position было корректным
+        if (jsonBackup.getTags() != null && !jsonBackup.getTags().isEmpty()) {
+             for (int i = 0; i < jsonBackup.getTags().size(); i++) {
+          Tag tag = jsonBackup.getTags().get(i);
+                // Если это старая резервная копия, где position не было установлено правильно
+                // (оставлен 0 по умолчанию, хотя в конструкторе create() устанавливается -1)
+                if (tag.getPosition() == 0 && tag.getSystemAction() == 0) {
+                    // Устанавливаем position в -1 для пользовательских тегов, как в методе create()
+                    tag.setPosition(-1);
+                }
+            }
+        }
+        
         getCompositeDisposable().add(
-            Completable.fromAction(() -> 
-                getDataManager().setListPreferences(jsonBackup.getPreferences())
-            ).subscribeOn(getSchedulerProvider().io())
+            Completable.fromAction(() -> getDataManager().setListPreferences(jsonBackup.getPreferences())).subscribeOn(getSchedulerProvider().io())
             .andThen(
-                Completable.mergeArray(
-                    getDataManager().addNotes(jsonBackup.getNotes()),
-                    getDataManager().addTags(jsonBackup.getTags()),
-                    getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
-                )
+                    Completable.mergeArray(
+                            getDataManager().addNotes(jsonBackup.getNotes()),
+                            getDataManager().addTags(jsonBackup.getTags()),
+                            getDataManager().addTrashNotes(jsonBackup.getTrashNotes())
+                    )
             )
             .subscribeOn(getSchedulerProvider().io())
             .observeOn(getSchedulerProvider().ui())
             .subscribe(
                 () -> getView().restoreFinish(CloudErrors.OKAY_RESTORE),
                 throwable -> {
-                    Log.e("RxError", "Error: ", throwable);
+                    Log.e("BackupRestore", "Error restore: " + throwable.getMessage(), throwable);
                     getView().showErrors(CloudErrors.BACKUP_DESTROY);
                 }
             )
