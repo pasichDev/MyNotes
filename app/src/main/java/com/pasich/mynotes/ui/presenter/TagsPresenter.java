@@ -51,10 +51,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
                 // Створюємо спеціальний тег для кнопки "Додати"
                tagList.add(0, SystemTagsManager.createAddTag());
 
-                // Зберігаємо в локальному кеші
                 cachedTags = new ArrayList<>(tagList);
-
-                // Відображаємо відсортований список
                 displayTags();
             }
         }, throwable -> {
@@ -65,9 +62,10 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
         }));
     }
 
+
+    // Сортуємо локальний кеш згідно з налаштуваннями
     public void displayTags() {
         if (!isViewAttached() || cachedTags.isEmpty()) return;
-        // Сортуємо локальний кеш згідно з налаштуваннями
         getView().loadTags(sortTagsList(cachedTags));
     }
 
@@ -81,8 +79,8 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
             int x1 = o1.getSystemAction();
             int x2 = o2.getSystemAction();
 
-            // Спеціальне сортування для системних міток
-             if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100; // addTag завжди перший
+            // Спеціальне сортування для системних міток addTag завжди перший
+             if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100;
              if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
 
 

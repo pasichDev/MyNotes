@@ -278,7 +278,7 @@
 
     <string name="tags_management">Теги</string>
     <string name="no_tags_yet">Ще немає тегів</string>
-    <string name="create_first_tag">Натисніть цю кнопку, щоб створити свій тег.</string>
+    <string name="create_tag">Натисніть цю кнопку, щоб створити тег.</string>
     <string name="tag_options">Налаштування тегу</string>
     <string name="createTag">Створити тег</string>
     <string name="toastTagVisible">Нотатки з цим тегом відображаються у загальному списку.</string>

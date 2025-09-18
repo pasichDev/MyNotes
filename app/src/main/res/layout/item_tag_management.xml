@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     app:visibilityForAddTag="@{tag}"
-                    android:text="@string/create_first_tag"
+                    android:text="@string/create_tag"
                     android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:singleLine="true"
