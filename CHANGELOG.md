@@ -2,7 +2,7 @@
 
 ## [2.2.35] - XX.XX.2025
 
-- Updated logic for interacting with tags
+- Updated logic for interacting with tags. (Tag sorting has been added, drag and drop to arrange as you wish.)
 - Fixed MainDrawer display
 - General UI improvements and bug fixes
 - Updated website and privacy policy links
