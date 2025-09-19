@@ -22,134 +22,135 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:id="@+id/activity_main"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="?android:colorBackground"
-            android:animateLayoutChanges="true"
-            tools:context=".ui.view.activity.MainActivity">
-
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/appBarMainActivity"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorSurface"
-            app:elevation="0dp"
-            app:liftOnScroll="false">
-
-            <com.google.android.material.search.SearchBar
-                android:id="@+id/actionSearch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/search"
-                android:searchIcon="@drawable/ic_search"
-                android:paddingEnd="10dp"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:menu="@menu/menu_search_notes"
-                app:defaultMarginsEnabled="false"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large"
-                android:backgroundTint="?attr/colorSurfaceVariant"
-                app:elevation="0dp"
-                app:navigationIcon="@drawable/ic_menu"
-                app:navigationIconTint="?attr/colorPrimary"
-                app:layout_scrollFlags="scroll|enterAlways" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/list_tags"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:overScrollMode="never"
-                android:paddingStart="15dp"
-                android:paddingEnd="0dp"
-                android:paddingBottom="7dp"
-                app:layout_scrollFlags="scroll|enterAlways" />
-
-        </com.google.android.material.appbar.AppBarLayout>
-
         <FrameLayout
-            android:id="@+id/notes_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingTop="7dp"
-            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+            android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/list_notes"
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:id="@+id/activity_main"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:overScrollMode="never"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:paddingBottom="15dp"
-                tools:listitem="@layout/item_help_feature"
-                android:visibility="@{emptyNotes ? View.GONE : View.VISIBLE,  default=visible}" />
+                android:animateLayoutChanges="true"
+                android:background="?android:colorBackground"
+                tools:context=".ui.view.activity.MainActivity">
 
-            <include
-                android:id="@+id/includeEmpty"
-                layout="@layout/view_empty_notes" />
+                <com.google.android.material.appbar.AppBarLayout
+                    android:id="@+id/appBarMainActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorSurface"
+                    app:elevation="0dp"
+                    app:liftOnScroll="false">
+
+                    <com.google.android.material.search.SearchBar
+                        android:id="@+id/actionSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:backgroundTint="?attr/colorSurfaceVariant"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:hint="@string/search"
+                        android:paddingEnd="10dp"
+                        android:searchIcon="@drawable/ic_search"
+                        app:defaultMarginsEnabled="false"
+                        app:elevation="0dp"
+                        app:layout_scrollFlags="scroll|enterAlways"
+                        app:menu="@menu/menu_search_notes"
+                        app:navigationIcon="@drawable/ic_menu"
+                        app:navigationIconTint="?attr/colorPrimary"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Large" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/list_tags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:overScrollMode="never"
+                        android:paddingStart="15dp"
+                        android:paddingEnd="0dp"
+                        android:paddingBottom="7dp"
+                        app:layout_scrollFlags="scroll|enterAlways" />
+
+                </com.google.android.material.appbar.AppBarLayout>
+
+                <FrameLayout
+                    android:id="@+id/notes_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingTop="7dp"
+                    app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/list_notes"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="80dp"
+                        android:visibility="@{emptyNotes ? View.GONE : View.VISIBLE,  default=visible}"
+                        tools:listitem="@layout/item_help_feature" />
+
+                    <include
+                        android:id="@+id/includeEmpty"
+                        layout="@layout/view_empty_notes" />
+
+                </FrameLayout>
+
+
+                <include
+                    android:id="@+id/actionInclude"
+                    layout="@layout/action_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:visibility="gone"
+                    app:layout_anchor="@id/notes_layout"
+                    app:layout_anchorGravity="bottom" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/newNotesButton"
+                    style="@style/fab_custom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="25dp"
+                    android:layout_marginBottom="25dp"
+                    android:contentDescription="@string/NewNote"
+                    android:onClick="@{(view) -> presenter.newNotesClick()}"
+                    app:layout_dodgeInsetEdges="bottom"
+                    app:srcCompat="@drawable/ic_add" />
+
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+            <com.google.android.material.search.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
+                android:hint="@string/searchNotesFromTitle"
+                app:autoShowKeyboard="true">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/resultsSearchList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:colorBackground"
+                    android:clipToPadding="false"
+                    android:paddingStart="10dp"
+                    android:paddingTop="15dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="15dp" />
+
+            </com.google.android.material.search.SearchView>
 
         </FrameLayout>
 
-
-        <include
-            android:id="@+id/actionInclude"
-            layout="@layout/action_panel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:visibility="gone"
-            app:layout_anchor="@id/notes_layout"
-            app:layout_anchorGravity="bottom" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/newNotesButton"
-            style="@style/fab_custom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="25dp"
-            android:layout_marginBottom="25dp"
-            android:contentDescription="@string/NewNote"
-            android:onClick="@{(view) -> presenter.newNotesClick()}"
-            android:layout_gravity="bottom|end"
-            app:layout_dodgeInsetEdges="bottom"
-            app:srcCompat="@drawable/ic_add" />
-
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-        <com.google.android.material.search.SearchView
-            android:id="@+id/searchView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            app:autoShowKeyboard="true"
-            android:hint="@string/searchNotesFromTitle">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/resultsSearchList"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?android:colorBackground"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:paddingTop="15dp"
-                android:paddingBottom="15dp"
-                android:clipToPadding="false" />
-
-        </com.google.android.material.search.SearchView>
-
-    </FrameLayout>
-
-    <!-- Navigation Drawer -->
+        <!-- Navigation Drawer -->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/navigation_view"
             style="@style/NavigationViewStyle"
@@ -157,12 +158,12 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
-            app:menu="@menu/activity_main_drawer"
+            app:dividerInsetEnd="16dp"
+            app:dividerInsetStart="16dp"
             app:headerLayout="@layout/nav_header_main"
             app:itemIconSize="24dp"
             app:itemMaxLines="1"
-            app:dividerInsetStart="16dp"
-            app:dividerInsetEnd="16dp" />
+            app:menu="@menu/activity_main_drawer" />
 
 
     </androidx.drawerlayout.widget.DrawerLayout>
