@@ -54,7 +54,6 @@
     <string name="notInstaledAppTranslate">Для использования этой функции нужно установить Google Translator</string>
     <string name="lastDateEditNote">Последнее изменение: %1$s </string>
     <string name="restore">Восстановить</string>
-    <string name="noteSaved">Заметку сохранено</string>
     <string name="searchNotesFromTitle">Начните вводить текст</string>
     <string name="errorNewTagInput">Ошибка: Максимальное количество символов которое может содержать название метки  %1$d </string>
     <string name="emptyTrash">Здесь отображаються удаленные вами заметки</string>
@@ -151,7 +150,6 @@
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
 
-    <string name="errorSyncTitle">Внимание!</string>
     <string name="errorSyncDescrpt">Создание резервной копии в облаке временно недоступно</string>
 
     <!-- Support Activity -->
@@ -188,15 +186,9 @@
     <string name="donation_wave_description">Пошлите мощную волну поощрения</string>
     <string name="donation_universe_title">Вселенная вдохновения</string>
     <string name="donation_universe_description">Откройте безграничные возможности для будущего</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Спасибо! 💖</string>
-    <string name="purchase_success_message">Ваша поддержка значит для нас весь мир! Благодаря таким замечательным людям, как вы, мы можем продолжать разрабатывать и улучшать MyNotes. Ваш вклад помогает нам добавлять новые функции, исправлять ошибки и делать приложение еще лучше.\n\nЖелаем вам всего наилучшего и надеемся, что вы продолжите с удовольствием пользоваться MyNotes!</string>
-    <string name="purchase_success_button">Закрыть</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Ошибка покупки</string>
-    <string name="purchase_loading">Загрузка товаров...</string>
+    <string name="purchase_loading">Загрузка товаров…</string>
     <string name="purchase_error_no_products">Нет доступных товаров для доната</string>
     
     <!-- Developer Support -->
@@ -219,10 +211,6 @@
     <string name="help_tags_hide_description">Используйте функцию скрытия, чтобы временно удалить отмеченные заметки из основного вида, сохраняя доступ к ним через тег</string>
     <string name="help_tags_limit_title">Ограничение тегов</string>
     <string name="help_tags_limit_description">Можно создать не более 25 тегов для эффективной организации ваших заметок</string>
-    <string name="help_tags_assign_title">Назначение тегов</string>
-    <string name="help_tags_assign_description">Теги заметкам можно назначать на главном экране и при редактировании заметки</string>
-    <string name="help_tags_update_title">Обновление тегов</string>
-    <string name="help_tags_update_description">Описывает обновление тегов и как скрыть заметки из основного вида</string>
     
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Навигация</string>
@@ -283,7 +271,6 @@
     <string name="help_notes_autosave_description">Заметки автоматически сохраняются через 2 секунды после окончания ввода. В верхней панели отображается индикатор: синяя точка — несохранённые изменения, анимированная иконка — идёт сохранение, зелёная галочка — успешно сохранено. Даже если вы закроете приложение или оно завершится аварийно, последние изменения не будут потеряны.</string>
 
     <string name="tags_management">Теги</string>
-    <string name="no_tags_yet">Тегов пока нет</string>
     <string name="create_tag">Нажмите эту кнопку, чтобы создать тег.</string>
     <string name="tag_options">Опции тега</string>
     <string name="createTag">Создать тег</string>

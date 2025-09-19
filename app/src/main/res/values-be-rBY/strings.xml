@@ -43,7 +43,6 @@
     <string name="notInstaledAppTranslate">Для выкарыстання гэтай функцыі трэба ўсталяваць Google Translator</string>
     <string name="lastDateEditNote">Апошняя змена: %1$s</string>
     <string name="restore">Аднавіць</string>
-    <string name="noteSaved">Нататку захавана</string>
     <string name="searchNotesFromTitle">Пачніце ўводзіць тэкст</string>
     <string name="errorNewTagInput">Памылка: Максімальная колькасць знакаў якая можа змяшчаць назву пазнакі %1$d </string>
     <string name="emptyTrash">Тут адлюстроўваюцца выдаленыя вамі нататкі</string>
@@ -144,7 +143,6 @@
 
     <!-- Product offer -->
     <string name="thanks_title">Паважаны карыстальнік</string>
-    <string name="errorSyncTitle">Звярніце ўвагу!</string>
     <string name="errorSyncDescrpt">Стварэнне рэзервовай копіі ў воблаку часова недаступна</string>
 
     <string name="thanks_donate">Распрацоўшчык праекту кажа вам дзякуй за вашу куплю. Мы будзем імкнуцца стаць лепшымі і зручнейшымі. \n <b>З павагай, мае нататкі!</b></string>
@@ -182,14 +180,8 @@
     <string name="donation_wave_description">Дашліце магутную хвалю заахвочвання</string>
     <string name="donation_universe_title">Сусвет натхнення</string>
     <string name="donation_universe_description">Адкрыйце бязмежныя магчымасці для будучыні</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Дзякуй! 💖</string>
-    <string name="purchase_success_message">Ваша падтрымка азначае для нас увесь свет! Дзякуючы такім выдатным людзям, як вы, мы можам працягваць распрацоўваць і палепшваць MyNotes. Ваш унёсак дапамагае нам дадаваць новыя функцыі, выпраўляць памылкі і рабіць прыкладанне яшчэ лепшым.\n\nЖадаем вам усяго найлепшага і спадзяемся, што вы й надалей будзеце з задавальненнем карыстацца MyNotes!</string>
-    <string name="purchase_success_button">Закрыць</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Памылка пакупкі</string>
     <string name="purchase_loading">Загрузка тавараў...</string>
     <string name="purchase_error_no_products">Няма даступных тавараў для данату</string>
     
@@ -213,11 +205,7 @@
     <string name="help_tags_hide_description">Выкарыстоўвайце функцыю схавання, каб часова выдаліць пазначаныя нататкі з галоўнага выгляду, захоўваючы доступ да іх праз тэг</string>
     <string name="help_tags_limit_title">Абмежаванне тэгаў</string>
     <string name="help_tags_limit_description">Можна стварыць не больш за 25 тэгаў для эфектыўнай арганізацыі вашых нататак</string>
-    <string name="help_tags_assign_title">Прызначэнне тэгаў</string>
-    <string name="help_tags_assign_description">Тэгі нататкам можна прызначаць на галоўным экране і пры рэдагаванні нататкі</string>
-    <string name="help_tags_update_title">Абнаўленне тэгаў</string>
-    <string name="help_tags_update_description">Апісвае абнаўленне тэгаў і як схаваць нататкі з галоўнага выгляду</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Навігацыя</string>
     <string name="help_navigation_drawer_title">Галоўнае меню</string>
@@ -275,7 +263,6 @@
     <string name="help_notes_autosave_description">Нататкі аўтаматычна захоўваюцца праз 2 секунды пасля завяршэння ўводу. У верхняй панэлі адлюстроўваецца індыкатар: сіняя кропка — незахаваныя змены, анімаваная іконка — ідзе захаванне, зялёная галачка — паспяхова захавана. Нават калі вы зачыніце дадатак або ён аварыйна завершиться, апошнія змены не будуць страчаны.</string>
 
     <string name="tags_management">Тэгі</string>
-    <string name="no_tags_yet">Пакуль няма тэгаў</string>
     <string name="create_tag">Націсніце гэтую кнопку, каб стварыць тэг.</string>
     <string name="tag_options">Налады тэга</string>
     <string name="createTag">Стварыць тэг</string>

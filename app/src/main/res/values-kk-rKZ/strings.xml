@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Бұл мүмкіндікті пайдалану үшін Google Translator орнатылуы керек</string>
     <string name="lastDateEditNote">Соңғы өңдеу: %1$s </string>
     <string name="restore">Қалпына келтіру</string>
-    <string name="noteSaved">Ескертпе сақталды</string>
     <string name="searchNotesFromTitle">Теруді бастаңыз</string>
     <string name="errorNewTagInput">Қате: тег атауында болуы мүмкін таңбалардың ең көп саны – %1$d </string>
     <string name="emptyTrash">Жойылған ескертпелер осы жерде көрсетіледі</string>
@@ -145,7 +144,6 @@
     <string name="percentProgress">Сақтық көшірме (%d%%)</string>
 
     <!-- Өнім ұсынысы -->
-    <string name="errorSyncTitle">Назар аударыңыз!</string>
     <string name="errorSyncDescrpt">Қалтада сақтық көшірме жасау уақытша қолжетімсіз</string>
 
     <string name="thanks_title">Құрметті пайдаланушы</string>
@@ -185,15 +183,9 @@
     <string name="donation_wave_description">Күшті жігерлендіру толқынын жіберіңіз</string>
     <string name="donation_universe_title">Шабыт ғаламы</string>
     <string name="donation_universe_description">Болашақ үшін шексіз мүмкіндіктерді ашыңыз</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Рахмет! 💖</string>
-    <string name="purchase_success_message">Сіздің қолдауыңыз біз үшін бүкіл әлемді білдіреді! Сіз сияқты керемет адамдардың арқасында біз MyNotes қолданбасын дамытып, жақсартып отыра аламыз. Сіздің үлесіңіз бізге жаңа функциялар қосуға, қателерді түзетуге және қолданбаны одан да жақсы етуге көмектеседі.\n\nСізге барлық жақсылықты тілейміз және MyNotes қолданбасын пайдалануды жалғастыра беретініңізге үміттенеміз!</string>
-    <string name="purchase_success_button">Жабу</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Сатып алу қатесі</string>
-    <string name="purchase_loading">Өнімдер жүктелуде...</string>
+    <string name="purchase_loading">Өнімдер жүктелуде…</string>
     <string name="purchase_error_no_products">Ауысым өнімдері жоқ</string>
     
     <!-- Developer Support -->
@@ -215,11 +207,8 @@
     <string name="help_tags_hide_description">Белгіленген жазбаларды негізгі көрінісінен уақытша жою үшін жасыру функциясын пайдаланыңыз, тег арқылы оларға қол жетімділікті сақтай отырып</string>
     <string name="help_tags_limit_title">Тег шектеуі</string>
     <string name="help_tags_limit_description">Жазбаларыңызды тиімді ұйымдастыру үшін 25-ке дейін тег жасай аласыз</string>
-    <string name="help_tags_assign_title">Тегтерді тағайындау</string>
-    <string name="help_tags_assign_description">Тегтерді негізгі экраннан және жазбаны өңдеу кезінде жазбаларға тағайындауға болады</string>
-    <string name="help_tags_update_title">Тегтерді жаңарту</string>
-    <string name="help_tags_update_description">Тег жаңартуларын және негізгі көрінісінен жазбаларды қалай жасыруды сипаттайды</string>
-    
+
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Навигация</string>
     <string name="help_navigation_drawer_title">Негізгі мәзір</string>
@@ -278,7 +267,6 @@
     <string name="help_notes_autosave_description">Жазбалар мәтінді енгізуді тоқтатқаннан кейін 2 секундтан соң автоматты түрде сақталады. Жоғарғы тақтада индикатор көрсетіледі: көк нүкте — сақталмаған өзгерістер, анимациялық белгіше — сақтау жүріп жатыр, жасыл құсбелгі — сәтті сақталды. Қолданбаны жапсаңыз да немесе ол істен шықса да, соңғы өзгерістер жоғалмайды.</string>
 
     <string name="tags_management">Тегтер</string>
-    <string name="no_tags_yet">Әзірге тегтер жоқ</string>
     <string name="create_tag">Тег жасау үшін осы батырманы басыңыз.</string>
     <string name="tag_options">Тег параметрлері</string>
     <string name="createTag">Тег жасау</string>

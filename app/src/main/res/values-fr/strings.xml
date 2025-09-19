@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Google Translator doit être installé pour utiliser cette fonctionnalité</string>
     <string name="lastDateEditNote">Modifié par %1$s</string>
     <string name="restore">Restaurer</string>
-    <string name="noteSaved">Note enregistrée</string>
     <string name="searchNotesFromTitle">Commencer à taper</string>
     <string name="errorNewTagInput">Erreur: nombre maximal de caractères que le nom de balise %1$d peut contenir </string>
     <string name="emptyTrash">Vos notes supprimées seront affichées ici</string>
@@ -137,7 +136,6 @@
     <string name="errorDriverAuthInfo">Pour utiliser la synchronisation cloud, vous devez être autorisé</string>
     <string name="sortNotes">Trier les notes</string>
     <string name="percentProgress" translatable="false">Sauvegarde (%d%%)</string>
-    <string name="errorSyncTitle">Attention!</string>
     <string name="errorSyncDescrpt">La sauvegarde dans le cloud est temporairement indisponible</string>
 
     <!-- Offre produit -->
@@ -178,15 +176,9 @@
     <string name="donation_wave_description">Envoyez une puissante vague d\'encouragement</string>
     <string name="donation_universe_title">Univers d\'inspiration</string>
     <string name="donation_universe_description">Débloquez des possibilités infinies pour l\'avenir</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Merci ! 💖</string>
-    <string name="purchase_success_message">Votre soutien représente le monde pour nous ! Grâce à des personnes formidables comme vous, nous pouvons continuer à développer et améliorer MyNotes. Votre contribution nous aide à ajouter de nouvelles fonctionnalités, corriger les bugs et rendre l\'application encore meilleure.\n\nNous vous souhaitons tout le meilleur et espérons que vous continuerez à apprécier l\'utilisation de MyNotes !</string>
-    <string name="purchase_success_button">Fermer</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Achat échoué</string>
-    <string name="purchase_loading">Chargement des produits...</string>
+    <string name="purchase_loading">Chargement des produits…</string>
     <string name="purchase_error_no_products">Aucun produit de don disponible</string>
     
     <!-- Developer Support -->
@@ -209,11 +201,7 @@
     <string name="help_tags_hide_description">Utilisez la fonction de masquage pour supprimer temporairement les notes étiquetées de la vue principale tout en conservant l\'accès via l\'étiquette</string>
     <string name="help_tags_limit_title">Limite d\'étiquettes</string>
     <string name="help_tags_limit_description">Vous pouvez créer jusqu\'à 25 étiquettes pour une organisation efficace de vos notes</string>
-    <string name="help_tags_assign_title">Assigner des étiquettes</string>
-    <string name="help_tags_assign_description">Les étiquettes peuvent être assignées aux notes depuis l\'écran principal et lors de l\'édition d\'une note</string>
-    <string name="help_tags_update_title">Mise à jour des étiquettes</string>
-    <string name="help_tags_update_description">Décrit les mises à jour d\'étiquettes et comment masquer les notes de la vue principale</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigation</string>
     <string name="help_navigation_drawer_title">Menu principal</string>
@@ -272,7 +260,6 @@
     <string name="help_notes_autosave_description">Les notes sont enregistrées automatiquement 2 secondes après avoir arrêté de taper. Dans la barre supérieure, un indicateur s’affiche : point bleu — modifications non enregistrées, icône animée — enregistrement en cours, coche verte — enregistré avec succès. Même si vous fermez l’application ou qu’elle plante, vos dernières modifications ne seront pas perdues.</string>
 
     <string name="tags_management">Étiquettes</string>
-    <string name="no_tags_yet">Aucune étiquette pour l’instant</string>
     <string name="create_tag">Appuyez sur ce bouton pour créer un tag.</string>
     <string name="tag_options">Options de l’étiquette</string>
     <string name="createTag">Créer une étiquette</string>

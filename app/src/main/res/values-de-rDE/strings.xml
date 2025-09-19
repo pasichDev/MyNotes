@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Google Translator muss installiert sein, um diese Funktion nutzen zu können</string>
     <string name="lastDateEditNote">Bearbeitet von %1$s</string>
     <string name="restore">Wiederherstellen</string>
-    <string name="noteSaved">Notiz gespeichert</string>
     <string name="searchNotesFromTitle">Beginnen Sie mit der Eingabe</string>
     <string name="errorNewTagInput">Fehler: Maximale Anzahl an Zeichen, die der Tag-Name %1$d enthalten kann </string>
     <string name="emptyTrash">Deine gelöschten Notizen werden hier angezeigt</string>
@@ -108,7 +107,7 @@
     <string name="nextRestore">Aus Cloud wiederherstellen</string>
     <string name="messageRestoreProcess"><b>Daten wiederherstellen</b> \nDieses Fenster wird nach Abschluss automatisch geschlossen.</string>
     <string name="emptyBackups">Keine Backups gefunden</string>
-    <string name="checkLastBackupsCloud">Bitte warten, Daten werden geladen...</string>
+    <string name="checkLastBackupsCloud">Bitte warten, Daten werden geladen…</string>
 
 
     <!-- Arrays AutoBackup -->
@@ -132,7 +131,6 @@
     <string name="errorDriverAuthInfo">Um die Cloud-Synchronisierung zu verwenden, müssen Sie autorisiert sein</string>
     <string name="sortNotes">Notizen sortieren</string>
     <string name="percentProgress" translateable="false">Sicherung läuft (%d%%)</string>
-    <string name="errorSyncTitle">Achtung!</string>
     <string name="errorSyncDescrpt">Die Sicherung in der Cloud ist vorübergehend nicht verfügbar</string>
 
     <!-- Produktangebot -->
@@ -173,15 +171,9 @@
     <string name="donation_wave_description">Senden Sie eine kraftvolle Welle der Ermutigung</string>
     <string name="donation_universe_title">Universum der Inspiration</string>
     <string name="donation_universe_description">Erschließen Sie unendliche Möglichkeiten für die Zukunft</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Vielen Dank! 💖</string>
-    <string name="purchase_success_message">Ihre Unterstützung bedeutet uns die Welt! Dank wunderbaren Menschen wie Ihnen können wir MyNotes weiterentwickeln und verbessern. Ihr Beitrag hilft uns dabei, neue Funktionen hinzuzufügen, Fehler zu beheben und die App noch besser zu machen.\n\nWir wünschen Ihnen alles Gute und hoffen, dass Sie MyNotes weiterhin gerne nutzen!</string>
-    <string name="purchase_success_button">Schließen</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Kauf fehlgeschlagen</string>
-    <string name="purchase_loading">Produkte werden geladen...</string>
+    <string name="purchase_loading">Produkte werden geladen…</string>
     <string name="purchase_error_no_products">Keine Spendenprodukte verfügbar</string>
     
     <!-- Developer Support -->
@@ -205,11 +197,7 @@
     <string name="help_tags_hide_description">Verwenden Sie die Ausblenden-Funktion, um markierte Notizen vorübergehend aus der Hauptansicht zu entfernen, während der Zugriff über das Tag erhalten bleibt</string>
     <string name="help_tags_limit_title">Tag-Limit</string>
     <string name="help_tags_limit_description">Sie können bis zu 25 Tags für eine effektive Organisation Ihrer Notizen erstellen</string>
-    <string name="help_tags_assign_title">Tags zuweisen</string>
-    <string name="help_tags_assign_description">Tags können Notizen vom Hauptbildschirm und beim Bearbeiten einer Notiz zugewiesen werden</string>
-    <string name="help_tags_update_title">Tags aktualisieren</string>
-    <string name="help_tags_update_description">Beschreibt Tag-Updates und wie man Notizen aus der Hauptansicht ausblendet</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigation</string>
     <string name="help_navigation_drawer_title">Hauptmenü</string>
@@ -277,7 +265,6 @@
 
 
     <string name="tags_management">Tags</string>
-    <string name="no_tags_yet">Noch keine Tags</string>
     <string name="create_tag">Drücken Sie diese Taste, um ein Tag zu erstellen.</string>
     <string name="tag_options">Tag-Optionen</string>
     <string name="createTag">Tag erstellen</string>

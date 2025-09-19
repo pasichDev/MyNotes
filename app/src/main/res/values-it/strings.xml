@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Google Translator deve essere installato per utilizzare questa funzione</string>
     <string name="lastDateEditNote">Modificato da %1$s</string>
     <string name="restore">Ripristina</string>
-    <string name="noteSaved">Nota salvata</string>
     <string name="searchNotesFromTitle">Inizia a digitare</string>
     <string name="errorNewTagInput">Errore: numero massimo di caratteri che il tag nome %1$d può contenere </string>
     <string name="emptyTrash">Le tue note eliminate verranno visualizzate qui</string>
@@ -135,7 +134,6 @@
     <string name="errorDriverAuthInfo">Per utilizzare la sincronizzazione cloud, devi essere autorizzato</string>
     <string name="sortNotes">Ordina note</string>
     <string name="percentProgress" translatable="false">Backup (%d%%)</string>
-    <string name="errorSyncTitle">Attenzione!</string>
     <string name="errorSyncDescrpt">Il backup cloud non è temporaneamente disponibile</string>
 
     <!-- Offerta prodotto -->
@@ -177,14 +175,8 @@
     <string name="donation_universe_title">Universo di ispirazione</string>
     <string name="donation_universe_description">Sblocca infinite possibilità per il futuro</string>
     
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Grazie! 💖</string>
-    <string name="purchase_success_message">Il tuo supporto significa il mondo per noi! Grazie a persone straordinarie come te, possiamo continuare a sviluppare e migliorare MyNotes. Il tuo contributo ci aiuta ad aggiungere nuove funzionalità, correggere bug e rendere l\'app ancora migliore.\n\nTi auguriamo tutto il meglio e speriamo che continui a goderti l\'uso di MyNotes!</string>
-    <string name="purchase_success_button">Chiudi</string>
-    
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Acquisto fallito</string>
-    <string name="purchase_loading">Caricamento prodotti...</string>
+    <string name="purchase_loading">Caricamento prodotti…</string>
     <string name="purchase_error_no_products">Nessun prodotto di donazione disponibile</string>
     
     <!-- Developer Support -->
@@ -207,10 +199,6 @@
     <string name="help_tags_hide_description">Usa la funzione di nascondimento per rimuovere temporaneamente le note etichettate dalla vista principale mantenendo l\'accesso tramite l\'etichetta</string>
     <string name="help_tags_limit_title">Limite etichette</string>
     <string name="help_tags_limit_description">Puoi creare fino a 25 etichette per un\'organizzazione efficace delle tue note</string>
-    <string name="help_tags_assign_title">Assegnare etichette</string>
-    <string name="help_tags_assign_description">Le etichette possono essere assegnate alle note dalla schermata principale e durante la modifica di una nota</string>
-    <string name="help_tags_update_title">Aggiornare etichette</string>
-    <string name="help_tags_update_description">Descrive gli aggiornamenti delle etichette e come nascondere le note dalla vista principale</string>
     
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigazione</string>
@@ -270,7 +258,6 @@
     <string name="help_notes_autosave_description">Le note vengono salvate automaticamente 2 secondi dopo aver smesso di digitare. Nella barra superiore appare un indicatore: punto blu — modifiche non salvate, icona animata — salvataggio in corso, segno di spunta verde — salvataggio riuscito. Anche se chiudi l\'app o si blocca, le ultime modifiche non andranno perse.</string>
 
     <string name="tags_management">Tag</string>
-    <string name="no_tags_yet">Ancora nessun tag</string>
     <string name="create_tag">Premi questo pulsante per creare un tag.</string>
     <string name="tag_options">Opzioni del tag</string>
     <string name="createTag">Crea tag</string>

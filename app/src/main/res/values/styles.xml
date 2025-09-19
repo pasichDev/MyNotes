@@ -51,11 +51,6 @@
     </style>
 
     <!-- Стиль для параграфа -->
-    <style name="paragraphText">
-        <item name="fontFamily">@font/railway_medium</item>
-        <item name="android:textColor">?attr/colorOnBackground</item>
-        <item name="android:textSize">22sp</item>
-    </style>
 
     <!-- Позиционирование елементов в BottomSheetsDialog -->
     <style name="marginDialogItem">
@@ -88,12 +83,6 @@
     </style>
 
     <!-- Стиль иконок в ActionPanel -->
-    <style name="iconActionPanel" parent="marginDialogItem">
-        <item name="android:layout_width">24dp</item>
-        <item name="android:layout_height">24dp</item>
-        <item name="android:background">?selectableItemBackground</item>
-        <item name="android:tint">?attr/colorOnPrimary</item>
-    </style>
 
     <style name="bottomSheetInput" parent="@style/ThemeOverlay.Material3.BottomSheetDialog">
         <item name="android:windowIsFloating">false</item>

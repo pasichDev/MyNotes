@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Google Translator must be installed to use this feature</string>
     <string name="lastDateEditNote">Last edit: %1$s </string>
     <string name="restore">Restore</string>
-    <string name="noteSaved">Note saved</string>
     <string name="searchNotesFromTitle">Start typing</string>
     <string name="errorNewTagInput">Error: The maximum number of characters a tag name can contain is %1$d </string>
     <string name="emptyTrash">Your deleted notes are displayed here</string>
@@ -158,7 +157,6 @@
     <!-- Product offer -->
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
-    <string name="errorSyncTitle">Attention!</string>
     <string name="errorSyncDescrpt">Cloud backup is temporarily unavailable</string>
 
     <string name="percentProgress">Backup (%d%%)</string>
@@ -198,14 +196,8 @@
     <string name="donation_universe_title">Universe of Inspiration</string>
     <string name="donation_universe_description">Unlock infinite possibilities for the future</string>
 
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Thank You! 💖</string>
-    <string name="purchase_success_message">Your support means the world to us! Thanks to amazing people like you, we can continue developing and improving MyNotes. Your contribution helps us add new features, fix bugs, and make the app even better.\n\nWe wish you all the best and hope you continue to enjoy using MyNotes!</string>
-    <string name="purchase_success_button">Close</string>
-
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Purchase Failed</string>
-    <string name="purchase_loading">Loading products...</string>
+    <string name="purchase_loading">Loading products…</string>
     <string name="purchase_error_no_products">No donation products available</string>
 
     <!-- Developer Support -->
@@ -227,10 +219,6 @@
     <string name="help_tags_hide_description">Use the hide function to temporarily remove tagged notes from the main view while keeping access to them through the tag</string>
     <string name="help_tags_limit_title">Tag Limit</string>
     <string name="help_tags_limit_description">You can create up to 25 tags for effective organization of your notes</string>
-    <string name="help_tags_assign_title">Assigning Tags</string>
-    <string name="help_tags_assign_description">Tags can be assigned to notes from the main screen and when editing a note</string>
-    <string name="help_tags_update_title">Updating Tags</string>
-    <string name="help_tags_update_description">Describes tag updates and how to hide notes from the main view</string>
 
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigation</string>
@@ -292,7 +280,6 @@
     <string name="help_notes_autosave_description">Notes are automatically saved 2 seconds after you stop typing. A status indicator in the top bar shows: blue dot for unsaved changes, animated icon for saving in progress, green checkmark for successfully saved. Even if you close the app or it crashes, your latest changes won\'t be lost.</string>
 
     <string name="tags_management">Tags</string>
-    <string name="no_tags_yet">No tags yet</string>
     <string name="create_tag">Press this button to create tag.</string>
     <string name="tag_options">Tag options</string>
     <string name="createTag">Create Tag</string>
