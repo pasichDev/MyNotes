@@ -18,6 +18,17 @@ android {
         buildConfig true
     }
 
+    bundle {
+        language {
+            enableSplit = true
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
+    }
     packagingOptions {
         resources {
             excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/ASL2.0']
@@ -71,19 +82,19 @@ android {
 ext {
     markwon_version = '4.6.2'
     powerPrefenceVersion = '2.1.0'
-    roomVersion = '2.7.2'
+    roomVersion = '2.8.0'
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.13.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.3"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.4"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.0"
     implementation 'androidx.core:core-splashscreen:1.0.1'
     
     // EdgeToEdge support for API 35+
-    implementation 'androidx.activity:activity:1.10.1'
+    implementation 'androidx.activity:activity:1.11.0'
 
 
     //DI (Hilt)
@@ -97,7 +108,9 @@ dependencies {
 
     //Reactive (rxjava2)
     implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
-    implementation 'androidx.room:room-rxjava2:2.7.2'
+
+    //Room
+    implementation "androidx.room:room-rxjava2:$roomVersion"
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
     testImplementation "androidx.room:room-compiler-processing-testing:$roomVersion"
 
@@ -111,8 +124,7 @@ dependencies {
 
 
     //Other lib (Gson/Glide/PowerPreferences)
-    implementation 'com.github.bumptech.glide:glide:5.0.4'
-    annotationProcessor 'com.github.bumptech.glide:compiler:5.0.4'
+    implementation 'com.github.bumptech.glide:glide:5.0.5'
     implementation 'com.google.code.gson:gson:2.13.1'
     implementation "com.github.AliAsadi:PowerPreference:$powerPrefenceVersion"
 
