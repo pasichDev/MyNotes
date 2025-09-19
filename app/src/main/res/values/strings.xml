@@ -227,8 +227,6 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tags</string>
-    <string name="help_tags_create_title">Creating Tags</string>
-    <string name="help_tags_create_description">At the beginning of the tags list, press the + button to create a new tag</string>
     <string name="help_tags_edit_title">Editing Tags</string>
     <string name="help_tags_edit_description">Hold a tag to open the context menu. Here you can delete the tag, rename it, or hide notes associated with it.</string>
     <string name="help_tags_hide_title">Hiding Notes</string>
@@ -239,6 +237,8 @@
     <string name="help_tags_assign_description">Tags can be assigned to notes from the main screen and when editing a note</string>
     <string name="help_tags_update_title">Updating Tags</string>
     <string name="help_tags_update_description">Describes tag updates and how to hide notes from the main view</string>
+    <string name="help_tags_func_title">Interaction with tags</string>
+    <string name="help_tags_func_description">In the Tags section, you can create and edit tags. You can also manage the order of tags here — simply drag and drop them to change the sorting. This allows you to organize your tags efficiently.</string>
     
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigation</string>

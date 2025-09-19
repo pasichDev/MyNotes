@@ -205,8 +205,8 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Теги</string>
-    <string name="help_tags_create_title">Створення тегів</string>
-    <string name="help_tags_create_description">На початку списку тегів натисніть кнопку + щоб створити новий тег</string>
+    <string name="help_tags_func_title">Взаємодія з тегами</string>
+    <string name="help_tags_func_description">У розділі Теги ви можете створювати та редагувати теги. Також тут можна керувати порядком тегів — просто перетягніть їх, щоб змінити сортування. Це дозволяє ефективно організовувати ваші теги.</string>
     <string name="help_tags_edit_title">Редагування тегів</string>
     <string name="help_tags_edit_description">Утримуйте тег, щоб відкрити контекстне меню редагування. Тут ви можете видалити тег, перейменувати його або приховати нотатки, пов’язані з ним.</string>
     <string name="help_tags_hide_title">Приховування нотаток</string>

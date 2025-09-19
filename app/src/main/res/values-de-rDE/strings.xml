@@ -197,8 +197,8 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tags</string>
-    <string name="help_tags_create_title">Tags erstellen</string>
-    <string name="help_tags_create_description">Am Anfang der Tag-Liste drücken Sie die + Taste, um ein neues Tag zu erstellen</string>
+    <string name="help_tags_func_title">Interaktion mit Tags</string>
+    <string name="help_tags_func_description">Im Abschnitt „Tags“ können Sie Tags erstellen und bearbeiten. Hier können Sie auch die Reihenfolge der Tags verwalten – ziehen Sie sie einfach per Drag &amp; Drop, um die Sortierung zu ändern. So können Sie Ihre Tags effizient organisieren.</string>
     <string name="help_tags_edit_title">Tags bearbeiten</string>
     <string name="help_tags_edit_description">Halten Sie ein Tag gedrückt, um das Kontextmenü zu öffnen. Hier können Sie das Tag löschen, umbenennen oder damit verbundene Notizen ausblenden.</string>
     <string name="help_tags_hide_title">Notizen ausblenden</string>

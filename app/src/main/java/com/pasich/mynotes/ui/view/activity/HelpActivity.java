@@ -152,9 +152,9 @@ public class HelpActivity extends BaseActivity {
         // Створення тегів
         sections.add(new HelpSection(
             HelpSection.TYPE_FEATURE,
-            getString(R.string.help_tags_create_title),
-            getString(R.string.help_tags_create_description),
-            R.drawable.ic_add_tag,
+            getString(R.string.help_tags_func_title),
+            getString(R.string.help_tags_func_description),
+            R.drawable.ic_tag,
             null
         ));
 
@@ -185,23 +185,6 @@ public class HelpActivity extends BaseActivity {
             null
         ));
 
-        // Додавання тегів до нотаток
-        sections.add(new HelpSection(
-            HelpSection.TYPE_FEATURE,
-            getString(R.string.help_tags_assign_title),
-            getString(R.string.help_tags_assign_description),
-            R.drawable.ic_label,
-            null
-        ));
-
-        // Оновлення тегів
-        sections.add(new HelpSection(
-            HelpSection.TYPE_FEATURE,
-            getString(R.string.help_tags_update_title),
-            getString(R.string.help_tags_update_description),
-            R.drawable.ic_update,
-            null
-        ));
 
         // Розділ "Функції нотаток"
         sections.add(new HelpSection(

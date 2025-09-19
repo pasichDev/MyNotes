@@ -199,8 +199,8 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Etichette</string>
-    <string name="help_tags_create_title">Creare etichette</string>
-    <string name="help_tags_create_description">All\'inizio dell\'elenco delle etichette, premi il pulsante + per creare una nuova etichetta</string>
+    <string name="help_tags_func_title">Interazione con i tag</string>
+    <string name="help_tags_func_description">Nella sezione Tag, puoi creare e modificare i tag. Qui puoi anche gestire l\'ordine dei tag — basta trascinarli per cambiare la disposizione. Questo ti permette di organizzare i tuoi tag in modo efficiente.</string>
     <string name="help_tags_edit_title">Modificare etichette</string>
     <string name="help_tags_edit_description">Tieni premuta un\'etichetta per aprire il menu contestuale di modifica. Qui puoi eliminare l\'etichetta, rinominarla o nascondere le note ad essa associate.</string>
     <string name="help_tags_hide_title">Nascondere note</string>

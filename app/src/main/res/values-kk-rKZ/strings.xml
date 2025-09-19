@@ -208,9 +208,8 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Тегтер</string>
-    <string name="help_tags_create_title">Тегтер жасау</string>
-    <string name="help_tags_create_description">Тегтер тізімінің басында жаңа тег жасау үшін + түймесін басыңыз</string>
-    <string name="help_tags_edit_title">Тегтерді өңдеу</string>
+    <string name="help_tags_func_title">Тегтермен әрекеттесу</string>
+    <string name="help_tags_func_description">Тегтер бөлімінде сіз тегтерді құра аласыз және өңдей аласыз. Сондай-ақ тегтердің тәртібін басқаруға болады — оларды сүйреп тастап, сұрыптауды өзгертіңіз. Бұл тегтеріңізді тиімді ұйымдастыруға мүмкіндік береді.</string><string name="help_tags_edit_title">Тегтерді өңдеу</string>
     <string name="help_tags_edit_description">Өңдеу контекст мәзірін ашу үшін тегті ұстап тұрыңыз. Мұнда сіз тегті жоя аласыз, атын өзгерте аласыз немесе онымен байланысты жазбаларды жасыра аласыз.</string>
     <string name="help_tags_hide_title">Жазбаларды жасыру</string>
     <string name="help_tags_hide_description">Белгіленген жазбаларды негізгі көрінісінен уақытша жою үшін жасыру функциясын пайдаланыңыз, тег арқылы оларға қол жетімділікті сақтай отырып</string>

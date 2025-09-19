@@ -208,8 +208,8 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tagi</string>
-    <string name="help_tags_create_title">Tworzenie tagów</string>
-    <string name="help_tags_create_description">Na początku listy tagów naciśnij przycisk + aby utworzyć nowy tag</string>
+    <string name="help_tags_func_title">Interakcja z tagami</string>
+    <string name="help_tags_func_description">W sekcji Tagi możesz tworzyć i edytować tagi. Możesz także zarządzać ich kolejnością — wystarczy przeciągnąć je, aby zmienić sortowanie. Pozwala to efektywnie organizować Twoje tagi.</string>
     <string name="help_tags_edit_title">Edytowanie tagów</string>
     <string name="help_tags_edit_description">Przytrzymaj tag, aby otworzyć menu kontekstowe edycji. Tutaj możesz usunąć tag, zmienić jego nazwę lub ukryć notatki z nim powiązane.</string>
     <string name="help_tags_hide_title">Ukrywanie notatek</string>

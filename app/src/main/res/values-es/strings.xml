@@ -210,8 +210,8 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Etiquetas</string>
-    <string name="help_tags_create_title">Crear etiquetas</string>
-    <string name="help_tags_create_description">Al principio de la lista de etiquetas, presiona el botón + para crear una nueva etiqueta</string>
+    <string name="help_tags_func_title">Interacción con etiquetas</string>
+    <string name="help_tags_func_description">En la sección Etiquetas, puedes crear y editar etiquetas. También puedes gestionar el orden de las etiquetas aquí — simplemente arrástralas para cambiar el orden. Esto permite organizar tus etiquetas de manera eficiente.</string>
     <string name="help_tags_edit_title">Editar etiquetas</string>
     <string name="help_tags_edit_description">Mantén presionada una etiqueta para abrir el menú contextual de edición. Aquí puedes eliminar la etiqueta, renombrarla u ocultar las notas asociadas con ella.</string>
     <string name="help_tags_hide_title">Ocultar notas</string>
