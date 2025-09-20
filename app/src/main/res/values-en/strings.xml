@@ -288,4 +288,25 @@
 
     <string name="sort_tags_position">Custom</string>
     <string name="sort_tags_creation_date">By creation date</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Backup &amp; Export</string>
+    <string name="import_data">Import Data</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Import notes from Google Keep</string>
+    <string name="google_keep_description">Export your notes from Google Keep and import them into this app. Google Takeout export is supported.</string>
+    <string name="import_from_google_keep">Import from Google Keep</string>
+    <string name="feature_coming_soon">Feature will be available in the next version</string>
+    
+    <string name="other_apps">Other Apps</string>
+    <string name="import_from_other_note_apps">Import from other note-taking apps</string>
+    <string name="other_apps_description">Import notes from popular note-taking apps: OneNote, Evernote, Notion and others.</string>
+    <string name="coming_soon">Coming Soon</string>
+
+    <string name="instructions">Instructions</string>
+    <string name="google_takeout_instructions">How to export from Google Keep</string>
+    <string name="google_takeout_description">To export your notes from Google Keep:\n\n1. Go to Google Takeout:\nhttps://takeout.google.com\n\n2. Select only "Keep" from the list\n\n3. Click "Next step" and choose your export settings\n\n4. Click "Create export" and wait for the download link\n\n5. Download the archive file (.zip)\n\n6. Use the Import button to select the downloaded .zip file directly - no need to unzip\n\nNote: Only text content will be imported. Images, drawings, audio, and other media files are not supported at this time.</string>
+
 </resources>

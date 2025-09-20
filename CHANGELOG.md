@@ -2,6 +2,7 @@
 
 ## [2.2.35] - XX.XX.2025
 
+- Improved backup and data export — easier to save and restore your notes
 - Updated logic for interacting with tags. (Tag sorting has been added, drag and drop to arrange as you wish.)
 - Fixed MainDrawer display
 - General UI improvements and bug fixes

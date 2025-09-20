@@ -19,11 +19,14 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
 import com.google.api.services.drive.Drive;
 import com.pasich.mynotes.R;
@@ -31,9 +34,12 @@ import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
+import com.pasich.mynotes.databinding.FragmentBackupExportBinding;
+import com.pasich.mynotes.ui.adapter.BackupPagerAdapter;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
+import com.pasich.mynotes.ui.view.fragment.BackupExportFragment;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.CloudAuthHelper;
 import com.pasich.mynotes.utils.backup.CloudCacheHelper;
@@ -71,6 +77,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     public CloudCacheHelper cloudCacheHelper;
     @Inject
     public CloudAuthHelper cloudAuthHelper;
+    private BackupPagerAdapter pagerAdapter;
+    private BackupExportFragment backupExportFragment;
     /**
      * Auth user cloud
      */
@@ -106,12 +114,57 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         presenter.viewIsReady();
         binding.setPresenter((BackupPresenter) presenter);
 
+        setupTabs();
+
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 setEnabled(finishActivity());
             }
         });
+    }
+
+    private void setupTabs() {
+        pagerAdapter = new BackupPagerAdapter(this, presenter);
+        binding.viewPager.setAdapter(pagerAdapter);
+
+        new TabLayoutMediator(binding.tabLayout, binding.viewPager,
+                (tab, position) -> {
+                    switch (position) {
+                        case 0:
+                            tab.setText(R.string.backup_and_export);
+                            break;
+                        case 1:
+                            tab.setText(R.string.import_data);
+                            break;
+                    }
+                }).attach();
+
+        // Встановлюємо слухач для отримання посилання на фрагмент
+        binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                if (position == 0) {
+                    // Отримуємо посилання на BackupExportFragment
+                    backupExportFragment = (BackupExportFragment) getSupportFragmentManager()
+                            .findFragmentByTag("f" + position);
+                }
+            }
+        });
+    }
+
+    private FragmentBackupExportBinding getFragmentBinding() {
+        if (backupExportFragment != null && backupExportFragment.getBinding() != null) {
+            return backupExportFragment.getBinding();
+        }
+        // Fallback: спробуємо знайти фрагмент
+        backupExportFragment = (BackupExportFragment) getSupportFragmentManager()
+                .findFragmentByTag("f0");
+        if (backupExportFragment != null) {
+            return backupExportFragment.getBinding();
+        }
+        return null;
     }
 
 
@@ -156,16 +209,21 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     @SuppressLint("StringFormatInvalid")
     @Override
     public void editLastDataEditBackupCloud(long lastDate, boolean error) {
+        FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+        if (fragmentBinding == null) return;
+        
         if (error) {
             showErrors(CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW);
         } else {
-            binding.lastBackupCloud.setText(getString(R.string.lastCloudCopy, lastDataCloudBackup(lastDate)));
-
+            fragmentBinding.lastBackupCloud.setText(getString(R.string.lastCloudCopy, lastDataCloudBackup(lastDate)));
         }
     }
 
     private void editSwitchSetAutoBackup(String text) {
-        binding.switchAutoCloud.setText(text);
+        FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+        if (fragmentBinding != null) {
+            fragmentBinding.switchAutoCloud.setText(text);
+        }
     }
 
 
@@ -178,7 +236,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
     @Override
     public void initConnectAccount() {
-        binding.setIsPlayService(cloudCacheHelper.isInstallPlayMarket());
+        FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+        if (fragmentBinding != null) {
+            fragmentBinding.setIsPlayService(cloudCacheHelper.isInstallPlayMarket());
+        }
         changeDataUserActivityFromAuth(cloudCacheHelper.isAuth());
     }
 
@@ -206,9 +267,12 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      * @param isAuth - check auth cloud
      */
     private void changeDataUserActivityFromAuth(boolean isAuth) {
+        FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+        if (fragmentBinding == null) return;
+        
         if (isAuth) {
-            binding.userNameDrive.setText(cloudCacheHelper.getGoogleSignInAccount().getEmail());
-            binding.setIsAuthUser(true);
+            fragmentBinding.userNameDrive.setText(cloudCacheHelper.getGoogleSignInAccount().getEmail());
+            fragmentBinding.setIsAuthUser(true);
 
             if (presenter.getDataManager().getLastBackupCloudId().equals("null")) {
                 loadingLastBackupInfoCloud();
@@ -216,9 +280,9 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                 editLastDataEditBackupCloud(presenter.getDataManager().getLastDataBackupCloud(), false);
 
         } else {
-            binding.lastBackupCloud.setText(getString(R.string.errorDriverAuthInfo));
-            binding.userNameDrive.setText(R.string.errorDriveAuth);
-            binding.setIsAuthUser(false);
+            fragmentBinding.lastBackupCloud.setText(getString(R.string.errorDriverAuthInfo));
+            fragmentBinding.userNameDrive.setText(R.string.errorDriveAuth);
+            fragmentBinding.setIsAuthUser(false);
         }
     }
 
@@ -252,7 +316,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         final Drive mDriveCredential = getDrive();
         final int mError = checkErrorCloud(mDriveCredential);
         if (mError == CloudErrors.NO_ERROR) {
-            binding.lastBackupCloud.setText(R.string.checkLastBackupsCloud);
+            FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+            if (fragmentBinding != null) {
+                fragmentBinding.lastBackupCloud.setText(R.string.checkLastBackupsCloud);
+            }
             presenter.saveDataLoadingLastBackup(mDriveCredential);
         } else showErrors(mError);
     }
@@ -290,9 +357,12 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      */
     @Override
     public void visibleProgressBarCLoud() {
-        binding.setIsVisibleProgressCloud(true);
-        binding.progressBackupCloud.setProgress(10);
-        binding.percentProgress.setText(getString(R.string.percentProgress, 10));
+        FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+        if (fragmentBinding != null) {
+            fragmentBinding.setIsVisibleProgressCloud(true);
+            fragmentBinding.progressBackupCloud.setProgress(10);
+            fragmentBinding.percentProgress.setText(getString(R.string.percentProgress, 10));
+        }
     }
 
     /**
@@ -300,16 +370,21 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      */
     @Override
     public void goneProgressBarCLoud() {
-
-        binding.progressBackupCloud.setVisibilityAfterHide(View.INVISIBLE);
-        binding.setIsVisibleProgressCloud(false);
-        binding.progressBackupCloud.setProgress(0);
-        binding.percentProgress.setText(getString(R.string.percentProgress, 0));
+        FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+        if (fragmentBinding != null) {
+            fragmentBinding.progressBackupCloud.setVisibilityAfterHide(View.INVISIBLE);
+            fragmentBinding.setIsVisibleProgressCloud(false);
+            fragmentBinding.progressBackupCloud.setProgress(0);
+            fragmentBinding.percentProgress.setText(getString(R.string.percentProgress, 0));
+        }
     }
 
     @Override
     public void getClickedOffUpdate() {
-        binding.driveData.setClickable(false);
+        FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+        if (fragmentBinding != null) {
+            fragmentBinding.driveData.setClickable(false);
+        }
     }
 
     /**
@@ -320,22 +395,25 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     @Override
     public MediaHttpUploaderProgressListener getProcessListener() {
         return uploading -> {
+            FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+            if (fragmentBinding == null) return;
+            
             switch (uploading.getUploadState()) {
                 case INITIATION_STARTED -> {
-                    binding.progressBackupCloud.setProgress(20);
-                    runOnUiThread(() -> binding.percentProgress.setText(getString(R.string.percentProgress, 20)));
+                    fragmentBinding.progressBackupCloud.setProgress(20);
+                    runOnUiThread(() -> fragmentBinding.percentProgress.setText(getString(R.string.percentProgress, 20)));
                 }
                 case INITIATION_COMPLETE -> {
-                    binding.progressBackupCloud.setProgress(50);
-                    runOnUiThread(() -> binding.percentProgress.setText(getString(R.string.percentProgress, 50)));
+                    fragmentBinding.progressBackupCloud.setProgress(50);
+                    runOnUiThread(() -> fragmentBinding.percentProgress.setText(getString(R.string.percentProgress, 50)));
                 }
                 case MEDIA_IN_PROGRESS -> {
-                    binding.progressBackupCloud.setProgress(80);
-                    runOnUiThread(() -> binding.percentProgress.setText(getString(R.string.percentProgress, 80)));
+                    fragmentBinding.progressBackupCloud.setProgress(80);
+                    runOnUiThread(() -> fragmentBinding.percentProgress.setText(getString(R.string.percentProgress, 80)));
                 }
                 case MEDIA_COMPLETE -> {
-                    binding.progressBackupCloud.setProgress(99);
-                    runOnUiThread(() -> binding.percentProgress.setText(getString(R.string.percentProgress, 99)));
+                    fragmentBinding.progressBackupCloud.setProgress(99);
+                    runOnUiThread(() -> fragmentBinding.percentProgress.setText(getString(R.string.percentProgress, 99)));
                 }
             }
         };
@@ -391,7 +469,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                 onInfoSnack(R.string.errorDriverAuthInfo, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
                 break;
             case CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW:
-                binding.lastBackupCloud.setText(getString(R.string.emptyBackups));
+                FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
+                if (fragmentBinding != null) {
+                    fragmentBinding.lastBackupCloud.setText(getString(R.string.emptyBackups));
+                }
                 break;
             case CloudErrors.LAST_BACKUP_EMPTY_RESTORE:
                 onInfoSnack(R.string.emptyBackups, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
@@ -408,7 +489,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                 break;
             case CloudErrors.ERROR_LOAD_LAST_INFO_BACKUP:
                 onInfoSnack(R.string.errorDriveSync, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
-                binding.lastBackupCloud.setText(R.string.errorLoadingLastBackupCloud);
+                FragmentBackupExportBinding fragmentBinding2 = getFragmentBinding();
+                if (fragmentBinding2 != null) {
+                    fragmentBinding2.lastBackupCloud.setText(R.string.errorLoadingLastBackupCloud);
+                }
                 break;
             default:
                 return true;

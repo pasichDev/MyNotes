@@ -267,4 +267,25 @@
     <string name="toastTagHidde">Les notes marquées avec cette étiquette sont masquées dans la liste générale.</string>
     <string name="sort_tags_position">Personnalisé</string>
     <string name="sort_tags_creation_date">Par date de création</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Sauvegarde et exportation</string>
+    <string name="import_data">Importer des données</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Importer des notes depuis Google Keep</string>
+    <string name="google_keep_description">Exportez vos notes depuis Google Keep et importez-les dans cette application. L\'exportation via Google Takeout est prise en charge.</string>
+    <string name="import_from_google_keep">Importer depuis Google Keep</string>
+    <string name="feature_coming_soon">La fonctionnalité sera disponible dans la prochaine version</string>
+    
+    <string name="other_apps">Autres applications</string>
+    <string name="import_from_other_note_apps">Importer depuis d\'autres applications de prise de notes</string>
+    <string name="other_apps_description">Importez des notes depuis des applications populaires de prise de notes : OneNote, Evernote, Notion et autres.</string>
+    <string name="coming_soon">Bientôt</string>
+
+    <string name="instructions">Instructions</string>
+    <string name="google_takeout_instructions">Comment exporter depuis Google Keep</string>
+    <string name="google_takeout_description">Pour exporter vos notes depuis Google Keep :\n\n1. Allez sur Google Takeout :\nhttps://takeout.google.com\n\n2. Sélectionnez uniquement "Keep" dans la liste\n\n3. Cliquez sur "Étape suivante" et choisissez vos paramètres d’exportation\n\n4. Cliquez sur "Créer une exportation" et attendez le lien de téléchargement\n\n5. Téléchargez le fichier d’archive (.zip)\n\n6. Utilisez le bouton "Importer" pour sélectionner directement le fichier .zip téléchargé sans le décompresser\n\nRemarque : Seul le contenu texte sera importé. Les images, dessins, fichiers audio et autres médias ne sont pas encore pris en charge.</string>
+
 </resources>

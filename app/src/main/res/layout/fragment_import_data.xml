@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Import from Google Keep Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Section Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_google_drive"
+                            android:layout_marginEnd="16dp"
+                            android:contentDescription="@string/google_keep" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/google_keep"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/import_notes_from_google_keep"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Description -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="@string/google_keep_description"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="14sp"
+                        android:lineSpacingMultiplier="1.2" />
+
+                    <!-- Buttons Container -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Import Button -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/importFromGoogleKeep"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:text="@string/import_from_google_keep"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:backgroundTint="?attr/colorPrimary"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_import"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:iconTint="?attr/colorOnPrimary"
+                            android:paddingHorizontal="16dp"
+                            android:enabled="false" />
+
+                        <!-- Instructions Button -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnGoogleKeepInstructions"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:contentDescription="@string/instructions"
+                            app:icon="@drawable/ic_help"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconTint="?attr/colorPrimary"
+                            android:insetLeft="0dp"
+                            android:insetTop="0dp"
+                            android:insetRight="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:cornerRadius="12dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Import from Other Apps Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Section Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_more"
+                            android:layout_marginEnd="16dp"
+                            app:tint="?attr/colorPrimary"
+                            android:contentDescription="@string/other_apps" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/other_apps"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/import_from_other_note_apps"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Description -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="@string/other_apps_description"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="14sp"
+                        android:lineSpacingMultiplier="1.2" />
+
+                    <!-- Import Options -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Evernote -->
+                        <LinearLayout
+                            android:id="@+id/importFromEvernote"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_item_middle"
+                            android:orientation="horizontal"
+                            android:padding="12dp"
+                            android:clickable="false">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginEnd="16dp"
+                                android:src="@drawable/ic_import"
+                                app:tint="?attr/colorOnSurfaceVariant"
+                                android:contentDescription="Evernote" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_gravity="center_vertical"
+                                android:text="Evernote"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="16sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:text="@string/coming_soon"
+                                android:textColor="?attr/colorOutline"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <!-- Notion -->
+                        <LinearLayout
+                            android:id="@+id/importFromNotion"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_item_end"
+                            android:orientation="horizontal"
+                            android:padding="12dp"
+                            android:clickable="false">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginEnd="16dp"
+                                android:src="@drawable/ic_import"
+                                app:tint="?attr/colorOnSurfaceVariant"
+                                android:contentDescription="Notion" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_gravity="center_vertical"
+                                android:text="Notion"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="16sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:text="@string/coming_soon"
+                                android:textColor="?attr/colorOutline"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+</layout>
