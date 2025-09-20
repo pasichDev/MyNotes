@@ -291,4 +291,13 @@
     <string name="google_takeout_instructions">Як экспартаваць з Google Keep</string>
     <string name="google_takeout_description">Каб экспартаваць свае нататкі з Google Keep:\n\n1. Перайдзіце на Google Takeout:\nhttps://takeout.google.com\n\n2. Абярыце толькі "Keep" са спісу\n\n3. Націсніце "Наступны крок" і выберыце налады экспарту\n\n4. Націсніце "Стварыць экспарт" і дачакайцеся спасылкі для загрузкі\n\n5. Спампуйце архіў (.zip)\n\n6. Выкарыстайце кнопку "Імпарт", каб абраць загружаны .zip-файл без распакоўкі\n\nЗаўвага: Будзе імпартаваны толькі тэкставы змест. Выявы, малюнкі, аўдыё і іншыя медыяфайлы пакуль не падтрымліваюцца.</string>
 
+    <string name="google_keep_import_title">Імпарт з Google Keep</string>
+    <string name="found_notes">Знойдзеныя даныя</string>
+    <string name="import_error">Памылка імпарту</string>
+    <string name="active_notes">Нататкі</string>
+    <string name="trashed_notes">Сметніца</string>
+    <string name="labels">Тэгі</string>
+    <string name="import_notes">Імпартаваць даныя</string>
+    <string name="empty_data_import">Няма новых даных для імпарту</string>
+
 </resources>

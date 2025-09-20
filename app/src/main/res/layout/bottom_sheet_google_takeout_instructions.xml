@@ -32,6 +32,8 @@
         android:id="@+id/btnClose"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="?attr/colorOnPrimary"
+        android:backgroundTint="?attr/colorPrimary"
         android:layout_marginHorizontal="24dp"
         android:text="@string/close"
         android:textStyle="bold"

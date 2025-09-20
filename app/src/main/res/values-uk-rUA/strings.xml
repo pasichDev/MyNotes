@@ -292,4 +292,15 @@
     <string name="instructions">Інструкція</string>
     <string name="google_takeout_instructions">Як експортувати з Google Keep</string>
     <string name="google_takeout_description">Як експортувати ваші нотатки з Google Keep:\n\n1. Перейдіть на Google Takeout:\nhttps://takeout.google.com\n\n2. Виберіть тільки "Keep" зі списку\n\n3. Натисніть "Наступний крок" і виберіть налаштування експорту\n\n4. Натисніть "Створити експорт" і дочекайтеся посилання для завантаження\n\n5. Завантажте архівний файл (.zip)\n\n6. Використайте кнопку Імпорт, щоб вибрати завантажений .zip файл напряму - розпаковувати не потрібно\n\nПримітка: Буде імпортовано лише текстовий вміст. Зображення, малюнки, аудіо та інші медіафайли наразі не підтримуються.</string>
+    <string name="google_keep_import_title">Імпорт з Google Keep</string>
+
+    <string name="found_notes">Знайдені дані</string>
+    <string name="import_error">Помилка імпорту</string>
+    <string name="active_notes">Нотатки</string>
+    <string name="trashed_notes">Кошик</string>
+    <string name="labels">Теги</string>
+    <string name="import_notes">Імпортувати дані</string>
+    <string name="empty_data_import">Немає нових даних для імпорту</string>
+
+
 </resources>

@@ -1,4 +1,4 @@
-package com.pasich.mynotes.ui.dialogs;
+package com.pasich.mynotes.ui.view.dialogs;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

@@ -105,8 +105,7 @@
                             app:iconGravity="textStart"
                             app:iconPadding="8dp"
                             app:iconTint="?attr/colorOnPrimary"
-                            android:paddingHorizontal="16dp"
-                            android:enabled="false" />
+                            android:paddingHorizontal="16dp" />
 
                         <!-- Instructions Button -->
                         <com.google.android.material.button.MaterialButton

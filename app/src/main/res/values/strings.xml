@@ -323,5 +323,14 @@
     <string name="other_apps_description">Import notes from popular note-taking apps: OneNote, Evernote, Notion and others.</string>
     <string name="coming_soon">Coming Soon</string>
 
+    <string name="google_keep_import_title">Import from Google Keep</string>
+    <string name="found_notes">Found data</string>
+    <string name="import_error">Import error</string>
+    <string name="active_notes">Notes</string>
+    <string name="trashed_notes">Trash</string>
+    <string name="labels">Tags</string>
+    <string name="import_notes">Import data</string>
+    <string name="empty_data_import">No new data to import</string>
+
 
 </resources>

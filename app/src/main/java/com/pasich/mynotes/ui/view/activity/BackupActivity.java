@@ -9,6 +9,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -25,7 +26,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
 import com.google.api.services.drive.Drive;
@@ -33,9 +33,11 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
+import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.databinding.FragmentBackupExportBinding;
-import com.pasich.mynotes.ui.adapter.BackupPagerAdapter;
+import com.pasich.mynotes.ui.view.dialogs.OtherAppImportDialog;
+import com.pasich.mynotes.utils.adapters.BackupPagerAdapter;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
@@ -77,8 +79,9 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     public CloudCacheHelper cloudCacheHelper;
     @Inject
     public CloudAuthHelper cloudAuthHelper;
-    private BackupPagerAdapter pagerAdapter;
     private BackupExportFragment backupExportFragment;
+
+    private OtherAppImportDialog importDialog;
     /**
      * Auth user cloud
      */
@@ -125,20 +128,19 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     }
 
     private void setupTabs() {
-        pagerAdapter = new BackupPagerAdapter(this, presenter);
+        BackupPagerAdapter pagerAdapter = new BackupPagerAdapter(this, presenter);
         binding.viewPager.setAdapter(pagerAdapter);
 
-        new TabLayoutMediator(binding.tabLayout, binding.viewPager,
-                (tab, position) -> {
-                    switch (position) {
-                        case 0:
-                            tab.setText(R.string.backup_and_export);
-                            break;
-                        case 1:
-                            tab.setText(R.string.import_data);
-                            break;
-                    }
-                }).attach();
+        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+            switch (position) {
+                case 0:
+                    tab.setText(R.string.backup_and_export);
+                    break;
+                case 1:
+                    tab.setText(R.string.import_data);
+                    break;
+            }
+        }).attach();
 
         // Встановлюємо слухач для отримання посилання на фрагмент
         binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -147,8 +149,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                 super.onPageSelected(position);
                 if (position == 0) {
                     // Отримуємо посилання на BackupExportFragment
-                    backupExportFragment = (BackupExportFragment) getSupportFragmentManager()
-                            .findFragmentByTag("f" + position);
+                    backupExportFragment = (BackupExportFragment) getSupportFragmentManager().findFragmentByTag("f" + position);
                 }
             }
         });
@@ -159,8 +160,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
             return backupExportFragment.getBinding();
         }
         // Fallback: спробуємо знайти фрагмент
-        backupExportFragment = (BackupExportFragment) getSupportFragmentManager()
-                .findFragmentByTag("f0");
+        backupExportFragment = (BackupExportFragment) getSupportFragmentManager().findFragmentByTag("f0");
         if (backupExportFragment != null) {
             return backupExportFragment.getBinding();
         }
@@ -211,7 +211,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     public void editLastDataEditBackupCloud(long lastDate, boolean error) {
         FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
         if (fragmentBinding == null) return;
-        
+
         if (error) {
             showErrors(CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW);
         } else {
@@ -269,7 +269,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     private void changeDataUserActivityFromAuth(boolean isAuth) {
         FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
         if (fragmentBinding == null) return;
-        
+
         if (isAuth) {
             fragmentBinding.userNameDrive.setText(cloudCacheHelper.getGoogleSignInAccount().getEmail());
             fragmentBinding.setIsAuthUser(true);
@@ -302,9 +302,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      */
     @Override
     public void openIntentReadBackup() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .setType("application/json");
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json");
         startIntentImport.launch(intent);
     }
 
@@ -397,7 +395,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         return uploading -> {
             FragmentBackupExportBinding fragmentBinding = getFragmentBinding();
             if (fragmentBinding == null) return;
-            
+
             switch (uploading.getUploadState()) {
                 case INITIATION_STARTED -> {
                     fragmentBinding.progressBackupCloud.setProgress(20);
@@ -452,7 +450,6 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      */
     @Override
     public boolean showErrors(int errorCode) {
-        Log.w("Drive","ShowErrors = " + errorCode);
         switch (errorCode) {
             case CloudErrors.CREDENTIAL:
                 onInfoSnack(R.string.errorCredential, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
@@ -501,24 +498,23 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     }
 
     @Override
+    public void showErrorsText(int errorCode, int string) {
+        onInfoSnack(string, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+    }
+
+    @Override
     public void restoreFinish(int infoCode) {
         if (progressDialog != null) {
             progressDialog.dismiss();
         }
         switch (infoCode) {
-            case CloudErrors.OKAY_RESTORE -> {
-                onInfoSnack(R.string.restoreDataOkay, null, SnackBarInfo.Success, Snackbar.LENGTH_LONG);
-            }
-            case CloudErrors.BACKUP_DESTROY -> {
-                onInfoSnack(R.string.restoreDataFall, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
-            }
+            case CloudErrors.OKAY_RESTORE -> onInfoSnack(R.string.restoreDataOkay, null, SnackBarInfo.Success, Snackbar.LENGTH_LONG);
+            case CloudErrors.BACKUP_DESTROY -> onInfoSnack(R.string.restoreDataFall, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             case CloudErrors.NETWORK_ERROR -> {
                 goneProgressBarCLoud();
                 onInfoSnack(R.string.errorDriveSync, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             }
-            default -> {
-                Log.w("BACKUP_ACTIVITY", "Unknown restore result code: " + infoCode);
-            }
+            default -> Log.w("BACKUP_ACTIVITY", "Unknown restore result code: " + infoCode);
         }
     }
 
@@ -586,11 +582,31 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     @Override
     public void initListeners() {
     }
-    
+
     @Override
     public void openShareOptionsDialog(java.util.List<Note> notes, boolean isDataExport) {
-        ShareOptionsDialog shareOptionsDialog =
-            new ShareOptionsDialog(notes, isDataExport);
+        ShareOptionsDialog shareOptionsDialog = new ShareOptionsDialog(notes, isDataExport);
         shareOptionsDialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
     }
+
+
+    @Override
+    public void processSelectedFileOtherApp(Uri fileUri) {
+        importDialog = OtherAppImportDialog.newInstance();
+        importDialog.show(getSupportFragmentManager(), "import_progress");
+        importDialog.updateProgress(true);
+        presenter.importFromZipOtherApp(fileUri);
+
+    }
+
+    @Override
+    public void showImportResultOtherApp(GoogleKeepImportResult result) {
+        importDialog.showResult(result);
+    }
+
+    @Override
+    public void setupImportCallbackOtherApp(GoogleKeepImportResult result) {
+        importDialog.setCallback(importResult -> presenter.importDataOtherApp(importResult));
+    }
+
 }

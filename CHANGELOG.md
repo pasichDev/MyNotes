@@ -2,11 +2,12 @@
 
 ## [2.2.35] - XX.XX.2025
 
-- Improved backup and data export — easier to save and restore your notes
-- Updated logic for interacting with tags. (Tag sorting has been added, drag and drop to arrange as you wish.)
-- Fixed MainDrawer display
-- General UI improvements and bug fixes
-- Updated website and privacy policy links
+- Added import of notes, trashed notes, and tags from other apps (e.g., Google Keep)
+- Improved backup and data export — easier to save and restore notes
+- Updated tag management: sorting added and drag-and-drop support for custom arrangement
+- Fixed MainDrawer display issues
+- General UI enhancements and bug fixes
+- Updated links to website and privacy policy
 
 ## [2.2.34] - 05.09.2025
 
