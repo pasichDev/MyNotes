@@ -115,12 +115,9 @@
                             android:contentDescription="@string/instructions"
                             app:icon="@drawable/ic_help"
                             app:iconGravity="textStart"
+                            app:iconSize="24dp"
                             app:iconPadding="0dp"
                             app:iconTint="?attr/colorPrimary"
-                            android:insetLeft="0dp"
-                            android:insetTop="0dp"
-                            android:insetRight="0dp"
-                            android:insetBottom="0dp"
                             style="@style/Widget.Material3.Button.OutlinedButton"
                             app:cornerRadius="12dp" />
 
@@ -215,8 +212,7 @@
                                 android:layout_height="24dp"
                                 android:layout_gravity="center_vertical"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_import"
-                                app:tint="?attr/colorOnSurfaceVariant"
+                                android:src="@drawable/ic_evernote"
                                 android:contentDescription="Evernote" />
 
                             <TextView
@@ -239,7 +235,7 @@
 
                         <!-- Notion -->
                         <LinearLayout
-                            android:id="@+id/importFromNotion"
+                            android:id="@+id/importFromOneNote"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_item_end"
@@ -252,16 +248,15 @@
                                 android:layout_height="24dp"
                                 android:layout_gravity="center_vertical"
                                 android:layout_marginEnd="16dp"
-                                android:src="@drawable/ic_import"
-                                app:tint="?attr/colorOnSurfaceVariant"
-                                android:contentDescription="Notion" />
+                                android:src="@drawable/ic_one_note"
+                                android:contentDescription="OneNote" />
 
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:layout_gravity="center_vertical"
-                                android:text="Notion"
+                                android:text="OneNote"
                                 android:textColor="?attr/colorOnSurfaceVariant"
                                 android:textSize="16sp" />
 

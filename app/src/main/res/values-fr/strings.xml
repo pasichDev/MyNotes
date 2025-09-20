@@ -290,7 +290,7 @@
 
     <string name="google_keep_import_title">Importer depuis Google Keep</string>
     <string name="found_notes">Données trouvées</string>
-    <string name="import_error">Erreur d'importation</string>
+    <string name="import_error">Erreur d\'importation</string>
     <string name="active_notes">Notes</string>
     <string name="trashed_notes">Corbeille</string>
     <string name="labels">Étiquettes</string>
