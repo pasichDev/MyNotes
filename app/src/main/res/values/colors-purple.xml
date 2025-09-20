@@ -49,7 +49,6 @@
     <color name="purple_theme_light_surfaceContainerHigh">#EFE5ED</color>
     <color name="purple_theme_light_surfaceContainerHighest">#E9E0E7</color>
 
-
     <!-- Dark -->
     <color name="purple_theme_dark_primary">#E0B8F6</color>
     <color name="purple_theme_dark_onPrimary">#422356</color>
