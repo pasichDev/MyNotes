@@ -2,7 +2,7 @@
 <resources>
     <!-- Landscape orientation specific dimensions -->
     <!-- Navigation Drawer -->
-    <dimen name="nav_header_height">160dp</dimen>
+    <dimen name="nav_header_height">200dp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 </resources>

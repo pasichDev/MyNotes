@@ -17,6 +17,7 @@ import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -96,6 +97,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 notePresenter.closeActivity();
             }
         });
+
 
 
     }
@@ -216,26 +218,39 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
      */
     private void setupEdgeToEdgeInsetsWithKeyboard(View rootView) {
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+
+                Insets navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+                // Оновлюємо марджін FAB
+                CoordinatorLayout.LayoutParams fab = (CoordinatorLayout.LayoutParams) binding.editActive.getLayoutParams();
+            fab.setMargins(
+                    fab.leftMargin,
+                    fab.topMargin,
+                    fab.rightMargin,
+                        25 + navBarInsets.bottom  // додаємо висоту нижньої панелі
+                );
+                binding.editActive.setLayoutParams(fab);
+
             // Отримуємо відступи для системних барів
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
             // Отримуємо відступи для клавіатури (IME)
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
-            
+
             // Точно визначаємо стан клавіатури
             boolean keyboardWasVisible = isKeyboardVisible;
             boolean keyboardWillBeVisible = imeInsets.bottom > 100; // Мінімальна висота для клавіатури
-            
+
             // Обробляємо зміну стану клавіатури
             if (!keyboardWasVisible && keyboardWillBeVisible) {
                 // Клавіатура тільки з'являється - зберігаємо поточну позицію
                 savedScrollPosition = binding.scrollView.getScrollY();
             }
-            
+
             // Оновлюємо стан
             isKeyboardVisible = keyboardWillBeVisible;
             lastImeInsets = imeInsets.bottom;
-            
+
             // Встановлюємо padding зверху для системних барів тільки для кореневого view
             v.setPadding(
                     v.getPaddingLeft(),
@@ -243,24 +258,24 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                     v.getPaddingRight(),
                     0
             );
-            
+
             // Встановлюємо нижній margin для scrollView з урахуванням клавіатури
             int bottomMargin = Math.max(imeInsets.bottom, systemBars.bottom);
-            
+
             // Отримуємо LayoutParams для scrollView (він в LinearLayout)
-            android.widget.LinearLayout.LayoutParams params = 
+            android.widget.LinearLayout.LayoutParams params =
                 (android.widget.LinearLayout.LayoutParams) binding.scrollView.getLayoutParams();
-            
+
             // При ховані клавіатури - спочатку встановлюємо правильну позицію скролу
             if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
                 // Встановлюємо позицію ДО зміни розміру
                 binding.scrollView.scrollTo(0, savedScrollPosition);
             }
-            
+
             // Встановлюємо нижній margin
             params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, bottomMargin);
             binding.scrollView.setLayoutParams(params);
-            
+
             // Встановлюємо додатковий padding для scrollView
             binding.scrollView.setPadding(
                     binding.scrollView.getPaddingLeft(),
@@ -268,13 +283,13 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                     binding.scrollView.getPaddingRight(),
                     getResources().getDimensionPixelSize(R.dimen.scroll_view_bottom_margin)
             );
-            
+
             // Обробляємо появу клавіатури
             if (!keyboardWasVisible && keyboardWillBeVisible && binding.valueNote.isFocused()) {
                 // Клавіатура з'являється - прокручуємо до курсора
                 lastCursorPosition = -1;
                 binding.valueNote.postDelayed(this::scrollToCursor, 200);
-            } 
+            }
             // Додаткове закріплення позиції після ховання клавіатури
             else if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
                 // Ще раз встановлюємо позицію ПІСЛЯ зміни розміру
@@ -284,7 +299,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                     }
                 });
             }
-            
+
+
+
             return insets;
         });
     }

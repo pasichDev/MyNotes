@@ -141,6 +141,7 @@
                 android:layout_height="match_parent"
                 android:scrollbarSize="0dp"
                 android:clipToPadding="false"
+                android:fitsSystemWindows="false"
                 android:fillViewport="true">
 
                 <LinearLayout
@@ -207,9 +208,7 @@
             android:contentDescription="@string/editNoteButton"
             android:onClick="@{(view) -> presenter.activateEditNote()}"
             android:visibility="@{activateEdit ? View.GONE : View.VISIBLE}"
-            app:layout_anchor="@id/scrollView"
-            app:layout_anchorGravity="bottom|right|end"
-            app:layout_dodgeInsetEdges="bottom"
+             app:layout_dodgeInsetEdges="bottom"
             app:srcCompat="@drawable/ic_edit" />
 
 

@@ -36,7 +36,7 @@
         android:orientation="vertical"
         android:overScrollMode="never"
         android:paddingTop="8dp"
-        android:paddingBottom="16dp"
+        android:paddingBottom="25dp"
         android:layout_marginBottom="18dp"
         android:scrollbarStyle="outsideOverlay"
         android:scrollbars="vertical"
