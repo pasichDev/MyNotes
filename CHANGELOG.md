@@ -8,6 +8,8 @@
 - Fixed MainDrawer display issues
 - General UI enhancements and bug fixes
 - Updated links to website and privacy policy
+- Fixed keyboard overlapping text issue
+- Fixed automatic text scrolling on devices
 
 ## [2.2.34] - 05.09.2025
 
