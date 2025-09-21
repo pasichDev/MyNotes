@@ -294,4 +294,6 @@
     <string name="labels">Etichette</string>
     <string name="import_notes">Importa dati</string>
     <string name="empty_data_import">Nessun dato nuovo da importare</string>
+
+    <string name="aboutApps_subtitle">Recensione · Guida · Versione</string>
 </resources>

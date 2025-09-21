@@ -277,7 +277,6 @@
     <string name="import_notes_from_google_keep">Importer des notes depuis Google Keep</string>
     <string name="google_keep_description">Exportez vos notes depuis Google Keep et importez-les dans cette application. L\'exportation via Google Takeout est prise en charge.</string>
     <string name="import_from_google_keep">Importer depuis Google Keep</string>
-    <string name="feature_coming_soon">La fonctionnalité sera disponible dans la prochaine version</string>
     
     <string name="other_apps">Autres applications</string>
     <string name="import_from_other_note_apps">Importer depuis d\'autres applications de prise de notes</string>
@@ -296,4 +295,6 @@
     <string name="labels">Étiquettes</string>
     <string name="import_notes">Importer les données</string>
     <string name="empty_data_import">Aucune nouvelle donnée à importer</string>
+
+    <string name="aboutApps_subtitle">Avis · Aide · Version</string>
 </resources>

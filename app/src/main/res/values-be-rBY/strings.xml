@@ -280,7 +280,6 @@
     <string name="import_notes_from_google_keep">Імпарт нататак з Google Keep</string>
     <string name="google_keep_description">Экспартуйце вашы нататкі з Google Keep і імпартуйце іх у гэтую праграму. Падтрымліваецца экспарт праз Google Takeout.</string>
     <string name="import_from_google_keep">Імпарт з Google Keep</string>
-    <string name="feature_coming_soon">Функцыя будзе даступна ў наступнай версіі</string>
     
     <string name="other_apps">Іншыя праграмы</string>
     <string name="import_from_other_note_apps">Імпарт з іншых праграм для нататак</string>
@@ -299,5 +298,7 @@
     <string name="labels">Тэгі</string>
     <string name="import_notes">Імпартаваць даныя</string>
     <string name="empty_data_import">Няма новых даных для імпарту</string>
+
+    <string name="aboutApps_subtitle">Водгук · Даведка · Версія</string>
 
 </resources>

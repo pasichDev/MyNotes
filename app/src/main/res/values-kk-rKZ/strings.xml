@@ -284,7 +284,6 @@
     <string name="import_notes_from_google_keep">Google Keep-тен жазбаларды импорттау</string>
     <string name="google_keep_description">Google Keep-тен жазбаларыңызды экспорттаңыз және осы қолданбаға импорттаңыз. Google Takeout арқылы экспорт қолдау көрсетіледі.</string>
     <string name="import_from_google_keep">Google Keep-тен импорттау</string>
-    <string name="feature_coming_soon">Функция келесі нұсқада қол жетімді болады</string>
     
     <string name="other_apps">Басқа қолданбалар</string>
     <string name="import_from_other_note_apps">Басқа жазба қолданбаларынан импорттау</string>
@@ -303,4 +302,6 @@
     <string name="labels">Тегтер</string>
     <string name="import_notes">Деректерді импорттау</string>
     <string name="empty_data_import">Импорттауға жаңа деректер жоқ</string>
+
+    <string name="aboutApps_subtitle">Пікір · Көмек · Нұсқа</string>
 </resources>

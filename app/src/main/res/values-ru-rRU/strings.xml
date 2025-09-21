@@ -289,7 +289,6 @@
     <string name="import_notes_from_google_keep">Импорт заметок из Google Keep</string>
     <string name="google_keep_description">Экспортируйте ваши заметки из Google Keep и импортируйте их в это приложение. Поддерживается экспорт через Google Takeout.</string>
     <string name="import_from_google_keep">Импорт из Google Keep</string>
-    <string name="feature_coming_soon">Функция будет доступна в следующей версии</string>
     
     <string name="other_apps">Другие приложения</string>
     <string name="import_from_other_note_apps">Импорт из других приложений для заметок</string>
@@ -308,4 +307,6 @@
     <string name="labels">Метки</string>
     <string name="import_notes">Импортировать данные</string>
     <string name="empty_data_import">Нет новых данных для импорта</string>
+
+    <string name="aboutApps_subtitle">Отзыв · Справка · Версия</string>
 </resources>

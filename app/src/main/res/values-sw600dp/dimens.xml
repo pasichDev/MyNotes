@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Tablet/Large screen specific dimensions -->
-    <!-- Navigation Drawer -->
-    <dimen name="activity_horizontal_margin">24dp</dimen>
-    <dimen name="activity_vertical_margin">32dp</dimen>
-    <dimen name="nav_header_height">280dp</dimen>
-</resources>

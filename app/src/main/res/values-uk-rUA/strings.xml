@@ -282,7 +282,6 @@
     <string name="import_notes_from_google_keep">Імпорт нотаток з Google Keep</string>
     <string name="google_keep_description">Експортуйте ваші нотатки з Google Keep та імпортуйте їх у цей додаток. Підтримується експорт з Google Takeout.</string>
     <string name="import_from_google_keep">Імпорт з Google Keep</string>
-    <string name="feature_coming_soon">Функція буде доступна в наступній версії</string>
     
     <string name="other_apps">Інші додатки</string>
     <string name="import_from_other_note_apps">Імпорт з інших додатків для нотаток</string>
@@ -302,5 +301,5 @@
     <string name="import_notes">Імпортувати дані</string>
     <string name="empty_data_import">Немає нових даних для імпорту</string>
 
-
+    <string name="aboutApps_subtitle">Відгук · Довідка · Версія</string>
 </resources>

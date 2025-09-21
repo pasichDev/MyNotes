@@ -284,7 +284,6 @@
     <string name="import_notes_from_google_keep">Importuj notatki z Google Keep</string>
     <string name="google_keep_description">Wyeksportuj swoje notatki z Google Keep i zaimportuj je do tej aplikacji. Obsługiwany jest eksport przez Google Takeout.</string>
     <string name="import_from_google_keep">Import z Google Keep</string>
-    <string name="feature_coming_soon">Funkcja będzie dostępna w następnej wersji</string>
     
     <string name="other_apps">Inne aplikacje</string>
     <string name="import_from_other_note_apps">Import z innych aplikacji do notatek</string>
@@ -303,4 +302,6 @@
     <string name="labels">Etykiety</string>
     <string name="import_notes">Importuj dane</string>
     <string name="empty_data_import">Brak nowych danych do importu</string>
+
+    <string name="aboutApps_subtitle">Opinie · Pomoc · Wersja</string>
 </resources>
