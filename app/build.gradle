@@ -10,6 +10,13 @@ apply plugin: 'com.google.dagger.hilt.android'
 def appVersionCode = 35
 def appVersionName = "2.2.${appVersionCode}"
 
+def gitCommitHashProvider = providers.exec {
+    commandLine 'git', 'rev-parse', '--short', 'HEAD'
+}.standardOutput.asText.map { it.trim() }
+
+ext.gitCommitHash = gitCommitHashProvider
+
+
 android {
     compileSdkVersion 36
     buildFeatures {
@@ -48,6 +55,7 @@ android {
             }
         }
         resValue "string", "whatNewVersion", "\"🔥 v${versionName}\""
+        buildConfigField "String", "GIT_COMMIT_HASH", "\"${gitCommitHashProvider.get()}\""
     }
 
     buildTypes {
@@ -78,6 +86,7 @@ android {
         abortOnError false
     }
 }
+
 
 ext {
     markwon_version = '4.6.2'

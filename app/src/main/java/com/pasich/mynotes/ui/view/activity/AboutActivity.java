@@ -75,7 +75,7 @@ public class AboutActivity extends BaseActivity {
     private void initActivity() {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        binding.versionApp.setText(BuildConfig.VERSION_NAME + " ⦁ Apache-2.0");
+        binding.versionApp.setText(BuildConfig.VERSION_NAME + " ⦁ " + BuildConfig.GIT_COMMIT_HASH);
         startLoadingProducts();
     }
 
