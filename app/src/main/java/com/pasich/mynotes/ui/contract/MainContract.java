@@ -24,7 +24,6 @@ public interface MainContract {
 
         void newNotesButton();
 
-        void startCreateTagDialog();
 
         void choiceTagDialog(Tag tag, View mView);
 

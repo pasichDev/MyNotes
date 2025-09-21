@@ -661,11 +661,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                         NameTransition.fabTransaction).toBundle());
     }
 
-    @Deprecated
-    @Override
-    public void startCreateTagDialog() {
-        //new NameTagDialog().show(getSupportFragmentManager(), "New Tag");
-    }
 
     @Override
     public void choiceTagDialog(Tag tag, View mView) {
