@@ -228,7 +228,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
             // Точно визначаємо стан клавіатури
             boolean keyboardWasVisible = isKeyboardVisible;
-            boolean keyboardWillBeVisible = imeInsets.bottom > 100; // Мінімальна висота для клавіатури
+            boolean keyboardWillBeVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
 
             // Обробляємо зміну стану клавіатури
             if (!keyboardWasVisible && keyboardWillBeVisible) {

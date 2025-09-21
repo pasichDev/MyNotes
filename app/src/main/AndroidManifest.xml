@@ -100,7 +100,7 @@
         <activity
             android:name=".ui.view.activity.NoteActivity"
             android:exported="true"
-            android:windowSoftInputMode="stateHidden|adjustNothing"
+            android:windowSoftInputMode="adjustResize|adjustNothing"
            />
         <activity
             android:name=".ui.view.activity.ShareActivity"
