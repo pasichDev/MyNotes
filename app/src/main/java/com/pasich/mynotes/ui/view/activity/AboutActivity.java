@@ -104,6 +104,11 @@ public class AboutActivity extends BaseActivity {
         return true;
     }
 
+    public void openHelp() {
+        startActivity(new Intent(this, HelpActivity.class));
+     //   overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

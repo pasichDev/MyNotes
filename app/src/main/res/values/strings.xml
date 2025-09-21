@@ -332,5 +332,7 @@
     <string name="import_notes">Import data</string>
     <string name="empty_data_import">No new data to import</string>
 
+    <string name="aboutApps_subtitle">Відгук · Довідка · Версія</string>
+
 
 </resources>

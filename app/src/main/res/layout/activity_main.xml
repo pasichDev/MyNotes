@@ -163,7 +163,7 @@
             app:headerLayout="@layout/nav_header_main"
             app:itemIconSize="24dp"
             app:itemMaxLines="1"
-            app:menu="@menu/activity_main_drawer" />
+          />
 
 
     </androidx.drawerlayout.widget.DrawerLayout>
