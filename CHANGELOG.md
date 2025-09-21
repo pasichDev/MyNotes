@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## [2.2.36] - XX.XX.2025
+
 ## [2.2.35] - 21.09.2025
 
 - Added import of notes, trashed notes, and tags from other apps (e.g., Google Keep)
