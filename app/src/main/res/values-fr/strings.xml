@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Google Translator doit être installé pour utiliser cette fonctionnalité</string>
     <string name="lastDateEditNote">Modifié par %1$s</string>
     <string name="restore">Restaurer</string>
-    <string name="noteSaved">Note enregistrée</string>
     <string name="searchNotesFromTitle">Commencer à taper</string>
     <string name="errorNewTagInput">Erreur: nombre maximal de caractères que le nom de balise %1$d peut contenir </string>
     <string name="emptyTrash">Vos notes supprimées seront affichées ici</string>
@@ -74,7 +73,7 @@
     <string name="renameTag">Renommer</string>
     <string name="settingsInterface">Paramètres d\'interface</string>
     <string name="settings">Paramètres</string>
-    <string name="settingsBackups">Synchronisation et sauvegardes</string>
+    <string name="settingsBackups">Sauvegardes</string>
     <string name="aboutApps">À propos de l\'application</string>
     <string name="trash">Corbeille</string>
     <string name="themes">Thème</string>
@@ -137,7 +136,6 @@
     <string name="errorDriverAuthInfo">Pour utiliser la synchronisation cloud, vous devez être autorisé</string>
     <string name="sortNotes">Trier les notes</string>
     <string name="percentProgress" translatable="false">Sauvegarde (%d%%)</string>
-    <string name="errorSyncTitle">Attention!</string>
     <string name="errorSyncDescrpt">La sauvegarde dans le cloud est temporairement indisponible</string>
 
     <!-- Offre produit -->
@@ -151,6 +149,9 @@
     <string name="kofiDescription">Offrez-moi un café sur Ko-Fi</string>
    <string name="ratingAppDescription">Notez-nous 5 étoiles sur Google Play</string>
     <string name="contactDeveloper">Contacter le développeur</string>
+    <string name="inAppPurchasesDescription">Soutenez le développement de l\'application par des achats intégrés</string>
+    <string name="viewDonationProducts">Voir les options de soutien</string>
+    <string name="purchaseBottomSheetDescription">Choisissez un moyen pratique de soutenir le développement de l\'application. Tous les fonds vont à l\'amélioration des fonctionnalités et à l\'ajout de nouvelles possibilités.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Quoi de neuf</string>
@@ -175,15 +176,9 @@
     <string name="donation_wave_description">Envoyez une puissante vague d\'encouragement</string>
     <string name="donation_universe_title">Univers d\'inspiration</string>
     <string name="donation_universe_description">Débloquez des possibilités infinies pour l\'avenir</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Merci ! 💖</string>
-    <string name="purchase_success_message">Votre soutien représente le monde pour nous ! Grâce à des personnes formidables comme vous, nous pouvons continuer à développer et améliorer MyNotes. Votre contribution nous aide à ajouter de nouvelles fonctionnalités, corriger les bugs et rendre l\'application encore meilleure.\n\nNous vous souhaitons tout le meilleur et espérons que vous continuerez à apprécier l\'utilisation de MyNotes !</string>
-    <string name="purchase_success_button">Fermer</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Achat échoué</string>
-    <string name="purchase_loading">Chargement des produits...</string>
+    <string name="purchase_loading">Chargement des produits…</string>
     <string name="purchase_error_no_products">Aucun produit de don disponible</string>
     
     <!-- Developer Support -->
@@ -198,19 +193,15 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Étiquettes</string>
-    <string name="help_tags_create_title">Créer des étiquettes</string>
-    <string name="help_tags_create_description">Au début de la liste des étiquettes, appuyez sur le bouton + pour créer une nouvelle étiquette</string>
+    <string name="help_tags_func_title">Interaction avec les tags</string>
+    <string name="help_tags_func_description">Dans la section Tags, vous pouvez créer et modifier des tags. Vous pouvez également gérer lordre des tags ici - il suffit de les faire glisser pour modifier le tri. Cela vous permet d\'organiser efficacement vos tags.</string>
     <string name="help_tags_edit_title">Modifier les étiquettes</string>
     <string name="help_tags_edit_description">Maintenez une étiquette enfoncée pour ouvrir le menu contextuel d\'édition. Ici, vous pouvez supprimer l\'étiquette, la renommer ou masquer les notes qui lui sont associées.</string>
     <string name="help_tags_hide_title">Masquer les notes</string>
     <string name="help_tags_hide_description">Utilisez la fonction de masquage pour supprimer temporairement les notes étiquetées de la vue principale tout en conservant l\'accès via l\'étiquette</string>
     <string name="help_tags_limit_title">Limite d\'étiquettes</string>
     <string name="help_tags_limit_description">Vous pouvez créer jusqu\'à 25 étiquettes pour une organisation efficace de vos notes</string>
-    <string name="help_tags_assign_title">Assigner des étiquettes</string>
-    <string name="help_tags_assign_description">Les étiquettes peuvent être assignées aux notes depuis l\'écran principal et lors de l\'édition d\'une note</string>
-    <string name="help_tags_update_title">Mise à jour des étiquettes</string>
-    <string name="help_tags_update_description">Décrit les mises à jour d\'étiquettes et comment masquer les notes de la vue principale</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigation</string>
     <string name="help_navigation_drawer_title">Menu principal</string>
@@ -268,4 +259,42 @@
     <string name="help_notes_autosave_title">Enregistrement automatique</string>
     <string name="help_notes_autosave_description">Les notes sont enregistrées automatiquement 2 secondes après avoir arrêté de taper. Dans la barre supérieure, un indicateur s’affiche : point bleu — modifications non enregistrées, icône animée — enregistrement en cours, coche verte — enregistré avec succès. Même si vous fermez l’application ou qu’elle plante, vos dernières modifications ne seront pas perdues.</string>
 
+    <string name="tags_management">Étiquettes</string>
+    <string name="create_tag">Appuyez sur ce bouton pour créer un tag.</string>
+    <string name="tag_options">Options de l’étiquette</string>
+    <string name="createTag">Créer une étiquette</string>
+    <string name="toastTagVisible">Les notes marquées avec cette étiquette apparaissent dans la liste générale.</string>
+    <string name="toastTagHidde">Les notes marquées avec cette étiquette sont masquées dans la liste générale.</string>
+    <string name="sort_tags_position">Personnalisé</string>
+    <string name="sort_tags_creation_date">Par date de création</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Sauvegarde et exportation</string>
+    <string name="import_data">Importer des données</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Importer des notes depuis Google Keep</string>
+    <string name="google_keep_description">Exportez vos notes depuis Google Keep et importez-les dans cette application. L\'exportation via Google Takeout est prise en charge.</string>
+    <string name="import_from_google_keep">Importer depuis Google Keep</string>
+    
+    <string name="other_apps">Autres applications</string>
+    <string name="import_from_other_note_apps">Importer depuis d\'autres applications de prise de notes</string>
+    <string name="other_apps_description">Importez des notes depuis des applications populaires de prise de notes : OneNote, Evernote, Notion et autres.</string>
+    <string name="coming_soon">Bientôt</string>
+
+    <string name="instructions">Instructions</string>
+    <string name="google_takeout_instructions">Comment exporter depuis Google Keep</string>
+    <string name="google_takeout_description">Pour exporter vos notes depuis Google Keep :\n\n1. Allez sur Google Takeout :\nhttps://takeout.google.com\n\n2. Sélectionnez uniquement "Keep" dans la liste\n\n3. Cliquez sur "Étape suivante" et choisissez vos paramètres d’exportation\n\n4. Cliquez sur "Créer une exportation" et attendez le lien de téléchargement\n\n5. Téléchargez le fichier d’archive (.zip)\n\n6. Utilisez le bouton "Importer" pour sélectionner directement le fichier .zip téléchargé sans le décompresser\n\nRemarque : Seul le contenu texte sera importé. Les images, dessins, fichiers audio et autres médias ne sont pas encore pris en charge.</string>
+
+    <string name="google_keep_import_title">Importer depuis Google Keep</string>
+    <string name="found_notes">Données trouvées</string>
+    <string name="import_error">Erreur d\'importation</string>
+    <string name="active_notes">Notes</string>
+    <string name="trashed_notes">Corbeille</string>
+    <string name="labels">Étiquettes</string>
+    <string name="import_notes">Importer les données</string>
+    <string name="empty_data_import">Aucune nouvelle donnée à importer</string>
+
+    <string name="aboutApps_subtitle">Avis · Aide · Version</string>
 </resources>

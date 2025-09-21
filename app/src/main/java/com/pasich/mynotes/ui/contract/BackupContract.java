@@ -3,12 +3,15 @@ package com.pasich.mynotes.ui.contract;
 
 import android.net.Uri;
 
+import androidx.annotation.StringRes;
+
 import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
 import com.google.api.services.drive.Drive;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
+import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 
 import dagger.hilt.android.scopes.ActivityScoped;
@@ -43,6 +46,8 @@ public interface BackupContract {
 
         boolean showErrors(int errorCode);
 
+        void showErrorsText(int errorCode, @StringRes int string);
+
         void editLastDataEditBackupCloud(long lastDate, boolean error);
 
         void startWriteBackupCloud(JsonBackup jsonBackup);
@@ -59,6 +64,11 @@ public interface BackupContract {
         
         void openShareOptionsDialog(java.util.List<Note> notes, boolean isDataExport);
 
+        void showImportResultOtherApp(GoogleKeepImportResult result);
+
+        void setupImportCallbackOtherApp(GoogleKeepImportResult result);
+
+        void processSelectedFileOtherApp(Uri fileUri);
     }
 
 
@@ -84,5 +94,12 @@ public interface BackupContract {
         void saveDataLoadingLastBackup(Drive mDriveCredential);
         
         void exportAllNotesPresenter();
+
+        void importDataOtherApp(GoogleKeepImportResult result);
+
+        void importFromZipOtherApp(Uri fileUri);
+
+        void startProcessSelectedFileOtherApp(Uri fileUri);
+
     }
 }

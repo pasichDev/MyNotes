@@ -39,7 +39,6 @@ import io.reactivex.Flowable;
 @AndroidEntryPoint
 public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDialogContract.view {
 
-
     private final Note mNote;
     private final boolean newNoteActivity;
     private final boolean activityNote;

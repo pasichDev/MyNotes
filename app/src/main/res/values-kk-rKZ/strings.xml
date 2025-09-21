@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Бұл мүмкіндікті пайдалану үшін Google Translator орнатылуы керек</string>
     <string name="lastDateEditNote">Соңғы өңдеу: %1$s </string>
     <string name="restore">Қалпына келтіру</string>
-    <string name="noteSaved">Ескертпе сақталды</string>
     <string name="searchNotesFromTitle">Теруді бастаңыз</string>
     <string name="errorNewTagInput">Қате: тег атауында болуы мүмкін таңбалардың ең көп саны – %1$d </string>
     <string name="emptyTrash">Жойылған ескертпелер осы жерде көрсетіледі</string>
@@ -75,7 +74,7 @@
 
     <string name="settingsInterface">Интерфейс параметрлері</string>
     <string name="settings">Параметрлер</string>
-    <string name="settingsBackups">Синхрондау және сақтық көшірме</string>
+    <string name="settingsBackups">Сақтық көшірмелер</string>
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>
     <string name="themes">Тақырып</string>
@@ -145,7 +144,6 @@
     <string name="percentProgress">Сақтық көшірме (%d%%)</string>
 
     <!-- Өнім ұсынысы -->
-    <string name="errorSyncTitle">Назар аударыңыз!</string>
     <string name="errorSyncDescrpt">Қалтада сақтық көшірме жасау уақытша қолжетімсіз</string>
 
     <string name="thanks_title">Құрметті пайдаланушы</string>
@@ -158,6 +156,9 @@
     <string name="kofiDescription">Ko-Fi-да маған кофе сыйлаңыз</string>
     <string name="ratingAppDescription">Google Play-де бізге 5 жұлдыз қойыңыз</string>
     <string name="contactDeveloper">Әзірлеушіге хабарласу</string>
+    <string name="inAppPurchasesDescription">Қолданба ішіндегі сатып алулар арқылы қолданба дамуын қолдаңыз</string>
+    <string name="viewDonationProducts">Қолдау көрсету нұсқаларын көру</string>
+    <string name="purchaseBottomSheetDescription">Қолданба дамуын қолдаудың ыңғайлы жолын таңдаңыз. Барлық қаражат функционалдылықты жақсартуға және жаңа мүмкіндіктерді қосуға жұмсалады.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Не жаңалық</string>
@@ -182,15 +183,9 @@
     <string name="donation_wave_description">Күшті жігерлендіру толқынын жіберіңіз</string>
     <string name="donation_universe_title">Шабыт ғаламы</string>
     <string name="donation_universe_description">Болашақ үшін шексіз мүмкіндіктерді ашыңыз</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Рахмет! 💖</string>
-    <string name="purchase_success_message">Сіздің қолдауыңыз біз үшін бүкіл әлемді білдіреді! Сіз сияқты керемет адамдардың арқасында біз MyNotes қолданбасын дамытып, жақсартып отыра аламыз. Сіздің үлесіңіз бізге жаңа функциялар қосуға, қателерді түзетуге және қолданбаны одан да жақсы етуге көмектеседі.\n\nСізге барлық жақсылықты тілейміз және MyNotes қолданбасын пайдалануды жалғастыра беретініңізге үміттенеміз!</string>
-    <string name="purchase_success_button">Жабу</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Сатып алу қатесі</string>
-    <string name="purchase_loading">Өнімдер жүктелуде...</string>
+    <string name="purchase_loading">Өнімдер жүктелуде…</string>
     <string name="purchase_error_no_products">Ауысым өнімдері жоқ</string>
     
     <!-- Developer Support -->
@@ -205,19 +200,15 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Тегтер</string>
-    <string name="help_tags_create_title">Тегтер жасау</string>
-    <string name="help_tags_create_description">Тегтер тізімінің басында жаңа тег жасау үшін + түймесін басыңыз</string>
-    <string name="help_tags_edit_title">Тегтерді өңдеу</string>
+    <string name="help_tags_func_title">Тегтермен әрекеттесу</string>
+    <string name="help_tags_func_description">Тегтер бөлімінде сіз тегтерді құра аласыз және өңдей аласыз. Сондай-ақ тегтердің тәртібін басқаруға болады — оларды сүйреп тастап, сұрыптауды өзгертіңіз. Бұл тегтеріңізді тиімді ұйымдастыруға мүмкіндік береді.</string><string name="help_tags_edit_title">Тегтерді өңдеу</string>
     <string name="help_tags_edit_description">Өңдеу контекст мәзірін ашу үшін тегті ұстап тұрыңыз. Мұнда сіз тегті жоя аласыз, атын өзгерте аласыз немесе онымен байланысты жазбаларды жасыра аласыз.</string>
     <string name="help_tags_hide_title">Жазбаларды жасыру</string>
     <string name="help_tags_hide_description">Белгіленген жазбаларды негізгі көрінісінен уақытша жою үшін жасыру функциясын пайдаланыңыз, тег арқылы оларға қол жетімділікті сақтай отырып</string>
     <string name="help_tags_limit_title">Тег шектеуі</string>
     <string name="help_tags_limit_description">Жазбаларыңызды тиімді ұйымдастыру үшін 25-ке дейін тег жасай аласыз</string>
-    <string name="help_tags_assign_title">Тегтерді тағайындау</string>
-    <string name="help_tags_assign_description">Тегтерді негізгі экраннан және жазбаны өңдеу кезінде жазбаларға тағайындауға болады</string>
-    <string name="help_tags_update_title">Тегтерді жаңарту</string>
-    <string name="help_tags_update_description">Тег жаңартуларын және негізгі көрінісінен жазбаларды қалай жасыруды сипаттайды</string>
-    
+
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Навигация</string>
     <string name="help_navigation_drawer_title">Негізгі мәзір</string>
@@ -275,4 +266,42 @@
     <string name="help_notes_autosave_title">Автоматты сақтау</string>
     <string name="help_notes_autosave_description">Жазбалар мәтінді енгізуді тоқтатқаннан кейін 2 секундтан соң автоматты түрде сақталады. Жоғарғы тақтада индикатор көрсетіледі: көк нүкте — сақталмаған өзгерістер, анимациялық белгіше — сақтау жүріп жатыр, жасыл құсбелгі — сәтті сақталды. Қолданбаны жапсаңыз да немесе ол істен шықса да, соңғы өзгерістер жоғалмайды.</string>
 
+    <string name="tags_management">Тегтер</string>
+    <string name="create_tag">Тег жасау үшін осы батырманы басыңыз.</string>
+    <string name="tag_options">Тег параметрлері</string>
+    <string name="createTag">Тег жасау</string>
+    <string name="toastTagVisible">Осы тегпен белгіленген жазбалар жалпы тізімде көрсетіледі.</string>
+    <string name="toastTagHidde">Осы тегпен белгіленген жазбалар жалпы тізімде жасырылған.</string>
+    <string name="sort_tags_position">Пайдаланушы реті</string>
+    <string name="sort_tags_creation_date">Құрылу күні бойынша</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Резервтік көшірме және экспорт</string>
+    <string name="import_data">Деректерді импорттау</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Google Keep-тен жазбаларды импорттау</string>
+    <string name="google_keep_description">Google Keep-тен жазбаларыңызды экспорттаңыз және осы қолданбаға импорттаңыз. Google Takeout арқылы экспорт қолдау көрсетіледі.</string>
+    <string name="import_from_google_keep">Google Keep-тен импорттау</string>
+    
+    <string name="other_apps">Басқа қолданбалар</string>
+    <string name="import_from_other_note_apps">Басқа жазба қолданбаларынан импорттау</string>
+    <string name="other_apps_description">Танымал жазба қолданбаларынан жазбаларды импорттаңыз: OneNote, Evernote, Notion және басқалары.</string>
+    <string name="coming_soon">Жақында</string>
+
+    <string name="instructions">Інструкцыі</string>
+    <string name="google_takeout_instructions">Як экспартаваць з Google Keep</string>
+    <string name="google_takeout_description">Каб экспартаваць нататкі з Google Keep:\n\n1. Перайдзіце ў Google Takeout:\nhttps://takeout.google.com\n\n2. Абярыце толькі "Keep" са спісу\n\n3. Націсніце "Наступны крок" і выберыце налады экспарту\n\n4. Націсніце "Стварыць экспарт" і дачакайцеся спасылкі для загрузкі\n\n5. Спампуйце архіў (.zip)\n\n6. Выкарыстайце кнопку "Імпарт", каб выбраць загружаны .zip-файл без распакоўкі\n\nЗаўвага: Будзе імпартаваны толькі тэкставы змест. Выявы, малюнкі, аўдыё і іншыя медыяфайлы пакуль не падтрымліваюцца.</string>
+
+    <string name="google_keep_import_title">Google Keep-тен импорттау</string>
+    <string name="found_notes">Табылған деректер</string>
+    <string name="import_error">Импорт қатесі</string>
+    <string name="active_notes">Ескертпелер</string>
+    <string name="trashed_notes">Қоқыс</string>
+    <string name="labels">Тегтер</string>
+    <string name="import_notes">Деректерді импорттау</string>
+    <string name="empty_data_import">Импорттауға жаңа деректер жоқ</string>
+
+    <string name="aboutApps_subtitle">Пікір · Көмек · Нұсқа</string>
 </resources>

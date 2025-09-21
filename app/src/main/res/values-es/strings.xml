@@ -45,7 +45,6 @@
     <string name="notInstaledAppTranslate">Google Traductor debe estar instalado para usar esta función</string>
     <string name="lastDateEditNote">Última edición: %1$s </string>
     <string name="restore">Restaurar</string>
-    <string name="noteSaved">Nota guardada</string>
     <string name="searchNotesFromTitle">Empieza a escribir</string>
     <string name="errorNewTagInput">Error: el número máximo de caracteres que puede contener un nombre de etiqueta es %1$d </string>
     <string name="emptyTrash">Tus notas eliminadas se muestran aquí</string>
@@ -78,7 +77,7 @@
 
     <string name="settingsInterface">Configuración de la interfaz</string>
     <string name="settings">Configuración</string>
-    <string name="settingsBackups">Sincronización y copia de seguridad</string>
+    <string name="settingsBackups">Copias de seguridad</string>
     <string name="aboutApps">Acerca de la aplicación</string>
     <string name="trash">Papelera</string>
     <string name="themes">Tema</string>
@@ -148,7 +147,6 @@
 
     <!-- Oferta de productos -->
     <string name="thanks_title">Estimado usuario</string>
-    <string name="errorSyncTitle">¡Atención!</string>
     <string name="errorSyncDescrpt">La copia de seguridad en la nube no está disponible temporalmente</string>
 
     <string name="thanks_donate">El desarrollador del proyecto le agradece su compra. Nos esforzaremos por ser mejores y más convenientes. \n <b>¡Respetuosamente, mis notas!</b></string>
@@ -160,6 +158,9 @@
     <string name="kofiDescription">Cómprame un café en Ko-Fi</string>
     <string name="ratingAppDescription">Califícanos con 5 estrellas en Google Play</string>
    <string name="contactDeveloper">Contactar al desarrollador</string>
+    <string name="inAppPurchasesDescription">Apoya el desarrollo de la aplicación a través de compras dentro de la aplicación</string>
+    <string name="viewDonationProducts">Ver opciones de apoyo</string>
+    <string name="purchaseBottomSheetDescription">Elige una forma conveniente de apoyar el desarrollo de la aplicación. Todos los fondos van hacia la mejora de funcionalidades y la adición de nuevas características.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Qué hay de nuevo</string>
@@ -184,15 +185,9 @@
     <string name="donation_wave_description">Envía una poderosa ola de aliento</string>
     <string name="donation_universe_title">Universo de inspiración</string>
     <string name="donation_universe_description">Desbloquea posibilidades infinitas para el futuro</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">¡Gracias! 💖</string>
-    <string name="purchase_success_message">¡Tu apoyo significa el mundo para nosotros! Gracias a personas increíbles como tú, podemos continuar desarrollando y mejorando MyNotes. Tu contribución nos ayuda a agregar nuevas funciones, corregir errores y hacer la aplicación aún mejor.\n\n¡Te deseamos todo lo mejor y esperamos que continues disfrutando el uso de MyNotes!</string>
-    <string name="purchase_success_button">Cerrar</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Compra fallida</string>
-    <string name="purchase_loading">Cargando productos...</string>
+    <string name="purchase_loading">Cargando productos…</string>
     <string name="purchase_error_no_products">No hay productos de donación disponibles</string>
     
     <!-- Developer Support -->
@@ -207,18 +202,14 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Etiquetas</string>
-    <string name="help_tags_create_title">Crear etiquetas</string>
-    <string name="help_tags_create_description">Al principio de la lista de etiquetas, presiona el botón + para crear una nueva etiqueta</string>
+    <string name="help_tags_func_title">Interacción con etiquetas</string>
+    <string name="help_tags_func_description">En la sección Etiquetas, puedes crear y editar etiquetas. También puedes gestionar el orden de las etiquetas aquí — simplemente arrástralas para cambiar el orden. Esto permite organizar tus etiquetas de manera eficiente.</string>
     <string name="help_tags_edit_title">Editar etiquetas</string>
     <string name="help_tags_edit_description">Mantén presionada una etiqueta para abrir el menú contextual de edición. Aquí puedes eliminar la etiqueta, renombrarla u ocultar las notas asociadas con ella.</string>
     <string name="help_tags_hide_title">Ocultar notas</string>
     <string name="help_tags_hide_description">Usa la función de ocultar para eliminar temporalmente las notas etiquetadas de la vista principal manteniendo el acceso a través de la etiqueta</string>
     <string name="help_tags_limit_title">Límite de etiquetas</string>
     <string name="help_tags_limit_description">Puedes crear hasta 25 etiquetas para una organización efectiva de tus notas</string>
-    <string name="help_tags_assign_title">Asignar etiquetas</string>
-    <string name="help_tags_assign_description">Las etiquetas se pueden asignar a las notas desde la pantalla principal y al editar una nota</string>
-    <string name="help_tags_update_title">Actualizar etiquetas</string>
-    <string name="help_tags_update_description">Describe las actualizaciones de etiquetas y cómo ocultar notas de la vista principal</string>
     
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navegación</string>
@@ -277,4 +268,42 @@
     <string name="help_notes_autosave_title">Guardado automático</string>
     <string name="help_notes_autosave_description">Las notas se guardan automáticamente 2 segundos después de dejar de escribir. En la barra superior aparece un indicador: punto azul — cambios no guardados, icono animado — guardando, marca verde — guardado con éxito. Incluso si cierras la app o se bloquea, tus últimos cambios no se perderán.</string>
 
+    <string name="tags_management">Etiquetas</string>
+    <string name="create_tag">Presiona este botón para crear una etiqueta.</string>
+    <string name="tag_options">Opciones de etiqueta</string>
+    <string name="createTag">Crear etiqueta</string>
+    <string name="toastTagVisible">Las notas con esta etiqueta se muestran en la lista general.</string>
+    <string name="toastTagHidde">Las notas con esta etiqueta están ocultas en la lista general.</string>
+    <string name="sort_tags_position">Personalizado</string>
+    <string name="sort_tags_creation_date">Por fecha de creación</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Copia de seguridad y exportación</string>
+    <string name="import_data">Importar datos</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Importar notas desde Google Keep</string>
+    <string name="google_keep_description">Exporta tus notas desde Google Keep e impórtalas a esta aplicación. Se admite la exportación a través de Google Takeout.</string>
+    <string name="import_from_google_keep">Importar desde Google Keep</string>
+    
+    <string name="other_apps">Otras aplicaciones</string>
+    <string name="import_from_other_note_apps">Importar desde otras aplicaciones de notas</string>
+    <string name="other_apps_description">Importa notas desde aplicaciones populares para tomar notas: OneNote, Evernote, Notion y otras.</string>
+    <string name="coming_soon">Próximamente</string>
+
+    <string name="instructions">Instrucciones</string>
+    <string name="google_takeout_instructions">Cómo exportar desde Google Keep</string>
+    <string name="google_takeout_description">Para exportar tus notas de Google Keep:\n\n1. Ve a Google Takeout:\nhttps://takeout.google.com\n\n2. Selecciona solo "Keep" de la lista\n\n3. Haz clic en "Siguiente paso" y elige la configuración de exportación\n\n4. Haz clic en "Crear exportación" y espera el enlace de descarga\n\n5. Descarga el archivo comprimido (.zip)\n\n6. Usa el botón "Importar" para seleccionar el archivo .zip descargado directamente, sin descomprimir\n\nNota: Solo se importará el contenido de texto. Imágenes, dibujos, audio y otros archivos multimedia no son compatibles por el momento.</string>
+
+    <string name="google_keep_import_title">Importar desde Google Keep</string>
+    <string name="found_notes">Datos encontrados</string>
+    <string name="import_error">Error de importación</string>
+    <string name="active_notes">Notas</string>
+    <string name="trashed_notes">Papelera</string>
+    <string name="labels">Etiquetas</string>
+    <string name="import_notes">Importar datos</string>
+    <string name="empty_data_import">No hay datos nuevos para importar</string>
+
+    <string name="aboutApps_subtitle">Reseña · Ayuda · Versión</string>
 </resources>

@@ -25,4 +25,6 @@ public interface DbTagsHelper {
     Completable deleteTag(Tag tag);
 
     Completable updateTag(Tag tag);
+
+    Completable updateTags(List<Tag> tags);
 }

@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [2.2.35] - XX.XX.2025
+
+- Added import of notes, trashed notes, and tags from other apps (e.g., Google Keep)
+- Improved backup and data export — easier to save and restore notes
+- Updated tag management: sorting added and drag-and-drop support for custom arrangement
+- Fixed MainDrawer display issues
+- General UI enhancements and bug fixes
+- Updated links to website and privacy policy
+- Fixed keyboard overlapping text issue
+- Fixed automatic text scrolling on devices
+
 ## [2.2.34] - 05.09.2025
 
 - Interface updates on some screens

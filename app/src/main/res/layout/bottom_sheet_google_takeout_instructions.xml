@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
+
+    <!-- Заголовок -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/google_takeout_instructions"
+        android:textAppearance="@style/TextAppearance.Material3.TitleLarge" />
+
+    <!-- Инструкции -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/google_takeout_description"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:autoLink="web"
+        android:lineSpacingMultiplier="1.2" />
+
+    <!-- Кнопка закрытия -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/colorOnPrimary"
+        android:backgroundTint="?attr/colorPrimary"
+        android:layout_marginHorizontal="24dp"
+        android:text="@string/close"
+        android:textStyle="bold"
+        app:cornerRadius="12dp" />
+
+</LinearLayout>

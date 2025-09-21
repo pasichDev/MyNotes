@@ -54,7 +54,6 @@
     <string name="notInstaledAppTranslate">Для использования этой функции нужно установить Google Translator</string>
     <string name="lastDateEditNote">Последнее изменение: %1$s </string>
     <string name="restore">Восстановить</string>
-    <string name="noteSaved">Заметку сохранено</string>
     <string name="searchNotesFromTitle">Начните вводить текст</string>
     <string name="errorNewTagInput">Ошибка: Максимальное количество символов которое может содержать название метки  %1$d </string>
     <string name="emptyTrash">Здесь отображаються удаленные вами заметки</string>
@@ -87,7 +86,7 @@
 
     <string name="settingsInterface">Настройки интерфейса</string>
     <string name="settings">Настройки</string>
-    <string name="settingsBackups">Синхронизация и резервное копирование</string>
+    <string name="settingsBackups">Резервные копии</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>
     <string name="themes">Тема</string>
@@ -151,7 +150,6 @@
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
 
-    <string name="errorSyncTitle">Внимание!</string>
     <string name="errorSyncDescrpt">Создание резервной копии в облаке временно недоступно</string>
 
     <!-- Support Activity -->
@@ -161,6 +159,9 @@
     <string name="ratingAppDescription">Поставьте нам 5 звёзд в Google Play</string>
     <string name="contactDeveloper">Связаться с разработчиком</string>
     <string name="inAppPurchases">Покупки в приложении</string>
+    <string name="inAppPurchasesDescription">Поддержите разработку приложения через внутренние покупки</string>
+    <string name="viewDonationProducts">Просмотреть варианты поддержки</string>
+    <string name="purchaseBottomSheetDescription">Выберите удобный для вас способ поддержки разработки приложения. Все средства идут на улучшение функциональности и добавление новых возможностей.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Что нового</string>
@@ -185,15 +186,9 @@
     <string name="donation_wave_description">Пошлите мощную волну поощрения</string>
     <string name="donation_universe_title">Вселенная вдохновения</string>
     <string name="donation_universe_description">Откройте безграничные возможности для будущего</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Спасибо! 💖</string>
-    <string name="purchase_success_message">Ваша поддержка значит для нас весь мир! Благодаря таким замечательным людям, как вы, мы можем продолжать разрабатывать и улучшать MyNotes. Ваш вклад помогает нам добавлять новые функции, исправлять ошибки и делать приложение еще лучше.\n\nЖелаем вам всего наилучшего и надеемся, что вы продолжите с удовольствием пользоваться MyNotes!</string>
-    <string name="purchase_success_button">Закрыть</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Ошибка покупки</string>
-    <string name="purchase_loading">Загрузка товаров...</string>
+    <string name="purchase_loading">Загрузка товаров…</string>
     <string name="purchase_error_no_products">Нет доступных товаров для доната</string>
     
     <!-- Developer Support -->
@@ -208,18 +203,14 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Теги</string>
-    <string name="help_tags_create_title">Создание тегов</string>
-    <string name="help_tags_create_description">В начале списка тегов нажмите кнопку + чтобы создать новый тег</string>
+    <string name="help_tags_func_title">Взаимодействие с тегами</string>
+    <string name="help_tags_func_description">В разделе Теги вы можете создавать и редактировать теги. Также здесь можно управлять порядком тегов — просто перетаскивайте их, чтобы изменить сортировку. Это позволяет эффективно организовывать ваши теги.</string>
     <string name="help_tags_edit_title">Редактирование тегов</string>
     <string name="help_tags_edit_description">Удерживайте тег, чтобы открыть контекстное меню редактирования. Здесь вы можете удалить тег, переименовать его или скрыть заметки, связанные с ним.</string>
     <string name="help_tags_hide_title">Скрытие заметок</string>
     <string name="help_tags_hide_description">Используйте функцию скрытия, чтобы временно удалить отмеченные заметки из основного вида, сохраняя доступ к ним через тег</string>
     <string name="help_tags_limit_title">Ограничение тегов</string>
     <string name="help_tags_limit_description">Можно создать не более 25 тегов для эффективной организации ваших заметок</string>
-    <string name="help_tags_assign_title">Назначение тегов</string>
-    <string name="help_tags_assign_description">Теги заметкам можно назначать на главном экране и при редактировании заметки</string>
-    <string name="help_tags_update_title">Обновление тегов</string>
-    <string name="help_tags_update_description">Описывает обновление тегов и как скрыть заметки из основного вида</string>
     
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Навигация</string>
@@ -279,5 +270,43 @@
     <string name="help_notes_autosave_title">Автосохранение</string>
     <string name="help_notes_autosave_description">Заметки автоматически сохраняются через 2 секунды после окончания ввода. В верхней панели отображается индикатор: синяя точка — несохранённые изменения, анимированная иконка — идёт сохранение, зелёная галочка — успешно сохранено. Даже если вы закроете приложение или оно завершится аварийно, последние изменения не будут потеряны.</string>
 
+    <string name="tags_management">Теги</string>
+    <string name="create_tag">Нажмите эту кнопку, чтобы создать тег.</string>
+    <string name="tag_options">Опции тега</string>
+    <string name="createTag">Создать тег</string>
+    <string name="toastTagVisible">Заметки с этим тегом отображаются в общем списке.</string>
+    <string name="toastTagHidde">Заметки с этим тегом скрыты в общем списке.</string>
 
+    <string name="sort_tags_position">Пользовательский</string>
+    <string name="sort_tags_creation_date">По дате создания</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Резервное копирование и экспорт</string>
+    <string name="import_data">Импорт данных</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Импорт заметок из Google Keep</string>
+    <string name="google_keep_description">Экспортируйте ваши заметки из Google Keep и импортируйте их в это приложение. Поддерживается экспорт через Google Takeout.</string>
+    <string name="import_from_google_keep">Импорт из Google Keep</string>
+    
+    <string name="other_apps">Другие приложения</string>
+    <string name="import_from_other_note_apps">Импорт из других приложений для заметок</string>
+    <string name="other_apps_description">Импорт заметок из популярных приложений для ведения заметок: OneNote, Evernote, Notion и других.</string>
+    <string name="coming_soon">Скоро</string>
+
+    <string name="instructions">Инструкция</string>
+    <string name="google_takeout_instructions">Как экспортировать из Google Keep</string>
+    <string name="google_takeout_description">Как экспортировать ваши заметки из Google Keep:\n\n1. Перейдите на Google Takeout:\nhttps://takeout.google.com\n\n2. Выберите только "Keep" из списка\n\n3. Нажмите "Следующий шаг" и выберите настройки экспорта\n\n4. Нажмите "Создать экспорт" и дождитесь ссылки для загрузки\n\n5. Загрузите архивный файл (.zip)\n\n6. Используйте кнопку Импорт, чтобы выбрать загруженный .zip файл напрямую - распаковывать не нужно\n\nПримечание: Будет импортировано только текстовое содержимое. Изображения, рисунки, аудио и другие медиафайлы в настоящее время не поддерживаются.</string>
+
+    <string name="google_keep_import_title">Импорт из Google Keep</string>
+    <string name="found_notes">Найденные данные</string>
+    <string name="import_error">Ошибка импорта</string>
+    <string name="active_notes">Заметки</string>
+    <string name="trashed_notes">Корзина</string>
+    <string name="labels">Метки</string>
+    <string name="import_notes">Импортировать данные</string>
+    <string name="empty_data_import">Нет новых данных для импорта</string>
+
+    <string name="aboutApps_subtitle">Отзыв · Справка · Версия</string>
 </resources>

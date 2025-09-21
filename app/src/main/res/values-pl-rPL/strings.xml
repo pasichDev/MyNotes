@@ -43,7 +43,6 @@
     <string name="notInstaledAppTranslate">Tłumacz Google musi być zainstalowany, aby korzystać z tej funkcji</string>
     <string name="lastDateEditNote">Ostatnia edycja: %1$s </string>
     <string name="restore">Przywróć</string>
-    <string name="noteSaved">Notatka została zapisana</string>
     <string name="searchNotesFromTitle">Zacznij pisać</string>
     <string name="errorNewTagInput">Błąd: Maksymalna liczba znaków, jaką może zawierać nazwa znacznika, to %1$d </string>
     <string name="emptyTrash">Twoje usunięte notatki są wyświetlane tutaj</string>
@@ -76,7 +75,7 @@
 
     <string name="settingsInterface">Ustawienia interfejsu</string>
     <string name="settings">Ustawienia</string>
-    <string name="settingsBackups">Synchronizacja i kopia zapasowa</string>
+    <string name="settingsBackups">Kopie zapasowe</string>
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>
     <string name="themes">Motyw</string>
@@ -144,7 +143,6 @@
     <string name="errorDriverAuthInfo">Musisz być zalogowany, aby korzystać z synchronizacji w chmurze</string>
     <string name="sortNotes">Sortuj notatki</string>
     <string name="percentProgress">Kopia zapasowa (%d%%)</string>
-    <string name="errorSyncTitle">Uwaga!</string>
     <string name="errorSyncDescrpt">Tworzenie kopii zapasowej w chmurze jest tymczasowo niedostępne.</string>
 
      <!-- Oferta produktowa -->
@@ -158,6 +156,9 @@
     <string name="kofiDescription">Postaw mi kawę na Ko-Fi</string>
     <string name="ratingAppDescription">Oceń nas na 5 gwiazdek w Google Play</string>
     <string name="contactDeveloper">Skontaktuj się z twórcą</string>
+    <string name="inAppPurchasesDescription">Wspieraj rozwój aplikacji poprzez zakupy w aplikacji</string>
+    <string name="viewDonationProducts">Zobacz opcje wsparcia</string>
+    <string name="purchaseBottomSheetDescription">Wybierz wygodny sposób wsparcia rozwoju aplikacji. Wszystkie środki idą na poprawę funkcjonalności i dodawanie nowych możliwości.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">Co nowego</string>
@@ -182,15 +183,9 @@
     <string name="donation_wave_description">Wyślij potężną falę zachęty</string>
     <string name="donation_universe_title">Wszechświat inspiracji</string>
     <string name="donation_universe_description">Odblokuj nieskończone możliwości na przyszłość</string>
-    
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Dziękuję! 💖</string>
-    <string name="purchase_success_message">Twoje wsparcie znaczy dla nas cały świat! Dzięki wspaniałym ludziom takim jak Ty możemy kontynuować rozwój i ulepszanie MyNotes. Twój wkład pomaga nam dodawać nowe funkcje, naprawiać błędy i czynić aplikację jeszcze lepszą.\n\nŻyczymy Ci wszystkiego najlepszego i mamy nadzieję, że nadal będziesz cieszyć się korzystaniem z MyNotes!</string>
-    <string name="purchase_success_button">Zamknij</string>
-    
+
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Zakup nie powiódł się</string>
-    <string name="purchase_loading">Ładowanie produktów...</string>
+    <string name="purchase_loading">Ładowanie produktów…</string>
     <string name="purchase_error_no_products">Brak dostępnych produktów do darowizny</string>
     
     <!-- Developer Support -->
@@ -205,18 +200,14 @@
     
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tagi</string>
-    <string name="help_tags_create_title">Tworzenie tagów</string>
-    <string name="help_tags_create_description">Na początku listy tagów naciśnij przycisk + aby utworzyć nowy tag</string>
+    <string name="help_tags_func_title">Interakcja z tagami</string>
+    <string name="help_tags_func_description">W sekcji Tagi możesz tworzyć i edytować tagi. Możesz także zarządzać ich kolejnością — wystarczy przeciągnąć je, aby zmienić sortowanie. Pozwala to efektywnie organizować Twoje tagi.</string>
     <string name="help_tags_edit_title">Edytowanie tagów</string>
     <string name="help_tags_edit_description">Przytrzymaj tag, aby otworzyć menu kontekstowe edycji. Tutaj możesz usunąć tag, zmienić jego nazwę lub ukryć notatki z nim powiązane.</string>
     <string name="help_tags_hide_title">Ukrywanie notatek</string>
     <string name="help_tags_hide_description">Użyj funkcji ukrywania, aby tymczasowo usunąć oznaczone notatki z głównego widoku, zachowując dostęp do nich przez tag</string>
     <string name="help_tags_limit_title">Limit tagów</string>
     <string name="help_tags_limit_description">Możesz utworzyć do 25 tagów dla efektywnej organizacji swoich notatek</string>
-    <string name="help_tags_assign_title">Przypisywanie tagów</string>
-    <string name="help_tags_assign_description">Tagi można przypisywać do notatek z ekranu głównego i podczas edytowania notatki</string>
-    <string name="help_tags_update_title">Aktualizacja tagów</string>
-    <string name="help_tags_update_description">Opisuje aktualizacje tagów i jak ukryć notatki z głównego widoku</string>
     
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Nawigacja</string>
@@ -275,4 +266,42 @@
     <string name="help_notes_autosave_description">Notatki są automatycznie zapisywane 2 sekundy po zakończeniu pisania. Na górnym pasku pojawia się wskaźnik: niebieska kropka — niezapisane zmiany, animowana ikona — zapisywanie w toku, zielony haczyk — zapisano pomyślnie. Nawet jeśli zamkniesz aplikację lub się zawiesi, ostatnie zmiany nie zostaną utracone.</string>
 
 
+    <string name="tags_management">Tagi</string>
+    <string name="create_tag">Naciśnij ten przycisk, aby utworzyć tag.</string>
+    <string name="tag_options">Opcje tagu</string>
+    <string name="createTag">Utwórz tag</string>
+    <string name="toastTagVisible">Notatki z tym tagiem są wyświetlane na liście ogólnej.</string>
+    <string name="toastTagHidde">Notatki z tym tagiem są ukryte na liście ogólnej.</string>
+    <string name="sort_tags_position">Własny</string>
+    <string name="sort_tags_creation_date">Według daty utworzenia</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Kopia zapasowa i eksport</string>
+    <string name="import_data">Import danych</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Importuj notatki z Google Keep</string>
+    <string name="google_keep_description">Wyeksportuj swoje notatki z Google Keep i zaimportuj je do tej aplikacji. Obsługiwany jest eksport przez Google Takeout.</string>
+    <string name="import_from_google_keep">Import z Google Keep</string>
+    
+    <string name="other_apps">Inne aplikacje</string>
+    <string name="import_from_other_note_apps">Import z innych aplikacji do notatek</string>
+    <string name="other_apps_description">Import notatek z popularnych aplikacji do robienia notatek: OneNote, Evernote, Notion i innych.</string>
+    <string name="coming_soon">Wkrótce</string>
+
+    <string name="instructions">Instrukcje</string>
+    <string name="google_takeout_instructions">Jak wyeksportować z Google Keep</string>
+    <string name="google_takeout_description">Aby wyeksportować swoje notatki z Google Keep:\n\n1. Przejdź do Google Takeout:\nhttps://takeout.google.com\n\n2. Wybierz tylko "Keep" z listy\n\n3. Kliknij "Następny krok" i wybierz ustawienia eksportu\n\n4. Kliknij "Utwórz eksport" i poczekaj na link do pobrania\n\n5. Pobierz plik archiwum (.zip)\n\n6. Użyj przycisku "Importuj", aby wybrać pobrany plik .zip bez rozpakowywania\n\nUwaga: Zostanie zaimportowana tylko treść tekstowa. Obrazy, rysunki, dźwięki i inne pliki multimedialne nie są obecnie obsługiwane.</string>
+
+    <string name="google_keep_import_title">Importuj z Google Keep</string>
+    <string name="found_notes">Znalezione dane</string>
+    <string name="import_error">Błąd importu</string>
+    <string name="active_notes">Notatki</string>
+    <string name="trashed_notes">Kosz</string>
+    <string name="labels">Etykiety</string>
+    <string name="import_notes">Importuj dane</string>
+    <string name="empty_data_import">Brak nowych danych do importu</string>
+
+    <string name="aboutApps_subtitle">Opinie · Pomoc · Wersja</string>
 </resources>

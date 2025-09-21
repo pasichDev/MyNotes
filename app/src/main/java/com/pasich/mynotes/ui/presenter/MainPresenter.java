@@ -1,6 +1,7 @@
 package com.pasich.mynotes.ui.presenter;
 
-import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_COUNT;
+import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT;
+import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -15,8 +16,11 @@ import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
+import com.preference.PowerPreference;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -46,8 +50,26 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void loadingData() {
-        getCompositeDisposable().add(getDataManager().getTags().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((tagList) -> getView().loadingTags(tagList), throwable -> Log.e("com.pasich.myNotes", "loadTags", throwable)));
+        getCompositeDisposable().add(getDataManager().getTags().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((tagList) -> {
+            List<Tag> sortedTags = sortTagsList(tagList);
+            getView().loadingTags(sortedTags);
+        }, throwable -> Log.e("com.pasich.myNotes", "loadTags", throwable)));
+
         getCompositeDisposable().add(getDataManager().getNotes().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((noteList) -> getView().loadingNotes(noteList), throwable -> Log.e("com.pasich.myNotes", "loadNotes", throwable)));
+    }
+
+    private List<Tag> sortTagsList(List<Tag> tagList) {
+        String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
+        List<Tag> sortedList = new ArrayList<>(tagList);
+        if ("TagsPositionSort".equals(sortParam)) {
+            // Sort by position (custom sorting)
+            sortedList.sort(Comparator.comparingInt(Tag::getPosition));
+        } else {
+            // Sort by creation date (ID - higher is newer)
+            sortedList.sort((tag1, tag2) -> Long.compare(tag2.getId(), tag1.getId()));
+        }
+
+        return sortedList;
     }
 
 
@@ -57,16 +79,9 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     }
 
 
-
     @Override
     public void clickTag(Tag tag, int position) {
-        if (SystemTagsManager.isAddTag(tag)) {
-            getCompositeDisposable().add(getDataManager().getCountTagAll().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(integer -> {
-                if (integer >= MAX_TAG_COUNT) {
-                    getView().startToastCheckCountTags();
-                } else getView().startCreateTagDialog();
-            }));
-        } else if (SystemTagsManager.isChangeLogTag(tag)) {
+        if (SystemTagsManager.isChangeLogTag(tag)) {
             // Відкриваємо ChangelogActivity для нового тегу "change"
             getView().openChangelogActivity();
         } else {
@@ -93,58 +108,36 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().moveNoteToTrash(
-            new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("MainPresenter", "Error deleting note", throwable)
-            ));
+        getCompositeDisposable().add(getDataManager().moveNoteToTrash(new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+                }, // onComplete
+                throwable -> Log.e("MainPresenter", "Error deleting note", throwable)));
     }
 
     @Override
     public void restoreNote(Note nNote) {
-        getCompositeDisposable().add(getDataManager().restoreNote(nNote)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("MainPresenter", "Error restoring note", throwable)
-            ));
+        getCompositeDisposable().add(getDataManager().restoreNote(nNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+                }, // onComplete
+                throwable -> Log.e("MainPresenter", "Error restoring note", throwable)));
     }
 
     @Override
     public void deleteTag(Tag tag) {
-        getCompositeDisposable().add(getDataManager().getCountNotesTag(tag.getNameTag())
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                integer -> {
-                    if (integer == 0) {
-                        getCompositeDisposable().add(getDataManager().deleteTag(tag)
-                            .subscribeOn(getSchedulerProvider().io())
-                            .observeOn(getSchedulerProvider().ui())
-                            .subscribe(
-                                () -> {}, // onComplete
-                                throwable -> Log.e("MainPresenter", "Error deleting tag", throwable)
-                            ));
-                    } else {
-                        getView().startDeleteTagDialog(tag);
-                    }
-                },
-                throwable -> Log.e("MainPresenter", "Error checking tag count", throwable)
-            ));
+        getCompositeDisposable().add(getDataManager().getCountNotesTag(tag.getNameTag()).subscribeOn(getSchedulerProvider().io()).subscribe(integer -> {
+            if (integer == 0) {
+                getCompositeDisposable().add(getDataManager().deleteTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+                        }, // onComplete
+                        throwable -> Log.e("MainPresenter", "Error deleting tag", throwable)));
+            } else {
+                getView().startDeleteTagDialog(tag);
+            }
+        }, throwable -> Log.e("MainPresenter", "Error checking tag count", throwable)));
     }
 
     @Override
     public void editVisibleTag(Tag tag) {
-        getCompositeDisposable().add(getDataManager().updateTag(tag)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("MainPresenter", "Error updating tag", throwable)
-            ));
+        getCompositeDisposable().add(getDataManager().updateTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+                }, // onComplete
+                throwable -> Log.e("MainPresenter", "Error updating tag", throwable)));
     }
 
 
@@ -156,13 +149,9 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     @Deprecated
     public void addNote(Note note) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(
-                aLong -> {}, // onSuccess  
-                throwable -> Log.e("MainPresenter", "Error adding note", throwable)
-            ));
+        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> {
+                }, // onSuccess
+                throwable -> Log.e("MainPresenter", "Error adding note", throwable)));
     }
 
     public Note getBackupDeleteNote() {
@@ -187,7 +176,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                 if (swipeResetRunnable != null) {
                     uiHandler.removeCallbacks(swipeResetRunnable);
                 }
-                
+
                 // Оптимізовано: зменшуємо затримку та спрощуємо логіку
                 swipeResetRunnable = () -> mSwipe = 0;
                 uiHandler.postDelayed(swipeResetRunnable, 3000); // Зменшили з 5000 до 3000

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="notes_count">
+        <item quantity="one">%d заметка</item>
+        <item quantity="few">%d заметки</item>
+        <item quantity="many">%d заметок</item>
+        <item quantity="other">%d заметок</item>
+    </plurals>
+</resources>

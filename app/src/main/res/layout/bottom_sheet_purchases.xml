@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content "
+    android:orientation="vertical"
+    android:background="?attr/colorSurface"
+    android:paddingTop="8dp"
+    android:minHeight="400dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bottom_sheet_handle" />
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="16dp">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="12dp"
+            android:src="@drawable/ic_heart_support"
+            app:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/supportDeveloper"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/railway_medium" />
+
+    </LinearLayout>
+
+    <!-- Description -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="20dp"
+        android:text="@string/purchaseBottomSheetDescription"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="14sp"
+        android:lineSpacingExtra="2dp" />
+
+    <!-- Content Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Loading indicator -->
+        <LinearLayout
+            android:id="@+id/purchases_loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="40dp"
+            android:visibility="visible">
+
+            <ProgressBar
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/purchase_loading"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+        <!-- RecyclerView for donation products -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:id="@+id/scroll_container">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/donation_products_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                android:nestedScrollingEnabled="false" />
+        </ScrollView>
+
+        <!-- Empty state -->
+        <LinearLayout
+            android:id="@+id/purchases_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="40dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_heart"
+                app:tint="?attr/colorOutlineVariant" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/purchase_error_no_products"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Safe area for bottom -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="16dp" />
+
+</LinearLayout>

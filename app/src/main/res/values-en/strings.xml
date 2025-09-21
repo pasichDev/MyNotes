@@ -42,7 +42,6 @@
     <string name="notInstaledAppTranslate">Google Translator must be installed to use this feature</string>
     <string name="lastDateEditNote">Last edit: %1$s </string>
     <string name="restore">Restore</string>
-    <string name="noteSaved">Note saved</string>
     <string name="searchNotesFromTitle">Start typing</string>
     <string name="errorNewTagInput">Error: The maximum number of characters a tag name can contain is %1$d </string>
     <string name="emptyTrash">Your deleted notes are displayed here</string>
@@ -89,7 +88,7 @@
 
     <string name="settingsInterface">Interface settings</string>
     <string name="settings">Settings</string>
-    <string name="settingsBackups">Sync &amp; Backup</string>
+    <string name="settingsBackups">Backups</string>
     <string name="aboutApps">About App</string>
     <string name="trash">Trash</string>
     <string name="themes">Theme</string>
@@ -158,7 +157,6 @@
     <!-- Product offer -->
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
-    <string name="errorSyncTitle">Attention!</string>
     <string name="errorSyncDescrpt">Cloud backup is temporarily unavailable</string>
 
     <string name="percentProgress">Backup (%d%%)</string>
@@ -170,6 +168,9 @@
     <string name="kofiDescription">Buy me a coffee on Ko-Fi</string>
     <string name="ratingAppDescription">Rate us 5 stars on Google Play</string>
     <string name="contactDeveloper">Contact Developer</string>
+    <string name="inAppPurchasesDescription">Support the development of the app through in-app purchases</string>
+    <string name="viewDonationProducts">View Support Options</string>
+    <string name="purchaseBottomSheetDescription">Choose a convenient way to support app development. All funds go towards improving functionality and adding new features.</string>
 
     <!-- Changelog Activity -->
     <string name="changelog">What\'s New</string>
@@ -195,14 +196,8 @@
     <string name="donation_universe_title">Universe of Inspiration</string>
     <string name="donation_universe_description">Unlock infinite possibilities for the future</string>
 
-    <!-- Purchase Success -->
-    <string name="purchase_success_title">Thank You! 💖</string>
-    <string name="purchase_success_message">Your support means the world to us! Thanks to amazing people like you, we can continue developing and improving MyNotes. Your contribution helps us add new features, fix bugs, and make the app even better.\n\nWe wish you all the best and hope you continue to enjoy using MyNotes!</string>
-    <string name="purchase_success_button">Close</string>
-
     <!-- Purchase Error Messages -->
-    <string name="purchase_error_title">Purchase Failed</string>
-    <string name="purchase_loading">Loading products...</string>
+    <string name="purchase_loading">Loading products…</string>
     <string name="purchase_error_no_products">No donation products available</string>
 
     <!-- Developer Support -->
@@ -216,18 +211,14 @@
 
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tags</string>
-    <string name="help_tags_create_title">Creating Tags</string>
-    <string name="help_tags_create_description">At the beginning of the tags list, press the + button to create a new tag</string>
+    <string name="help_tags_func_title">Interaction with tags</string>
+    <string name="help_tags_func_description">In the Tags section, you can create and edit tags. You can also manage the order of tags here — simply drag and drop them to change the sorting. This allows you to organize your tags efficiently.</string>
     <string name="help_tags_edit_title">Editing Tags</string>
     <string name="help_tags_edit_description">Hold a tag to open the context menu. Here you can delete the tag, rename it, or hide notes associated with it.</string>
     <string name="help_tags_hide_title">Hiding Notes</string>
     <string name="help_tags_hide_description">Use the hide function to temporarily remove tagged notes from the main view while keeping access to them through the tag</string>
     <string name="help_tags_limit_title">Tag Limit</string>
     <string name="help_tags_limit_description">You can create up to 25 tags for effective organization of your notes</string>
-    <string name="help_tags_assign_title">Assigning Tags</string>
-    <string name="help_tags_assign_description">Tags can be assigned to notes from the main screen and when editing a note</string>
-    <string name="help_tags_update_title">Updating Tags</string>
-    <string name="help_tags_update_description">Describes tag updates and how to hide notes from the main view</string>
 
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigation</string>
@@ -288,5 +279,43 @@
     <string name="help_notes_autosave_title">Auto-save</string>
     <string name="help_notes_autosave_description">Notes are automatically saved 2 seconds after you stop typing. A status indicator in the top bar shows: blue dot for unsaved changes, animated icon for saving in progress, green checkmark for successfully saved. Even if you close the app or it crashes, your latest changes won\'t be lost.</string>
 
+    <string name="tags_management">Tags</string>
+    <string name="create_tag">Press this button to create tag.</string>
+    <string name="tag_options">Tag options</string>
+    <string name="createTag">Create Tag</string>
+    <string name="toastTagVisible">Notes marked with this tag are displayed in the general list.</string>
+    <string name="toastTagHidde">Notes marked with this tag are hidden in the general list.</string>
 
+    <string name="sort_tags_position">Custom</string>
+    <string name="sort_tags_creation_date">By creation date</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Backup &amp; Export</string>
+    <string name="import_data">Import Data</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Import notes from Google Keep</string>
+    <string name="google_keep_description">Export your notes from Google Keep and import them into this app. Google Takeout export is supported.</string>
+    <string name="import_from_google_keep">Import from Google Keep</string>
+    
+    <string name="other_apps">Other Apps</string>
+    <string name="import_from_other_note_apps">Import from other note-taking apps</string>
+    <string name="other_apps_description">Import notes from popular note-taking apps: OneNote, Evernote, Notion and others.</string>
+    <string name="coming_soon">Coming Soon</string>
+
+    <string name="instructions">Instructions</string>
+    <string name="google_takeout_instructions">How to export from Google Keep</string>
+    <string name="google_takeout_description">To export your notes from Google Keep:\n\n1. Go to Google Takeout:\nhttps://takeout.google.com\n\n2. Select only "Keep" from the list\n\n3. Click "Next step" and choose your export settings\n\n4. Click "Create export" and wait for the download link\n\n5. Download the archive file (.zip)\n\n6. Use the Import button to select the downloaded .zip file directly - no need to unzip\n\nNote: Only text content will be imported. Images, drawings, audio, and other media files are not supported at this time.</string>
+
+    <string name="google_keep_import_title">Import from Google Keep</string>
+    <string name="found_notes">Found data</string>
+    <string name="import_error">Import error</string>
+    <string name="active_notes">Notes</string>
+    <string name="trashed_notes">Trash</string>
+    <string name="labels">Tags</string>
+    <string name="import_notes">Import data</string>
+    <string name="empty_data_import">No new data to import</string>
+
+    <string name="aboutApps_subtitle">Feedback · Help · Version</string>
 </resources>

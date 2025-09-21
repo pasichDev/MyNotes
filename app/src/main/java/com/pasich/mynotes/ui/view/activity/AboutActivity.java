@@ -75,7 +75,7 @@ public class AboutActivity extends BaseActivity {
     private void initActivity() {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        binding.versionApp.setText(BuildConfig.VERSION_NAME + " ⦁ Apache-2.0");
+        binding.versionApp.setText(BuildConfig.VERSION_NAME + " ⦁ " + BuildConfig.GIT_COMMIT_HASH);
         startLoadingProducts();
     }
 
@@ -102,6 +102,11 @@ public class AboutActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_activity_toolbar, menu);
         return true;
+    }
+
+    public void openHelp() {
+        startActivity(new Intent(this, HelpActivity.class));
+     //   overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     @Override

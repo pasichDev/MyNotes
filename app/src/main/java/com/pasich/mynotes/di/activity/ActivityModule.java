@@ -4,10 +4,12 @@ package com.pasich.mynotes.di.activity;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.contract.NoteContract;
+import com.pasich.mynotes.ui.contract.TagsContract;
 import com.pasich.mynotes.ui.contract.TrashContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
+import com.pasich.mynotes.ui.presenter.TagsPresenter;
 import com.pasich.mynotes.ui.presenter.TrashPresenter;
 import com.pasich.mynotes.utils.rx.AppSchedulerProvider;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
@@ -55,6 +57,12 @@ public class ActivityModule {
     @Provides
     @ActivityScoped
     TrashContract.presenter providerTrashActivityPresenter(TrashPresenter presenter) {
+        return presenter;
+    }
+
+    @Provides
+    @ActivityScoped
+    TagsContract.presenter providesTagsPresenter(TagsPresenter presenter) {
         return presenter;
     }
 

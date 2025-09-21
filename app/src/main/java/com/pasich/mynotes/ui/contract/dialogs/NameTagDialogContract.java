@@ -4,7 +4,6 @@ import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.model.Tag;
 
-
 public interface NameTagDialogContract {
 
     interface view extends BaseView {
@@ -13,7 +12,7 @@ public interface NameTagDialogContract {
 
     interface presenter extends BasePresenter<view> {
 
-        void saveTag(String nameNewTag);
+        void saveTag(Tag nameTag);
 
         void editNameTag(String nameNewTag, Tag mTag);
     }

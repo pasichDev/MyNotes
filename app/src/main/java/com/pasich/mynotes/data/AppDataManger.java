@@ -180,6 +180,11 @@ public class AppDataManger implements DataManager {
         return dbHelper.updateTag(tag);
     }
 
+    @Override
+    public Completable updateTags(List<Tag> tags) {
+        return dbHelper.updateTags(tags);
+    }
+
     /**
      * Trash
      */

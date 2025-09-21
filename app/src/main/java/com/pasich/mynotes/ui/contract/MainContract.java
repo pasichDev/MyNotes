@@ -19,11 +19,11 @@ public interface MainContract {
 
     interface view extends BaseView, MoreNoteMainActivityView, MainSortView, ManagerViewAction<Note>{
         void settingsSearchView();
+
         void settingsLists();
 
         void newNotesButton();
 
-        void startCreateTagDialog();
 
         void choiceTagDialog(Tag tag, View mView);
 

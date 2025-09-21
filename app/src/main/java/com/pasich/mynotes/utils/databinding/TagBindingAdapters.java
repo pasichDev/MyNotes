@@ -1,6 +1,8 @@
 package com.pasich.mynotes.utils.databinding;
 
 import android.view.View;
+import android.widget.TextView;
+
 import androidx.databinding.BindingAdapter;
 
 import com.pasich.mynotes.R;
@@ -20,11 +22,13 @@ public class TagBindingAdapters {
     }
 
     @BindingAdapter("tagDisplayName")
-    public static void setTagDisplayName(android.widget.TextView textView, Tag tag) {
+    public static void setTagDisplayName(TextView textView, Tag tag) {
         if (SystemTagsManager.isAllNotesTag(tag)) {
             textView.setText(textView.getContext().getString(com.pasich.mynotes.R.string.allNotes));
         } else if (SystemTagsManager.isChangeLogTag(tag)) {
             textView.setText(textView.getContext().getString(R.string.whatNewVersion));
+        } else if (SystemTagsManager.isAddTag(tag)) {
+            textView.setText(R.string.createTag);
         } else {
             textView.setText(tag.getNameTag());
         }

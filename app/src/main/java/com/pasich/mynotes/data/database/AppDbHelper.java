@@ -74,6 +74,11 @@ public class AppDbHelper implements DbHelper {
         return Completable.fromAction(() -> appDatabase.tagsDao().updateTag(tag));
     }
 
+    @Override
+    public Completable updateTags(List<Tag> tags) {
+        return Completable.fromAction(() -> appDatabase.tagsDao().updateTags(tags));
+    }
+
     /**
      * Trash
      */

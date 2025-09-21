@@ -39,10 +39,12 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
     public NameTagDialogPresenter mPresenter;
     private DialogNameTagBinding binding;
     private boolean errorText = true;
+    private int newTagPosition = -1;
 
 
-    public NameTagDialog() {
+    public NameTagDialog(int newPosition) {
         this.mTag = null;
+        this.newTagPosition = newPosition;
 
     }
 
@@ -131,11 +133,11 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
     private void saveTag() {
         if (!errorText) {
             if (getTag() != null && getTag().equals("RenameTag") && mTag != null) {
-
                 mPresenter.editNameTag(Objects.requireNonNull(binding.nameTag.getText()).toString(), mTag);
             } else {
-
-                mPresenter.saveTag(Objects.requireNonNull(binding.nameTag.getText()).toString());
+                Tag newTag = new Tag().create(Objects.requireNonNull(binding.nameTag.getText()).toString());
+                newTag.setPosition(newTagPosition);
+                mPresenter.saveTag(newTag);
             }
             dismiss();
         }
