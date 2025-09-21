@@ -25,14 +25,14 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     private long idKey;
     private Note mNote;
     private boolean exitNoSave = false, newNoteKey;
-    
+
     // Автозбереження
     private final Handler autoSaveHandler;
     private Runnable autoSaveRunnable;
     private static final long AUTO_SAVE_DELAY = 2000; // 2 секунди
     private String lastSavedTitle = "";
     private String lastSavedValue = "";
-    
+
     // Блокування закриття під час збереження
     private boolean isSavingInProgress = false;
     private boolean pendingClose = false;
@@ -53,35 +53,35 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             }
             return;
         }
-        
+
         // Перевіряємо чи є контент для збереження
         if (!hasValidContent(mNote)) {
             // Якщо нотатка пуста, приховуємо індикатор і не запускаємо збереження
             updateSaveState(SaveState.IDLE);
             return;
         }
-        
+
         // Скасовуємо попередню заплановану операцію збереження
         if (autoSaveRunnable != null) {
             autoSaveHandler.removeCallbacks(autoSaveRunnable);
         }
-        
+
         // Встановлюємо стан "очікування збереження" тільки якщо є контент
         updateSaveState(SaveState.PENDING);
-        
+
         // Створюємо нову операцію автозбереження з затримкою
         autoSaveRunnable = () -> {
             if (mNote != null && getView() != null) {
                 performAutoSave();
             }
         };
-        
+
         autoSaveHandler.postDelayed(autoSaveRunnable, AUTO_SAVE_DELAY);
     }
-    
+
     private void performAutoSave() {
         if (mNote == null || getView() == null) return;
-        
+
         autoSaveNote(mNote, new NoteContract.AutoSaveCallback() {
             @Override
             public void onSuccess() {
@@ -99,7 +99,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             }
         });
     }
-    
+
     @Override
     public void autoSaveNote(Note note, NoteContract.AutoSaveCallback callback) {
         if (note == null) {
@@ -132,39 +132,32 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             }
             return;
         }
-        
+
         // Перевіряємо чи є зміни
-        boolean hasChanges = !note.getTitle().equals(lastSavedTitle) || 
-                            !note.getValue().equals(lastSavedValue);
-        
+        boolean hasChanges = !note.getTitle().equals(lastSavedTitle) || !note.getValue().equals(lastSavedValue);
+
         if (!hasChanges) {
             updateSaveState(SaveState.IDLE);
             return;
         }
-        
+
         updateSaveState(SaveState.SAVING);
         note.setDate(new Date().getTime());
-        
-        getCompositeDisposable().add(getDataManager().updateNote(note)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(
-                () -> {
-                    lastSavedTitle = note.getTitle();
-                    lastSavedValue = note.getValue();
-                    callback.onSuccess();
-                },
-                callback::onError
-            ));
+
+        getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+            lastSavedTitle = note.getTitle();
+            lastSavedValue = note.getValue();
+            callback.onSuccess();
+        }, callback::onError));
     }
-    
+
     private void updateSaveState(SaveState newState) {
         isSavingInProgress = (newState == SaveState.SAVING);
-        
+
         if (getView() != null) {
             getView().updateSaveStatus(newState);
         }
-        
+
         // Якщо збереження завершилось і очікується закриття
         if (!isSavingInProgress && pendingClose) {
             pendingClose = false;
@@ -173,7 +166,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             }
         }
     }
-    
+
     @Override
     public void closeActivity() {
         // Перевіряємо, чи є незбережені зміни
@@ -189,49 +182,48 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
                 return;
             }
         }
-        
+
         // Якщо немає змін, закриваємо одразу
         if (getView() != null) {
             getView().closeNoteActivity();
         }
     }
-    
+
     private boolean hasUnsavedChanges() {
         if (mNote == null) return false;
-        
+
         // Спочатку перевіряємо чи є валідний контент
         if (!hasValidContent(mNote)) {
             return false; // Якщо контент пустий, не вважаємо це за зміни
         }
-        
+
         // Для нових нотаток перевіряємо чи є контент
         if (newNoteKey) {
             return hasValidContent(mNote);
         }
-        
+
         // Для існуючих нотаток перевіряємо зміни
-        return !mNote.getTitle().equals(lastSavedTitle) || 
-               !mNote.getValue().equals(lastSavedValue);
+        return !mNote.getTitle().equals(lastSavedTitle) || !mNote.getValue().equals(lastSavedValue);
     }
-    
+
     /**
      * Перевіряє чи має нотатка валідний контент (не пустий заголовок або текст)
      */
     private boolean hasValidContent(Note note) {
         if (note == null) return false;
-        
+
         String title = note.getTitle() != null ? note.getTitle().trim() : "";
         String value = note.getValue() != null ? note.getValue().trim() : "";
-        
+
         // Вважаємо контент валідним якщо є хоча б 1 символ в заголовку або тексті
         return !title.isEmpty() || !value.isEmpty();
     }
-    
+
     private void performFinalSave() {
         if (mNote == null) return;
-        
+
         updateSaveState(SaveState.SAVING);
-        
+
         autoSaveNote(mNote, new NoteContract.AutoSaveCallback() {
             @Override
             public void onSuccess() {
@@ -268,7 +260,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         setTagNote(mIntent.getStringExtra("tagNote"));
         setShareText(mIntent.getStringExtra("shareText"));
         setNewNoteKey(mIntent.getBooleanExtra("NewNote", true));
-        
+
         // Для нових нотаток створюємо початковий об'єкт Note
         if (newNoteKey) {
             mNote = new Note().create("", shareText != null ? shareText : "", new Date().getTime(), tagNote);
@@ -280,17 +272,14 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void loadingData(long idNote) {
-        getCompositeDisposable().add(getDataManager().getNoteForId(idNote)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(note -> {
-                getView().loadingNote(note);
-                setNote(note);
-                // Оновлюємо збережені значення при завантаженні
-                lastSavedTitle = note.getTitle();
-                lastSavedValue = note.getValue();
-                updateSaveState(SaveState.IDLE);
-            }));
+        getCompositeDisposable().add(getDataManager().getNoteForId(idNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(note -> {
+            getView().loadingNote(note);
+            setNote(note);
+            // Оновлюємо збережені значення при завантаженні
+            lastSavedTitle = note.getTitle();
+            lastSavedValue = note.getValue();
+            updateSaveState(SaveState.IDLE);
+        }));
     }
 
     @Override
@@ -300,61 +289,46 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void createNote(Note note) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(aLong -> {
-                note.setId(Math.toIntExact(aLong));
-                getView().editIdNoteCreated(aLong);
-                // Оновлюємо збережені значення після створення
-                lastSavedTitle = note.getTitle();
-                lastSavedValue = note.getValue();
-                setNewNoteKey(false);
-            }));
+        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> {
+            note.setId(Math.toIntExact(aLong));
+            getView().editIdNoteCreated(aLong);
+            // Оновлюємо збережені значення після створення
+            lastSavedTitle = note.getTitle();
+            lastSavedValue = note.getValue();
+            setNewNoteKey(false);
+        }));
     }
 
     // Новий метод створення нотатки з callback'ом для автозбереження
     private void createNoteWithCallback(Note note, NoteContract.AutoSaveCallback callback) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false)
-            .subscribeOn(getSchedulerProvider().io())
-            .observeOn(getSchedulerProvider().ui())
-            .subscribe(
-                aLong -> {
-                    note.setId(Math.toIntExact(aLong));
-                    if (getView() != null) {
-                        getView().editIdNoteCreated(aLong);
-                    }
-                    // Оновлюємо збережені значення після створення
-                    lastSavedTitle = note.getTitle();
-                    lastSavedValue = note.getValue();
-                    setNewNoteKey(false);
-                    callback.onSuccess();
-                },
-                throwable -> {
-                    Log.e("NotePresenter", "Error creating note", throwable);
-                    callback.onError(throwable);
-                }
-            ));
+        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> {
+            note.setId(Math.toIntExact(aLong));
+            if (getView() != null) {
+                getView().editIdNoteCreated(aLong);
+            }
+            // Оновлюємо збережені значення після створення
+            lastSavedTitle = note.getTitle();
+            lastSavedValue = note.getValue();
+            setNewNoteKey(false);
+            callback.onSuccess();
+        }, throwable -> {
+            Log.e("NotePresenter", "Error creating note", throwable);
+            callback.onError(throwable);
+        }));
     }
 
     @Override
     public void saveNote(Note note) {
-        getCompositeDisposable().add(getDataManager().updateNote(note)
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("NotePresenter", "Error saving note", throwable)
-            ));
+        getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
+                }, // onComplete
+                throwable -> Log.e("NotePresenter", "Error saving note", throwable)));
     }
 
     @Override
     public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().deleteNote(note)
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                () -> {}, // onComplete  
-                throwable -> Log.e("NotePresenter", "Error deleting note", throwable)
-            ));
+        getCompositeDisposable().add(getDataManager().deleteNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
+                }, // onComplete
+                throwable -> Log.e("NotePresenter", "Error deleting note", throwable)));
     }
 
     // Getters and Setters
@@ -415,7 +389,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             default -> Typeface.NORMAL;
         };
     }
-    
+
     /**
      * Очищаємо Handler та callbacks при знищенні Activity
      * КРИТИЧНО для уникнення memory leaks та крашів
@@ -428,7 +402,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         pendingClose = false;
         isSavingInProgress = false;
     }
-    
+
     /**
      * Публічний метод для екстреного збереження з Activity
      */
@@ -437,7 +411,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             performEmergencySave(mNote);
         }
     }
-    
+
     /**
      * Екстрене збереження коли Activity знищується але є незбережені дані
      * Виконується синхронно для гарантії збереження
@@ -447,33 +421,22 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             if (note.getId() == 0) {
                 // Нова нотатка - створюємо синхронно
                 if (newNoteKey && hasValidContent(note)) {
-                    getDataManager().addNote(note, false)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .subscribe(
-                            aLong -> {
-                                note.setId(Math.toIntExact(aLong));
-                                lastSavedTitle = note.getTitle();
-                                lastSavedValue = note.getValue();
-                                setNewNoteKey(false);
-                            },
-                            throwable -> Log.e("NotePresenter", "Emergency save failed", throwable)
-                        );
+                    getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).subscribe(aLong -> {
+                        note.setId(Math.toIntExact(aLong));
+                        lastSavedTitle = note.getTitle();
+                        lastSavedValue = note.getValue();
+                        setNewNoteKey(false);
+                    }, throwable -> Log.e("NotePresenter", "Emergency save failed", throwable)));
                 }
             } else {
                 // Існуюча нотатка - оновлюємо синхронно
-                boolean hasChanges = !note.getTitle().equals(lastSavedTitle) || 
-                                    !note.getValue().equals(lastSavedValue);
+                boolean hasChanges = !note.getTitle().equals(lastSavedTitle) || !note.getValue().equals(lastSavedValue);
                 if (hasChanges && hasValidContent(note)) {
                     note.setDate(new Date().getTime());
-                    getDataManager().updateNote(note)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .subscribe(
-                            () -> {
-                                lastSavedTitle = note.getTitle();
-                                lastSavedValue = note.getValue();
-                            },
-                            throwable -> Log.e("NotePresenter", "Emergency update failed", throwable)
-                        );
+                    getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
+                        lastSavedTitle = note.getTitle();
+                        lastSavedValue = note.getValue();
+                    }, throwable -> Log.e("NotePresenter", "Emergency update failed", throwable)));
                 }
             }
         } catch (Exception e) {
