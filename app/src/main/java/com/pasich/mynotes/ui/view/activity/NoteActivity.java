@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Layout;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -519,17 +520,27 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
     @Override
     public void loadingNote(Note note) {
-        binding.notesTitle.setText(!note.getTitle().isEmpty() ? note.getTitle() : "");
-        binding.valueNote.setText(note.getValue());
+        if (note == null) {
+            Log.e("NoteActivity", "Received null note in loadingNote()");
+            return;
+        }
+
+        String title = note.getTitle();
+        String value = note.getValue();
+
+        // Безопасная проверка title
+        binding.notesTitle.setText(title != null && !title.isEmpty() ? title : "");
+        // Безопасная установка value
+        binding.valueNote.setText(value != null ? value : "");
+
         binding.valueNote.setMovementMethod(new CustomLinkMovementMethod() {
             @Override
             protected void onClickLink(String link, int type) {
-                link = link.replaceAll("mailto:", "").replaceAll("tel:", "");
-
-                new LinkInfoDialog(link, type).show(getSupportFragmentManager(), "LinkInfoDialog");
-
+                if (link != null) {
+                    link = link.replaceAll("mailto:", "").replaceAll("tel:", "");
+                    new LinkInfoDialog(link, type).show(getSupportFragmentManager(), "LinkInfoDialog");
+                }
             }
-
         });
 
         String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate()));
@@ -537,13 +548,15 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         // Оновлюємо центровані елементи
         binding.titleToolbarDataCenter.setText(formattedDate);
 
-        // Оновлюємо згорнуті елементи
-        binding.titleToolbarCollapsed.setText(!note.getTitle().isEmpty() ? note.getTitle() : getString(R.string.noteTitle));
+        // Оновлюємо згорнуті елементи з безпечною перевіркою title
+        binding.titleToolbarCollapsed.setText((title != null && !title.isEmpty()) ?
+                title : getString(R.string.noteTitle));
         binding.titleToolbarDataCollapsed.setText(formattedDate);
 
-        changeTag(note.getTag(), false);
+        // Безпечна перевірка tag перед викликом changeTag
+        String tag = note.getTag();
+        changeTag(tag != null ? tag : "", false);
     }
-
 
     @Override
     public void closeNoteActivity() {

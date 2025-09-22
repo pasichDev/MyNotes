@@ -272,14 +272,22 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void loadingData(long idNote) {
-        getCompositeDisposable().add(getDataManager().getNoteForId(idNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(note -> {
-            getView().loadingNote(note);
-            setNote(note);
-            // Оновлюємо збережені значення при завантаженні
-            lastSavedTitle = note.getTitle();
-            lastSavedValue = note.getValue();
-            updateSaveState(SaveState.IDLE);
-        }));
+        getCompositeDisposable().add(getDataManager()
+                .getNoteForId(idNote)
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(note -> {
+                    if (note != null && getView() != null) {
+                        getView().loadingNote(note);
+                        setNote(note);
+                        // Оновлюємо збережені значення при завантаженні
+                        lastSavedTitle = note.getTitle() != null ? note.getTitle() : "";
+                        lastSavedValue = note.getValue() != null ? note.getValue() : "";
+                        updateSaveState(SaveState.IDLE);
+                    }
+                }, throwable -> {
+                    Log.e("NotePresenter", "Error loading note", throwable);
+                }));
     }
 
     @Override
