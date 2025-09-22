@@ -16,7 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
-import com.pasich.mynotes.data.AppDataManger;
+import com.pasich.mynotes.data.AppDataManager;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.AppDbHelper;
@@ -79,7 +79,7 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    DataManager providesDataManager(AppDataManger appDataManager) {
+    DataManager providesDataManager(AppDataManager appDataManager) {
         return appDataManager;
     }
 

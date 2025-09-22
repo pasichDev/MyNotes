@@ -32,7 +32,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 
 @Singleton
-public class AppDataManger implements DataManager {
+public class AppDataManager implements DataManager {
 
 
     private final DbHelper dbHelper;
@@ -40,7 +40,7 @@ public class AppDataManger implements DataManager {
     private final ApiBackup apiBackup;
 
     @Inject
-    AppDataManger(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, ApiBackup apiBackup) {
+    AppDataManager(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, ApiBackup apiBackup) {
         this.dbHelper = dbHelper;
         this.preferencesHelper = preferencesHelper;
         this.apiBackup = apiBackup;
