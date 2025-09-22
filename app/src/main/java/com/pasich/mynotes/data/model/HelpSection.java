@@ -5,6 +5,5 @@ public record HelpSection(int type, String title, String description, Integer ic
     public static final int TYPE_HEADER = 0;
     public static final int TYPE_SECTION_TITLE = 1;
     public static final int TYPE_FEATURE = 2;
-    public static final int TYPE_TIP = 3;
 
 }

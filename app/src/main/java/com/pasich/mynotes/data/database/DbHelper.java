@@ -7,6 +7,4 @@ import com.pasich.mynotes.data.database.helpers.DbTransactionsHelper;
 import com.pasich.mynotes.data.database.helpers.DbTrashHelper;
 
 public interface DbHelper extends DbTagsHelper, DbTrashHelper, DbNotesHelper, DbTransactionsHelper {
-
-
 }

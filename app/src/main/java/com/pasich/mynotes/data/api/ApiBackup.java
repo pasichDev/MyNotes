@@ -8,7 +8,6 @@ import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE
 import android.content.Context;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -46,6 +45,7 @@ import javax.inject.Singleton;
 
 import dagger.hilt.android.qualifiers.ApplicationContext;
 
+@Deprecated
 @Singleton
 public class ApiBackup implements ApiHelper {
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
@@ -72,7 +72,7 @@ public class ApiBackup implements ApiHelper {
                 list.add(new LastBackupCloud(file.getId(), file.getModifiedTime().getValue()));
             }
 
-            if (list.size() == 0) {
+            if (list.isEmpty()) {
                 return new LastBackupCloud(CloudErrors.LAST_BACKUP_EMPTY_DRIVE_VIEW);
             } else {
                 return list.get(0);

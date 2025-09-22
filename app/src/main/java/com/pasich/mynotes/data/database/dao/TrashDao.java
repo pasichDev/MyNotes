@@ -14,22 +14,22 @@ import io.reactivex.Flowable;
 
 @Dao
 public interface TrashDao {
- @Query("SELECT * FROM trash")
- Flowable<List<TrashNote>> getTrash();
+    @Query("SELECT * FROM trash")
+    Flowable<List<TrashNote>> getTrash();
 
- @Query("SELECT * FROM trash")
- List<TrashNote> getTrashWorker();
+    @Query("SELECT * FROM trash")
+    List<TrashNote> getTrashWorker();
 
- @Delete
- void deleteNote(TrashNote note);
+    @Delete
+    void deleteNote(TrashNote note);
 
- @Insert(onConflict = OnConflictStrategy.IGNORE)
- Long addNote(TrashNote trashNote);
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    Long addNote(TrashNote trashNote);
 
- @Insert(onConflict = OnConflictStrategy.IGNORE)
- void addNotes(List<TrashNote> trashNote);
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void addNotes(List<TrashNote> trashNote);
 
-  @Query("DELETE FROM trash")
-  void deleteAll();
+    @Query("DELETE FROM trash")
+    void deleteAll();
 
 }

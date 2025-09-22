@@ -10,7 +10,6 @@ public class BackupCloud {
         this.id = id;
     }
 
-
     public long getLastDate() {
         return lastData;
     }

@@ -1,8 +1,6 @@
 package com.pasich.mynotes.ui.presenter.dialogs;
 
 
-import static android.content.ContentValues.TAG;
-
 import android.util.Log;
 
 import com.pasich.mynotes.base.presenter.BasePresenter;
@@ -39,12 +37,13 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     @Override
     public void deleteNote(Note note) {
         getCompositeDisposable().add(getDataManager().moveNoteToTrash(
-            new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note)
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("MoreNoteDialogPresenter", "Error deleting note", throwable)
-            ));
+                        new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note)
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(
+                        () -> {
+                        }, // onComplete
+                        throwable -> Log.e("MoreNoteDialogPresenter", "Error deleting note", throwable)
+                ));
     }
 
     @Override
@@ -55,21 +54,23 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     @Override
     public void removeTagNote(int idNote) {
         getCompositeDisposable().add(getDataManager().setTagNote("", idNote)
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("MoreNoteDialogPresenter", "Error removing tag", throwable)
-            ));
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(
+                        () -> {
+                        }, // onComplete
+                        throwable -> Log.e("MoreNoteDialogPresenter", "Error removing tag", throwable)
+                ));
     }
 
     @Override
     public void editTagNote(String nameTag, int idNote) {
         getCompositeDisposable().add(getDataManager().setTagNote(nameTag, idNote)
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("MoreNoteDialogPresenter", "Error editing tag", throwable)
-            ));
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(
+                        () -> {
+                        }, // onComplete
+                        throwable -> Log.e("MoreNoteDialogPresenter", "Error editing tag", throwable)
+                ));
     }
 
     @Override
@@ -77,19 +78,20 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
 
         if (noteActivity) {
             getCompositeDisposable().add(getDataManager().updateNote(note)
-                .subscribeOn(getSchedulerProvider().io())
-                .subscribe(
-                    () -> {}, // onComplete
-                    throwable -> Log.e("MoreNoteDialogPresenter", "Error updating note", throwable)
-                ));
+                    .subscribeOn(getSchedulerProvider().io())
+                    .subscribe(
+                            () -> {
+                            }, // onComplete
+                            throwable -> Log.e("MoreNoteDialogPresenter", "Error updating note", throwable)
+                    ));
         }
 
         getCompositeDisposable().add(getDataManager()
                 .addNote(new Note().create(note.getTitle() + " (2)", note.getValue() + " ", new Date().getTime(), note.getTag()), true)
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(
-                    aLong -> getView().callableCopyNote(aLong),
-                    throwable -> Log.e("MoreNoteDialogPresenter", "Error copying note", throwable)
+                        aLong -> getView().callableCopyNote(aLong),
+                        throwable -> Log.e("MoreNoteDialogPresenter", "Error copying note", throwable)
                 ));
 
     }

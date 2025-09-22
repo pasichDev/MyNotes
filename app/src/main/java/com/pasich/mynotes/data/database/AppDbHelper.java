@@ -22,6 +22,8 @@ import io.reactivex.Single;
 public class AppDbHelper implements DbHelper {
 
     private final AppDatabase appDatabase;
+
+    /// TODO Delete UpdateChecker
     private final UpdateChecker updateChecker;
 
     @Inject
@@ -31,17 +33,17 @@ public class AppDbHelper implements DbHelper {
     }
 
 
+    /// TODO Delete Create showChangeLog
     @Override
     public Flowable<List<Tag>> getTags() {
-        return appDatabase.tagsDao().getTags()
-                .map(userTags -> {
-                    List<Tag> allTags = new ArrayList<>();
-                    boolean showChangeLog = updateChecker.hasNewVersion();
-                    allTags.addAll(SystemTagsManager.getSystemTags(showChangeLog));
-                    allTags.addAll(userTags);
-                    
-                    return allTags;
-                });
+        return appDatabase.tagsDao().getTags().map(userTags -> {
+            List<Tag> allTags = new ArrayList<>();
+            boolean showChangeLog = updateChecker.hasNewVersion();
+            allTags.addAll(SystemTagsManager.getSystemTags(showChangeLog));
+            allTags.addAll(userTags);
+
+            return allTags;
+        });
     }
 
     @Override
@@ -173,11 +175,7 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Single<Long> addNote(Note note, boolean copyNote) {
-        return Single.fromCallable(() -> {
-           return copyNote ?
-                appDatabase.noteDao().addNoteCopy(note) : 
-                appDatabase.transactionsNote().addNoteTransaction(note);
-        });
+        return Single.fromCallable(() -> copyNote ? appDatabase.noteDao().addNoteCopy(note) : appDatabase.transactionsNote().addNoteTransaction(note));
     }
 
     @Override
