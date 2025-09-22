@@ -254,13 +254,8 @@ public class SettingsActivity extends BaseActivity {
     private void openAccentColorDialog() {
         if (!enableDynamic) {
             ArrayList<Theme> themes;
-            int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-            if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
-                themes = new ThemesArray().getThemes(true);
-            } else {
-                themes = new ThemesArray().getThemes(false);
-            }
-            
+            themes = new ThemesArray().getThemes();
+
             // Show a simple dialog with theme options
             showThemeSelectionDialog(themes);
         }

@@ -14,7 +14,6 @@ public class TransitionUtil {
 
     /**
      * Transition to activity Notes
-     *
      * @param container - coordinationLyout
      */
     public static Transition buildContainerTransform(View container) {

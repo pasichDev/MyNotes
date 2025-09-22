@@ -1,6 +1,6 @@
 package com.pasich.mynotes.utils.adapters.searchAdapter;
 
-
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.color.MaterialColors;
@@ -24,80 +26,83 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.scopes.ActivityScoped;
 
-
 @ActivityScoped
-public class SearchNotesAdapter extends RecyclerView.Adapter<SearchNotesAdapter.ViewHolder> {
+public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.ViewHolder> {
 
     private List<Note> defaultListNotes = new ArrayList<>();
-    private List<Note> listNotes = new ArrayList<>();
     private List<IndexFilter> indexValue = new ArrayList<>();
-    private SetItemClickListener mOnItemClickListener;
+    private SetItemClickListener onItemClickListener;
     private String textSearch;
 
     @Inject
     public SearchNotesAdapter() {
+        super(DIFF_CALLBACK);
     }
+
+    private static final DiffUtil.ItemCallback<Note> DIFF_CALLBACK = new DiffUtil.ItemCallback<>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @SuppressLint("DiffUtilEquals")
+        @Override
+        public boolean areContentsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
 
     public void setItemClickListener(SetItemClickListener onItemClickListener) {
-        this.mOnItemClickListener = onItemClickListener;
+        this.onItemClickListener = onItemClickListener;
     }
-
 
     public void setDefaultListNotes(List<Note> defaultListNotes) {
-        this.defaultListNotes = defaultListNotes;
-    }
-
-    @Override
-    public int getItemCount() {
-        return (null != listNotes ? listNotes.size() : 0);
+        this.defaultListNotes = defaultListNotes != null ? defaultListNotes : new ArrayList<>();
     }
 
     public List<Note> getData() {
-        return this.listNotes;
+        return getCurrentList();
     }
-
 
     @NonNull
     @Override
     public SearchNotesAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ViewHolder view = new SearchNotesAdapter.ViewHolder(ItemResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-
-        if (mOnItemClickListener != null) {
-            view.itemView.setOnClickListener(v -> mOnItemClickListener.onClick(getData().get(view.getAdapterPosition()).getId(), view.ItemBinding.itemNote));
-        }
-
-        return view;
+        ItemResultBinding binding = ItemResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new ViewHolder(binding);
     }
 
-
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        final Note note = listNotes.get(position);
-        holder.ItemBinding.setNote(listNotes.get(position));
+    public void onBindViewHolder(@NonNull SearchNotesAdapter.ViewHolder holder, int position) {
+        Note note = getItem(position);
+        holder.binding.setNote(note);
 
         final int colorSpannable = MaterialColors.getColor(holder.itemView.getContext(), R.attr.colorSurfaceVariant, Color.GRAY);
-        Spannable titleNote = new SpannableString(note.getTitle());
-        Spannable valueNote = new SpannableString(note.getValue());
 
+        Spannable titleNote = highlightMatch(note.getTitle(), note.getId(), true, colorSpannable);
+        Spannable valueNote = highlightMatch(note.getValue(), note.getId(), false, colorSpannable);
+
+        holder.binding.nameNote.setText(titleNote);
+        holder.binding.previewNote.setText(valueNote);
+        holder.binding.tagNote.setText(note.getTag());
+
+        if (onItemClickListener != null) {
+            holder.itemView.setOnClickListener(v ->
+                    onItemClickListener.onClick(note.getId(), holder.binding.itemNote)
+            );
+        }
+    }
+
+    private Spannable highlightMatch(String text, int noteId, boolean isTitle, int color) {
+        Spannable spannable = new SpannableString(text);
         for (IndexFilter filter : indexValue) {
-
-            if (filter.getIdNote() == listNotes.get(position).getId()) {
-                if (filter.getIndexTitle() != -1) {
-                    titleNote.setSpan(new BackgroundColorSpan(colorSpannable)
-                            , filter.getIndexTitle(), filter.getIndexTitle() + textSearch.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (filter.getIdNote() == noteId) {
+                int start = isTitle ? filter.getIndexTitle() : filter.getIndexValue();
+                if (start != -1 && textSearch != null) {
+                    spannable.setSpan(new BackgroundColorSpan(color), start, start + textSearch.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
-
-                if (filter.getIndexValue() != -1) {
-                    valueNote.setSpan(new BackgroundColorSpan(
-                            colorSpannable), filter.getIndexValue(), filter.getIndexValue() + textSearch.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                }
-
             }
         }
-
-        holder.ItemBinding.previewNote.setText(valueNote);
-        holder.ItemBinding.nameNote.setText(titleNote);
-        holder.ItemBinding.tagNote.setText(note.getTag());
+        return spannable;
     }
 
     public void filter(String text) {
@@ -105,72 +110,57 @@ public class SearchNotesAdapter extends RecyclerView.Adapter<SearchNotesAdapter.
             cleanResult();
             return;
         }
-        
-        // Нормалізуємо текст пошуку
-        String searchText = text.toLowerCase().trim();
-        
-        // Ініціалізуємо колекції з початковою ємністю для оптимізації
+
+        textSearch = text.trim().toLowerCase();
         ArrayList<Note> filteredNotes = new ArrayList<>();
         ArrayList<IndexFilter> indices = new ArrayList<>();
-        
-        // Проходимо по всіх нотатках один раз
+
         for (Note note : defaultListNotes) {
             String title = note.getTitle().toLowerCase();
             String content = note.getValue().toLowerCase();
+
+            int titleIndex = title.indexOf(textSearch);
+            int contentIndex = content.indexOf(textSearch);
+
             boolean found = false;
-            
-            // Пошук в заголовку
-            int titleIndex = title.indexOf(searchText);
             if (titleIndex != -1) {
                 indices.add(new IndexFilter(note.id, titleIndex, -1));
                 found = true;
             }
-            
-            // Пошук в контенті
-            int contentIndex = content.indexOf(searchText);
             if (contentIndex != -1) {
                 indices.add(new IndexFilter(note.id, -1, contentIndex));
                 found = true;
             }
-            
-            // Додаємо нотатку тільки якщо знайдено збіг
+
             if (found) {
                 filteredNotes.add(note);
             }
         }
-        
-        // Обробляємо результат пошуку
+
         if (filteredNotes.isEmpty()) {
             cleanResult();
         } else {
-            filterList(filteredNotes, text, indices);
+            this.indexValue = indices;
+            submitList(filteredNotes);
         }
-    }
-
-
-    public void filterList(ArrayList<Note> newListFilter, String textSearch, ArrayList<IndexFilter> indexValue) {
-        this.listNotes = newListFilter;
-        this.indexValue = indexValue;
-        this.textSearch = textSearch;
-        notifyDataSetChanged();
-
     }
 
     public void cleanResult() {
-        if (listNotes.size() >= 1) {
-            listNotes.clear();
-            indexValue.clear();
-            notifyDataSetChanged();
-        }
+        indexValue.clear();
+        submitList(new ArrayList<>());
     }
 
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ItemResultBinding ItemBinding;
+        private final ItemResultBinding binding;
 
-        ViewHolder(ItemResultBinding binding) {
+        public ViewHolder(ItemResultBinding binding) {
             super(binding.getRoot());
-            ItemBinding = binding;
+            this.binding = binding;
+        }
+
+        public void bind(Note note) {
+            binding.nameNote.setText(note.getTitle());
+            binding.previewNote.setText(note.getValue());
         }
     }
 }

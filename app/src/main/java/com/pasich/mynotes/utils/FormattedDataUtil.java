@@ -8,7 +8,6 @@ import java.util.Locale;
 
 public class FormattedDataUtil {
 
-
     /**
      * This method determines what result to display on the last change day or time
      *
