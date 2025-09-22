@@ -7,13 +7,13 @@ import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.ARGU
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.ARGUMENT_LAST_BACKUP_ID;
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.ARGUMENT_LAST_BACKUP_TIME;
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_SORT;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE;
 
+import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.preference.PowerPreference;
@@ -21,13 +21,15 @@ import com.preference.Preference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-
 @Singleton
 public class AppPreferencesHelper implements PreferenceHelper {
 
+    private final AppPreferencesCache cache;
+
     @Inject
-    AppPreferencesHelper() {
+    AppPreferencesHelper(AppPreferencesCache cache) {
+        this.cache = cache;
+        this.cache.initialize();
     }
 
     @Override
@@ -42,7 +44,7 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public int getFormatCount() {
-        return getDefaultPreferences().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE);
+        return cache.getFormatPref();
     }
 
     @Override
@@ -52,7 +54,17 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public String getSortParam() {
-        return getDefaultPreferences().getString(ARGUMENT_PREFERENCE_SORT, ARGUMENT_DEFAULT_SORT_PREF);
+        return cache.getSortPref();
+    }
+
+    @Override
+    public String getSortParamTags() {
+        return cache.getTagsSortPref();
+    }
+
+    @Override
+    public void setSortParamTags(String paramTags) {
+        cache.setTagsSortPref(paramTags);
     }
 
     @Override
@@ -68,7 +80,6 @@ public class AppPreferencesHelper implements PreferenceHelper {
     @Override
     public void editSizeTextNoteActivity(int value) {
         getDefaultPreferences().setInt(ARGUMENT_PREFERENCE_TEXT_SIZE, value);
-
     }
 
     @Override
@@ -78,18 +89,28 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public PreferencesBackup getListPreferences() {
-        return new PreferencesBackup(getFormatCount(),
+        return new PreferencesBackup(
+                getFormatCount(),
                 getTypeFaceNoteActivity(),
                 getSortParam(),
-                getSizeTextNoteActivity(), PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE),
-                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE),
-                PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE));
+                getSizeTextNoteActivity(),
+                PowerPreference.getDefaultFile().getInt(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE
+                ),
+                PowerPreference.getDefaultFile().getBoolean(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+                        PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE
+                ),
+                PowerPreference.getDefaultFile().getInt(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE
+                )
+        );
     }
-
 
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
-
         if (preferences.isCreated()) {
             getDefaultPreferences()
                     .putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, preferences.getFormatCount())
@@ -100,6 +121,7 @@ public class AppPreferencesHelper implements PreferenceHelper {
                     .putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, preferences.isDynamicTheme())
                     .putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
 
+            cache.refresh();
         }
     }
 
@@ -110,7 +132,10 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public boolean isScreenProtectionEnabled() {
-        return getDefaultPreferences().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
+        return getDefaultPreferences().getBoolean(
+                PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
+                PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE
+        );
     }
 
     @Override
@@ -120,22 +145,24 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public String getLastKnownVersion() {
-        return getDefaultPreferences().getString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "");
+        return cache.getLastKnownVersion();
     }
 
     @Override
     public void setLastKnownVersion(String version) {
-        getDefaultPreferences().setString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, version);
+        cache.setLastKnownVersion(version);
     }
 
     @Override
     public int getThemeMode() {
-        return getDefaultPreferences().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+        return PowerPreference.getDefaultFile().getInt(
+                PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE
+        );
     }
 
     @Override
     public void setThemeMode(int mode) {
         getDefaultPreferences().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, mode);
     }
-
 }

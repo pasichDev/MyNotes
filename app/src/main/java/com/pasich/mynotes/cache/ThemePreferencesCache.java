@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.preferences;
+package com.pasich.mynotes.cache;
 
 import android.content.Context;
 import android.os.Handler;

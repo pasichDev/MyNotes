@@ -1,8 +1,5 @@
 package com.pasich.mynotes.ui.presenter;
 
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -16,7 +13,6 @@ import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
-import com.preference.PowerPreference;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,11 +51,11 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             getView().loadingTags(sortedTags);
         }, throwable -> Log.e("com.pasich.myNotes", "loadTags", throwable)));
 
-        getCompositeDisposable().add(getDataManager().getNotes().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((noteList) -> getView().loadingNotes(noteList), throwable -> Log.e("com.pasich.myNotes", "loadNotes", throwable)));
+        getCompositeDisposable().add(getDataManager().getNotes().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((noteList) -> getView().loadingNotes(noteList, getDataManager().getSortParam()), throwable -> Log.e("com.pasich.myNotes", "loadNotes", throwable)));
     }
 
     private List<Tag> sortTagsList(List<Tag> tagList) {
-        String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
+        String sortParam = getDataManager().getSortParamTags();
         List<Tag> sortedList = new ArrayList<>(tagList);
         if ("TagsPositionSort".equals(sortParam)) {
             // Sort by position (custom sorting)

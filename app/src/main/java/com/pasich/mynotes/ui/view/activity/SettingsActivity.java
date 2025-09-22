@@ -18,7 +18,6 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
@@ -29,7 +28,7 @@ import com.pasich.mynotes.data.model.Theme;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
 import com.pasich.mynotes.utils.themes.ThemesArray;
-import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 
 import java.util.ArrayList;
 import java.util.Objects;

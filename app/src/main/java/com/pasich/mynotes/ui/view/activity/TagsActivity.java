@@ -8,8 +8,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -18,13 +18,13 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityTagsBinding;
 import com.pasich.mynotes.ui.contract.TagsContract;
 import com.pasich.mynotes.ui.presenter.TagsPresenter;
-import com.pasich.mynotes.utils.adapters.TagsManagementAdapter;
-import com.pasich.mynotes.utils.recycler.TagDragCallback;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.TagOptionsBottomSheet;
+import com.pasich.mynotes.utils.adapters.TagsManagementAdapter;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
+import com.pasich.mynotes.utils.recycler.TagDragCallback;
 
 import java.util.List;
 
@@ -179,7 +179,20 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
 
     @Override
     public void showSortDialog() {
-        new SortDialog(true).show(getSupportFragmentManager(), "TagsSortDialog");
+        SortDialog dialog = SortDialog.newInstance(true);
+        dialog.setListener(new SortDialog.SortListener() {
+            @Override
+            public void onSortSelected(String sortParam) {
+            }
+
+            @Override
+            public void onTagsSortSelected(String tagsSortParam) {
+                sortTags(tagsSortParam);
+            }
+        });
+        dialog.show(getSupportFragmentManager(), "SortDialog");
+
+
     }
 
 }

@@ -14,6 +14,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
+import com.pasich.mynotes.cache.AppPreferencesCache;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.AppDataManger;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.database.AppDatabase;
@@ -24,7 +26,6 @@ import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.utils.backup.CloudCacheHelper;
 import com.pasich.mynotes.utils.constants.Database;
 import com.pasich.mynotes.utils.constants.DriveScope;
-import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
 
 import javax.inject.Singleton;
 
@@ -122,14 +123,14 @@ public class ApplicationModule {
         CloudCacheHelper helper = new CloudCacheHelper();
         // Запускаємо асинхронну ініціалізацію Google Services
         helper.initializeAsync(mContext, accessDrive, isPlayMarketInstall)
-            .whenComplete((result, throwable) -> {
-                if (throwable != null) {
-                    android.util.Log.e("ApplicationModule", "Failed to initialize Google Services asynchronously", throwable);
-                } else {
-                    android.util.Log.d("ApplicationModule", "Google Services initialized asynchronously");
-                }
-            });
-        
+                .whenComplete((result, throwable) -> {
+                    if (throwable != null) {
+                        android.util.Log.e("ApplicationModule", "Failed to initialize Google Services asynchronously", throwable);
+                    } else {
+                        android.util.Log.d("ApplicationModule", "Google Services initialized asynchronously");
+                    }
+                });
+
         return helper;
     }
 
@@ -140,5 +141,14 @@ public class ApplicationModule {
         themePreferencesCache.initialize();
         return themePreferencesCache;
     }
+
+    @Provides
+    @Singleton
+    AppPreferencesCache providesAppPreferencesCache(@ApplicationContext Context context) {
+        final AppPreferencesCache appPreferencesCache = new AppPreferencesCache(context);
+        appPreferencesCache.initialize();
+        return appPreferencesCache;
+    }
+
 
 }

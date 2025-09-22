@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.view.activity;
 
-import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_COUNT;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,6 +24,7 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -329,7 +329,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             int idItem = menuItem.getItemId();
             if (idItem == R.id.sort) {
                 if (!actionUtils.getAction())
-                    new SortDialog().show(getSupportFragmentManager(), "sortDialog");
+                    showSortDialog();
             } else if (idItem == R.id.format) {
                 if (!actionUtils.getAction()) {
                     formatList.formatNote(menuItem);
@@ -383,6 +383,22 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     }
 
+    void showSortDialog() {
+        SortDialog dialog = SortDialog.newInstance(false);
+        dialog.setListener(new SortDialog.SortListener() {
+            @Override
+            public void onSortSelected(String sortParam) {
+                sortList(sortParam);
+            }
+
+            @Override
+            public void onTagsSortSelected(String tagsSortParam) {
+            }
+        });
+        dialog.show(getSupportFragmentManager(), "SortDialog");
+
+    }
+
     @Override
     public void settingsSearchView() {
         formatList.init(mActivityBinding.actionSearch.getMenu().findItem(R.id.format));
@@ -432,7 +448,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listNotes.setLayoutManager(staggeredGridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
 
-        mActivityBinding.listNotes.setItemAnimator(new androidx.recyclerview.widget.DefaultItemAnimator());
+        mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
         mActivityBinding.resultsSearchList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
@@ -475,7 +491,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     @Override
-    public void loadingNotes(List<Note> noteList) {
+    /// TODO Перенести обробку в презентер
+    public void loadingNotes(List<Note> noteList, String sortParam) {
         // Перевіряємо чи додалася нова нотатка
         boolean isNewNoteAdded = noteList.size() > previousNotesCount;
         if (isNewNoteAdded) {
@@ -483,7 +500,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             mNoteAdapter.setScrollToTopOnNextUpdate(true);
         }
 
-        int countNotes = mNoteAdapter.sortList(noteList, mainPresenter.getSortParam(), tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
+        int countNotes = mNoteAdapter.sortList(noteList, sortParam, tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
 
         // Оновлюємо лічильник для наступної перевірки
         previousNotesCount = noteList.size();
@@ -598,12 +615,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
     }
 
-    @Override
-    public void startToastCheckCountTags() {
-        String message = getString(R.string.countTagsError, String.valueOf(MAX_TAG_COUNT));
-        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, message, Snackbar.LENGTH_LONG);
-        snackbar.show();
-    }
 
     @Override
     public void newNotesButton() {

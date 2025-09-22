@@ -106,7 +106,6 @@ public class AboutActivity extends BaseActivity {
 
     public void openHelp() {
         startActivity(new Intent(this, HelpActivity.class));
-     //   overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     @Override

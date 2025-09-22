@@ -19,6 +19,10 @@ public interface PreferenceHelper {
 
     String getSortParam();
 
+    String getSortParamTags();
+
+    void setSortParamTags(String paramTags);
+
     long getLastDataBackupCloud();
 
     String getLastBackupCloudId();

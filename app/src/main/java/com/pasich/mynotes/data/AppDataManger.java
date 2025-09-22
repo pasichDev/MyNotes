@@ -76,6 +76,16 @@ public class AppDataManger implements DataManager {
     }
 
     @Override
+    public String getSortParamTags() {
+        return preferencesHelper.getSortParamTags();
+    }
+
+    @Override
+    public void setSortParamTags(String paramTags) {
+        preferencesHelper.setSortParamTags(paramTags);
+    }
+
+    @Override
     public long getLastDataBackupCloud() {
         return preferencesHelper.getLastDataBackupCloud();
     }
