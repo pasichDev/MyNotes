@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACTION_CREATE_SHORTCUT" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <queries>
@@ -100,7 +99,7 @@
         <activity
             android:name=".ui.view.activity.NoteActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize|adjustNothing"
+            android:windowSoftInputMode="adjustResize"
            />
         <activity
             android:name=".ui.view.activity.ShareActivity"
