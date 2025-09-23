@@ -200,7 +200,6 @@ public class ChangelogActivity extends BaseActivity {
     
     /**
      * Парсить контент changelog, залишаючи тільки те, що після заголовку "# CHANGELOG"
-     * Оптимізовано для роботи в фоновому потоці
      */
     private String parseChangelogContent(String fullContent) {
         if (fullContent == null || fullContent.isEmpty()) {

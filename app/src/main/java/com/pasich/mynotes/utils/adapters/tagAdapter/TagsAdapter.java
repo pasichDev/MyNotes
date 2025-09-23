@@ -92,7 +92,7 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
             Tag allNotesTag = null;
 
             for (Tag tag : list) {
-                if (tag.getSelected() && !SystemTagsManager.isAllNotesTag(tag) && !SystemTagsManager.isChangeLogTag(tag)) {
+                if (tag.getSelected() && !SystemTagsManager.isAllNotesTag(tag)) {
                     hasSelectedTag = true;
                     mTagSelected = tag;
                 }
@@ -144,14 +144,14 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
         Tag selectedTag = getItem(position);
 
         // Якщо це тег change або addTag - не дозволяємо їх вибирати
-        if (SystemTagsManager.isChangeLogTag(selectedTag) || SystemTagsManager.isAddTag(selectedTag)) {
+        if (SystemTagsManager.isAddTag(selectedTag)) {
             return;
         }
 
         // Знімаємо вибір з усіх тегів (включаючи "Всі нотатки"), крім changelog
         for (int i = 0; i < getCurrentList().size(); i++) {
             Tag tag = getItem(i);
-            if (tag.getSelected() && i != position && !SystemTagsManager.isChangeLogTag(tag)) {
+            if (tag.getSelected() && i != position) {
                 tag.setSelectedReturn(false);
                 notifyItemChanged(i, AppPayloads.PAYLOADS_TAG_EDIT);
             }

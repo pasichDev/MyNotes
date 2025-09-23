@@ -1,6 +1,7 @@
 package com.pasich.mynotes.ui.view.activity;
 
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -94,19 +95,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
-
-    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        Intent data = result.getData();
-        if (result.getResultCode() == 11) {
-            assert data != null;
-            if (data.getBooleanExtra("updateThemeMode", false)) {
-                recreate();
-            } else {
-                this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
-            }
-        }
-
-    });
     public ActivityMainBinding mActivityBinding;
     @Inject
     public MainContract.presenter mainPresenter;
@@ -170,6 +158,29 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             mainPresenter.loadingData();
         }
     });
+
+
+    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        Intent data = result.getData();
+        if (result.getResultCode() == 11) {
+            assert data != null;
+            if (data.getBooleanExtra("updateThemeMode", false)) {
+                recreate();
+            } else {
+                this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+            }
+        }
+    });
+
+    private final ActivityResultLauncher<Intent> changelogLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            ///  Ховаємо показ пр онову версію
+                            boolean hasNewVersion = updateChecker.hasNewVersion();
+                            navigationView.getHeaderView(0).findViewById(R.id.newVersion).setVisibility(hasNewVersion ? View.VISIBLE : View.GONE);
+                        }
+                    });
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -344,8 +355,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void onClick(int position) {
                 if (!actionUtils.getAction()) {
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
-                    // Якщо тег вже вибраний і це не спеціальний тег для додавання та не changelog
-                    if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag) && !SystemTagsManager.isChangeLogTag(clickedTag)) {
+                    if (clickedTag.getSelected() && !SystemTagsManager.isAddTag(clickedTag)) {
                         assert mActivityBinding.listTags.getLayoutManager() != null;
                         View tagView = mActivityBinding.listTags.getLayoutManager().findViewByPosition(position);
                         Animation shake = AnimationUtils.loadAnimation(MainActivity.this, R.anim.shake_gentle);
@@ -469,7 +479,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     selectItemAction(mNoteAdapter.getCurrentList().get(position), position, false);
 
                 } else {
-
                     Note sNote = mNoteAdapter.getCurrentList().get(position);
                     mainPresenter.setBackupDeleteNote(sNote);
                     mainPresenter.deleteNote(sNote);
@@ -515,6 +524,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     @Override
+    /// TODO Перенести обробку в презентер
     public void loadingTags(List<Tag> tagList) {
         tagsAdapter.submitList(tagList);
 
@@ -834,20 +844,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void openChangelogActivity() {
-        Intent intent = new Intent(this, ChangelogActivity.class);
-        startActivityForResult(intent, REQUEST_CODE_CHANGELOG);
+        changelogLauncher.launch(new Intent(this, ChangelogActivity.class));
+
     }
 
-    private static final int REQUEST_CODE_CHANGELOG = 1001;
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_CHANGELOG && resultCode == RESULT_OK) {
-            // Користувач ознайомився з оновленням, оновлюємо список тегів
-            mainPresenter.loadingData();
-        }
-    }
 
     /**
      * Налаштування Navigation Drawer
@@ -907,6 +907,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         View headerView = navigationView.getHeaderView(0);
 
+
         // Основні кнопки
         headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.START);
@@ -958,6 +959,20 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 }, 100);
             });
         }
+
+        // Нова версія додатку
+        if(updateChecker.hasNewVersion()){
+            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    openChangelogActivity();
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                }, 100);
+            });
+            headerView.findViewById(R.id.newVersion).setVisibility(View.VISIBLE);
+        }
+
+
 
     }
 

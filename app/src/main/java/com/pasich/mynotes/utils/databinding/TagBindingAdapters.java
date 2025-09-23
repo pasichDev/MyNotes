@@ -25,8 +25,6 @@ public class TagBindingAdapters {
     public static void setTagDisplayName(TextView textView, Tag tag) {
         if (SystemTagsManager.isAllNotesTag(tag)) {
             textView.setText(textView.getContext().getString(com.pasich.mynotes.R.string.allNotes));
-        } else if (SystemTagsManager.isChangeLogTag(tag)) {
-            textView.setText(textView.getContext().getString(R.string.whatNewVersion));
         } else if (SystemTagsManager.isAddTag(tag)) {
             textView.setText(R.string.createTag);
         } else {
