@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [2.2.36] - XX.XX.2025
+## [2.2.36] - 23.09.2025
 
 - Added search debounce — search now triggers shortly after user stops typing.
 - Optimized code and improved app stability
