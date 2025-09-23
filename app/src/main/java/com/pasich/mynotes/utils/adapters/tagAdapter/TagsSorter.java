@@ -23,7 +23,7 @@ public class TagsSorter {
             int x2 = o2.getSystemAction();
 
             if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES) {
-                x1 = 98; // allNotes третій
+                x1 = 98; // allNotes 1
             }
             if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES) {
                 x2 = 98;
