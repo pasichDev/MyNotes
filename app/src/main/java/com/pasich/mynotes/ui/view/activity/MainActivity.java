@@ -76,17 +76,16 @@ import com.pasich.mynotes.utils.backup.CloudCacheHelper;
 import com.pasich.mynotes.utils.constants.DriveScope;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
-import com.pasich.mynotes.utils.constants.settings.BackupPreferences;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
-import com.preference.PowerPreference;
-import com.preference.Preference;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -992,27 +991,32 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     /**
      * Вихід з Google акаунта
-     * TODO Update logic
      */
     private void signOut(ViewLoginPageBinding loginPageBinding) {
         googleSignInClient.signOut().addOnCompleteListener(task -> {
-            // Оновлюємо UI в main потоці
             loginPageBinding.loginUser.setVisibility(View.VISIBLE);
             loginPageBinding.loginPageRoot.setVisibility(View.GONE);
-            // Виконуємо операції з preferences асинхронно
-            new Thread(() -> {
-                try {
-                    final Preference preference = PowerPreference.getFileByName(com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP);
-                    preference.removeAsync(BackupPreferences.ARGUMENT_AUTO_BACKUP_CLOUD);
-                    preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_ID);
-                    preference.removeAsync(BackupPreferences.ARGUMENT_LAST_BACKUP_TIME);
-                    cloudCacheHelper.clean();
-                } catch (Exception e) {
-                    Log.e("MainActivity", "Error during sign out preferences cleanup", e);
-                }
-            }).start();
+
+            // Виконуємо чистку в окремому потоці і одразу закриваємо Executor
+            try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
+                executor.submit(() -> {
+                    try {
+                        mainPresenter.cleanBackupPrefs();
+                        cloudCacheHelper.clean();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error during sign out preferences cleanup", e);
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Executor shutdown error", e);
+            }
         });
     }
+
+
+    // десь у класі
+    private static final String TAG = MainActivity.class.getSimpleName();
+
 
     /**
      * Налаштовує Edge-to-Edge для DrawerLayout

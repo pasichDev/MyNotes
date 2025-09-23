@@ -39,4 +39,6 @@ public interface PreferenceHelper {
 
     void setLastKnownVersion(String version);
 
+    @Deprecated
+    void cleanBackupInfo();
 }

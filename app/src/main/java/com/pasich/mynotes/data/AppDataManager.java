@@ -125,6 +125,11 @@ public class AppDataManager implements DataManager {
         preferencesHelper.setLastKnownVersion(version);
     }
 
+    @Override
+    public void cleanBackupInfo() {
+        preferencesHelper.cleanBackupInfo();
+    }
+
 
     @Override
     public String getTypeFaceNoteActivity() {

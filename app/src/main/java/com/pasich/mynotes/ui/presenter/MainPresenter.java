@@ -195,6 +195,11 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     }
 
     @Override
+    public void cleanBackupPrefs() {
+        getDataManager().cleanBackupInfo();
+    }
+
+    @Override
     public void detachView() {
         if (swipeResetRunnable != null) {
             uiHandler.removeCallbacks(swipeResetRunnable);

@@ -14,6 +14,7 @@ import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGU
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
+import com.pasich.mynotes.utils.constants.settings.BackupPreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.preference.PowerPreference;
 import com.preference.Preference;
@@ -146,6 +147,11 @@ public class AppPreferencesHelper implements PreferenceHelper {
     @Override
     public void setLastKnownVersion(String version) {
         appCache.setLastKnownVersion(version);
+    }
+
+    @Override
+    public void cleanBackupInfo() {
+        PowerPreference.getFileByName(BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP).clearAsync();
     }
 
 }
