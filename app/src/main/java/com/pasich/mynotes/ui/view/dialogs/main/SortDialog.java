@@ -183,12 +183,26 @@ public class SortDialog extends BaseDialogBottomSheets {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        binding.DataSort.setOnClickListener(null);
-        binding.DataReserve.setOnClickListener(null);
-        binding.TitleSort.setOnClickListener(null);
-        binding.TitleReserve.setOnClickListener(null);
-        binding.TagsPositionSort.setOnClickListener(null);
-        binding.TagsCreationDateSort.setOnClickListener(null);
+        clearListeners();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        clearListeners();
+        binding = null;
+    }
+
+    private void clearListeners() {
+        if (binding != null) {
+            binding.DataSort.setOnClickListener(null);
+            binding.DataReserve.setOnClickListener(null);
+            binding.TitleSort.setOnClickListener(null);
+            binding.TitleReserve.setOnClickListener(null);
+            binding.TagsPositionSort.setOnClickListener(null);
+            binding.TagsCreationDateSort.setOnClickListener(null);
+        }
+        listener = null;
     }
 
 }

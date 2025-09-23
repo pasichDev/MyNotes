@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -161,8 +162,22 @@ public class ChangelogActivity extends BaseActivity {
         binding.versionText.setText(getString(R.string.current_version, currentVersion));
 
         updateAcknowledgeButtonVisibility();
-        markwon.setMarkdown(binding.changelogText, content);
+
+        // Рендеримо Markdown у фоновому потоці
+        executor.execute(() -> {
+            // Рендеримо Markdown у фоновому потоці
+            Spanned markdown = markwon.toMarkdown(content);
+
+            runOnUiThread(() -> {
+                if (!isFinishing()) {
+                    // Каст до Spanned
+                    markwon.setParsedMarkdown(binding.changelogText, markdown);
+                }
+            });
+        });
+
     }
+
 
     private String downloadChangelog() throws IOException {
         URL url = new URL(CHANGELOG_URL);
