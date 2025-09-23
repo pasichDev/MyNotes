@@ -21,10 +21,9 @@
             android:padding="@dimen/paddingItems">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:layout_marginHorizontal="12dp"
                 android:layout_marginVertical="8dp"
+                style="@style/iconDialogList"
                 android:contentDescription="@string/deleteTag"
                 android:src="@drawable/ic_trash_notes" />
 
@@ -48,8 +47,7 @@
             android:padding="@dimen/paddingItems">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/iconDialogList"
                 android:layout_marginHorizontal="12dp"
                 android:layout_marginVertical="8dp"
                 android:contentDescription="@string/renameTag"
@@ -76,8 +74,7 @@
 
             <ImageView
                 android:id="@+id/imageTagVisible"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/iconDialogList"
                 android:layout_marginHorizontal="12dp"
                 android:layout_marginVertical="8dp"
                 android:contentDescription="@string/deleteTag"
