@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.pasich.mynotes.R;
+import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
@@ -16,12 +17,10 @@ import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.databinding.ItemNoteTrashBinding;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.adapters.notes.TrashAdapter;
-import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilNote;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTag;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTrash;
-import com.preference.PowerPreference;
 
 import javax.inject.Named;
 
@@ -89,8 +88,8 @@ public class ListUtilsModule {
 
     @Provides
     @ActivityScoped
-    int providesSpanCountStaggerGridLayout() {
-        return PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE);
+    int providesSpanCountStaggerGridLayout(AppPreferencesCache appPreferencesCache) {
+        return appPreferencesCache.getFormatPref();
     }
 
     @Named("TagsItemSpaceDecoration")
