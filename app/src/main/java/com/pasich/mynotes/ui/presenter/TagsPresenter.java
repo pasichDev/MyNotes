@@ -10,6 +10,7 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.contract.TagsContract;
+import com.pasich.mynotes.utils.adapters.tagAdapter.TagsSorter;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
@@ -49,9 +50,8 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
             if (isViewAttached()) {
                 // Створюємо спеціальний тег для кнопки "Додати"
                 tagList.add(0, SystemTagsManager.createAddTag());
-
-                cachedTags = new ArrayList<>(tagList);
-                displayTags();
+                cachedTags = new ArrayList<>(TagsSorter.sortTags(tagList, getDataManager().getSortParamTags()));
+                displayTags(false);
             }
         }, throwable -> {
             Log.e("TagsPresenter", "Error loading tags", throwable);
@@ -63,48 +63,13 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
 
 
     // Сортуємо локальний кеш згідно з налаштуваннями
-    public void displayTags() {
+    public void displayTags(boolean isSort) {
         if (!isViewAttached() || cachedTags.isEmpty()) return;
-        getView().loadTags(sortTagsList(cachedTags));
-    }
-
-
-    private List<Tag> sortTagsList(List<Tag> tagList) {
-        String sortParam = getDataManager().getSortParamTags();
-        List<Tag> sortedList = new ArrayList<>(tagList);
-
-        sortedList.sort((o1, o2) -> {
-
-            int x1 = o1.getSystemAction();
-            int x2 = o2.getSystemAction();
-
-            // Спеціальне сортування для системних міток addTag завжди перший
-            if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100;
-            if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
-
-
-            int sComp = Math.toIntExact(x2 - x1);
-
-            if (sComp != 0) {
-                return sComp;
-            }
-
-            // Для користувацьких тегів використовуємо налаштування сортування
-            if (o1.getSystemAction() == 0 && o2.getSystemAction() == 0) {
-                if ("TagsPositionSort".equals(sortParam)) {
-                    // Сортування за позицією (спеціальне)
-                    return Integer.compare(o1.getPosition(), o2.getPosition());
-                } else {
-                    // Сортування за датою створення (ID - новіші вгорі)
-                    return Long.compare(o2.getId(), o1.getId());
-                }
-            }
-
-            // Для системних тегів за замовчуванням сортуємо за ID
-            return Math.toIntExact(o2.getId() - o1.getId());
-        });
-
-        return sortedList;
+        if (isSort) {
+            getView().loadTags(TagsSorter.sortTags(cachedTags, getDataManager().getSortParamTags()));
+        } else {
+            getView().loadTags(cachedTags);
+        }
     }
 
     @Override
@@ -117,7 +82,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
             if (isViewAttached()) {
                 getView().showToastMessage(tag.getVisibility() == 0 ? R.string.toastTagVisible : R.string.toastTagHidde);
                 updateTagInCache(tag);
-                displayTags();
+                displayTags(false);
             }
         }, throwable -> Log.e("TagsPresenter", "Error toggling tag visibility", throwable)));
     }
@@ -145,11 +110,17 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
     @Override
     public void sortTags(String sortParam) {
         getDataManager().setSortParamTags(sortParam);
-        displayTags();
+        displayTags(true);
     }
 
     @Override
     public void onDragCompleted(List<Tag> currentTagOrders) {
+
+        // Якщо список посортовано по даті створення необхідно пересортувати
+        if ("TagsCreationDateSort".equals(getDataManager().getSortParamTags())) {
+            getDataManager().setSortParamTags("TagsPositionSort");
+        }
+
         // Фільтруємо тільки користувацькі теги
         List<Tag> userTags = currentTagOrders.stream().filter(tag -> tag.getSystemAction() == 0).collect(Collectors.toList());
 

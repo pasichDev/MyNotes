@@ -1,8 +1,5 @@
 package com.pasich.mynotes.utils.adapters;
 
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagManagementBinding;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
-import com.preference.PowerPreference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +21,9 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
 
     public interface OnTagClickListener {
         void onTagClick(Tag tag, int position);
+
         void onTagLongClick(Tag tag, View anchorView);
+
         void onOptionsClick(Tag tag, View anchorView);
     }
 
@@ -48,7 +46,7 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
         this.moveListener = listener;
     }
 
-    // Method for UI-only movement (used during drag)
+
     public void moveItemUI(int fromPosition, int toPosition) {
         if (fromPosition == 0 || toPosition == 0) return;
 
@@ -56,41 +54,8 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
         Tag moved = newList.remove(fromPosition);
         newList.add(toPosition, moved);
 
-        String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
-
-        // Якщо список посортовано по даті створення необхідно пересортувати
-        // Придумати спрощену реалізацію, працює як костиль
-
-        if("TagsCreationDateSort".equals(sortParam)){
-            PowerPreference.getDefaultFile().setString(ARGUMENT_PREFERENCE_TAGS_SORT, "TagsPositionSort");
-            newList.sort((o1, o2) -> {
-                int x1 = o1.getSystemAction();
-                int x2 = o2.getSystemAction();
-
-                // Спеціальне сортування для системних міток addTag завжди перший
-                if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100;
-                if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
-
-
-                int sComp = Math.toIntExact(x2 - x1);
-
-                if (sComp != 0) {
-                    return sComp;
-                }
-
-                // Для користувацьких тегів використовуємо налаштування сортування
-                if (o1.getSystemAction() == 0 && o2.getSystemAction() == 0) {
-                    return Integer.compare(o1.getPosition(), o2.getPosition());
-                }
-
-                // Для системних тегів за замовчуванням сортуємо за ID
-                return Math.toIntExact(o2.getId() - o1.getId());
-            });
-        }
-
         submitList(newList);
     }
-
 
     // Method called when drag operation is complete - save to database
     public void saveDragChangesToDatabase() {
@@ -161,8 +126,8 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
         @Override
         public boolean areContentsTheSame(@NonNull Tag oldItem, @NonNull Tag newItem) {
             return oldItem.getNameTag().equals(newItem.getNameTag()) &&
-                   oldItem.getVisibility() == newItem.getVisibility() &&
-                   oldItem.getSystemAction() == newItem.getSystemAction() && oldItem.getPosition() == newItem.getPosition();
+                    oldItem.getVisibility() == newItem.getVisibility() &&
+                    oldItem.getSystemAction() == newItem.getSystemAction() && oldItem.getPosition() == newItem.getPosition();
         }
     }
 }
