@@ -2,6 +2,10 @@
 
 ## [2.2.36] - XX.XX.2025
 
+- Added search debounce — search now triggers shortly after user stops typing.
+- Optimized code and improved app stability
+- Restored display of the new version in the MainDrawer
+
 ## [2.2.35] - 21.09.2025
 
 - Added import of notes, trashed notes, and tags from other apps (e.g., Google Keep)
