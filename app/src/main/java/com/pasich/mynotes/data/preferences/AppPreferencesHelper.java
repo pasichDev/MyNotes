@@ -67,6 +67,8 @@ public class AppPreferencesHelper implements PreferenceHelper {
         cache.setTagsSortPref(paramTags);
     }
 
+    ///  TODO Migrate to AppPreferencesCache
+    @Deprecated
     @Override
     public long getLastDataBackupCloud() {
         return getBackupCloudInfoPreference().getLong(ARGUMENT_LAST_BACKUP_TIME, ARGUMENT_DEFAULT_LAST_BACKUP_TIME);
