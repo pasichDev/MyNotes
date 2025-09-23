@@ -43,10 +43,7 @@ public class ApplicationModule {
     @Singleton
     AppDatabase providesAppDatabase(@ApplicationContext Context context, RoomDatabase.Callback sRoomDatabaseCallback) {
         AppDatabase.setContext(context);
-        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME)
-                .addCallback(sRoomDatabaseCallback)
-                .addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
-                .build();
+        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME).addCallback(sRoomDatabaseCallback).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build();
     }
 
 
@@ -122,30 +119,29 @@ public class ApplicationModule {
     CloudCacheHelper providesCloudCacheHelper(@ApplicationContext Context mContext, Scope accessDrive, boolean isPlayMarketInstall) {
         CloudCacheHelper helper = new CloudCacheHelper();
         // Запускаємо асинхронну ініціалізацію Google Services
-        helper.initializeAsync(mContext, accessDrive, isPlayMarketInstall)
-                .whenComplete((result, throwable) -> {
-                    if (throwable != null) {
-                        android.util.Log.e("ApplicationModule", "Failed to initialize Google Services asynchronously", throwable);
-                    } else {
-                        android.util.Log.d("ApplicationModule", "Google Services initialized asynchronously");
-                    }
-                });
+        helper.initializeAsync(mContext, accessDrive, isPlayMarketInstall).whenComplete((result, throwable) -> {
+            if (throwable != null) {
+                android.util.Log.e("ApplicationModule", "Failed to initialize Google Services asynchronously", throwable);
+            } else {
+                android.util.Log.d("ApplicationModule", "Google Services initialized asynchronously");
+            }
+        });
 
         return helper;
     }
 
     @Provides
     @Singleton
-    ThemePreferencesCache providesThemePreferencesCache(@ApplicationContext Context context) {
-        final ThemePreferencesCache themePreferencesCache = new ThemePreferencesCache(context);
+    ThemePreferencesCache providesThemePreferencesCache() {
+        final ThemePreferencesCache themePreferencesCache = new ThemePreferencesCache();
         themePreferencesCache.initialize();
         return themePreferencesCache;
     }
 
     @Provides
     @Singleton
-    AppPreferencesCache providesAppPreferencesCache(@ApplicationContext Context context) {
-        final AppPreferencesCache appPreferencesCache = new AppPreferencesCache(context);
+    AppPreferencesCache providesAppPreferencesCache() {
+        final AppPreferencesCache appPreferencesCache = new AppPreferencesCache();
         appPreferencesCache.initialize();
         return appPreferencesCache;
     }

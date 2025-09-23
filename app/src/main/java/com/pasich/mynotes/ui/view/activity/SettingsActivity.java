@@ -25,7 +25,6 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Theme;
-import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
 import com.pasich.mynotes.utils.themes.ThemesArray;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
@@ -39,9 +38,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SettingsActivity extends BaseActivity {
 
-    @Inject
-    PreferenceHelper mPreferenceHelper;
-    
     @Inject
     ThemePreferencesCache themePreferencesCache;
 

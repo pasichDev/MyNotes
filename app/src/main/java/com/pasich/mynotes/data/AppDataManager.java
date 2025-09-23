@@ -116,16 +116,6 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public boolean isScreenProtectionEnabled() {
-        return preferencesHelper.isScreenProtectionEnabled();
-    }
-
-    @Override
-    public void setScreenProtectionEnabled(boolean enabled) {
-        preferencesHelper.setScreenProtectionEnabled(enabled);
-    }
-
-    @Override
     public String getLastKnownVersion() {
         return preferencesHelper.getLastKnownVersion();
     }
@@ -135,15 +125,6 @@ public class AppDataManager implements DataManager {
         preferencesHelper.setLastKnownVersion(version);
     }
 
-    @Override
-    public int getThemeMode() {
-        return preferencesHelper.getThemeMode();
-    }
-
-    @Override
-    public void setThemeMode(int mode) {
-        preferencesHelper.setThemeMode(mode);
-    }
 
     @Override
     public String getTypeFaceNoteActivity() {

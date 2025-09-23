@@ -1,10 +1,6 @@
 package com.pasich.mynotes.cache;
 
-import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.preference.PowerPreference;
@@ -20,9 +16,6 @@ public class AppPreferencesCache {
 
     private static final String TAG = "AppPreferencesCache";
 
-    private final Context context;
-    private final Handler mainHandler;
-
     // Cached values
     private volatile String lastKnownVersion;
     private volatile String sortPref;
@@ -32,9 +25,7 @@ public class AppPreferencesCache {
     private volatile boolean initialized = false;
 
     @Inject
-    public AppPreferencesCache(Context context) {
-        this.context = context;
-        this.mainHandler = new Handler(Looper.getMainLooper());
+    public AppPreferencesCache() {
     }
 
     /**
@@ -115,7 +106,7 @@ public class AppPreferencesCache {
                     version
             );
         } catch (Exception e) {
-            showErrorToast("Failed to save version");
+            Log.e(TAG, "Failed to save version", e);
         }
     }
 
@@ -127,7 +118,7 @@ public class AppPreferencesCache {
                     sort
             );
         } catch (Exception e) {
-            showErrorToast("Failed to save sort preference");
+            Log.e(TAG, "Failed to save sort preference", e);
         }
     }
 
@@ -139,7 +130,7 @@ public class AppPreferencesCache {
                     tagsSort
             );
         } catch (Exception e) {
-            showErrorToast("Failed to save tags sort preference");
+            Log.e(TAG, "Failed to save tags sort preference", e);
         }
     }
 
@@ -151,7 +142,7 @@ public class AppPreferencesCache {
                     format
             );
         } catch (Exception e) {
-            showErrorToast("Failed to save format preference");
+            Log.e(TAG, "Failed to save format preference", e);
         }
     }
 
@@ -164,13 +155,6 @@ public class AppPreferencesCache {
         }
     }
 
-    private void showErrorToast(String message) {
-        if (context != null && mainHandler != null) {
-            mainHandler.post(() ->
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            );
-        }
-    }
 
     public synchronized void refresh() {
         initialized = false;
