@@ -142,6 +142,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private AppUpdateManager appUpdateManager;
     private int previousNotesCount = 0;
 
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+
     // Google Sign-In launcher
     final private ActivityResultLauncher<Intent> startAuthIntent = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == RESULT_OK) {
@@ -254,6 +257,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+            searchRunnable = null;
+        }
         if (isDestroyed()) {
             mainPresenter.detachView();
             variablesNull();
@@ -328,10 +335,21 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
-                if (s.length() >= 2) searchNotesAdapter.filter(s.toString());
-                else {
-                    searchNotesAdapter.cleanResult();
+                // Відміняємо попередній запуск
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
                 }
+
+                searchRunnable = () -> {
+                    if (s.length() >= 2) {
+                        searchNotesAdapter.filter(s.toString());
+                    } else {
+                        searchNotesAdapter.cleanResult();
+                    }
+                };
+
+                // Запускаємо з затримкою 400ms
+                searchHandler.postDelayed(searchRunnable, 400);
             }
         });
 
