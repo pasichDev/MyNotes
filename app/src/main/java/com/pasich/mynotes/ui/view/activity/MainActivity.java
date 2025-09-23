@@ -305,8 +305,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void exitWhat() {
-        onInfoSnack(R.string.exitWhat, mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+        if (!isDestroyed() && mActivityBinding != null) {
+            onInfoSnack(R.string.exitWhat, mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+        }
     }
+
 
     @Override
     public void finishActivityOtPresenter() {
@@ -979,7 +982,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         }
 
         // Нова версія додатку
-        if(updateChecker.hasNewVersion()){
+        if (updateChecker.hasNewVersion()) {
             headerView.findViewById(R.id.newVersion).setOnClickListener(v -> {
                 drawerLayout.closeDrawer(GravityCompat.START);
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -989,7 +992,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             });
             headerView.findViewById(R.id.newVersion).setVisibility(View.VISIBLE);
         }
-
 
 
     }
