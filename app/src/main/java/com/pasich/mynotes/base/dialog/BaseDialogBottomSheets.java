@@ -24,24 +24,6 @@ public abstract class BaseDialogBottomSheets extends BottomSheetDialogFragment i
     }
 
     @Override
-    public void dismiss() {
-        super.dismiss();
-    }
-
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-
-
-    @Override
     public void vibrateOpenDialog(boolean vibrate) {
         if (vibrate) {
             Vibrator vibrator = (Vibrator) requireActivity().getSystemService(Context.VIBRATOR_SERVICE);
@@ -55,7 +37,6 @@ public abstract class BaseDialogBottomSheets extends BottomSheetDialogFragment i
             }
         }
     }
-
 
 
     @Override

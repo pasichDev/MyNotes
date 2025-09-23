@@ -4,47 +4,52 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import com.pasich.mynotes.data.preferences.PreferenceHelper;
+import com.pasich.mynotes.cache.AppPreferencesCache;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import dagger.hilt.android.qualifiers.ApplicationContext;
 
+
 /**
- * Клас для перевірки оновлень додатка
+ * Class for checking app updates
  */
 @Singleton
 public class UpdateChecker {
 
     private final Context context;
-    private final PreferenceHelper preferenceHelper;
+
+    private final AppPreferencesCache cache;
 
     @Inject
-    public UpdateChecker(@ApplicationContext Context context, PreferenceHelper preferenceHelper) {
+    public UpdateChecker(@ApplicationContext Context context, AppPreferencesCache cache) {
         this.context = context;
-        this.preferenceHelper = preferenceHelper;
+        this.cache = cache;
+        this.cache.initialize();
     }
 
     /**
-     * Перевірити, чи є нова версія додатка
-     * @return true, якщо є нова версія
+     * Check if a new version of the app is available
+     *
+     * @return true if there is a new version
      */
     public boolean hasNewVersion() {
         String currentVersion = getCurrentAppVersion();
-        String lastKnownVersion = preferenceHelper.getLastKnownVersion();
+        String lastKnownVersion = cache.getLastKnownVersion();
 
-        // Якщо lastKnownVersion порожній - це перший запуск
+        // If lastKnownVersion is empty - this is the first launch
         if (lastKnownVersion == null || lastKnownVersion.isEmpty()) {
             return false;
         }
-        
+
         return !currentVersion.equals(lastKnownVersion);
     }
 
     /**
-     * Отримати поточну версію додатка
-     * @return Версія додатка
+     * Get the current app version
+     *
+     * @return App version
      */
     public String getCurrentAppVersion() {
         try {
@@ -56,20 +61,20 @@ public class UpdateChecker {
     }
 
     /**
-     * Відзначити, що користувач ознайомився з оновленням
+     * Mark the current version as read/acknowledged by the user
      */
     public void markVersionAsRead() {
         String currentVersion = getCurrentAppVersion();
-        preferenceHelper.setLastKnownVersion(currentVersion);
+        cache.setLastKnownVersion(currentVersion);
     }
 
     /**
-     * Ініціалізувати перевірку версії (викликати при першому запуску)
+     * Initialize version check (should be called on the first launch)
      */
     public void initializeVersionCheck() {
-        String lastKnownVersion = preferenceHelper.getLastKnownVersion();
+        String lastKnownVersion = cache.getLastKnownVersion();
         if (lastKnownVersion == null || lastKnownVersion.isEmpty()) {
-            // Перший запуск - зберігаємо поточну версію
+            // First launch - save the current version
             markVersionAsRead();
         }
     }

@@ -363,7 +363,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
             jsonBackup.setTags(newTags);
 
             return jsonBackup;
-        }).subscribeOn(getSchedulerProvider().io()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::restoreData, throwable -> getView().showErrorsText(0, R.string.empty_data_import)));
+        }).subscribeOn(getSchedulerProvider().computation()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::restoreData, throwable -> getView().showErrorsText(0, R.string.empty_data_import)));
     }
 
 

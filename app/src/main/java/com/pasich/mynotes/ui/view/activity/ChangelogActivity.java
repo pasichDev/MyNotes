@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,9 +70,7 @@ public class ChangelogActivity extends BaseActivity {
 
     @Override
     public void initListeners() {
-        binding.retryButton.setOnClickListener(v -> {
-            retryLoad();
-        });
+        binding.retryButton.setOnClickListener(v -> retryLoad());
 
         binding.acknowledgeButton.setOnClickListener(v -> {
             updateChecker.markVersionAsRead();
@@ -105,48 +104,80 @@ public class ChangelogActivity extends BaseActivity {
 
     private void loadChangelog() {
         if (!isNetworkAvailable()) {
-            binding.progressBar.setVisibility(View.GONE);
-            binding.scrollView.setVisibility(View.GONE);
-            binding.errorLayout.setVisibility(View.VISIBLE);
+            showError();
             return;
         }
 
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.scrollView.setVisibility(View.GONE);
-        binding.errorLayout.setVisibility(View.GONE);
+        if (isFinishing()) {
+            return;
+        }
 
+        // Защита от повторного создания executor
         if (executor == null || executor.isShutdown()) {
-            Log.d("ChangelogActivity", "Recreating ExecutorService");
             executor = Executors.newSingleThreadExecutor();
         }
 
+        showLoading();
+
         executor.execute(() -> {
+            if (isFinishing()) return;
+
             try {
                 String changelogContent = downloadChangelog();
                 String parsedContent = parseChangelogContent(changelogContent);
-                
+
                 runOnUiThread(() -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.scrollView.setVisibility(View.VISIBLE);
-                    
-                    String currentVersion = updateChecker.getCurrentAppVersion();
-                    binding.versionText.setText(getString(R.string.current_version, currentVersion));
-                    
-                    // Оновлюємо видимість кнопки "Ознайомився"
-                    updateAcknowledgeButtonVisibility();
-                    
-                    markwon.setMarkdown(binding.changelogText, parsedContent);
-                    Log.d("ChangelogActivity", "UI updated with changelog content");
+                    if (!isFinishing()) {
+                        showContent(parsedContent);
+                    }
                 });
             } catch (Exception e) {
                 Log.e("ChangelogActivity", "Error loading changelog", e);
                 runOnUiThread(() -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.errorLayout.setVisibility(View.VISIBLE);
+                    if (!isFinishing()) {
+                        showError();
+                    }
                 });
             }
         });
     }
+
+    private void showError() {
+        binding.progressBar.setVisibility(View.GONE);
+        binding.scrollView.setVisibility(View.GONE);
+        binding.errorLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void showLoading() {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.scrollView.setVisibility(View.GONE);
+        binding.errorLayout.setVisibility(View.GONE);
+    }
+
+    private void showContent(String content) {
+        binding.progressBar.setVisibility(View.GONE);
+        binding.scrollView.setVisibility(View.VISIBLE);
+
+        String currentVersion = updateChecker.getCurrentAppVersion();
+        binding.versionText.setText(getString(R.string.current_version, currentVersion));
+
+        updateAcknowledgeButtonVisibility();
+
+        // Рендеримо Markdown у фоновому потоці
+        executor.execute(() -> {
+            // Рендеримо Markdown у фоновому потоці
+            Spanned markdown = markwon.toMarkdown(content);
+
+            runOnUiThread(() -> {
+                if (!isFinishing()) {
+                    // Каст до Spanned
+                    markwon.setParsedMarkdown(binding.changelogText, markdown);
+                }
+            });
+        });
+
+    }
+
 
     private String downloadChangelog() throws IOException {
         URL url = new URL(CHANGELOG_URL);
@@ -184,7 +215,6 @@ public class ChangelogActivity extends BaseActivity {
     
     /**
      * Парсить контент changelog, залишаючи тільки те, що після заголовку "# CHANGELOG"
-     * Оптимізовано для роботи в фоновому потоці
      */
     private String parseChangelogContent(String fullContent) {
         if (fullContent == null || fullContent.isEmpty()) {
@@ -203,7 +233,6 @@ public class ChangelogActivity extends BaseActivity {
                     line.trim().equalsIgnoreCase("## CHANGELOG") ||
                     line.contains("CHANGELOG")) {
                     foundChangelogHeader = true;
-                    continue; // Пропускаємо сам заголовок
                 }
             } else {
                 parsedContent.append(line).append("\n");
@@ -240,26 +269,28 @@ public class ChangelogActivity extends BaseActivity {
         return true;
     }
 
-    private boolean finishActivitySafely() {
-        supportFinishAfterTransition();
-        return true;
-    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        shutdownExecutorService();
+    }
+
+    private void shutdownExecutorService() {
         if (executor != null && !executor.isShutdown()) {
-            executor.shutdown();
             try {
-                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                    executor.shutdownNow();
-                    if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
-                        Log.w("ChangelogActivity", "ExecutorService did not terminate gracefully");
-                    }
+                // Отменяем все текущие задачи
+                executor.shutdownNow();
+
+                // Ждем завершения максимум 1 секунду
+                if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    Log.w("ChangelogActivity", "ExecutorService did not terminate gracefully");
                 }
             } catch (InterruptedException e) {
-                executor.shutdownNow();
                 Thread.currentThread().interrupt();
+                Log.e("ChangelogActivity", "ExecutorService shutdown interrupted", e);
+            } finally {
+                executor = null;
             }
         }
     }

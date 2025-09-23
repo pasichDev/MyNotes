@@ -7,14 +7,14 @@ import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.ARGU
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.ARGUMENT_LAST_BACKUP_ID;
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.ARGUMENT_LAST_BACKUP_TIME;
 import static com.pasich.mynotes.utils.constants.settings.BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_SORT;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE;
 
+import com.pasich.mynotes.cache.AppPreferencesCache;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
+import com.pasich.mynotes.utils.constants.settings.BackupPreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.preference.PowerPreference;
 import com.preference.Preference;
@@ -22,12 +22,19 @@ import com.preference.Preference;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-
 @Singleton
 public class AppPreferencesHelper implements PreferenceHelper {
 
+    private final AppPreferencesCache appCache;
+
+    private final ThemePreferencesCache themeCache;
+
     @Inject
-    AppPreferencesHelper() {
+    AppPreferencesHelper(AppPreferencesCache appCache, ThemePreferencesCache themeCache) {
+        this.appCache = appCache;
+        this.themeCache = themeCache;
+        this.appCache.initialize();
+        this.themeCache.initialize();
     }
 
     @Override
@@ -35,6 +42,7 @@ public class AppPreferencesHelper implements PreferenceHelper {
         return PowerPreference.getDefaultFile();
     }
 
+    @Deprecated
     @Override
     public Preference getBackupCloudInfoPreference() {
         return PowerPreference.getFileByName(FIlE_NAME_PREFERENCE_BACKUP);
@@ -42,19 +50,31 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public int getFormatCount() {
-        return getDefaultPreferences().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE);
+        return appCache.getFormatPref();
     }
 
     @Override
     public int getSizeTextNoteActivity() {
-        return getDefaultPreferences().getInt(ARGUMENT_PREFERENCE_TEXT_SIZE, ARGUMENT_DEFAULT_TEXT_SIZE);
+        return themeCache.getSizeTextNoteActivity();
     }
 
     @Override
     public String getSortParam() {
-        return getDefaultPreferences().getString(ARGUMENT_PREFERENCE_SORT, ARGUMENT_DEFAULT_SORT_PREF);
+        return appCache.getSortPref();
     }
 
+    @Override
+    public String getSortParamTags() {
+        return appCache.getTagsSortPref();
+    }
+
+    @Override
+    public void setSortParamTags(String paramTags) {
+        appCache.setTagsSortPref(paramTags);
+    }
+
+    ///  TODO Migrate to AppPreferencesCache
+    @Deprecated
     @Override
     public long getLastDataBackupCloud() {
         return getBackupCloudInfoPreference().getLong(ARGUMENT_LAST_BACKUP_TIME, ARGUMENT_DEFAULT_LAST_BACKUP_TIME);
@@ -67,10 +87,10 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public void editSizeTextNoteActivity(int value) {
-        getDefaultPreferences().setInt(ARGUMENT_PREFERENCE_TEXT_SIZE, value);
-
+        themeCache.setSizeTextNoteActivity(value);
     }
 
+    @Deprecated
     @Override
     public int getSetCloudAuthBackup() {
         return getBackupCloudInfoPreference().getInt(ARGUMENT_AUTO_BACKUP_CLOUD, ARGUMENT_AUTO_BACKUP_CLOUD_ID);
@@ -78,18 +98,28 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public PreferencesBackup getListPreferences() {
-        return new PreferencesBackup(getFormatCount(),
+        return new PreferencesBackup(
+                getFormatCount(),
                 getTypeFaceNoteActivity(),
                 getSortParam(),
-                getSizeTextNoteActivity(), PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE),
-                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE),
-                PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE));
+                getSizeTextNoteActivity(),
+                PowerPreference.getDefaultFile().getInt(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE
+                ),
+                PowerPreference.getDefaultFile().getBoolean(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+                        PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE
+                ),
+                PowerPreference.getDefaultFile().getInt(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE
+                )
+        );
     }
-
 
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
-
         if (preferences.isCreated()) {
             getDefaultPreferences()
                     .putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, preferences.getFormatCount())
@@ -100,42 +130,28 @@ public class AppPreferencesHelper implements PreferenceHelper {
                     .putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, preferences.isDynamicTheme())
                     .putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
 
+            appCache.refresh();
         }
     }
 
     @Override
     public String getTypeFaceNoteActivity() {
-        return getDefaultPreferences().getString(ARGUMENT_PREFERENCE_TEXT_STYLE, ARGUMENT_DEFAULT_TEXT_STYLE);
-    }
-
-    @Override
-    public boolean isScreenProtectionEnabled() {
-        return getDefaultPreferences().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
-    }
-
-    @Override
-    public void setScreenProtectionEnabled(boolean enabled) {
-        getDefaultPreferences().setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, enabled);
+        return themeCache.getTypeFaceNoteActivity();
     }
 
     @Override
     public String getLastKnownVersion() {
-        return getDefaultPreferences().getString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "");
+        return appCache.getLastKnownVersion();
     }
 
     @Override
     public void setLastKnownVersion(String version) {
-        getDefaultPreferences().setString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, version);
+        appCache.setLastKnownVersion(version);
     }
 
     @Override
-    public int getThemeMode() {
-        return getDefaultPreferences().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
-    }
-
-    @Override
-    public void setThemeMode(int mode) {
-        getDefaultPreferences().setInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, mode);
+    public void cleanBackupInfo() {
+        PowerPreference.getFileByName(BackupPreferences.FIlE_NAME_PREFERENCE_BACKUP).clearAsync();
     }
 
 }

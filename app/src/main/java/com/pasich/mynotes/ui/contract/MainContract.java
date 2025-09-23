@@ -24,18 +24,15 @@ public interface MainContract {
 
         void newNotesButton();
 
-
         void choiceTagDialog(Tag tag, View mView);
 
         void choiceNoteDialog(Note note, int position);
 
         void selectTagUser(int position);
 
-        void loadingNotes(List<Note> noteList);
+        void loadingNotes(List<Note> noteList, String sortParam);
 
         void loadingTags(List<Tag> tagList);
-
-        void startToastCheckCountTags();
 
         void startDeleteTagDialog(Tag tag);
 
@@ -78,5 +75,6 @@ public interface MainContract {
         String getSortParam();
 
         boolean closeApp(boolean showSearchView);
+        void cleanBackupPrefs();
     }
 }

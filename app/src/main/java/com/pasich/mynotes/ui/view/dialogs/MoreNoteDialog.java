@@ -209,6 +209,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
 
+
     private void initTranslate() {
         PackageInfo pi = null;
         try {

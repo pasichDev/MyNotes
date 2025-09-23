@@ -19,6 +19,10 @@ public interface PreferenceHelper {
 
     String getSortParam();
 
+    String getSortParamTags();
+
+    void setSortParamTags(String paramTags);
+
     long getLastDataBackupCloud();
 
     String getLastBackupCloudId();
@@ -31,15 +35,10 @@ public interface PreferenceHelper {
 
     void setListPreferences(PreferencesBackup preferences);
 
-    boolean isScreenProtectionEnabled();
-
-    void setScreenProtectionEnabled(boolean enabled);
-
     String getLastKnownVersion();
 
     void setLastKnownVersion(String version);
 
-    int getThemeMode();
-
-    void setThemeMode(int mode);
+    @Deprecated
+    void cleanBackupInfo();
 }

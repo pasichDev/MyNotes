@@ -3,7 +3,7 @@ package com.pasich.mynotes;
 import android.app.Application;
 import android.util.Log;
 
-import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 
 import javax.inject.Inject;
 

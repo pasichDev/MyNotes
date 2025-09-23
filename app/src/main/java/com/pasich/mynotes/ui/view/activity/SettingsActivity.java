@@ -18,7 +18,6 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.color.MaterialColors;
@@ -26,10 +25,9 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Theme;
-import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
 import com.pasich.mynotes.utils.themes.ThemesArray;
-import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -40,9 +38,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SettingsActivity extends BaseActivity {
 
-    @Inject
-    PreferenceHelper mPreferenceHelper;
-    
     @Inject
     ThemePreferencesCache themePreferencesCache;
 
@@ -255,13 +250,8 @@ public class SettingsActivity extends BaseActivity {
     private void openAccentColorDialog() {
         if (!enableDynamic) {
             ArrayList<Theme> themes;
-            int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-            if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
-                themes = new ThemesArray().getThemes(true);
-            } else {
-                themes = new ThemesArray().getThemes(false);
-            }
-            
+            themes = new ThemesArray().getThemes();
+
             // Show a simple dialog with theme options
             showThemeSelectionDialog(themes);
         }

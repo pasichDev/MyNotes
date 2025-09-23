@@ -1,8 +1,6 @@
 package com.pasich.mynotes.ui.presenter;
 
 import static com.pasich.mynotes.utils.constants.settings.TagSettings.MAX_TAG_COUNT;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT;
 
 import android.util.Log;
 import android.view.View;
@@ -12,9 +10,9 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.contract.TagsContract;
+import com.pasich.mynotes.utils.adapters.tagAdapter.TagsSorter;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
-import com.preference.PowerPreference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +27,7 @@ import io.reactivex.disposables.CompositeDisposable;
 public class TagsPresenter extends BasePresenter<TagsContract.view> implements TagsContract.presenter {
 
     private List<Tag> cachedTags = new ArrayList<>();
+
     @Inject
     public TagsPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
@@ -50,10 +49,9 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
         getCompositeDisposable().add(getDataManager().getTagsUser().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(tagList -> {
             if (isViewAttached()) {
                 // Створюємо спеціальний тег для кнопки "Додати"
-               tagList.add(0, SystemTagsManager.createAddTag());
-
-                cachedTags = new ArrayList<>(tagList);
-                displayTags();
+                tagList.add(0, SystemTagsManager.createAddTag());
+                cachedTags = new ArrayList<>(TagsSorter.sortTags(tagList, getDataManager().getSortParamTags()));
+                displayTags(false);
             }
         }, throwable -> {
             Log.e("TagsPresenter", "Error loading tags", throwable);
@@ -65,48 +63,13 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
 
 
     // Сортуємо локальний кеш згідно з налаштуваннями
-    public void displayTags() {
+    public void displayTags(boolean isSort) {
         if (!isViewAttached() || cachedTags.isEmpty()) return;
-        getView().loadTags(sortTagsList(cachedTags));
-    }
-
-
-    private List<Tag> sortTagsList(List<Tag> tagList) {
-        String sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
-        List<Tag> sortedList = new ArrayList<>(tagList);
-
-        sortedList.sort((o1, o2) -> {
-
-            int x1 = o1.getSystemAction();
-            int x2 = o2.getSystemAction();
-
-            // Спеціальне сортування для системних міток addTag завжди перший
-             if (o1.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x1 = 100;
-             if (o2.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ADD_TAG) x2 = 100;
-
-
-            int sComp = Math.toIntExact(x2 - x1);
-
-            if (sComp != 0) {
-                return sComp;
-            }
-
-            // Для користувацьких тегів використовуємо налаштування сортування
-            if (o1.getSystemAction() == 0 && o2.getSystemAction() == 0) {
-                if ("TagsPositionSort".equals(sortParam)) {
-                    // Сортування за позицією (спеціальне)
-                    return Integer.compare(o1.getPosition(), o2.getPosition());
-                } else {
-                    // Сортування за датою створення (ID - новіші вгорі)
-                    return Long.compare(o2.getId(), o1.getId());
-                }
-            }
-
-            // Для системних тегів за замовчуванням сортуємо за ID
-            return Math.toIntExact(o2.getId() - o1.getId());
-        });
-
-        return sortedList;
+        if (isSort) {
+            getView().loadTags(TagsSorter.sortTags(cachedTags, getDataManager().getSortParamTags()));
+        } else {
+            getView().loadTags(cachedTags);
+        }
     }
 
     @Override
@@ -117,9 +80,9 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
 
         getCompositeDisposable().add(getDataManager().updateTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
             if (isViewAttached()) {
-                getView().showToastMessage(tag.getVisibility() == 0 ? R.string.toastTagVisible :  R.string.toastTagHidde);
+                getView().showToastMessage(tag.getVisibility() == 0 ? R.string.toastTagVisible : R.string.toastTagHidde);
                 updateTagInCache(tag);
-                displayTags();
+                displayTags(false);
             }
         }, throwable -> Log.e("TagsPresenter", "Error toggling tag visibility", throwable)));
     }
@@ -127,10 +90,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
     @Override
     public void onAddTagClick() {
         if (isViewAttached()) {
-            int minPosition = cachedTags.stream()
-                    .mapToInt(Tag::getPosition)
-                    .min()
-                    .orElse(0);
+            int minPosition = cachedTags.stream().mapToInt(Tag::getPosition).min().orElse(0);
 
             if (cachedTags.size() >= MAX_TAG_COUNT) {
                 getView().showToastCheckCountTags();
@@ -149,12 +109,18 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
 
     @Override
     public void sortTags(String sortParam) {
-        PowerPreference.getDefaultFile().setString(ARGUMENT_PREFERENCE_TAGS_SORT, sortParam);
-        displayTags();
+        getDataManager().setSortParamTags(sortParam);
+        displayTags(true);
     }
 
     @Override
     public void onDragCompleted(List<Tag> currentTagOrders) {
+
+        // Якщо список посортовано по даті створення необхідно пересортувати
+        if ("TagsCreationDateSort".equals(getDataManager().getSortParamTags())) {
+            getDataManager().setSortParamTags("TagsPositionSort");
+        }
+
         // Фільтруємо тільки користувацькі теги
         List<Tag> userTags = currentTagOrders.stream().filter(tag -> tag.getSystemAction() == 0).collect(Collectors.toList());
 
@@ -182,18 +148,11 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
     @Override
     public void getTagNotesCount(Tag tag, TagsContract.TagNotesCountCallback callback) {
         if (tag == null || callback == null) return;
-        
-        getCompositeDisposable().add(getDataManager()
-                .getCountNotesTag(tag.getNameTag())
-                .subscribeOn(getSchedulerProvider().io())
-                .observeOn(getSchedulerProvider().ui())
-                .subscribe(
-                        callback::onTagNotesCountReceived,
-                        throwable -> {
-                            Log.e("TagsPresenter", "Error getting notes count for tag", throwable);
-                            callback.onTagNotesCountReceived(0);
-                        }
-                ));
+
+        getCompositeDisposable().add(getDataManager().getCountNotesTag(tag.getNameTag()).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(callback::onTagNotesCountReceived, throwable -> {
+            Log.e("TagsPresenter", "Error getting notes count for tag", throwable);
+            callback.onTagNotesCountReceived(0);
+        }));
     }
 
     private void updateTagInCache(Tag updatedTag) {

@@ -19,13 +19,12 @@ import com.android.billingclient.api.Purchase;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
-import com.pasich.mynotes.billing.BillingManager;
+import com.pasich.mynotes.utils.managers.BillingManager;
 import com.pasich.mynotes.data.model.DonationProduct;
 import com.pasich.mynotes.databinding.ActivitySupportBinding;
 import com.pasich.mynotes.utils.adapters.DonationProductAdapter;

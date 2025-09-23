@@ -174,7 +174,7 @@
 
                     <EditText
                         android:id="@+id/valueNote"
-                        android:autoLink="web|email|phone"
+                        android:autoLink="web|email"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:autofillHints="no"

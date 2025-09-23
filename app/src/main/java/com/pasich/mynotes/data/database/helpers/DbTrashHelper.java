@@ -8,9 +8,7 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 
 public interface DbTrashHelper {
-    /**
-     * Trash
-     */
+
     Flowable<List<TrashNote>> getTrashNotesLoad();
 
     Completable addTrashNotes(List<TrashNote> noteList);

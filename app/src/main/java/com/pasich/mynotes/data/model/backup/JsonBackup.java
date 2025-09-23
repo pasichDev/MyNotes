@@ -12,10 +12,10 @@ public class JsonBackup {
 
     @SerializedName("a")
     private PreferencesBackup preferences;
-    
+
     @SerializedName("b")
     private List<Note> notes;
-    
+
     @SerializedName("c")
     private List<TrashNote> trashNotes;
 

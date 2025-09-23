@@ -1,4 +1,4 @@
-package com.pasich.mynotes.billing;
+package com.pasich.mynotes.utils.managers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,8 +9,6 @@ import com.pasich.mynotes.data.model.DonationProduct;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class BillingManager implements PurchasesUpdatedListener, BillingClientStateListener {
@@ -145,18 +143,15 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                         }
 
                         // Сортуємо товари за ціною (від меншої до більшої)
-                        Collections.sort(products, new Comparator<DonationProduct>() {
-                            @Override
-                            public int compare(DonationProduct p1, DonationProduct p2) {
-                                try {
-                                    // Витягуємо числові значення з цін
-                                    double price1 = extractPrice(p1.getPrice());
-                                    double price2 = extractPrice(p2.getPrice());
-                                    return Double.compare(price1, price2);
-                                } catch (Exception e) {
-                                    Log.w(TAG, "Error sorting prices: " + e.getMessage());
-                                    return 0;
-                                }
+                        products.sort((p1, p2) -> {
+                            try {
+                                // Витягуємо числові значення з цін
+                                double price1 = extractPrice(p1.getPrice());
+                                double price2 = extractPrice(p2.getPrice());
+                                return Double.compare(price1, price2);
+                            } catch (Exception e) {
+                                Log.w(TAG, "Error sorting prices: " + e.getMessage());
+                                return 0;
                             }
                         });
 

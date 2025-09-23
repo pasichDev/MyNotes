@@ -12,6 +12,7 @@ import com.pasich.mynotes.data.model.Note;
 import java.util.List;
 
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 
 @Dao
 public interface NoteDao {
@@ -44,7 +45,7 @@ public interface NoteDao {
   List<Note> getNotesForTag(String nameTag);
 
   @Query("SELECT * FROM notes WHERE id=:idNote")
-  Note getNoteForId(long idNote);
+  Single<Note> getNoteForId(long idNote);
 
   @Query("UPDATE NOTES SET tag=:tag WHERE id=:noteID")
   void setTagNote(String tag, int noteID);

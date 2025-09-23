@@ -1,18 +1,19 @@
 package com.pasich.mynotes.utils.tool;
 
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT;
-
 import android.view.MenuItem;
 
 import com.pasich.mynotes.R;
-import com.preference.PowerPreference;
+import com.pasich.mynotes.cache.AppPreferencesCache;
 
 import javax.inject.Inject;
 
 public class FormatListTool {
+    private final AppPreferencesCache cache;
+
     @Inject
-    public FormatListTool() {
+    public FormatListTool(AppPreferencesCache cache) {
+        this.cache = cache;
+        this.cache.initialize();
     }
 
     public void init(MenuItem button) {
@@ -20,7 +21,7 @@ public class FormatListTool {
     }
 
     private int getParamFormatValue() {
-        return PowerPreference.getDefaultFile().getInt(ARGUMENT_PREFERENCE_FORMAT, ARGUMENT_DEFAULT_FORMAT_VALUE);
+        return cache.getFormatPref();
     }
 
     /**
@@ -29,11 +30,11 @@ public class FormatListTool {
     public void formatNote(MenuItem menuItem) {
         switch (getParamFormatValue()) {
             case 1 -> {
-                PowerPreference.getDefaultFile().setInt(ARGUMENT_PREFERENCE_FORMAT, 2);
+                cache.setFormatPref(2);
                 menuItem.setIcon(getParamIco(2));
             }
             case 2 -> {
-                PowerPreference.getDefaultFile().setInt(ARGUMENT_PREFERENCE_FORMAT, 1);
+                cache.setFormatPref(1);
                 menuItem.setIcon(getParamIco(1));
             }
         }

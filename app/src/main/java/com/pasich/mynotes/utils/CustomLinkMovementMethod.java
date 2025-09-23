@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 /**
  * <a href="https://stackoverflow.com/questions/1697084/handle-textview-link-click-in-my-android-app/16644228#16644228">...</a>
  */
+@Deprecated
 public abstract class CustomLinkMovementMethod extends LinkMovementMethod {
 
     public int LINK_WEB = 0;

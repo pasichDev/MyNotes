@@ -12,6 +12,7 @@ import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 
 import java.util.ArrayList;
 
+@Deprecated
 public interface ApiHelper {
     Task<LastBackupCloud> getLastBackupInfo(Drive mDriveCredential);
 

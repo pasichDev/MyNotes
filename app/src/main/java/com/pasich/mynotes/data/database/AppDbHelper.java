@@ -4,7 +4,6 @@ package com.pasich.mynotes.data.database;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
-import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.ArrayList;
@@ -22,26 +21,18 @@ import io.reactivex.Single;
 public class AppDbHelper implements DbHelper {
 
     private final AppDatabase appDatabase;
-    private final UpdateChecker updateChecker;
 
     @Inject
-    AppDbHelper(AppDatabase appDatabase, UpdateChecker updateChecker) {
+    AppDbHelper(AppDatabase appDatabase) {
         this.appDatabase = appDatabase;
-        this.updateChecker = updateChecker;
     }
-
 
     @Override
     public Flowable<List<Tag>> getTags() {
-        return appDatabase.tagsDao().getTags()
-                .map(userTags -> {
-                    List<Tag> allTags = new ArrayList<>();
-                    boolean showChangeLog = updateChecker.hasNewVersion();
-                    allTags.addAll(SystemTagsManager.getSystemTags(showChangeLog));
-                    allTags.addAll(userTags);
-                    
-                    return allTags;
-                });
+        return appDatabase.tagsDao().getTags().map(userTags -> {
+            userTags.addAll(SystemTagsManager.getSystemTags());
+            return userTags;
+        });
     }
 
     @Override
@@ -165,19 +156,13 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Single<Note> getNoteForId(long idNote) {
-        return Single.fromCallable(() -> {
-            Note note = appDatabase.noteDao().getNoteForId(idNote);
-            return note != null ? note : new Note(); // Защита от null
-        });
+        return appDatabase.noteDao().getNoteForId(idNote)
+                .onErrorReturnItem(new Note());
     }
 
     @Override
     public Single<Long> addNote(Note note, boolean copyNote) {
-        return Single.fromCallable(() -> {
-           return copyNote ?
-                appDatabase.noteDao().addNoteCopy(note) : 
-                appDatabase.transactionsNote().addNoteTransaction(note);
-        });
+        return Single.fromCallable(() -> copyNote ? appDatabase.noteDao().addNoteCopy(note) : appDatabase.transactionsNote().addNoteTransaction(note));
     }
 
     @Override

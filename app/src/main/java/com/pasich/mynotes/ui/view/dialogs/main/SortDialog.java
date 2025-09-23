@@ -1,10 +1,5 @@
 package com.pasich.mynotes.ui.view.dialogs.main;
 
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_SORT;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT;
-
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -19,52 +14,67 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.color.MaterialColors;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.dialog.BaseDialogBottomSheets;
-import com.pasich.mynotes.base.view.MainSortView;
-import com.pasich.mynotes.base.view.TagsSortView;
+import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.databinding.DialogChooseSortBinding;
-import com.preference.PowerPreference;
 
+import javax.inject.Inject;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class SortDialog extends BaseDialogBottomSheets {
-    private MainSortView sortView;
-    private TagsSortView tagsSortView;
+
+    public interface SortListener {
+        void onSortSelected(String sortParam);
+
+        void onTagsSortSelected(String tagsSortParam);
+    }
+
+    private boolean isTagsSort;
+    private SortListener listener;
     private DialogChooseSortBinding binding;
     private String sortParam;
     private String tagsSortParam;
-    private boolean isTagsSort = false;
 
+    @Inject
+    AppPreferencesCache cache;
+
+    @Inject
     public SortDialog() {
-        this.isTagsSort = false;
     }
 
-    public SortDialog(boolean isTagsSort) {
-        this.isTagsSort = isTagsSort;
+    public static SortDialog newInstance(boolean isTagsSort) {
+        SortDialog dialog = new SortDialog();
+        Bundle args = new Bundle();
+        args.putBoolean("isTagsSort", isTagsSort);
+        dialog.setArguments(args);
+        return dialog;
+    }
+
+
+    public void setListener(SortListener listener) {
+        this.listener = listener;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        this.binding = DialogChooseSortBinding.inflate(getLayoutInflater());
-        
+        binding = DialogChooseSortBinding.inflate(inflater, container, false);
+        isTagsSort = getArguments() != null && getArguments().getBoolean("isTagsSort", false);
+
         if (isTagsSort) {
-            this.tagsSortView = (TagsSortView) getContext();
-            this.tagsSortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TAGS_SORT, ARGUMENT_DEFAULT_TAGS_SORT_PREF);
-            binding.head.setText(R.string.sortHead);
+            tagsSortParam = cache.getTagsSortPref();
             setupTagsView();
             selectedAutoItemTags(tagsSortParam);
         } else {
-            this.sortView = (MainSortView) getContext();
-            this.sortParam = PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_SORT, ARGUMENT_DEFAULT_SORT_PREF);
-            binding.head.setText(R.string.sortHead);
+            sortParam = cache.getSortPref();
             setupNotesView();
             selectedAutoItem(sortParam);
         }
-        
+
         initListeners();
         return binding.getRoot();
     }
-
-
 
     @Override
     public void setState(BottomSheetDialog dialog) {
@@ -73,43 +83,44 @@ public class SortDialog extends BaseDialogBottomSheets {
 
     private void selectedSort(String param) {
         if (!param.equals(sortParam)) {
-            PowerPreference.getDefaultFile().setString(ARGUMENT_PREFERENCE_SORT, param);
-            assert sortView != null;
-            sortView.sortList(param);
+            cache.setSortPref(param);
+            if (listener != null) listener.onSortSelected(param);
             dismiss();
         }
     }
 
     private void selectedTagsSort(String param) {
         if (!param.equals(tagsSortParam)) {
-            PowerPreference.getDefaultFile().setString(ARGUMENT_PREFERENCE_TAGS_SORT, param);
-            assert tagsSortView != null;
-            tagsSortView.sortTags(param);
+            cache.setTagsSortPref(param);
+            if (listener != null) listener.onTagsSortSelected(param);
             dismiss();
         }
     }
 
     private void setupNotesView() {
-        // Hide tags sorting options
         binding.TagsPositionSort.setVisibility(View.GONE);
         binding.TagsCreationDateSort.setVisibility(View.GONE);
+        binding.head.setText(R.string.sortHead);
     }
 
     private void setupTagsView() {
-        // Hide notes sorting options
         binding.DataSort.setVisibility(View.GONE);
         binding.DataReserve.setVisibility(View.GONE);
         binding.TitleSort.setVisibility(View.GONE);
         binding.TitleReserve.setVisibility(View.GONE);
-        
-        // Show tags sorting options
         binding.TagsPositionSort.setVisibility(View.VISIBLE);
         binding.TagsCreationDateSort.setVisibility(View.VISIBLE);
+        binding.head.setText(R.string.sortHead);
     }
 
-    public void selectedAutoItem(String param) {
+    private void selectedAutoItem(String param) {
         int colorBackground = MaterialColors.getColor(requireContext(), R.attr.colorSurfaceVariant, Color.GRAY);
         int colorText = MaterialColors.getColor(requireContext(), R.attr.colorPrimary, Color.BLACK);
+
+        binding.DataSortCheck.setVisibility(View.GONE);
+        binding.DataReserveCheck.setVisibility(View.GONE);
+        binding.TitleSortCheck.setVisibility(View.GONE);
+        binding.TitleReserveCheck.setVisibility(View.GONE);
 
         switch (param) {
             case "DataSort" -> {
@@ -135,9 +146,12 @@ public class SortDialog extends BaseDialogBottomSheets {
         }
     }
 
-    public void selectedAutoItemTags(String param) {
+    private void selectedAutoItemTags(String param) {
         int colorBackground = MaterialColors.getColor(requireContext(), R.attr.colorSurfaceVariant, Color.GRAY);
         int colorText = MaterialColors.getColor(requireContext(), R.attr.colorPrimary, Color.BLACK);
+
+        binding.TagsPositionSortCheck.setVisibility(View.GONE);
+        binding.TagsCreationDateSortCheck.setVisibility(View.GONE);
 
         switch (param) {
             case "TagsPositionSort" -> {
@@ -154,28 +168,41 @@ public class SortDialog extends BaseDialogBottomSheets {
     }
 
     @Override
-    public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-        binding.DataSort.setOnClickListener(null);
-        binding.DataReserve.setOnClickListener(null);
-        binding.TitleSort.setOnClickListener(null);
-        binding.TitleReserve.setOnClickListener(null);
-        binding.TagsPositionSort.setOnClickListener(null);
-        binding.TagsCreationDateSort.setOnClickListener(null);
-    }
-
-    @Override
     public void initListeners() {
         if (isTagsSort) {
-            // Setup listeners for tags sorting
             binding.TagsPositionSort.setOnClickListener(v -> selectedTagsSort("TagsPositionSort"));
             binding.TagsCreationDateSort.setOnClickListener(v -> selectedTagsSort("TagsCreationDateSort"));
         } else {
-            // Setup listeners for notes sorting
             binding.DataSort.setOnClickListener(v -> selectedSort("DataSort"));
             binding.DataReserve.setOnClickListener(v -> selectedSort("DataReserve"));
             binding.TitleSort.setOnClickListener(v -> selectedSort("TitleSort"));
             binding.TitleReserve.setOnClickListener(v -> selectedSort("TitleReserve"));
         }
     }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        clearListeners();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        clearListeners();
+        binding = null;
+    }
+
+    private void clearListeners() {
+        if (binding != null) {
+            binding.DataSort.setOnClickListener(null);
+            binding.DataReserve.setOnClickListener(null);
+            binding.TitleSort.setOnClickListener(null);
+            binding.TitleReserve.setOnClickListener(null);
+            binding.TagsPositionSort.setOnClickListener(null);
+            binding.TagsCreationDateSort.setOnClickListener(null);
+        }
+        listener = null;
+    }
+
 }

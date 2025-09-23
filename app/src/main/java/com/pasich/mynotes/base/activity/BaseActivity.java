@@ -28,7 +28,7 @@ import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.themes.ThemesArray;
-import com.pasich.mynotes.utils.preferences.ThemePreferencesCache;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.preference.PowerPreference;
 
 import javax.inject.Inject;

@@ -1,12 +1,11 @@
 package com.pasich.mynotes.utils.tool;
 
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE;
 
 import android.widget.ImageButton;
 
 import com.pasich.mynotes.R;
-import com.preference.PowerPreference;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 
 import javax.inject.Inject;
 
@@ -17,8 +16,12 @@ public class TextStyleTool {
 
     private ImageButton mButton;
 
+    private final ThemePreferencesCache cache;
+
     @Inject
-    public TextStyleTool() {
+    public TextStyleTool(ThemePreferencesCache cache) {
+        this.cache = cache;
+        this.cache.initialize();
     }
 
     public void addButton(ImageButton button) {
@@ -27,7 +30,7 @@ public class TextStyleTool {
     }
 
     private String getArgPreference() {
-        return PowerPreference.getDefaultFile().getString(ARGUMENT_PREFERENCE_TEXT_STYLE, ARGUMENT_DEFAULT_TEXT_STYLE);
+        return cache.getTypeFaceNoteActivity();
     }
 
 
@@ -37,17 +40,17 @@ public class TextStyleTool {
                 case ARGUMENT_DEFAULT_TEXT_STYLE -> {
                     //selected italic
                     mButton.setImageResource(getLoadSrcDrawable("italic"));
-                    PowerPreference.getDefaultFile().setString(ARGUMENT_PREFERENCE_TEXT_STYLE, "italic");
+                    cache.setTypeFaceNoteActivity("italic");
                 }
                 case "italic" -> {
                     //selected bold
                     mButton.setImageResource(getLoadSrcDrawable("bold"));
-                    PowerPreference.getDefaultFile().setString(ARGUMENT_PREFERENCE_TEXT_STYLE, "bold");
+                    cache.setTypeFaceNoteActivity("bold");
                 }
                 case "bold" -> {
                     //selected normal
                     mButton.setImageResource(getLoadSrcDrawable("normal"));
-                    PowerPreference.getDefaultFile().setString(ARGUMENT_PREFERENCE_TEXT_STYLE, ARGUMENT_DEFAULT_TEXT_STYLE);
+                    cache.setTypeFaceNoteActivity("normal");
                 }
             }
         }

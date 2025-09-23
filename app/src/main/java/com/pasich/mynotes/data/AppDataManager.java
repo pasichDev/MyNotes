@@ -32,7 +32,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 
 @Singleton
-public class AppDataManger implements DataManager {
+public class AppDataManager implements DataManager {
 
 
     private final DbHelper dbHelper;
@@ -40,7 +40,7 @@ public class AppDataManger implements DataManager {
     private final ApiBackup apiBackup;
 
     @Inject
-    AppDataManger(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, ApiBackup apiBackup) {
+    AppDataManager(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, ApiBackup apiBackup) {
         this.dbHelper = dbHelper;
         this.preferencesHelper = preferencesHelper;
         this.apiBackup = apiBackup;
@@ -76,6 +76,16 @@ public class AppDataManger implements DataManager {
     }
 
     @Override
+    public String getSortParamTags() {
+        return preferencesHelper.getSortParamTags();
+    }
+
+    @Override
+    public void setSortParamTags(String paramTags) {
+        preferencesHelper.setSortParamTags(paramTags);
+    }
+
+    @Override
     public long getLastDataBackupCloud() {
         return preferencesHelper.getLastDataBackupCloud();
     }
@@ -106,16 +116,6 @@ public class AppDataManger implements DataManager {
     }
 
     @Override
-    public boolean isScreenProtectionEnabled() {
-        return preferencesHelper.isScreenProtectionEnabled();
-    }
-
-    @Override
-    public void setScreenProtectionEnabled(boolean enabled) {
-        preferencesHelper.setScreenProtectionEnabled(enabled);
-    }
-
-    @Override
     public String getLastKnownVersion() {
         return preferencesHelper.getLastKnownVersion();
     }
@@ -126,14 +126,10 @@ public class AppDataManger implements DataManager {
     }
 
     @Override
-    public int getThemeMode() {
-        return preferencesHelper.getThemeMode();
+    public void cleanBackupInfo() {
+        preferencesHelper.cleanBackupInfo();
     }
 
-    @Override
-    public void setThemeMode(int mode) {
-        preferencesHelper.setThemeMode(mode);
-    }
 
     @Override
     public String getTypeFaceNoteActivity() {

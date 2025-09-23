@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.pasich.mynotes.R;
 
+@Deprecated
 public class GoogleTranslationIntent {
 
    public static String packageTranslator = "com.google.android.apps.translate";
