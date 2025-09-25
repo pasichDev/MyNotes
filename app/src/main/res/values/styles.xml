@@ -125,10 +125,6 @@
         <item name="cornerSize">10%</item>
     </style>
 
-    <style name="circleUserAvatar">
-        <item name="cornerSize">50%</item>
-    </style>
-
     <style name="progressDialogRestore" parent="MaterialAlertDialog.Material3.Body.Text">
         <item name="android:windowCloseOnTouchOutside">false</item>
     </style>

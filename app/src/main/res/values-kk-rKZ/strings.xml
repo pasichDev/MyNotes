@@ -96,8 +96,6 @@
     <string name="themeModeLight">Ашық</string>
     <string name="themeModeDark">Қараңғы</string>
 
-    <string name="loginUser">Google жүйесіне кіру</string>
-    <string name="cloudBackup">Бұлт</string>
     <string name="localBackup">Құрылғы</string>
     <string name="importLocalBackup">Res. көшірмелер</string>
     <string name="exportLocalBackup">Сақтық көшірме жасау</string>
@@ -107,43 +105,21 @@
     <string name="important">Маңызды</string>
     <string name="dataExportDescription">Сіз өзіңіздің барлық ағымдағы жазбаларыңызды көру үшін экспорттай аласыз. Бұл функция тек белсенді жазбаларды экспорттайды, қоқыс жәшігіндегі жазбаларды алып тастап, тегтер немесе басқа сүзгілерді ескермейді.</string>
     <string name="exportAllNotes">Барлық жазбаларды экспорттау</string>
-    <string name="lastCloudCopy">Соңғы сақтық көшірме: %1$s</string>
-    <string name="errorDriveAuth">Қонақ</string>
-    <string name="autoCloudBackupTitle">Сақтық көшірмені автоматты түрде жасау</string>
     <string name="restoreNotesTitle">Деректерді қалпына келтіру</string>
     <string name="restoreNotesMessage">Барлардан бұрын жаңа ескертпелер қосылады және көшірмелер еленбейді!</string>
     <string name="selectRestore">Қалпына келтіру опциясын таңдаңыз. көшіру</string>
     <string name="nextRestore">Бұлттан қалпына келтіру</string>
     <string name="messageRestoreProcess"><b>Деректерді қалпына келтіру</b> \nБұл терезе аяқталғаннан кейін автоматты түрде жабылады.</string>
-    <string name="emptyBackups">Сақтық көшірмелер табылмады</string>
-    <string name="checkLastBackupsCloud">Күтіңіз, деректер жүктелуде…</string>
-
-    <!-- Массивтердің автосақтық көшірмесі -->
-    <string name="autoCloudVariantsDay">Күн сайын</string>
-    <string name="autoCloudVariantsWeek">Апта сайын</string>
-    <string name="autoCloudVariantsMonth">Ай сайын</string>
-    <string name="autoCloudVariantsOff">Өшірулі</string>
-
-    <!-- Автоматты сақтық көшірме жолдары -->
-
 
     <!-- Қате нәтижелерінің сақтық көшірмесін жасау/қалпына келтіру -->
     <string name="emptyDataToBackup">Сақтық көшірме жасау үшін деректер жоқ</string>
-    <string name="errorConnectedNetwork">Интернет қосылымы жоқ</string>
     <string name="creteLocalCopyOkay">Сақтық көшірме сәтті жасалды</string>
     <string name="creteLocalCopyFail">Қате, сақтық көшірме сақталмады</string>
     <string name="restoreDataOkay">Деректерді қалпына келтіру сәтті аяқталды</string>
     <string name="restoreDataFall">Қате: сақтық көшірме бүлінген</string>
-    <string name="errorAuth">Қате, әрекетті кейінірек қайталаңыз</string>
-    <string name="errorLoadingLastBackupCloud">Қате, әрекетті қайталау үшін басыңыз</string>
     <string name="errorDriveSync">Сервер қатесі немесе нашар интернет сапасы</string>
-    <string name="errorCredential">Қате, авторизация мәселелері</string>
 
-    <string name="errorDriverAuthInfo">Бұлтты синхрондауды пайдалану үшін жүйеге кіруіңіз керек</string>
     <string name="sortNotes">Ескертпелерді сұрыптау</string>
-    <string name="percentProgress">Сақтық көшірме (%d%%)</string>
-
-    <!-- Өнім ұсынысы -->
     <string name="errorSyncDescrpt">Қалтада сақтық көшірме жасау уақытша қолжетімсіз</string>
 
     <string name="thanks_title">Құрметті пайдаланушы</string>

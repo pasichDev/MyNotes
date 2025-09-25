@@ -77,7 +77,6 @@
     <string name="email_address" translatable="false">pasichDev@gmail.com</string>
     <string name="editNoteButton" translatable="false">EditNote</string>
     <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
-    <string name="userAvatar" translatable="false">User Avatar</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
 
@@ -110,8 +109,6 @@
     <string name="themeModeLight">Light</string>
     <string name="themeModeDark">Dark</string>
 
-    <string name="loginUser">Google Login</string>
-    <string name="cloudBackup">Cloud</string>
     <string name="localBackup">Device</string>
     <string name="importLocalBackup">Restore with Res. copies</string>
     <string name="exportLocalBackup">Create backup</string>
@@ -121,36 +118,19 @@
     <string name="important">Important</string>
     <string name="dataExportDescription">You can export all your current notes for viewing. This feature exports only active notes, excluding notes from trash, without considering tags or other filters.</string>
     <string name="exportAllNotes">Export all notes</string>
-    <string name="lastCloudCopy">Last backup: %1$s</string>
-    <string name="errorDriveAuth">Guest</string>
-    <string name="autoCloudBackupTitle">Auto Backup</string>
     <string name="restoreNotesTitle">Data Restore</string>
     <string name="restoreNotesMessage">New notes will be added before existing ones, and duplicates will be ignored!</string>
     <string name="selectRestore">Select Restore. copy</string>
     <string name="nextRestore">Restore from Cloud</string>
     <string name="messageRestoreProcess"><b>Restoring data</b> \nThis window will close automatically when completed.</string>
-    <string name="emptyBackups">No backups found</string>
-    <string name="checkLastBackupsCloud">Please wait, loading data…</string>
-
-    <!-- Arrays AutoBackup -->
-    <string name="autoCloudVariantsDay">Every day</string>
-    <string name="autoCloudVariantsWeek">Every week</string>
-    <string name="autoCloudVariantsMonth">Every month</string>
-    <string name="autoCloudVariantsOff">Off</string>
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">No data to backup</string>
-    <string name="errorConnectedNetwork">No internet connection</string>
     <string name="creteLocalCopyOkay">The backup was created successfully</string>
     <string name="creteLocalCopyFail">Error, backup not saved</string>
     <string name="restoreDataOkay">Data restore completed successfully</string>
     <string name="restoreDataFall">Error: Backup corrupted</string>
-    <string name="errorAuth">Error, please try again later</string>
-    <string name="errorLoadingLastBackupCloud">Error, click to try again</string>
     <string name="errorDriveSync">Server error or poor internet quality</string>
-    <string name="errorCredential">Error, authorization problems</string>
-
-    <string name="errorDriverAuthInfo">You must be logged in to use cloud sync</string>
     <string name="sortNotes">Sort notes</string>
 
 
@@ -158,8 +138,6 @@
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
     <string name="errorSyncDescrpt">Cloud backup is temporarily unavailable</string>
-
-    <string name="percentProgress">Backup (%d%%)</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Support Developer</string>
@@ -298,7 +276,7 @@
     <string name="import_notes_from_google_keep">Import notes from Google Keep</string>
     <string name="google_keep_description">Export your notes from Google Keep and import them into this app. Google Takeout export is supported.</string>
     <string name="import_from_google_keep">Import from Google Keep</string>
-    
+
     <string name="other_apps">Other Apps</string>
     <string name="import_from_other_note_apps">Import from other note-taking apps</string>
     <string name="other_apps_description">Import notes from popular note-taking apps: OneNote, Evernote, Notion and others.</string>

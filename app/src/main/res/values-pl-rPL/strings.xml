@@ -49,7 +49,7 @@
     <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
     <string name="emptyNotesForTag">Tutaj będą wyświetlane notatki które oznaczysz tagiem "%1$s"</string>
     <string name="chooseNote">Działania na wybranej notatce</string>
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Opcje udostępniania</string>
     <string name="saveToGoogleDrive">Zapisz w Google Drive</string>
@@ -97,55 +97,34 @@
     <string name="themeModeLight">Jasny</string>
     <string name="themeModeDark">Ciemny</string>
 
-    <string name="loginUser">Logowanie Google</string>
-    <string name="cloudBackup">Chmura</string>
     <string name="localBackup">Urządzenie</string>
     <string name="importLocalBackup">Przywróć z Res. kopie</string>
     <string name="exportLocalBackup">Utwórz kopię zapasową</string>
-    
+
     <!-- Data Export Section -->
     <string name="dataExport">Eksport danych</string>
     <string name="important">Ważne</string>
     <string name="dataExportDescription">Możesz wyeksportować wszystkie swoje obecne notatki do przeglądania. Ta funkcja eksportuje tylko aktywne notatki, wykluczając notatki z kosza, bez uwzględniania tagów lub innych filtrów.</string>
     <string name="exportAllNotes">Eksportuj wszystkie notatki</string>
-    <string name="lastCloudCopy">Ostatnia kopia zapasowa: %1$s</string>
-    <string name="errorDriveAuth">Gość</string>
-    <string name="autoCloudBackupTitle">Automatyczna kopia zapasowa</string>
     <string name="restoreNotesTitle">Przywracanie danych</string>
     <string name="restoreNotesMessage">Nowe notatki zostaną dodane przed istniejącymi, a duplikaty będą ignorowane!</string>
     <string name="selectRestore">Wybierz opcję Przywróć. skopiuj</string>
     <string name="nextRestore">Przywróć z chmury</string>
     <string name="messageRestoreProcess"><b>Przywracanie danych</b> \nTo okno zamknie się automatycznie po zakończeniu.</string>
-    <string name="emptyBackups">Nie znaleziono kopii zapasowych</string>
-    <string name="checkLastBackupsCloud">Proszę czekać, ładowanie danych…</string>
-
-    <!-- Automatyczna kopia zapasowa tablic -->
-    <string name="autoCloudVariantsDay">Każdego dnia</string>
-    <string name="autoCloudVariantsWeek">Co tydzień</string>
-    <string name="autoCloudVariantsMonth">Co miesiąc</string>
-    <string name="autoCloudVariantsOff">Wyłączone</string>
-
-    <!-- Ciągi automatycznej kopii zapasowej -->
 
 
     <!-- Błąd wyników tworzenia kopii zapasowej/przywracania -->
     <string name="emptyDataToBackup">Brak danych do wykonania kopii zapasowej</string>
-    <string name="errorConnectedNetwork">Brak połączenia internetowego</string>
     <string name="creteLocalCopyOkay">Kopia zapasowa została pomyślnie utworzona</string>
     <string name="creteLocalCopyFail">Błąd, kopia zapasowa nie została zapisana</string>
     <string name="restoreDataOkay">Przywracanie danych zakończone pomyślnie</string>
     <string name="restoreDataFall">Błąd: Uszkodzona kopia zapasowa</string>
-    <string name="errorAuth">Błąd, spróbuj ponownie później</string>
-    <string name="errorLoadingLastBackupCloud">Błąd, kliknij, aby spróbować ponownie</string>
     <string name="errorDriveSync">Błąd serwera lub niska jakość internetu</string>
-    <string name="errorCredential">Błąd, problemy z autoryzacją</string>
 
-    <string name="errorDriverAuthInfo">Musisz być zalogowany, aby korzystać z synchronizacji w chmurze</string>
     <string name="sortNotes">Sortuj notatki</string>
-    <string name="percentProgress">Kopia zapasowa (%d%%)</string>
     <string name="errorSyncDescrpt">Tworzenie kopii zapasowej w chmurze jest tymczasowo niedostępne.</string>
 
-     <!-- Oferta produktowa -->
+    <!-- Oferta produktowa -->
     <string name="thanks_title">Drogi użytkowniku</string>
     <string name="thanks_donate">Twórca projektu dziękuje za zakup. Będziemy dążyć do tego, aby stać się lepszymi i wygodniejszymi. \n <b>Z wyrazami szacunku, moje notatki!</b></string>
 
@@ -187,7 +166,7 @@
     <!-- Purchase Error Messages -->
     <string name="purchase_loading">Ładowanie produktów…</string>
     <string name="purchase_error_no_products">Brak dostępnych produktów do darowizny</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Wspieraj dewelopera</string>
     <string name="support_solo_developer_description">Cześć! Jestem deweloperem pracującym nad MyNotes w wolnym czasie. Wszystkie funkcje zawsze będą darmowe, ale Twoje wsparcie pomaga mi poświęcić więcej czasu na ulepszanie tej aplikacji. Każdy wkład znaczy dla mnie cały świat! 💖</string>
@@ -197,7 +176,7 @@
     <string name="help_subtitle">Dowiedz się, jak maksymalnie wykorzystać funkcje MyNotes</string>
     <string name="help_section_icon">Ikona sekcji</string>
     <string name="help_feature_icon">Ikona funkcji</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tagi</string>
     <string name="help_tags_func_title">Interakcja z tagami</string>
@@ -208,7 +187,7 @@
     <string name="help_tags_hide_description">Użyj funkcji ukrywania, aby tymczasowo usunąć oznaczone notatki z głównego widoku, zachowując dostęp do nich przez tag</string>
     <string name="help_tags_limit_title">Limit tagów</string>
     <string name="help_tags_limit_description">Możesz utworzyć do 25 tagów dla efektywnej organizacji swoich notatek</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Nawigacja</string>
     <string name="help_navigation_drawer_title">Menu główne</string>
@@ -219,18 +198,18 @@
     <string name="help_navigation_sort_description">Sortuj swoje notatki według daty ostatniej modyfikacji lub nazwy w kolejności rosnącej lub malejącej</string>
     <string name="help_navigation_format_title">Format wyświetlania</string>
     <string name="help_navigation_format_description">Przełączaj między listą a siatką, aby wyświetlać swoje notatki w wygodnym dla siebie układzie</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gesty przesuwania</string>
     <string name="help_navigation_swipe_description">Zarządzaj notatkami intuicyjnie! Przesuń w lewo, aby aktywować tryb wielokrotnego wyboru dla szybkich operacji masowych, lub w prawo, aby natychmiast usunąć notatkę i wysłać ją do kosza. Gesty są dostępne tylko w trybie jednokolumnowym.</string>
-    
+
     <!-- Other Section -->
     <string name="help_other_title">Inne</string>
     <string name="help_other_security_title">Ochrona ekranu</string>
     <string name="help_other_security_description">Po włączeniu w ustawieniach, ta funkcja chroni twoje notatki przed nieautoryzowanym przeglądaniem: ukrywa zawartość aplikacji w przeglądzie ostatnich aplikacji, zapobiega zrzutom ekranu i blokuje nagrywanie ekranu. Ta funkcja bezpieczeństwa aktywuje się po ponownym uruchomieniu aplikacji.</string>
     <string name="help_other_shortcuts_title">Skróty aplikacji</string>
     <string name="help_other_shortcuts_description">Przytrzymaj ikonę aplikacji, aby szybko uzyskać dostęp do skrótów tworzenia nowej notatki lub wyszukiwania w twoich notatkach. Dostępne na Androidzie 7.1 i wyższym.</string>
-    
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Funkcje notatek</string>
     <string name="help_notes_limit_title">Limit tekstu</string>
@@ -284,7 +263,7 @@
     <string name="import_notes_from_google_keep">Importuj notatki z Google Keep</string>
     <string name="google_keep_description">Wyeksportuj swoje notatki z Google Keep i zaimportuj je do tej aplikacji. Obsługiwany jest eksport przez Google Takeout.</string>
     <string name="import_from_google_keep">Import z Google Keep</string>
-    
+
     <string name="other_apps">Inne aplikacje</string>
     <string name="import_from_other_note_apps">Import z innych aplikacji do notatek</string>
     <string name="other_apps_description">Import notatek z popularnych aplikacji do robienia notatek: OneNote, Evernote, Notion i innych.</string>

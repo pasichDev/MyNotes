@@ -96,8 +96,6 @@
     <string name="themeModeLight">Светлая</string>
     <string name="themeModeDark">Цёмная</string>
 
-    <string name="loginUser">Аўтарызацыя Google</string>
-    <string name="cloudBackup">Хмара</string>
     <string name="localBackup">Прылада</string>
     <string name="importLocalBackup">Аднавіць з дапамогай рэз. копіі</string>
     <string name="exportLocalBackup">Стварыць рэзервовую копію</string>
@@ -107,39 +105,22 @@
     <string name="important">Важна</string>
     <string name="dataExportDescription">Вы можаце экспартаваць усе свае бягучыя нататкі для прагляду. Гэтая функцыя экспартуе толькі актыўныя нататкі, выключаючы нататкі з сметніцы, не ўлічваючы тэгі або іншыя фільтры.</string>
     <string name="exportAllNotes">Экспартаваць усе нататкі</string>
-    <string name="lastCloudCopy">Апошняя рэзервовая копія: %1$s</string>
-    <string name="errorDriveAuth">Госць</string>
-    <string name="autoCloudBackupTitle">Аўтаматычнае рэзервовае капіраванне</string>
     <string name="restoreNotesTitle">Аднаўленне дадзеных</string>
     <string name="restoreNotesMessage">Новыя нататкі будуць дададзеныя да ўжо існых, а дублікаты будуць праігнараваныя!</string>
     <string name="selectRestore">Выбраць рэз. копію</string>
     <string name="nextRestore">Аднавіць з аблокі</string>
     <string name="messageRestoreProcess"><b>Аднаўленне дадзеных</b> \nПасля завяршэння дадзенае акно будзе аўтаматычна зачынена.</string>
-    <string name="emptyBackups">Рэзервовых копій не знойдзена</string>
-    <string name="checkLastBackupsCloud">Пачакайце, ідзе загрузка дадзеных…</string>
-
-    <!-- Arrays AutoBackup -->
-    <string name="autoCloudVariantsDay">Кожны дзень</string>
-    <string name="autoCloudVariantsWeek">Кожны тыдзень</string>
-    <string name="autoCloudVariantsMonth">Кожны месяц</string>
-    <string name="autoCloudVariantsOff">Выкл.</string>
 
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">Няма дадзеных, для стварэння рэзервовай копіі</string>
-    <string name="errorConnectedNetwork">Няма падлучэння да інтэрнэту</string>
     <string name="creteLocalCopyOkay">Рэзервовую копію паспяхова створана</string>
     <string name="creteLocalCopyFail">Памылка, рэзервовая копія не захавана</string>
     <string name="restoreDataOkay">Аднаўленне дадзеных завершана паспяхова</string>
     <string name="restoreDataFall">Памылка: Рэзервовая копія пашкоджана</string>
-    <string name="errorAuth">Памылка, паспрабуйце пазней</string>
-    <string name="errorLoadingLastBackupCloud">Памылка, націсніце, каб паўтарыць спробу</string>
     <string name="errorDriveSync">Памылка сервера, або дрэнная якасць інтэрнэту</string>
-    <string name="errorCredential">Памылка, праблемы з аўтарызацыяй</string>
 
-    <string name="errorDriverAuthInfo">Каб выкарыстоўваць сінхранізацыю з воблакам неабходна аўтарызавацца</string>
-    <string name="sortNotes">Сартаваць нататкі</string>
-    <string name="percentProgress">Рэзервовае капіраванне (%d%%)</string>
+     <string name="sortNotes">Сартаваць нататкі</string>
 
     <!-- Product offer -->
     <string name="thanks_title">Паважаны карыстальнік</string>
