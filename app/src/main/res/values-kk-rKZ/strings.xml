@@ -48,7 +48,7 @@
     <string name="emptyNotes">Сіз жасаған ескертпелер осы жерде пайда болады</string>
     <string name="emptyNotesForTag">Мұнда сіз "%1$s" тегімен белгілейтін ескертпелер көрсетіледі</string>
     <string name="chooseNote">Таңдалған ескертпедегі әрекеттер</string>
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Бөлісу опциялары</string>
     <string name="saveToGoogleDrive">Google Drive-ға сақтау</string>
@@ -99,10 +99,9 @@
     <string name="localBackup">Құрылғы</string>
     <string name="importLocalBackup">Res. көшірмелер</string>
     <string name="exportLocalBackup">Сақтық көшірме жасау</string>
-    
+
     <!-- Data Export Section -->
     <string name="dataExport">Деректерді экспорттау</string>
-    <string name="important">Маңызды</string>
     <string name="dataExportDescription">Сіз өзіңіздің барлық ағымдағы жазбаларыңызды көру үшін экспорттай аласыз. Бұл функция тек белсенді жазбаларды экспорттайды, қоқыс жәшігіндегі жазбаларды алып тастап, тегтер немесе басқа сүзгілерді ескермейді.</string>
     <string name="exportAllNotes">Барлық жазбаларды экспорттау</string>
     <string name="restoreNotesTitle">Деректерді қалпына келтіру</string>
@@ -120,7 +119,6 @@
     <string name="errorDriveSync">Сервер қатесі немесе нашар интернет сапасы</string>
 
     <string name="sortNotes">Ескертпелерді сұрыптау</string>
-    <string name="errorSyncDescrpt">Қалтада сақтық көшірме жасау уақытша қолжетімсіз</string>
 
     <string name="thanks_title">Құрметті пайдаланушы</string>
     <string name="thanks_donate">Жоба әзірлеушісі сатып алғаныңыз үшін алғыс білдіреді. Біз жақсырақ және ыңғайлырақ болуға тырысамыз. \n <b>Құрметпен, менің жазбаларым!</b></string>
@@ -163,7 +161,7 @@
     <!-- Purchase Error Messages -->
     <string name="purchase_loading">Өнімдер жүктелуде…</string>
     <string name="purchase_error_no_products">Ауысым өнімдері жоқ</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Әзірлеушіні қолдау</string>
     <string name="support_solo_developer_description">Сәлем! Мен бос уақытымда MyNotes үстінде жұмыс істейтін әзірлеушімін. Барлық функциялар әрқашан тегін болады, бірақ сіздің қолдауыңыз маған осы қолданбаны жақсартуға көбірек уақыт бөлуге көмектеседі. Әрбір үлес маған бүкіл әлемді білдіреді! 💖</string>
@@ -173,11 +171,12 @@
     <string name="help_subtitle">MyNotes функцияларын барынша пайдалану жолдарын біліңіз</string>
     <string name="help_section_icon">Бөлім белгішесі</string>
     <string name="help_feature_icon">Функция белгішесі</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Тегтер</string>
     <string name="help_tags_func_title">Тегтермен әрекеттесу</string>
-    <string name="help_tags_func_description">Тегтер бөлімінде сіз тегтерді құра аласыз және өңдей аласыз. Сондай-ақ тегтердің тәртібін басқаруға болады — оларды сүйреп тастап, сұрыптауды өзгертіңіз. Бұл тегтеріңізді тиімді ұйымдастыруға мүмкіндік береді.</string><string name="help_tags_edit_title">Тегтерді өңдеу</string>
+    <string name="help_tags_func_description">Тегтер бөлімінде сіз тегтерді құра аласыз және өңдей аласыз. Сондай-ақ тегтердің тәртібін басқаруға болады — оларды сүйреп тастап, сұрыптауды өзгертіңіз. Бұл тегтеріңізді тиімді ұйымдастыруға мүмкіндік береді.</string>
+    <string name="help_tags_edit_title">Тегтерді өңдеу</string>
     <string name="help_tags_edit_description">Өңдеу контекст мәзірін ашу үшін тегті ұстап тұрыңыз. Мұнда сіз тегті жоя аласыз, атын өзгерте аласыз немесе онымен байланысты жазбаларды жасыра аласыз.</string>
     <string name="help_tags_hide_title">Жазбаларды жасыру</string>
     <string name="help_tags_hide_description">Белгіленген жазбаларды негізгі көрінісінен уақытша жою үшін жасыру функциясын пайдаланыңыз, тег арқылы оларға қол жетімділікті сақтай отырып</string>
@@ -195,18 +194,18 @@
     <string name="help_navigation_sort_description">Жазбаларыңызды соңғы өзгерту күні немесе атауы бойынша өсу немесе кему ретімен сұрыптаңыз</string>
     <string name="help_navigation_format_title">Көрсету форматы</string>
     <string name="help_navigation_format_description">Жазбаларыңызды өзіңізге ыңғайлы орналасуда көрсету үшін тізім мен тор арасында ауысыңыз</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Сырғыту жестері</string>
     <string name="help_navigation_swipe_description">Жазбаларды интуитивті басқарыңыз! Жылдам жаппай операциялар үшін бірнеше жазбаны таңдау режимін қосу үшін солға сырғытыңыз немесе жазбаны лезде жою және қоқыс жәшігіне жіберу үшін оңға сырғытыңыз. Жестер тек бір баған режимінде қолжетімді.</string>
-    
+
     <!-- Other Section -->
     <string name="help_other_title">Басқа</string>
     <string name="help_other_security_title">Экранды қорғау</string>
     <string name="help_other_security_description">Параметрлерде қосылған кезде, бұл функция жазбаларыңызды рұқсатсыз қарауден қорғайды: соңғы қолданбалар шолуында қолданба мазмұнын жасырады, скриншот алуды болдырмайды және экранды жазуды блоктайды. Бұл қауіпсіздік функциясы қолданбаны қайта іске қосқаннан кейін белсендіріледі.</string>
     <string name="help_other_shortcuts_title">Қолданба жылдам әрекеттері</string>
     <string name="help_other_shortcuts_description">Жаңа жазба жасау немесе жазбаларыңыздан іздеу үшін жылдам қол жеткізу үшін қолданба белгішесін басып ұстаңыз. Android 7.1 және одан жоғары нұсқаларда қол жетімді.</string>
-    
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Жазбалар функциялары</string>
     <string name="help_notes_limit_title">Мәтін шектеуі</string>
@@ -260,7 +259,7 @@
     <string name="import_notes_from_google_keep">Google Keep-тен жазбаларды импорттау</string>
     <string name="google_keep_description">Google Keep-тен жазбаларыңызды экспорттаңыз және осы қолданбаға импорттаңыз. Google Takeout арқылы экспорт қолдау көрсетіледі.</string>
     <string name="import_from_google_keep">Google Keep-тен импорттау</string>
-    
+
     <string name="other_apps">Басқа қолданбалар</string>
     <string name="import_from_other_note_apps">Басқа жазба қолданбаларынан импорттау</string>
     <string name="other_apps_description">Танымал жазба қолданбаларынан жазбаларды импорттаңыз: OneNote, Evernote, Notion және басқалары.</string>
@@ -280,4 +279,7 @@
     <string name="empty_data_import">Импорттауға жаңа деректер жоқ</string>
 
     <string name="aboutApps_subtitle">Пікір · Көмек · Нұсқа</string>
+    <string name="cloud_sync_title">🛠️ Бұлттық синхрондау уақытша өшірілді</string>
+    <string name="cloud_sync_message">Бұлттық синхрондау уақытша өшірілді. Кейбір пайдаланушылар анонимділіктен алаңдады. Ескі жүзеге асыруды қолдау қиын болды. Болашақта жаңа опционалды плагин қосу жоспарлануда.</string>
+
 </resources>

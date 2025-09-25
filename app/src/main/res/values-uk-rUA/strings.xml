@@ -94,7 +94,6 @@
 
     <!-- Data Export Section -->
     <string name="dataExport">Експорт даних</string>
-    <string name="important">Важливо</string>
     <string name="dataExportDescription">Ви можете експортувати всі свої наявні нотатки для перегляду. Ця функція експортує лише активні нотатки, виключаючи нотатки з корзини, не враховуючи теги чи інші фільтри.</string>
     <string name="exportAllNotes">Експортувати всі нотатки</string>
     <string name="restoreNotesTitle">Відновлення даних</string>
@@ -114,8 +113,6 @@
     <!-- Product offer -->
     <string name="thanks_title">Шановний користувач</string>
     <string name="thanks_donate">Розробник проекту каже вам спасибі за вашу покупку. Ми будемо прагнути стати кращими і зручнішими. \n <b>З повагою, мої нотатки!</b></string>
-
-    <string name="errorSyncDescrpt">Створення резервної копії в хмарі наразі тимчасово недоступне</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Підтримати розробника</string>
@@ -282,4 +279,7 @@
     <string name="empty_data_import">Немає нових даних для імпорту</string>
 
     <string name="aboutApps_subtitle">Відгук · Довідка · Версія</string>
+
+    <string name="cloud_sync_title">🛠️ Хмарна синхронізація тимчасово вимкнена</string>
+    <string name="cloud_sync_message">Хмарна синхронізація тимчасово вимкнена. Деякі користувачі хвилювалися щодо анонімності. Стара реалізація була складною у підтримці. Ми плануємо додати новий опціональний плагін у майбутньому.</string>
 </resources>

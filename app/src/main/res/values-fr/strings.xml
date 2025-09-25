@@ -100,7 +100,6 @@
 
     <!-- Data Export Section -->
     <string name="dataExport">Export de données</string>
-    <string name="important">Important</string>
     <string name="dataExportDescription">Vous pouvez exporter toutes vos notes actuelles pour les consulter. Cette fonctionnalité exporte uniquement les notes actives, en excluant les notes de la corbeille, sans tenir compte des étiquettes ou autres filtres.</string>
     <string name="exportAllNotes">Exporter toutes les notes</string>
     <string name="restoreNotesTitle">Restaurer les notes</string>
@@ -117,7 +116,6 @@
     <string name="restoreDataFall">Erreur: Sauvegarde corrompue</string>
     <string name="errorDriveSync">Erreur de serveur ou mauvaise qualité Internet</string>
     <string name="sortNotes">Trier les notes</string>
-    <string name="errorSyncDescrpt">La sauvegarde dans le cloud est temporairement indisponible</string>
 
     <!-- Offre produit -->
     <string name="thanks_title">Cher utilisateur</string>
@@ -278,4 +276,8 @@
     <string name="empty_data_import">Aucune nouvelle donnée à importer</string>
 
     <string name="aboutApps_subtitle">Avis · Aide · Version</string>
+
+    <string name="cloud_sync_title">🛠️ Synchronisation cloud temporairement désactivée</string>
+    <string name="cloud_sync_message">La synchronisation cloud est temporairement désactivée. Certains utilisateurs étaient préoccupés par l’anonymat. L’ancienne implémentation était difficile à maintenir. Nous prévoyons d’ajouter un nouveau plugin optionnel à l’avenir.</string>
+
 </resources>

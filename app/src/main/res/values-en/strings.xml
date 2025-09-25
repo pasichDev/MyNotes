@@ -115,7 +115,6 @@
 
     <!-- Data Export Section -->
     <string name="dataExport">Data Export</string>
-    <string name="important">Important</string>
     <string name="dataExportDescription">You can export all your current notes for viewing. This feature exports only active notes, excluding notes from trash, without considering tags or other filters.</string>
     <string name="exportAllNotes">Export all notes</string>
     <string name="restoreNotesTitle">Data Restore</string>
@@ -137,7 +136,6 @@
     <!-- Product offer -->
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
-    <string name="errorSyncDescrpt">Cloud backup is temporarily unavailable</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Support Developer</string>
@@ -296,4 +294,8 @@
     <string name="empty_data_import">No new data to import</string>
 
     <string name="aboutApps_subtitle">Feedback · Help · Version</string>
+
+    <string name="cloud_sync_title">🛠️ Cloud sync temporarily removed</string>
+    <string name="cloud_sync_message">Cloud sync is temporarily disabled. Some users were concerned about privacy. The old implementation was hard to maintain. We plan to add a new optional plugin later.</string>
+
 </resources>

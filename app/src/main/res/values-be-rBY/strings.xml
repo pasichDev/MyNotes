@@ -102,7 +102,6 @@
     
     <!-- Data Export Section -->
     <string name="dataExport">Экспарт даных</string>
-    <string name="important">Важна</string>
     <string name="dataExportDescription">Вы можаце экспартаваць усе свае бягучыя нататкі для прагляду. Гэтая функцыя экспартуе толькі актыўныя нататкі, выключаючы нататкі з сметніцы, не ўлічваючы тэгі або іншыя фільтры.</string>
     <string name="exportAllNotes">Экспартаваць усе нататкі</string>
     <string name="restoreNotesTitle">Аднаўленне дадзеных</string>
@@ -124,7 +123,6 @@
 
     <!-- Product offer -->
     <string name="thanks_title">Паважаны карыстальнік</string>
-    <string name="errorSyncDescrpt">Стварэнне рэзервовай копіі ў воблаку часова недаступна</string>
 
     <string name="thanks_donate">Распрацоўшчык праекту кажа вам дзякуй за вашу куплю. Мы будзем імкнуцца стаць лепшымі і зручнейшымі. \n <b>З павагай, мае нататкі!</b></string>
 
@@ -281,5 +279,7 @@
     <string name="empty_data_import">Няма новых даных для імпарту</string>
 
     <string name="aboutApps_subtitle">Водгук · Даведка · Версія</string>
+    <string name="cloud_sync_title">🛠️ Хмарная сінхранізацыя часова адключаная</string>
+    <string name="cloud_sync_message">Хмарная сінхранізацыя часова адключаная. Некаторыя карыстальнікі хваляваліся за ананімнасць. Старая рэалізацыя была складанай у падтрымцы. Плануем дадаць новую апцыянальную ўбудову ў будучыні.</string>
 
 </resources>

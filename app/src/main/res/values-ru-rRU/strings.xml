@@ -105,7 +105,6 @@
 
     <!-- Data Export Section -->
     <string name="dataExport">Экспорт данных</string>
-    <string name="important">Важно</string>
     <string name="dataExportDescription">Вы можете экспортировать все свои текущие заметки для просмотра. Эта функция экспортирует только активные заметки, исключая заметки из корзины, не учитывая теги или другие фильтры.</string>
     <string name="exportAllNotes">Экспортировать все заметки</string>
     <string name="restoreNotesTitle">Восстановление данных</string>
@@ -127,8 +126,6 @@
     <!-- Product offer  -->
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
-
-    <string name="errorSyncDescrpt">Создание резервной копии в облаке временно недоступно</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Поддержать разработчика</string>
@@ -287,4 +284,9 @@
     <string name="empty_data_import">Нет новых данных для импорта</string>
 
     <string name="aboutApps_subtitle">Отзыв · Справка · Версия</string>
+
+    <string name="cloud_sync_title">🛠️ Облачная синхронизация временно отключена</string>
+    <string name="cloud_sync_message">Облачная синхронизация временно отключена. Некоторые пользователи переживали за анонимность. Старая реализация была сложна в поддержке. Мы планируем добавить новый опциональный плагин в будущем.</string>
+
+
 </resources>

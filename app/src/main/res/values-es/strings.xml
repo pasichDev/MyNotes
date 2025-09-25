@@ -105,7 +105,6 @@
 
     <!-- Data Export Section -->
     <string name="dataExport">Exportación de datos</string>
-    <string name="important">Importante</string>
     <string name="dataExportDescription">Puede exportar todas sus notas actuales para visualización. Esta función exporta solo notas activas, excluyendo notas de la papelera, sin considerar etiquetas u otros filtros.</string>
     <string name="exportAllNotes">Exportar todas las notas</string>
     <string name="restoreNotesTitle">Restauración de datos</string>
@@ -125,7 +124,6 @@
 
     <!-- Oferta de productos -->
     <string name="thanks_title">Estimado usuario</string>
-    <string name="errorSyncDescrpt">La copia de seguridad en la nube no está disponible temporalmente</string>
 
     <string name="thanks_donate">El desarrollador del proyecto le agradece su compra. Nos esforzaremos por ser mejores y más convenientes. \n <b>¡Respetuosamente, mis notas!</b></string>
 
@@ -284,4 +282,8 @@
     <string name="empty_data_import">No hay datos nuevos para importar</string>
 
     <string name="aboutApps_subtitle">Reseña · Ayuda · Versión</string>
+
+    <string name="cloud_sync_title">🛠️ Sincronización en la nube temporalmente desactivada</string>
+    <string name="cloud_sync_message">La sincronización en la nube está temporalmente desactivada. Algunos usuarios estaban preocupados por la privacidad. La implementación anterior era difícil de mantener. Planeamos añadir un nuevo plugin opcional en el futuro.</string>
+
 </resources>

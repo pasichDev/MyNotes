@@ -99,7 +99,6 @@
     
     <!-- Data Export Section -->
     <string name="dataExport">Esportazione dati</string>
-    <string name="important">Importante</string>
     <string name="dataExportDescription">Puoi esportare tutte le tue note attuali per la visualizzazione. Questa funzione esporta solo note attive, escludendo note dal cestino, senza considerare tag o altri filtri.</string>
     <string name="exportAllNotes">Esporta tutte le note</string>
     <string name="restoreNotesTitle">Ripristina le note</string>
@@ -117,7 +116,6 @@
     <string name="errorDriveSync">Errore del server o scarsa qualità di Internet</string>
 
     <string name="sortNotes">Ordina note</string>
-    <string name="errorSyncDescrpt">Il backup cloud non è temporaneamente disponibile</string>
 
     <!-- Offerta prodotto -->
     <string name="thanks_title">Gentile utente</string>
@@ -278,4 +276,8 @@
     <string name="empty_data_import">Nessun dato nuovo da importare</string>
 
     <string name="aboutApps_subtitle">Recensione · Guida · Versione</string>
+
+    <string name="cloud_sync_title">🛠️ Sincronizzazione cloud temporaneamente disattivata</string>
+    <string name="cloud_sync_message">La sincronizzazione cloud è temporaneamente disattivata. Alcuni utenti erano preoccupati per l\'anonimato. La vecchia implementazione era difficile da mantenere. Prevediamo di aggiungere un nuovo plugin opzionale in futuro.</string>
+
 </resources>

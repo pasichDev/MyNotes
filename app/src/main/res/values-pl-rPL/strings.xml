@@ -103,7 +103,6 @@
 
     <!-- Data Export Section -->
     <string name="dataExport">Eksport danych</string>
-    <string name="important">Ważne</string>
     <string name="dataExportDescription">Możesz wyeksportować wszystkie swoje obecne notatki do przeglądania. Ta funkcja eksportuje tylko aktywne notatki, wykluczając notatki z kosza, bez uwzględniania tagów lub innych filtrów.</string>
     <string name="exportAllNotes">Eksportuj wszystkie notatki</string>
     <string name="restoreNotesTitle">Przywracanie danych</string>
@@ -122,7 +121,6 @@
     <string name="errorDriveSync">Błąd serwera lub niska jakość internetu</string>
 
     <string name="sortNotes">Sortuj notatki</string>
-    <string name="errorSyncDescrpt">Tworzenie kopii zapasowej w chmurze jest tymczasowo niedostępne.</string>
 
     <!-- Oferta produktowa -->
     <string name="thanks_title">Drogi użytkowniku</string>
@@ -283,4 +281,8 @@
     <string name="empty_data_import">Brak nowych danych do importu</string>
 
     <string name="aboutApps_subtitle">Opinie · Pomoc · Wersja</string>
+    <string name="cloud_sync_title">🛠️ Synchronizacja w chmurze tymczasowo wyłączona</string>
+    <string name="cloud_sync_message">Synchronizacja w chmurze jest tymczasowo wyłączona. Niektórzy użytkownicy obawiali się o anonimowość. Stara implementacja była trudna w utrzymaniu. Planujemy dodać nową opcjonalną wtyczkę w przyszłości.</string>
+
+
 </resources>

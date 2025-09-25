@@ -48,9 +48,8 @@
     <string name="emptyNotes">Notes you create will appear here</string>
     <string name="emptyNotesForTag">Notes marked with the tag will be displayed here "%1$s"</string>
     <string name="chooseNote">Actions on the selected note</string>
-    
 
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Share options</string>
     <string name="saveToGoogleDrive">Save to Google Drive</string>
@@ -112,10 +111,9 @@
     <string name="localBackup">Device</string>
     <string name="importLocalBackup">Restore with Res. copies</string>
     <string name="exportLocalBackup">Create backup</string>
-    
+
     <!-- Data Export Section -->
     <string name="dataExport">Data Export</string>
-    <string name="important">Important</string>
     <string name="dataExportDescription">You can export all your current notes for viewing. This feature exports only active notes, excluding notes from trash, without considering tags or other filters.</string>
     <string name="exportAllNotes">Export all notes</string>
     <string name="restoreNotesTitle">Data Restore</string>
@@ -143,8 +141,6 @@
     <!-- Product offer -->
     <string name="thanks_title">Dear User</string>
     <string name="thanks_donate">The project developer thanks you for your purchase. We will strive to become better and more convenient. \n <b>Respectfully, my notes!</b></string>
-
-    <string name="errorSyncDescrpt">Cloud backup is temporarily unavailable</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Support Developer</string>
@@ -187,7 +183,7 @@
     <!-- Purchase Error Messages -->
     <string name="purchase_loading">Loading products…</string>
     <string name="purchase_error_no_products">No donation products available</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Support Developer</string>
     <string name="support_solo_developer_description">Hi! I\'m a developer working on MyNotes in my free time. All features will always be free, but your support helps me dedicate more time to making this app even better. Every contribution means the world to me! 💖</string>
@@ -197,7 +193,7 @@
     <string name="help_subtitle">Learn how to get the most out of MyNotes features</string>
     <string name="help_section_icon">Section icon</string>
     <string name="help_feature_icon">Feature icon</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tags</string>
     <string name="help_tags_edit_title">Editing Tags</string>
@@ -208,7 +204,7 @@
     <string name="help_tags_limit_description">You can create up to 25 tags for effective organization of your notes</string>
     <string name="help_tags_func_title">Interaction with tags</string>
     <string name="help_tags_func_description">In the Tags section, you can create and edit tags. You can also manage the order of tags here — simply drag and drop them to change the sorting. This allows you to organize your tags efficiently.</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navigation</string>
     <string name="help_navigation_drawer_title">Main Menu</string>
@@ -219,22 +215,22 @@
     <string name="help_navigation_sort_description">Sort your notes by last modified date or name in ascending or descending order</string>
     <string name="help_navigation_format_title">Display Format</string>
     <string name="help_navigation_format_description">Switch between list and grid to display your notes in a layout convenient for you</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Swipe Gestures</string>
     <string name="help_navigation_swipe_description">Manage notes intuitively! Swipe left to activate multiple note selection mode for quick bulk operations, or swipe right to instantly delete a note and send it to trash. Gestures are only available in single-column mode.</string>
-    
+
     <!-- Other Section -->
     <string name="help_other_title">Other</string>
     <string name="help_other_security_title">Screen Protection</string>
     <string name="help_other_security_description">When enabled in settings, this feature protects your notes from unauthorized viewing by hiding app content in recent apps overview, preventing screenshots, and blocking screen recording. This security feature activates after restarting the app.</string>
     <string name="help_other_shortcuts_title">App Shortcuts</string>
     <string name="help_other_shortcuts_description">Long press the app icon to quickly access shortcuts for creating a new note or searching through your notes. Available on Android 7.1 and higher.</string>
-    
+
     <!-- Backup and Export Help -->
     <string name="help_other_backup_export_title">Sync and Data Export</string>
     <string name="help_other_backup_export_description">In the Synchronization and Backup section, you can export all your notes in various formats (TXT, PDF, HTML) for viewing and backup purposes.</string>
-    
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Notes Features</string>
     <string name="help_notes_limit_title">Text Limit</string>
@@ -245,7 +241,7 @@
     <string name="help_notes_text_size_description">Adjust text size while editing notes using the text size dialog accessible directly from the note editing screen.</string>
     <string name="help_notes_copy_title">Edit Copy</string>
     <string name="help_notes_copy_description">Create an editable copy of any note to make modifications while keeping the original intact.</string>
-    
+
     <!-- Share and Export Help -->
     <string name="help_notes_share_title">Share and Export Notes</string>
     <string name="help_notes_share_description">Share single or multiple notes via other apps, save to Google Drive, or export as TXT, PDF, or HTML files with styled formatting.</string>
@@ -313,4 +309,8 @@
     <string name="empty_data_import">No new data to import</string>
 
     <string name="aboutApps_subtitle">Feedback · Help · Version</string>
+
+    <string name="cloud_sync_title">🛠️ Cloud sync temporarily removed</string>
+    <string name="cloud_sync_message">Cloud sync is temporarily disabled. Some users were concerned about privacy. The old implementation was hard to maintain. We plan to add a new optional plugin later.</string>
+
 </resources>
