@@ -108,6 +108,7 @@ dependencies {
 
     //DI (Hilt)
     implementation 'com.google.dagger:hilt-android:2.57.1'
+    implementation 'androidx.credentials:credentials:1.5.0'
     annotationProcessor 'com.google.dagger:hilt-compiler:2.57.1'
     androidTestImplementation 'com.google.dagger:hilt-android-testing:2.57.1'
     androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.57.1'
@@ -124,18 +125,14 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
     testImplementation "androidx.room:room-compiler-processing-testing:$roomVersion"
 
-    //Google Drive integration, Pay Billing
-    implementation 'com.google.android.gms:play-services-auth:20.4.1'
-    implementation 'com.google.http-client:google-http-client-gson:1.42.1'
-    implementation 'com.google.api-client:google-api-client-android:1.26.0'
-    implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
+    //Pay Billing
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'com.android.billingclient:billing:8.0.0'
 
 
     //Other lib (Gson/Glide/PowerPreferences)
     implementation 'com.github.bumptech.glide:glide:5.0.5'
-    implementation 'com.google.code.gson:gson:2.13.1'
+    implementation 'com.google.code.gson:gson:2.13.2'
     implementation "com.github.AliAsadi:PowerPreference:$powerPrefenceVersion"
 
 

@@ -5,8 +5,6 @@ import android.net.Uri;
 
 import androidx.annotation.StringRes;
 
-import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
-import com.google.api.services.drive.Drive;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.model.Note;
@@ -22,17 +20,9 @@ public interface BackupContract {
 
         void initActivity();
 
-        void initConnectAccount();
-
-        void startIntentLogInUserCloud();
-
-        void loadingLastBackupInfoCloud();
-
         void openIntentSaveBackup(JsonBackup jsonBackup);
 
         void openIntentReadBackup();
-
-        void dialogChoiceVariantAutoBackup();
 
         void dialogRestoreData(boolean local);
 
@@ -44,24 +34,8 @@ public interface BackupContract {
 
         void createLocalCopyFinish(boolean error);
 
-        boolean showErrors(int errorCode);
-
         void showErrorsText(int errorCode, @StringRes int string);
 
-        void editLastDataEditBackupCloud(long lastDate, boolean error);
-
-        void startWriteBackupCloud(JsonBackup jsonBackup);
-
-        void startReadBackupCloud();
-
-        void visibleProgressBarCLoud();
-
-        void goneProgressBarCLoud();
-
-        void getClickedOffUpdate();
-
-        MediaHttpUploaderProgressListener getProcessListener();
-        
         void openShareOptionsDialog(java.util.List<Note> notes, boolean isDataExport);
 
         void showImportResultOtherApp(GoogleKeepImportResult result);
@@ -75,24 +49,14 @@ public interface BackupContract {
     @ActivityScoped
     interface presenter extends BasePresenter<view> {
 
-        void clickInformationCloud(boolean isAuth);
-
         void saveBackupPresenter(boolean local);
 
         void restoreBackupPresenter(boolean local);
 
         void writeFileBackupLocal(BackupCacheHelper serviceCache, Uri mUri);
 
-        void openChoiceDialogAutoBackup();
-
         void readFileBackupLocal(Uri mUri);
 
-        void writeFileBackupCloud(Drive mDriveCredential, JsonBackup jsonBackup);
-
-        void readFileBackupCloud(Drive mDriveCredential);
-
-        void saveDataLoadingLastBackup(Drive mDriveCredential);
-        
         void exportAllNotesPresenter();
 
         void importDataOtherApp(GoogleKeepImportResult result);

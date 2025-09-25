@@ -7,18 +7,9 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Login / header -->
-    <include
-        android:id="@+id/login_page"
-        layout="@layout/view_login_page"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:layout_marginBottom="20dp" />
-
     <View
         android:layout_width="match_parent"
-        android:layout_height="30dp" />
+        android:layout_height="120dp" />
     <!-- Main buttons -->
     <LinearLayout
         android:id="@+id/nav_tags"

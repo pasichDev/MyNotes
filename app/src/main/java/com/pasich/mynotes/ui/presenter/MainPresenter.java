@@ -171,10 +171,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         return false;
     }
 
-    @Override
-    public void cleanBackupPrefs() {
-        getDataManager().cleanBackupInfo();
-    }
 
     @Override
     public void detachView() {

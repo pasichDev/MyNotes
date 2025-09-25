@@ -3,17 +3,12 @@ package com.pasich.mynotes.data;
 
 import android.net.Uri;
 
-import com.google.android.gms.tasks.Task;
-import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
-import com.google.api.services.drive.Drive;
-import com.pasich.mynotes.data.api.ApiBackup;
+import com.pasich.mynotes.utils.backup.local.LocalBackup;
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
-import com.pasich.mynotes.data.model.backup.BackupCloud;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
-import com.pasich.mynotes.data.model.backup.LastBackupCloud;
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
@@ -37,10 +32,10 @@ public class AppDataManager implements DataManager {
 
     private final DbHelper dbHelper;
     private final AppPreferencesHelper preferencesHelper;
-    private final ApiBackup apiBackup;
+    private final LocalBackup apiBackup;
 
     @Inject
-    AppDataManager(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, ApiBackup apiBackup) {
+    AppDataManager(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, LocalBackup apiBackup) {
         this.dbHelper = dbHelper;
         this.preferencesHelper = preferencesHelper;
         this.apiBackup = apiBackup;
@@ -55,10 +50,6 @@ public class AppDataManager implements DataManager {
         return preferencesHelper.getDefaultPreferences();
     }
 
-    @Override
-    public Preference getBackupCloudInfoPreference() {
-        return preferencesHelper.getBackupCloudInfoPreference();
-    }
 
     @Override
     public int getFormatCount() {
@@ -86,23 +77,8 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public long getLastDataBackupCloud() {
-        return preferencesHelper.getLastDataBackupCloud();
-    }
-
-    @Override
-    public String getLastBackupCloudId() {
-        return preferencesHelper.getLastBackupCloudId();
-    }
-
-    @Override
     public void editSizeTextNoteActivity(int value) {
         preferencesHelper.editSizeTextNoteActivity(value);
-    }
-
-    @Override
-    public int getSetCloudAuthBackup() {
-        return preferencesHelper.getSetCloudAuthBackup();
     }
 
     @Override
@@ -124,12 +100,6 @@ public class AppDataManager implements DataManager {
     public void setLastKnownVersion(String version) {
         preferencesHelper.setLastKnownVersion(version);
     }
-
-    @Override
-    public void cleanBackupInfo() {
-        preferencesHelper.cleanBackupInfo();
-    }
-
 
     @Override
     public String getTypeFaceNoteActivity() {
@@ -306,31 +276,6 @@ public class AppDataManager implements DataManager {
     @Override
     public Completable setTagNote(String nameTag, int idNote) {
         return dbHelper.setTagNote(nameTag, idNote);
-    }
-
-    @Override
-    public Task<LastBackupCloud> getLastBackupInfo(Drive mDriveCredential) {
-        return apiBackup.getLastBackupInfo(mDriveCredential);
-    }
-
-    @Override
-    public Task<BackupCloud> writeCloudBackup(Drive mDriveCredential, File backupTemp, MediaHttpUploaderProgressListener progressListener) {
-        return apiBackup.writeCloudBackup(mDriveCredential, backupTemp, progressListener);
-    }
-
-    @Override
-    public Task<Boolean> cleanOldBackups(Drive mDriveCredential, ArrayList<String> oldBackups) {
-        return apiBackup.cleanOldBackups(mDriveCredential, oldBackups);
-    }
-
-    @Override
-    public Task<ArrayList<String>> getOldBackupForCLean(Drive mDriveCredential) {
-        return apiBackup.getOldBackupForCLean(mDriveCredential);
-    }
-
-    @Override
-    public Task<JsonBackup> getReadLastBackupCloud(Drive mDriveCredential) {
-        return apiBackup.getReadLastBackupCloud(mDriveCredential);
     }
 
     @Override
