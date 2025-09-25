@@ -2,6 +2,8 @@
 
 ## [2.2.37] - XX.XX.2025
 
+- Removed Google sign-in and Drive sync
+
 ## [2.2.36] - 23.09.2025
 
 - Added search debounce — search now triggers shortly after user stops typing.
