@@ -125,6 +125,7 @@ dependencies {
 
     //Room
     implementation "androidx.room:room-rxjava2:$roomVersion"
+    annotationProcessor "androidx.room:room-compiler:$roomVersion"
 
     //Pay Billing
     implementation 'com.google.android.play:app-update:2.1.0'
