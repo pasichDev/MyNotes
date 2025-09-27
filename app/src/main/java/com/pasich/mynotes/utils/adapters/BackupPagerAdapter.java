@@ -11,24 +11,17 @@ import com.pasich.mynotes.ui.view.fragment.ImportDataFragment;
 
 public class BackupPagerAdapter extends FragmentStateAdapter {
 
-    private final BackupContract.presenter presenter;
-
-    public BackupPagerAdapter(@NonNull FragmentActivity fragmentActivity, BackupContract.presenter presenter) {
+    public BackupPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
-        this.presenter = presenter;
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        switch (position) {
-            case 0:
-                return BackupExportFragment.newInstance(presenter);
-            case 1:
-                return ImportDataFragment.newInstance();
-            default:
-                return BackupExportFragment.newInstance(presenter);
-        }
+        return switch (position) {
+            case 1 -> ImportDataFragment.newInstance();
+            default -> BackupExportFragment.newInstance();
+        };
     }
 
     @Override

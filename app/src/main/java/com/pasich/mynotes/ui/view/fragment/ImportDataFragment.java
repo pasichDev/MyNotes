@@ -32,6 +32,9 @@ public class ImportDataFragment extends Fragment {
 
     private ActivityResultLauncher<Intent> zipFilePicker;
 
+    public ImportDataFragment() {
+    }
+
     public static ImportDataFragment newInstance() {
         return new ImportDataFragment();
     }

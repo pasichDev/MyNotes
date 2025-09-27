@@ -97,7 +97,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     }
 
     private void setupTabs() {
-        BackupPagerAdapter pagerAdapter = new BackupPagerAdapter(this, presenter);
+        BackupPagerAdapter pagerAdapter = new BackupPagerAdapter(this);
         binding.viewPager.setAdapter(pagerAdapter);
 
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {

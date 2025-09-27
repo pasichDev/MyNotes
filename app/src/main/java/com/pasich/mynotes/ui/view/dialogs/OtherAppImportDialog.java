@@ -16,6 +16,9 @@ public class OtherAppImportDialog extends BottomSheetDialogFragment {
     private DialogOtherAppImportBinding binding;
     private ImportCallback callback;
 
+    public OtherAppImportDialog() {
+    }
+
     public interface ImportCallback {
         void onImportConfirmed(GoogleKeepImportResult result);
     }

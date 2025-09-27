@@ -29,84 +29,114 @@ import java.util.List;
 public class ShareOptionsDialog extends BaseDialogBottomSheets {
 
     private static final String TAG = "ShareOptionsDialog";
-    
-    private final Note mNote;
-    private final List<Note> mSelectedNotes;
-    private final boolean isDataExport;
+
+    private Note mNote;
+    private List<Note> mSelectedNotes;
+    private boolean isDataExport;
     private DialogShareOptionsBinding binding;
-    
+
+    public ShareOptionsDialog() {
+    }
+
     // Activity result launchers for file saving
     private ActivityResultLauncher<Intent> saveTxtLauncher;
     private ActivityResultLauncher<Intent> savePdfLauncher;
     private ActivityResultLauncher<Intent> saveHtmlLauncher;
-    
+
     // Current data for saving
     private String currentNoteTitle;
     private String currentNoteContent;
 
     public ShareOptionsDialog(Note note) {
+        this();
         this.mNote = note;
         this.mSelectedNotes = null;
         this.isDataExport = false;
     }
 
     public ShareOptionsDialog(List<Note> selectedNotes) {
+        this();
         this.mNote = null;
         this.mSelectedNotes = selectedNotes;
         this.isDataExport = false;
     }
-    
+
     public ShareOptionsDialog(List<Note> selectedNotes, boolean isDataExport) {
+        this();
         this.mNote = null;
         this.mSelectedNotes = selectedNotes;
         this.isDataExport = isDataExport;
     }
 
+    public static ShareOptionsDialog newInstance(Note note) {
+        ShareOptionsDialog dialog = new ShareOptionsDialog();
+        dialog.mNote = note;
+        dialog.mSelectedNotes = null;
+        dialog.isDataExport = false;
+        return dialog;
+    }
+
+    public static ShareOptionsDialog newInstance(List<Note> selectedNotes) {
+        ShareOptionsDialog dialog = new ShareOptionsDialog();
+        dialog.mNote = null;
+        dialog.mSelectedNotes = selectedNotes;
+        dialog.isDataExport = false;
+        return dialog;
+    }
+
+    public static ShareOptionsDialog newInstance(List<Note> selectedNotes, boolean isDataExport) {
+        ShareOptionsDialog dialog = new ShareOptionsDialog();
+        dialog.mNote = null;
+        dialog.mSelectedNotes = selectedNotes;
+        dialog.isDataExport = isDataExport;
+        return dialog;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         // Initialize activity result launchers
         saveTxtLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri uri = result.getData().getData();
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri uri = result.getData().getData();
 
-                    if (uri != null && currentNoteTitle != null && currentNoteContent != null) {
-                        FileExportUtils.saveTxtToUri(requireContext(), uri, currentNoteTitle, currentNoteContent);
-                    } else {
-                        Log.e(TAG, "Missing data for TXT save - URI: " + uri + ", Title: " + currentNoteTitle + ", Content: " + (currentNoteContent != null ? "available" : "null"));
+                        if (uri != null && currentNoteTitle != null && currentNoteContent != null) {
+                            FileExportUtils.saveTxtToUri(requireContext(), uri, currentNoteTitle, currentNoteContent);
+                        } else {
+                            Log.e(TAG, "Missing data for TXT save - URI: " + uri + ", Title: " + currentNoteTitle + ", Content: " + (currentNoteContent != null ? "available" : "null"));
+                        }
                     }
+                    dismiss(); // Dismiss after handling result
                 }
-                dismiss(); // Dismiss after handling result
-            }
         );
-        
+
         savePdfLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri uri = result.getData().getData();
-                    if (uri != null) {
-                        FileExportUtils.savePdfToUri(requireContext(), uri, currentNoteTitle, currentNoteContent);
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        if (uri != null) {
+                            FileExportUtils.savePdfToUri(requireContext(), uri, currentNoteTitle, currentNoteContent);
+                        }
                     }
+                    dismiss(); // Dismiss after handling result
                 }
-                dismiss(); // Dismiss after handling result
-            }
         );
-        
+
         saveHtmlLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri uri = result.getData().getData();
-                    if (uri != null) {
-                        FileExportUtils.saveHtmlToUri(requireContext(), uri, currentNoteTitle, currentNoteContent, mSelectedNotes);
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        if (uri != null) {
+                            FileExportUtils.saveHtmlToUri(requireContext(), uri, currentNoteTitle, currentNoteContent, mSelectedNotes);
+                        }
                     }
+                    dismiss(); // Dismiss after handling result
                 }
-                dismiss(); // Dismiss after handling result
-            }
         );
     }
 
@@ -115,7 +145,7 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
         vibrateOpenDialog(true);
         setState((BottomSheetDialog) requireDialog());
         binding = DialogShareOptionsBinding.inflate(getLayoutInflater(), container, false);
-        
+
         initListeners();
         return binding.getRoot();
     }
@@ -141,7 +171,7 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
         });
 
         binding.saveAsPdf.setOnClickListener(v -> {
-             prepareNoteData();
+            prepareNoteData();
             Intent intent = FileExportUtils.createSavePdfIntent(currentNoteTitle);
             savePdfLauncher.launch(intent);
         });
@@ -175,19 +205,19 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
     }
 
     private void prepareNoteData() {
-          if (mNote != null) {
-             currentNoteTitle = (mNote.getTitle() == null || mNote.getTitle().isEmpty()) ? "***" : mNote.getTitle();
+        if (mNote != null) {
+            currentNoteTitle = (mNote.getTitle() == null || mNote.getTitle().isEmpty()) ? "***" : mNote.getTitle();
             currentNoteContent = mNote.getValue();
 
         } else if (mSelectedNotes != null && !mSelectedNotes.isEmpty()) {
-            
+
             // Set title based on whether this is data export or regular share
             if (isDataExport) {
                 currentNoteTitle = "Data_Export";
             } else {
                 currentNoteTitle = "Multiple_Notes";
             }
-            
+
             StringBuilder combinedContent = new StringBuilder();
 
             for (int i = 0; i < mSelectedNotes.size(); i++) {
@@ -204,8 +234,8 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
                 }
             }
             currentNoteContent = combinedContent.toString();
-            
-             } else {
+
+        } else {
             currentNoteTitle = "***";
             currentNoteContent = "";
         }
