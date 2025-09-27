@@ -16,13 +16,26 @@ def gitCommitHashProvider = providers.exec {
 
 ext.gitCommitHash = gitCommitHashProvider
 
+tasks.register("copyChangelog", Copy) {
+    description = "Copies CHANGELOG.md from root to res/raw"
+    group = "build"
+
+    from("${rootDir}/CHANGELOG.md")
+    into("${projectDir}/src/main/res/raw")
+    rename { "changelog.md" }
+}
+
+preBuild.dependsOn("copyChangelog")
+
+
+
 
 android {
     compileSdkVersion 36
     buildFeatures {
-        viewBinding true
-        dataBinding true
-        buildConfig true
+        viewBinding = true
+        dataBinding = true
+        buildConfig = true
     }
 
     bundle {
@@ -81,7 +94,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    namespace 'com.pasich.mynotes'
+    namespace = 'com.pasich.mynotes'
     lint {
         abortOnError false
     }
@@ -108,7 +121,6 @@ dependencies {
 
     //DI (Hilt)
     implementation 'com.google.dagger:hilt-android:2.57.1'
-    implementation 'androidx.credentials:credentials:1.5.0'
     annotationProcessor 'com.google.dagger:hilt-compiler:2.57.1'
     androidTestImplementation 'com.google.dagger:hilt-android-testing:2.57.1'
     androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.57.1'

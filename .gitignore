@@ -10,3 +10,7 @@
 local.properties
 /app/schemas
 .vscode
+
+## Changelog.md
+app/src/main/res/raw/*
+!app/src/main/res/raw/keep.xml

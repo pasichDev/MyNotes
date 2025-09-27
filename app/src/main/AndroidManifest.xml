@@ -2,9 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
@@ -28,10 +26,10 @@
     <application
         android:name=".MyApp"
         android:allowBackup="true"
-        android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/DefaultTheme"
@@ -99,8 +97,7 @@
         <activity
             android:name=".ui.view.activity.NoteActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
-           />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.view.activity.ShareActivity"
             android:exported="true"

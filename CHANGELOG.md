@@ -2,6 +2,7 @@
 
 ## [2.2.37] - XX.XX.2025
 
+- Removed all network access requests; the app now works fully offline without Internet permissions
 - Removed Google sign-in and Drive sync
 
 ## [2.2.36] - 23.09.2025
