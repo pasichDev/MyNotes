@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
@@ -109,18 +108,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     }
 
-    public void setRippleBottomLayout() {
-
-        if (binding.chipGroupSystem.getChildCount() == 0 && !newNoteActivity) {
-            if (activityNote)
-                binding.noSave.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.item_bottom_ripple));
-            else
-                binding.moveToTrash.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.item_bottom_ripple));
-
-        } else if (newNoteActivity) {
-            binding.noSave.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.item_bottom_new_ripple));
-        }
-    }
 
     @Override
     public void initInterfaces() {
@@ -209,7 +196,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
 
-
     private void initTranslate() {
         PackageInfo pi = null;
         try {
@@ -227,8 +213,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             });
         }
     }
-
-
 
 
     @Override
@@ -273,7 +257,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             binding.scrollChips.setVisibility(View.GONE);
         }
 
-        setRippleBottomLayout();
 
     }
 
@@ -286,7 +269,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             if (activityNote) noteActivity.changeTag("", true);
         }
 
-        if(tag.getVisibility() == 1 && !activityNote){
+        if (tag.getVisibility() == 1 && !activityNote) {
             dismiss();
         }
     }
