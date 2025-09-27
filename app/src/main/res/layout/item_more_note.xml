@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="Note"
+            type="com.pasich.mynotes.data.model.Note" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/item_Note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:elevation="2dp"
+        android:padding="15dp"
+        app:cardBackgroundColor="@{Note.checked ? @color/item_bindig_note_surface_variant : @color/item_bindig_note_surface}"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
+        app:strokeColor="@{Note.checked ? @color/item_bindig_note_primary :  @color/item_bindig_note_surface_variant}">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/iconNote"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="5dp"
+                android:contentDescription="note_icon"
+                android:src="@drawable/ic_notebook"
+                app:tint="?attr/colorOnBackground"
+                tools:ignore="HardcodedText" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="10dp">
+
+                <TextView
+                    android:id="@+id/nameNote"
+                    style="@style/itemNoteTitle"
+                    android:text="@{Note.title}"
+                    android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
+                    tools:text="Title Note" />
+
+                <TextView
+                    android:id="@+id/previewNote"
+                    style="@style/itemNotePreview"
+                    android:maxLines="2"
+                    android:text="@{Note.valuePreview}"
+                    tools:text="Preview Note Check" />
+
+                <TextView
+                    android:id="@+id/dataNote"
+                    style="@style/itemNotePreview"
+                    android:alpha="0.7"
+                    android:maxLines="1"
+                    app:dataNote="@{Note}"
+                    tools:text="01.01.2025" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</layout>

@@ -19,6 +19,11 @@
             name="valuesText"
             type="boolean" />
 
+        <variable
+            name="note"
+            type="com.pasich.mynotes.data.model.Note" />
+
+
     </data>
 
     <FrameLayout
@@ -42,10 +47,20 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <include
-                    android:id="@+id/includeHead"
-                    layout="@layout/view_head_dialog" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
 
+                <include
+                    android:id="@+id/notePreview"
+                    layout="@layout/item_more_note"
+                    android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}"
+                    app:Note="@{note}" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}"
+                    android:layout_height="30dp" />
 
                 <LinearLayout
                     android:id="@+id/action_panel_activate"
@@ -66,6 +81,7 @@
                         style="@style/itemTextBottomSheets"
                         android:text="@string/selectAll" />
                 </LinearLayout>
+
 
                 <View
                     android:layout_width="match_parent"

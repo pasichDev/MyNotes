@@ -70,6 +70,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         mPresenter.viewIsReady();
         binding.setNewNote(newNoteActivity);
         binding.setActivityNote(activityNote);
+        binding.setNote(mNote);
         binding.setValuesText(mNote.getValue().length() > 1);
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
         addTitle();
@@ -86,11 +87,11 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     public void addTitle() {
         if (!activityNote) {
             String title = mNote.getTitle().length() > 20 ? mNote.getTitle().substring(0, 20) + "..." : mNote.getTitle();
-            binding.includeHead.headTextDialog.setText(mNote.getTitle().length() > 1 ? title : getString(R.string.chooseNote));
-            binding.includeHead.getRoot().setVisibility(newNoteActivity ? View.GONE : View.VISIBLE);
-            binding.spacerLast.setVisibility(View.GONE);
+       //     binding.includeHead.headTextDialog.setText(mNote.getTitle().length() > 1 ? title : getString(R.string.chooseNote));
+       //     binding.includeHead.getRoot().setVisibility(newNoteActivity ? View.GONE : View.VISIBLE);
+      //      binding.spacerLast.setVisibility(View.GONE);
         } else {
-            binding.includeHead.getRoot().setVisibility(View.GONE);
+       //     binding.includeHead.getRoot().setVisibility(View.GONE);
         }
     }
 
