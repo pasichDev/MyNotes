@@ -1,4 +1,8 @@
 buildscript {
+    ext {
+        daggerHilt = '2.57.2'
+    }
+
     repositories {
         google()
         mavenCentral()
@@ -6,25 +10,16 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.57.1'
+        classpath "com.google.dagger:hilt-android-gradle-plugin:$daggerHilt"
     }
 
 }
 plugins {
-
-    id 'com.google.dagger.hilt.android' version '2.57.1' apply false
-}
-allprojects {
-
-
+    id 'com.google.dagger.hilt.android' version "$daggerHilt" apply false
 }
 
 tasks.register('clean', Delete) {
-    delete rootProject.buildDir
+    delete layout.buildDirectory
 }
 
-ext {
 
-    rxjava2Version = '2.1.6'
-    rxandroidVersion = '2.0.1'
-}
