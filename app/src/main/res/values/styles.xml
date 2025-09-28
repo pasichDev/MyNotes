@@ -134,9 +134,16 @@
         <item name="android:enabled">false</item>
         <item name="chipCornerRadius">@dimen/defaultCornerChip</item>
         <item name="chipStrokeWidth">0dp</item>
-        <item name="android:textColor">?attr/colorPrimary</item>
-        <item name="chipBackgroundColor">?attr/colorSurfaceVariant</item>
+        <item name="android:textColor">@color/chip_text_alpha</item>
+        <item name="chipBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+        <item name="android:textSize">12sp</item>
+        <item name="chipMinHeight">24dp</item>
+        <item name="chipStartPadding">4dp</item>
+        <item name="chipEndPadding">4dp</item>
+        <item name="chipIconSize">0dp</item>
+        <item name="android:textStyle">normal</item>
     </style>
+
 
     <style name="chipTagDialog" parent="@style/Widget.Material3.Chip.Filter">
         <item name="chipCornerRadius">@dimen/defaultCornerChip</item>
