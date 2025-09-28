@@ -47,7 +47,6 @@
     <string name="emptyTrash">Le tue note eliminate verranno visualizzate qui</string>
     <string name="emptyNotes">Le note che hai creato verranno visualizzate qui</string>
     <string name="emptyNotesForTag">Qui verranno visualizzate le note che contrassegni con il tag "%1$s"</string>
-    <string name="chooseNote">Azioni sulla nota selezionata</string>
     
     <!-- Share Dialog -->
     <string name="shareOptions">Opzioni di condivisione</string>
@@ -72,7 +71,6 @@
      <string name="renameTag">Rinomina</string>
     <string name="settingsInterface">Impostazioni interfaccia</string>
     <string name="settings">Impostazioni</string>
-    <string name="settingsBackups">Backup</string>
     <string name="aboutApps">Informazioni sull\'app</string>
     <string name="trash">Cestino</string>
     <string name="themes">Tema</string>
@@ -93,7 +91,6 @@
     <string name="themeModeFollowSystem">Come nel sistema</string>
     <string name="themeModeLight">Chiaro</string>
     <string name="themeModeDark">Scuro</string>
-    <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Ripristina usando res. copie</string>
     <string name="exportLocalBackup">Crea backup</string>
     
@@ -138,10 +135,6 @@
     <string name="whats_new_title">Nuove funzionalità e miglioramenti</string>
     <string name="whats_new_description">Scopri gli ultimi aggiornamenti, nuove funzionalità e miglioramenti che rendono la tua esperienza di prendere appunti ancora migliore. Lavoriamo costantemente per migliorare l\'app basandoci sui tuoi feedback!</string>
     <string name="changelog_subtitle">Rimani aggiornato su tutti i cambiamenti e miglioramenti di questa versione</string>
-    <string name="errorLoadingChangelog">Errore nel caricamento del registro delle modifiche</string>
-    <string name="checkInternetConnection">Controlla la connessione internet</string>
-    <string name="retry">Riprova</string>
-
     <string name="leaveFeedback">Lascia feedback</string>
 
     <!-- Donation Products -->

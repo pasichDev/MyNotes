@@ -47,7 +47,6 @@
     <string name="emptyTrash">Жойылған ескертпелер осы жерде көрсетіледі</string>
     <string name="emptyNotes">Сіз жасаған ескертпелер осы жерде пайда болады</string>
     <string name="emptyNotesForTag">Мұнда сіз "%1$s" тегімен белгілейтін ескертпелер көрсетіледі</string>
-    <string name="chooseNote">Таңдалған ескертпедегі әрекеттер</string>
 
     <!-- Share Dialog -->
     <string name="shareOptions">Бөлісу опциялары</string>
@@ -74,7 +73,6 @@
 
     <string name="settingsInterface">Интерфейс параметрлері</string>
     <string name="settings">Параметрлер</string>
-    <string name="settingsBackups">Сақтық көшірмелер</string>
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>
     <string name="themes">Тақырып</string>
@@ -95,8 +93,6 @@
     <string name="themeModeFollowSystem">Жүйе сияқты</string>
     <string name="themeModeLight">Ашық</string>
     <string name="themeModeDark">Қараңғы</string>
-
-    <string name="localBackup">Құрылғы</string>
     <string name="importLocalBackup">Res. көшірмелер</string>
     <string name="exportLocalBackup">Сақтық көшірме жасау</string>
 
@@ -140,10 +136,6 @@
     <string name="whats_new_title">Жаңа функциялар мен жақсартулар</string>
     <string name="whats_new_description">Жазбаларыңызбен жұмыс істеуді одан да жақсы ететін соңғы жаңартулар, жаңа функциялар мен жақсартуларды ашыңыз. Біз сіздің пікірлеріңіз негізінде қолданбаны үздіксіз жақсартып отырамыз!</string>
     <string name="changelog_subtitle">Осы нұсқадағы барлық өзгерістер мен жақсартулардан хабардар болыңыз</string>
-    <string name="errorLoadingChangelog">Өзгерістер тізімін жүктеу қатесі</string>
-    <string name="checkInternetConnection">Интернет байланысын тексеріңіз</string>
-    <string name="retry">Қайталау</string>
-
     <string name="leaveFeedback">Пікір қалдыру</string>
 
     <!-- Donation Products -->
@@ -279,8 +271,6 @@
     <string name="empty_data_import">Импорттауға жаңа деректер жоқ</string>
 
     <string name="aboutApps_subtitle">Пікір · Көмек · Нұсқа</string>
-    <string name="cloud_sync_title">🛠️ Бұлттық синхрондау уақытша өшірілді</string>
-    <string name="cloud_sync_message">Бұлттық синхрондау уақытша өшірілді. Кейбір пайдаланушылар анонимділіктен алаңдады. Ескі жүзеге асыруды қолдау қиын болды. Болашақта жаңа опционалды плагин қосу жоспарлануда.</string>
     <string name="backup">Сақтық көшірме</string>
     <string name="device_storage">Құрылғы жады</string>
     <string name="google_drive">Google Диск</string>

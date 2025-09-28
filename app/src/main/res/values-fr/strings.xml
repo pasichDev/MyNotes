@@ -47,7 +47,6 @@
     <string name="emptyTrash">Vos notes supprimées seront affichées ici</string>
     <string name="emptyNotes">Les notes que vous avez créées seront affichées ici</string>
     <string name="emptyNotesForTag">Ici seront affichées les notes que vous marquerez avec le tag "%1$s"</string>
-    <string name="chooseNote">Actions sur la note sélectionnée</string>
 
     <!-- Share Dialog -->
     <string name="shareOptions">Options de partage</string>
@@ -73,7 +72,6 @@
     <string name="renameTag">Renommer</string>
     <string name="settingsInterface">Paramètres d\'interface</string>
     <string name="settings">Paramètres</string>
-    <string name="settingsBackups">Sauvegardes</string>
     <string name="aboutApps">À propos de l\'application</string>
     <string name="trash">Corbeille</string>
     <string name="themes">Thème</string>
@@ -94,7 +92,6 @@
     <string name="themeModeFollowSystem">Comme le système</string>
     <string name="themeModeLight">Clair</string>
     <string name="themeModeDark">Sombre</string>
-    <string name="localBackup">Périphérique</string>
     <string name="importLocalBackup">Restauration à l\'aide de res. copies</string>
     <string name="exportLocalBackup">Créer une sauvegarde</string>
 
@@ -138,10 +135,6 @@
     <string name="whats_new_title">Nouvelles fonctionnalités et améliorations</string>
     <string name="whats_new_description">Découvrez les dernières mises à jour, nouvelles fonctionnalités et améliorations qui rendent votre expérience de prise de notes encore meilleure. Nous travaillons constamment à améliorer l\'application en fonction de vos commentaires !</string>
     <string name="changelog_subtitle">Restez au courant de tous les changements et améliorations de cette version</string>
-    <string name="errorLoadingChangelog">Erreur lors du chargement du journal des modifications</string>
-    <string name="checkInternetConnection">Veuillez vérifier votre connexion internet</string>
-    <string name="retry">Réessayer</string>
-
     <string name="leaveFeedback">Laisser un commentaire</string>
 
     <!-- Donation Products -->
@@ -277,8 +270,6 @@
 
     <string name="aboutApps_subtitle">Avis · Aide · Version</string>
 
-    <string name="cloud_sync_title">🛠️ Synchronisation cloud temporairement désactivée</string>
-    <string name="cloud_sync_message">La synchronisation cloud est temporairement désactivée. Certains utilisateurs étaient préoccupés par l’anonymat. L’ancienne implémentation était difficile à maintenir. Nous prévoyons d’ajouter un nouveau plugin optionnel à l’avenir.</string>
     <string name="backup">Sauvegarde</string>
     <string name="device_storage">Stockage de l’appareil</string>
     <string name="google_drive">Google Drive</string>

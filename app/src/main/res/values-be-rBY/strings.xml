@@ -48,8 +48,7 @@
     <string name="emptyTrash">Тут адлюстроўваюцца выдаленыя вамі нататкі</string>
     <string name="emptyNotes">Тут будуць адлюстроўвацца створаныя вамі нататкі</string>
     <string name="emptyNotesForTag">Тут будуць адлюстроўвацца нататкі якія вы пазначыце тэгам "%1$s"</string>
-    <string name="chooseNote">Дзеянні над абранай нататкай</string>
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Опцыі падзелу</string>
     <string name="saveToGoogleDrive">Захаваць у Google Drive</string>
@@ -74,7 +73,6 @@
 
     <string name="settingsInterface">Налады інтэрфейсу</string>
     <string name="settings">Налады</string>
-    <string name="settingsBackups">Рэзервовыя копіі</string>
     <string name="aboutApps">Аб дадатку</string>
     <string name="trash">Кошык</string>
     <string name="themes">Тэма</string>
@@ -95,11 +93,9 @@
     <string name="themeModeFollowSystem">Як у сістэме</string>
     <string name="themeModeLight">Светлая</string>
     <string name="themeModeDark">Цёмная</string>
-
-    <string name="localBackup">Прылада</string>
     <string name="importLocalBackup">Аднавіць з дапамогай рэз. копіі</string>
     <string name="exportLocalBackup">Стварыць рэзервовую копію</string>
-    
+
     <!-- Data Export Section -->
     <string name="dataExport">Экспарт даных</string>
     <string name="dataExportDescription">Вы можаце экспартаваць усе свае бягучыя нататкі для прагляду. Гэтая функцыя экспартуе толькі актыўныя нататкі, выключаючы нататкі з сметніцы, не ўлічваючы тэгі або іншыя фільтры.</string>
@@ -119,7 +115,7 @@
     <string name="restoreDataFall">Памылка: Рэзервовая копія пашкоджана</string>
     <string name="errorDriveSync">Памылка сервера, або дрэнная якасць інтэрнэту</string>
 
-     <string name="sortNotes">Сартаваць нататкі</string>
+    <string name="sortNotes">Сартаваць нататкі</string>
 
     <!-- Product offer -->
     <string name="thanks_title">Паважаны карыстальнік</string>
@@ -143,9 +139,6 @@
     <string name="whats_new_title">Новыя функцыі і паляпшэнні</string>
     <string name="whats_new_description">Адкрыйце для сябе апошнія абнаўленні, новыя функцыі і паляпшэнні, якія робяць работу з нататкамі яшчэ лепшай. Мы пастаянна працуем над паляпшэннем прыкладання на аснове вашых водгукаў!</string>
     <string name="changelog_subtitle">Заставайцеся ў курсе ўсіх змен і паляпшэнняў у гэтай версіі</string>
-    <string name="errorLoadingChangelog">Памылка загрузкі спісу змен</string>
-    <string name="checkInternetConnection">Калі ласка, праверце падключэнне да інтэрнэту</string>
-    <string name="retry">Паўтарыць</string>
     <string name="leaveFeedback">Пакінуць водгук</string>
 
     <!-- Donation Products -->
@@ -161,9 +154,9 @@
     <string name="donation_universe_description">Адкрыйце бязмежныя магчымасці для будучыні</string>
 
     <!-- Purchase Error Messages -->
-    <string name="purchase_loading">Загрузка тавараў...</string>
+    <string name="purchase_loading">Загрузка тавараў…</string>
     <string name="purchase_error_no_products">Няма даступных тавараў для данату</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Падтрымаць распрацоўшчыка</string>
     <string name="support_solo_developer_description">Прывітанне! Я распрацоўшчык, які працуе над MyNotes у свабодны час. Усе функцыі заўсёды будуць бясплатнымі, але ваша падтрымка дапамагае мне прысвячаць больш часу паляпшэнню гэтага прыкладання. Кожны ўнёсак азначае для мяне ўвесь свет! 💖</string>
@@ -173,7 +166,7 @@
     <string name="help_subtitle">Даведайцеся, як максімальна выкарыстоўваць функцыі MyNotes</string>
     <string name="help_section_icon">Іконка раздзела</string>
     <string name="help_feature_icon">Іконка функцыі</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Тэгі</string>
     <string name="help_tags_func_title">Узаемадзеянне з тэгаў</string>
@@ -195,18 +188,18 @@
     <string name="help_navigation_sort_description">Сартуйце вашы нататкі па даце апошняй змены або назве ў ўзыходным ці спадным парадку</string>
     <string name="help_navigation_format_title">Фармат адлюстравання</string>
     <string name="help_navigation_format_description">Пераключайцеся паміж спісам і сеткай для адлюстравання вашых нататак у зручным для вас макеце</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жэсты свайп</string>
     <string name="help_navigation_swipe_description">Кіруйце нататкамі інтуітыўна! Правядзіце пальцам улева, каб уключыць рэжым выбару некалькіх нататак для хуткіх масавых аперацый, або ўправа — каб імгненна выдаліць нататку і адправіць яе ў кош. Жэсты даступны толькі ў адноколонкавым рэжыме.</string>
-    
+
     <!-- Other Section -->
     <string name="help_other_title">Іншае</string>
     <string name="help_other_security_title">Абарона экрана</string>
     <string name="help_other_security_description">Калі ўключана ў наладах, гэтая функцыя абараняе вашы нататкі ад несанкцыянаванага прагляду: хавае змесціва прыкладання ў агляды апошніх прыкладанняў, забараняе стварэнне скрыншотаў і запіс экрана. Функцыя бяспекі актывуецца пасля перазапуску прыкладання.</string>
     <string name="help_other_shortcuts_title">Хуткія дзеянні</string>
     <string name="help_other_shortcuts_description">Утрымлівайце іконку прыкладання для хуткага доступу да стварэння новай нататкі або пошуку ў вашых нататках. Даступна на Android 7.1 і вышэй.</string>
-    
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функцыі нататак</string>
     <string name="help_notes_limit_title">Абмежаванне тэксту</string>
@@ -259,7 +252,7 @@
     <string name="import_notes_from_google_keep">Імпарт нататак з Google Keep</string>
     <string name="google_keep_description">Экспартуйце вашы нататкі з Google Keep і імпартуйце іх у гэтую праграму. Падтрымліваецца экспарт праз Google Takeout.</string>
     <string name="import_from_google_keep">Імпарт з Google Keep</string>
-    
+
     <string name="other_apps">Іншыя праграмы</string>
     <string name="import_from_other_note_apps">Імпарт з іншых праграм для нататак</string>
     <string name="other_apps_description">Імпарт нататак з папулярных праграм для вядзення нататак: OneNote, Evernote, Notion і іншых.</string>
@@ -279,8 +272,6 @@
     <string name="empty_data_import">Няма новых даных для імпарту</string>
 
     <string name="aboutApps_subtitle">Водгук · Даведка · Версія</string>
-    <string name="cloud_sync_title">🛠️ Хмарная сінхранізацыя часова адключаная</string>
-    <string name="cloud_sync_message">Хмарная сінхранізацыя часова адключаная. Некаторыя карыстальнікі хваляваліся за ананімнасць. Старая рэалізацыя была складанай у падтрымцы. Плануем дадаць новую апцыянальную ўбудову ў будучыні.</string>
     <string name="backup">Рэзервовая копія</string>
     <string name="device_storage">Памяць прылады</string>
     <string name="google_drive">Google Дыск</string>

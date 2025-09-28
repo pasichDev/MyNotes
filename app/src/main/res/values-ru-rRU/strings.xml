@@ -59,7 +59,6 @@
     <string name="emptyTrash">Здесь отображаються удаленные вами заметки</string>
     <string name="emptyNotes">Здесь будут отображаться созданные вами заметки</string>
     <string name="emptyNotesForTag">Здесь будут отображаться заметки которые вы отметите тегом "%1$s"</string>
-    <string name="chooseNote">Действия над выбраной заметкой</string>
 
     <!-- Share Dialog -->
     <string name="shareOptions">Опции поделиться</string>
@@ -86,7 +85,6 @@
 
     <string name="settingsInterface">Настройки интерфейса</string>
     <string name="settings">Настройки</string>
-    <string name="settingsBackups">Резервные копии</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>
     <string name="themes">Тема</string>
@@ -98,8 +96,6 @@
     <string name="themeModeFollowSystem">Как в системе</string>
     <string name="themeModeLight">Светлая</string>
     <string name="themeModeDark">Тёмная</string>
-
-    <string name="localBackup">Устройство</string>
     <string name="importLocalBackup">Восстановить с Рез. копии</string>
     <string name="exportLocalBackup">Создать резервную копию</string>
 
@@ -144,10 +140,6 @@
     <string name="whats_new_title">Новые функции и улучшения</string>
     <string name="whats_new_description">Откройте для себя последние обновления, новые функции и улучшения, которые делают работу с заметками еще лучше. Мы постоянно работаем над улучшением приложения на основе ваших отзывов!</string>
     <string name="changelog_subtitle">Будьте в курсе всех изменений и улучшений в этой версии</string>
-    <string name="errorLoadingChangelog">Ошибка загрузки списка изменений</string>
-    <string name="checkInternetConnection">Пожалуйста, проверьте подключение к интернету</string>
-    <string name="retry">Повторить</string>
-
     <string name="leaveFeedback">Оставить отзыв</string>
 
     <!-- Donation Products -->
@@ -284,10 +276,6 @@
     <string name="empty_data_import">Нет новых данных для импорта</string>
 
     <string name="aboutApps_subtitle">Отзыв · Справка · Версия</string>
-
-    <string name="cloud_sync_title">🛠️ Облачная синхронизация временно отключена</string>
-    <string name="cloud_sync_message">Облачная синхронизация временно отключена. Некоторые пользователи переживали за анонимность. Старая реализация была сложна в поддержке. Мы планируем добавить новый опциональный плагин в будущем.</string>
-
     <string name="backup">Резервная копия</string>
     <string name="device_storage">Память устройства</string>
     <string name="google_drive">Google Диск</string>

@@ -47,7 +47,6 @@
     <string name="emptyTrash">Тут відображатимуться видалені вами нотатки</string>
     <string name="emptyNotes">Тут відображатимуться створені вами нотатки</string>
     <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
-    <string name="chooseNote">Дії над вибраною нотаткою</string>
 
     <!-- Share Dialog -->
     <string name="shareOptions">Опції поділитися</string>
@@ -73,7 +72,6 @@
     <string name="renameTag">Перейменувати</string>
     <string name="settingsInterface">Налаштування інтерфейсу</string>
     <string name="settings">Налаштування</string>
-    <string name="settingsBackups">Резервні копії</string>
     <string name="aboutApps">Про програму</string>
     <string name="trash">Кошик</string>
     <string name="themes">Тема</string>
@@ -88,7 +86,6 @@
     <string name="themeModeFollowSystem">Як в системі</string>
     <string name="themeModeLight">Світла</string>
     <string name="themeModeDark">Темна</string>
-    <string name="localBackup">Пристрій</string>
     <string name="importLocalBackup">Відновити за допомогою рез. копії</string>
     <string name="exportLocalBackup">Створити резервну копію</string>
 
@@ -131,9 +128,6 @@
     <string name="whats_new_title">Нові функції та покращення</string>
     <string name="whats_new_description">Відкрийте для себе останні оновлення, нові функції та покращення, які роблять роботу з нотатками ще кращою. Ми постійно працюємо над покращенням додатку на основі ваших відгуків!</string>
     <string name="changelog_subtitle">Залишайтеся в курсі всіх змін та покращень у цій версії</string>
-    <string name="errorLoadingChangelog">Помилка завантаження списку змін</string>
-    <string name="checkInternetConnection">Будь ласка, перевірте підключення до інтернету</string>
-    <string name="retry">Повторити</string>
 
     <!-- Themes names -->
     <string name="themeBlue">Океанський синій</string>
@@ -279,9 +273,6 @@
     <string name="empty_data_import">Немає нових даних для імпорту</string>
 
     <string name="aboutApps_subtitle">Відгук · Довідка · Версія</string>
-
-    <string name="cloud_sync_title">🛠️ Хмарна синхронізація тимчасово вимкнена</string>
-    <string name="cloud_sync_message">Хмарна синхронізація тимчасово вимкнена. Деякі користувачі хвилювалися щодо анонімності. Стара реалізація була складною у підтримці. Ми плануємо додати новий опціональний плагін у майбутньому.</string>
     <string name="backup">Резервна копія</string>
     <string name="device_storage">Пам’ять пристрою</string>
     <string name="google_drive">Google Диск</string>

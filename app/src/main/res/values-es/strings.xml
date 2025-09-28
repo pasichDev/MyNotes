@@ -50,7 +50,6 @@
     <string name="emptyTrash">Tus notas eliminadas se muestran aquí</string>
     <string name="emptyNotes">Las notas que cree aparecerán aquí</string>
     <string name="emptyNotesForTag">Aquí se mostrarán las notas que marques con la etiqueta "%1$s"</string>
-    <string name="chooseNote">Acciones en la nota seleccionada</string>
 
     <!-- Share Dialog -->
     <string name="shareOptions">Opciones de compartir</string>
@@ -77,7 +76,6 @@
 
     <string name="settingsInterface">Configuración de la interfaz</string>
     <string name="settings">Configuración</string>
-    <string name="settingsBackups">Copias de seguridad</string>
     <string name="aboutApps">Acerca de la aplicación</string>
     <string name="trash">Papelera</string>
     <string name="themes">Tema</string>
@@ -98,8 +96,6 @@
     <string name="themeModeFollowSystem">Como el sistema</string>
     <string name="themeModeLight">Claro</string>
     <string name="themeModeDark">Oscuro</string>
-
-    <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Restaurar desde Res. copias</string>
     <string name="exportLocalBackup">Crear una copia de seguridad</string>
 
@@ -144,10 +140,6 @@
     <string name="whats_new_title">Nuevas funciones y mejoras</string>
     <string name="whats_new_description">Descubre las últimas actualizaciones, nuevas funciones y mejoras que hacen que tu experiencia de tomar notas sea aún mejor. ¡Trabajamos constantemente para mejorar la aplicación basándonos en tus comentarios!</string>
     <string name="changelog_subtitle">Mantente al día con todos los cambios y mejoras de esta versión</string>
-    <string name="errorLoadingChangelog">Error al cargar el registro de cambios</string>
-    <string name="checkInternetConnection">Por favor verifica tu conexión a internet</string>
-    <string name="retry">Reintentar</string>
-
     <string name="leaveFeedback">Dejar comentario</string>
 
     <!-- Donation Products -->
@@ -283,8 +275,6 @@
 
     <string name="aboutApps_subtitle">Reseña · Ayuda · Versión</string>
 
-    <string name="cloud_sync_title">🛠️ Sincronización en la nube temporalmente desactivada</string>
-    <string name="cloud_sync_message">La sincronización en la nube está temporalmente desactivada. Algunos usuarios estaban preocupados por la privacidad. La implementación anterior era difícil de mantener. Planeamos añadir un nuevo plugin opcional en el futuro.</string>
     <string name="backup">Copia de seguridad</string>
     <string name="device_storage">Almacenamiento del dispositivo</string>
     <string name="google_drive">Google Drive</string>

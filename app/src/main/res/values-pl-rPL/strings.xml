@@ -48,7 +48,6 @@
     <string name="emptyTrash">Twoje usunięte notatki są wyświetlane tutaj</string>
     <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
     <string name="emptyNotesForTag">Tutaj będą wyświetlane notatki które oznaczysz tagiem "%1$s"</string>
-    <string name="chooseNote">Działania na wybranej notatce</string>
 
     <!-- Share Dialog -->
     <string name="shareOptions">Opcje udostępniania</string>
@@ -75,7 +74,6 @@
 
     <string name="settingsInterface">Ustawienia interfejsu</string>
     <string name="settings">Ustawienia</string>
-    <string name="settingsBackups">Kopie zapasowe</string>
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>
     <string name="themes">Motyw</string>
@@ -96,8 +94,6 @@
     <string name="themeModeFollowSystem">Jak w systemie</string>
     <string name="themeModeLight">Jasny</string>
     <string name="themeModeDark">Ciemny</string>
-
-    <string name="localBackup">Urządzenie</string>
     <string name="importLocalBackup">Przywróć z Res. kopie</string>
     <string name="exportLocalBackup">Utwórz kopię zapasową</string>
 
@@ -143,10 +139,6 @@
     <string name="whats_new_title">Nowe funkcje i ulepszenia</string>
     <string name="whats_new_description">Odkryj najnowsze aktualizacje, nowe funkcje i ulepszenia, które sprawiają, że robienie notatek jest jeszcze lepsze. Nieustannie pracujemy nad ulepszaniem aplikacji na podstawie Twoich opinii!</string>
     <string name="changelog_subtitle">Bądź na bieżąco ze wszystkimi zmianami i ulepszeniami w tej wersji</string>
-    <string name="errorLoadingChangelog">Błąd ładowania listy zmian</string>
-    <string name="checkInternetConnection">Sprawdź połączenie internetowe</string>
-    <string name="retry">Ponów</string>
-
     <string name="leaveFeedback">Zostaw opinię</string>
 
     <!-- Donation Products -->
@@ -281,9 +273,6 @@
     <string name="empty_data_import">Brak nowych danych do importu</string>
 
     <string name="aboutApps_subtitle">Opinie · Pomoc · Wersja</string>
-    <string name="cloud_sync_title">🛠️ Synchronizacja w chmurze tymczasowo wyłączona</string>
-    <string name="cloud_sync_message">Synchronizacja w chmurze jest tymczasowo wyłączona. Niektórzy użytkownicy obawiali się o anonimowość. Stara implementacja była trudna w utrzymaniu. Planujemy dodać nową opcjonalną wtyczkę w przyszłości.</string>
-
     <string name="backup">Kopia zapasowa</string>
     <string name="device_storage">Pamięć urządzenia</string>
     <string name="google_drive">Google Drive</string>
