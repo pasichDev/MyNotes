@@ -42,23 +42,16 @@
                 android:text="@{Note.valuePreview}"
                 tools:text="Preview Note Check" />
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chip_group_action"
-                style="@style/Widget.MaterialComponents.Chip.Action"
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/tagNote"
+                style="@style/chipTagItemNote"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="false"
-                app:singleSelection="true">
+                tools:text="tag"
+                android:text="@{'#'+Note.tag}"
+                android:visibility="@{Note.tag.length() >= 1 ? View.VISIBLE : View.GONE}" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/tagNote"
-                    style="@style/chipTagItemNote"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{'#'+Note.tag}"
-                    android:visibility="@{Note.tag.length() >= 1 ? View.VISIBLE : View.GONE}" />
-
-            </com.google.android.material.chip.ChipGroup>
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
