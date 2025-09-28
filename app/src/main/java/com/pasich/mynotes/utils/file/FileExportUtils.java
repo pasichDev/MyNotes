@@ -10,67 +10,73 @@ import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.content.FileProvider;
+
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+
 
 /**
  * Utility class for exporting notes to different file formats
  */
 public class FileExportUtils {
-    
+
     private static final String TAG = "FileExportUtils";
-    private static final String GOOGLE_DRIVE_PACKAGE = "com.google.android.apps.docs";
-    
+    public static final String GOOGLE_DRIVE_PACKAGE = "com.google.android.apps.docs";
+
     /**
      * Create intent for saving TXT file with system file picker
      */
     public static Intent createSaveTxtIntent(String noteTitle) {
         String fileName = generateFileName(noteTitle, "txt");
-        
+
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-        
+
         return intent;
     }
-    
+
     /**
      * Create intent for saving PDF file with system file picker
      */
     public static Intent createSavePdfIntent(String noteTitle) {
         String fileName = generateFileName(noteTitle, "pdf");
-        
+
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("application/pdf");
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
-        
+
         return intent;
     }
-    
+
     /**
      * Create intent for saving HTML file with system file picker
      */
     public static Intent createSaveHtmlIntent(String noteTitle) {
         String fileName = generateFileName(noteTitle, "html");
-        
+
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/html");
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
-        
+
         return intent;
     }
-    
+
     /**
      * Open Google Drive intent to save file
      */
@@ -81,22 +87,60 @@ public class FileExportUtils {
                 Toast.makeText(context, context.getString(R.string.googleDriveNotInstalled), Toast.LENGTH_LONG).show();
                 return;
             }
-            
+
             // Create intent to share with Google Drive
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setType("text/plain");
             intent.putExtra(Intent.EXTRA_TEXT, noteContent);
             intent.putExtra(Intent.EXTRA_SUBJECT, noteTitle);
             intent.setPackage(GOOGLE_DRIVE_PACKAGE);
-            
             context.startActivity(intent);
-            
+
         } catch (Exception e) {
             Log.e(TAG, "Error saving to Google Drive", e);
             Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
         }
     }
-    
+
+    public static void saveBackupToGoogleDrive(Context context, String jsonContent, DriveProcess callback) {
+        String fileName = generateBackupFileName();
+        try {
+            // Перевірка, чи є Google Drive
+            if (!isAppInstalled(context)) {
+                Toast.makeText(context, context.getString(R.string.googleDriveNotInstalled), Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // Очимстка тимчасових файлів у кеші
+            File dir = context.getCacheDir();
+            for (File f : Objects.requireNonNull(dir.listFiles())) {
+                if (f.getName().startsWith("MyNotes_Backup_") && f.getName().endsWith(".json")) {
+                    f.delete();
+                }
+            }
+
+
+            // Створюємо тимчасовий файл у кеші
+            File file = new File(context.getCacheDir(), fileName + ".json");
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(jsonContent.getBytes(StandardCharsets.UTF_8));
+                fos.flush();
+            }
+
+            // Робимо Uri через FileProvider
+            Uri fileUri = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", // authorities
+                    file);
+            callback.onSuccess(fileUri, fileName);
+
+
+
+        } catch (Exception e) {
+            callback.onError(context.getString(R.string.errorSavingFile));
+            Log.e("DriveExport", "Error saving to Google Drive", e);
+        }
+    }
+
+
     /**
      * Share note through other apps
      */
@@ -105,11 +149,11 @@ public class FileExportUtils {
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, noteContent);
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, noteTitle);
-        
+
         Intent chooser = Intent.createChooser(shareIntent, context.getString(R.string.shareViaApps));
         context.startActivity(chooser);
     }
-    
+
     /**
      * Save TXT content to selected URI
      */
@@ -123,9 +167,9 @@ public class FileExportUtils {
                 // Add UTF-8 BOM for better compatibility
                 byte[] bom = new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
                 outputStream.write(bom);
-                
+
                 byte[] contentBytes = formattedContent.getBytes(StandardCharsets.UTF_8);
-                
+
                 outputStream.write(contentBytes);
                 outputStream.flush();
                 outputStream.close();
@@ -139,7 +183,7 @@ public class FileExportUtils {
             Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     /**
      * Save PDF content to selected URI
      */
@@ -149,32 +193,32 @@ public class FileExportUtils {
             PdfDocument pdfDocument = new PdfDocument();
             PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create(); // A4 size
             PdfDocument.Page page = pdfDocument.startPage(pageInfo);
-            
+
             Canvas canvas = page.getCanvas();
             Paint paint = new Paint();
             paint.setColor(Color.BLACK);
             paint.setTextSize(12);
             paint.setAntiAlias(true);
-            
+
             int y = 50;
             int lineHeight = 20;
             int maxWidth = 500;
-            
+
             // Title
             String title = (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
-            
+
             paint.setTextSize(16);
             paint.setFakeBoldText(true);
             canvas.drawText(title, 50, y, paint);
             y += 30; // Extra space after title
-            
+
             // Content
             paint.setTextSize(12);
             paint.setFakeBoldText(false);
-            
+
             if (noteContent != null && !noteContent.trim().isEmpty()) {
                 String[] lines = noteContent.trim().split("\n");
-                
+
                 for (String line : lines) {
                     if (y > 800) { // Start new page if needed
                         pdfDocument.finishPage(page);
@@ -183,12 +227,12 @@ public class FileExportUtils {
                         canvas = page.getCanvas();
                         y = 50;
                     }
-                    
+
                     // Handle line wrapping
                     if (paint.measureText(line) > maxWidth) {
                         String[] words = line.split(" ");
                         StringBuilder currentLine = new StringBuilder();
-                        
+
                         for (String word : words) {
                             if (paint.measureText(currentLine + word + " ") > maxWidth) {
                                 if (currentLine.length() > 0) {
@@ -200,7 +244,7 @@ public class FileExportUtils {
                                 currentLine.append(word).append(" ");
                             }
                         }
-                        
+
                         if (currentLine.length() > 0) {
                             canvas.drawText(currentLine.toString(), 50, y, paint);
                             y += lineHeight;
@@ -213,32 +257,32 @@ public class FileExportUtils {
             } else {
                 Log.d(TAG, "PDF Content is empty");
             }
-            
+
             pdfDocument.finishPage(page);
-            
+
             // Save PDF to selected URI
             OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
             Log.d(TAG, "PDF OutputStream opened: " + (outputStream != null));
-            
+
             if (outputStream != null) {
                 pdfDocument.writeTo(outputStream);
                 outputStream.flush();
                 outputStream.close();
-                
+
                 Log.d(TAG, "PDF written successfully");
                 Toast.makeText(context, context.getString(R.string.fileSavedSuccessfully), Toast.LENGTH_SHORT).show();
             } else {
                 Log.e(TAG, "PDF OutputStream is null");
                 Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
             }
-            
+
             pdfDocument.close();
-            
+
         } catch (Exception e) {
             Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     /**
      * Save HTML content to selected URI
      */
@@ -252,9 +296,9 @@ public class FileExportUtils {
                 // Add UTF-8 BOM for better compatibility
                 byte[] bom = new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
                 outputStream.write(bom);
-                
+
                 byte[] contentBytes = htmlContent.getBytes(StandardCharsets.UTF_8);
-                
+
                 outputStream.write(contentBytes);
                 outputStream.flush();
                 outputStream.close();
@@ -268,50 +312,59 @@ public class FileExportUtils {
             Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     /**
      * Generate file name with timestamp and handle empty titles
      */
     private static String generateFileName(String noteTitle, String extension) {
         // Handle empty or null title
         String title = (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
-        
+
         String sanitizedTitle = title.replaceAll("[^a-zA-Z0-9\\u0400-\\u04FF.-]", "_");
         if (sanitizedTitle.length() > 50) {
             sanitizedTitle = sanitizedTitle.substring(0, 50);
         }
-        
+
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         return sanitizedTitle + "_" + timestamp + "." + extension;
     }
-    
+
     /**
      * Format note content with title and text properly
      */
     public static String formatNoteContent(String noteTitle, String noteContent) {
         StringBuilder formattedContent = new StringBuilder();
-        
+
         // Handle title
         String title = (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
         formattedContent.append(title).append("\n\n");
-        
+
         // Add content if exists
         if (noteContent != null && !noteContent.trim().isEmpty()) {
             formattedContent.append(noteContent.trim());
         }
-        
+
         return formattedContent.toString();
     }
-    
+
     /**
      * Check if app is installed
      */
-    private static boolean isAppInstalled(Context context) {
+    public static boolean isAppInstalled(Context context) {
         try {
             context.getPackageManager().getApplicationInfo(FileExportUtils.GOOGLE_DRIVE_PACKAGE, 0);
             return true;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static String generateBackupFileName() {
+        // Поточна дата
+        Date now = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd_MM_yy_HH_mm", Locale.getDefault());
+        String dateStr = sdf.format(now);
+
+        return "MyNotes_Backup_" + dateStr + ".json";
     }
 }

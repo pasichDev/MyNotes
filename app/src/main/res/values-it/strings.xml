@@ -47,7 +47,6 @@
     <string name="emptyTrash">Le tue note eliminate verranno visualizzate qui</string>
     <string name="emptyNotes">Le note che hai creato verranno visualizzate qui</string>
     <string name="emptyNotesForTag">Qui verranno visualizzate le note che contrassegni con il tag "%1$s"</string>
-    <string name="chooseNote">Azioni sulla nota selezionata</string>
     
     <!-- Share Dialog -->
     <string name="shareOptions">Opzioni di condivisione</string>
@@ -72,7 +71,6 @@
      <string name="renameTag">Rinomina</string>
     <string name="settingsInterface">Impostazioni interfaccia</string>
     <string name="settings">Impostazioni</string>
-    <string name="settingsBackups">Backup</string>
     <string name="aboutApps">Informazioni sull\'app</string>
     <string name="trash">Cestino</string>
     <string name="themes">Tema</string>
@@ -93,48 +91,28 @@
     <string name="themeModeFollowSystem">Come nel sistema</string>
     <string name="themeModeLight">Chiaro</string>
     <string name="themeModeDark">Scuro</string>
-    <string name="loginUser">Autorizzazione Google</string>
-    <string name="cloudBackup">Nuvola</string>
-    <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Ripristina usando res. copie</string>
     <string name="exportLocalBackup">Crea backup</string>
     
     <!-- Data Export Section -->
     <string name="dataExport">Esportazione dati</string>
-    <string name="important">Importante</string>
     <string name="dataExportDescription">Puoi esportare tutte le tue note attuali per la visualizzazione. Questa funzione esporta solo note attive, escludendo note dal cestino, senza considerare tag o altri filtri.</string>
     <string name="exportAllNotes">Esporta tutte le note</string>
-    <string name="lastCloudCopy">Ultimo backup: %1$s</string>
-    <string name="errorDriveAuth">Ospite</string>
-    <string name="autoCloudBackupTitle">Backup automatico</string>
     <string name="restoreNotesTitle">Ripristina le note</string>
     <string name="restoreNotesMessage">Le nuove note verranno aggiunte alle note esistenti e i duplicati verranno ignorati!</string>
     <string name="selectRestore">Seleziona res. copia</string>
     <string name="nextRestore">Ripristina dal cloud</string>
     <string name="messageRestoreProcess"><b>Ripristina dati</b> \nQuesta finestra si chiuderà automaticamente al termine.</string>
-    <string name="emptyBackups">Nessun backup trovato</string>
-    <string name="checkLastBackupsCloud">Attendi, caricamento dati in corso…</string>
-    <!-- Array AutoBackup -->
-    <string name="autoCloudVariantsDay">Ogni giorno</string>
-    <string name="autoCloudVariantsWeek">Ogni settimana</string>
-    <string name="autoCloudVariantsMonth">Ogni mese</string>
-    <string name="autoCloudVariantsOff">Off</string>
+
     <!-- Lerrore genera backup/ripristino -->
     <string name="emptyDataToBackup">Non ci sono dati di cui eseguire il backup</string>
-    <string name="errorConnectedNetwork">Nessun accesso a Internet</string>
     <string name="creteLocalCopyOkay">Backup creato con successo</string>
     <string name="creteLocalCopyFail">Errore, backup non salvato</string>
     <string name="restoreDataOkay">Ripristino dati completato con successo</string>
     <string name="restoreDataFall">Errore: backup corrotto</string>
-    <string name="errorAuth">Errore, riprova più tardi</string>
-    <string name="errorLoadingLastBackupCloud">Errore, clicca per riprovare</string>
     <string name="errorDriveSync">Errore del server o scarsa qualità di Internet</string>
-    <string name="errorCredential">Errore, problemi di autenticazione</string>
 
-    <string name="errorDriverAuthInfo">Per utilizzare la sincronizzazione cloud, devi essere autorizzato</string>
     <string name="sortNotes">Ordina note</string>
-    <string name="percentProgress" translatable="false">Backup (%d%%)</string>
-    <string name="errorSyncDescrpt">Il backup cloud non è temporaneamente disponibile</string>
 
     <!-- Offerta prodotto -->
     <string name="thanks_title">Gentile utente</string>
@@ -157,10 +135,6 @@
     <string name="whats_new_title">Nuove funzionalità e miglioramenti</string>
     <string name="whats_new_description">Scopri gli ultimi aggiornamenti, nuove funzionalità e miglioramenti che rendono la tua esperienza di prendere appunti ancora migliore. Lavoriamo costantemente per migliorare l\'app basandoci sui tuoi feedback!</string>
     <string name="changelog_subtitle">Rimani aggiornato su tutti i cambiamenti e miglioramenti di questa versione</string>
-    <string name="errorLoadingChangelog">Errore nel caricamento del registro delle modifiche</string>
-    <string name="checkInternetConnection">Controlla la connessione internet</string>
-    <string name="retry">Riprova</string>
-
     <string name="leaveFeedback">Lascia feedback</string>
 
     <!-- Donation Products -->
@@ -295,4 +269,18 @@
     <string name="empty_data_import">Nessun dato nuovo da importare</string>
 
     <string name="aboutApps_subtitle">Recensione · Guida · Versione</string>
+
+    <string name="backup">Backup</string>
+    <string name="device_storage">Memoria dispositivo</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Salva backup</string>
+    <string name="restore_backup">Ripristina backup</string>
+    <string name="file_not_selected">File non selezionato</string>
+    <string name="drive_selected_error">Errore durante l’interazione con Google Drive</string>
+    <string name="export_drive_error">Hai annullato l’azione o si è verificato un errore.</string>
+    <string name="backup_descrpt">Puoi creare un backup e salvarlo localmente sul dispositivo o su Google Drive; include le impostazioni dell’app, tutte le note e i tag.</string>
+    <string name="your_data">I tuoi dati</string>
+
+
+
 </resources>

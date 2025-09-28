@@ -13,18 +13,23 @@ import com.pasich.mynotes.databinding.FragmentBackupExportBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class BackupExportFragment extends Fragment {
 
     private FragmentBackupExportBinding binding;
-    private BackupContract.presenter presenter;
+    
+    @Inject
+    BackupContract.presenter presenter;
 
-    public static BackupExportFragment newInstance(BackupContract.presenter presenter) {
-        BackupExportFragment fragment = new BackupExportFragment();
-        fragment.presenter = presenter;
-        return fragment;
+    public BackupExportFragment() {
+    }
+
+    public static BackupExportFragment newInstance() {
+        return new BackupExportFragment();
     }
 
     @Nullable

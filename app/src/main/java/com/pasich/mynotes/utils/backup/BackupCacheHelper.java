@@ -11,7 +11,6 @@ public class BackupCacheHelper {
 
     @Inject
     public BackupCacheHelper() {
-
     }
 
     public JsonBackup getJsonBackup() {

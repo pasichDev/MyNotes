@@ -47,8 +47,7 @@
     <string name="emptyTrash">Deine gelöschten Notizen werden hier angezeigt</string>
     <string name="emptyNotes">Die von dir erstellten Notizen werden hier angezeigt</string>
     <string name="emptyNotesForTag">Hier werden Notizen angezeigt, die du mit dem Tag "%1$s" markierst</string>
-    <string name="chooseNote">Aktionen für die ausgewählte Notiz</string>
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Freigabeoptionen</string>
     <string name="saveToGoogleDrive">In Google Drive speichern</string>
@@ -69,10 +68,9 @@
     <string name="button_url">Link öffnen</string>
     <string name="hiddeTag">Notizen ausblenden</string>
     <string name="visibleTag">Notizen anzeigen</string>
-     <string name="renameTag">Umbenennen</string>
+    <string name="renameTag">Umbenennen</string>
     <string name="settingsInterface">Schnittstelleneinstellungen</string>
     <string name="settings">Einstellungen</string>
-    <string name="settingsBackups">Backups</string>
     <string name="aboutApps">Über die App</string>
     <string name="trash">Papierkorb</string>
     <string name="themes">Design</string>
@@ -89,49 +87,27 @@
     <string name="onScreenProtection">Bildschirmschutz aktivieren</string>
     <string name="onScreenProtectionDescription">Verhindert Screenshots und Bildschirmaufnahmen. Wird nach dem Neustart der App wirksam</string>
     <string name="themeMode">Design-Modus</string>
-     <string name="selectThemeMode">Design-Modus auswählen</string>
+    <string name="selectThemeMode">Design-Modus auswählen</string>
     <string name="themeModeFollowSystem">Wie im System</string>
     <string name="themeModeLight">Hell</string>
     <string name="themeModeDark">Dunkel</string>
-     <string name="loginUser">Google-Autorisierung</string>
-    <string name="cloudBackup">Cloud</string>
-    <string name="localBackup">Gerät</string>
     <string name="importLocalBackup">Wiederherstellung mit res. Kopien</string>
     <string name="exportLocalBackup">Sicherung erstellen</string>
-    <string name="lastCloudCopy">Letzte Sicherung: %1$s</string>
-    <string name="errorDriveAuth">Gast</string>
-    <string name="autoCloudBackupTitle">Automatische Sicherung</string>
     <string name="restoreNotesTitle">Notizen wiederherstellen</string>
     <string name="restoreNotesMessage">Neue Notizen werden bestehenden Notizen hinzugefügt und Duplikate werden ignoriert!</string>
     <string name="selectRestore">Auflösung auswählen. kopieren</string>
     <string name="nextRestore">Aus Cloud wiederherstellen</string>
     <string name="messageRestoreProcess"><b>Daten wiederherstellen</b> \nDieses Fenster wird nach Abschluss automatisch geschlossen.</string>
-    <string name="emptyBackups">Keine Backups gefunden</string>
-    <string name="checkLastBackupsCloud">Bitte warten, Daten werden geladen…</string>
-
-
-    <!-- Arrays AutoBackup -->
-    <string name="autoCloudVariantsDay">Jeden Tag</string>
-    <string name="autoCloudVariantsWeek">Jede Woche</string>
-    <string name="autoCloudVariantsMonth">Jeden Monat</string>
-    <string name="autoCloudVariantsOff">Aus</string>
 
 
     <!-- Fehlerergebnisse sichern/wiederherstellen -->
     <string name="emptyDataToBackup">Es gibt keine Daten zum Sichern</string>
-    <string name="errorConnectedNetwork">Kein Zugriff auf das Internet</string>
     <string name="creteLocalCopyOkay">Sicherung erfolgreich erstellt</string>
     <string name="creteLocalCopyFail">Fehler, Sicherung nicht gespeichert</string>
     <string name="restoreDataOkay">Datenwiederherstellung erfolgreich abgeschlossen</string>
     <string name="restoreDataFall">Fehler: Sicherung beschädigt</string>
-    <string name="errorAuth">Fehler, bitte versuche es später noch einmal</string>
-    <string name="errorLoadingLastBackupCloud">Fehler, klicken Sie, um es erneut zu versuchen</string>
     <string name="errorDriveSync">Serverfehler oder schlechte Internetqualität</string>
-    <string name="errorCredential">Fehler, Authentifizierungsprobleme</string>
-    <string name="errorDriverAuthInfo">Um die Cloud-Synchronisierung zu verwenden, müssen Sie autorisiert sein</string>
     <string name="sortNotes">Notizen sortieren</string>
-    <string name="percentProgress" translateable="false">Sicherung läuft (%d%%)</string>
-    <string name="errorSyncDescrpt">Die Sicherung in der Cloud ist vorübergehend nicht verfügbar</string>
 
     <!-- Produktangebot -->
     <string name="thanks_title">Lieber Benutzer</string>
@@ -154,10 +130,6 @@
     <string name="whats_new_title">Neue Funktionen &amp; Verbesserungen</string>
     <string name="whats_new_description">Entdecken Sie die neuesten Updates, neuen Funktionen und Verbesserungen, die Ihr Notiz-Erlebnis noch besser machen. Wir arbeiten kontinuierlich daran, die App basierend auf Ihrem Feedback zu verbessern!</string>
     <string name="changelog_subtitle">Bleiben Sie über alle Änderungen und Verbesserungen in dieser Version auf dem Laufenden</string>
-    <string name="errorLoadingChangelog">Fehler beim Laden des Änderungsprotokolls</string>
-    <string name="checkInternetConnection">Bitte überprüfen Sie Ihre Internetverbindung</string>
-    <string name="retry">Wiederholen</string>
-
     <string name="leaveFeedback">Feedback hinterlassen</string>
 
     <!-- Donation Products -->
@@ -175,7 +147,7 @@
     <!-- Purchase Error Messages -->
     <string name="purchase_loading">Produkte werden geladen…</string>
     <string name="purchase_error_no_products">Keine Spendenprodukte verfügbar</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Entwickler unterstützen</string>
     <string name="support_solo_developer_description">Hallo! Ich bin ein Entwickler, der in seiner Freizeit an MyNotes arbeitet. Alle Funktionen werden immer kostenlos sein, aber Ihre Unterstützung hilft mir, mehr Zeit für die Verbesserung dieser App aufzuwenden. Jeder Beitrag bedeutet mir die Welt! 💖</string>
@@ -186,7 +158,7 @@
     <string name="help_subtitle">Erfahren Sie, wie Sie MyNotes-Funktionen optimal nutzen</string>
     <string name="help_section_icon">Abschnitt-Symbol</string>
     <string name="help_feature_icon">Funktions-Symbol</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Tags</string>
     <string name="help_tags_func_title">Interaktion mit Tags</string>
@@ -208,11 +180,11 @@
     <string name="help_navigation_sort_description">Sortieren Sie Ihre Notizen nach dem letzten Änderungsdatum oder Namen in aufsteigender oder absteigender Reihenfolge</string>
     <string name="help_navigation_format_title">Anzeigeformat</string>
     <string name="help_navigation_format_description">Wechseln Sie zwischen Liste und Raster, um Ihre Notizen in einem für Sie bequemen Layout anzuzeigen</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Wischgesten</string>
     <string name="help_navigation_swipe_description">Verwalten Sie Notizen intuitiv! Wischen Sie nach links, um den Mehrfachauswahl-Modus für schnelle Massenoperationen zu aktivieren, oder nach rechts, um eine Notiz sofort zu löschen und in den Papierkorb zu verschieben. Gesten sind nur im einspaltigem Modus verfügbar.</string>
-    
+
     <!-- Other Section -->
     <string name="help_other_title">Sonstiges</string>
     <string name="help_other_security_title">Bildschirmschutz</string>
@@ -230,7 +202,6 @@
 
     <!-- Data Export Section -->
     <string name="dataExport">Datenexport</string>
-    <string name="important">Wichtig</string>
     <string name="dataExportDescription">Sie können alle Ihre aktuellen Notizen zum Anzeigen exportieren. Diese Funktion exportiert nur aktive Notizen, ausgenommen Notizen aus dem Papierkorb, ohne Berücksichtigung von Tags oder anderen Filtern.</string>
     <string name="exportAllNotes">Alle Notizen exportieren</string>
     <!-- Help - Notes Features Section -->
@@ -243,7 +214,6 @@
     <string name="help_notes_text_size_description">Passen Sie die Textgröße beim Bearbeiten von Notizen über den Textgrößen-Dialog an, der direkt vom Notizbearbeitungsbildschirm zugänglich ist.</string>
     <string name="help_notes_copy_title">Kopie bearbeiten</string>
     <string name="help_notes_copy_description">Erstellen Sie eine bearbeitbare Kopie jeder Notiz, um Änderungen vorzunehmen, während das Original unberührt bleibt.</string>
-    
 
 
     <string name="actual_version">Aktuell für Version %1$s</string>
@@ -282,7 +252,7 @@
     <string name="import_notes_from_google_keep">Notizen aus Google Keep importieren</string>
     <string name="google_keep_description">Exportieren Sie Ihre Notizen aus Google Keep und importieren Sie sie in diese App. Export über Google Takeout wird unterstützt.</string>
     <string name="import_from_google_keep">Import aus Google Keep</string>
-    
+
     <string name="other_apps">Andere Apps</string>
     <string name="import_from_other_note_apps">Import aus anderen Notiz-Apps</string>
     <string name="other_apps_description">Importieren Sie Notizen aus beliebten Notiz-Apps: OneNote, Evernote, Notion und anderen.</string>
@@ -302,4 +272,16 @@
     <string name="empty_data_import">Keine neuen Daten zum Importieren</string>
 
     <string name="aboutApps_subtitle">Feedback · Hilfe · Version</string>
+    <string name="backup">Sicherung</string>
+    <string name="device_storage">Gerätespeicher</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Sicherung speichern</string>
+    <string name="restore_backup">Sicherung wiederherstellen</string>
+    <string name="file_not_selected">Datei nicht ausgewählt</string>
+    <string name="drive_selected_error">Fehler bei der Arbeit mit Google Drive</string>
+    <string name="export_drive_error">Aktion abgebrochen oder ein Fehler ist aufgetreten.</string>
+    <string name="backup_descrpt">Sie können eine Sicherung erstellen und lokal auf Ihrem Gerät oder in Google Drive speichern; sie enthält die App-Einstellungen, alle Notizen und Tags.</string>
+    <string name="your_data">Ihre Daten</string>
+
+
 </resources>

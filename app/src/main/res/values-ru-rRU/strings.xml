@@ -59,8 +59,7 @@
     <string name="emptyTrash">Здесь отображаються удаленные вами заметки</string>
     <string name="emptyNotes">Здесь будут отображаться созданные вами заметки</string>
     <string name="emptyNotesForTag">Здесь будут отображаться заметки которые вы отметите тегом "%1$s"</string>
-    <string name="chooseNote">Действия над выбраной заметкой</string>
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Опции поделиться</string>
     <string name="saveToGoogleDrive">Сохранить в Google Drive</string>
@@ -86,7 +85,6 @@
 
     <string name="settingsInterface">Настройки интерфейса</string>
     <string name="settings">Настройки</string>
-    <string name="settingsBackups">Резервные копии</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>
     <string name="themes">Тема</string>
@@ -98,59 +96,32 @@
     <string name="themeModeFollowSystem">Как в системе</string>
     <string name="themeModeLight">Светлая</string>
     <string name="themeModeDark">Тёмная</string>
-
-    <string name="loginUser">Вход через Google</string>
-    <string name="cloudBackup">Облако</string>
-    <string name="localBackup">Устройство</string>
     <string name="importLocalBackup">Восстановить с Рез. копии</string>
     <string name="exportLocalBackup">Создать резервную копию</string>
-    
+
     <!-- Data Export Section -->
     <string name="dataExport">Экспорт данных</string>
-    <string name="important">Важно</string>
     <string name="dataExportDescription">Вы можете экспортировать все свои текущие заметки для просмотра. Эта функция экспортирует только активные заметки, исключая заметки из корзины, не учитывая теги или другие фильтры.</string>
     <string name="exportAllNotes">Экспортировать все заметки</string>
-    <string name="lastCloudCopy">Последняя резервная копия: %1$s</string>
-    <string name="errorDriveAuth">Гость</string>
-    <string name="autoCloudBackupTitle">Автоматическое резервное копирование</string>
     <string name="restoreNotesTitle">Восстановление данных</string>
     <string name="restoreNotesMessage">Новые заметки будут добавлены до существующих, а дубликаты будут проигнорированы!</string>
     <string name="selectRestore">Выбрать рез. копию</string>
     <string name="nextRestore">Восстановить из облака</string>
     <string name="messageRestoreProcess"><b>Восстановление данных</b> \nПо завершении это окно закроется автоматически.</string>
-    <string name="emptyBackups">Резервные копии не найдены</string>
-    <string name="checkLastBackupsCloud">Подождите, идет загрузка данных…</string>
-
-    <!-- Arrays AutoBackup  -->
-    <string name="autoCloudVariantsDay">Каждый день</string>
-    <string name="autoCloudVariantsWeek">Каждую неделю</string>
-    <string name="autoCloudVariantsMonth">Каждый месяц</string>
-    <string name="autoCloudVariantsOff">Выкл.</string>
-
-    <!-- AutoBackup strings  -->
-
 
     <!-- Error results backup/restore  -->
     <string name="emptyDataToBackup">Нет данных, для создания резервной копии</string>
-    <string name="errorConnectedNetwork">Нет подключения к интернету</string>
     <string name="creteLocalCopyOkay">Резервную копию успешно создано</string>
     <string name="creteLocalCopyFail">Ошибка, резервная копия не сохранена</string>
     <string name="restoreDataOkay">Восстановление данных завершено успешно</string>
     <string name="restoreDataFall">Ошибка: Резервная копия повреждена</string>
-    <string name="errorAuth">Ошибка, повторите попытку позже</string>
-    <string name="errorLoadingLastBackupCloud">Ошибка, нажмите чтобы повторить попытку</string>
     <string name="errorDriveSync">Ошибка сервера, или плохое качество интернета</string>
-    <string name="errorCredential">Ошибка, проблемы с авторизацией</string>
 
-    <string name="errorDriverAuthInfo">Чтобы использовать синхронизацию с облаком необходимо авторизоваться</string>
     <string name="sortNotes">Сортировать заметки</string>
-    <string name="percentProgress">Создание резервной копии (%d%%)</string>
 
     <!-- Product offer  -->
     <string name="thanks_title">Уважаемый пользователь</string>
     <string name="thanks_donate">Разработчик проекта говорит вам спасибо за вашу покупку. Мы будем стремиться стать лучше, и удобнее. \n <b>С уважением, мои заметки!</b></string>
-
-    <string name="errorSyncDescrpt">Создание резервной копии в облаке временно недоступно</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Поддержать разработчика</string>
@@ -169,10 +140,6 @@
     <string name="whats_new_title">Новые функции и улучшения</string>
     <string name="whats_new_description">Откройте для себя последние обновления, новые функции и улучшения, которые делают работу с заметками еще лучше. Мы постоянно работаем над улучшением приложения на основе ваших отзывов!</string>
     <string name="changelog_subtitle">Будьте в курсе всех изменений и улучшений в этой версии</string>
-    <string name="errorLoadingChangelog">Ошибка загрузки списка изменений</string>
-    <string name="checkInternetConnection">Пожалуйста, проверьте подключение к интернету</string>
-    <string name="retry">Повторить</string>
-
     <string name="leaveFeedback">Оставить отзыв</string>
 
     <!-- Donation Products -->
@@ -190,7 +157,7 @@
     <!-- Purchase Error Messages -->
     <string name="purchase_loading">Загрузка товаров…</string>
     <string name="purchase_error_no_products">Нет доступных товаров для доната</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Поддержать разработчика</string>
     <string name="support_solo_developer_description">Привет! Я разработчик, работающий над MyNotes в свободное время. Все функции всегда будут бесплатными, но ваша поддержка помогает мне уделять больше времени улучшению этого приложения. Каждый вклад значит для меня целый мир! 💖</string>
@@ -200,7 +167,7 @@
     <string name="help_subtitle">Узнайте, как максимально использовать функции MyNotes</string>
     <string name="help_section_icon">Иконка раздела</string>
     <string name="help_feature_icon">Иконка функции</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Теги</string>
     <string name="help_tags_func_title">Взаимодействие с тегами</string>
@@ -211,7 +178,7 @@
     <string name="help_tags_hide_description">Используйте функцию скрытия, чтобы временно удалить отмеченные заметки из основного вида, сохраняя доступ к ним через тег</string>
     <string name="help_tags_limit_title">Ограничение тегов</string>
     <string name="help_tags_limit_description">Можно создать не более 25 тегов для эффективной организации ваших заметок</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Навигация</string>
     <string name="help_navigation_drawer_title">Главное меню</string>
@@ -222,22 +189,22 @@
     <string name="help_navigation_sort_description">Сортируйте ваши заметки по дате последнего изменения или названию в восходящем или нисходящем порядке</string>
     <string name="help_navigation_format_title">Формат отображения</string>
     <string name="help_navigation_format_description">Переключайтесь между списком и сеткой для отображения ваших заметок в удобном для вас макете</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жесты свайп</string>
     <string name="help_navigation_swipe_description">Управляйте заметками интуитивно! Проведите пальцем влево, чтобы включить режим выбора нескольких заметок для быстрых массовых операций, или вправо — чтобы мгновенно удалить заметку и отправить её в корзину. Жесты доступны только в одноколоночном режиме.</string>
-    
+
     <!-- Other Section -->
     <string name="help_other_title">Прочее</string>
     <string name="help_other_security_title">Защита экрана</string>
     <string name="help_other_security_description">Когда включено в настройках, эта функция защищает ваши заметки от несанкционированного просмотра: скрывает содержимое приложения в обзоре последних приложений, запрещает создание скриншотов и запись экрана. Функция безопасности активируется после перезапуска приложения.</string>
     <string name="help_other_shortcuts_title">Быстрые действия</string>
     <string name="help_other_shortcuts_description">Удерживайте иконку приложения для быстрого доступа к созданию новой заметки или поиску среди ваших заметок. Доступно на Android 7.1 и выше.</string>
-    
+
     <!-- Backup and Export Help -->
     <string name="help_other_backup_export_title">Синхронизация и экспорт данных</string>
     <string name="help_other_backup_export_description">В разделе "Синхронизация и резервные копии" вы можете экспортировать все свои заметки в различных форматах (TXT, PDF, HTML) для просмотра и создания резервных копий.</string>
-    
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функции заметок</string>
     <string name="help_notes_limit_title">Ограничение текста</string>
@@ -248,7 +215,7 @@
     <string name="help_notes_text_size_description">Изменяйте размер текста во время редактирования заметок с помощью диалогового окна размера текста, доступного прямо с экрана редактирования заметки.</string>
     <string name="help_notes_copy_title">Редактировать копию</string>
     <string name="help_notes_copy_description">Создавайте редактируемую копию любой заметки для внесения изменений, сохраняя оригинал нетронутым.</string>
-    
+
     <!-- Share and Export Help -->
     <string name="help_notes_share_title">Поделиться и экспорт заметок</string>
     <string name="help_notes_share_description">Делитесь одной или несколькими заметками через другие приложения, сохраняйте на Google Drive или экспортируйте как TXT, PDF или HTML файлы со стилизованным форматированием.</string>
@@ -289,7 +256,7 @@
     <string name="import_notes_from_google_keep">Импорт заметок из Google Keep</string>
     <string name="google_keep_description">Экспортируйте ваши заметки из Google Keep и импортируйте их в это приложение. Поддерживается экспорт через Google Takeout.</string>
     <string name="import_from_google_keep">Импорт из Google Keep</string>
-    
+
     <string name="other_apps">Другие приложения</string>
     <string name="import_from_other_note_apps">Импорт из других приложений для заметок</string>
     <string name="other_apps_description">Импорт заметок из популярных приложений для ведения заметок: OneNote, Evernote, Notion и других.</string>
@@ -309,4 +276,15 @@
     <string name="empty_data_import">Нет новых данных для импорта</string>
 
     <string name="aboutApps_subtitle">Отзыв · Справка · Версия</string>
+    <string name="backup">Резервная копия</string>
+    <string name="device_storage">Память устройства</string>
+    <string name="google_drive">Google Диск</string>
+    <string name="save_backup">Сохранить резервную копию</string>
+    <string name="restore_backup">Восстановить резервную копию</string>
+    <string name="file_not_selected">Файл не выбран</string>
+    <string name="drive_selected_error">Ошибка при работе с Google Диском</string>
+    <string name="export_drive_error">Вы отменили действие или произошла ошибка.</string>
+    <string name="backup_descrpt">Вы можете создать резервную копию и сохранить её локально на устройстве или на Google Диске; она включает настройки приложения, все заметки и теги.</string>
+    <string name="your_data">Ваши данные</string>
+
 </resources>

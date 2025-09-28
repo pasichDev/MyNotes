@@ -22,11 +22,9 @@ public class FormattedDataUtil {
 
         if (newDate.get(Calendar.DAY_OF_MONTH) == dayNote && newDate.get(Calendar.MONTH) + 1 == montNote)
             return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(date);
-        else return new SimpleDateFormat("d MMM", Locale.getDefault()).format(date);
+        else
+            return new SimpleDateFormat("d MMM", Locale.getDefault()).format(date).replace(".", "");
 
     }
 
-    public static String lastDataCloudBackup(long date) {
-        return new SimpleDateFormat("d.MM.yyyy HH:mm", Locale.getDefault()).format(date);
-    }
 }

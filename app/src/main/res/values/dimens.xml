@@ -2,7 +2,7 @@
 <resources>
     <dimen name="heightImageEmpty">120dp</dimen>
     <!--Bottom Sheets-->
-    <dimen name="paddingItems">8dp</dimen>
+    <dimen name="paddingItems">10dp</dimen>
     <dimen name="textSizeItems">16sp</dimen>
     <dimen name="marginItemsNote">15dp</dimen>
     <dimen name="marginItemsNoteChip">5dp</dimen>
@@ -10,5 +10,7 @@
     <dimen name="defaultCornerChip">10dp</dimen>
     <!-- ScrollView margins -->
     <dimen name="scroll_view_bottom_margin">16dp</dimen>
-    <!-- Navigation Drawer -->
+
+
+    <dimen name="marginHorizontalActivity">10dp</dimen>
 </resources>

@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [2.2.37] - 28.09.2025
+
+- The “Backups” section has been moved to “Your data.” The ability to store backups on Google Drive and in device memory has also been added.
+- The contrast of the design has been improved and some interface elements have been updated for more convenient operation.
+- All network access requests have been removed; the app works completely offline. The only Internet permission required is for updates and in-app purchases.
+- Removed Google sign-in and Google Drive sync.
+
 ## [2.2.36] - 23.09.2025
 
 - Added search debounce — search now triggers shortly after user stops typing.

@@ -15,6 +15,9 @@ public class GoogleTakeoutInstructionsBottomSheet extends BottomSheetDialogFragm
 
     private BottomSheetGoogleTakeoutInstructionsBinding binding;
 
+    public GoogleTakeoutInstructionsBottomSheet() {
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

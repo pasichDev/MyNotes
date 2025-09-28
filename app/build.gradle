@@ -7,7 +7,7 @@ plugins {
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.dagger.hilt.android'
 
-def appVersionCode = 36
+def appVersionCode = 37
 def appVersionName = "2.2.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
@@ -16,13 +16,26 @@ def gitCommitHashProvider = providers.exec {
 
 ext.gitCommitHash = gitCommitHashProvider
 
+tasks.register("copyChangelog", Copy) {
+    description = "Copies CHANGELOG.md from root to res/raw"
+    group = "build"
+
+    from("${rootDir}/CHANGELOG.md")
+    into("${projectDir}/src/main/res/raw")
+    rename { "changelog.md" }
+}
+
+preBuild.dependsOn("copyChangelog")
+
+
+
 
 android {
     compileSdkVersion 36
     buildFeatures {
-        viewBinding true
-        dataBinding true
-        buildConfig true
+        viewBinding = true
+        dataBinding = true
+        buildConfig = true
     }
 
     bundle {
@@ -81,7 +94,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    namespace 'com.pasich.mynotes'
+    namespace = 'com.pasich.mynotes'
     lint {
         abortOnError false
     }
@@ -91,7 +104,7 @@ android {
 ext {
     markwon_version = '4.6.2'
     powerPrefenceVersion = '2.1.0'
-    roomVersion = '2.8.0'
+    roomVersion = '2.8.1'
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
@@ -99,21 +112,12 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.preference:preference:1.2.1'
     implementation "androidx.lifecycle:lifecycle-viewmodel:2.9.4"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.0"
     implementation 'androidx.core:core-splashscreen:1.0.1'
-    
-    // EdgeToEdge support for API 35+
     implementation 'androidx.activity:activity:1.11.0'
 
-
     //DI (Hilt)
-    implementation 'com.google.dagger:hilt-android:2.57.1'
-    annotationProcessor 'com.google.dagger:hilt-compiler:2.57.1'
-    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.57.1'
-    androidTestAnnotationProcessor 'com.google.dagger:hilt-compiler:2.57.1'
-    testImplementation 'com.google.dagger:hilt-android-testing:2.57.1'
-    testAnnotationProcessor 'com.google.dagger:hilt-compiler:2.57.1'
-
+    implementation "com.google.dagger:hilt-android:$daggerHilt"
+    annotationProcessor "com.google.dagger:hilt-compiler:$daggerHilt"
 
     //Reactive
     implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
@@ -122,22 +126,14 @@ dependencies {
     //Room
     implementation "androidx.room:room-rxjava2:$roomVersion"
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
-    testImplementation "androidx.room:room-compiler-processing-testing:$roomVersion"
 
-    //Google Drive integration, Pay Billing
-    implementation 'com.google.android.gms:play-services-auth:20.4.1'
-    implementation 'com.google.http-client:google-http-client-gson:1.42.1'
-    implementation 'com.google.api-client:google-api-client-android:1.26.0'
-    implementation 'com.google.apis:google-api-services-drive:v3-rev136-1.25.0'
+    //Pay Billing
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'com.android.billingclient:billing:8.0.0'
 
-
     //Other lib (Gson/Glide/PowerPreferences)
-    implementation 'com.github.bumptech.glide:glide:5.0.5'
-    implementation 'com.google.code.gson:gson:2.13.1'
+    implementation 'com.google.code.gson:gson:2.13.2'
     implementation "com.github.AliAsadi:PowerPreference:$powerPrefenceVersion"
-
 
     //Markwon https://noties.io/Markwon/docs/v4/
     implementation"io.noties.markwon:core:$markwon_version"

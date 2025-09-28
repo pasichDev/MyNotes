@@ -47,8 +47,7 @@
     <string name="emptyTrash">Тут відображатимуться видалені вами нотатки</string>
     <string name="emptyNotes">Тут відображатимуться створені вами нотатки</string>
     <string name="emptyNotesForTag">Тут будуть відображатися нотатки які позначите тегом "%1$s"</string>
-    <string name="chooseNote">Дії над вибраною нотаткою</string>
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Опції поділитися</string>
     <string name="saveToGoogleDrive">Зберегти в Google Drive</string>
@@ -73,7 +72,6 @@
     <string name="renameTag">Перейменувати</string>
     <string name="settingsInterface">Налаштування інтерфейсу</string>
     <string name="settings">Налаштування</string>
-    <string name="settingsBackups">Резервні копії</string>
     <string name="aboutApps">Про програму</string>
     <string name="trash">Кошик</string>
     <string name="themes">Тема</string>
@@ -88,54 +86,30 @@
     <string name="themeModeFollowSystem">Як в системі</string>
     <string name="themeModeLight">Світла</string>
     <string name="themeModeDark">Темна</string>
-    <string name="loginUser">Авторизація Google</string>
-    <string name="cloudBackup">Хмара</string>
-    <string name="localBackup">Пристрій</string>
     <string name="importLocalBackup">Відновити за допомогою рез. копії</string>
     <string name="exportLocalBackup">Створити резервну копію</string>
-    
+
     <!-- Data Export Section -->
     <string name="dataExport">Експорт даних</string>
-    <string name="important">Важливо</string>
     <string name="dataExportDescription">Ви можете експортувати всі свої наявні нотатки для перегляду. Ця функція експортує лише активні нотатки, виключаючи нотатки з корзини, не враховуючи теги чи інші фільтри.</string>
     <string name="exportAllNotes">Експортувати всі нотатки</string>
-    <string name="lastCloudCopy">Остання резервна копія: %1$s</string>
-    <string name="errorDriveAuth">Гість</string>
-    <string name="autoCloudBackupTitle">Автоматичне резервне копіювання</string>
     <string name="restoreNotesTitle">Відновлення даних</string>
     <string name="restoreNotesMessage">Нові нотатки будуть додані до існуючих, а дублікати будуть проігноровані!</string>
     <string name="selectRestore">Вибрати рез. копію</string>
     <string name="nextRestore">Відновити з хмари</string>
     <string name="messageRestoreProcess"><b>Відновлення даних</b> \nПісля завершення це вікно буде автоматично закрито.</string>
-    <string name="emptyBackups">Резервних копій не знайдено</string>
-    <string name="checkLastBackupsCloud">Зачекайте, завантажуються дані…</string>
-    <!-- Arrays AutoBackup -->
-    <string name="autoCloudVariantsDay">Кожен день</string>
-    <string name="autoCloudVariantsWeek">Кожен тиждень</string>
-    <string name="autoCloudVariantsMonth">Кожен місяць</string>
-    <string name="autoCloudVariantsOff">Вимк.</string>
-
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">Немає даних для створення резервної копії</string>
-    <string name="errorConnectedNetwork">Немає доступу до інтернету</string>
     <string name="creteLocalCopyOkay">Резервну копію успішно створено</string>
     <string name="creteLocalCopyFail">Помилка, резервна копія не збережена</string>
     <string name="restoreDataOkay">Відновлення даних успішно завершено</string>
     <string name="restoreDataFall">Помилка: Резервна копія пошкоджена</string>
-    <string name="errorAuth">Помилка, повторіть спробу пізніше</string>
-    <string name="errorLoadingLastBackupCloud">Помилка, натисніть, щоб повторити спробу</string>
     <string name="errorDriveSync">Помилка сервера або погана якість інтернету</string>
-    <string name="errorCredential">Помилка, проблеми з авторизацією</string>
-    <string name="errorDriverAuthInfo">Щоб використовувати синхронізацію з хмарою, необхідно авторизуватися</string>
     <string name="sortNotes">Сортувати нотатки</string>
-    <string name="percentProgress" translatable="false">Створення резервної копії (%d%%)</string>
-
     <!-- Product offer -->
     <string name="thanks_title">Шановний користувач</string>
     <string name="thanks_donate">Розробник проекту каже вам спасибі за вашу покупку. Ми будемо прагнути стати кращими і зручнішими. \n <b>З повагою, мої нотатки!</b></string>
-
-    <string name="errorSyncDescrpt">Створення резервної копії в хмарі наразі тимчасово недоступне</string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Підтримати розробника</string>
@@ -154,9 +128,6 @@
     <string name="whats_new_title">Нові функції та покращення</string>
     <string name="whats_new_description">Відкрийте для себе останні оновлення, нові функції та покращення, які роблять роботу з нотатками ще кращою. Ми постійно працюємо над покращенням додатку на основі ваших відгуків!</string>
     <string name="changelog_subtitle">Залишайтеся в курсі всіх змін та покращень у цій версії</string>
-    <string name="errorLoadingChangelog">Помилка завантаження списку змін</string>
-    <string name="checkInternetConnection">Будь ласка, перевірте підключення до інтернету</string>
-    <string name="retry">Повторити</string>
 
     <!-- Themes names -->
     <string name="themeBlue">Океанський синій</string>
@@ -183,7 +154,7 @@
     <!-- Purchase Error Messages -->
     <string name="purchase_loading">Завантаження товарів…</string>
     <string name="purchase_error_no_products">Немає доступних товарів для донату</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Підтримати розробника</string>
     <string name="support_solo_developer_description">Привіт! Я розробник, який працює над MyNotes у вільний час. Усі функції завжди будуть безкоштовними, але ваша підтримка допомагає мені приділяти більше часу для покращення цього додатку. Кожен внесок означає для мене цілий світ! 💖</string>
@@ -193,7 +164,7 @@
     <string name="help_subtitle">Дізнайтеся, як максимально використовувати функції MyNotes</string>
     <string name="help_section_icon">Іконка розділу</string>
     <string name="help_feature_icon">Іконка функції</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Теги</string>
     <string name="help_tags_func_title">Взаємодія з тегами</string>
@@ -215,7 +186,7 @@
     <string name="help_navigation_sort_description">Сортуйте ваші нотатки за датою останньої зміни або назвою у висхідному чи спадному порядку</string>
     <string name="help_navigation_format_title">Формат відображення</string>
     <string name="help_navigation_format_description">Переключайтеся між списком та сіткою для відображення ваших нотаток у зручному для вас макеті</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жести свайп</string>
     <string name="help_navigation_swipe_description">Керуйте нотатками інтуїтивно! Проведіть пальцем ліворуч, щоб увімкнути режим вибору кількох нотаток для швидких масових операцій, або вправо — щоб миттєво видалити нотатку та відправити її в кошик. Жести доступні лише в одноколонковому режимі.</string>
@@ -230,7 +201,7 @@
     <string name="help_notes_text_size_description">Змінюйте розмір тексту під час редагування нотаток за допомогою діалогового вікна розміру тексту, доступного прямо з екрану редагування нотатки.</string>
     <string name="help_notes_copy_title">Редагувати копію</string>
     <string name="help_notes_copy_description">Створюйте редаговану копію будь-якої нотатки для внесення змін, зберігаючи оригінал недоторканим.</string>
-    
+
     <!-- Share and Export Help -->
     <string name="help_notes_share_title">Поділитися та експорт нотаток</string>
     <string name="help_notes_share_description">Діліться однією або кількома нотатками через інші додатки, зберігайте на Google Drive або експортуйте як TXT, PDF чи HTML файли зі стилізованим форматуванням.</string>
@@ -243,7 +214,7 @@
     <string name="help_other_security_description">Коли увімкнено в налаштуваннях, ця функція захищає ваші нотатки від несанкціонованого перегляду, приховуючи вміст додатку в огляді останніх програм, запобігаючи скріншотам та блокуючи запис екрану. Ця функція безпеки активується після перезапуску додатку.</string>
     <string name="help_other_shortcuts_title">Швидкі дії</string>
     <string name="help_other_shortcuts_description">Утримуйте іконку додатку для швидкого доступу до створення нової нотатки або пошуку серед ваших нотаток. Доступно на Android 7.1 і вище.</string>
-    
+
     <!-- Backup and Export Help -->
     <string name="help_other_backup_export_title">Синхронізація та експорт даних</string>
     <string name="help_other_backup_export_description">У розділі "Синхронізація та резервні копії" ви можете експортувати всі свої нотатки в різних форматах (TXT, PDF, HTML) для перегляду та створення резервних копій.</string>
@@ -282,7 +253,7 @@
     <string name="import_notes_from_google_keep">Імпорт нотаток з Google Keep</string>
     <string name="google_keep_description">Експортуйте ваші нотатки з Google Keep та імпортуйте їх у цей додаток. Підтримується експорт з Google Takeout.</string>
     <string name="import_from_google_keep">Імпорт з Google Keep</string>
-    
+
     <string name="other_apps">Інші додатки</string>
     <string name="import_from_other_note_apps">Імпорт з інших додатків для нотаток</string>
     <string name="other_apps_description">Імпорт нотаток з популярних додатків для ведення нотаток: OneNote, Evernote, Notion та інших.</string>
@@ -302,4 +273,15 @@
     <string name="empty_data_import">Немає нових даних для імпорту</string>
 
     <string name="aboutApps_subtitle">Відгук · Довідка · Версія</string>
+    <string name="backup">Резервна копія</string>
+    <string name="device_storage">Пам’ять пристрою</string>
+    <string name="google_drive">Google Диск</string>
+    <string name="save_backup">Зберегти резервну копію</string>
+    <string name="restore_backup">Відновити резервну копію</string>
+    <string name="file_not_selected">Файл не вибрано</string>
+    <string name="drive_selected_error">Помилка при роботі з Google Диском</string>
+    <string name="export_drive_error">Ви скасували дію або сталася помилка.</string>
+    <string name="backup_descrpt">Ви можете створити резервну копію та зберегти її локально на пристрої або на Google Диску; вона включає налаштування додатка, усі нотатки та теги.</string>
+    <string name="your_data">Ваші дані</string>
+
 </resources>

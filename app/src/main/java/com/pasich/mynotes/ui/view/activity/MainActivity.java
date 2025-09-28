@@ -31,9 +31,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.card.MaterialCardView;
@@ -53,7 +50,6 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
-import com.pasich.mynotes.databinding.ViewLoginPageBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
@@ -72,9 +68,6 @@ import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
 import com.pasich.mynotes.utils.adapters.tagAdapter.OnItemClickListenerTag;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
-import com.pasich.mynotes.utils.backup.CloudAuthHelper;
-import com.pasich.mynotes.utils.backup.CloudCacheHelper;
-import com.pasich.mynotes.utils.constants.DriveScope;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
@@ -85,8 +78,6 @@ import com.pasich.mynotes.utils.tool.FormatListTool;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -129,31 +120,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-
-    // Google Sign-In variables (moved from AboutDialog)
-    @Inject
-    public GoogleSignInClient googleSignInClient;
-    @Inject
-    public CloudCacheHelper cloudCacheHelper;
-    @Inject
-    public CloudAuthHelper cloudAuthHelper;
-
     private static final int REQUEST_UPDATE = 100;
     private AppUpdateManager appUpdateManager;
     private int previousNotesCount = 0;
 
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
-
-    // Google Sign-In launcher
-    final private ActivityResultLauncher<Intent> startAuthIntent = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        if (result.getResultCode() == RESULT_OK) {
-            cloudAuthHelper.getResultAuth(result.getData()).addOnFailureListener((GoogleSignInAccount) -> onInfoSnack(R.string.errorAuth, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG)).addOnSuccessListener((GoogleSignInAccount) -> {
-                cloudCacheHelper.update(GoogleSignInAccount, GoogleSignIn.hasPermissions(GoogleSignInAccount, DriveScope.ACCESS_DRIVE_SCOPE), true);
-                loadingDataUser(true);
-            });
-        }
-    });
 
     // Tags Activity launcher - reloads data when tags are modified
     final private ActivityResultLauncher<Intent> startTagsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -477,8 +449,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listNotes.addItemDecoration(itemDecorationNotes);
         mActivityBinding.listNotes.setLayoutManager(staggeredGridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
-
         mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
+
+
         mActivityBinding.resultsSearchList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
@@ -889,8 +862,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         // Налаштовуємо menu click listener для Navigation Drawer
         navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
 
-        // Ініціалізуємо дані користувача в header
-        initNavigationHeader();
+        // Налаштування listeners для header Navigation Drawer
+        setupNavigationHeaderListeners();
     }
 
     /**
@@ -901,33 +874,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         return true;
     }
 
-
-    /**
-     * Ініціалізація header Navigation Drawer з інформацією користувача
-     */
-    private void initNavigationHeader() {
-        View headerView = navigationView.getHeaderView(0);
-        ViewLoginPageBinding loginPageBinding = ViewLoginPageBinding.bind(headerView.findViewById(R.id.login_page));
-
-        // Налаштовуємо видимість елементів для Google Play Market
-        loginPageBinding.viewLoginRoot.setVisibility(cloudCacheHelper.isInstallPlayMarket() ? View.VISIBLE : View.GONE);
-
-        // Завантажуємо дані користувача
-        loadingDataUser(cloudCacheHelper.isAuth(), loginPageBinding);
-
-        // Налаштовуємо listeners
-        setupNavigationHeaderListeners(loginPageBinding);
-    }
-
     /**
      * Налаштування listeners для header Navigation Drawer
      */
-    private void setupNavigationHeaderListeners(com.pasich.mynotes.databinding.ViewLoginPageBinding loginPageBinding) {
-        loginPageBinding.exitUser.setOnClickListener(v -> signOut(loginPageBinding));
-        loginPageBinding.loginUser.setOnClickListener(v -> startAuthIntent.launch(googleSignInClient.getSignInIntent()));
-
+    private void setupNavigationHeaderListeners() {
         View headerView = navigationView.getHeaderView(0);
-
 
         // Основні кнопки
         headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> {
@@ -995,63 +946,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
 
     }
-
-    /**
-     * Завантаження даних користувача
-     */
-    private void loadingDataUser(boolean isAuth, ViewLoginPageBinding loginPageBinding) {
-        if (isAuth) {
-            String nameUser = cloudCacheHelper.getGoogleSignInAccount().getDisplayName();
-            loginPageBinding.nameUser.setText(nameUser);
-            loginPageBinding.emailUSer.setText(cloudCacheHelper.getGoogleSignInAccount().getEmail());
-            Glide.with(this).load(cloudCacheHelper.getGoogleSignInAccount().getPhotoUrl()).placeholder(R.drawable.ic_no_avatar).into(loginPageBinding.userAvatar);
-            loginPageBinding.loginUser.setVisibility(View.GONE);
-            loginPageBinding.loginPageRoot.setVisibility(View.VISIBLE);
-        } else {
-            loginPageBinding.loginPageRoot.setVisibility(View.GONE);
-            loginPageBinding.loginUser.setVisibility(View.VISIBLE);
-        }
-    }
-
-    /**
-     *
-     */
-    private void loadingDataUser(boolean isAuth) {
-        if (navigationView != null) {
-            View headerView = navigationView.getHeaderView(0);
-            ViewLoginPageBinding loginPageBinding = ViewLoginPageBinding.bind(headerView.findViewById(R.id.login_page));
-            loadingDataUser(isAuth, loginPageBinding);
-        }
-    }
-
-    /**
-     * Вихід з Google акаунта
-     */
-    private void signOut(ViewLoginPageBinding loginPageBinding) {
-        googleSignInClient.signOut().addOnCompleteListener(task -> {
-            loginPageBinding.loginUser.setVisibility(View.VISIBLE);
-            loginPageBinding.loginPageRoot.setVisibility(View.GONE);
-
-            // Виконуємо чистку в окремому потоці і одразу закриваємо Executor
-            try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
-                executor.submit(() -> {
-                    try {
-                        mainPresenter.cleanBackupPrefs();
-                        cloudCacheHelper.clean();
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error during sign out preferences cleanup", e);
-                    }
-                });
-            } catch (Exception e) {
-                Log.e(TAG, "Executor shutdown error", e);
-            }
-        });
-    }
-
-
-    // десь у класі
-    private static final String TAG = MainActivity.class.getSimpleName();
-
 
     /**
      * Налаштовує Edge-to-Edge для DrawerLayout

@@ -21,10 +21,6 @@ public interface BaseView {
 
     }
 
-    default boolean isNetworkConnected() {
-        return false;
-    }
-
     default void setState(BottomSheetDialog dialog) {
 
     }

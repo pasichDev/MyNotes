@@ -7,18 +7,9 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Login / header -->
-    <include
-        android:id="@+id/login_page"
-        layout="@layout/view_login_page"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:layout_marginBottom="20dp" />
-
     <View
         android:layout_width="match_parent"
-        android:layout_height="30dp" />
+        android:layout_height="120dp" />
     <!-- Main buttons -->
     <LinearLayout
         android:id="@+id/nav_tags"
@@ -129,14 +120,14 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
-            android:contentDescription="@string/settingsBackups"
+            android:contentDescription="@string/your_data"
             android:src="@drawable/ic_backup_restore"
             app:tint="?attr/colorPrimary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/settingsBackups"
+            android:text="@string/your_data"
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp" />
     </LinearLayout>

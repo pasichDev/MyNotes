@@ -50,8 +50,7 @@
     <string name="emptyTrash">Tus notas eliminadas se muestran aquí</string>
     <string name="emptyNotes">Las notas que cree aparecerán aquí</string>
     <string name="emptyNotesForTag">Aquí se mostrarán las notas que marques con la etiqueta "%1$s"</string>
-    <string name="chooseNote">Acciones en la nota seleccionada</string>
-    
+
     <!-- Share Dialog -->
     <string name="shareOptions">Opciones de compartir</string>
     <string name="saveToGoogleDrive">Guardar en Google Drive</string>
@@ -77,7 +76,6 @@
 
     <string name="settingsInterface">Configuración de la interfaz</string>
     <string name="settings">Configuración</string>
-    <string name="settingsBackups">Copias de seguridad</string>
     <string name="aboutApps">Acerca de la aplicación</string>
     <string name="trash">Papelera</string>
     <string name="themes">Tema</string>
@@ -98,66 +96,40 @@
     <string name="themeModeFollowSystem">Como el sistema</string>
     <string name="themeModeLight">Claro</string>
     <string name="themeModeDark">Oscuro</string>
-
-    <string name="loginUser">Inicio de sesión de Google</string>
-    <string name="cloudBackup">Nube</string>
-    <string name="localBackup">Dispositivo</string>
     <string name="importLocalBackup">Restaurar desde Res. copias</string>
     <string name="exportLocalBackup">Crear una copia de seguridad</string>
-    
+
     <!-- Data Export Section -->
     <string name="dataExport">Exportación de datos</string>
-    <string name="important">Importante</string>
     <string name="dataExportDescription">Puede exportar todas sus notas actuales para visualización. Esta función exporta solo notas activas, excluyendo notas de la papelera, sin considerar etiquetas u otros filtros.</string>
     <string name="exportAllNotes">Exportar todas las notas</string>
-    <string name="lastCloudCopy">Última copia de seguridad: %1$s</string>
-    <string name="errorDriveAuth">Invitado</string>
-    <string name="autoCloudBackupTitle">Copia de seguridad automática</string>
     <string name="restoreNotesTitle">Restauración de datos</string>
     <string name="restoreNotesMessage">¡Se agregarán nuevas notas antes que las existentes y se ignorarán los duplicados!</string>
     <string name="selectRestore">Seleccione Restaurar. copiar</string>
     <string name="nextRestore">Restaurar desde la nube</string>
     <string name="messageRestoreProcess"><b>Restaurando datos</b> \nEsta ventana se cerrará automáticamente cuando se complete.</string>
-    <string name="emptyBackups">No se encontraron copias de seguridad</string>
-    <string name="checkLastBackupsCloud">Espere, cargando datos…</string>
-
-    <!-- Copia de seguridad automática de matrices -->
-    <string name="autoCloudVariantsDay">Todos los días</string>
-    <string name="autoCloudVariantsWeek">Todas las semanas</string>
-    <string name="autoCloudVariantsMonth">Todos los meses</string>
-    <string name="autoCloudVariantsOff">Desactivado</string>
-
-    <!-- Cadenas de copia de seguridad automática -->
 
     <!-- Copia de seguridad/restauración de resultados de error -->
     <string name="emptyDataToBackup">No hay datos para respaldar</string>
-    <string name="errorConnectedNetwork">Sin conexión a Internet</string>
     <string name="creteLocalCopyOkay">Copia de seguridad creada con éxito</string>
     <string name="creteLocalCopyFail">Error, copia de seguridad no guardada</string>
     <string name="restoreDataOkay">Restauración de datos completada con éxito</string>
     <string name="restoreDataFall">Error: la copia de seguridad está dañada</string>
-    <string name="errorAuth">Error, inténtalo de nuevo más tarde</string>
-    <string name="errorLoadingLastBackupCloud">Error, haga clic para intentarlo de nuevo</string>
     <string name="errorDriveSync">Error del servidor o mala calidad de Internet</string>
-    <string name="errorCredential">Error, problemas de autorización</string>
-
-    <string name="errorDriverAuthInfo">Debe iniciar sesión para usar la sincronización en la nube</string>
     <string name="sortNotes">Ordenar notas</string>
-    <string name="percentProgress">Copia de seguridad (%d%%)</string>
 
     <!-- Oferta de productos -->
     <string name="thanks_title">Estimado usuario</string>
-    <string name="errorSyncDescrpt">La copia de seguridad en la nube no está disponible temporalmente</string>
 
     <string name="thanks_donate">El desarrollador del proyecto le agradece su compra. Nos esforzaremos por ser mejores y más convenientes. \n <b>¡Respetuosamente, mis notas!</b></string>
 
     <!-- Support Activity -->
     <string name="supportDeveloper">Apoyar al desarrollador</string>
     <string name="inAppPurchases">Compras dentro de la aplicación</string>
-   <string name="donationMethods">Métodos de donación</string>
+    <string name="donationMethods">Métodos de donación</string>
     <string name="kofiDescription">Cómprame un café en Ko-Fi</string>
     <string name="ratingAppDescription">Califícanos con 5 estrellas en Google Play</string>
-   <string name="contactDeveloper">Contactar al desarrollador</string>
+    <string name="contactDeveloper">Contactar al desarrollador</string>
     <string name="inAppPurchasesDescription">Apoya el desarrollo de la aplicación a través de compras dentro de la aplicación</string>
     <string name="viewDonationProducts">Ver opciones de apoyo</string>
     <string name="purchaseBottomSheetDescription">Elige una forma conveniente de apoyar el desarrollo de la aplicación. Todos los fondos van hacia la mejora de funcionalidades y la adición de nuevas características.</string>
@@ -168,10 +140,6 @@
     <string name="whats_new_title">Nuevas funciones y mejoras</string>
     <string name="whats_new_description">Descubre las últimas actualizaciones, nuevas funciones y mejoras que hacen que tu experiencia de tomar notas sea aún mejor. ¡Trabajamos constantemente para mejorar la aplicación basándonos en tus comentarios!</string>
     <string name="changelog_subtitle">Mantente al día con todos los cambios y mejoras de esta versión</string>
-    <string name="errorLoadingChangelog">Error al cargar el registro de cambios</string>
-    <string name="checkInternetConnection">Por favor verifica tu conexión a internet</string>
-    <string name="retry">Reintentar</string>
-
     <string name="leaveFeedback">Dejar comentario</string>
 
     <!-- Donation Products -->
@@ -189,7 +157,7 @@
     <!-- Purchase Error Messages -->
     <string name="purchase_loading">Cargando productos…</string>
     <string name="purchase_error_no_products">No hay productos de donación disponibles</string>
-    
+
     <!-- Developer Support -->
     <string name="support_solo_developer_title">Apoyar al desarrollador</string>
     <string name="support_solo_developer_description">¡Hola! Soy un desarrollador que trabaja en MyNotes en mi tiempo libre. Todas las funciones siempre serán gratuitas, pero tu apoyo me ayuda a dedicar más tiempo a hacer esta aplicación aún mejor. ¡Cada contribución significa el mundo para mí! 💖</string>
@@ -199,7 +167,7 @@
     <string name="help_subtitle">Aprende a aprovechar al máximo las funciones de MyNotes</string>
     <string name="help_section_icon">Icono de sección</string>
     <string name="help_feature_icon">Icono de función</string>
-    
+
     <!-- Tags Help Section -->
     <string name="help_tags_title">Etiquetas</string>
     <string name="help_tags_func_title">Interacción con etiquetas</string>
@@ -210,7 +178,7 @@
     <string name="help_tags_hide_description">Usa la función de ocultar para eliminar temporalmente las notas etiquetadas de la vista principal manteniendo el acceso a través de la etiqueta</string>
     <string name="help_tags_limit_title">Límite de etiquetas</string>
     <string name="help_tags_limit_description">Puedes crear hasta 25 etiquetas para una organización efectiva de tus notas</string>
-    
+
     <!-- Navigation Help Section -->
     <string name="help_navigation_title">Navegación</string>
     <string name="help_navigation_drawer_title">Menú principal</string>
@@ -221,18 +189,18 @@
     <string name="help_navigation_sort_description">Ordena tus notas por fecha de última modificación o nombre en orden ascendente o descendente</string>
     <string name="help_navigation_format_title">Formato de visualización</string>
     <string name="help_navigation_format_description">Cambia entre lista y cuadrícula para mostrar tus notas en un diseño conveniente para ti</string>
-    
+
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gestos de deslizar</string>
     <string name="help_navigation_swipe_description">¡Gestiona las notas intuitivamente! Desliza hacia la izquierda para activar el modo de selección múltiple para operaciones masivas rápidas, o hacia la derecha para eliminar instantáneamente una nota y enviarla a la papelera. Los gestos solo están disponibles en modo de una columna.</string>
-    
+
     <!-- Other Section -->
     <string name="help_other_title">Otro</string>
     <string name="help_other_security_title">Protección de pantalla</string>
     <string name="help_other_security_description">Cuando está habilitada en configuración, esta función protege tus notas de visualización no autorizada: oculta el contenido de la aplicación en la vista de aplicaciones recientes, previene capturas de pantalla y bloquea la grabación de pantalla. Esta función de seguridad se activa después de reiniciar la aplicación.</string>
     <string name="help_other_shortcuts_title">Accesos directos de la app</string>
     <string name="help_other_shortcuts_description">Mantén presionado el ícono de la aplicación para acceder rápidamente a accesos directos para crear una nueva nota o buscar entre tus notas. Disponible en Android 7.1 y superior.</string>
-    
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Funciones de notas</string>
     <string name="help_notes_limit_title">Límite de texto</string>
@@ -286,7 +254,7 @@
     <string name="import_notes_from_google_keep">Importar notas desde Google Keep</string>
     <string name="google_keep_description">Exporta tus notas desde Google Keep e impórtalas a esta aplicación. Se admite la exportación a través de Google Takeout.</string>
     <string name="import_from_google_keep">Importar desde Google Keep</string>
-    
+
     <string name="other_apps">Otras aplicaciones</string>
     <string name="import_from_other_note_apps">Importar desde otras aplicaciones de notas</string>
     <string name="other_apps_description">Importa notas desde aplicaciones populares para tomar notas: OneNote, Evernote, Notion y otras.</string>
@@ -306,4 +274,16 @@
     <string name="empty_data_import">No hay datos nuevos para importar</string>
 
     <string name="aboutApps_subtitle">Reseña · Ayuda · Versión</string>
+
+    <string name="backup">Copia de seguridad</string>
+    <string name="device_storage">Almacenamiento del dispositivo</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Guardar copia de seguridad</string>
+    <string name="restore_backup">Restaurar copia de seguridad</string>
+    <string name="file_not_selected">Archivo no seleccionado</string>
+    <string name="drive_selected_error">Error al interactuar con Google Drive</string>
+    <string name="export_drive_error">Has cancelado la acción o ha ocurrido un error.</string>
+    <string name="backup_descrpt">Puedes crear una copia de seguridad y guardarla localmente en tu dispositivo o en Google Drive; incluye la configuración de la app, todas las notas y etiquetas.</string>
+    <string name="your_data">Tus datos</string>
+
 </resources>

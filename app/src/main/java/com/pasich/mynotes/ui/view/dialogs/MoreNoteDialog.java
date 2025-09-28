@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
@@ -71,6 +70,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         mPresenter.viewIsReady();
         binding.setNewNote(newNoteActivity);
         binding.setActivityNote(activityNote);
+        binding.setNote(mNote);
         binding.setValuesText(mNote.getValue().length() > 1);
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
         addTitle();
@@ -87,11 +87,11 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     public void addTitle() {
         if (!activityNote) {
             String title = mNote.getTitle().length() > 20 ? mNote.getTitle().substring(0, 20) + "..." : mNote.getTitle();
-            binding.includeHead.headTextDialog.setText(mNote.getTitle().length() > 1 ? title : getString(R.string.chooseNote));
-            binding.includeHead.getRoot().setVisibility(newNoteActivity ? View.GONE : View.VISIBLE);
-            binding.spacerLast.setVisibility(View.GONE);
+       //     binding.includeHead.headTextDialog.setText(mNote.getTitle().length() > 1 ? title : getString(R.string.chooseNote));
+       //     binding.includeHead.getRoot().setVisibility(newNoteActivity ? View.GONE : View.VISIBLE);
+      //      binding.spacerLast.setVisibility(View.GONE);
         } else {
-            binding.includeHead.getRoot().setVisibility(View.GONE);
+       //     binding.includeHead.getRoot().setVisibility(View.GONE);
         }
     }
 
@@ -109,18 +109,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     }
 
-    public void setRippleBottomLayout() {
-
-        if (binding.chipGroupSystem.getChildCount() == 0 && !newNoteActivity) {
-            if (activityNote)
-                binding.noSave.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.item_bottom_ripple));
-            else
-                binding.moveToTrash.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.item_bottom_ripple));
-
-        } else if (newNoteActivity) {
-            binding.noSave.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.item_bottom_new_ripple));
-        }
-    }
 
     @Override
     public void initInterfaces() {
@@ -209,7 +197,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
 
-
     private void initTranslate() {
         PackageInfo pi = null;
         try {
@@ -227,8 +214,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             });
         }
     }
-
-
 
 
     @Override
@@ -273,7 +258,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             binding.scrollChips.setVisibility(View.GONE);
         }
 
-        setRippleBottomLayout();
 
     }
 
@@ -286,7 +270,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             if (activityNote) noteActivity.changeTag("", true);
         }
 
-        if(tag.getVisibility() == 1 && !activityNote){
+        if (tag.getVisibility() == 1 && !activityNote) {
             dismiss();
         }
     }

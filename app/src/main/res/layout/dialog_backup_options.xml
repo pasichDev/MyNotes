@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:ignore="UselessParent">
+
+    <TextView
+        android:id="@+id/backupOptions"
+        style="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:gravity="start"
+        android:maxLines="1"
+        android:text="@string/save_backup"
+        tools:text="Share options" />
+
+    <FrameLayout
+        android:id="@+id/googleDrive"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:padding="@dimen/paddingItems">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginHorizontal="10dp"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@string/google_drive"
+                android:src="@drawable/ic_google_drive" />
+
+            <TextView
+                style="@style/marginDialogItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:text="@string/google_drive"
+                android:textSize="@dimen/textSizeItems" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/deviceStorage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:padding="@dimen/paddingItems">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                style="@style/iconDialogList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/device_storage"
+                android:src="@drawable/ic_device" />
+
+            <TextView
+                style="@style/marginDialogItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:text="@string/device_storage"
+                android:textSize="@dimen/textSizeItems" />
+
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>
