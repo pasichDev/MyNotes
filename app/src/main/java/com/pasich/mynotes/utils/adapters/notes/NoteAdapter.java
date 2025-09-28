@@ -23,7 +23,6 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
     private androidx.recyclerview.widget.RecyclerView recyclerView;
     private boolean shouldScrollToTop = false;
 
-
     @Inject
     public NoteAdapter(@NonNull DiffUtilNote diffCallback, int layoutId, GenericAdapterCallback<VM, Note> bindingInterface) {
         super(diffCallback, layoutId, bindingInterface);
@@ -62,7 +61,9 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
     public void sortList(String arg) {
         ArrayList<Note> newList = new ArrayList<>(getCurrentList());
         newList.sort(new NoteComparator().getComparator(arg));
-        submitList(newList);
+        submitList(new ArrayList<>(newList), this::notifyDataSetChanged);
+        recyclerView.scheduleLayoutAnimation();
+
     }
 
     public int sortList(List<Note> notesList, String arg, String tagSelected) {
@@ -91,7 +92,7 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
     public int filter(String tagSelected) {
         return filter(tagSelected, true);
     }
-    
+
     public int filter(String tagSelected, boolean updateList) {
         ArrayList<Note> newFilter = new ArrayList<>();
 
@@ -110,14 +111,14 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
             } else {
                 if (updateList) {
                     submitList(defaultList, () -> {
-                       if (shouldScrollToTop && recyclerView != null && !getCurrentList().isEmpty()) {
+                        if (shouldScrollToTop && recyclerView != null && !getCurrentList().isEmpty()) {
                             recyclerView.postDelayed(() -> {
-                                androidx.recyclerview.widget.StaggeredGridLayoutManager layoutManager = 
-                                    (androidx.recyclerview.widget.StaggeredGridLayoutManager) recyclerView.getLayoutManager();
+                                androidx.recyclerview.widget.StaggeredGridLayoutManager layoutManager =
+                                        (androidx.recyclerview.widget.StaggeredGridLayoutManager) recyclerView.getLayoutManager();
                                 if (layoutManager != null) {
                                     int[] firstVisibleItemPositions = layoutManager.findFirstVisibleItemPositions(null);
                                     boolean isFirstItemVisible = firstVisibleItemPositions.length > 0 && firstVisibleItemPositions[0] == 0;
-                                    
+
                                     if (!isFirstItemVisible) {
                                         layoutManager.scrollToPositionWithOffset(0, 0);
                                     }
@@ -144,6 +145,7 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
         }
 
     }
+
     public void clearList() {
         submitList(new ArrayList<>());
     }
@@ -153,11 +155,10 @@ public class NoteAdapter<VM extends ViewDataBinding> extends GenericAdapter<Note
         public Comparator<Note> getComparator(String arg) {
             return switch (arg) {
                 case "DataSort" -> (e1, e2) -> Long.compare(e2.getDate(), e1.getDate());
-                case "TitleSort" ->
-                        (e1, e2) -> e1.getTitle().toLowerCase().compareTo(e2.getTitle().toLowerCase());
+                case "TitleSort" -> Comparator.comparing((Note e) -> e.getTitle().toLowerCase());
                 case "TitleReserve" ->
                         (e1, e2) -> e2.getTitle().toLowerCase().compareTo(e1.getTitle().toLowerCase());
-                default -> (e1, e2) -> Long.compare(e1.getDate(), e2.getDate());
+                default -> Comparator.comparingLong(Note::getDate);
             };
         }
     }

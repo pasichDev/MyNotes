@@ -92,6 +92,7 @@
                         android:paddingStart="5dp"
                         android:paddingEnd="5dp"
                         android:paddingBottom="80dp"
+                        android:layoutAnimation="@anim/layout_animation_fade_in"
                         android:visibility="@{emptyNotes ? View.GONE : View.VISIBLE,  default=visible}"
                         tools:listitem="@layout/item_help_feature" />
 

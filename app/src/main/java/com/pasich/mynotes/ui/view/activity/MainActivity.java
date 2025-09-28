@@ -449,8 +449,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listNotes.addItemDecoration(itemDecorationNotes);
         mActivityBinding.listNotes.setLayoutManager(staggeredGridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
-
         mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
+
+
         mActivityBinding.resultsSearchList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
