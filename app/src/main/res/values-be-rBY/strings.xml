@@ -281,5 +281,15 @@
     <string name="aboutApps_subtitle">Водгук · Даведка · Версія</string>
     <string name="cloud_sync_title">🛠️ Хмарная сінхранізацыя часова адключаная</string>
     <string name="cloud_sync_message">Хмарная сінхранізацыя часова адключаная. Некаторыя карыстальнікі хваляваліся за ананімнасць. Старая рэалізацыя была складанай у падтрымцы. Плануем дадаць новую апцыянальную ўбудову ў будучыні.</string>
+    <string name="backup">Рэзервовая копія</string>
+    <string name="device_storage">Памяць прылады</string>
+    <string name="google_drive">Google Дыск</string>
+    <string name="save_backup">Захаваць рэзервовую копію</string>
+    <string name="restore_backup">Адноўліваць рэзервовую копію</string>
+    <string name="file_not_selected">Файл не абраны</string>
+    <string name="drive_selected_error">Памылка пры працы з Google Дыскам</string>
+    <string name="export_drive_error">Вы адменілі дзеянне або здарылася памылка.</string>
+    <string name="backup_descrpt">Вы можаце стварыць рэзервовую копію і захаваць яе лакальна на прыладзе або на Google Дыску; яна ўключае налады прыкладання, усе нататкі і тэгі.</string>
+    <string name="your_data">Вашы дадзеныя</string>
 
 </resources>

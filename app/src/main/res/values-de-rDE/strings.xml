@@ -281,6 +281,16 @@
     <string name="aboutApps_subtitle">Feedback · Hilfe · Version</string>
     <string name="cloud_sync_title">🛠️ Cloud-Synchronisierung vorübergehend deaktiviert</string>
     <string name="cloud_sync_message">Die Cloud-Synchronisierung ist vorübergehend deaktiviert. Einige Nutzer waren besorgt um die Anonymität. Die alte Implementierung war schwer zu warten. Wir planen, später ein neues optionales Plugin hinzuzufügen.</string>
+    <string name="backup">Sicherung</string>
+    <string name="device_storage">Gerätespeicher</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Sicherung speichern</string>
+    <string name="restore_backup">Sicherung wiederherstellen</string>
+    <string name="file_not_selected">Datei nicht ausgewählt</string>
+    <string name="drive_selected_error">Fehler bei der Arbeit mit Google Drive</string>
+    <string name="export_drive_error">Aktion abgebrochen oder ein Fehler ist aufgetreten.</string>
+    <string name="backup_descrpt">Sie können eine Sicherung erstellen und lokal auf Ihrem Gerät oder in Google Drive speichern; sie enthält die App-Einstellungen, alle Notizen und Tags.</string>
+    <string name="your_data">Ihre Daten</string>
 
 
 </resources>

@@ -284,5 +284,15 @@
     <string name="cloud_sync_title">🛠️ Synchronizacja w chmurze tymczasowo wyłączona</string>
     <string name="cloud_sync_message">Synchronizacja w chmurze jest tymczasowo wyłączona. Niektórzy użytkownicy obawiali się o anonimowość. Stara implementacja była trudna w utrzymaniu. Planujemy dodać nową opcjonalną wtyczkę w przyszłości.</string>
 
+    <string name="backup">Kopia zapasowa</string>
+    <string name="device_storage">Pamięć urządzenia</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Zapisz kopię zapasową</string>
+    <string name="restore_backup">Przywróć kopię zapasową</string>
+    <string name="file_not_selected">Plik nie wybrano</string>
+    <string name="drive_selected_error">Błąd podczas pracy z Google Drive</string>
+    <string name="export_drive_error">Anulowano akcję lub wystąpił błąd.</string>
+    <string name="backup_descrpt">Możesz utworzyć kopię zapasową i zapisać ją lokalnie lub w Google Drive; zawiera ustawienia aplikacji, wszystkie notatki i tagi.</string>
+    <string name="your_data">Twoje dane</string>
 
 </resources>

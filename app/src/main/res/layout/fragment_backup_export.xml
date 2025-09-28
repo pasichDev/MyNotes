@@ -40,8 +40,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardElevation="2dp"
                 app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
@@ -54,35 +54,49 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="16dp">
+                        android:orientation="horizontal">
 
                         <ImageView
+                            style="@style/iconActivityListBackup"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_local"
-                            app:tint="?attr/colorPrimary"
-                            style="@style/iconActivityListBackup"
                             android:layout_marginStart="0dp"
-                            android:contentDescription="@string/localBackup" />
+                            android:contentDescription="@string/backup"
+                            android:src="@drawable/ic_backup_restore"
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/localBackup"
+                            android:text="@string/backup"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                     </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="15dp"
+                        android:lineSpacingMultiplier="1.2"
+                        android:text="@string/backup_descrpt"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="14sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp" />
+
 
                     <!-- Local Backup Actions -->
                     <LinearLayout
                         android:id="@+id/exportLocal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:onClick="@{(view) -> presenter.saveBackupPresenter(true)}"
                         android:background="@drawable/bg_item_start"
+                        android:onClick="@{(view) -> presenter.saveBackupPresenter(true)}"
                         android:orientation="horizontal"
                         android:paddingVertical="12dp">
 
@@ -95,16 +109,17 @@
                             style="@style/itemTextBottomSheets"
                             android:text="@string/exportLocalBackup" />
                     </LinearLayout>
+
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"/>
+                        android:layout_height="1dp" />
 
                     <LinearLayout
                         android:id="@+id/importLocal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:onClick="@{(view) -> presenter.restoreBackupPresenter(true)}"
                         android:background="@drawable/bg_item_end"
+                        android:onClick="@{(view) -> presenter.restoreBackupPresenter(true)}"
                         android:orientation="horizontal"
                         android:paddingVertical="12dp">
 
@@ -117,15 +132,18 @@
                             style="@style/itemTextBottomSheets"
                             android:text="@string/importLocalBackup" />
                     </LinearLayout>
+
+
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Data Export Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardElevation="2dp"
                 app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
@@ -138,18 +156,18 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:orientation="horizontal">
 
                         <ImageView
+                            style="@style/iconActivityListBackup"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_export"
-                            app:tint="?attr/colorPrimary"
-                            style="@style/iconActivityListBackup"
                             android:layout_marginStart="0dp"
-                            android:contentDescription="@string/dataExport" />
+                            android:contentDescription="@string/dataExport"
+                            android:src="@drawable/ic_export"
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -164,29 +182,29 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
                         android:layout_marginTop="10dp"
+                        android:layout_marginBottom="16dp"
+                        android:lineSpacingMultiplier="1.2"
                         android:text="@string/dataExportDescription"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="14sp"
-                        android:lineSpacingMultiplier="1.2" />
+                        android:textSize="14sp" />
 
                     <!-- Export Button -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/exportAllNotes"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
+                        android:backgroundTint="?attr/colorPrimary"
+                        android:onClick="@{(view) -> presenter.exportAllNotesPresenter()}"
+                        android:paddingHorizontal="16dp"
                         android:text="@string/exportAllNotes"
-                        android:textStyle="bold"
                         android:textAllCaps="false"
                         android:textColor="?attr/colorOnPrimary"
-                        android:backgroundTint="?attr/colorPrimary"
+                        android:textStyle="bold"
                         app:cornerRadius="12dp"
                         app:iconGravity="textStart"
                         app:iconPadding="8dp"
-                        app:iconTint="@android:color/white"
-                        android:paddingHorizontal="16dp"
-                        android:onClick="@{(view) -> presenter.exportAllNotesPresenter()}" />
+                        app:iconTint="@android:color/white" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

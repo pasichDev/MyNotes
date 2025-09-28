@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import static com.pasich.mynotes.utils.constants.Backup.FILE_NAME_BACKUP;
+import static com.pasich.mynotes.utils.file.FileExportUtils.GOOGLE_DRIVE_PACKAGE;
+import static com.pasich.mynotes.utils.file.FileExportUtils.saveBackupToGoogleDrive;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -20,18 +22,21 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
+import com.pasich.mynotes.base.view.BackupOptionsCallback;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
+import com.pasich.mynotes.ui.view.dialogs.BackupOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.OtherAppImportDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.utils.adapters.BackupPagerAdapter;
-import com.pasich.mynotes.utils.backup.BackupCacheHelper;
+import com.pasich.mynotes.utils.backup.ScramblerBackupHelper;
 import com.pasich.mynotes.utils.constants.CloudErrors;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
+import com.pasich.mynotes.utils.file.DriveProcess;
 
 import java.util.Objects;
 
@@ -44,19 +49,9 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
     @Inject
     public BackupContract.presenter presenter;
-    /**
-     * Restore local backup intent
-     */
-    private final ActivityResultLauncher<Intent> startIntentImport = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        if (result.getResultCode() == Activity.RESULT_OK) {
-            if (result.getData() != null && result.getData().getData() != null) {
-                presenter.readFileBackupLocal(result.getData().getData());
-            }
-        }
-    });
+
     public ActivityBackupBinding binding;
-    @Inject
-    public BackupCacheHelper serviceCache;
+
 
     private OtherAppImportDialog importDialog;
 
@@ -64,13 +59,53 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     /**
      * Save local backup intent
      */
-    private final ActivityResultLauncher<Intent> startIntentExport = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+    private final ActivityResultLauncher<Intent> intentExportDevice = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK) {
             if (result.getData() != null) {
-                presenter.writeFileBackupLocal(serviceCache, result.getData().getData());
+                presenter.writeFileBackupLocal(result.getData().getData());
             }
         }
     });
+
+    /**
+     * Restore local backup intent
+     */
+    private final ActivityResultLauncher<Intent> intentImportDevice = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            if (result.getData() != null && result.getData().getData() != null) {
+                presenter.readFileBackupLocal(result.getData().getData());
+            }
+        }
+    });
+
+
+    ActivityResultLauncher<Intent> launcherImportDrive = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        presenter.readFileBackupLocal(result.getData().getData());
+                    } else {
+                        onInfoSnack(getString(R.string.file_not_selected), null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+                    }
+                } else {
+                    onInfoSnack(getString(R.string.drive_selected_error), null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+                }
+            }
+    );
+
+    ActivityResultLauncher<Intent> launcherExportDrive = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    createLocalCopyFinish(true);
+                } else {
+                    onInfoSnack(getString(R.string.export_drive_error), null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+                }
+            }
+    );
+
 
     private Dialog progressDialog;
 
@@ -151,13 +186,42 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
     /**
      * Save local backup (2/3) - start intent save json file
-     *
-     * @param jsonValue - appData
      */
     @Override
-    public void openIntentSaveBackup(JsonBackup jsonValue) {
-        serviceCache.setJsonBackup(jsonValue);
-        startIntentExport.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE, FILE_NAME_BACKUP));
+    public void openIntentSaveBackup(JsonBackup jsonBackup) {
+        BackupOptionsDialog.newInstance(new BackupOptionsCallback() {
+            @Override
+            public void onGoogleDrive() {
+                saveBackupToGoogleDrive(BackupActivity.this,
+                        ScramblerBackupHelper.encodeString(jsonBackup),
+                        new DriveProcess() {
+                            @Override
+                            public void onSuccess(Uri uri, String nameFile) {
+                                // Формуємо інтент для Drive
+                                Intent intent = new Intent(Intent.ACTION_SEND);
+                                intent.setType("application/json");
+                                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                intent.putExtra(Intent.EXTRA_SUBJECT, nameFile);
+                                intent.setPackage(GOOGLE_DRIVE_PACKAGE);
+                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                launcherExportDrive.launch(intent);
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                onInfoSnack(error, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+                            }
+                        });
+            }
+
+            @Override
+            public void onDeviceStorage() {
+                intentExportDevice.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE, FILE_NAME_BACKUP));
+            }
+
+        }, false).show(getSupportFragmentManager(), "ShareOptionsDialog");
+
+
     }
 
     /**
@@ -165,8 +229,24 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
      */
     @Override
     public void openIntentReadBackup() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json");
-        startIntentImport.launch(intent);
+        BackupOptionsDialog.newInstance(new BackupOptionsCallback() {
+            @Override
+            public void onGoogleDrive() {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("application/json");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setPackage(GOOGLE_DRIVE_PACKAGE);
+                launcherImportDrive.launch(intent);
+            }
+
+            @Override
+            public void onDeviceStorage() {
+                intentImportDevice.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json"));
+            }
+
+        }, true).show(getSupportFragmentManager(), "ShareOptionsDialog");
+
+
     }
 
     @Override
@@ -184,9 +264,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                     onInfoSnack(R.string.restoreDataOkay, null, SnackBarInfo.Success, Snackbar.LENGTH_LONG);
             case CloudErrors.BACKUP_DESTROY ->
                     onInfoSnack(R.string.restoreDataFall, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
-            case CloudErrors.NETWORK_ERROR -> {
-                onInfoSnack(R.string.errorDriveSync, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
-            }
+            case CloudErrors.NETWORK_ERROR ->
+                    onInfoSnack(R.string.errorDriveSync, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             default -> Log.w("BACKUP_ACTIVITY", "Unknown restore result code: " + infoCode);
         }
     }

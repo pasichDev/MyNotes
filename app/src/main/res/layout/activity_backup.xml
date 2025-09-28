@@ -41,7 +41,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@android:color/transparent"
-            app:title="@string/settingsBackups" />
+            app:title="@string/your_data" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"

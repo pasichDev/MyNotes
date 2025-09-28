@@ -281,5 +281,15 @@
     <string name="aboutApps_subtitle">Пікір · Көмек · Нұсқа</string>
     <string name="cloud_sync_title">🛠️ Бұлттық синхрондау уақытша өшірілді</string>
     <string name="cloud_sync_message">Бұлттық синхрондау уақытша өшірілді. Кейбір пайдаланушылар анонимділіктен алаңдады. Ескі жүзеге асыруды қолдау қиын болды. Болашақта жаңа опционалды плагин қосу жоспарлануда.</string>
+    <string name="backup">Сақтық көшірме</string>
+    <string name="device_storage">Құрылғы жады</string>
+    <string name="google_drive">Google Диск</string>
+    <string name="save_backup">Сақтық көшірмесін сақтау</string>
+    <string name="restore_backup">Сақтық көшірмесін қалпына келтіру</string>
+    <string name="file_not_selected">Файл таңдалмады</string>
+    <string name="drive_selected_error">Google Диск-пен жұмыс кезінде қате</string>
+    <string name="export_drive_error">Әрекет тоқтатылды немесе қате орын алды.</string>
+    <string name="backup_descrpt">Сіз сақтық көшірмесін жасап, оны құрылғыда немесе Google Дискке сақтай аласыз; ол қосымшаның баптауларын, барлық жазбаларды және тегтерді қамтиды.</string>
+    <string name="your_data">Сіздің деректеріңіз</string>
 
 </resources>

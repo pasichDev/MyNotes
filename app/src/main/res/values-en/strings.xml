@@ -297,5 +297,14 @@
 
     <string name="cloud_sync_title">🛠️ Cloud sync temporarily removed</string>
     <string name="cloud_sync_message">Cloud sync is temporarily disabled. Some users were concerned about privacy. The old implementation was hard to maintain. We plan to add a new optional plugin later.</string>
-
+    <string name="backup">Backup</string>
+    <string name="device_storage">Device storage</string>
+    <string name="google_drive">Google drive</string>
+    <string name="save_backup">Save backup</string>
+    <string name="restore_backup">Restore backup</string>
+    <string name="file_not_selected">File not selected</string>
+    <string name="drive_selected_error">Error interacting with Google Drive</string>
+    <string name="export_drive_error">You have canceled the action, or an error has occurred.</string>
+    <string name="backup_descrpt">You can create a backup and save it locally on your device or on Google Drive; it includes the app settings, all notes, and tags.</string>
+    <string name="your_data">Your data</string>
 </resources>

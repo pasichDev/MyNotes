@@ -282,4 +282,15 @@
 
     <string name="cloud_sync_title">🛠️ Хмарна синхронізація тимчасово вимкнена</string>
     <string name="cloud_sync_message">Хмарна синхронізація тимчасово вимкнена. Деякі користувачі хвилювалися щодо анонімності. Стара реалізація була складною у підтримці. Ми плануємо додати новий опціональний плагін у майбутньому.</string>
+    <string name="backup">Резервна копія</string>
+    <string name="device_storage">Пам’ять пристрою</string>
+    <string name="google_drive">Google Диск</string>
+    <string name="save_backup">Зберегти резервну копію</string>
+    <string name="restore_backup">Відновити резервну копію</string>
+    <string name="file_not_selected">Файл не вибрано</string>
+    <string name="drive_selected_error">Помилка при роботі з Google Диском</string>
+    <string name="export_drive_error">Ви скасували дію або сталася помилка.</string>
+    <string name="backup_descrpt">Ви можете створити резервну копію та зберегти її локально на пристрої або на Google Диску; вона включає налаштування додатка, усі нотатки та теги.</string>
+    <string name="your_data">Ваші дані</string>
+
 </resources>

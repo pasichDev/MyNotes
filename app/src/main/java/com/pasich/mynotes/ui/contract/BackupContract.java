@@ -53,7 +53,7 @@ public interface BackupContract {
 
         void restoreBackupPresenter(boolean local);
 
-        void writeFileBackupLocal(BackupCacheHelper serviceCache, Uri mUri);
+        void writeFileBackupLocal(Uri mUri);
 
         void readFileBackupLocal(Uri mUri);
 

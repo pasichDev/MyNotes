@@ -39,6 +39,9 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
     GoogleKeepImportService importService;
 
     @Inject
+    public BackupCacheHelper serviceCache;
+
+    @Inject
     public BackupPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
     }
@@ -78,7 +81,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
             if (countData != 0) {
                 if (local) {
-                    getView().openIntentSaveBackup(jsonBackup);
+                    serviceCache.setJsonBackup(jsonBackup);
                     getView().openIntentSaveBackup(jsonBackup);
                 } else {
                     return;
@@ -94,7 +97,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      * Save local backup (3/3) - write appData to public file
      */
     @Override
-    public void writeFileBackupLocal(BackupCacheHelper serviceCache, Uri mUri) {
+    public void writeFileBackupLocal(Uri mUri) {
         getView().createLocalCopyFinish(getDataManager().writeBackupLocalFile(serviceCache, mUri));
     }
 
@@ -104,14 +107,19 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      */
     @Override
     public void readFileBackupLocal(Uri mUri) {
-        getView().showProcessRestoreDialog();
-        final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
-        if (jsonBackup.isError()) {
-            getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
-        } else {
-            restoreData(jsonBackup);
-        }
+
+
+        getCompositeDisposable().add(Completable.timer(3, java.util.concurrent.TimeUnit.SECONDS).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+            final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
+            if (jsonBackup.isError()) {
+                getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
+            } else {
+                getView().showProcessRestoreDialog();
+                restoreData(jsonBackup);
+            }
+        }));
     }
+
 
     /**
      * Restore date request rxJava

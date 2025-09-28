@@ -279,5 +279,15 @@
 
     <string name="cloud_sync_title">🛠️ Synchronisation cloud temporairement désactivée</string>
     <string name="cloud_sync_message">La synchronisation cloud est temporairement désactivée. Certains utilisateurs étaient préoccupés par l’anonymat. L’ancienne implémentation était difficile à maintenir. Nous prévoyons d’ajouter un nouveau plugin optionnel à l’avenir.</string>
+    <string name="backup">Sauvegarde</string>
+    <string name="device_storage">Stockage de l’appareil</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Enregistrer la sauvegarde</string>
+    <string name="restore_backup">Restaurer la sauvegarde</string>
+    <string name="file_not_selected">Fichier non sélectionné</string>
+    <string name="drive_selected_error">Erreur lors de l’interaction avec Google Drive</string>
+    <string name="export_drive_error">Vous avez annulé l’action ou une erreur s’est produite.</string>
+    <string name="backup_descrpt">Vous pouvez créer une sauvegarde et l’enregistrer localement sur votre appareil ou sur Google Drive ; elle inclut les paramètres de l’application, toutes les notes et les tags.</string>
+    <string name="your_data">Vos données</string>
 
 </resources>

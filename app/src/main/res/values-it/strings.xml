@@ -277,7 +277,17 @@
 
     <string name="aboutApps_subtitle">Recensione · Guida · Versione</string>
 
-    <string name="cloud_sync_title">🛠️ Sincronizzazione cloud temporaneamente disattivata</string>
-    <string name="cloud_sync_message">La sincronizzazione cloud è temporaneamente disattivata. Alcuni utenti erano preoccupati per l\'anonimato. La vecchia implementazione era difficile da mantenere. Prevediamo di aggiungere un nuovo plugin opzionale in futuro.</string>
+    <string name="backup">Backup</string>
+    <string name="device_storage">Memoria dispositivo</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Salva backup</string>
+    <string name="restore_backup">Ripristina backup</string>
+    <string name="file_not_selected">File non selezionato</string>
+    <string name="drive_selected_error">Errore durante l’interazione con Google Drive</string>
+    <string name="export_drive_error">Hai annullato l’azione o si è verificato un errore.</string>
+    <string name="backup_descrpt">Puoi creare un backup e salvarlo localmente sul dispositivo o su Google Drive; include le impostazioni dell’app, tutte le note e i tag.</string>
+    <string name="your_data">I tuoi dati</string>
+
+
 
 </resources>
