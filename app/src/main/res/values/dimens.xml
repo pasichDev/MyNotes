@@ -10,5 +10,7 @@
     <dimen name="defaultCornerChip">10dp</dimen>
     <!-- ScrollView margins -->
     <dimen name="scroll_view_bottom_margin">16dp</dimen>
-    <!-- Navigation Drawer -->
+
+
+    <dimen name="marginHorizontalActivity">10dp</dimen>
 </resources>

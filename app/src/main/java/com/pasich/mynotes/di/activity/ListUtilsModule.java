@@ -38,7 +38,7 @@ public class ListUtilsModule {
     @Provides
     @ActivityScoped
     SpacesItemDecoration providerSpaceItemDecorationNotes() {
-        return new SpacesItemDecoration(20);
+        return new SpacesItemDecoration(10);
     }
 
     @Provides
