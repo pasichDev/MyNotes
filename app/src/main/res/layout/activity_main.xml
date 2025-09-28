@@ -31,14 +31,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:animateLayoutChanges="true"
-                android:background="?android:colorBackground"
+                android:background="?attr/colorSurfaceContainerLow"
                 tools:context=".ui.view.activity.MainActivity">
 
                 <com.google.android.material.appbar.AppBarLayout
                     android:id="@+id/appBarMainActivity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/colorSurface"
+                    android:background="?attr/colorSurfaceContainerLow"
                     app:elevation="0dp"
                     app:liftOnScroll="false">
 

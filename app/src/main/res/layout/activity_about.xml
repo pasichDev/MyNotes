@@ -14,7 +14,7 @@
         android:id="@+id/activity_about"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
+        android:background="?attr/colorSurfaceContainerLow"
         android:fitsSystemWindows="true"
         android:orientation="vertical"
         tools:context=".ui.view.activity.AboutActivity">
@@ -40,9 +40,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginBottom="24dp"
-
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
                     app:strokeWidth="0dp">
 
                     <LinearLayout

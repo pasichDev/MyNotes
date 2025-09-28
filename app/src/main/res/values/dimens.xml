@@ -2,7 +2,7 @@
 <resources>
     <dimen name="heightImageEmpty">120dp</dimen>
     <!--Bottom Sheets-->
-    <dimen name="paddingItems">8dp</dimen>
+    <dimen name="paddingItems">10dp</dimen>
     <dimen name="textSizeItems">16sp</dimen>
     <dimen name="marginItemsNote">15dp</dimen>
     <dimen name="marginItemsNoteChip">5dp</dimen>
