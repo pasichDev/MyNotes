@@ -17,41 +17,38 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
-        android:elevation="2dp"
-        android:padding="15dp"
-        app:cardBackgroundColor="@{Note.checked ? @color/item_bindig_note_surface_variant : @color/item_bindig_note_surface}"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
-        app:strokeColor="@{Note.checked ? @color/item_bindig_note_primary :  @color/item_bindig_note_surface_variant}">
+        android:backgroundTint="?attr/colorSurfaceContainer"
+        android:padding="15dp">
 
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="10dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="10dp">
 
-                <TextView
-                    android:id="@+id/nameNote"
-                    style="@style/itemNoteTitle"
-                    android:text="@{Note.title}"
-                    android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
-                    tools:text="Title Note" />
+            <TextView
+                android:id="@+id/nameNote"
+                style="@style/itemNoteTitle"
+                android:text="@{Note.title}"
+                android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
+                tools:text="Title Note" />
 
-                <TextView
-                    android:id="@+id/previewNote"
-                    style="@style/itemNotePreview"
-                    android:maxLines="2"
-                    android:text="@{Note.valuePreview}"
-                    tools:text="Preview Note Check" />
+            <TextView
+                android:id="@+id/previewNote"
+                style="@style/itemNotePreview"
+                android:maxLines="2"
+                android:text="@{Note.valuePreview}"
+                tools:text="Preview Note Check" />
 
-                <TextView
-                    android:id="@+id/dataNote"
-                    style="@style/itemNotePreview"
-                    android:alpha="0.7"
-                    android:maxLines="1"
-                    app:dataNote="@{Note}"
-                    tools:text="01.01.2025" />
+            <TextView
+                android:id="@+id/dataNote"
+                style="@style/itemNotePreview"
+                android:alpha="0.7"
+                android:maxLines="1"
+                app:dataNote="@{Note}"
+                tools:text="01.01.2025" />
 
 
         </LinearLayout>
