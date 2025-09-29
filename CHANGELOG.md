@@ -2,6 +2,9 @@
 
 ## [2.2.38] - XX.XX.2025
 
+- Interface improvements
+- Fixed a bug displaying snackbar on the home screen
+
 ## [2.2.37] - 28.09.2025
 
 - The “Backups” section has been moved to “Your data.” The ability to store backups on Google Drive and in device memory has also been added.
