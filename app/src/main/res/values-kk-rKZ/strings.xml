@@ -281,5 +281,6 @@
     <string name="export_drive_error">Әрекет тоқтатылды немесе қате орын алды.</string>
     <string name="backup_descrpt">Сіз сақтық көшірмесін жасап, оны құрылғыда немесе Google Дискке сақтай аласыз; ол қосымшаның баптауларын, барлық жазбаларды және тегтерді қамтиды.</string>
     <string name="your_data">Сіздің деректеріңіз</string>
-
+    <string name="interface_tab">Интерфейс</string>
+    <string name="interaction_tab">Өзара әрекет</string>
 </resources>

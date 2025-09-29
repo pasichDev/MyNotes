@@ -281,6 +281,6 @@
     <string name="backup_descrpt">Puoi creare un backup e salvarlo localmente sul dispositivo o su Google Drive; include le impostazioni dell’app, tutte le note e i tag.</string>
     <string name="your_data">I tuoi dati</string>
 
-
-
+    <string name="interface_tab">Interfaccia</string>
+    <string name="interaction_tab">Interazione</string>
 </resources>

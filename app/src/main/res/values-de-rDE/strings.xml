@@ -283,5 +283,7 @@
     <string name="backup_descrpt">Sie können eine Sicherung erstellen und lokal auf Ihrem Gerät oder in Google Drive speichern; sie enthält die App-Einstellungen, alle Notizen und Tags.</string>
     <string name="your_data">Ihre Daten</string>
 
+    <string name="interface_tab">Schnittstelle</string>
+    <string name="interaction_tab">Interaktion</string>
 
 </resources>

@@ -297,4 +297,7 @@
     <string name="export_drive_error">You have canceled the action, or an error has occurred.</string>
     <string name="backup_descrpt">You can create a backup and save it locally on your device or on Google Drive; it includes the app settings, all notes, and tags.</string>
     <string name="your_data">Your data</string>
+
+    <string name="interface_tab">Interface</string>
+    <string name="interaction_tab">Interaction</string>
 </resources>

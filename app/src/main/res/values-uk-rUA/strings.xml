@@ -283,5 +283,6 @@
     <string name="export_drive_error">Ви скасували дію або сталася помилка.</string>
     <string name="backup_descrpt">Ви можете створити резервну копію та зберегти її локально на пристрої або на Google Диску; вона включає налаштування додатка, усі нотатки та теги.</string>
     <string name="your_data">Ваші дані</string>
-
+    <string name="interface_tab">Інтерфейс</string>
+    <string name="interaction_tab">Взаємодія</string>
 </resources>

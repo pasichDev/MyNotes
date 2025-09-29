@@ -282,5 +282,6 @@
     <string name="export_drive_error">Вы адменілі дзеянне або здарылася памылка.</string>
     <string name="backup_descrpt">Вы можаце стварыць рэзервовую копію і захаваць яе лакальна на прыладзе або на Google Дыску; яна ўключае налады прыкладання, усе нататкі і тэгі.</string>
     <string name="your_data">Вашы дадзеныя</string>
-
+    <string name="interface_tab">Інтэрфейс</string>
+    <string name="interaction_tab">Узаемадзеянне</string>
 </resources>

@@ -286,5 +286,6 @@
     <string name="export_drive_error">Вы отменили действие или произошла ошибка.</string>
     <string name="backup_descrpt">Вы можете создать резервную копию и сохранить её локально на устройстве или на Google Диске; она включает настройки приложения, все заметки и теги.</string>
     <string name="your_data">Ваши данные</string>
-
+    <string name="interface_tab">Интерфейс</string>
+    <string name="interaction_tab">Взаимодействие</string>
 </resources>

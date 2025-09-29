@@ -285,5 +285,6 @@
     <string name="export_drive_error">Has cancelado la acción o ha ocurrido un error.</string>
     <string name="backup_descrpt">Puedes crear una copia de seguridad y guardarla localmente en tu dispositivo o en Google Drive; incluye la configuración de la app, todas las notas y etiquetas.</string>
     <string name="your_data">Tus datos</string>
-
+    <string name="interface_tab">Interfaz</string>
+    <string name="interaction_tab">Interacción</string>
 </resources>
