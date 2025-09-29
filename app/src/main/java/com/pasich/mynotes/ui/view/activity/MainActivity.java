@@ -278,7 +278,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void exitWhat() {
         if (!isDestroyed() && mActivityBinding != null) {
-            onInfoSnack(R.string.exitWhat, mActivityBinding.newNotesButton, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+            onInfoSnack(R.string.exitWhat, mActivityBinding.drawerLayout, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
         }
     }
 
@@ -484,12 +484,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     public void snackBarRestoreNote() {
-        Snackbar snackbar = Snackbar.make(mActivityBinding.newNotesButton, getString(R.string.noteMoveTrashSnackbar), Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(mActivityBinding.drawerLayout, getString(R.string.noteMoveTrashSnackbar), Snackbar.LENGTH_LONG);
         snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNote(mainPresenter.getBackupDeleteNote()));
-        if (mActivityBinding.newNotesButton.getY() >= mActivityBinding.activityMain.getHeight()) {
-            snackbar.setAnchorView(mActivityBinding.newNotesButton);
-        }
+        snackbar.setAnchorView(mActivityBinding.newNotesButton);
         snackbar.show();
+
+
     }
 
     @Override
@@ -880,67 +880,47 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private void setupNavigationHeaderListeners() {
         View headerView = navigationView.getHeaderView(0);
 
+        drawerLayout.closeDrawer(GravityCompat.START);
         // Основні кнопки
-        headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startTagsActivity.launch(new Intent(this, TagsActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100);
-        });
+        headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            startTagsActivity.launch(new Intent(this, TagsActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        }, 100));
 
-        headerView.findViewById(R.id.nav_trash).setOnClickListener(v -> {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(this, TrashActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100);
-        });
+        headerView.findViewById(R.id.nav_trash).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            startActivity(new Intent(this, TrashActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        }, 100));
 
         // Налаштування / управління
-        headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> startSettingsActivity.launch(new Intent(this, SettingsActivity.class)), 100);
-        });
+        headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startSettingsActivity.launch(new Intent(this, SettingsActivity.class)), 100));
 
-        headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(this, BackupActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100);
-        });
+        headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            startActivity(new Intent(this, BackupActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        }, 100));
 
         // About з описом
-        headerView.findViewById(R.id.nav_about).setOnClickListener(v -> {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(this, AboutActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100);
-        });
+        headerView.findViewById(R.id.nav_about).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            startActivity(new Intent(this, AboutActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        }, 100));
 
         // Support кнопка
         View navSupport = headerView.findViewById(R.id.nav_support);
         if (navSupport != null) {
-            navSupport.setOnClickListener(v -> {
-                drawerLayout.closeDrawer(GravityCompat.START);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    startActivity(new Intent(this, SupportActivity.class));
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                }, 100);
-            });
+            navSupport.setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                startActivity(new Intent(this, SupportActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }, 100));
         }
 
         // Нова версія додатку
         if (updateChecker.hasNewVersion()) {
-            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> {
-                drawerLayout.closeDrawer(GravityCompat.START);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    openChangelogActivity();
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                }, 100);
-            });
+            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                openChangelogActivity();
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }, 100));
             headerView.findViewById(R.id.newVersion).setVisibility(View.VISIBLE);
         }
 
