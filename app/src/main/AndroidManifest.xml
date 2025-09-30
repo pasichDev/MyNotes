@@ -100,6 +100,10 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".ui.view.activity.NoteActivityBeta"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".ui.view.activity.ShareActivity"
             android:exported="true"
             android:label="@string/NewNote">

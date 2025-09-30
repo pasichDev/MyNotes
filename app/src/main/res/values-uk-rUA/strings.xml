@@ -81,6 +81,8 @@
     <string name="onDynamicColorDescription">Адаптує кольори додатку до вашої шпалери (Android 12+)</string>
     <string name="onScreenProtection">Увімкнути захист екрану</string>
     <string name="onScreenProtectionDescription">Запобігає створенню скріншотів та записуванню екрану. Вступить в силу після перезапуску додатку</string>
+    <string name="onExtendedEditor">Увімкнути розширений редактор</string>
+    <string name="onExtendedEditorDescription">Розширений редактор з додатковими функціями. Це ще тестується і можуть бути збої</string>
     <string name="themeMode">Режим теми</string>
     <string name="selectThemeMode">Оберіть режим теми</string>
     <string name="themeModeFollowSystem">Як в системі</string>

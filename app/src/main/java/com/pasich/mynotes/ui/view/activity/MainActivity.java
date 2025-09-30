@@ -116,6 +116,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     UpdateChecker updateChecker;
 
+    @Inject
+    com.pasich.mynotes.cache.ThemePreferencesCache themePreferencesCache;
+
     // Navigation Drawer variables
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -615,7 +618,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     public void openNoteEdit(long idNote, MaterialCardView materialCardView) {
-        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
+        // Check if extended editor is enabled
+        if (themePreferencesCache.isExtendedEditorEnabled()) {
+            // Open beta note editor
+            startActivity(new Intent(this, NoteActivityBeta.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
+        } else {
+            // Open standard editor
+            startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
+        }
     }
 
 
@@ -623,7 +633,15 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void newNotesButton() {
         Tag tagSelected = tagsAdapter.getTagSelected();
         String tagName = tagSelected == null ? "" : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
-        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+        
+        // Check if extended editor is enabled
+        if (themePreferencesCache.isExtendedEditorEnabled()) {
+            // Open beta note editor for new notes
+            startActivity(new Intent(this, NoteActivityBeta.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+        } else {
+            // Open standard editor for new notes
+            startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+        }
     }
 
 

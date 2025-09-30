@@ -29,6 +29,9 @@ public class PreferencesConfig {
     //ScreenProtection
     public static final String ARGUMENT_PREFERENCE_SCREEN_PROTECTION = "screenProtectionEnable";
     public static final boolean ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE = false;
+    //ExtendedEditor
+    public static final String ARGUMENT_PREFERENCE_EXTENDED_EDITOR = "extendedEditorEnable";
+    public static final boolean ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE = false;
     //LastKnownVersion
     public static final String ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION = "lastKnownVersion";
     //ThemeMode

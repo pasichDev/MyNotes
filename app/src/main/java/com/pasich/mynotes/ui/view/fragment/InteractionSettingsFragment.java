@@ -45,11 +45,15 @@ public class InteractionSettingsFragment extends Fragment {
 
     private void initViews() {
         binding.screenProtection.setChecked(themePreferencesCache.isScreenProtectionEnabled());
+        binding.extendedEditor.setChecked(themePreferencesCache.isExtendedEditorEnabled());
     }
 
     private void initListeners() {
         binding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) ->
                 themePreferencesCache.setScreenProtection(isChecked));
+        
+        binding.extendedEditor.setOnCheckedChangeListener((buttonView, isChecked) ->
+                themePreferencesCache.setExtendedEditor(isChecked));
     }
 
     private void applyThemeColors() {
@@ -66,7 +70,13 @@ public class InteractionSettingsFragment extends Fragment {
         binding.screenProtection.setTextColor(colorOnSurface);
         binding.screenProtectionDescription.setTextColor(colorOnSurfaceVariant);
 
+        // Extended Editor Card and Switch
+        binding.extendedEditorCard.setCardBackgroundColor(colorSurfaceContainer);
+        binding.extendedEditor.setTextColor(colorOnSurface);
+        binding.extendedEditorDescription.setTextColor(colorOnSurfaceVariant);
+
         updateSwitchColors(binding.screenProtection, colorPrimary, colorOnSurfaceVariant);
+        updateSwitchColors(binding.extendedEditor, colorPrimary, colorOnSurfaceVariant);
     }
 
     public void updateThemeColors() {
