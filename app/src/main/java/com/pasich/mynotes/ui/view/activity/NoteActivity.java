@@ -381,7 +381,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 // Викликаємо автозбереження при зміні тексту
                 if (notePresenter != null && notePresenter.getNote() != null) {
                     notePresenter.getNote().setValue(s.toString());
-                    notePresenter.getNote().setValue("");
+                    notePresenter.getNote().setValueJson("");
                     notePresenter.getNote().setHasRichContent(false);
                     notePresenter.onTextChanged();
                 }
