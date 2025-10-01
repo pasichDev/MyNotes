@@ -17,6 +17,7 @@ public class SettingsEditorColors {
         colors.put("surface-color", resolveAttrColor(context, R.attr.colorSurfaceContainerLow));
         colors.put("on-surface-color", resolveAttrColor(context, R.attr.colorOnSurface));
         colors.put("primary-color", resolveAttrColor(context, R.attr.colorPrimary));
+        colors.put("on-primary-color", resolveAttrColor(context, R.attr.colorOnPrimary));
         colors.put("surface-variant-color", resolveAttrColor(context, R.attr.colorSurfaceVariant));
         colors.put("on-surface-variant-color", resolveAttrColor(context, R.attr.colorOnSurfaceVariant));
         colors.put("outline-color", resolveAttrColor(context, R.attr.colorOutline));

@@ -63,3 +63,60 @@ body {
   display: block;
   font-family: "RailwayMedium", sans-serif;
 }
+
+.ce-toolbar__plus,
+.ce-toolbar__settings-btn {
+  background-color: var(--surface-variant-color, #ffffff);
+  color: var(--on-surface-color, #000000);
+  border: 1px solid var(--surface-color, #ffffff);
+}
+.ce-toolbox {
+  background-color: var(--surface-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ce-toolbox__button {
+  color: var(--on-surface-color, #000000);
+}
+
+.ce-toolbox__button:hover {
+  background-color: var(--primary-color, #1976d2);
+  color: #ffffff;
+}
+
+.ce-inline-toolbar {
+  background-color: var(--surface-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#editorjs ::selection {
+  background: var(--primary-color, #1976d2);
+  color: var(--on-primary-color, #ffffff);
+}
+
+/* сам тулбар */
+.ce-popover__container {
+  background-color: var(--surface-variant-color, #ffffff);
+  color: var(--on-surface-color, #000000);
+  border: 1px solid var(--surface-color, #ffffff);
+  border-radius: 8px;
+}
+
+/* кнопки в тулбарі */
+.ce-inline-tool {
+  color: var(--on-surface-color, #000000);
+}
+
+/* кнопка у активному стані (наприклад, жирний увімкнено) */
+.ce-inline-tool--active {
+  background-color: var(--primary-color, #1976d2);
+  color: var(--on-primary-color, #ffffff);
+  border-radius: 4px;
+}
+
+/* коли наводиш курсор */
+.ce-inline-tool:hover {
+  background-color: var(--surface-variant-color, #f0f0f0);
+}

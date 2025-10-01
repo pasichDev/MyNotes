@@ -67,10 +67,7 @@ function getNoteSnapshot() {
   }
 }
 
-
-
-
-      // --- Глобальні функції для WebView ---
+// --- Глобальні функції для WebView ---
       window.setThemeColors = setThemeColors;
       window.loadNote = loadNote;
       window.getNoteData = getNoteData;
