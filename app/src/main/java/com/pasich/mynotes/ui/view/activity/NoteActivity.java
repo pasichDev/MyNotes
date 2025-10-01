@@ -486,7 +486,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
         }
         if (item.getItemId() == R.id.moreBut) {
-            if (!notePresenter.getNewNotesKey()) saveNote();
             new MoreNoteDialog(notePresenter.getNewNotesKey() ? new Note().create(binding.notesTitle.getText().toString(), binding.valueNote.getText().toString(), new Date().getTime()) : notePresenter.getNote(), notePresenter.getNewNotesKey(), true, 0).show(getSupportFragmentManager(), "MoreNote");
 
         }
@@ -573,7 +572,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         supportFinishAfterTransition();
     }
 
-    private void saveNote() {
+ /*   private void saveNote() {
         // Check if binding and notePresenter are initialized
         if (binding == null || notePresenter == null) {
             return;
@@ -621,6 +620,8 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         }
         return false;
     }
+
+  */
 
     @Override
     public void closeActivityNotSaved() {

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>My Notes - Editor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div
+      id="noteTitleInput"
+      contenteditable="true"
+      style="
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--on-surface-color, #000000);
+        padding: 0 0 16px 0;
+        margin: 0;
+        outline: none;
+        border: none;
+        min-height: 32px;
+        box-sizing: border-box;
+        width: 100%;
+        background: transparent;
+        caret-color: var(--primary-color, #1976d2);
+      "
+      data-placeholder="Enter title..."
+    ></div>
+
+    <div class="loading" id="loading">Loading editor...</div>
+    <div class="error" id="error" style="display: none">
+      Editor failed to load.
+    </div>
+    <div id="editorjs" style="display: none"></div>
+
+    <script src="js/editor-bundle.js"></script>
+    <script>
+      let editor;
+      let saveTimeout;
+      let isReady = false;
+      function initEditor() {
+        const Paragraph = window.Paragraph; // або window.EditorJS.Paragraph, залежно від bundle
+
+        class CustomParagraph extends Paragraph {
+          onKeyDown(event) {
+            if (event.key === "Enter") {
+              event.preventDefault(); // блокуємо створення нового блока
+              document.execCommand("insertHTML", false, "<br><br>"); // вставляємо відступ
+            } else {
+              super.onKeyDown(event);
+            }
+          }
+        }
+
+        editor = new EditorJS({
+          holder: "editorjs",
+          placeholder: "Start writing your note...",
+          autofocus: true,
+          tools: {
+            paragraph: {
+              class: CustomParagraph,
+              inlineToolbar: true,
+            },
+            list: List,
+            Headers: Header,
+            quote: Quote,
+            delimiter: Delimiter,
+            marker: Marker,
+            inlineCode: InlineCode,
+          },
+          inlineToolbar: ["bold", "italic", "marker", "inlineCode"],
+          data: {
+            blocks: [{ type: "paragraph", data: { text: "" } }],
+          },
+          onChange: () => {
+            if (isReady) {
+              clearTimeout(saveTimeout);
+              saveTimeout = setTimeout(saveContent, 100);
+            }
+          },
+          onReady: () => {
+            isReady = true;
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("editorjs").style.display = "block";
+            if (window.Android) window.Android.onEditorReady();
+          },
+        });
+      }
+    </script>
+    <script src="js/android-interfaces.js"></script>
+    <script src="js/title-custom.js"></script>
+  </body>
+</html>
