@@ -135,7 +135,9 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
             public void onEditorReady() {
                 mainHandler.post(() -> {
                     editorInterface.setThemeColors(new SettingsEditorColors().getThemeColors(NoteActivityBeta.this));
-                    editorInterface.loadNoteToEditor(notePresenter.getNote());
+                    if (!notePresenter.getNewNotesKey()) {
+                        editorInterface.loadNoteToEditor(notePresenter.getNote());
+                    }
                     showEditor();
                 });
             }
@@ -292,6 +294,7 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
      */
     private void processTitleChange(String title) {
         notePresenter.getNote().setTitle(title);
+        notePresenter.getNote().setHasRichContent(true);
         notePresenter.onTextChanged();
     }
 

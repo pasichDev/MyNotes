@@ -14,45 +14,36 @@ import java.util.Map;
  * JavaScript Interface for Editor.js communication
  */
 public class EditorJSInterface {
-    private static final String TAG = "EditorJSInterface";
     public static final String nameInterface = "Android";
-
+    private static final String TAG = "EditorJSInterface";
     private final EditorListener listener;
     private final WebView webView;
-
-    public interface EditorListener {
-        void onEditorReady();
-
-        void onContentChanged(String jsonData);
-
-        void onTitleChanged(String tile);
-
-        void onError(String error);
-    }
 
     public EditorJSInterface(EditorListener listener, WebView webView) {
         this.listener = listener;
         this.webView = webView;
     }
 
+    @SuppressWarnings("unused")
     @JavascriptInterface
     public void onEditorReady() {
         Log.d(TAG, "Editor.js is ready");
         if (listener != null) listener.onEditorReady();
     }
 
+    @SuppressWarnings("unused")
     @JavascriptInterface
     public void onContentChanged(String jsonData) {
-        Log.d(TAG, "jsonData: " + jsonData);
         if (listener != null) listener.onContentChanged(jsonData);
     }
 
+    @SuppressWarnings("unused")
     @JavascriptInterface
     public void onTitleChanged(String title) {
-        Log.d(TAG, "tile: " + title);
         webView.post(() -> listener.onTitleChanged(title));
     }
 
+    @SuppressWarnings("unused")
     @JavascriptInterface
     public void onError(String error) {
         Log.e(TAG, "Editor.js error: " + error);
@@ -77,18 +68,27 @@ public class EditorJSInterface {
 
     public void loadNoteToEditor(Note note) {
         if (webView == null || note == null) return;
-
+        Log.d(TAG, "JS Command: " + note.hasRichContent());
         try {
             JSONObject json = new JSONObject();
             json.put("title", note.getTitle());
 
-            // Серіалізуємо valueJson у JSONArray, а не в рядок
-            if (note.getValueJson() != null && !note.getValueJson().isEmpty()) {
+            boolean isPlainTextFallback = false;
+
+            if (!note.hasRichContent() && (note.getValueJson() == null || note.getValueJson().isEmpty())) {
+                // стара нотатка → передаємо plainText
+                isPlainTextFallback = true;
+                json.put("plainText", note.getValue() != null ? note.getValue() : "");
+            } else if (note.getValueJson() != null && !note.getValueJson().isEmpty()) {
+                // оптимізована нотатка → передаємо valueJson
                 json.put("valueJson", new org.json.JSONArray(note.getValueJson()));
             } else {
-                // fallback на порожній блок
+                // зовсім порожня нотатка
                 json.put("valueJson", new org.json.JSONArray());
             }
+
+            json.put("plainTextFallback", isPlainTextFallback);
+
 
             final String jsCommand = "loadNote(" + json + ");";
             Log.d(TAG, "JS Command: " + jsCommand);
@@ -96,6 +96,16 @@ public class EditorJSInterface {
         } catch (Exception e) {
             Log.e(TAG, "Failed to load note: " + e.getMessage(), e);
         }
+    }
+
+    public interface EditorListener {
+        void onEditorReady();
+
+        void onContentChanged(String jsonData);
+
+        void onTitleChanged(String tile);
+
+        void onError(String error);
     }
 
 

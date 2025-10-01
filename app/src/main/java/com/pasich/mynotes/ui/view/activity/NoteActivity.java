@@ -320,6 +320,8 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             // Оновлюємо дані в моделі
             notePresenter.getNote().setTitle(currentTitle);
             notePresenter.getNote().setValue(currentValue);
+            notePresenter.getNote().setValue("");
+            notePresenter.getNote().setHasRichContent(false);
 
             // Якщо є незбережені зміни - робимо екстрене збереження
             ((NotePresenter) notePresenter).performEmergencySaveIfNeeded();
@@ -367,6 +369,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 // Викликаємо автозбереження при зміні заголовка
                 if (notePresenter != null && notePresenter.getNote() != null) {
                     notePresenter.getNote().setTitle(title);
+                    notePresenter.getNote().setHasRichContent(false);
                     notePresenter.onTextChanged();
                 }
             }
@@ -378,6 +381,8 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 // Викликаємо автозбереження при зміні тексту
                 if (notePresenter != null && notePresenter.getNote() != null) {
                     notePresenter.getNote().setValue(s.toString());
+                    notePresenter.getNote().setValue("");
+                    notePresenter.getNote().setHasRichContent(false);
                     notePresenter.onTextChanged();
                 }
             }
@@ -571,57 +576,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         }
         supportFinishAfterTransition();
     }
-
- /*   private void saveNote() {
-        // Check if binding and notePresenter are initialized
-        if (binding == null || notePresenter == null) {
-            return;
-        }
-
-        long mThisDate = new Date().getTime();
-        String mTitle = binding.notesTitle.getText().toString();
-        String mValue = binding.valueNote.getText().toString();
-
-        String mNoteValue = "";
-
-        if (!notePresenter.getNewNotesKey()) mNoteValue = notePresenter.getNote().getValue();
-
-        if (notePresenter.getNewNotesKey()) {
-            Note note = new Note().create(!mTitle.isEmpty() ? mTitle : "", mValue, mThisDate, notePresenter.getTagNote());
-            notePresenter.setNote(note);
-            notePresenter.createNote(note);
-            notePresenter.setNewNoteKey(false);
-
-        } else {
-            if (saveNoteToLocal(mValue, mTitle, mNoteValue, mThisDate)) {
-                notePresenter.saveNote(notePresenter.getNote());
-            }
-        }
-    }
-
-
-    private boolean saveNoteToLocal(String mValue, String mTitle, String mNoteValue, long mThisDate) {
-        if (!mValue.equals(mNoteValue) || !mTitle.equals(notePresenter.getNote().getTitle())) {
-            boolean x1 = false;
-            if (!notePresenter.getNote().getTitle().contentEquals(mTitle)) {
-                notePresenter.getNote().setTitle(mTitle);
-                x1 = true;
-            }
-            if (!mNoteValue.contentEquals(mValue)) {
-                notePresenter.getNote().setValue(mValue);
-                x1 = true;
-            }
-
-            if (x1) {
-                notePresenter.getNote().setDate(mThisDate);
-                return true;
-            }
-
-        }
-        return false;
-    }
-
-  */
 
     @Override
     public void closeActivityNotSaved() {

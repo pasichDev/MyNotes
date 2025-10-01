@@ -20,7 +20,7 @@
         );
       }
 
-    function loadNote(note) {
+function loadNote(note) {
   if (!editor) return;
 
   // Встановлюємо title
@@ -31,7 +31,13 @@
 
   const blocks = [];
 
-  if (note.valueJson) {
+  if (note.plainTextFallback && note.plainText) {
+    // старі нотатки — вставляємо plainText у перший параграф
+    blocks.push({
+      type: "paragraph",
+      data: { text: note.plainText }
+    });
+  } else if (note.valueJson) {
     note.valueJson.forEach((block) => {
       blocks.push(block);
     });
@@ -39,6 +45,8 @@
 
   editor.render({ blocks }).catch((err) => console.error(err));
 }
+
+
 
       // --- Отримати дані Note ---
       function getNoteData() {
