@@ -282,4 +282,8 @@
     <string name="your_data">Vos données</string>
     <string name="interface_tab">Interface</string>
     <string name="interaction_tab">Interaction</string>
+    <string name="onExtendedEditor">Activer l\'éditeur avancé</string>
+    <string name="onExtendedEditorDescription">L\'éditeur avancé offre des options de formatage supplémentaires : titres, listes, citations, blocs de code et autres outils pour créer des notes structurées et visuellement attractives.</string>
+    <string name="onExtendedEditorWarning">Si vous passez à l\'éditeur standard et modifiez une note créée ou modifiée en mode avancé, une partie de la mise en forme peut être perdue.</string>
+
 </resources>

@@ -100,8 +100,9 @@
     <string name="onDynamicColorDescription">Adapts app colors to your wallpaper (Android 12+)</string>
     <string name="onScreenProtection">Enable screen protection</string>
     <string name="onScreenProtectionDescription">Prevents screenshots and screen recording. Takes effect after restarting the app</string>
-    <string name="onExtendedEditor">Enable extended editor</string>
-    <string name="onExtendedEditorDescription">Extended editor with additional features. This is still being tested and may have bugs</string>
+    <string name="onExtendedEditor">Enable Extended Editor</string>
+    <string name="onExtendedEditorDescription">The extended editor provides additional formatting options: headers, lists, quotes, code blocks, and other tools for creating structured and visually rich notes.</string>
+    <string name="onExtendedEditorWarning">If you switch to the standard editor and edit a note created or modified in extended mode, some formatting may be lost.</string>
     <string name="themeMode">Theme Mode</string>
     <string name="selectThemeMode">Select theme mode</string>
     <string name="themeModeFollowSystem">Follow System</string>
@@ -319,4 +320,5 @@
 
     <string name="interface_tab">Interface</string>
     <string name="interaction_tab">Interaction</string>
+
 </resources>

@@ -285,4 +285,8 @@
     <string name="your_data">Twoje dane</string>
     <string name="interface_tab">Interfejs</string>
     <string name="interaction_tab">Interakcja</string>
+    <string name="onExtendedEditor">Włącz rozszerzony edytor</string>
+    <string name="onExtendedEditorDescription">Rozszerzony edytor oferuje dodatkowe opcje formatowania: nagłówki, listy, cytaty, bloki kodu i inne narzędzia do tworzenia strukturalnych i atrakcyjnych wizualnie notatek.</string>
+    <string name="onExtendedEditorWarning">Jeśli przełączysz się na standardowy edytor i edytujesz notatkę utworzoną lub zmodyfikowaną w trybie rozszerzonym, część formatowania może zostać utracona.</string>
+
 </resources>

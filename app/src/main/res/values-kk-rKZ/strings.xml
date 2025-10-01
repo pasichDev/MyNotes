@@ -283,4 +283,8 @@
     <string name="your_data">Сіздің деректеріңіз</string>
     <string name="interface_tab">Интерфейс</string>
     <string name="interaction_tab">Өзара әрекет</string>
+    <string name="onExtendedEditor">Кеңейтілген редакторды қосу</string>
+    <string name="onExtendedEditorDescription">Кеңейтілген редактор қосымша форматтау мүмкіндіктерін ұсынады: тақырыптар, тізімдер, дәйексөздер, код блоктары және құрылымдық әрі көрнекі ескертпелер жасауға арналған басқа құралдар.</string>
+    <string name="onExtendedEditorWarning">Егер сіз кеңейтілген режимде жасалған немесе өңделген ескертпені стандартты редакторға ауыстырып өзгерткен болсаңыз, кейбір форматтау жоғалуы мүмкін.</string>
+
 </resources>
