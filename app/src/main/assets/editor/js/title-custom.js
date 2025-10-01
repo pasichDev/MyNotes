@@ -3,7 +3,7 @@ const titleDiv = document.getElementById("noteTitleInput");
 // Показуємо placeholder
 function updateTitlePlaceholder() {
   if (!titleDiv.innerText.trim()) {
-    titleDiv.setAttribute("data-placeholder", "Enter title...");
+    titleDiv.setAttribute("data-placeholder", "Title...");
   } else {
     titleDiv.removeAttribute("data-placeholder");
   }

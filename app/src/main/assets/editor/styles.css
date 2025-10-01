@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "RailwayMedium";
+  src: url("file:///android_res/font/railway_medium.ttf");
+}
+
 body {
   margin: 0;
   padding: 16px;
@@ -25,6 +30,7 @@ body {
 .ce-header,
 .ce-list {
   color: var(--on-surface-color, #000000);
+  font-family: "RailwayBold", sans-serif;
 }
 .ce-quote {
   border-left: 4px solid var(--primary-color, #1976d2);
@@ -55,4 +61,5 @@ body {
   color: var(--on-surface-variant-color, #999999);
   pointer-events: none;
   display: block;
+  font-family: "RailwayMedium", sans-serif;
 }
