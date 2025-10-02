@@ -284,4 +284,8 @@
     <string name="your_data">Вашы дадзеныя</string>
     <string name="interface_tab">Інтэрфейс</string>
     <string name="interaction_tab">Узаемадзеянне</string>
+    <string name="onExtendedEditor">Уключыць пашыраны рэдактар</string>
+    <string name="onExtendedEditorDescription">Пашыраны рэдактар прапануе дадатковыя магчымасці фарматавання: загалоўкі, спісы, цытаты, блокі кода і іншыя інструменты для стварэння структураваных і візуальна прывабных нататак.</string>
+    <string name="onExtendedEditorWarning">Калі вы пераключыцеся на звычайны рэдактар і адрэдагуеце нататку, створаную або змененую ў пашыраным рэжыме, частка фарматавання можа страціцца.</string>
+
 </resources>

@@ -81,9 +81,6 @@
     <string name="onDynamicColorDescription">Адаптує кольори додатку до вашої шпалери (Android 12+)</string>
     <string name="onScreenProtection">Увімкнути захист екрану</string>
     <string name="onScreenProtectionDescription">Запобігає створенню скріншотів та записуванню екрану. Вступить в силу після перезапуску додатку</string>
-    <string name="onExtendedEditor">Увімкнути розширений редактор</string>
-    <string name="onExtendedEditorDescription">Розширений редактор надає додаткові можливості форматування: заголовки, списки, цитати, код-блоки та інші інструменти для створення структурованих і яскравих нотаток.</string>
-    <string name="onExtendedEditorWarning">Якщо ви переключитеся на звичайний редактор і відредагуєте нотатку, створену або змінену у розширеному режимі, деяке форматування може бути втрачено.</string>
 
     <string name="themeMode">Режим теми</string>
     <string name="selectThemeMode">Оберіть режим теми</string>
@@ -289,4 +286,8 @@
     <string name="your_data">Ваші дані</string>
     <string name="interface_tab">Інтерфейс</string>
     <string name="interaction_tab">Взаємодія</string>
+    <string name="onExtendedEditor">Увімкнути розширений редактор</string>
+    <string name="onExtendedEditorDescription">Розширений редактор надає додаткові можливості форматування: заголовки, списки, цитати, код-блоки та інші інструменти для створення структурованих і яскравих нотаток.</string>
+    <string name="onExtendedEditorWarning">Якщо ви переключитеся на звичайний редактор і відредагуєте нотатку, створену або змінену у розширеному режимі, деяке форматування може бути втрачено.</string>
+
 </resources>
