@@ -1,8 +1,11 @@
 package com.pasich.mynotes.ui.view.fragment;
 
+import static com.pasich.mynotes.utils.constants.ContactLink.SEND_FEEDBACK_EDITOR;
 import static com.pasich.mynotes.utils.themes.ManualRedrawSwitch.updateSwitchColors;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,9 +54,10 @@ public class InteractionSettingsFragment extends Fragment {
     private void initListeners() {
         binding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) ->
                 themePreferencesCache.setScreenProtection(isChecked));
-        
+
         binding.extendedEditor.setOnCheckedChangeListener((buttonView, isChecked) ->
                 themePreferencesCache.setExtendedEditor(isChecked));
+        binding.feedbackNewEditor.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK_EDITOR))));
     }
 
     private void applyThemeColors() {
@@ -87,5 +91,6 @@ public class InteractionSettingsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+
     }
 }

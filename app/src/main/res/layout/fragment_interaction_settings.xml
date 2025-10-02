@@ -132,6 +132,21 @@
                     android:textColor="?attr/colorError"
                     android:textSize="12sp" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/feedbackNewEditor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_feedback"
+                    android:text="@string/leaveFeedback"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="20dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
+                    android:backgroundTint="?attr/colorPrimary"
+                    android:textColor="?attr/colorOnPrimary"
+                    app:cornerRadius="8dp" />
+
+
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
