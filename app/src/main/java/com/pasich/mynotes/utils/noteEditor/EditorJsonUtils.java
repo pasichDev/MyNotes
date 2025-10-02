@@ -32,9 +32,15 @@ public class EditorJsonUtils {
                 if (data == null) continue;
 
                 switch (type) {
-                    case "paragraph", "header":
+                    case "paragraph":
                         plainText.append(cleanText(data.optString("text", "")));
                         break;
+
+                    case "header":
+                    case "Headers":
+                        plainText.append(data.optString("text", ""));
+                        break;
+
 
                     case "list":
                         String style = data.optString("style", "unordered");
