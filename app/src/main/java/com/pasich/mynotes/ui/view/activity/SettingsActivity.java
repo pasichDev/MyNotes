@@ -32,16 +32,15 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SettingsActivity extends BaseActivity implements InterfaceSettingsFragment.ThemeChangeListener {
 
+    public ActivitySettingsBinding activitySettingsBinding;
     @Inject
     ThemePreferencesCache themePreferencesCache;
-
-    public ActivitySettingsBinding activitySettingsBinding;
+    int targetPage = 0;
     private int themeIdStartActivity;
     private boolean enableDynamic, themeDynamicStartActivity;
     private int themeModeStartActivity;
     private SettingsPagerAdapter pagerAdapter;
     private TabLayout tabLayout;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,7 +55,10 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         themeModeStartActivity = themePreferencesCache.getThemeMode();
         setSupportActionBar(activitySettingsBinding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        initViewPager();
+
+        // Animation focus new editor
+        int startIndex = getIntent().getIntExtra("startFragmentIndex", 0);
+        initViewPager(startIndex);
 
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
@@ -67,10 +69,10 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
 
     }
 
-    private void initViewPager() {
+    private void initViewPager(int startIndex) {
         ViewPager2 viewPager = activitySettingsBinding.viewPager;
-        tabLayout = activitySettingsBinding.tabLayout;
 
+        tabLayout = activitySettingsBinding.tabLayout;
         pagerAdapter = new SettingsPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
@@ -87,6 +89,10 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
                     }
                 }
         ).attach();
+
+        if (startIndex == 1) {
+            activitySettingsBinding.viewPager.setCurrentItem(startIndex, true);
+        }
 
         // Apply theme colors to tabs
         applyTabColors();

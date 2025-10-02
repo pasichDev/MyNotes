@@ -322,4 +322,6 @@
     <string name="onExtendedEditorWarning">If you switch to the standard editor and edit a note created or modified in extended mode, some formatting may be lost.</string>
 
     <string name="new_note">New Note</string>
+    <string name="new_editor">New editor</string>
+    <string name="new_descrpt">Tap to learn more</string>
 </resources>

@@ -289,4 +289,7 @@
     <string name="onExtendedEditorDescription">Rozszerzony edytor oferuje dodatkowe opcje formatowania: nagłówki, listy, cytaty, bloki kodu i inne narzędzia do tworzenia strukturalnych i atrakcyjnych wizualnie notatek.</string>
     <string name="onExtendedEditorWarning">Jeśli przełączysz się na standardowy edytor i edytujesz notatkę utworzoną lub zmodyfikowaną w trybie rozszerzonym, część formatowania może zostać utracona.</string>
     <string name="new_note">Nowa Notatka</string>
+    <string name="new_editor">Nowy edytor</string>
+    <string name="new_descrpt">Dotknij, aby dowiedzieć się więcej</string>
+
 </resources>

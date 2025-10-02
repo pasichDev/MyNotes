@@ -288,4 +288,7 @@
     <string name="onExtendedEditorDescription">L\'editor avanzato offre funzionalità di formattazione aggiuntive: intestazioni, elenchi, citazioni, blocchi di codice e altri strumenti per creare note strutturate e visivamente accattivanti.</string>
     <string name="onExtendedEditorWarning">Se passi all\'editor standard e modifichi una nota creata o modificata in modalità avanzata, alcune formattazioni potrebbero andare perse.</string>
     <string name="new_note">Nuova Nota</string>
+    <string name="new_editor">Nuovo editor</string>
+    <string name="new_descrpt">Tocca per saperne di più</string>
+
 </resources>

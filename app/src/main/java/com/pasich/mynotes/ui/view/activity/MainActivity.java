@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.view.activity;
 
 
+import static android.view.View.VISIBLE;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -46,6 +48,7 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.base.simplifications.TextWatcher;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
@@ -86,9 +89,28 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
+    private static final int REQUEST_UPDATE = 100;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        Intent data = result.getData();
+        if (result.getResultCode() == 11) {
+            assert data != null;
+            if (data.getBooleanExtra("updateThemeMode", false)) {
+                recreate();
+            } else {
+                this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+            }
+        }
+    });
     public ActivityMainBinding mActivityBinding;
     @Inject
     public MainContract.presenter mainPresenter;
+    // Tags Activity launcher - reloads data when tags are modified
+    final private ActivityResultLauncher<Intent> startTagsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (mainPresenter != null) {
+            mainPresenter.loadingData();
+        }
+    });
     @Inject
     public FormatListTool formatList;
     @Inject
@@ -109,56 +131,27 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public SpacesItemDecoration itemDecorationNotes;
     @Inject
     public LinearLayoutManager mLinearLayoutManager;
-
     @Inject
     SearchNotesAdapter searchNotesAdapter;
-
     @Inject
     UpdateChecker updateChecker;
-
     @Inject
-    com.pasich.mynotes.cache.ThemePreferencesCache themePreferencesCache;
-
+    ThemePreferencesCache themePreferencesCache;
     // Navigation Drawer variables
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-
-    private static final int REQUEST_UPDATE = 100;
-    private AppUpdateManager appUpdateManager;
-    private int previousNotesCount = 0;
-
-    private final Handler searchHandler = new Handler(Looper.getMainLooper());
-    private Runnable searchRunnable;
-
-    // Tags Activity launcher - reloads data when tags are modified
-    final private ActivityResultLauncher<Intent> startTagsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        if (mainPresenter != null) {
-            mainPresenter.loadingData();
-        }
-    });
-
-
-    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        Intent data = result.getData();
-        if (result.getResultCode() == 11) {
-            assert data != null;
-            if (data.getBooleanExtra("updateThemeMode", false)) {
-                recreate();
-            } else {
-                this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
-            }
-        }
-    });
-
     private final ActivityResultLauncher<Intent> changelogLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     result -> {
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             ///  Ховаємо показ пр онову версію
                             boolean hasNewVersion = updateChecker.hasNewVersion();
-                            navigationView.getHeaderView(0).findViewById(R.id.newVersion).setVisibility(hasNewVersion ? View.VISIBLE : View.GONE);
+                            navigationView.getHeaderView(0).findViewById(R.id.newVersion).setVisibility(hasNewVersion ? VISIBLE : View.GONE);
                         }
                     });
+    private AppUpdateManager appUpdateManager;
+    private int previousNotesCount = 0;
+    private Runnable searchRunnable;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -537,7 +530,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         }
         // Приховуємо або показуємо список тегів залежно від наявності користувацьких тегів
         if (hasUserTags) {
-            mActivityBinding.listTags.setVisibility(View.VISIBLE);
+            mActivityBinding.listTags.setVisibility(VISIBLE);
         } else {
             mActivityBinding.listTags.setVisibility(View.GONE);
         }
@@ -555,7 +548,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.setEmptyNotes(flag);
         if (getResources().getDisplayMetrics().density < 2.2)
             mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
-        mActivityBinding.includeEmpty.emptyViewNote.setVisibility(flag ? View.VISIBLE : View.GONE);
+        mActivityBinding.includeEmpty.emptyViewNote.setVisibility(flag ? VISIBLE : View.GONE);
 
         // Управління поведінкою AppBar залежно від наявності нотаток
         setAppBarScrollBehavior(!flag);
@@ -589,12 +582,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }
 
             // Використовуємо ViewPropertyAnimator для кращої продуктивності
-            mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.VISIBLE);
+            mActivityBinding.includeEmpty.emptyViewNote.setVisibility(VISIBLE);
             mActivityBinding.includeEmpty.emptyViewNote.setAlpha(0f);
             mActivityBinding.includeEmpty.emptyViewNote.animate().alpha(1f).setDuration(300).start();
         } else {
             mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.GONE);
-            mActivityBinding.listNotes.setVisibility(View.VISIBLE);
+            mActivityBinding.listNotes.setVisibility(VISIBLE);
             mActivityBinding.listNotes.setAlpha(0f);
             mActivityBinding.listNotes.animate().alpha(1f).setDuration(300).start();
         }
@@ -633,7 +626,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void newNotesButton() {
         Tag tagSelected = tagsAdapter.getTagSelected();
         String tagName = tagSelected == null ? "" : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
-        
+
         // Check if extended editor is enabled
         if (themePreferencesCache.isExtendedEditorEnabled()) {
             // Open beta note editor for new notes
@@ -697,7 +690,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void deactivationActionPanel() {
-        mActivityBinding.newNotesButton.setVisibility(View.VISIBLE);
+        mActivityBinding.newNotesButton.setVisibility(VISIBLE);
     }
 
     @Override
@@ -763,7 +756,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     private void hideCurrentContent(Runnable onComplete) {
-        if (mActivityBinding.listNotes.getVisibility() == View.VISIBLE) {
+        if (mActivityBinding.listNotes.getVisibility() == VISIBLE) {
             // Використовуємо ViewPropertyAnimator замість Animation
             mActivityBinding.listNotes.animate().alpha(0f).setDuration(300).withEndAction(() -> {
                 mActivityBinding.listNotes.setVisibility(View.INVISIBLE);
@@ -774,7 +767,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     onComplete.run();
                 }
             }).start();
-        } else if (mActivityBinding.includeEmpty.emptyViewNote.getVisibility() == View.VISIBLE) {
+        } else if (mActivityBinding.includeEmpty.emptyViewNote.getVisibility() == VISIBLE) {
             // Використовуємо ViewPropertyAnimator замість Animation
             mActivityBinding.includeEmpty.emptyViewNote.animate().alpha(0f).setDuration(300).withEndAction(() -> {
                 mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.INVISIBLE);
@@ -939,10 +932,17 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 openChangelogActivity();
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }, 100));
-            headerView.findViewById(R.id.newVersion).setVisibility(View.VISIBLE);
+            headerView.findViewById(R.id.newVersion).setVisibility(VISIBLE);
         }
-
-
+        if (!themePreferencesCache.isExtendedEditorEnabled()) {
+            headerView.findViewById(R.id.newEditor).setVisibility(VISIBLE);
+            headerView.findViewById(R.id.newEditor).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                Intent intent = new Intent(this, SettingsActivity.class);
+                intent.putExtra("startFragmentIndex", 1);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }, 100));
+        }
     }
 
     /**

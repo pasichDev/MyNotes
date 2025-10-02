@@ -290,4 +290,7 @@
     <string name="onExtendedEditorDescription">Der erweiterte Editor bietet zusätzliche Formatierungsoptionen: Überschriften, Listen, Zitate, Codeblöcke und weitere Werkzeuge zur Erstellung strukturierter und optisch ansprechender Notizen.</string>
     <string name="onExtendedEditorWarning">Wenn Sie zum Standard-Editor wechseln und eine in erweiterter Ansicht erstellte oder bearbeitete Notiz ändern, kann ein Teil der Formatierung verloren gehen.</string>
     <string name="new_note">Neue Notiz</string>
+    <string name="new_editor">Neuer Editor</string>
+    <string name="new_descrpt">Tippen Sie, um mehr zu erfahren</string>
+
 </resources>
