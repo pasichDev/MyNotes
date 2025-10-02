@@ -36,10 +36,9 @@ import io.reactivex.schedulers.Schedulers;
 public class BackupPresenter extends BasePresenter<BackupContract.view> implements BackupContract.presenter {
 
     @Inject
-    GoogleKeepImportService importService;
-
-    @Inject
     public BackupCacheHelper serviceCache;
+    @Inject
+    GoogleKeepImportService importService;
 
     @Inject
     public BackupPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
@@ -80,12 +79,8 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
             Integer countData = result.getValue();
 
             if (countData != 0) {
-                if (local) {
-                    serviceCache.setJsonBackup(jsonBackup);
-                    getView().openIntentSaveBackup(jsonBackup);
-                } else {
-                    return;
-                }
+                serviceCache.setJsonBackup(jsonBackup);
+                getView().openIntentSaveBackup(jsonBackup);
             } else {
                 getView().emptyDataToBackup();
             }
@@ -107,17 +102,21 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      */
     @Override
     public void readFileBackupLocal(Uri mUri) {
+        getView().showProcessRestoreDialog();
 
+        getCompositeDisposable().add(
+                Completable.timer(3, java.util.concurrent.TimeUnit.SECONDS)
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(() -> {
+                            final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
+                            if (jsonBackup.isError()) {
+                                getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
+                            } else {
+                                restoreData(jsonBackup);
+                            }
+                        })
+        );
 
-        getCompositeDisposable().add(Completable.timer(3, java.util.concurrent.TimeUnit.SECONDS).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-            final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
-            if (jsonBackup.isError()) {
-                getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
-            } else {
-                getView().showProcessRestoreDialog();
-                restoreData(jsonBackup);
-            }
-        }));
     }
 
 

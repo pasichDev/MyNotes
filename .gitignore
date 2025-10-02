@@ -8,7 +8,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/schemas
 .vscode
 
 ## Changelog.md

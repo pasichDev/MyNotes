@@ -286,5 +286,14 @@
     <string name="export_drive_error">Вы отменили действие или произошла ошибка.</string>
     <string name="backup_descrpt">Вы можете создать резервную копию и сохранить её локально на устройстве или на Google Диске; она включает настройки приложения, все заметки и теги.</string>
     <string name="your_data">Ваши данные</string>
+    <string name="interface_tab">Интерфейс</string>
+    <string name="interaction_tab">Взаимодействие</string>
+
+    <string name="onExtendedEditor">Включить расширенный редактор</string>
+    <string name="onExtendedEditorDescription">Расширенный редактор предоставляет дополнительные возможности форматирования: заголовки, списки, цитаты, блоки кода и другие инструменты для создания структурированных и наглядных заметок.</string>
+    <string name="onExtendedEditorWarning">Если вы переключитесь на обычный редактор и отредактируете заметку, созданную или изменённую в расширенном режиме, часть форматирования может быть утрачена.</string>
+    <string name="new_note">Новая заметка</string>
+    <string name="new_editor">Новый редактор</string>
+    <string name="new_descrpt">Нажмите, чтобы узнать больше</string>
 
 </resources>

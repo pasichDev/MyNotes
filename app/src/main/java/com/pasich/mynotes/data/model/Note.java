@@ -27,6 +27,12 @@ public class Note {
     
     @SerializedName("e")
     private String tag;
+    
+    @SerializedName("f")
+    private String valueJson;
+    
+    @SerializedName("g")
+    private boolean hasRichContent;
 
 
     @Ignore
@@ -105,6 +111,22 @@ public class Note {
 
     public void setDate(long date) {
         this.date = date;
+    }
+
+    public String getValueJson() {
+        return this.valueJson;
+    }
+
+    public void setValueJson(String valueJson) {
+        this.valueJson = valueJson;
+    }
+
+    public boolean hasRichContent() {
+        return this.hasRichContent;
+    }
+
+    public void setHasRichContent(boolean hasRichContent) {
+        this.hasRichContent = hasRichContent;
     }
 
 }

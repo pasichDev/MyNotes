@@ -1,8 +1,8 @@
 package com.pasich.mynotes.utils.constants;
 
-public class Database {
+public class DatabaseConstants {
 
     public static final String DB_NAME = "MyNotes.db";
-    public static final int DB_VERSION = 4;
+    public static final int DB_VERSION = 5;
 
 }

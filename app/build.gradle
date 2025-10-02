@@ -7,8 +7,8 @@ plugins {
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.dagger.hilt.android'
 
-def appVersionCode = 37
-def appVersionName = "2.2.${appVersionCode}"
+def appVersionCode = 38
+def appVersionName = "2.3.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
     commandLine 'git', 'rev-parse', '--short', 'HEAD'
@@ -142,4 +142,3 @@ dependencies {
     
 
 }
-

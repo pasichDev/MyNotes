@@ -281,6 +281,14 @@
     <string name="backup_descrpt">Puoi creare un backup e salvarlo localmente sul dispositivo o su Google Drive; include le impostazioni dell’app, tutte le note e i tag.</string>
     <string name="your_data">I tuoi dati</string>
 
+    <string name="interface_tab">Interfaccia</string>
+    <string name="interaction_tab">Interazione</string>
 
+    <string name="onExtendedEditor">Attiva l\'editor avanzato</string>
+    <string name="onExtendedEditorDescription">L\'editor avanzato offre funzionalità di formattazione aggiuntive: intestazioni, elenchi, citazioni, blocchi di codice e altri strumenti per creare note strutturate e visivamente accattivanti.</string>
+    <string name="onExtendedEditorWarning">Se passi all\'editor standard e modifichi una nota creata o modificata in modalità avanzata, alcune formattazioni potrebbero andare perse.</string>
+    <string name="new_note">Nuova Nota</string>
+    <string name="new_editor">Nuovo editor</string>
+    <string name="new_descrpt">Tocca per saperne di più</string>
 
 </resources>

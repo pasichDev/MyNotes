@@ -283,5 +283,13 @@
     <string name="export_drive_error">Anulowano akcję lub wystąpił błąd.</string>
     <string name="backup_descrpt">Możesz utworzyć kopię zapasową i zapisać ją lokalnie lub w Google Drive; zawiera ustawienia aplikacji, wszystkie notatki i tagi.</string>
     <string name="your_data">Twoje dane</string>
+    <string name="interface_tab">Interfejs</string>
+    <string name="interaction_tab">Interakcja</string>
+    <string name="onExtendedEditor">Włącz rozszerzony edytor</string>
+    <string name="onExtendedEditorDescription">Rozszerzony edytor oferuje dodatkowe opcje formatowania: nagłówki, listy, cytaty, bloki kodu i inne narzędzia do tworzenia strukturalnych i atrakcyjnych wizualnie notatek.</string>
+    <string name="onExtendedEditorWarning">Jeśli przełączysz się na standardowy edytor i edytujesz notatkę utworzoną lub zmodyfikowaną w trybie rozszerzonym, część formatowania może zostać utracona.</string>
+    <string name="new_note">Nowa Notatka</string>
+    <string name="new_editor">Nowy edytor</string>
+    <string name="new_descrpt">Dotknij, aby dowiedzieć się więcej</string>
 
 </resources>

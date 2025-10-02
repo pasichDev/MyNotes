@@ -41,6 +41,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     private final Note mNote;
     private final boolean newNoteActivity;
     private final boolean activityNote;
+    private final boolean hideTextSize;
+
     @Inject
     public MoreNoteDialogPresenter mPresenter;
     @Inject
@@ -58,6 +60,15 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         this.newNoteActivity = newNoteActivity;
         this.activityNote = activityNote;
         this.positionItem = position;
+        this.hideTextSize = false;
+    }
+
+    public MoreNoteDialog(Note note, boolean newNoteActivity, boolean activityNote, int position, boolean hideTextSize) {
+        this.mNote = note;
+        this.newNoteActivity = newNoteActivity;
+        this.activityNote = activityNote;
+        this.positionItem = position;
+        this.hideTextSize = hideTextSize;
     }
 
     @Override
@@ -73,8 +84,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         binding.setNote(mNote);
         binding.setValuesText(mNote.getValue().length() > 1);
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
-        addTitle();
-        binding.settingsActivity.rootView.setVisibility(activityNote ? View.VISIBLE : View.GONE);
+        setHideTextSize();
         return binding.getRoot();
     }
 
@@ -84,14 +94,13 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         super.setState(dialog);
     }
 
-    public void addTitle() {
-        if (!activityNote) {
-            String title = mNote.getTitle().length() > 20 ? mNote.getTitle().substring(0, 20) + "..." : mNote.getTitle();
-       //     binding.includeHead.headTextDialog.setText(mNote.getTitle().length() > 1 ? title : getString(R.string.chooseNote));
-       //     binding.includeHead.getRoot().setVisibility(newNoteActivity ? View.GONE : View.VISIBLE);
-      //      binding.spacerLast.setVisibility(View.GONE);
+    // Ховає зміну шрифту на новій версії редактора
+    public void setHideTextSize() {
+        if (hideTextSize) {
+            binding.settingsActivity.rootView.setVisibility(View.GONE);
         } else {
-       //     binding.includeHead.getRoot().setVisibility(View.GONE);
+            binding.settingsActivity.rootView.setVisibility(activityNote ? View.VISIBLE : View.GONE);
+
         }
     }
 

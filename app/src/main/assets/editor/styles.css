@@ -1,0 +1,182 @@
+@font-face {
+  font-family: "RailwayMedium";
+  src: url("file:///android_res/font/railway_medium.ttf");
+}
+
+:root {
+  --selectionColor: --surface-variant-color;
+  --inlineSelectionColor: #d4ecff;
+  --bg-light: #eff2f5;
+  --grayText: --color-on-surface-variant-color;
+  --color-dark: #1d202b;
+  --color-active-icon: --color-on-surface-variant-color;
+  --color-gray-border: rgba(201, 201, 204, 0.48);
+  --color-line-gray: #eff0f1;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--surface-color, #ffffff);
+  color: var(--on-surface-color, #000000);
+}
+.codex-editor {
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+.codex-editor__redactor {
+  padding-bottom: 50px !important;
+}
+.ce-block__content {
+  max-width: none !important;
+  margin: 0 !important;
+}
+.ce-paragraph {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--on-surface-color, #000000);
+}
+.ce-header,
+.ce-list {
+  color: var(--on-surface-color, #000000);
+  font-family: "RailwayBold", sans-serif;
+}
+.ce-quote {
+  border-left: 4px solid var(--primary-color, #1976d2);
+  background: var(--surface-variant-color, #f5f5f5);
+  color: var(--on-surface-color, #000000);
+}
+.ce-code {
+  background: var(--surface-variant-color, #f5f5f5);
+  color: var(--on-surface-color, #000000);
+  border-radius: 8px;
+}
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--on-surface-variant-color, #666666);
+}
+.error {
+  padding: 16px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+#noteTitleInput:empty:before {
+  content: attr(data-placeholder);
+  color: var(--on-surface-variant-color, #999999);
+  pointer-events: none;
+  display: block;
+  font-family: "RailwayMedium", sans-serif;
+}
+
+.ce-toolbar__plus,
+.ce-toolbar__settings-btn {
+  background-color: var(--surface-variant-color, #ffffff);
+  color: var(--on-surface-color, #000000);
+  border: 1px solid var(--surface-color, #ffffff);
+}
+.ce-toolbox {
+  background-color: var(--surface-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ce-toolbox__button {
+  color: var(--on-surface-color, #000000);
+}
+
+.ce-toolbox__button:hover {
+  background-color: var(--primary-color, #1976d2);
+  color: #ffffff;
+}
+
+.ce-inline-toolbar {
+  background-color: var(--surface-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#editorjs ::selection {
+  background: var(--primary-color, #1976d2);
+  color: var(--on-primary-color, #ffffff);
+}
+
+/* сам тулбар */
+.ce-popover__container {
+  background-color: var(--surface-variant-color, #ffffff);
+  color: var(--on-surface-color, #000000);
+  border: 1px solid var(--surface-color, #ffffff);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+/* кнопки в тулбарі */
+.ce-inline-tool {
+  color: var(--on-surface-color, #000000);
+}
+
+.ce-inline-tool--active {
+  background-color: var(--primary-color, #1976d2);
+  color: var(--on-primary-color, #ffffff);
+  border-radius: 4px;
+}
+
+/* коли наводиш курсор */
+.ce-inline-tool:hover {
+  background-color: var(--surface-variant-color, #f0f0f0);
+}
+
+.ce-popover--opened > .ce-popover__container {
+  border: var(--on-primary-color, #ffffff);
+}
+
+.ce-popover-item {
+  color: var(--on-surface-color);
+}
+
+.ce-popover__overlay {
+  background: var(--surface-color);
+  opacity: 0.7;
+}
+
+.ce-block--selected .ce-block__content {
+  background: color-mix(in srgb, var(--primary-color) 30%, transparent);
+}
+
+.ce-popover-header__back-button {
+  color: var(--on-surface-color);
+}
+
+.ce-popover-item--active {
+  background: var(--surface-color);
+  color: var(--on-surface-color);
+}
+
+/* custom-list.css */
+
+.cdx-list-checklist .cdx-list__checkbox--checked .cdx-list__checkbox-check {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.cdx-list-checklist
+  .cdx-list__checkbox--checked
+  .cdx-list__checkbox-check
+  svg
+  path {
+  stroke: var(--on-primary-color) !important;
+}
+
+.cdx-list-checklist .cdx-list__checkbox-check {
+  background: var(--on-surface-variant-color) !important;
+}
+
+.cdx-list__item {
+  margin-top: 5px;
+}
