@@ -32,8 +32,6 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorSurfaceContainerLow"
                 app:layout_scrollFlags="scroll|enterAlways|snap">
-
-                <!-- End content (collapsed state) -->
                 <LinearLayout
                     android:id="@+id/endContent"
                     android:layout_width="match_parent"

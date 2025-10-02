@@ -1,9 +1,11 @@
 package com.pasich.mynotes.utils.databinding;
 
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.databinding.BindingAdapter;
 
+import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.utils.FormattedDataUtil;
 
@@ -12,13 +14,13 @@ public class NoteBindingAdapters {
     @BindingAdapter("dataNote")
     public static void setDataNote(TextView textView, Note note) {
         if (note != null && note.getDate() > 0) {
-            textView.setText(FormattedDataUtil.lastDayEditNote(note.getDate()));
-            textView.setVisibility(TextView.VISIBLE);
+            textView.setText(
+                    textView.getContext().getString(R.string.lastDateEditNote,  FormattedDataUtil.lastDayEditNote(note.getDate()))
+            );
+            textView.setVisibility(View.VISIBLE);
         } else {
             textView.setText("");
-            textView.setVisibility(TextView.GONE);
+            textView.setVisibility(View.GONE);
         }
     }
-
 }
-
