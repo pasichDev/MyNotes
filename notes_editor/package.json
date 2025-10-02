@@ -20,5 +20,8 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "rollup": "^4.52.3"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4"
+  }
 }

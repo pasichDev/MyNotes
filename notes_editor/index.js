@@ -1,4 +1,4 @@
-// index.js
+// Editor.js
 import EditorJS from '@editorjs/editorjs'
 import Header from '@editorjs/header'
 import List from '@editorjs/list'
@@ -7,6 +7,7 @@ import Delimiter from '@editorjs/delimiter'
 import Marker from '@editorjs/marker'
 import InlineCode from '@editorjs/inline-code'
 
+// Експортуємо на глобальний об'єкт, щоб підключати у браузері
 window.EditorJS = EditorJS
 window.Header = Header
 window.List = List
