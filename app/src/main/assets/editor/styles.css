@@ -176,3 +176,7 @@ body {
 .cdx-list-checklist .cdx-list__checkbox-check {
   background: var(--on-surface-variant-color) !important;
 }
+
+.cdx-list__item {
+  margin-top: 5px;
+}
