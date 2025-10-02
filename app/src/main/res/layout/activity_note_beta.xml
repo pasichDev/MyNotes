@@ -42,28 +42,14 @@
                     android:gravity="start|center_vertical"
                     android:orientation="vertical">
 
-                    <com.google.android.material.card.MaterialCardView
+                    <TextView
+                        android:id="@+id/titleToolbarTagCollapsed"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small"
-                        android:layout_gravity="top|start"
-                        app:cardBackgroundColor="?attr/colorPrimary"
-                        android:layout_marginBottom="3dp"
-                        app:strokeWidth="0dp"
-                        app:cardElevation="2dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingHorizontal="6dp"
-                            android:paddingVertical="2dp"
-                            android:text="BETA"
-                            android:textColor="?attr/colorOnPrimary"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            tools:ignore="HardcodedText" />
-
-                    </com.google.android.material.card.MaterialCardView>
+                        android:fontFamily="@font/railway_medium"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="11sp"
+                        android:visibility="gone" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -79,16 +65,6 @@
                             android:text="@string/lastDateEditNote"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/titleToolbarTagCollapsed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:fontFamily="@font/railway_medium"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="11sp"
-                            android:visibility="gone" />
 
                     </LinearLayout>
 
