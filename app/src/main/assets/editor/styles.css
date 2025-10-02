@@ -113,6 +113,7 @@ body {
   color: var(--on-surface-color, #000000);
   border: 1px solid var(--surface-color, #ffffff);
   border-radius: 8px;
+  margin-top: 16px;
 }
 
 /* кнопки в тулбарі */
@@ -120,7 +121,6 @@ body {
   color: var(--on-surface-color, #000000);
 }
 
-/* кнопка у активному стані (наприклад, жирний увімкнено) */
 .ce-inline-tool--active {
   background-color: var(--primary-color, #1976d2);
   color: var(--on-primary-color, #ffffff);
