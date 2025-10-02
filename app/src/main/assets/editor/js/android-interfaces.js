@@ -60,20 +60,6 @@ function getNoteData () {
     .catch(err => console.error(err))
 }
 
-// --- Глобальна функція для отримання всіх даних нотатки ---
-function getNoteSnapshot () {
-  const title = document.getElementById('noteTitleInput').innerText.trim()
-  let blocksJson = '[]'
-
-  if (window.editor) {
-    return editor.save().then(output => {
-      blocksJson = JSON.stringify(output.blocks || [])
-      return JSON.stringify({ title, blocksJson })
-    })
-  } else {
-    return Promise.resolve(JSON.stringify({ title, blocksJson }))
-  }
-}
 function toggleReadModeFromAndroid () {
   isReadMode = !isReadMode
   if (editor && editor.readOnly) {
@@ -92,5 +78,4 @@ function toggleReadModeFromAndroid () {
 window.setThemeColors = setThemeColors
 window.loadNote = loadNote
 window.getNoteData = getNoteData
-window.getNoteSnapshot = getNoteSnapshot
 window.addEventListener('load', initEditor)

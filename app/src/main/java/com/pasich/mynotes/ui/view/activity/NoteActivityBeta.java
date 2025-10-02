@@ -258,18 +258,6 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
 
 
     @Override
-    public void onStop() {
-        super.onStop();
-        // КРИТИЧНО: Екстрене збереження при зупинці Activity
-        if (notePresenter != null && notePresenter.getNote() != null) {
-
-            // витягнимо дані з редактора TODO
-
-            ((NotePresenter) notePresenter).performEmergencySaveIfNeeded();
-        }
-    }
-
-    @Override
     public void initParam() {
         // Not implemented
     }

@@ -184,6 +184,13 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             } else {
                 // Запускаємо збереження перед закриттям
                 pendingClose = true;
+
+                //Якщо ця на нотатка не була змінена та остання редакція в простому редаторі то канцесим її, також якщо це розширений редактор
+                if (!mNote.hasRichContent() && lastSavedJsonValue.isEmpty() && extendedEditor) {
+                    getView().closeNoteActivity();
+                    return;
+                }
+
                 performFinalSave();
                 return;
             }
@@ -220,6 +227,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             Gson gson = new Gson();
             JsonElement e1 = JsonParser.parseString(gson.toJson(mNote.getValueJson()));
             JsonElement e2 = JsonParser.parseString(gson.toJson(lastSavedJsonValue));
+
             return !e1.equals(e2);
         } else {
 
