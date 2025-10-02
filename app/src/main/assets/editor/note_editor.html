@@ -39,13 +39,12 @@
       let saveTimeout;
       let isReady = false;
       function initEditor() {
-        const Paragraph = window.Paragraph; // або window.EditorJS.Paragraph, залежно від bundle
+        const Paragraph = window.Paragraph;
 
         class CustomParagraph extends Paragraph {
           onKeyDown(event) {
             if (event.key === "Enter") {
-              event.preventDefault(); // блокуємо створення нового блока
-              document.execCommand("insertHTML", false, "<br><br>"); // вставляємо відступ
+              event.preventDefault();
             } else {
               super.onKeyDown(event);
             }
