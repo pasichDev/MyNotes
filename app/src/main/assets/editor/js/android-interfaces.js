@@ -37,7 +37,7 @@ function loadNote (note) {
     // старі нотатки — вставляємо plainText у перший параграф
     blocks.push({
       type: 'paragraph',
-      data: { text: note.plainText }
+      data: { text: note.plainText.replace(/\n/g, '<br>') } // <-- конвертуємо перенос рядка
     })
   } else if (note.valueJson) {
     note.valueJson.forEach(block => {

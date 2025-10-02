@@ -87,6 +87,7 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
         notePresenter.attachView(this);
         notePresenter.getLoadIntentData(getIntent());
         notePresenter.viewIsReady();
+        notePresenter.setExtendedEditor(true);
 
         setupRichEditor();
 
@@ -350,13 +351,8 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
 
         if (item.getItemId() == R.id.actionRead) {
             isReadMode = !isReadMode;
-
-            runOnUiThread(() -> {
-                binding.richEditor.evaluateJavascript("toggleReadModeFromAndroid();", null);
-            });
-            // Змінюємо іконку
+            runOnUiThread(() -> binding.richEditor.evaluateJavascript("toggleReadModeFromAndroid();", null));
             item.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
-
             return true;
         }
 

@@ -38,10 +38,6 @@ public interface NoteContract {
 
         void activateEditNote();
 
-        void createNote(Note note);
-
-        void saveNote(Note note);
-        
         void autoSaveNote(Note note, AutoSaveCallback callback);
 
         void deleteNote(Note note);
@@ -73,6 +69,10 @@ public interface NoteContract {
         int getTypeFace(String textStyle);
         
         void onTextChanged();
+        boolean getExtendedEditor();
+
+        void setExtendedEditor(boolean extendedEditor);
+
     }
     
     interface AutoSaveCallback {

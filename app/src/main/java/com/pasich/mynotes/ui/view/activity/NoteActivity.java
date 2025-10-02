@@ -320,7 +320,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             // Оновлюємо дані в моделі
             notePresenter.getNote().setTitle(currentTitle);
             notePresenter.getNote().setValue(currentValue);
-            notePresenter.getNote().setValue("");
+            notePresenter.getNote().setValueJson("");
             notePresenter.getNote().setHasRichContent(false);
 
             // Якщо є незбережені зміни - робимо екстрене збереження

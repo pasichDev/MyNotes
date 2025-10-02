@@ -90,7 +90,8 @@ public class EditorJSInterface {
             json.put("plainTextFallback", isPlainTextFallback);
 
 
-            final String jsCommand = "loadNote(" + json + ");";
+            String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
+
             Log.d(TAG, "JS Command: " + jsCommand);
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
         } catch (Exception e) {

@@ -1,5 +1,7 @@
 package com.pasich.mynotes.utils.editor;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,19 +31,7 @@ public class EditorJsonUtils {
 
                 switch (type) {
                     case "paragraph", "header":
-                        plainText.append(data.optString("text", ""));
-                        break;
-
-                    case "quote":
-                        plainText.append(data.optString("text", ""));
-                        String caption = data.optString("caption", "");
-                        if (!caption.isEmpty()) {
-                            plainText.append(" — ").append(caption);
-                        }
-                        break;
-
-                    case "code":
-                        plainText.append(data.optString("code", ""));
+                        plainText.append(cleanText(data.optString("text", "")));
                         break;
 
                     case "list":
@@ -62,7 +52,7 @@ public class EditorJsonUtils {
             }
 
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("jsonToPlainText", "Failed to parse JSON", e);
         }
 
         return plainText.toString().trim();
@@ -71,10 +61,9 @@ public class EditorJsonUtils {
     /**
      * Рекурсивний метод для обробки вкладених елементів списку
      *
-     * @param item       JSONObject одного елемента списку
-     * @param builder    StringBuilder для збору тексту
-     * @param indent     відступ для вкладеності
-     * @throws JSONException
+     * @param item    JSONObject одного елемента списку
+     * @param builder StringBuilder для збору тексту
+     * @param indent  відступ для вкладеності
      */
     private static void appendListItem(JSONObject item, StringBuilder builder, String indent) throws JSONException {
         String content = item.optString("content", "");
@@ -89,4 +78,15 @@ public class EditorJsonUtils {
             }
         }
     }
+
+    private static String cleanText(String text) {
+        if (text == null) return "";
+        // Заміна <br> або <br/> на новий рядок
+        text = text.replaceAll("(?i)<br\\s*/?>", "\n");
+        text = text.replace("&nbsp;", " ");
+        // Можна додатково видалити інші HTML-теги, якщо потрібно
+        text = text.replaceAll("<[^>]+>", "");
+        return text;
+    }
+
 }
