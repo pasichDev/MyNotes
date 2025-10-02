@@ -23,6 +23,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -62,6 +63,8 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
 
     private EditorJSInterface editorInterface;
     private Handler mainHandler;
+
+    private boolean isReadMode = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -328,9 +331,36 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity_toolbar_note, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_toolbar_note_extendes, menu);
         saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+
+        if (item.getItemId() == android.R.id.home) {
+            notePresenter.closeActivity();
+
+        }
+        if (item.getItemId() == R.id.moreBut) {
+            new MoreNoteDialog(notePresenter.getNote(), notePresenter.getNewNotesKey(), true, 0, true).show(getSupportFragmentManager(), "MoreNote");
+        }
+
+        if (item.getItemId() == R.id.actionRead) {
+            isReadMode = !isReadMode;
+
+            runOnUiThread(() -> {
+                binding.richEditor.evaluateJavascript("toggleReadModeFromAndroid();", null);
+            });
+            // Змінюємо іконку
+            item.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -368,17 +398,6 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
         }
     }
 
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            notePresenter.closeActivity();
-
-        }
-        if (item.getItemId() == R.id.moreBut) {
-            new MoreNoteDialog(notePresenter.getNote(), notePresenter.getNewNotesKey(), true, 0, true).show(getSupportFragmentManager(), "MoreNote");
-        }
-
-        return true;
-    }
 
     @Override
     public void onDestroy() {

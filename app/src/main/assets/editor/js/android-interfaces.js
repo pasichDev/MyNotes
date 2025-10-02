@@ -1,3 +1,5 @@
+let isReadMode = false
+
 // --- Функція збереження контенту ---
 function saveContent () {
   if (!editor) return
@@ -70,6 +72,19 @@ function getNoteSnapshot () {
     })
   } else {
     return Promise.resolve(JSON.stringify({ title, blocksJson }))
+  }
+}
+function toggleReadModeFromAndroid () {
+  isReadMode = !isReadMode
+  if (editor && editor.readOnly) {
+    editor.readOnly.toggle()
+  }
+
+  const title = document.getElementById('noteTitleInput')
+  if (title) {
+    title.contentEditable = !isReadMode
+    title.style.pointerEvents = isReadMode ? 'none' : 'auto'
+    title.style.userSelect = isReadMode ? 'none' : 'text'
   }
 }
 
