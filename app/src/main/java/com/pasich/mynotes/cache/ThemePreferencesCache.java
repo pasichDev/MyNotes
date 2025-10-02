@@ -102,11 +102,37 @@ public class ThemePreferencesCache {
     }
 
     /**
+     * Set theme mode with asynchronous persistence
+     */
+    public synchronized void setThemeMode(int themeMode) {
+        try {
+            this.themeMode = themeMode;
+            // Use asynchronous put method to avoid UI blocking
+            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, themeMode);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set theme mode", e);
+        }
+    }
+
+    /**
      * Get cached theme ID
      */
     public int getThemeId() {
         ensureInitialized();
         return themeId;
+    }
+
+    /**
+     * Set theme ID with asynchronous persistence
+     */
+    public synchronized void setThemeId(int themeId) {
+        try {
+            this.themeId = themeId;
+            // Use asynchronous put method to avoid UI blocking
+            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, themeId);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set theme ID", e);
+        }
     }
 
     /**
@@ -133,10 +159,19 @@ public class ThemePreferencesCache {
         return extendedEditor;
     }
 
-
     public int getSizeTextNoteActivity() {
         ensureInitialized();
         return sizeTextNoteActivity;
+    }
+
+    public synchronized void setSizeTextNoteActivity(int size) {
+        try {
+            this.sizeTextNoteActivity = size;
+            // Use asynchronous put method to avoid UI blocking
+            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, size);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set size text note", e);
+        }
     }
 
     public String getTypeFaceNoteActivity() {
@@ -144,29 +179,13 @@ public class ThemePreferencesCache {
         return typeFaceNoteActivity;
     }
 
-    /**
-     * Set theme mode with asynchronous persistence
-     */
-    public synchronized void setThemeMode(int themeMode) {
+    public synchronized void setTypeFaceNoteActivity(String typeFace) {
         try {
-            this.themeMode = themeMode;
+            this.typeFaceNoteActivity = typeFace;
             // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, themeMode);
+            PowerPreference.getDefaultFile().putString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, typeFace);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to set theme mode", e);
-        }
-    }
-
-    /**
-     * Set theme ID with asynchronous persistence
-     */
-    public synchronized void setThemeId(int themeId) {
-        try {
-            this.themeId = themeId;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, themeId);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to set theme ID", e);
+            Log.e(TAG, "Failed to set type font note note", e);
         }
     }
 
@@ -206,27 +225,6 @@ public class ThemePreferencesCache {
             PowerPreference.getDefaultFile().putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, enabled);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set extended editor", e);
-        }
-    }
-
-    public synchronized void setTypeFaceNoteActivity(String typeFace) {
-        try {
-            this.typeFaceNoteActivity = typeFace;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, typeFace);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to set type font note note", e);
-        }
-    }
-
-
-    public synchronized void setSizeTextNoteActivity(int size) {
-        try {
-            this.sizeTextNoteActivity = size;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, size);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to set size text note", e);
         }
     }
 

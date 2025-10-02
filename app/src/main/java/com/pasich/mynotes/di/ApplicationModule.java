@@ -1,6 +1,8 @@
 package com.pasich.mynotes.di;
 
 
+import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_4_5;
+
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -19,7 +21,7 @@ import com.pasich.mynotes.data.database.AppDbHelper;
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
-import com.pasich.mynotes.utils.constants.Database;
+import com.pasich.mynotes.utils.constants.DatabaseConstants;
 
 import javax.inject.Singleton;
 
@@ -37,7 +39,9 @@ public class ApplicationModule {
     @Singleton
     AppDatabase providesAppDatabase(@ApplicationContext Context context, RoomDatabase.Callback sRoomDatabaseCallback) {
         AppDatabase.setContext(context);
-        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Database.DB_NAME).addCallback(sRoomDatabaseCallback).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build();
+        return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, DatabaseConstants.DB_NAME)
+                .addCallback(sRoomDatabaseCallback)
+                .addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, MIGRATION_4_5).build();
     }
 
 
