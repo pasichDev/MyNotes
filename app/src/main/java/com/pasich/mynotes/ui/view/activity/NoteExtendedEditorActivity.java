@@ -34,14 +34,14 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.databinding.ActivityNoteBetaBinding;
+import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.utils.constants.NameTransition;
-import com.pasich.mynotes.utils.editor.EditorJSInterface;
-import com.pasich.mynotes.utils.editor.EditorJsonUtils;
-import com.pasich.mynotes.utils.editor.SettingsEditorColors;
+import com.pasich.mynotes.utils.noteEditor.EditorJSInterface;
+import com.pasich.mynotes.utils.noteEditor.EditorJsonUtils;
+import com.pasich.mynotes.utils.noteEditor.SettingsEditorColors;
 import com.pasich.mynotes.utils.enums.SaveState;
 
 import java.util.Date;
@@ -52,9 +52,9 @@ import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class NoteActivityBeta extends BaseActivity implements NoteContract.view {
+public class NoteExtendedEditorActivity extends BaseActivity implements NoteContract.view {
 
-    public ActivityNoteBetaBinding binding;
+    public ActivityNoteExtendedEditorBinding binding;
     @Inject
     public NoteContract.presenter notePresenter;
 
@@ -72,7 +72,7 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
         settingsStatusBar(getWindow());
         long idNote = getIntent().getLongExtra("idNote", 0);
 
-        binding = ActivityNoteBetaBinding.inflate(getLayoutInflater());
+        binding = ActivityNoteExtendedEditorBinding.inflate(getLayoutInflater());
         mainHandler = new Handler(Looper.getMainLooper());
         binding.noteLayout.setTransitionName(idNote == 0 ? NameTransition.fabTransaction : String.valueOf(idNote));
         setEnterSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
@@ -138,7 +138,7 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
             @Override
             public void onEditorReady() {
                 mainHandler.post(() -> {
-                    editorInterface.setThemeColors(new SettingsEditorColors().getThemeColors(NoteActivityBeta.this));
+                    editorInterface.setThemeColors(new SettingsEditorColors().getThemeColors(NoteExtendedEditorActivity.this));
                     if (!notePresenter.getNewNotesKey()) {
                         editorInterface.loadNoteToEditor(notePresenter.getNote());
                     }
@@ -192,33 +192,6 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
 
 
     }
-
-    /*
-    public void saveNote() {
-        binding.richEditor.evaluateJavascript(
-                "getNoteSnapshot().then(data => data);",
-                new ValueCallback<String>() {
-                    @Override
-                    public void onReceiveValue(String value) {
-                        if (value == null || value.equals("null")) return;
-
-                        // Прибираємо лапки, екрануємо кавички
-                        String content = value.replaceAll("^\"|\"$", "").replace("\\\"", "\"");
-                        NoteSnapshot snapshot = new Gson().fromJson(content, NoteSnapshot.class);
-
-                        String title = snapshot.getTitle();
-                        String jsonBlocks = snapshot.getBlocksJson(); // тепер має працювати
-
-                        Log.d("NOTE_DATA", "content: " + content);
-                        Log.d("NOTE_DATA", "Title: " + title);
-                        Log.d("NOTE_DATA", "JSON blocks: " + jsonBlocks);
-                    }
-                }
-        );
-    }
-
-     */
-
 
     /**
      * Налаштовує відступи з урахуванням клавіатури для NoteActivity
@@ -457,7 +430,7 @@ public class NoteActivityBeta extends BaseActivity implements NoteContract.view 
     @Override
     public void openCopyNote(long idNote) {
         finish();
-        startActivity(new Intent(NoteActivityBeta.this, NoteActivityBeta.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", "").putExtra("betaMode", true));
+        startActivity(new Intent(NoteExtendedEditorActivity.this, NoteExtendedEditorActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", "").putExtra("betaMode", true));
 
 
     }

@@ -621,7 +621,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         // Check if extended editor is enabled
         if (themePreferencesCache.isExtendedEditorEnabled()) {
             // Open beta note editor
-            startActivity(new Intent(this, NoteActivityBeta.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
+            startActivity(new Intent(this, NoteExtendedEditorActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
         } else {
             // Open standard editor
             startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
@@ -637,7 +637,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         // Check if extended editor is enabled
         if (themePreferencesCache.isExtendedEditorEnabled()) {
             // Open beta note editor for new notes
-            startActivity(new Intent(this, NoteActivityBeta.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+            startActivity(new Intent(this, NoteExtendedEditorActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
         } else {
             // Open standard editor for new notes
             startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());

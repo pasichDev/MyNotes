@@ -79,11 +79,8 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
             Integer countData = result.getValue();
 
             if (countData != 0) {
-                if (local) {
-                    serviceCache.setJsonBackup(jsonBackup);
-                    getView().openIntentSaveBackup(jsonBackup);
-                } else {
-                }
+                serviceCache.setJsonBackup(jsonBackup);
+                getView().openIntentSaveBackup(jsonBackup);
             } else {
                 getView().emptyDataToBackup();
             }
