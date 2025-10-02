@@ -39,12 +39,11 @@ import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.utils.constants.NameTransition;
+import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.noteEditor.EditorJSInterface;
 import com.pasich.mynotes.utils.noteEditor.EditorJsonUtils;
 import com.pasich.mynotes.utils.noteEditor.SettingsEditorColors;
-import com.pasich.mynotes.utils.enums.SaveState;
 
-import java.util.Date;
 import java.util.Objects;
 
 import javax.inject.Inject;
@@ -240,8 +239,8 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         if (notePresenter.getNewNotesKey()) {
             if (notePresenter.getTagNote().length() >= 2)
                 changeTag(notePresenter.getTagNote(), false);
-            binding.titleToolbarDataCollapsed.setText(lastDayEditNote(new Date().getTime()));
 
+            binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
             if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5)
                 activatedActivity();
         } else if (notePresenter.getIdKey() >= 1) {
@@ -275,6 +274,7 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
 
     @Override
     public void editIdNoteCreated(long idNote) {
+        binding.titleToolbarDataCollapsed.setText(getString(R.string.lastDateEditNote, lastDayEditNote(notePresenter.getNote().getDate())));
         notePresenter.getNote().setId(Math.toIntExact(idNote));
     }
 
@@ -300,8 +300,6 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-
         if (item.getItemId() == android.R.id.home) {
             notePresenter.closeActivity();
 
@@ -391,8 +389,7 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         String tag = note.getTag();
         changeTag(tag != null ? tag : "", false);
 
-        String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate()));
-        binding.titleToolbarDataCollapsed.setText(formattedDate);
+        binding.titleToolbarDataCollapsed.setText(getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate())));
     }
 
     @Override

@@ -304,5 +304,5 @@
     <string name="onExtendedEditor">Enable Extended Editor</string>
     <string name="onExtendedEditorDescription">The extended editor provides additional formatting options: headers, lists, quotes, code blocks, and other tools for creating structured and visually rich notes.</string>
     <string name="onExtendedEditorWarning">If you switch to the standard editor and edit a note created or modified in extended mode, some formatting may be lost.</string>
-
+    <string name="new_note">New Note</string>
 </resources>

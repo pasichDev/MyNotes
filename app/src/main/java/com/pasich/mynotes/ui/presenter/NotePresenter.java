@@ -324,7 +324,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public void activateEditNote() {
         getView().activatedActivity();
     }
-
     // Новий метод створення нотатки з callback'ом для автозбереження
     private void createNoteWithCallback(Note note, NoteContract.AutoSaveCallback callback) {
         getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> {
