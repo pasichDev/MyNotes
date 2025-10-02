@@ -98,6 +98,7 @@ public class EditorJSInterface {
         }
     }
 
+
     public interface EditorListener {
         void onEditorReady();
 
