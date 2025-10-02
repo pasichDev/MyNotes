@@ -152,3 +152,8 @@ body {
 .ce-popover-header__back-button {
   color: var(--on-surface-color);
 }
+
+.ce-popover-item--active {
+  background: var(--surface-color);
+  color: var(--on-surface-color);
+}
