@@ -1,17 +1,22 @@
 # CHANGELOG
 
-## [2.3.38] - XX.XX.2025
+## [2.3.38] - 02.10.2025
 
-- Added an Extended Notes Editor with formatting options: headings, lists, quotes, and other tools for creating structured and visually rich notes. The extended editor can be enabled in Settings → Interaction
+- Added an Extended Notes Editor with formatting options: headings, lists, quotes, and other tools
+  for creating structured and visually rich notes. The extended editor can be enabled in Settings →
+  Interaction
 - Improved interface on the settings page and other design elements
 - Fixed a bug displaying snackbar on the home screen
 - Fixed a bug when restoring backup copies: long wait for the progress dialog
 
 ## [2.2.37] - 28.09.2025
 
-- The “Backups” section has been moved to “Your data.” The ability to store backups on Google Drive and in device memory has also been added.
-- The contrast of the design has been improved and some interface elements have been updated for more convenient operation.
-- All network access requests have been removed; the app works completely offline. The only Internet permission required is for updates and in-app purchases.
+- The “Backups” section has been moved to “Your data.” The ability to store backups on Google Drive
+  and in device memory has also been added.
+- The contrast of the design has been improved and some interface elements have been updated for
+  more convenient operation.
+- All network access requests have been removed; the app works completely offline. The only Internet
+  permission required is for updates and in-app purchases.
 - Removed Google sign-in and Google Drive sync.
 
 ## [2.2.36] - 23.09.2025
@@ -42,7 +47,8 @@
 - Added auto-save when editing notes
 - Added the ability to save selected text via the context menu
 - Added the ability to export notes for viewing or quick sharing with others.
-- Now you can easily share your notes or save them locally! TXT, PDF, and HTML formats are available, as well as the option to send them via Google Drive or other applications.
+- Now you can easily share your notes or save them locally! TXT, PDF, and HTML formats are
+  available, as well as the option to send them via Google Drive or other applications.
 - Fixed main thread operations that could cause the app to freeze or crash.
 - Fixed data retrieval when sharing content from other apps.
 - Fixed saving notes when there are many changes in processing
