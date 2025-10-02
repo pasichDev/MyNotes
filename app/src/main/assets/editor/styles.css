@@ -157,3 +157,22 @@ body {
   background: var(--surface-color);
   color: var(--on-surface-color);
 }
+
+/* custom-list.css */
+
+.cdx-list-checklist .cdx-list__checkbox--checked .cdx-list__checkbox-check {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.cdx-list-checklist
+  .cdx-list__checkbox--checked
+  .cdx-list__checkbox-check
+  svg
+  path {
+  stroke: var(--on-primary-color) !important;
+}
+
+.cdx-list-checklist .cdx-list__checkbox-check {
+  background: var(--on-surface-variant-color) !important;
+}
