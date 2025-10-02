@@ -36,10 +36,9 @@ import io.reactivex.schedulers.Schedulers;
 public class BackupPresenter extends BasePresenter<BackupContract.view> implements BackupContract.presenter {
 
     @Inject
-    GoogleKeepImportService importService;
-
-    @Inject
     public BackupCacheHelper serviceCache;
+    @Inject
+    GoogleKeepImportService importService;
 
     @Inject
     public BackupPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
@@ -84,7 +83,6 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
                     serviceCache.setJsonBackup(jsonBackup);
                     getView().openIntentSaveBackup(jsonBackup);
                 } else {
-                    return;
                 }
             } else {
                 getView().emptyDataToBackup();
@@ -107,17 +105,23 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      */
     @Override
     public void readFileBackupLocal(Uri mUri) {
+        // Показуємо діалог одразу
+        getView().showProcessRestoreDialog();
 
+// Виконуємо таймер для відновлення даних
+        getCompositeDisposable().add(
+                Completable.timer(3, java.util.concurrent.TimeUnit.SECONDS)
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(() -> {
+                            final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
+                            if (jsonBackup.isError()) {
+                                getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
+                            } else {
+                                restoreData(jsonBackup);
+                            }
+                        })
+        );
 
-        getCompositeDisposable().add(Completable.timer(3, java.util.concurrent.TimeUnit.SECONDS).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-            final JsonBackup jsonBackup = getDataManager().readBackupLocalFile(mUri);
-            if (jsonBackup.isError()) {
-                getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
-            } else {
-                getView().showProcessRestoreDialog();
-                restoreData(jsonBackup);
-            }
-        }));
     }
 
 
