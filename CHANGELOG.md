@@ -1,9 +1,10 @@
 # CHANGELOG
 
-## [2.2.38] - XX.XX.2025
+## [2.3.38] - XX.XX.2025
 
-- Interface improvements
+- Improved interface on the settings page and other design elements
 - Fixed a bug displaying snackbar on the home screen
+- Fixed a bug when restoring backup copies: long wait for the progress dialog
 
 ## [2.2.37] - 28.09.2025
 
