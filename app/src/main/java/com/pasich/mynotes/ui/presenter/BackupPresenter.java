@@ -105,10 +105,8 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      */
     @Override
     public void readFileBackupLocal(Uri mUri) {
-        // Показуємо діалог одразу
         getView().showProcessRestoreDialog();
 
-// Виконуємо таймер для відновлення даних
         getCompositeDisposable().add(
                 Completable.timer(3, java.util.concurrent.TimeUnit.SECONDS)
                         .observeOn(getSchedulerProvider().ui())
