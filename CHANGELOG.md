@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## [2.3.39] - 03.10.2025
+
 ## [2.3.38] - 02.10.2025
 
 - Added an Extended Notes Editor with formatting options: headings, lists, quotes, and other tools
