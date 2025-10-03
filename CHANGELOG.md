@@ -1,8 +1,6 @@
 # CHANGELOG
 
-## [2.3.39] - 03.10.2025
-
-## [2.3.38] - 02.10.2025
+## [2.3.38] - [2.3.39] - 02.10.2025
 
 - Added an Extended Notes Editor with formatting options: headings, lists, quotes, and other tools
   for creating structured and visually rich notes. The extended editor can be enabled in Settings →
@@ -10,6 +8,7 @@
 - Improved interface on the settings page and other design elements
 - Fixed a bug displaying snackbar on the home screen
 - Fixed a bug when restoring backup copies: long wait for the progress dialog
+- Update help section
 
 ## [2.2.37] - 28.09.2025
 
