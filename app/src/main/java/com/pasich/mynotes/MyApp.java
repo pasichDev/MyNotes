@@ -8,6 +8,8 @@ import com.pasich.mynotes.cache.ThemePreferencesCache;
 import javax.inject.Inject;
 
 import dagger.hilt.android.HiltAndroidApp;
+import io.reactivex.exceptions.UndeliverableException;
+import io.reactivex.plugins.RxJavaPlugins;
 
 @HiltAndroidApp
 public class MyApp extends Application {
@@ -17,12 +19,25 @@ public class MyApp extends Application {
     @Inject
     ThemePreferencesCache themePreferencesCache;
 
-
     @Override
     public void onCreate() {
         super.onCreate();
+
         // Ініціалізація кешу тем для покращення продуктивності
         initThemeCache();
+
+        // Глобальний RxJava ErrorHandler для уникнення UndeliverableException
+        RxJavaPlugins.setErrorHandler(e -> {
+            if (e instanceof UndeliverableException) {
+                Throwable cause = e.getCause();
+                if (cause instanceof InterruptedException) {
+                    return;
+                }
+                Log.w(TAG, "Undeliverable exception received", cause);
+            } else {
+                Log.w(TAG, "Unhandled RxJava exception", e);
+            }
+        });
     }
 
     /**

@@ -295,5 +295,7 @@
     <string name="new_note">Новая заметка</string>
     <string name="new_editor">Новый редактор</string>
     <string name="new_descrpt">Нажмите, чтобы узнать больше</string>
+    <string name="help_extended_editor_title">Расширенный редактор</string>
+    <string name="help_extended_editor_descrpt">Получите больше контроля над заметками: заголовки, списки, цитаты, блоки кода и другие инструменты, которые будут добавляться со временем. Можно включить или отключить в настройках.</string>
 
 </resources>

@@ -288,5 +288,7 @@
     <string name="new_note">Nouvelle Note</string>
     <string name="new_editor">Nouvel éditeur</string>
     <string name="new_descrpt">Appuyez pour en savoir plus</string>
+    <string name="help_extended_editor_title">Éditeur Étendu</string>
+    <string name="help_extended_editor_descrpt">Prenez plus de contrôle sur vos notes : titres, listes, citations, blocs de code et autres outils qui seront ajoutés avec le temps. Peut être activé ou désactivé dans les paramètres.</string>
 
 </resources>

@@ -29,7 +29,7 @@ public class HelpActivity extends BaseActivity {
     @Named("NotesItemSpaceDecoration")
     public SpacesItemDecoration itemDecoration;
 
-    private final String actualVersionHelp = "2.2.35";
+    private final String actualVersionHelp = "2.3.39";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -193,6 +193,14 @@ public class HelpActivity extends BaseActivity {
             null,
             R.drawable.ic_notebook,
             null
+        ));
+
+        sections.add(new HelpSection(
+                HelpSection.TYPE_FEATURE,
+                getString(R.string.help_extended_editor_title),
+                getString(R.string.help_extended_editor_descrpt),
+                R.drawable.ic_write,
+                null
         ));
 
         // Автозбереження

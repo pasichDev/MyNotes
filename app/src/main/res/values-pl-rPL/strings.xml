@@ -291,5 +291,7 @@
     <string name="new_note">Nowa Notatka</string>
     <string name="new_editor">Nowy edytor</string>
     <string name="new_descrpt">Dotknij, aby dowiedzieć się więcej</string>
+    <string name="help_extended_editor_title">Rozszerzony Edytor</string>
+    <string name="help_extended_editor_descrpt">Uzyskaj większą kontrolę nad swoimi notatkami: nagłówki, listy, cytaty, bloki kodu i inne narzędzia, które będą dodawane z czasem. Można włączyć lub wyłączyć w ustawieniach.</string>
 
 </resources>

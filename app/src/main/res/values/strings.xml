@@ -324,4 +324,7 @@
     <string name="new_note">New Note</string>
     <string name="new_editor">New editor</string>
     <string name="new_descrpt">Tap to learn more</string>
+
+    <string name="help_extended_editor_title">Extended Editor</string>
+    <string name="help_extended_editor_descrpt">Get more control over your notes: headings, lists, quotes, code blocks, and other tools that will be added over time. Can be enabled or disabled in settings.</string>
 </resources>
