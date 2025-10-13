@@ -3,6 +3,7 @@
 ## [2.2.40] - XX.XX.2025
 
 - Optimized code and improved app stability
+- Added translation support for the advanced editor
 
 ## [2.3.38] - [2.3.39] - 02.10.2025
 

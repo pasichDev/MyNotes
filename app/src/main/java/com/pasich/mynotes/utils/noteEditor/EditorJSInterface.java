@@ -27,7 +27,6 @@ public class EditorJSInterface {
     @SuppressWarnings("unused")
     @JavascriptInterface
     public void onEditorReady() {
-        Log.d(TAG, "Editor.js is ready");
         if (listener != null) listener.onEditorReady();
     }
 

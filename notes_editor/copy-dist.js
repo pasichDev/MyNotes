@@ -28,10 +28,17 @@ const bundleDest = path.join(destDir, 'editor-bundle.min.js')
 fs.copyFileSync(bundleSrc, bundleDest)
 console.log(`✅ Copied bundle: ${bundleDest}`)
 
+// Мінімізований бандл кастомних налаштувань
 const customSrc = path.join(srcDir, 'custom.js')
 const customDest = path.join(destDir, 'custom.min.js')
 fs.copyFileSync(customSrc, customDest)
 console.log(`✅ Copied custom: ${customDest}`)
+
+// Локалізації
+const localesSrc = path.join(srcDir, 'locales.js')
+const localesDest = path.join(destDir, 'locales.js')
+fs.copyFileSync(localesSrc, localesDest)
+console.log(`✅ Copied locales: ${localesDest}`)
 
 // Видаляємо папку dist після копіювання
 fs.rmSync(distDir, { recursive: true, force: true })

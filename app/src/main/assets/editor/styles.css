@@ -180,3 +180,26 @@ body {
 .cdx-list__item {
   margin-top: 5px;
 }
+
+.note-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--on-surface-color, #000000);
+  padding: 0 0 16px 0;
+  margin: 0;
+  outline: none;
+  border: none;
+  min-height: 32px;
+  box-sizing: border-box;
+  width: 100%;
+  background: transparent;
+  caret-color: var(--primary-color, #1976d2);
+  transition: color 0.2s ease, caret-color 0.2s ease;
+}
+
+/* Псевдо-placeholder */
+.note-title:empty::before {
+  content: attr(data-placeholder);
+  color: var(--placeholder-color, #888);
+  pointer-events: none;
+}
