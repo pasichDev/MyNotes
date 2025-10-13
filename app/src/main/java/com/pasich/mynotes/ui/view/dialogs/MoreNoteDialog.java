@@ -142,6 +142,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     @Override
     public void initListeners() {
+        // Перевіряємо що mNote не null
+        if (mNote == null) {
+            return;
+        }
 
         if (activityNote) {
             binding.noSave.setOnClickListener(v -> noteActivity.closeActivityNotSaved());
@@ -174,7 +178,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
 
-        if (mNote.getValue().length() >= 2) {
+        if (mNote.getValue() != null && mNote.getValue().length() >= 2) {
             binding.share.setVisibility(View.VISIBLE);
             binding.share.setOnClickListener(v -> {
                 // Open share options dialog

@@ -32,9 +32,9 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     private Note mNote;
     private boolean exitNoSave = false, newNoteKey;
     private Runnable autoSaveRunnable;
-    private String lastSavedTitle = "";
-    private String lastSavedValue = "";
-    private String lastSavedJsonValue = "";
+    private String lastSavedTitle;
+    private String lastSavedValue;
+    private String lastSavedJsonValue;
 
     // Блокування закриття під час збереження
     private boolean isSavingInProgress = false;
@@ -46,6 +46,12 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public NotePresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
         autoSaveHandler = new Handler(Looper.getMainLooper());
+
+        lastSavedTitle = "";
+        lastSavedValue = "";
+        lastSavedJsonValue = "";
+        shareText = "";
+        tagNote = "";
     }
 
     @Override
@@ -175,6 +181,14 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void closeActivity() {
+        // Додаткова перевірка на null для mNote
+        if (mNote == null) {
+            if (getView() != null) {
+                getView().closeNoteActivity();
+            }
+            return;
+        }
+
         // Перевіряємо, чи є незбережені зміни
         if (hasUnsavedChanges()) {
             if (isSavingInProgress) {
@@ -186,8 +200,11 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
                 pendingClose = true;
 
                 //Якщо ця на нотатка не була змінена та остання редакція в простому редаторі то канцесим її, також якщо це розширений редактор
-                if (!mNote.hasRichContent() && lastSavedJsonValue.isEmpty() && extendedEditor) {
-                    getView().closeNoteActivity();
+                String jsonValue = lastSavedJsonValue != null ? lastSavedJsonValue : "";
+                if (!mNote.hasRichContent() && jsonValue.isEmpty() && extendedEditor) {
+                    if (getView() != null) {
+                        getView().closeNoteActivity();
+                    }
                     return;
                 }
 
@@ -216,7 +233,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         }
 
         return hasValueChanges();
-
     }
 
     /**
@@ -225,13 +241,20 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     private boolean hasValueChanges() {
         if (extendedEditor) {
             Gson gson = new Gson();
-            JsonElement e1 = JsonParser.parseString(gson.toJson(mNote.getValueJson()));
-            JsonElement e2 = JsonParser.parseString(gson.toJson(lastSavedJsonValue));
+            // Перевіряємо на null перед використанням
+            String currentJson = mNote.getValueJson() != null ? mNote.getValueJson() : "";
+            String savedJson = lastSavedJsonValue != null ? lastSavedJsonValue : "";
+            
+            JsonElement e1 = JsonParser.parseString(gson.toJson(currentJson));
+            JsonElement e2 = JsonParser.parseString(gson.toJson(savedJson));
 
             return !e1.equals(e2);
         } else {
-
-            return !mNote.getValue().equals(lastSavedValue);
+            // Перевіряємо на null перед використанням
+            String currentValue = mNote.getValue() != null ? mNote.getValue() : "";
+            String savedValue = lastSavedValue != null ? lastSavedValue : "";
+            
+            return !currentValue.equals(savedValue);
         }
     }
 
