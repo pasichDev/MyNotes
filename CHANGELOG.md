@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [2.2.40] - XX.XX.2025
+## [2.2.40] - 13.10.2025
 
 - Optimized code and improved app stability
 - Added translation support for the advanced editor
