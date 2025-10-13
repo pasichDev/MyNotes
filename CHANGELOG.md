@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [2.2.40] - 13.10.2025
+
+- Optimized code and improved app stability
+- Added translation support for the advanced editor
+
 ## [2.3.38] - [2.3.39] - 02.10.2025
 
 - Added an Extended Notes Editor with formatting options: headings, lists, quotes, and other tools

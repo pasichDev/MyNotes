@@ -1,5 +1,6 @@
 let isReadMode = false
 const titleDiv = document.getElementById('noteTitleInput')
+let currentHeadingName = 'Title'
 
 // --- Функція збереження контенту ---
 function saveContent () {
@@ -8,7 +9,7 @@ function saveContent () {
     .save()
     .then(output => {
       if (window.Android && window.Android.onContentChanged) {
-        const jsonData = JSON.stringify(output.blocks)
+        const jsonData = JSON.stringify(output.blocks) // рядок JSON
         window.Android.onContentChanged(jsonData)
       }
     })
@@ -38,7 +39,7 @@ function loadNote (note) {
     // старі нотатки — вставляємо plainText у перший параграф
     blocks.push({
       type: 'paragraph',
-      data: { text: note.plainText.replace(/\n/g, '<br>') }
+      data: { text: note.plainText.replace(/\n/g, '<br>') } // <-- конвертуємо перенос рядка
     })
   } else if (note.valueJson) {
     note.valueJson.forEach(block => {
@@ -61,7 +62,6 @@ function getNoteData () {
     .catch(err => console.error(err))
 }
 
-// Перемикаємо режим читання
 function toggleReadModeFromAndroid () {
   isReadMode = !isReadMode
   if (editor && editor.readOnly) {
@@ -77,9 +77,10 @@ function toggleReadModeFromAndroid () {
 }
 
 // Показуємо placeholder
-function updateTitlePlaceholder () {
+function updateTitlePlaceholder (headingName = 'Heading') {
+  const text = headingName + '...'
   if (!titleDiv.innerText.trim()) {
-    titleDiv.setAttribute('data-placeholder', 'Title...')
+    titleDiv.setAttribute('data-placeholder', text)
   } else {
     titleDiv.removeAttribute('data-placeholder')
   }
@@ -117,10 +118,24 @@ titleDiv.addEventListener('keydown', e => {
     }
   }
 })
-
 updateTitlePlaceholder()
+
 // --- Глобальні функції для WebView ---
 window.setThemeColors = setThemeColors
 window.loadNote = loadNote
 window.getNoteData = getNoteData
-window.addEventListener('load', initEditor)
+
+window.addEventListener('load', () => {
+  // Беремо локаль з URL ?locale=uk
+  const params = new URLSearchParams(window.location.search)
+  const locale = params.get('locale') || 'en'
+
+  // Передаємо в глобальну конфігурацію
+  window.EditorConfig = { locale }
+  const i18n = getTranslationsForLocale(locale)
+  currentHeadingName = i18n.title_placeholder || 'Title...'
+
+  updateTitlePlaceholder(currentHeadingName)
+  // Ініціалізуємо редактор із цією локаллю
+  initEditor(locale)
+})

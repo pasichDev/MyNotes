@@ -44,6 +44,7 @@ import com.pasich.mynotes.utils.noteEditor.EditorJSInterface;
 import com.pasich.mynotes.utils.noteEditor.EditorJsonUtils;
 import com.pasich.mynotes.utils.noteEditor.SettingsEditorColors;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import javax.inject.Inject;
@@ -186,9 +187,9 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         });
 
 
-        // Load Editor.js HTML
-        binding.richEditor.loadUrl("file:///android_asset/editor/note_editor.html");
-
+        // Load Editor.js HTML, add local
+        String url = "file:///android_asset/editor/note_editor.html?locale=" + Locale.getDefault().getLanguage();
+        binding.richEditor.loadUrl(url);
 
     }
 

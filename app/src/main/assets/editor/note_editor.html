@@ -7,25 +7,13 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div
-      id="noteTitleInput"
-      contenteditable="true"
-      style="
-        font-size: 24px;
-        font-weight: bold;
-        color: var(--on-surface-color, #000000);
-        padding: 0 0 16px 0;
-        margin: 0;
-        outline: none;
-        border: none;
-        min-height: 32px;
-        box-sizing: border-box;
-        width: 100%;
-        background: transparent;
-        caret-color: var(--primary-color, #1976d2);
-      "
-      data-placeholder="Enter title..."
-    ></div>
+    <script>
+      window.EditorConfig = {
+        locale: "en", // default
+      };
+    </script>
+
+    <div id="noteTitleInput" class="note-title" contenteditable="true"></div>
 
     <div class="loading" id="loading">Loading editor...</div>
     <div class="error" id="error" style="display: none">
@@ -34,14 +22,15 @@
     <div id="editorjs" style="display: none"></div>
 
     <script src="js/editor-bundle.min.js"></script>
+    <script src="js/locales.js"></script>
     <script>
       let editor;
       let saveTimeout;
       let isReady = false;
-      function initEditor() {
-        const Paragraph = window.Paragraph;
 
-        class CustomParagraph extends Paragraph {
+      function initEditor(locale = "en") {
+        const i18n = getTranslationsForLocale(locale);
+        class CustomParagraph extends window.Paragraph {
           onKeyDown(event) {
             if (event.key === "Enter") {
               event.preventDefault();
@@ -50,10 +39,10 @@
             }
           }
         }
-
         editor = new EditorJS({
           holder: "editorjs",
-          placeholder: "Start writing your note...",
+          i18n,
+          placeholder: i18n.placeholder,
           readOnly: false,
           autofocus: true,
           tools: {
@@ -67,6 +56,7 @@
             marker: Marker,
             inlineCode: InlineCode,
           },
+
           inlineToolbar: ["bold", "italic", "marker", "inlineCode"],
           data: {
             blocks: [{ type: "paragraph", data: { text: "" } }],
