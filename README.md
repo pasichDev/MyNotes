@@ -1,21 +1,29 @@
 # My Notes
 
-[![Google Play](https://img.shields.io/badge/Google%20Play-Download-blue.svg)](https://play.google.com/store/apps/details?id=com.pasich.mynotes)
+**My Notes** is a simple and convenient app for quickly jotting down notes.  
+Organize ideas, tasks, and important things without distractions.
 
-![src1](/doc/images/Notes.png)
+[![My Notes on Product Hunt](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1027550&theme=light&width=200)](https://www.producthunt.com/products/my-notes-4?utm_source=badge-featured&utm_medium=badge&utm_source=badge-my-notes-204c8f1f-1e34-423b-9817-bb05b82b69e2)
 
-**My Notes** - is a simple and convenient application for storing your notes and important details. Use it to jot down ideas, task lists, memos, and more. The app allows you to quickly create, edit, and delete notes, as well as organize them into categories.
+[![Download on Google Play](https://img.shields.io/badge/Google%20Play-Download-blue?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.pasich.mynotes)
 
 ## Features
 
-- **Simple and intuitive interface**: The app has a user-friendly and easy-to-use interface that allows you to quickly create and organize notes.
-- **Categories**: Categorize your notes to make them more structured and easily searchable.
-- **Search**: Quickly find the note you need with the search function.
-- **Backup and Restore**: Save your notes and data by creating a backup on an external device and restore them when needed.
+- 📥 **Import from Google Keep**
+- 🏷️ **Tags** for sorting and searching notes
+- ✍️ **Advanced editor** (headings, lists, quotes, formatting)
+- 🎨 **Themes and colors** to match your mood
+- 🚫 **No ads** – just your notes
+- 🔒 **Fully offline** – no remote servers or cloud
+- 💻 **Open-source** – transparent and open code
+- 🎯 **Stylish and intuitive design**
+
+My Notes helps you keep track of thoughts, organize your day, and always have important information at hand.
 
 ## Contribution
 
-If you encounter issues, bugs, or have suggestions for improvements, please open a new [Issue](https://github.com/pasichDev/My-Notes/issues) in the project repository.
+If you encounter bugs, issues, or have suggestions for improvements, please open a new [Issue](https://github.com/pasichDev/My-Notes/issues) in the project repository.
 
-## License.
+## License
+
 This project is licensed under the terms of the [Apache License 2.0](./LICENSE).
