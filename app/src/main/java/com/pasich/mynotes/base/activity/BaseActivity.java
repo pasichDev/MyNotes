@@ -151,8 +151,8 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
                 snackbar.setActionTextColor(ContextCompat.getColor(this, R.color.successTextOnColor));
                 break;
             case SnackBarInfo.Error:
-                snackbar.setBackgroundTint(MaterialColors.getColor(this, R.attr.colorError, Color.DKGRAY));
-                snackbar.setActionTextColor(MaterialColors.getColor(this, R.attr.colorOnError, Color.GRAY));
+                snackbar.setBackgroundTint(MaterialColors.getColor(this, com.google.android.material.R.attr.colorErrorContainer, Color.DKGRAY));
+                snackbar.setActionTextColor(MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnError, Color.GRAY));
                 break;
             default:
         }

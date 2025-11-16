@@ -69,7 +69,7 @@ public class SortDialog extends BaseDialogBottomSheets {
         } else {
             sortParam = cache.getSortPref();
             setupNotesView();
-            selectedAutoItem(sortParam);
+           selectedAutoItem(sortParam);
         }
 
         initListeners();
@@ -113,9 +113,9 @@ public class SortDialog extends BaseDialogBottomSheets {
         binding.head.setText(R.string.sortHead);
     }
 
-    private void selectedAutoItem(String param) {
-        int colorBackground = MaterialColors.getColor(requireContext(), R.attr.colorSurfaceVariant, Color.GRAY);
-        int colorText = MaterialColors.getColor(requireContext(), R.attr.colorPrimary, Color.BLACK);
+   private void selectedAutoItem(String param) {
+        int colorBackground = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorSurfaceVariant, Color.GRAY);
+        int colorText = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.BLACK);
 
         binding.DataSortCheck.setVisibility(View.GONE);
         binding.DataReserveCheck.setVisibility(View.GONE);
@@ -146,9 +146,11 @@ public class SortDialog extends BaseDialogBottomSheets {
         }
     }
 
-    private void selectedAutoItemTags(String param) {
-        int colorBackground = MaterialColors.getColor(requireContext(), R.attr.colorSurfaceVariant, Color.GRAY);
-        int colorText = MaterialColors.getColor(requireContext(), R.attr.colorPrimary, Color.BLACK);
+
+
+  private void selectedAutoItemTags(String param) {
+        int colorBackground = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorSurfaceVariant, Color.GRAY);
+        int colorText = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.BLACK);
 
         binding.TagsPositionSortCheck.setVisibility(View.GONE);
         binding.TagsCreationDateSortCheck.setVisibility(View.GONE);
@@ -166,6 +168,8 @@ public class SortDialog extends BaseDialogBottomSheets {
             }
         }
     }
+
+
 
     @Override
     public void initListeners() {

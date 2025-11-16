@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.view.activity;
 
-
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -35,9 +34,8 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     public ActivitySettingsBinding activitySettingsBinding;
     @Inject
     ThemePreferencesCache themePreferencesCache;
-    int targetPage = 0;
     private int themeIdStartActivity;
-    private boolean enableDynamic, themeDynamicStartActivity;
+    private boolean themeDynamicStartActivity;
     private int themeModeStartActivity;
     private SettingsPagerAdapter pagerAdapter;
     private TabLayout tabLayout;
@@ -50,8 +48,7 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         setContentView(activitySettingsBinding.getRoot());
         setupEdgeToEdgeInsets(activitySettingsBinding.getRoot());
         themeIdStartActivity = themePreferencesCache.getThemeId();
-        enableDynamic = themePreferencesCache.isDynamicColorEnabled();
-        themeDynamicStartActivity = enableDynamic;
+        themeDynamicStartActivity = themePreferencesCache.isDynamicColorEnabled();
         themeModeStartActivity = themePreferencesCache.getThemeMode();
         setSupportActionBar(activitySettingsBinding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -176,8 +173,8 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     }
 
     private void applyTabColors() {
-        int colorPrimary = MaterialColors.getColor(this, R.attr.colorPrimary, Color.GRAY);
-        int colorOnSurfaceVariant = MaterialColors.getColor(this, R.attr.colorOnSurfaceVariant, Color.GRAY);
+        int colorPrimary = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
+        int colorOnSurfaceVariant = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
 
         tabLayout.setTabTextColors(colorOnSurfaceVariant, colorPrimary);
         tabLayout.setSelectedTabIndicatorColor(colorPrimary);

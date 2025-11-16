@@ -72,7 +72,7 @@ public class InterfaceSettingsFragment extends Fragment {
         updateAccentCardState(enableDynamic);
 
         // Apply current theme colors
-        applyThemeColors();
+        //     applyThemeColors();
     }
 
     private void initListeners() {
@@ -105,10 +105,10 @@ public class InterfaceSettingsFragment extends Fragment {
     private void applyThemeColors() {
         if (getContext() == null) return;
 
-        int colorPrimary = MaterialColors.getColor(getContext(), R.attr.colorPrimary, Color.GRAY);
-        int colorOnSurface = MaterialColors.getColor(getContext(), R.attr.colorOnSurface, Color.GRAY);
-        int colorOnSurfaceVariant = MaterialColors.getColor(getContext(), R.attr.colorOnSurfaceVariant, Color.GRAY);
-        int colorSurfaceContainer = MaterialColors.getColor(getContext(), R.attr.colorSurfaceContainer, Color.GRAY);
+        int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
+        int colorOnSurface = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurface, Color.GRAY);
+        int colorOnSurfaceVariant = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
+        int colorSurfaceContainer = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorSurfaceContainer, Color.GRAY);
 
         // Dynamic Color Card and Switch
         binding.dynamicColorCard.setCardBackgroundColor(colorSurfaceContainer);
@@ -188,14 +188,14 @@ public class InterfaceSettingsFragment extends Fragment {
                         themeName.setTypeface(themeName.getTypeface(), android.graphics.Typeface.BOLD);
 
                         // Use primary color for selected text
-                        int primaryColor = MaterialColors.getColor(getContext(), R.attr.colorPrimary, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
+                        int primaryColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
                         themeName.setTextColor(primaryColor);
                     } else {
                         selectedIndicator.setVisibility(View.GONE);
                         themeName.setTypeface(themeName.getTypeface(), android.graphics.Typeface.NORMAL);
 
                         // Use default text color
-                        int textColor = MaterialColors.getColor(getContext(), R.attr.colorOnSurface, ContextCompat.getColor(getContext(), android.R.color.black));
+                        int textColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurface, ContextCompat.getColor(getContext(), android.R.color.black));
                         themeName.setTextColor(textColor);
                     }
                 }
@@ -265,7 +265,7 @@ public class InterfaceSettingsFragment extends Fragment {
 
             // Update icon color to match current theme
             if (getContext() != null) {
-                int colorPrimary = MaterialColors.getColor(getContext(), R.attr.colorPrimary, Color.GRAY);
+                int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
                 binding.themeModeIcon.setImageTintList(ColorStateList.valueOf(colorPrimary));
             }
         }
@@ -304,14 +304,14 @@ public class InterfaceSettingsFragment extends Fragment {
                         themeModeName.setTypeface(themeModeName.getTypeface(), android.graphics.Typeface.BOLD);
 
                         // Use primary color for selected text
-                        int primaryColor = MaterialColors.getColor(getContext(), R.attr.colorPrimary, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
+                        int primaryColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
                         themeModeName.setTextColor(primaryColor);
                     } else {
                         selectedIndicator.setVisibility(View.GONE);
                         themeModeName.setTypeface(themeModeName.getTypeface(), android.graphics.Typeface.NORMAL);
 
                         // Use default text color
-                        int textColor = MaterialColors.getColor(getContext(), R.attr.colorOnSurface, ContextCompat.getColor(getContext(), android.R.color.black));
+                        int textColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurface, ContextCompat.getColor(getContext(), android.R.color.black));
                         themeModeName.setTextColor(textColor);
                     }
                 }

@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.color.MaterialColors;
-import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.IndexFilter;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ItemResultBinding;
@@ -76,7 +75,7 @@ public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.Vie
         Note note = getItem(position);
         holder.binding.setNote(note);
 
-        final int colorSpannable = MaterialColors.getColor(holder.itemView.getContext(), R.attr.colorSurfaceVariant, Color.GRAY);
+        final int colorSpannable = MaterialColors.getColor(holder.itemView.getContext(), com.google.android.material.R.attr.colorSurfaceVariant, Color.GRAY);
 
         Spannable titleNote = highlightMatch(note.getTitle(), note.getId(), true, colorSpannable);
         Spannable valueNote = highlightMatch(note.getValue(), note.getId(), false, colorSpannable);

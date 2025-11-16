@@ -16,7 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.color.MaterialColors;
-import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.FragmentInteractionSettingsBinding;
 
@@ -63,10 +62,10 @@ public class InteractionSettingsFragment extends Fragment {
     private void applyThemeColors() {
         if (getContext() == null) return;
         // Apply theme colors to views
-        int colorSurfaceContainer = MaterialColors.getColor(getContext(), R.attr.colorSurfaceContainer, Color.GRAY);
-        int colorOnSurface = MaterialColors.getColor(getContext(), R.attr.colorOnSurface, Color.GRAY);
-        int colorOnSurfaceVariant = MaterialColors.getColor(getContext(), R.attr.colorOnSurfaceVariant, android.graphics.Color.GRAY);
-        int colorPrimary = MaterialColors.getColor(getContext(), R.attr.colorPrimary, Color.GRAY);
+        int colorSurfaceContainer = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorSurfaceContainer, Color.GRAY);
+        int colorOnSurface = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurface, Color.GRAY);
+        int colorOnSurfaceVariant = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurfaceVariant, android.graphics.Color.GRAY);
+        int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
 
 
         // Screen Protection Card and Switch
@@ -82,6 +81,7 @@ public class InteractionSettingsFragment extends Fragment {
         updateSwitchColors(binding.screenProtection, colorPrimary, colorOnSurfaceVariant);
         updateSwitchColors(binding.extendedEditor, colorPrimary, colorOnSurfaceVariant);
     }
+
 
     public void updateThemeColors() {
         applyThemeColors();
