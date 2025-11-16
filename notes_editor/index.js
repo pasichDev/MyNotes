@@ -6,6 +6,7 @@ import Paragraph from '@editorjs/paragraph'
 import Delimiter from '@editorjs/delimiter'
 import Marker from '@editorjs/marker'
 import InlineCode from '@editorjs/inline-code'
+import AttachesTool from '@editorjs/attaches'
 
 // Експортуємо на глобальний об'єкт, щоб підключати у браузері
 window.EditorJS = EditorJS
@@ -15,3 +16,4 @@ window.Paragraph = Paragraph
 window.Delimiter = Delimiter
 window.Marker = Marker
 window.InlineCode = InlineCode
+window.AttachesTool = AttachesTool

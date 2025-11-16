@@ -139,3 +139,62 @@ window.addEventListener('load', () => {
   // Ініціалізуємо редактор із цією локаллю
   initEditor(locale)
 })
+
+// --- Convert File → Base64 ---
+async function fileToBase64 (file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      console.log('fileToBase64: length =', reader.result.length)
+      resolve(reader.result)
+    }
+
+    reader.onerror = err => {
+      console.error('fileToBase64 ERROR:', err)
+      reject(err)
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
+
+// --- Upload to Android (AttachesTool will call this) ---
+async function uploadAttachment (file) {
+  console.log('uploadAttachment: file =', file)
+
+  if (!window.Android || !window.Android.uploadFile) {
+    console.error('uploadAttachment ERROR: window.Android.uploadFile NOT FOUND')
+    return {
+      success: 0,
+      file: null
+    }
+  }
+
+  const base64 = await fileToBase64(file)
+
+  console.log('uploadAttachment: base64 OK, sending to Android...')
+
+  let url = ''
+  try {
+    url = window.Android.uploadFile(base64, file.name)
+  } catch (e) {
+    console.error('uploadAttachment: Android upload FAILED:', e)
+    return { success: 0 }
+  }
+
+  console.log('uploadAttachment: Android returned URL:', url)
+
+  return {
+    success: 1,
+    file: {
+      url: url,
+      name: file.name,
+      size: file.size,
+      extension: file.name.split('.').pop()
+    }
+  }
+}
+
+// --- Export for Editor.js Tools (AttachesTool uses this) ---
+window.uploadAttachment = uploadAttachment

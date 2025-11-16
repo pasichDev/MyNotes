@@ -34,6 +34,8 @@ public class Note {
     @SerializedName("g")
     private boolean hasRichContent;
 
+    @SerializedName("h")
+    private String attachments; // JSON масив файлів
 
     @Ignore
     private boolean Checked;
@@ -129,4 +131,11 @@ public class Note {
         this.hasRichContent = hasRichContent;
     }
 
+    public String getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(String attachments) {
+        this.attachments = attachments;
+    }
 }

@@ -203,3 +203,53 @@ body {
   color: var(--placeholder-color, #888);
   pointer-events: none;
 }
+
+
+/* фон контейнера */
+.cdx-attaches--with-file {
+  background: var(--surface-variant-color, #f0f0f0) !important;
+  border-color: var(--color-gray-border, rgba(201,201,204,0.48)) !important;
+  color: var(--on-surface-color, #000000) !important;
+}
+
+/* hover */
+.cdx-attaches--with-file:hover {
+  background: color-mix(in srgb, var(--primary-color) 12%, var(--surface-variant-color)) !important;
+  border-color: var(--primary-color, #1976d2) !important;
+}
+
+/* файлова іконка */
+.cdx-attaches__file-icon-background {
+  background: var(--primary-color, #1976d2) !important;
+}
+
+/* підпис формату файлу */
+.cdx-attaches__file-icon-label {
+  background: rgba(0,0,0,0.2) !important;
+  color: var(--on-primary-color, #ffffff) !important;
+}
+
+/* назва файлу */
+.cdx-attaches__title {
+  color: var(--on-surface-color, #000000) !important;
+}
+
+/* розмір файлу */
+.cdx-attaches__size {
+  color: var(--on-surface-variant-color, #777777) !important;
+}
+
+/* кнопка скачування */
+.cdx-attaches__download-button {
+  background: var(--surface-color, #ffffff) !important;
+  color: var(--on-surface-color, #000000) !important;
+  border-color: var(--color-gray-border, rgba(201,201,204,0.48)) !important;
+}
+
+/* hover кнопки */
+.cdx-attaches__download-button:hover {
+  background: var(--primary-color, #1976d2) !important;
+  color: var(--on-primary-color, #ffffff) !important;
+  border-color: var(--primary-color, #1976d2) !important;
+}
+

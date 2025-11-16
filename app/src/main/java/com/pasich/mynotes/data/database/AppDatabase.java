@@ -77,6 +77,31 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    /**
+     * Додаємо колонку attachments json до таблиці notes
+     * [
+     *   {
+     *     "url": "file:///data/user/0/.../attachments/file1.pdf",
+     *     "name": "file1.pdf",
+     *     "extension": "pdf",
+     *     "size": 12345
+     *   },
+     *   {
+     *     "url": "file:///data/.../image.png",
+     *     "name": "image.png",
+     *     "extension": "png",
+     *     "size": 88521
+     *   }
+     * ]
+     */
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Додаємо нове поле TEXT NOT NULL DEFAULT ''
+            database.execSQL("ALTER TABLE notes ADD COLUMN attachments TEXT DEFAULT ''");
+        }
+    };
+
     public static void setContext(Context context) {
         appContext = context.getApplicationContext();
     }

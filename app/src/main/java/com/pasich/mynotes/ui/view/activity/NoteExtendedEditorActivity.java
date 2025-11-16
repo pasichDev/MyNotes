@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,6 +17,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -31,6 +34,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
+import com.google.gson.Gson;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
@@ -43,6 +47,7 @@ import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.noteEditor.EditorJSInterface;
 import com.pasich.mynotes.utils.noteEditor.EditorJsonUtils;
 import com.pasich.mynotes.utils.noteEditor.SettingsEditorColors;
+import com.pasich.mynotes.utils.noteEditor.models.ParsedNote;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -108,6 +113,24 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         binding.richEditor.animate().alpha(1f).setDuration(400).setStartDelay(100).start();
     }
 
+    private ValueCallback<Uri[]> fileCallback;
+    private final int FILE_CHOOSER_REQUEST = 2025;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == FILE_CHOOSER_REQUEST) {
+            Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+
+            if (fileCallback != null) {
+                fileCallback.onReceiveValue(result);
+                fileCallback = null;
+            }
+        }
+    }
+
+
     /**
      * Setup WebView with Editor.js
      */
@@ -167,7 +190,7 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
             public void onError(String error) {
                 mainHandler.post(() -> Log.e("NoteActivityBeta", "Editor error: " + error));
             }
-        }, binding.richEditor);
+        }, binding.richEditor, this);
 
 
         binding.richEditor.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
@@ -183,6 +206,33 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
                 Log.e("NoteActivityBeta", "WebView error: " + error.getDescription());
+            }
+        });
+
+        binding.richEditor.setWebChromeClient(new WebChromeClient() {
+
+            @Override
+            public boolean onShowFileChooser(WebView webView,
+                                             ValueCallback<Uri[]> filePathCallback,
+                                             FileChooserParams fileChooserParams) {
+
+                fileCallback = filePathCallback;
+
+                Intent intent;
+                try {
+                    intent = fileChooserParams.createIntent();
+                } catch (Exception e) {
+                    return false;
+                }
+
+                try {
+                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                } catch (Exception e) {
+                    fileCallback = null;
+                    return false;
+                }
+
+                return true;
             }
         });
 
@@ -267,7 +317,9 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
      * Process text changes with enhanced features
      */
     private void processTextChange(String jsonData) {
-        notePresenter.getNote().setValue(EditorJsonUtils.jsonToPlainText(jsonData));
+        final ParsedNote mNote = EditorJsonUtils.extendedNoteToOldNote(jsonData);
+        notePresenter.getNote().setValue(mNote.plainText);
+        notePresenter.getNote().setAttachments(new Gson().toJson(mNote.attachments));
         notePresenter.getNote().setValueJson(jsonData);
         notePresenter.getNote().setHasRichContent(true);
         notePresenter.onTextChanged();
