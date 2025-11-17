@@ -291,5 +291,6 @@
     <string name="new_descrpt">Толығырақ білу үшін басыңыз</string>
     <string name="help_extended_editor_title">Кеңейтілген редактор</string>
     <string name="help_extended_editor_descrpt">Ескертпелеріңізді көбірек бақылау алыңыз: тақырыптар, тізімдер, дәйексөздер, код блоктары және уақыт өте келе қосылатын басқа құралдар. Параметрлерден қосуға немесе өшіруге болады.</string>
+    <string name="countMediaNote">Медиа файлдар: %1$d</string>
 
 </resources>

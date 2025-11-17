@@ -293,5 +293,6 @@
     <string name="new_descrpt">Dotknij, aby dowiedzieć się więcej</string>
     <string name="help_extended_editor_title">Rozszerzony Edytor</string>
     <string name="help_extended_editor_descrpt">Uzyskaj większą kontrolę nad swoimi notatkami: nagłówki, listy, cytaty, bloki kodu i inne narzędzia, które będą dodawane z czasem. Można włączyć lub wyłączyć w ustawieniach.</string>
+    <string name="countMediaNote">Multimedialne: %1$d</string>
 
 </resources>

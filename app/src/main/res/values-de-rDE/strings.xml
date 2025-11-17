@@ -294,5 +294,6 @@
     <string name="new_descrpt">Tippen Sie, um mehr zu erfahren</string>
     <string name="help_extended_editor_title">Erweiterter Editor</string>
     <string name="help_extended_editor_descrpt">Erhalte mehr Kontrolle über deine Notizen: Überschriften, Listen, Zitate, Codeblöcke und weitere Tools, die im Laufe der Zeit hinzugefügt werden. Kann in den Einstellungen ein- oder ausgeschaltet werden.</string>
+    <string name="countMediaNote">Mediendateien: %1$d</string>
 
 </resources>

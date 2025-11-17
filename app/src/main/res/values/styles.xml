@@ -144,6 +144,10 @@
         <item name="android:textStyle">normal</item>
     </style>
 
+    <style name="chipMediaItemNote" parent="chipTagItemNote">
+        <item name="chipBackgroundColor">?attr/colorSurfaceContainerLow</item>
+    </style>
+
 
     <style name="chipTagDialog" parent="@style/Widget.Material3.Chip.Filter">
         <item name="chipCornerRadius">@dimen/defaultCornerChip</item>

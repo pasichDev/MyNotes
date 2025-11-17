@@ -295,5 +295,6 @@
     <string name="new_descrpt">Toca para saber más</string>
     <string name="help_extended_editor_title">Editor Extendido</string>
     <string name="help_extended_editor_descrpt">Obtén más control sobre tus notas: encabezados, listas, citas, bloques de código y otras herramientas que se agregarán con el tiempo. Se puede activar o desactivar en la configuración.</string>
+    <string name="countMediaNote">Multimedia: %1$d</string>
 
 </resources>

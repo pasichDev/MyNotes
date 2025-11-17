@@ -292,5 +292,6 @@
     <string name="new_descrpt">Націсніце, каб даведацца больш</string>
     <string name="help_extended_editor_title">Пашыраны рэдактар</string>
     <string name="help_extended_editor_descrpt">Атрымайце больш кантролю над нататкамі: загалоўкі, спісы, цытаты, блокі кода і іншыя інструменты, якія будуць дадавацца з цягам часу. Можна ўключыць або выключыць у наладах.</string>
+    <string name="countMediaNote">Медыяфайлы: %1$d</string>
 
 </resources>
