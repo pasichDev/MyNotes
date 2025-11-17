@@ -13,3 +13,4 @@ local.properties
 ## Changelog.md
 app/src/main/res/raw/*
 !app/src/main/res/raw/keep.xml
+app/secret.properties
