@@ -7,6 +7,7 @@ import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -74,14 +75,20 @@ public class AttachmentSecureStorage {
 
             String ext = "";
             int dot = originalName.lastIndexOf('.');
-            if (dot != -1) ext = originalName.substring(dot);
+            if (dot != -1) {
+                ext = originalName.substring(dot);
+            }
 
-            String baseName = originalName.replace(ext, "").replace(" ", "_");
+            byte[] tsBytes = String.valueOf(System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8);
+            byte[] combined = new byte[raw.length + tsBytes.length];
 
-            long ts = System.currentTimeMillis();
-            String md5 = md5(raw);
+            System.arraycopy(raw, 0, combined, 0, raw.length);
+            System.arraycopy(tsBytes, 0, combined, raw.length, tsBytes.length);
 
-            String finalName = baseName + "_" + ts + "_" + md5 + ext + ".enc";
+            String hash = md5(combined);
+
+
+            String finalName = hash + ext + ".enc";
 
             File out = new File(noteFolder, finalName);
 
@@ -90,6 +97,7 @@ public class AttachmentSecureStorage {
             try (FileOutputStream fos = new FileOutputStream(out)) {
                 fos.write(encData);
             }
+
             return out;
 
         } catch (Exception e) {
@@ -97,6 +105,7 @@ public class AttachmentSecureStorage {
             return null;
         }
     }
+
 
     public byte[] loadDecrypted(File file) {
         try {
