@@ -94,8 +94,4 @@ For a release build:
 ## License
 
 This project is licensed under the terms of the [Apache License 2.0](./LICENSE).
-```
-***
-Would you like this version exported as a ready-to-use `README.md` file?
-```
 
