@@ -10,7 +10,10 @@
 local.properties
 .vscode
 
+# Ignore app secret config
+app/secret.properties
+
+
 ## Changelog.md
 app/src/main/res/raw/*
 !app/src/main/res/raw/keep.xml
-app/secret.properties

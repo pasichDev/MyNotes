@@ -5,6 +5,7 @@ import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
 import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -21,6 +22,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -47,8 +49,13 @@ import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.noteEditor.EditorJSInterface;
 import com.pasich.mynotes.utils.noteEditor.EditorJsonUtils;
 import com.pasich.mynotes.utils.noteEditor.SettingsEditorColors;
+import com.pasich.mynotes.utils.noteEditor.attach.AttachmentSecureStorage;
+import com.pasich.mynotes.utils.noteEditor.attach.AttachmentsConst;
 import com.pasich.mynotes.utils.noteEditor.models.ParsedNote;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -59,17 +66,16 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class NoteExtendedEditorActivity extends BaseActivity implements NoteContract.view {
 
+    private final int FILE_CHOOSER_REQUEST = 2025;
     public ActivityNoteExtendedEditorBinding binding;
     @Inject
     public NoteContract.presenter notePresenter;
-
     // Menu for the save status indicator
     private MenuItem saveStatusMenuItem;
-
     private EditorJSInterface editorInterface;
     private Handler mainHandler;
-
     private boolean isReadMode = false;
+    private ValueCallback<Uri[]> fileCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -113,8 +119,6 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         binding.richEditor.animate().alpha(1f).setDuration(400).setStartDelay(100).start();
     }
 
-    private ValueCallback<Uri[]> fileCallback;
-    private final int FILE_CHOOSER_REQUEST = 2025;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -190,10 +194,13 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
             public void onError(String error) {
                 mainHandler.post(() -> Log.e("NoteActivityBeta", "Editor error: " + error));
             }
+
+            @Override
+            public int getNoteId() {
+                return notePresenter.getNote().getId();
+            }
         }, binding.richEditor, this);
 
-
-        binding.richEditor.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
 
         // Setup WebView client
         binding.richEditor.setWebViewClient(new WebViewClient() {
@@ -207,14 +214,38 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
                 super.onReceivedError(view, request, error);
                 Log.e("NoteActivityBeta", "WebView error: " + error.getDescription());
             }
-        });
 
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
+
+                String url = req.getUrl().toString();
+
+                if (url.startsWith("scheme://" + AttachmentsConst.ATTACH_DIR + "/")) {
+
+                    // scheme://attachment/note_12/file_enc123.png.enc
+                    List<String> segments = req.getUrl().getPathSegments();
+
+                    String noteFolder = segments.get(0);  // note_12
+                    String fileName = segments.get(1);    // abc_123_md5.png.enc
+
+                    File file = new File(getFilesDir(), AttachmentsConst.ATTACH_DIR + "/" + noteFolder + "/" + fileName);
+
+                    AttachmentSecureStorage storage = new AttachmentSecureStorage(getApplicationContext());
+
+                    byte[] raw = storage.loadDecrypted(file);
+                    if (raw == null) return null;
+
+                    return new WebResourceResponse("application/octet-stream", "binary", new ByteArrayInputStream(raw));
+                }
+
+                return super.shouldInterceptRequest(view, req);
+            }
+
+        });
         binding.richEditor.setWebChromeClient(new WebChromeClient() {
 
             @Override
-            public boolean onShowFileChooser(WebView webView,
-                                             ValueCallback<Uri[]> filePathCallback,
-                                             FileChooserParams fileChooserParams) {
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 
                 fileCallback = filePathCallback;
 
@@ -222,12 +253,14 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
                 try {
                     intent = fileChooserParams.createIntent();
                 } catch (Exception e) {
+                    fileCallback = null;
                     return false;
                 }
 
                 try {
+
                     startActivityForResult(intent, FILE_CHOOSER_REQUEST);
-                } catch (Exception e) {
+                } catch (ActivityNotFoundException e) {
                     fileCallback = null;
                     return false;
                 }
@@ -236,6 +269,8 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
             }
         });
 
+
+        binding.richEditor.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
 
         // Load Editor.js HTML, add local
         String url = "file:///android_asset/editor/note_editor.html?locale=" + Locale.getDefault().getLanguage();

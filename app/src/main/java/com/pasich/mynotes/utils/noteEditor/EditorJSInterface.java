@@ -1,6 +1,5 @@
 package com.pasich.mynotes.utils.noteEditor;
 
-import static com.preference.provider.PreferenceProvider.context;
 
 import android.content.Context;
 import android.util.Base64;
@@ -9,14 +8,11 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import com.pasich.mynotes.data.model.Note;
-import com.preference.provider.PreferenceProvider;
+import com.pasich.mynotes.utils.noteEditor.attach.AttachmentSecureStorage;
 
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -77,7 +73,6 @@ public class EditorJSInterface {
 
     public void loadNoteToEditor(Note note) {
         if (webView == null || note == null) return;
-        Log.d(TAG, "JS Command: " + note.hasRichContent());
         try {
             JSONObject json = new JSONObject();
             json.put("title", note.getTitle());
@@ -98,10 +93,8 @@ public class EditorJSInterface {
 
             json.put("plainTextFallback", isPlainTextFallback);
 
-
             String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
 
-            Log.d(TAG, "JS Command: " + jsCommand);
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
         } catch (Exception e) {
             Log.e(TAG, "Failed to load note: " + e.getMessage(), e);
@@ -110,84 +103,38 @@ public class EditorJSInterface {
 
     @SuppressWarnings("unused")
     @JavascriptInterface
-    public String uploadFile(String base64, String fileName) {
-        Log.d(TAG, "uploadFile(): start");
+    public String uploadFile(String base64, String originalName) {
 
-        if (base64 == null || base64.isEmpty()) {
-            Log.e(TAG, "uploadFile(): base64 is NULL or empty");
-            return "";
-        }
+        int noteId = listener.getNoteId();
 
-        if (fileName == null || fileName.trim().isEmpty()) {
-            Log.w(TAG, "uploadFile(): fileName is empty, generating fallback name");
-            fileName = "file_" + System.currentTimeMillis();
-        }
+        AttachmentSecureStorage storage = new AttachmentSecureStorage(appContext);
 
-        try {
-            // 1) Очистити префікс
-            int commaIndex = base64.indexOf(",");
-            if (commaIndex != -1) {
-                base64 = base64.substring(commaIndex + 1);
-            } else {
-                Log.w(TAG, "uploadFile(): no comma found in base64, using original string");
-            }
+        int idx = base64.indexOf(",");
+        if (idx != -1) base64 = base64.substring(idx + 1);
 
-            // 2) Декодуємо
-            byte[] data;
-            try {
-                data = Base64.decode(base64, Base64.DEFAULT);
-            } catch (Exception e) {
-                Log.e(TAG, "uploadFile(): FAILED TO DECODE BASE64", e);
-                return "";
-            }
+        byte[] raw = Base64.decode(base64, Base64.DEFAULT);
 
-            if (data.length == 0) {
-                Log.e(TAG, "uploadFile(): decoded byte array is EMPTY");
-                return "";
-            }
+        File saved = storage.saveEncrypted(noteId, originalName, raw);
 
-            // 3) Створюємо директорію attachments
-            File dir = new File(appContext.getFilesDir(), "attachments");
-            if (!dir.exists()) {
-                boolean created = dir.mkdirs();
-                Log.d(TAG, "uploadFile(): create dir " + created + " → " + dir.getAbsolutePath());
-            }
+        if (saved == null) return "";
 
-            // 4) Уникаємо колізій імен
-            File file = new File(dir, fileName);
-            if (file.exists()) {
-                String name = fileName;
-                String ext = "";
-                int dotIndex = fileName.lastIndexOf(".");
-                if (dotIndex != -1) {
-                    name = fileName.substring(0, dotIndex);
-                    ext = fileName.substring(dotIndex);
-                }
-                file = new File(dir, name + "_" + System.currentTimeMillis() + ext);
-                Log.w(TAG, "uploadFile(): filename collision → using " + file.getName());
-            }
-
-            // 5) Записуємо файл
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                fos.write(data);
-                fos.flush();
-            }
-
-            Log.d(TAG, "uploadFile(): file saved → " + file.getAbsolutePath() +
-                    " (" + data.length + " bytes)");
-
-            // 6) Повертаємо URL
-            String url = "file://" + file.getAbsolutePath();
-            Log.d(TAG, "uploadFile(): return URL " + url);
-
-            return url;
-
-        } catch (Exception e) {
-            Log.e(TAG, "uploadFile(): ERROR", e);
-            return "";
-        }
+        return "scheme://attachment/" + "note_" + noteId + "/" + saved.getName();
     }
 
+
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public String getFile(String name) {
+        AttachmentSecureStorage storage = new AttachmentSecureStorage(appContext);
+
+        File file = new File(appContext.getFilesDir() + "/attachments_secure/" + name);
+
+        byte[] raw = storage.loadDecrypted(file);
+
+        if (raw == null) return "";
+
+        return Base64.encodeToString(raw, Base64.NO_WRAP);
+    }
 
 
     public interface EditorListener {
@@ -198,6 +145,8 @@ public class EditorJSInterface {
         void onTitleChanged(String tile);
 
         void onError(String error);
+
+        int getNoteId();
     }
 
 
