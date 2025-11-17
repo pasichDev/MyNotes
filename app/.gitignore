@@ -2,4 +2,4 @@
 /libs
 /release
 /sampledata
-/secret.properties
+**/secret.properties
