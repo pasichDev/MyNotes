@@ -1,89 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>My Notes - Editor</title>
-    <link rel="stylesheet" href="./styles.css"/>
-</head>
-<body>
-<script>
-    window.EditorConfig = {
-      locale: "en", // default
-    };
-</script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <script>
+      window.EditorConfig = {
+        locale: "en", // default
+      };
+    </script>
 
-<div id="noteTitleInput" class="note-title" contenteditable="true"></div>
+    <div id="noteTitleInput" class="note-title" contenteditable="true"></div>
 
-<div class="loading" id="loading">Loading editor...</div>
-<div class="error" id="error" style="display: none">
-    Editor failed to load.
-</div>
-<div id="editorjs" style="display: none"></div>
+    <div class="loading" id="loading">Loading editor...</div>
+    <div class="error" id="error" style="display: none">
+      Editor failed to load.
+    </div>
+    <div id="editorjs" style="display: none"></div>
 
-<script src="js/editor-bundle.min.js"></script>
-<script src="js/locales.js"></script>
-<script>
-    let editor;
-    let saveTimeout;
-    let isReady = false;
+    <script src="js/editor-bundle.min.js"></script>
+    <script src="js/locales.js"></script>
+    <script>
+      let editor;
+      let saveTimeout;
+      let isReady = false;
 
-    function initEditor(locale = "en") {
-      const i18n = getTranslationsForLocale(locale);
-      class CustomParagraph extends window.Paragraph {
-        onKeyDown(event) {
-          if (event.key === "Enter") {
-            event.preventDefault();
-          } else {
-            super.onKeyDown(event);
+      function initEditor(locale = "en") {
+        const i18n = getTranslationsForLocale(locale);
+        class CustomParagraph extends window.Paragraph {
+          onKeyDown(event) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+            } else {
+              super.onKeyDown(event);
+            }
           }
         }
-      }
-      editor = new EditorJS({
-        holder: "editorjs",
-        i18n,
-        placeholder: i18n.placeholder,
-        readOnly: false,
-        autofocus: true,
-        tools: {
-          paragraph: {
-            class: CustomParagraph,
-            inlineToolbar: true,
+        editor = new EditorJS({
+          holder: "editorjs",
+          i18n,
+          placeholder: i18n.placeholder,
+          readOnly: false,
+          autofocus: true,
+          tools: {
+            paragraph: {
+              class: CustomParagraph,
+              inlineToolbar: true,
+            },
+            list: List,
+            Headers: Header,
+            delimiter: Delimiter,
+            marker: Marker,
+            inlineCode: InlineCode,
+            attaches: {
+              class: AttachesTool,
+              config: {
+                uploader: {
+                  uploadByFile: async (file) =>
+                    await window.uploadAttachment(file),
+                },
+
+                openFile: async (fileData) => {
+                  if (window.Android) {
+                    window.Android.openAttachment(JSON.stringify(fileData));
+                  }
+                },
+              },
+            },
           },
-          list: List,
-          Headers: Header,
-          delimiter: Delimiter,
-          marker: Marker,
-          inlineCode: InlineCode,
-attaches: {
-class: AttachesTool,
-config: {
-  uploader: {
-    uploadByFile: async (file) => {
-      return await window.uploadAttachment(file)
-    }
-  }
-}
-},},
-        inlineToolbar: ["bold", "italic", "marker", "inlineCode"],
-        data: {
-          blocks: [{ type: "paragraph", data: { text: "" } }],
-        },
-        onChange: () => {
-          if (isReady) {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveContent, 100);
-          }
-        },
-        onReady: () => {
-          isReady = true;
-          document.getElementById("loading").style.display = "none";
-          document.getElementById("editorjs").style.display = "block";
-          if (window.Android) window.Android.onEditorReady();
-        },
-      });
-    }
-</script>
-<script src="js/custom.min.js"></script>
-</body>
+          inlineToolbar: ["bold", "italic", "marker", "inlineCode"],
+          data: {
+            blocks: [{ type: "paragraph", data: { text: "" } }],
+          },
+          onChange: () => {
+            if (isReady) {
+              clearTimeout(saveTimeout);
+              saveTimeout = setTimeout(saveContent, 100);
+            }
+          },
+          onReady: () => {
+            isReady = true;
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("editorjs").style.display = "block";
+            if (window.Android) window.Android.onEditorReady();
+          },
+        });
+      }
+    </script>
+    <script src="js/attaches.umd.js"></script>
+    <script src="js/custom.min.js"></script>
+  </body>
 </html>

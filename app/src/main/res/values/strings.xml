@@ -328,4 +328,9 @@
     <string name="help_extended_editor_title">Extended Editor</string>
     <string name="help_extended_editor_descrpt">Get more control over your notes: headings, lists, quotes, code blocks, and other tools that will be added over time. Can be enabled or disabled in settings.</string>
     <string name="countMediaNote">Media files: %1$d </string>
+
+    <string name="openWith">Open with..</string>
+    <string name="saveDevice">Save to device</string>
+    <string name="savedDownloads">Saved to Downloads</string>
+    <string name="savedFailed">Save failed</string>
 </resources>

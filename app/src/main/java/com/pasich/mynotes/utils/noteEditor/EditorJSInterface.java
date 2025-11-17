@@ -9,7 +9,9 @@ import android.webkit.WebView;
 
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.utils.noteEditor.attach.AttachmentSecureStorage;
+import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -18,16 +20,14 @@ import java.util.Map;
 /**
  * JavaScript Interface for Editor.js communication
  */
-public class EditorJSInterface {
+public record EditorJSInterface(EditorListener listener, WebView webView, Context appContext) {
     public static final String nameInterface = "Android";
     private static final String TAG = "EditorJSInterface";
-    private final EditorListener listener;
-    private final WebView webView;
-    private final Context appContext;
-    public EditorJSInterface(EditorListener listener, WebView webView, Context context) {
+
+    public EditorJSInterface(EditorListener listener, WebView webView, Context appContext) {
         this.listener = listener;
         this.webView = webView;
-        this.appContext = context.getApplicationContext();
+        this.appContext = appContext.getApplicationContext();
     }
 
     @SuppressWarnings("unused")
@@ -85,10 +85,10 @@ public class EditorJSInterface {
                 json.put("plainText", note.getValue() != null ? note.getValue() : "");
             } else if (note.getValueJson() != null && !note.getValueJson().isEmpty()) {
                 // оптимізована нотатка → передаємо valueJson
-                json.put("valueJson", new org.json.JSONArray(note.getValueJson()));
+                json.put("valueJson", new JSONArray(note.getValueJson()));
             } else {
                 // зовсім порожня нотатка
-                json.put("valueJson", new org.json.JSONArray());
+                json.put("valueJson", new JSONArray());
             }
 
             json.put("plainTextFallback", isPlainTextFallback);
@@ -107,33 +107,24 @@ public class EditorJSInterface {
 
         int noteId = listener.getNoteId();
 
-        AttachmentSecureStorage storage = new AttachmentSecureStorage(appContext);
+        AttachmentSecureStorage storage = new AttachmentSecureStorage();
 
         int idx = base64.indexOf(",");
         if (idx != -1) base64 = base64.substring(idx + 1);
 
         byte[] raw = Base64.decode(base64, Base64.DEFAULT);
 
-        File saved = storage.saveEncrypted(noteId, originalName, raw);
+        File saved = storage.saveEncrypted(appContext, noteId, originalName, raw);
 
         if (saved == null) return "";
 
         return "scheme://attachment/" + "note_" + noteId + "/" + saved.getName();
     }
 
-
     @SuppressWarnings("unused")
     @JavascriptInterface
-    public String getFile(String name) {
-        AttachmentSecureStorage storage = new AttachmentSecureStorage(appContext);
-
-        File file = new File(appContext.getFilesDir() + "/attachments_secure/" + name);
-
-        byte[] raw = storage.loadDecrypted(file);
-
-        if (raw == null) return "";
-
-        return Base64.encodeToString(raw, Base64.NO_WRAP);
+    public void openAttachment(String json) {
+        listener.openFile(EditorAttachment.parseSingleAttachment(json));
     }
 
 
@@ -145,6 +136,8 @@ public class EditorJSInterface {
         void onTitleChanged(String tile);
 
         void onError(String error);
+
+        void openFile(EditorAttachment attachment);
 
         int getNoteId();
     }

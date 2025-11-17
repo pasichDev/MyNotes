@@ -40,6 +40,12 @@ const localesDest = path.join(destDir, 'locales.js')
 fs.copyFileSync(localesSrc, localesDest)
 console.log(`✅ Copied locales: ${localesDest}`)
 
+// Custom Attaches
+const attachesSrc = path.join(srcDir, 'attaches.umd.js')
+const attachesDest = path.join(destDir, 'attaches.umd.js')
+fs.copyFileSync(attachesSrc, attachesDest)
+console.log(`✅ Copied attaches: ${attachesDest}`)
+
 // Видаляємо папку dist після копіювання
 fs.rmSync(distDir, { recursive: true, force: true })
 console.log(`🗑️ Removed dist folder: ${distDir}`)

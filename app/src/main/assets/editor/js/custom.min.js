@@ -120,10 +120,6 @@ titleDiv.addEventListener('keydown', e => {
 })
 updateTitlePlaceholder()
 
-// --- Глобальні функції для WebView ---
-window.setThemeColors = setThemeColors
-window.loadNote = loadNote
-window.getNoteData = getNoteData
 
 window.addEventListener('load', () => {
   // Беремо локаль з URL ?locale=uk
@@ -195,6 +191,11 @@ async function uploadAttachment (file) {
     }
   }
 }
+
+// --- Глобальні функції для WebView ---
+window.setThemeColors = setThemeColors
+window.loadNote = loadNote
+window.getNoteData = getNoteData
 
 // --- Export for Editor.js Tools (AttachesTool uses this) ---
 window.uploadAttachment = uploadAttachment

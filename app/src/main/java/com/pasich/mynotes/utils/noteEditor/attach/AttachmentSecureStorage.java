@@ -3,31 +3,39 @@ package com.pasich.mynotes.utils.noteEditor.attach;
 import android.content.Context;
 import android.util.Log;
 
+import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 public class AttachmentSecureStorage {
 
     private static final String TAG = "AttachmentSecureStorage";
-    private final File baseDir;
+
     private final byte[] key;
 
-    public AttachmentSecureStorage(Context ctx) {
-        this.baseDir = new File(ctx.getFilesDir(), AttachmentsConst.ATTACH_DIR);
-        if (!baseDir.exists() && !baseDir.mkdirs()) {
-            Log.e(TAG, "Failed to create base attach dir");
-        }
+    public AttachmentSecureStorage() {
         key = SecureKeyProvider.getKey();
     }
 
-    private File getNoteFolder(int noteId) {
-        File dir = new File(baseDir, "note_" + noteId);
+    private File getBaseDir(Context ctx) {
+        File dir = new File(ctx.getFilesDir(), AttachmentsConst.ATTACH_DIR);
+        if (!dir.exists() && !dir.mkdirs()) {
+            Log.e(TAG, "Failed to create base attach dir");
+        }
+        return dir;
+    }
+
+    private File getNoteFolder(Context ctx, int noteId) {
+        File dir = new File(getBaseDir(ctx), "note_" + noteId);
         if (!dir.exists() && !dir.mkdirs()) {
             Log.e(TAG, "Failed to create note folder!");
         }
@@ -60,9 +68,9 @@ public class AttachmentSecureStorage {
         return c.doFinal(enc);
     }
 
-    public File saveEncrypted(int noteId, String originalName, byte[] raw) {
+    public File saveEncrypted(Context ctx, int noteId, String originalName, byte[] raw) {
         try {
-            File noteFolder = getNoteFolder(noteId);
+            File noteFolder = getNoteFolder(ctx, noteId);
 
             String ext = "";
             int dot = originalName.lastIndexOf('.');
@@ -82,8 +90,6 @@ public class AttachmentSecureStorage {
             try (FileOutputStream fos = new FileOutputStream(out)) {
                 fos.write(encData);
             }
-
-            Log.d(TAG, "Saved encrypted: " + out.getAbsolutePath());
             return out;
 
         } catch (Exception e) {
@@ -103,11 +109,72 @@ public class AttachmentSecureStorage {
         }
     }
 
+    public static File decryptTemp(Context ctx, EditorAttachment att) {
+        try {
+            AttachmentSecureStorage storage = new AttachmentSecureStorage();
+
+            File encrypted = resolveFilePath(ctx, att);
+            if (encrypted == null) return null;
+
+            byte[] raw = storage.loadDecrypted(encrypted);
+            if (raw == null) return null;
+
+            File tempDir = new File(ctx.getCacheDir(), AttachmentsConst.ATTACH_TEMP);
+            if (!tempDir.exists()) tempDir.mkdirs();
+
+            String clean = encrypted.getName().replace(".enc", "");
+            File out = new File(tempDir, clean);
+
+            try (FileOutputStream fos = new FileOutputStream(out)) {
+                fos.write(raw);
+            }
+
+            return out;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static File resolveFilePath(Context ctx, EditorAttachment att) {
+        try {
+            var uri = android.net.Uri.parse(att.url);
+            List<String> seg = uri.getPathSegments();
+
+            if (seg.size() < 2) return null;
+
+            String folder = seg.get(0);
+            String name = seg.get(1);
+
+            File base = new File(ctx.getFilesDir(), AttachmentsConst.ATTACH_DIR);
+            File noteFolder = new File(base, folder);
+
+            return new File(noteFolder, name);
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    public static void cleanupTempAttachments(Context ctx) {
+        File tempDir = new File(ctx.getCacheDir(), AttachmentsConst.ATTACH_TEMP);
+
+        if (tempDir.exists() && tempDir.isDirectory()) {
+            File[] files = tempDir.listFiles();
+            if (files != null) {
+                for (File f : files) f.delete();
+            }
+        }
+    }
+
     private static String md5(byte[] data) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             return bytesToHex(md.digest(data));
-        } catch (Exception ignored) { return "md5"; }
+        } catch (Exception ignored) {
+            return "md5";
+        }
     }
 
     private static String bytesToHex(byte[] b) {

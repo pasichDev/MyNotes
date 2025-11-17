@@ -79,6 +79,7 @@ public class EditorJsonUtils {
             appendListItem(items.getJSONObject(j), plainText, "", style, j + 1);
         }
     }
+
     private static void handleAttachBlock(JSONObject data, ParsedNote result) {
         try {
             JSONObject fileObj = data.optJSONObject("file");

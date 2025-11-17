@@ -22,7 +22,6 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -43,19 +42,16 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
+import com.pasich.mynotes.ui.view.dialogs.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.noteEditor.EditorJSInterface;
 import com.pasich.mynotes.utils.noteEditor.EditorJsonUtils;
 import com.pasich.mynotes.utils.noteEditor.SettingsEditorColors;
-import com.pasich.mynotes.utils.noteEditor.attach.AttachmentSecureStorage;
-import com.pasich.mynotes.utils.noteEditor.attach.AttachmentsConst;
+import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
 import com.pasich.mynotes.utils.noteEditor.models.ParsedNote;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -196,6 +192,14 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
             }
 
             @Override
+            public void openFile(EditorAttachment attachment) {
+                runOnUiThread(() -> {
+                    AttachmentActionsDialog.show(NoteExtendedEditorActivity.this, attachment);
+                });
+            }
+
+
+            @Override
             public int getNoteId() {
                 return notePresenter.getNote().getId();
             }
@@ -214,33 +218,6 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
                 super.onReceivedError(view, request, error);
                 Log.e("NoteActivityBeta", "WebView error: " + error.getDescription());
             }
-
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
-
-                String url = req.getUrl().toString();
-
-                if (url.startsWith("scheme://" + AttachmentsConst.ATTACH_DIR + "/")) {
-
-                    // scheme://attachment/note_12/file_enc123.png.enc
-                    List<String> segments = req.getUrl().getPathSegments();
-
-                    String noteFolder = segments.get(0);  // note_12
-                    String fileName = segments.get(1);    // abc_123_md5.png.enc
-
-                    File file = new File(getFilesDir(), AttachmentsConst.ATTACH_DIR + "/" + noteFolder + "/" + fileName);
-
-                    AttachmentSecureStorage storage = new AttachmentSecureStorage(getApplicationContext());
-
-                    byte[] raw = storage.loadDecrypted(file);
-                    if (raw == null) return null;
-
-                    return new WebResourceResponse("application/octet-stream", "binary", new ByteArrayInputStream(raw));
-                }
-
-                return super.shouldInterceptRequest(view, req);
-            }
-
         });
         binding.richEditor.setWebChromeClient(new WebChromeClient() {
 
@@ -256,9 +233,7 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
                     fileCallback = null;
                     return false;
                 }
-
                 try {
-
                     startActivityForResult(intent, FILE_CHOOSER_REQUEST);
                 } catch (ActivityNotFoundException e) {
                     fileCallback = null;
@@ -313,7 +288,6 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
 
 
     }
-
 
     @Override
     public void initParam() {

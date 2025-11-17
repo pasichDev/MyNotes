@@ -1,6 +1,5 @@
 package com.pasich.mynotes.utils.databinding;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -29,9 +28,6 @@ public class NoteBindingAdapters {
     @BindingAdapter("noteMediaCount")
     public static void setNoteMediaCount(TextView textView, Note note) {
         int countMedia = ParsedNote.parseAttachmentsJson(note.getAttachments()).size();
-        Log.e("s", note.getAttachments());
-        Log.e("s", String.valueOf(countMedia));
-
         if (countMedia > 0) {
             textView.setText(
                     textView.getContext().getString(R.string.countMediaNote, countMedia)
