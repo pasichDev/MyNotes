@@ -1,11 +1,16 @@
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Емуляція __dirname в ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Папка з бандлом
-const distDir = path.join(__dirname, 'dist')
-const srcDir = path.join(__dirname, 'src')
+const distDir = path.join(__dirname, 'dist');
+const srcDir = path.join(__dirname, 'src');
 
-// Кінцева папка (Assets в Android проекті)
+// Кінцева папка (Assets в Android)
 const destDir = path.join(
   __dirname,
   '..',
@@ -15,38 +20,45 @@ const destDir = path.join(
   'assets',
   'editor',
   'js'
-)
+);
 
 // Створюємо директорію, якщо нема
 if (!fs.existsSync(destDir)) {
-  fs.mkdirSync(destDir, { recursive: true })
+  fs.mkdirSync(destDir, { recursive: true });
 }
 
-// Мінімізований бандл
-const bundleSrc = path.join(distDir, 'editor-bundle.min.js')
-const bundleDest = path.join(destDir, 'editor-bundle.min.js')
-fs.copyFileSync(bundleSrc, bundleDest)
-console.log(`✅ Copied bundle: ${bundleDest}`)
+// Копіювання файлів
+const copy = (src, dest, label) => {
+  fs.copyFileSync(src, dest);
+  console.log(`✅ Copied ${label}: ${dest}`);
+};
 
-// Мінімізований бандл кастомних налаштувань
-const customSrc = path.join(srcDir, 'custom.js')
-const customDest = path.join(destDir, 'custom.min.js')
-fs.copyFileSync(customSrc, customDest)
-console.log(`✅ Copied custom: ${customDest}`)
+// Мінімізований бандл
+copy(
+  path.join(distDir, 'editor-bundle.min.js'),
+  path.join(destDir, 'editor-bundle.min.js'),
+  'bundle'
+);
+
+// Кастомні налаштування
+copy(
+  path.join(srcDir, 'custom.js'),
+  path.join(destDir, 'custom.min.js'),
+  'custom'
+);
 
 // Локалізації
-const localesSrc = path.join(srcDir, 'locales.js')
-const localesDest = path.join(destDir, 'locales.js')
-fs.copyFileSync(localesSrc, localesDest)
-console.log(`✅ Copied locales: ${localesDest}`)
+copy(
+  path.join(srcDir, 'locales.js'),
+  path.join(destDir, 'locales.js'),
+  'locales'
+);
 
-// Custom Attaches
-const attachesSrc = path.join(srcDir, 'attaches.umd.js')
-const attachesDest = path.join(destDir, 'attaches.umd.js')
-fs.copyFileSync(attachesSrc, attachesDest)
-console.log(`✅ Copied attaches: ${attachesDest}`)
+// Custom Attaches (тимчасово закоментовано як у тебе)
+console.log(`⚠️ Attaches skipped: ${path.join(destDir, 'attaches.umd.js')}`);
 
-// Видаляємо папку dist після копіювання
-fs.rmSync(distDir, { recursive: true, force: true })
-console.log(`🗑️ Removed dist folder: ${distDir}`)
-console.log('🎉 Build process completed!')
+// Видаляємо dist
+fs.rmSync(distDir, { recursive: true, force: true });
+console.log(`🗑️ Removed dist folder: ${distDir}`);
+
+console.log('🎉 Build process completed!');

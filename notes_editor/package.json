@@ -1,12 +1,13 @@
 {
   "name": "notes_editor",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "rollup -c && node copy-dist.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "pasichDev",
   "license": "ISC",
   "dependencies": {
     "@editorjs/delimiter": "^1.4.2",
