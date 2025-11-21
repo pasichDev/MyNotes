@@ -12,6 +12,8 @@ import com.google.gson.JsonParser;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.extendedEditor.models.ParsedNote;
+import com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
@@ -505,5 +507,23 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     @Override
     public void setExtendedEditor(boolean extendedEditor) {
         this.extendedEditor = extendedEditor;
+    }
+
+
+    @Override
+    public void extendedTitleChange(String title) {
+        getNote().setTitle(title);
+        getNote().setHasRichContent(true);
+        onTextChanged();
+    }
+
+    @Override
+    public void extendedNoteChange(String jsonData) {
+        final ParsedNote mNote = EditorJsonUtils.extendedNoteToOldNote(jsonData);
+        getNote().setValue(mNote.plainText);
+        getNote().setAttachments(new Gson().toJson(mNote.attachments));
+        getNote().setValueJson(jsonData);
+        getNote().setHasRichContent(true);
+        onTextChanged();
     }
 }

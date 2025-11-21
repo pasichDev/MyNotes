@@ -96,11 +96,11 @@
             android:name=".ui.view.activity.TagsActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.view.activity.NoteActivity"
+            android:name=".ui.view.activity.noteEditor.NoteActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ui.view.activity.NoteExtendedEditorActivity"
+            android:name=".ui.view.activity.noteEditor.NoteExtendedEditorActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity

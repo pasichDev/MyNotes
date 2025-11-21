@@ -25,7 +25,7 @@ public interface NoteContract {
         void loadingNote(Note note);
 
         void editIdNoteCreated(long idNote);
-        
+
         void updateSaveStatus(SaveState saveState);
     }
 
@@ -67,16 +67,23 @@ public interface NoteContract {
         void setNewNoteKey(boolean newNoteKey);
 
         int getTypeFace(String textStyle);
-        
+
         void onTextChanged();
+
         boolean getExtendedEditor();
 
         void setExtendedEditor(boolean extendedEditor);
 
+        void extendedTitleChange(String title);
+
+        void extendedNoteChange(String jsonData);
+
+
     }
-    
+
     interface AutoSaveCallback {
         void onSuccess();
+
         void onError(Throwable error);
     }
 }

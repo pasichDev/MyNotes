@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import com.pasich.mynotes.R;
+import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;

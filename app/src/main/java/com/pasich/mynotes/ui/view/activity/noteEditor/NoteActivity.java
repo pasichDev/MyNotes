@@ -1,111 +1,96 @@
-package com.pasich.mynotes.ui.view.activity;
+package com.pasich.mynotes.ui.view.activity.noteEditor;
 
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
-import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Color;
-import android.os.Bundle;
 import android.text.Editable;
 import android.text.Layout;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 
-import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.core.widget.NestedScrollView;
 
-import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
-import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.base.simplifications.TextWatcher;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteBinding;
-import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
-import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
 import com.pasich.mynotes.utils.CustomLinkMovementMethod;
-import com.pasich.mynotes.utils.enums.SaveState;
-
-import java.util.Date;
-import java.util.Objects;
-
-import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class NoteActivity extends BaseActivity implements NoteContract.view {
+public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
-    public ActivityNoteBinding binding;
-    @Inject
-    public NoteContract.presenter notePresenter;
 
-    // Меню для індикатора стану збереження
-    private MenuItem saveStatusMenuItem;
-
-    // Змінна для відстеження останньої позиції курсора
+    // Tracks last known cursor position
     private int lastCursorPosition = -1;
 
+    // Tracks scroll progress when adjusting view
     private int scrollProgress = -1;
 
-    // Змінна для збереження позиції скролу при роботі з клавіатурою
+    // Saves scroll position when keyboard opens/closes
     private int savedScrollPosition = -1;
 
-    // Змінні для точного відстеження стану клавіатури
+    // Tracks current keyboard visibility state
     private boolean isKeyboardVisible = false;
+
+    // Tracks last cursor line in multiline input
     private int lastCursorLine = -1;
 
+    @Override
+    protected void onNewNoteInit(Note note) {
+        // Simple version
+    }
+    @Override
+    protected void setNewNoteTitle() {
+        binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
+    }
+    @Override
+    protected int getMenuResId() {
+        return R.menu.menu_activity_toolbar_note;
+    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        selectTheme();
-        settingsStatusBar(getWindow());
-        long idNote = getIntent().getLongExtra("idNote", 0);
-        binding = ActivityNoteBinding.inflate(getLayoutInflater());
-        binding.noteLayout.setTransitionName(String.valueOf(idNote));
+    protected Toolbar getToolbar() {
+        return binding.toolbar;
+    }
 
-        setEnterSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
-        getWindow().setSharedElementEnterTransition(buildContainerTransform(binding.noteLayout));
-        getWindow().setSharedElementReturnTransition(buildContainerTransform(binding.noteLayout));
+    @Override
+    protected Intent getCopyNoteIntent(long idNote) {
+        return new Intent(this, NoteActivity.class)
+                .putExtra("NewNote", false)
+                .putExtra("idNote", idNote)
+                .putExtra("shareText", "")
+                .putExtra("tagNote", "");
+    }
 
-        super.onCreate(savedInstanceState);
-        setContentView(binding.getRoot());
+    @Override
+    protected ActivityNoteBinding inflateBinding(LayoutInflater inflater) {
+        return ActivityNoteBinding.inflate(inflater);
+    }
 
-        setupEdgeToEdgeInsetsWithKeyboard(binding.getRoot());
+    @Override
+    protected void bindingSetPresenter(ActivityNoteBinding binding) {
         binding.setPresenter((NotePresenter) notePresenter);
-        notePresenter.attachView(this);
-        notePresenter.getLoadIntentData(getIntent());
-        notePresenter.viewIsReady();
+    }
 
+    @Override
+    protected void onAfterPresenterReady() {
         setupAppBarScrollListener();
-
-        // Handle back button press with OnBackPressedDispatcher
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                notePresenter.closeActivity();
-            }
-        });
-
-
     }
 
 
     /**
-     * Прокручує до позиції курсора в полі вводу
+     * Scrolls the view to keep the cursor visible when the keyboard is open.
      */
     private void scrollToCursor() {
         if (!binding.valueNote.isFocused()) return;
@@ -156,28 +141,23 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
 
     /**
-     * Налаштовує слухач скролінгу для AppBar
+     * Sets up a scroll listener for AppBar
      */
     private void setupAppBarScrollListener() {
         binding.scrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-            // Отримуємо позицію заголовка нотатки відносно scrollView
+
             int titleTop = binding.notesTitle.getTop();
 
-            // Простіша логіка: якщо прокрутили більше ніж висота заголовка
             boolean shouldShowCollapsed = scrollY > titleTop;
 
             if (shouldShowCollapsed) {
-                // Показуємо згорнутий вигляд
                 if (binding.centerContent.getVisibility() == View.VISIBLE) {
                     binding.centerContent.setVisibility(View.GONE);
                     binding.endContent.setVisibility(View.VISIBLE);
                     binding.scrollProgressIndicator.setVisibility(View.VISIBLE);
                 }
-
-                // Оновлюємо прогрес скролу
                 updateScrollProgress(scrollY);
             } else {
-                // Показуємо розгорнутий вигляд
                 if (binding.centerContent.getVisibility() == View.GONE) {
                     binding.centerContent.setVisibility(View.VISIBLE);
                     binding.endContent.setVisibility(View.GONE);
@@ -188,18 +168,16 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     }
 
     /**
-     * Оновлює індикатор прогресу скролу
+     * Updates the scroll progress indicator
      */
     private void updateScrollProgress(int scrollY) {
-        // Отримуємо загальну висоту контенту для скролу
         View child = binding.scrollView.getChildAt(0);
         if (child != null) {
             int totalScrollableHeight = child.getHeight() - binding.scrollView.getHeight();
 
             if (totalScrollableHeight > 0) {
-                // Розраховуємо прогрес у відсотках (0-100)
                 int progress = (int) ((float) scrollY / totalScrollableHeight * 100);
-                progress = Math.max(0, Math.min(100, progress)); // Обмежуємо 0-100
+                progress = Math.max(0, Math.min(100, progress));
                 scrollProgress = progress;
                 binding.scrollProgressIndicator.setProgress(progress);
             }
@@ -208,69 +186,57 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
 
     /**
-     * Налаштовує відступи з урахуванням клавіатури для NoteActivity
+     * Handles system indents and keyboard appearance/disappearance:
+     * - correctly sets top inset for root layout
+     * - raises FAB above the navbar
+     * - adapts the bottom margin of ScrollView to the keyboard or system navbar
+     * - saves and restores the scroll position when opening/closing the keyboard
+     * - automatically scrolls to the cursor when the keyboard appears
      */
-    private void setupEdgeToEdgeInsetsWithKeyboard(View rootView) {
+    @Override
+    protected void applyEdgeToEdgeInsets(View rootView) {
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
 
             Insets navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
 
-            // Оновлюємо марджін FAB
             CoordinatorLayout.LayoutParams fab = (CoordinatorLayout.LayoutParams) binding.editActive.getLayoutParams();
             fab.setMargins(fab.leftMargin, fab.topMargin, fab.rightMargin, 25 + navBarInsets.bottom  // додаємо висоту нижньої панелі
             );
             binding.editActive.setLayoutParams(fab);
 
-            // Отримуємо відступи для системних барів
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            // Отримуємо відступи для клавіатури (IME)
             Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
 
-            // Точно визначаємо стан клавіатури
             boolean keyboardWasVisible = isKeyboardVisible;
             boolean keyboardWillBeVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
 
-            // Обробляємо зміну стану клавіатури
             if (!keyboardWasVisible && keyboardWillBeVisible) {
-                // Клавіатура тільки з'являється - зберігаємо поточну позицію
                 savedScrollPosition = binding.scrollView.getScrollY();
             }
 
-            // Оновлюємо стан
             isKeyboardVisible = keyboardWillBeVisible;
 
-            // Встановлюємо padding зверху для системних барів тільки для кореневого view
             v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), 0);
 
-            // Встановлюємо нижній margin для scrollView з урахуванням клавіатури
             int bottomMargin = Math.max(imeInsets.bottom, systemBars.bottom);
 
-            // Отримуємо LayoutParams для scrollView (він в LinearLayout)
             android.widget.LinearLayout.LayoutParams params = (android.widget.LinearLayout.LayoutParams) binding.scrollView.getLayoutParams();
 
-            // При ховані клавіатури - спочатку встановлюємо правильну позицію скролу
             if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
-                // Встановлюємо позицію ДО зміни розміру
                 binding.scrollView.scrollTo(0, savedScrollPosition);
             }
 
-            // Встановлюємо нижній margin
             params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, bottomMargin);
             binding.scrollView.setLayoutParams(params);
 
-            // Встановлюємо додатковий padding для scrollView
             binding.scrollView.setPadding(binding.scrollView.getPaddingLeft(), binding.scrollView.getPaddingTop(), binding.scrollView.getPaddingRight(), getResources().getDimensionPixelSize(R.dimen.scroll_view_bottom_margin));
 
-            // Обробляємо появу клавіатури
             if (!keyboardWasVisible && keyboardWillBeVisible && binding.valueNote.isFocused()) {
-                // Клавіатура з'являється - прокручуємо до курсора
                 lastCursorPosition = -1;
                 binding.valueNote.postDelayed(this::scrollToCursor, 200);
             }
-            // Додаткове закріплення позиції після ховання клавіатури
             else if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
-                // Ще раз встановлюємо позицію ПІСЛЯ зміни розміру
                 binding.scrollView.post(() -> {
                     if (Math.abs(binding.scrollView.getScrollY() - savedScrollPosition) > 5) {
                         binding.scrollView.scrollTo(0, savedScrollPosition);
@@ -278,87 +244,29 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                 });
             }
 
-
             return insets;
         });
     }
 
 
-    private void settingsStatusBar(Window window) {
-        // Декор під edge-to-edge
-        WindowCompat.setDecorFitsSystemWindows(window, false);
-
-        // Контролюємо колір іконок статусбару залежно від нічного режиму
-        final int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
-        insetsController.setAppearanceLightStatusBars(currentNightMode == Configuration.UI_MODE_NIGHT_NO);
-
-        // Прозорий статусбар
-        window.setStatusBarColor(Color.TRANSPARENT);
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Auto-save is now handled through TextWatcher and NotePresenter
-    }
 
     @Override
     public void onStop() {
         super.onStop();
-        // КРИТИЧНО: Екстрене збереження при зупинці Activity
+        // CRITICAL: Emergency saving when stopping Activity
         if (notePresenter != null && notePresenter.getNote() != null) {
             String currentTitle = binding != null ? binding.notesTitle.getText().toString() : "";
             String currentValue = binding != null ? binding.valueNote.getText().toString() : "";
 
-            // Оновлюємо дані в моделі
             notePresenter.getNote().setTitle(currentTitle);
             notePresenter.getNote().setValue(currentValue);
             notePresenter.getNote().setValueJson("");
             notePresenter.getNote().setHasRichContent(false);
 
-            // Якщо є незбережені зміни - робимо екстрене збереження
+            // If there are unsaved changes, perform an emergency save.
             ((NotePresenter) notePresenter).performEmergencySaveIfNeeded();
         }
     }
-
-    @Override
-    public void initParam() {
-
-    }
-
-    @Override
-    public void initTypeActivity() {
-
-        long id = notePresenter.getIdKey();
-
-        if (id > 0) {
-            notePresenter.loadingData(id);
-            return;
-        }
-
-        // Якщо ID немає — fallback для старих сценаріїв (не критично)
-        if (notePresenter.getNewNotesKey()) {
-
-            if (notePresenter.getTagNote().length() >= 2) {
-                changeTag(notePresenter.getTagNote(), false);
-            }
-
-            binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
-
-            if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5) {
-                activatedActivity();
-            }
-
-        }
-    }
-
 
     @Override
     public void initListeners() {
@@ -369,11 +277,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
                     binding.notesTitle.setText(s.toString().replace('\n', ' ').trim());
                     binding.valueNote.requestFocus();
                 }
-                // Оновлюємо заголовок у згорнутому вигляді
                 String title = s.toString().trim();
                 binding.titleToolbarCollapsed.setText(!title.isEmpty() ? title : getString(R.string.noteTitle));
 
-                // Викликаємо автозбереження при зміні заголовка
                 if (notePresenter != null && notePresenter.getNote() != null) {
                     notePresenter.getNote().setTitle(title);
                     notePresenter.getNote().setHasRichContent(false);
@@ -385,7 +291,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         binding.valueNote.addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
-                // Викликаємо автозбереження при зміні тексту
                 if (notePresenter != null && notePresenter.getNote() != null) {
                     notePresenter.getNote().setValue(s.toString());
                     notePresenter.getNote().setValueJson("");
@@ -395,7 +300,7 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             }
         });
 
-        // Додаємо обробник кліку для поля вводу - тільки для обробки переміщення курсора
+        // Add a click handler for the input field - only for cursor movement processing
         binding.valueNote.setOnClickListener(v -> {
             if (binding.valueNote.isFocused() && scrollProgress < 95) {
                 binding.valueNote.postDelayed(this::scrollToCursor, 50);
@@ -411,14 +316,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
 
     @Override
-    public void settingsActionBar() {
-        setSupportActionBar(binding.toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-    }
-
-
-    @Override
     public void activatedActivity() {
         binding.setActivateEdit(true);
         binding.valueNote.setEnabled(true);
@@ -430,7 +327,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
         if (notePresenter.getNewNotesKey()) {
             ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInputFromWindow(binding.valueNote.getApplicationWindowToken(), InputMethodManager.SHOW_IMPLICIT, 0);
-            // Прокручуємо до курсора після показу клавіатури для нової нотатки
             lastCursorPosition = -1;
             binding.valueNote.postDelayed(this::scrollToCursor, 300);
 
@@ -446,75 +342,8 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
 
     @Override
-    public void onRestart() {
-        super.onRestart();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity_toolbar_note, menu);
-        saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
-        return true;
-    }
-
-    @Override
-    public void updateSaveStatus(SaveState saveState) {
-        if (saveStatusMenuItem == null) return;
-
-        switch (saveState) {
-            case IDLE:
-                saveStatusMenuItem.setVisible(false);
-                break;
-
-            case PENDING:
-                saveStatusMenuItem.setVisible(true);
-                saveStatusMenuItem.setIcon(R.drawable.ic_save_pending);
-                saveStatusMenuItem.setTitle(getString(R.string.saveStatusPending));
-                break;
-
-            case SAVING:
-                saveStatusMenuItem.setVisible(true);
-                saveStatusMenuItem.setIcon(R.drawable.ic_save_saving_animated);
-                saveStatusMenuItem.setTitle(getString(R.string.saveStatusSaving));
-                break;
-
-            case SAVED:
-                saveStatusMenuItem.setVisible(true);
-                saveStatusMenuItem.setIcon(R.drawable.ic_save_success);
-                saveStatusMenuItem.setTitle(getString(R.string.saveStatusSaved));
-                break;
-
-            case ERROR:
-                saveStatusMenuItem.setVisible(true);
-                saveStatusMenuItem.setIcon(R.drawable.ic_save_error);
-                saveStatusMenuItem.setTitle(getString(R.string.saveStatusError));
-                break;
-        }
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            notePresenter.closeActivity();
-
-        }
-        if (item.getItemId() == R.id.moreBut) {
-            new MoreNoteDialog(notePresenter.getNewNotesKey() ? new Note().create(binding.notesTitle.getText().toString(), binding.valueNote.getText().toString(), new Date().getTime()) : notePresenter.getNote(), notePresenter.getNewNotesKey(), true, 0).show(getSupportFragmentManager(), "MoreNote");
-
-        }
-
-
-        return true;
-    }
-
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
-        if (notePresenter != null) {
-            ((NotePresenter) notePresenter).cleanupHandlers();
-            notePresenter.detachView();
-        }
-
         if (binding != null) {
             binding.notesTitle.addTextChangedListener(null);
             binding.titleToolbarTagCenter.setOnClickListener(null);
@@ -532,7 +361,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void loadingNote(Note note) {
         if (note == null) {
-            Log.e("NoteActivity", "Note not found for id=" + notePresenter.getIdKey());
             finish();
             return;
         }
@@ -540,13 +368,10 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         String title = note.getTitle();
         String value = note.getValue();
 
-        // Безпечне встановлення заголовка
         binding.notesTitle.setText(title != null && !title.isEmpty() ? title : "");
 
-        // Безпечне встановлення тексту
         binding.valueNote.setText(value != null ? value : "");
 
-        // Обробка кліків по лінках
         binding.valueNote.setMovementMethod(new CustomLinkMovementMethod() {
             @Override
             protected void onClickLink(String link, int type) {
@@ -594,12 +419,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     }
 
     @Override
-    public void closeActivityNotSaved() {
-        notePresenter.setExitNoSave(true);
-        finish();
-    }
-
-    @Override
     public void changeTag(String nameTag, boolean change) {
         if (change) {
             notePresenter.getNote().setTag(nameTag);
@@ -607,10 +426,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         }
         if (!nameTag.isEmpty()) {
             String tagText = getString(R.string.tagHastag, nameTag);
-            // Оновлюємо центровані елементи
             binding.titleToolbarTagCenter.setText(tagText);
             binding.titleToolbarTagCenter.setVisibility(View.VISIBLE);
-            // Оновлюємо згорнуті елементи
+
             binding.titleToolbarTagCollapsed.setText(tagText);
             binding.titleToolbarTagCollapsed.setVisibility(View.VISIBLE);
         } else {
@@ -618,13 +436,6 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
             binding.titleToolbarTagCollapsed.setVisibility(View.GONE);
         }
     }
-
-    @Override
-    public void openCopyNote(long idNote) {
-        finish();
-        startActivity(new Intent(NoteActivity.this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""));
-    }
-
 
     @Override
     public void changeTextStyle() {
@@ -642,4 +453,9 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         changeTextSizeOnline(notePresenter.getDataManager().getSizeTextNoteActivity());
     }
 
+    @Override
+    public void openCopyNote(long idNote) {
+        super.openCopyNote(idNote);
+        finish();
+    }
 }

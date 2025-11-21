@@ -55,6 +55,8 @@ import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
+import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
+import com.pasich.mynotes.ui.view.activity.noteEditor.NoteExtendedEditorActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
