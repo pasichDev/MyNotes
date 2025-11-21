@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.noteEditor;
+package com.pasich.mynotes.extendedEditor.utils;
 
 
 import android.content.Context;
@@ -9,9 +9,9 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.utils.noteEditor.attach.AttachmentSecureStorage;
-import com.pasich.mynotes.utils.noteEditor.attach.AttachmentsConst;
-import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentSecureStorage;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentsConst;
+import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

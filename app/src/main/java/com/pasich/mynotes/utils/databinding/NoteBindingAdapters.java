@@ -8,7 +8,7 @@ import androidx.databinding.BindingAdapter;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.utils.FormattedDataUtil;
-import com.pasich.mynotes.utils.noteEditor.models.ParsedNote;
+import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 
 public class NoteBindingAdapters {
 

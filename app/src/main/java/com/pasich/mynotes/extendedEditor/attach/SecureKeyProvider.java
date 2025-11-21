@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.noteEditor.attach;
+package com.pasich.mynotes.extendedEditor.attach;
 
 import android.util.Log;
 import com.pasich.mynotes.BuildConfig;

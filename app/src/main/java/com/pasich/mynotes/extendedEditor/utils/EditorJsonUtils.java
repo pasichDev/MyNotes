@@ -1,9 +1,9 @@
-package com.pasich.mynotes.utils.noteEditor;
+package com.pasich.mynotes.extendedEditor.utils;
 
 import android.util.Log;
 
-import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
-import com.pasich.mynotes.utils.noteEditor.models.ParsedNote;
+import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 
 import org.json.JSONArray;
 import org.json.JSONException;

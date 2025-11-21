@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.noteEditor.models;
+package com.pasich.mynotes.extendedEditor.models;
 
 import android.util.Log;
 

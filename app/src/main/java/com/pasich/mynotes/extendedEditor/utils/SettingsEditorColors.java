@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.noteEditor;
+package com.pasich.mynotes.extendedEditor.utils;
 
 import android.content.Context;
 import android.util.TypedValue;

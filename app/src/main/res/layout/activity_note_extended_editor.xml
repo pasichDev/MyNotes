@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="presenter"
             type="com.pasich.mynotes.ui.presenter.NotePresenter" />
-        
+
         <variable
             name="activateEdit"
             type="boolean" />
@@ -32,6 +32,7 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorSurfaceContainerLow"
                 app:layout_scrollFlags="scroll|enterAlways|snap">
+
                 <LinearLayout
                     android:id="@+id/endContent"
                     android:layout_width="match_parent"
@@ -81,32 +82,11 @@
             android:orientation="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <!-- Rich Editor Container -->
-            <FrameLayout
+            <!-- Extended Editor Container -->
+            <com.pasich.mynotes.extendedEditor.NoteEditorView
+                android:id="@+id/noteEditor"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                tools:ignore="UselessParent">
-
-                <!-- Лоадер -->
-                <ProgressBar
-                    android:id="@+id/editorLoader"
-                    style="?android:attr/progressBarStyleLarge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:indeterminateTint="?attr/colorPrimary" />
-
-                <!-- WebView for Editor.js -->
-                <WebView
-                    android:id="@+id/richEditor"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone"
-                    android:paddingBottom="10dp"
-                    android:background="?attr/colorSurfaceContainerLow" />
-            </FrameLayout>
-
+                android:layout_height="match_parent" />
 
         </LinearLayout>
 

@@ -6,7 +6,7 @@
     <data>
         <variable
             name="attachment"
-            type="com.pasich.mynotes.utils.noteEditor.models.EditorAttachment" />
+            type="com.pasich.mynotes.extendedEditor.models.EditorAttachment" />
     </data>
 
 <LinearLayout

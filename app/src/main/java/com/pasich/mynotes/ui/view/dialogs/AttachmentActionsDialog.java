@@ -13,8 +13,8 @@ import androidx.core.content.FileProvider;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.BottomSheetAttachmentBinding;
-import com.pasich.mynotes.utils.noteEditor.attach.AttachmentSecureStorage;
-import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentSecureStorage;
+import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -89,6 +89,7 @@ public class AttachmentActionsDialog {
             values.put(MediaStore.Downloads.MIME_TYPE, mime);
             values.put(MediaStore.Downloads.IS_PENDING, 1);
 
+            // TODO
             Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             ContentResolver resolver = ctx.getContentResolver();
 

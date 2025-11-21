@@ -4,27 +4,17 @@ import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
 import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
-import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -40,19 +30,15 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
+import com.pasich.mynotes.extendedEditor.models.ParsedNote;
+import com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.enums.SaveState;
-import com.pasich.mynotes.utils.noteEditor.EditorJSInterface;
-import com.pasich.mynotes.utils.noteEditor.EditorJsonUtils;
-import com.pasich.mynotes.utils.noteEditor.SettingsEditorColors;
-import com.pasich.mynotes.utils.noteEditor.models.EditorAttachment;
-import com.pasich.mynotes.utils.noteEditor.models.ParsedNote;
 
-import java.util.Locale;
 import java.util.Objects;
 
 import javax.inject.Inject;
@@ -62,14 +48,11 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class NoteExtendedEditorActivity extends BaseActivity implements NoteContract.view {
 
-    private final int FILE_CHOOSER_REQUEST = 2025;
     public ActivityNoteExtendedEditorBinding binding;
     @Inject
     public NoteContract.presenter notePresenter;
     // Menu for the save status indicator
     private MenuItem saveStatusMenuItem;
-    private EditorJSInterface editorInterface;
-    private Handler mainHandler;
     private boolean isReadMode = false;
     private ValueCallback<Uri[]> fileCallback;
 
@@ -80,7 +63,6 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         long idNote = getIntent().getLongExtra("idNote", 0);
 
         binding = ActivityNoteExtendedEditorBinding.inflate(getLayoutInflater());
-        mainHandler = new Handler(Looper.getMainLooper());
         binding.noteLayout.setTransitionName(idNote == 0 ? NameTransition.fabTransaction : String.valueOf(idNote));
         setEnterSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
         getWindow().setSharedElementEnterTransition(buildContainerTransform(binding.noteLayout));
@@ -96,7 +78,17 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         notePresenter.viewIsReady();
         notePresenter.setExtendedEditor(true);
 
-        setupRichEditor();
+
+        binding.noteEditor.setOnTitleChangedListener(this::processTitleChange);
+        binding.noteEditor.setOnContentChangedListener(this::processTextChange);
+        binding.noteEditor.setOnAttachmentClickListener(att -> {
+            AttachmentActionsDialog.show(this, att);
+        });
+        binding.noteEditor.setOnFileChooserListener(this::startActivityForResult);
+
+        //   binding.noteEditor.setInitialNoteJson(notePresenter.getNote());
+        //   binding.noteEditor.load();
+
 
         // Handle back button press with OnBackPressedDispatcher
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
@@ -107,151 +99,15 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         });
     }
 
-
-    void showEditor() {
-        binding.editorLoader.animate().alpha(0f).setDuration(300).withEndAction(() -> binding.editorLoader.setVisibility(View.GONE)).start();
-        binding.richEditor.setAlpha(0f);
-        binding.richEditor.setVisibility(View.VISIBLE);
-        binding.richEditor.animate().alpha(1f).setDuration(400).setStartDelay(100).start();
-    }
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == FILE_CHOOSER_REQUEST) {
-            Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
-
-            if (fileCallback != null) {
-                fileCallback.onReceiveValue(result);
-                fileCallback = null;
-            }
+        if (requestCode == 2025) {
+            binding.noteEditor.onFileChooserResult(resultCode, data);
         }
     }
 
-
-    /**
-     * Setup WebView with Editor.js
-     */
-    @SuppressLint("SetJavaScriptEnabled")
-    private void setupRichEditor() {
-        // Resize WebView
-        binding.richEditor.post(() -> {
-            binding.richEditor.getLayoutParams().height = ((View) binding.richEditor.getParent()).getHeight() - findViewById(R.id.toolbar).getHeight() - 16;
-            binding.richEditor.requestLayout();
-        });
-
-        // Configure WebView settings
-        WebSettings webSettings = binding.richEditor.getSettings();
-        webSettings.setAllowFileAccess(true);
-        webSettings.setAllowContentAccess(true);
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-
-        // Clean scroll
-        binding.richEditor.setVerticalScrollBarEnabled(false);
-        binding.richEditor.setHorizontalScrollBarEnabled(false);
-        binding.richEditor.setOverScrollMode(View.OVER_SCROLL_NEVER);
-
-
-        // Setup JavaScript interface
-        editorInterface = new EditorJSInterface(new EditorJSInterface.EditorListener() {
-            @Override
-            public void onEditorReady() {
-                mainHandler.post(() -> {
-                    editorInterface.setThemeColors(new SettingsEditorColors().getThemeColors(NoteExtendedEditorActivity.this));
-                    if (!notePresenter.getNewNotesKey()) {
-                        editorInterface.loadNoteToEditor(notePresenter.getNote());
-                    }
-                    showEditor();
-                });
-            }
-
-            @Override
-            public void onContentChanged(String jsonData) {
-                mainHandler.post(() -> {
-                    // Update note with both formats
-                    if (notePresenter != null && notePresenter.getNote() != null) {
-                        processTextChange(jsonData);
-                    }
-                });
-            }
-
-            @Override
-            public void onTitleChanged(String title) {
-                if (notePresenter != null && notePresenter.getNote() != null) {
-                    processTitleChange(title);
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                mainHandler.post(() -> Log.e("NoteActivityBeta", "Editor error: " + error));
-            }
-
-            @Override
-            public void openFile(EditorAttachment attachment) {
-                runOnUiThread(() -> {
-                    AttachmentActionsDialog.show(NoteExtendedEditorActivity.this, attachment);
-                });
-            }
-
-
-            @Override
-            public int getNoteId() {
-                return notePresenter.getNote().getId();
-            }
-        }, binding.richEditor, this);
-
-
-        // Setup WebView client
-        binding.richEditor.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-            }
-
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-                Log.e("NoteActivityBeta", "WebView error: " + error.getDescription());
-            }
-        });
-        binding.richEditor.setWebChromeClient(new WebChromeClient() {
-
-            @Override
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-
-                fileCallback = filePathCallback;
-
-                Intent intent;
-                try {
-                    intent = fileChooserParams.createIntent();
-                } catch (Exception e) {
-                    fileCallback = null;
-                    return false;
-                }
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
-                } catch (ActivityNotFoundException e) {
-                    fileCallback = null;
-                    return false;
-                }
-
-                return true;
-            }
-        });
-
-
-        binding.richEditor.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
-
-        // Load Editor.js HTML, add local
-        String url = "file:///android_asset/editor/note_editor.html?locale=" + Locale.getDefault().getLanguage();
-        binding.richEditor.loadUrl(url);
-
-    }
 
     /**
      * Налаштовує відступи з урахуванням клавіатури для NoteActivity
@@ -297,14 +153,19 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
     @Override
     public void initTypeActivity() {
         if (notePresenter.getNewNotesKey()) {
-            if (notePresenter.getTagNote().length() >= 2)
+            if (notePresenter.getTagNote().length() >= 2) {
                 changeTag(notePresenter.getTagNote(), false);
+            }
 
             binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
-            if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5)
+            if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5) {
                 activatedActivity();
+            }
+
+            binding.noteEditor.load(null);
         } else if (notePresenter.getIdKey() >= 1) {
             notePresenter.loadingData(notePresenter.getIdKey());
+            binding.noteEditor.load(notePresenter.getNote());
         }
     }
 
@@ -372,7 +233,7 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
 
         if (item.getItemId() == R.id.actionRead) {
             isReadMode = !isReadMode;
-            runOnUiThread(() -> binding.richEditor.evaluateJavascript("toggleReadModeFromAndroid();", null));
+            binding.noteEditor.actionRead();
             item.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
             return true;
         }
@@ -420,9 +281,7 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
     public void onDestroy() {
         super.onDestroy();
         // Clear WebView resources
-        binding.richEditor.removeJavascriptInterface("Android");
-        binding.richEditor.loadUrl("about:blank");
-        binding.richEditor.destroy();
+
 
         if (notePresenter != null) {
             ((NotePresenter) notePresenter).cleanupHandlers();
@@ -431,11 +290,6 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
 
         if (binding != null) {
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
-        }
-
-        // Clear handlers
-        if (mainHandler != null) {
-            mainHandler.removeCallbacksAndMessages(null);
         }
 
     }
