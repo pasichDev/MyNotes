@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -18,8 +20,8 @@ import android.widget.FrameLayout;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
 
 import java.util.Locale;
@@ -32,7 +34,10 @@ public class NoteEditorView extends FrameLayout {
     private Handler handler;
 
     private Note note;
+    private Note pendingNote;
+    private boolean editorIsReady = false;
 
+    private boolean htmlLoaded = false;
     private OnTitleChangedListener titleListener;
     private OnContentChangedListener contentListener;
     private OnAttachmentClickListener attachmentListener;
@@ -51,8 +56,20 @@ public class NoteEditorView extends FrameLayout {
         loader = findViewById(R.id.editorLoader);
         handler = new Handler(Looper.getMainLooper());
 
-
         setupWebView();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        if (!htmlLoaded) {
+            htmlLoaded = true;
+            webView.loadUrl(
+                    "file:///android_asset/editor/note_editor.html?locale="
+                            + Locale.getDefault().getLanguage()
+            );
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -72,13 +89,47 @@ public class NoteEditorView extends FrameLayout {
             @Override
             public void onEditorReady() {
                 handler.post(() -> {
+                    editorIsReady = true;
                     applyTheme();
+
+
+
+                    if (pendingNote != null) {
+                        editorInterface.loadNoteToEditor(pendingNote);
+                        pendingNote = null;
+                    }
+
+                    showEditor();
+                });
+            }
+
+
+            @Override
+            public void onTitleChanged(String title) {
+                handler.post(() -> {
+                    if (titleListener != null) titleListener.onTitleChanged(title);
+                });
+            }
+
+
+            @Override
+            public void onContentChanged(String json) {
+                handler.post(() -> {
+                    if (contentListener != null) contentListener.onContentChanged(json);
                 });
             }
 
             @Override
-            public void onTitleChanged(String title) {
-                if (titleListener != null) titleListener.onTitleChanged(title);
+            public void openFile(EditorAttachment attachment) {
+                handler.post(() -> {
+                    if (attachmentListener != null)
+                        attachmentListener.onAttachmentClick(attachment);
+                });
+            }
+
+            @Override
+            public int getNoteId() {
+                return (note != null && note.getId() > 0) ? note.getId() : 0;
             }
 
             @Override
@@ -86,22 +137,20 @@ public class NoteEditorView extends FrameLayout {
                 handler.post(() -> Log.e("NoteActivityBeta", "Editor error: " + error));
             }
 
-            @Override
-            public void onContentChanged(String json) {
-                if (contentListener != null) contentListener.onContentChanged(json);
-            }
-
-            @Override
-            public void openFile(EditorAttachment attachment) {
-                if (attachmentListener != null) attachmentListener.onAttachmentClick(attachment);
-            }
-
-            @Override
-            public int getNoteId() {
-                return note.getId();
-            }
         }, webView, getContext());
 
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                Log.e("NoteActivityBeta", "WebView error: " + error.getDescription());
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
@@ -126,8 +175,9 @@ public class NoteEditorView extends FrameLayout {
         });
 
 
-        webView.addJavascriptInterface(editorInterface,  EditorJSInterface.nameInterface);
+        webView.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
     }
+
     public void applyTheme() {
         if (editorInterface != null) {
             editorInterface.setThemeColors(
@@ -135,6 +185,7 @@ public class NoteEditorView extends FrameLayout {
             );
         }
     }
+
     void showEditor() {
         loader.animate().alpha(0f).setDuration(300).withEndAction(() -> loader.setVisibility(View.GONE)).start();
         webView.setAlpha(0f);
@@ -143,18 +194,21 @@ public class NoteEditorView extends FrameLayout {
     }
 
 
-    public void load(Note note) {
-        if (note != null) {
-            editorInterface.loadNoteToEditor(note);
+    public void load(Note mNote) {
+
+        if (mNote == null) {
+            Log.e("NoteEditorView", "ERROR: load(null) — приходить пуста нотатка");
+            pendingNote = null;
+            return;
         }
 
-       postDelayed(() -> {
-            showEditor();
+        note = mNote;
 
-            String locale = Locale.getDefault().getLanguage();
-            webView.loadUrl("file:///android_asset/editor/note_editor.html?locale=" + locale);
-
-        }, 150);
+        if (editorIsReady) {
+            editorInterface.loadNoteToEditor(mNote);
+        } else {
+            pendingNote = mNote;
+        }
     }
 
 
@@ -181,7 +235,9 @@ public class NoteEditorView extends FrameLayout {
     public interface OnAttachmentClickListener {
         void onAttachmentClick(EditorAttachment attachment);
     }
+
     public void actionRead() {
+        if (!editorIsReady) return;
         handler.post(() -> webView.evaluateJavascript("toggleReadModeFromAndroid();", null));
     }
 
@@ -212,8 +268,9 @@ public class NoteEditorView extends FrameLayout {
                 webView.loadUrl("about:blank");
                 webView.clearHistory();
                 webView.clearCache(true);
-                webView.removeJavascriptInterface("Android");
+                webView.removeJavascriptInterface(EditorJSInterface.nameInterface);
                 webView.setWebChromeClient(null);
+
                 webView.destroy();
             }
         } catch (Exception e) {

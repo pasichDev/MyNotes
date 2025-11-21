@@ -7,14 +7,12 @@ import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerT
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.webkit.ValueCallback;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -54,7 +52,6 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
     // Menu for the save status indicator
     private MenuItem saveStatusMenuItem;
     private boolean isReadMode = false;
-    private ValueCallback<Uri[]> fileCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,14 +78,8 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
 
         binding.noteEditor.setOnTitleChangedListener(this::processTitleChange);
         binding.noteEditor.setOnContentChangedListener(this::processTextChange);
-        binding.noteEditor.setOnAttachmentClickListener(att -> {
-            AttachmentActionsDialog.show(this, att);
-        });
+        binding.noteEditor.setOnAttachmentClickListener(att -> AttachmentActionsDialog.show(this, att));
         binding.noteEditor.setOnFileChooserListener(this::startActivityForResult);
-
-        //   binding.noteEditor.setInitialNoteJson(notePresenter.getNote());
-        //   binding.noteEditor.load();
-
 
         // Handle back button press with OnBackPressedDispatcher
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
@@ -161,11 +152,8 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
             if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5) {
                 activatedActivity();
             }
-
-            binding.noteEditor.load(null);
         } else if (notePresenter.getIdKey() >= 1) {
             notePresenter.loadingData(notePresenter.getIdKey());
-            binding.noteEditor.load(notePresenter.getNote());
         }
     }
 
@@ -306,6 +294,8 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         changeTag(tag != null ? tag : "", false);
 
         binding.titleToolbarDataCollapsed.setText(getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate())));
+
+        binding.noteEditor.load(note);
     }
 
     @Override
