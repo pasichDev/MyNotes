@@ -92,8 +92,6 @@ public class NoteEditorView extends FrameLayout {
                     editorIsReady = true;
                     applyTheme();
 
-
-
                     if (pendingNote != null) {
                         editorInterface.loadNoteToEditor(pendingNote);
                         pendingNote = null;
@@ -197,7 +195,6 @@ public class NoteEditorView extends FrameLayout {
     public void load(Note mNote) {
 
         if (mNote == null) {
-            Log.e("NoteEditorView", "ERROR: load(null) — приходить пуста нотатка");
             pendingNote = null;
             return;
         }
