@@ -54,8 +54,15 @@ copy(
   'locales'
 );
 
-// Custom Attaches (тимчасово закоментовано як у тебе)
-console.log(`⚠️ Attaches skipped: ${path.join(destDir, 'attaches.umd.js')}`);
+// --- Custom Attaches from src ---
+const attachesSrc = path.join(srcDir, 'attaches.umd.js');
+const attachesDest = path.join(destDir, 'attaches.umd.js');
+
+if (fs.existsSync(attachesSrc)) {
+  copy(attachesSrc, attachesDest, 'attaches');
+} else {
+  console.log(`⚠️ Attaches skipped (file not found): ${attachesSrc}`);
+}
 
 // Видаляємо dist
 fs.rmSync(distDir, { recursive: true, force: true });
