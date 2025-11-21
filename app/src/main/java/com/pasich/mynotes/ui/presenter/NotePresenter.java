@@ -181,6 +181,13 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void closeActivity() {
+        // 1. Якщо нотатка нова (id > 0) але немає валідного контенту → видаляємо
+        if (mNote != null && mNote.getId() > 0 && !hasValidContent(mNote)) {
+            deleteNote(mNote);
+            if (getView() != null) getView().closeNoteActivity();
+            return;
+        }
+
         // Додаткова перевірка на null для mNote
         if (mNote == null) {
             if (getView() != null) {
@@ -244,7 +251,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             // Перевіряємо на null перед використанням
             String currentJson = mNote.getValueJson() != null ? mNote.getValueJson() : "";
             String savedJson = lastSavedJsonValue != null ? lastSavedJsonValue : "";
-            
+
             JsonElement e1 = JsonParser.parseString(gson.toJson(currentJson));
             JsonElement e2 = JsonParser.parseString(gson.toJson(savedJson));
 
@@ -253,7 +260,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             // Перевіряємо на null перед використанням
             String currentValue = mNote.getValue() != null ? mNote.getValue() : "";
             String savedValue = lastSavedValue != null ? lastSavedValue : "";
-            
+
             return !currentValue.equals(savedValue);
         }
     }
@@ -347,6 +354,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public void activateEditNote() {
         getView().activatedActivity();
     }
+
     // Новий метод створення нотатки з callback'ом для автозбереження
     private void createNoteWithCallback(Note note, NoteContract.AutoSaveCallback callback) {
         getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> {

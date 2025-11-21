@@ -54,7 +54,29 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void newNotesClick() {
-        if (isViewAttached()) getView().newNotesButton();
+        if (!isViewAttached()) return;
+
+        Note note = new Note().create(
+                "",
+                "",
+                System.currentTimeMillis(),
+                ""
+        );
+
+        createNewNote(note, new MainContract.CreateNoteCallback() {
+            @Override
+            public void onCreated(long id) {
+                // Кажемо View відкрити нову нотатку вже з ID
+                if (isViewAttached()) {
+                    getView().openNewNoteWithId(id);
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                Log.e("NotePresenter", "Failed to create note", t);
+            }
+        });
     }
 
 
@@ -119,13 +141,26 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         return getDataManager().getSortParam();
     }
 
-    @Override
-    @Deprecated
-    public void addNote(Note note) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> {
-                }, // onSuccess
-                throwable -> Log.e("MainPresenter", "Error adding note", throwable)));
+    /**
+     * Створення нової нотатки з поверненням її ID
+     */
+    public void createNewNote(Note note, MainContract.CreateNoteCallback callback) {
+        if (note == null) {
+            callback.onError(new Exception("Note is null"));
+            return;
+        }
+
+        getCompositeDisposable().add(
+                getDataManager().addNote(note, false)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(id -> {
+                            note.setId(Math.toIntExact(id));
+                            callback.onCreated(id);
+                        }, callback::onError)
+        );
     }
+
 
     public Note getBackupDeleteNote() {
         return backupDeleteNote;

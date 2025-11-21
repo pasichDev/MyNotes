@@ -34,7 +34,6 @@ import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
-import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.enums.SaveState;
 
 import java.util.Objects;
@@ -60,7 +59,7 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
         long idNote = getIntent().getLongExtra("idNote", 0);
 
         binding = ActivityNoteExtendedEditorBinding.inflate(getLayoutInflater());
-        binding.noteLayout.setTransitionName(idNote == 0 ? NameTransition.fabTransaction : String.valueOf(idNote));
+        binding.noteLayout.setTransitionName(String.valueOf(idNote));
         setEnterSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
         getWindow().setSharedElementEnterTransition(buildContainerTransform(binding.noteLayout));
         getWindow().setSharedElementReturnTransition(buildContainerTransform(binding.noteLayout));
@@ -143,19 +142,32 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
 
     @Override
     public void initTypeActivity() {
+        long id = notePresenter.getIdKey();
+
+        // Якщо ID передали — це вже існуюча нотатка (включно з новоствореною!)
+        if (id > 0) {
+            notePresenter.loadingData(id);
+            return;
+        }
+
+        // Якщо ID немає — fallback для старих сценаріїв (не критично)
         if (notePresenter.getNewNotesKey()) {
+
             if (notePresenter.getTagNote().length() >= 2) {
                 changeTag(notePresenter.getTagNote(), false);
             }
 
             binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
+
             if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5) {
                 activatedActivity();
             }
-        } else if (notePresenter.getIdKey() >= 1) {
-            notePresenter.loadingData(notePresenter.getIdKey());
+
+            // Load пустої нотатки тільки якщо справді нема id
+            binding.noteEditor.load(notePresenter.getNote());
         }
     }
+
 
     @Override
     public void initListeners() {
@@ -285,18 +297,20 @@ public class NoteExtendedEditorActivity extends BaseActivity implements NoteCont
     @Override
     public void loadingNote(Note note) {
         if (note == null) {
-            Log.e("NoteActivityBeta", "Received null note in loadingNote()");
+            Log.e("NoteActivity", "Note not found for id=" + notePresenter.getIdKey());
+            finish();
             return;
         }
 
-        // Безпечна перевірка tag перед викликом changeTag
-        String tag = note.getTag();
-        changeTag(tag != null ? tag : "", false);
+        changeTag(note.getTag() != null ? note.getTag() : "", false);
 
-        binding.titleToolbarDataCollapsed.setText(getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate())));
+        binding.titleToolbarDataCollapsed.setText(
+                getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate()))
+        );
 
         binding.noteEditor.load(note);
     }
+
 
     @Override
     public void closeNoteActivity() {

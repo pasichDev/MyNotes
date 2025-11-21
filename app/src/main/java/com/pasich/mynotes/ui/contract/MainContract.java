@@ -22,7 +22,7 @@ public interface MainContract {
 
         void settingsLists();
 
-        void newNotesButton();
+        void openNewNoteWithId(long id);
 
         void choiceTagDialog(Tag tag, View mView);
 
@@ -56,8 +56,6 @@ public interface MainContract {
 
         void deleteNotesArray(ArrayList<Note> notes);
 
-        void addNote(Note note);
-
         void deleteNote(Note note);
 
         void restoreNote(Note nNote);
@@ -76,4 +74,10 @@ public interface MainContract {
 
         boolean closeApp(boolean showSearchView);
     }
+
+    interface CreateNoteCallback {
+        void onCreated(long id);
+        void onError(Throwable t);
+    }
+
 }

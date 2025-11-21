@@ -623,18 +623,38 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
 
     @Override
-    public void newNotesButton() {
+    public void openNewNoteWithId(long id) {
         Tag tagSelected = tagsAdapter.getTagSelected();
-        String tagName = tagSelected == null ? "" : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
+        String tagName = tagSelected == null
+                ? ""
+                : tagSelected.getSystemAction() == 2
+                ? ""
+                : tagSelected.getNameTag();
 
-        // Check if extended editor is enabled
+        Intent intent;
+
         if (themePreferencesCache.isExtendedEditorEnabled()) {
-            // Open beta note editor for new notes
-            startActivity(new Intent(this, NoteExtendedEditorActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+            intent = new Intent(this, NoteExtendedEditorActivity.class)
+                    .putExtra("NewNote", false)
+                    .putExtra("idNote", id)
+                    .putExtra("tagNote", tagName)
+                    .putExtra("shareText", "");
         } else {
-            // Open standard editor for new notes
-            startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
+            intent = new Intent(this, NoteActivity.class)
+                    .putExtra("NewNote", false)
+                    .putExtra("idNote", id)
+                    .putExtra("tagNote", tagName)
+                    .putExtra("shareText", "");
         }
+
+        startActivity(
+                intent,
+                ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        this,
+                        mActivityBinding.newNotesButton,
+                        NameTransition.fabTransaction
+                ).toBundle()
+        );
     }
 
 

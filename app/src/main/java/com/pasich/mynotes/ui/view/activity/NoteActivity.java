@@ -37,7 +37,6 @@ import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
 import com.pasich.mynotes.utils.CustomLinkMovementMethod;
-import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.enums.SaveState;
 
 import java.util.Date;
@@ -76,7 +75,8 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
         settingsStatusBar(getWindow());
         long idNote = getIntent().getLongExtra("idNote", 0);
         binding = ActivityNoteBinding.inflate(getLayoutInflater());
-        binding.noteLayout.setTransitionName(idNote == 0 ? NameTransition.fabTransaction : String.valueOf(idNote));
+        binding.noteLayout.setTransitionName(String.valueOf(idNote));
+
         setEnterSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
         getWindow().setSharedElementEnterTransition(buildContainerTransform(binding.noteLayout));
         getWindow().setSharedElementReturnTransition(buildContainerTransform(binding.noteLayout));
@@ -335,20 +335,27 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
 
     @Override
     public void initTypeActivity() {
+
+        long id = notePresenter.getIdKey();
+
+        if (id > 0) {
+            notePresenter.loadingData(id);
+            return;
+        }
+
+        // Якщо ID немає — fallback для старих сценаріїв (не критично)
         if (notePresenter.getNewNotesKey()) {
-            if (notePresenter.getTagNote().length() >= 2)
+
+            if (notePresenter.getTagNote().length() >= 2) {
                 changeTag(notePresenter.getTagNote(), false);
+            }
 
-            String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(new Date().getTime()));
-            binding.titleToolbarDataCenter.setText(formattedDate);
-            binding.titleToolbarDataCollapsed.setText(lastDayEditNote(new Date().getTime()));
+            binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
 
-            if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5)
-                binding.valueNote.setText(notePresenter.getShareText());
+            if (notePresenter.getShareText() != null && notePresenter.getShareText().length() > 5) {
+                activatedActivity();
+            }
 
-            activatedActivity();
-        } else if (notePresenter.getIdKey() >= 1) {
-            notePresenter.loadingData(notePresenter.getIdKey());
         }
     }
 
@@ -525,39 +532,48 @@ public class NoteActivity extends BaseActivity implements NoteContract.view {
     @Override
     public void loadingNote(Note note) {
         if (note == null) {
-            Log.e("NoteActivity", "Received null note in loadingNote()");
+            Log.e("NoteActivity", "Note not found for id=" + notePresenter.getIdKey());
+            finish();
             return;
         }
 
         String title = note.getTitle();
         String value = note.getValue();
 
-        // Безопасная проверка title
+        // Безпечне встановлення заголовка
         binding.notesTitle.setText(title != null && !title.isEmpty() ? title : "");
-        // Безопасная установка value
+
+        // Безпечне встановлення тексту
         binding.valueNote.setText(value != null ? value : "");
 
+        // Обробка кліків по лінках
         binding.valueNote.setMovementMethod(new CustomLinkMovementMethod() {
             @Override
             protected void onClickLink(String link, int type) {
                 if (link != null) {
-                    link = link.replaceAll("mailto:", "").replaceAll("tel:", "");
-                    new LinkInfoDialog(link, type).show(getSupportFragmentManager(), "LinkInfoDialog");
+                    link = link.replace("mailto:", "").replace("tel:", "");
+                    new LinkInfoDialog(link, type)
+                            .show(getSupportFragmentManager(), "LinkInfoDialog");
                 }
             }
         });
 
-        String formattedDate = getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate()));
+        String formattedDate = getString(
+                R.string.lastDateEditNote,
+                lastDayEditNote(note.getDate())
+        );
 
-        // Оновлюємо центровані елементи
         binding.titleToolbarDataCenter.setText(formattedDate);
 
-        // Оновлюємо згорнуті елементи з безпечною перевіркою title
-        binding.titleToolbarCollapsed.setText((title != null && !title.isEmpty()) ?
-                title : getString(R.string.noteTitle));
+        // Collapsed title
+        binding.titleToolbarCollapsed.setText(
+                title != null && !title.isEmpty()
+                        ? title
+                        : getString(R.string.noteTitle)
+        );
         binding.titleToolbarDataCollapsed.setText(formattedDate);
 
-        // Безпечна перевірка tag перед викликом changeTag
+        // Tag
         String tag = note.getTag();
         changeTag(tag != null ? tag : "", false);
     }
