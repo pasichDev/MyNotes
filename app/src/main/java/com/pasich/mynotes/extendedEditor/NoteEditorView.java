@@ -18,6 +18,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import androidx.core.view.ViewCompat;
+
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
@@ -49,12 +51,14 @@ public class NoteEditorView extends FrameLayout {
         init(context);
     }
 
+
     private void init(Context context) {
         inflate(context, R.layout.view_note_editor, this);
 
         webView = findViewById(R.id.editorWebView);
         loader = findViewById(R.id.editorLoader);
         handler = new Handler(Looper.getMainLooper());
+        ViewCompat.setNestedScrollingEnabled(webView, false);
 
         setupWebView();
     }
