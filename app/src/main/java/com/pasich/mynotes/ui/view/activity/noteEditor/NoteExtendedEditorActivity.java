@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
@@ -17,15 +19,28 @@ import androidx.core.view.WindowInsetsCompat;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
+import com.pasich.mynotes.extendedEditor.NoteEditorView;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.AttachmentActionsDialog;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityNoteExtendedEditorBinding> {
+public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityNoteExtendedEditorBinding> implements NoteEditorView.OnFileChooserListener {
 
     private boolean isReadMode = false;
+
+    private ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (binding != null) {
+                    binding.noteEditor.onFileChooserResult(
+                            result.getResultCode(),
+                            result.getData()
+                    );
+                }
+            }
+    );
 
     @Override
     protected int getMenuResId() {
@@ -93,7 +108,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         binding.noteEditor.setOnTitleChangedListener(this::processTitleChange);
         binding.noteEditor.setOnContentChangedListener(this::processTextChange);
         binding.noteEditor.setOnAttachmentClickListener(att -> AttachmentActionsDialog.show(this, att));
-        binding.noteEditor.setOnFileChooserListener(this::startActivityForResult);
+        binding.noteEditor.setOnFileChooserListener(this);
     }
 
     /**
@@ -188,4 +203,8 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         finish();
     }
 
+    @Override
+    public void onOpenFileChooser(Intent intent, int requestCode) {
+        fileChooserLauncher.launch(intent);
+    }
 }

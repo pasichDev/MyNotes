@@ -13,7 +13,7 @@ import androidx.core.content.FileProvider;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.BottomSheetAttachmentBinding;
-import com.pasich.mynotes.extendedEditor.attach.AttachmentSecureStorage;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 
 import java.io.File;
@@ -46,7 +46,7 @@ public class AttachmentActionsDialog {
 
     private static void openWith(Context ctx, EditorAttachment att) {
         try {
-            File decrypted = AttachmentSecureStorage.decryptTemp(ctx, att);
+            File decrypted = AttachmentStorage.copyTemp(ctx, att);
             if (decrypted == null) {
                 Toast.makeText(ctx, "Decrypt failed", Toast.LENGTH_SHORT).show();
                 return;
@@ -75,8 +75,8 @@ public class AttachmentActionsDialog {
 
     private static void saveToDownloads(Context ctx, EditorAttachment att) {
         try {
-            File decrypted = AttachmentSecureStorage.decryptTemp(ctx, att);
-            if (decrypted == null) {
+            File file = AttachmentStorage.copyTemp(ctx, att);
+            if (file == null) {
                 Toast.makeText(ctx, "Decrypt failed", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -84,14 +84,24 @@ public class AttachmentActionsDialog {
             String mime = getMime(att.extension);
             if (mime == null) mime = "*/*";
 
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Downloads.DISPLAY_NAME, att.name);
-            values.put(MediaStore.Downloads.MIME_TYPE, mime);
-            values.put(MediaStore.Downloads.IS_PENDING, 1);
-
-            // TODO
-            Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             ContentResolver resolver = ctx.getContentResolver();
+
+            Uri collection;
+
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            } else {
+                // API 26–28 fallback → пишемо у Files
+                collection = MediaStore.Files.getContentUri("external");
+            }
+
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, att.name);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
+
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+            }
 
             Uri item = resolver.insert(collection, values);
             if (item == null) {
@@ -99,10 +109,9 @@ public class AttachmentActionsDialog {
                 return;
             }
 
-            try (
-                    OutputStream out = resolver.openOutputStream(item);
-                    FileInputStream in = new FileInputStream(decrypted)
-            ) {
+            try (OutputStream out = resolver.openOutputStream(item);
+                 FileInputStream in = new FileInputStream(file)) {
+
                 byte[] buffer = new byte[8192];
                 int len;
                 while ((len = in.read(buffer)) > 0) {
@@ -111,10 +120,13 @@ public class AttachmentActionsDialog {
                 }
             }
 
-            values.clear();
-            values.put(MediaStore.Downloads.IS_PENDING, 0);
-            resolver.update(item, values, null, null);
-            AttachmentSecureStorage.cleanupTempAttachments(ctx);
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                values.clear();
+                values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                resolver.update(item, values, null, null);
+            }
+
+            AttachmentStorage.cleanupTemp(ctx);
             Toast.makeText(ctx, ctx.getString(R.string.savedDownloads), Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {

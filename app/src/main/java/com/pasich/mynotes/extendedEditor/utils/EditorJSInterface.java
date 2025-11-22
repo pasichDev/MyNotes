@@ -9,8 +9,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.extendedEditor.attach.AttachmentSecureStorage;
-import com.pasich.mynotes.extendedEditor.attach.AttachmentsConst;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 
 import org.json.JSONArray;
@@ -109,32 +108,21 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
 
         int noteId = listener.getNoteId();
 
-        AttachmentSecureStorage storage = new AttachmentSecureStorage();
-
-        // strip base64 header
+        // strip header
         int idx = base64.indexOf(",");
-        if (idx != -1) {
-            base64 = base64.substring(idx + 1);
-        }
+        if (idx != -1) base64 = base64.substring(idx + 1);
 
         byte[] raw = Base64.decode(base64, Base64.DEFAULT);
         if (raw == null || raw.length == 0) return "";
 
-        // save encrypted file
-        File saved = storage.saveEncrypted(appContext, noteId, originalName, raw);
+        File saved = AttachmentStorage.save(appContext, noteId, originalName, raw);
         if (saved == null) return "";
 
-        // get file name
-        String folder = "note_" + noteId;
-        String fileName = saved.getName();
-
-        // 🔥 Створюємо URI у форматі:
-        // scheme://attachments_secure/note_12/file.ext.enc
         return new Uri.Builder()
-                .scheme("scheme")
-                .authority(AttachmentsConst.ATTACH_DIR)
-                .appendPath(folder)
-                .appendPath(fileName)
+                .scheme("file")
+                .authority("attachments")
+                .appendPath("note_" + noteId)
+                .appendPath(saved.getName())
                 .build()
                 .toString();
     }

@@ -27,19 +27,6 @@ tasks.register("copyChangelog", Copy) {
 
 preBuild.dependsOn("copyChangelog")
 
-// -------------------------------
-// LOAD secret.properties
-// -------------------------------
-def secretPropsFile = rootProject.file("app/secret.properties")
-def secretProps = new Properties()
-
-if (secretPropsFile.exists()) {
-    secretProps.load(new FileInputStream(secretPropsFile))
-} else {
-    throw new GradleException("🔥 secret.properties is missing! Create app/secret.properties")
-}
-
-
 
 android {
     compileSdkVersion 36
@@ -88,14 +75,12 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "ATTACH_KEY", "\"${secretProps['ATTACH_KEY']}\""
         }
         debug {
             debuggable true
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "ATTACH_KEY", "\"${secretProps['ATTACH_KEY']}\""
         }
 
     }

@@ -46,6 +46,9 @@ public class NoteEditorView extends FrameLayout {
     private OnFileChooserListener fileChooserListener;
     private ValueCallback<Uri[]> fileCallback;
 
+    public static final int FILE_CHOOSER_REQUEST = 2025;
+
+
     public NoteEditorView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context);
@@ -155,7 +158,9 @@ public class NoteEditorView extends FrameLayout {
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+            public boolean onShowFileChooser(WebView webView,
+                                             ValueCallback<Uri[]> filePathCallback,
+                                             FileChooserParams fileChooserParams) {
 
                 fileCallback = filePathCallback;
 
@@ -168,12 +173,13 @@ public class NoteEditorView extends FrameLayout {
                 }
 
                 if (fileChooserListener != null) {
-                    fileChooserListener.onOpenFileChooser(intent, 2025);
+                    fileChooserListener.onOpenFileChooser(intent, FILE_CHOOSER_REQUEST);
                     return true;
                 }
 
                 return false;
             }
+
         });
 
 
