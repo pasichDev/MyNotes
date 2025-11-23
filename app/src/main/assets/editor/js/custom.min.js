@@ -120,7 +120,6 @@ titleDiv.addEventListener('keydown', e => {
 })
 updateTitlePlaceholder()
 
-
 window.addEventListener('load', () => {
   // Беремо локаль з URL ?locale=uk
   const params = new URLSearchParams(window.location.search)
@@ -199,3 +198,39 @@ window.getNoteData = getNoteData
 
 // --- Export for Editor.js Tools (AttachesTool uses this) ---
 window.uploadAttachment = uploadAttachment
+
+// =====================================
+// Delete attachment block (from Android)
+// =====================================
+window.deleteAttachmentBlockFromAndroid = function (blockId, fileUrl) {
+  if (!window.editor) return
+
+  try {
+    const blockAPI = window.editor.blocks.getById(blockId)
+    if (!blockAPI) {
+      console.warn('[Delete] JS block not found:', blockId)
+      return
+    }
+
+    const element = blockAPI.holder
+    const index = Array.from(element.parentNode.children).indexOf(element)
+
+    if (index < 0) {
+      console.warn('[Delete] JS index invalid:', blockId)
+      return
+    }
+
+    // Delete block
+    window.editor.blocks.delete(index)
+    console.log('[Delete] Block removed:', blockId)
+
+    // After DOM update, notify Android
+    setTimeout(() => {
+      if (window.Android && Android.onAttachmentBlockDeletedResponse) {
+        Android.onAttachmentBlockDeletedResponse(blockId, fileUrl)
+      }
+    }, 50)
+  } catch (err) {
+    console.error('[Delete] JS ERROR:', err)
+  }
+}
