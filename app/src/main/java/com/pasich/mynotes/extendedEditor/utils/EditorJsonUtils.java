@@ -2,6 +2,7 @@ package com.pasich.mynotes.extendedEditor.utils;
 
 import android.util.Log;
 
+import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 
@@ -12,6 +13,89 @@ import org.json.JSONObject;
 import java.util.Objects;
 
 public class EditorJsonUtils {
+    private static final String TAG = "EditorJsonUtils";
+
+    /**
+     * Finds the Editor.js block ID that corresponds to the given attachment.
+     * <p>
+     * This method scans the note's valueJson structure and looks for an "attaches"
+     * block whose file URL matches the attachment's URL. Supports both
+     * data.file.url and data.files[].url formats depending on the Editor.js tool.
+     *
+     * @param note The note containing the serialized Editor.js blocks.
+     * @param att  The attachment with the target file URL.
+     * @return The ID of the matching block, or null if not found.
+     */
+    public static String findBlockIdByAttachment(Note note, EditorAttachment att) {
+        try {
+            if (note == null || att == null || att.url == null) return null;
+
+            String json = note.getValueJson();
+            if (json == null || json.isEmpty()) return null;
+
+            JSONArray blocks = new JSONArray(json);
+            String targetUrl = att.url.trim();
+
+            for (int i = 0; i < blocks.length(); i++) {
+                JSONObject block = blocks.optJSONObject(i);
+                if (block == null) continue;
+
+                if (!"attaches".equals(block.optString("type"))) continue;
+
+                JSONObject data = block.optJSONObject("data");
+                if (data == null) continue;
+
+                JSONObject file = data.optJSONObject("file");
+                if (file != null) {
+                    String blockUrl = file.optString("url", "").trim();
+                    if (targetUrl.equals(blockUrl)) {
+                        return block.optString("id");
+                    }
+                }
+
+                JSONArray files = data.optJSONArray("files");
+                if (files != null) {
+                    for (int f = 0; f < files.length(); f++) {
+                        JSONObject fObj = files.optJSONObject(f);
+                        if (fObj == null) continue;
+
+                        String blockUrl = fObj.optString("url", "").trim();
+                        if (targetUrl.equals(blockUrl)) {
+                            return block.optString("id");
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "findBlockIdByAttachment() failed", e);
+
+        }
+
+        return null;
+    }
+
+    /**
+     * Converts an extended Editor.js JSON representation into a legacy note format.
+     * <p>
+     * This method parses the array of Editor.js blocks and extracts:
+     * - Combined plain text content (paragraphs, headers, lists)
+     * - Attached files (from "attaches" blocks)
+     * <p>
+     * It effectively "flattens" rich structured content into a plain-text fallback
+     * while also collecting attachment metadata into the ParsedNote model.
+     * <p>
+     * Supported block types:
+     * - paragraph → appended as cleaned text
+     * - header → appended as plain text
+     * - list → appended as list items
+     * - attaches → extracted into attachment list
+     * <p>
+     * Unsupported blocks are safely ignored.
+     *
+     * @param jsonData Raw Editor.js blocks JSON array (valueJson)
+     * @return ParsedNote containing plain text and parsed attachments
+     */
 
     public static ParsedNote extendedNoteToOldNote(String jsonData) {
         ParsedNote result = new ParsedNote();
@@ -61,13 +145,19 @@ public class EditorJsonUtils {
             }
 
         } catch (Exception e) {
-            Log.e("jsonToModel", "Failed parsing blocks", e);
+            Log.e(TAG, "extendedNoteToOldNote() failed", e);
         }
 
         result.plainText = plainText.toString().trim();
         return result;
     }
 
+    /**
+     * Parses a “list” type block and adds its elements to plain text.
+     *
+     * @param data      JSON data of the Editor.js block
+     * @param plainText accumulated plain text string
+     */
     private static void handleListBlock(JSONObject data, StringBuilder plainText) throws JSONException {
 
         String style = data.optString("style", "unordered");
@@ -80,32 +170,32 @@ public class EditorJsonUtils {
         }
     }
 
+    /**
+     * Parses the “attaches” block and adds attachments to the ParsedNote model.
+     *
+     * @param data   JSON data from the Editor.js block
+     * @param result the result where all attachments are collected
+     */
     private static void handleAttachBlock(JSONObject data, ParsedNote result) {
         try {
             JSONObject fileObj = data.optJSONObject("file");
             if (fileObj == null) return;
 
-            String url = fileObj.optString("url", "");
-            String name = fileObj.optString("name", "");
-            String extension = fileObj.optString("extension", "");
-            long size = fileObj.optLong("size", 0);
-
-            result.attachments.add(
-                    new EditorAttachment(url, name, extension, size)
-            );
+            EditorAttachment att = EditorAttachment.fromJsonObject(fileObj);
+            result.attachments.add(att);
 
         } catch (Exception e) {
-            Log.e("jsonToModel", "Failed parsing attaches", e);
+            Log.e(TAG, "handleAttachBlock() failed", e);
         }
     }
 
 
     /**
-     * Рекурсивний метод для обробки вкладених елементів списку
+     * Recursive method for processing nested list items.
      *
-     * @param item    JSONObject одного елемента списку
-     * @param builder StringBuilder для збору тексту
-     * @param indent  відступ для вкладеності
+     * @param item    JSONObject of a single list item.
+     * @param builder StringBuilder for collecting text.
+     * @param indent  Indentation for nesting.
      */
 
     private static void appendListItem(JSONObject item, StringBuilder builder, String indent, String style, int orderIndex) throws JSONException {
@@ -135,12 +225,26 @@ public class EditorJsonUtils {
         }
     }
 
+    /**
+     * Cleans HTML-formatted text extracted from Editor.js blocks
+     * and converts it into plain text.
+     * <p>
+     * Operations performed:
+     * - Converts <br> tags (any variant) into newline characters
+     * - Replaces &nbsp; with a normal space
+     * - Removes all remaining HTML tags using a regex
+     * <p>
+     * This method ensures that paragraph and header text from the
+     * rich-text editor is safely converted into a readable plain-text form.
+     *
+     * @param text Raw HTML/text content from Editor.js
+     * @return Sanitized plain-text string
+     */
+
     private static String cleanText(String text) {
         if (text == null) return "";
-        // Заміна <br> або <br/> на новий рядок
         text = text.replaceAll("(?i)<br\\s*/?>", "\n");
         text = text.replace("&nbsp;", " ");
-        // Можна додатково видалити інші HTML-теги, якщо потрібно
         text = text.replaceAll("<[^>]+>", "");
         return text;
     }

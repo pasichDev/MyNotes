@@ -1,8 +1,9 @@
-package com.pasich.mynotes.ui.view.dialogs;
+package com.pasich.mynotes.extendedEditor.view;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.view.View;
@@ -17,7 +18,6 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.BottomSheetAttachmentBinding;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
-import com.pasich.mynotes.extendedEditor.view.OnAttachmentDeleteListener;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,12 +36,12 @@ public class AttachmentActionsDialog {
 
         binding.setAttachment(attachment);
 
-        // Перевіряємо чи існує файл
+        // Check if the file exists
         File file = AttachmentStorage.read(ctx, attachment);
         boolean exists = file != null && file.exists();
 
         if (!exists) {
-            //  ФАЙЛУ НЕМА → показуємо заглушку
+            //  FILE NOT FOUND → show error
             binding.previewItem.itemPreview.setVisibility(View.GONE);
             binding.errorFile.setText(ctx.getString(R.string.attachment_file_unavailable));
 
@@ -50,7 +50,7 @@ public class AttachmentActionsDialog {
             binding.downloadAction.setVisibility(View.GONE);
             binding.deleteAttach.setBackground(ctx.getDrawable(R.drawable.bg_item_full));
         } else {
-            // Файл є → показуємо все
+            // File exists → show everything
             binding.openAction.setOnClickListener(v -> {
                 dialog.dismiss();
                 openWith(ctx, attachment);
@@ -62,16 +62,16 @@ public class AttachmentActionsDialog {
             });
         }
 
-        // DELETE — завжди видимий
+        // DELETE — always visible
         binding.deleteAttach.setOnClickListener(v -> {
             dialog.dismiss();
 
             if (exists) {
-                // Показуємо підтвердження
+                // Showing confirmation
                 showConfirmDelete(ctx, attachment, deleteListener);
             } else {
-                // Файла нема — просто видаляємо без діалога
-                deleteListener.onDeleteAttachment(attachment);
+                // File does not exist — simply delete without dialog
+                deleteListener.onDeleteAttachment(attachment, true);
             }
         });
 
@@ -91,12 +91,10 @@ public class AttachmentActionsDialog {
                 .setTitle(R.string.dialog_delete_title)
                 .setMessage(R.string.dialog_delete_message)
                 .setPositiveButton(R.string.dialog_delete_confirm, (dialog, which) -> {
-                    listener.onDeleteAttachment(att);
+                    listener.onDeleteAttachment(att, false);
                     dialog.dismiss();
                 })
-                .setNegativeButton(R.string.dialog_delete_cancel, (dialog, which) -> {
-                    dialog.dismiss();
-                })
+                .setNegativeButton(R.string.dialog_delete_cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }
 
@@ -105,7 +103,7 @@ public class AttachmentActionsDialog {
         try {
             File mFile = AttachmentStorage.read(ctx, att);
             if (mFile == null) {
-                Toast.makeText(ctx, "Load file failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ctx, ctx.getString(R.string.attachment_load_failed), Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -118,14 +116,14 @@ public class AttachmentActionsDialog {
                     mFile
             );
 
-            var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
+            var intent = new Intent(android.content.Intent.ACTION_VIEW);
             intent.setDataAndType(uri, mime);
-            intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            ctx.startActivity(android.content.Intent.createChooser(intent, "Open with"));
+            ctx.startActivity(Intent.createChooser(intent, ctx.getString(R.string.attachment_open_with)));
 
         } catch (Exception e) {
-            Toast.makeText(ctx, "Can't open file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ctx, ctx.getString(R.string.attachment_open_failed), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -134,7 +132,7 @@ public class AttachmentActionsDialog {
         try {
             File file = AttachmentStorage.read(ctx, att);
             if (file == null) {
-                Toast.makeText(ctx, "Save file failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ctx, ctx.getString(R.string.attachment_save_failed), Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -148,7 +146,7 @@ public class AttachmentActionsDialog {
             if (android.os.Build.VERSION.SDK_INT >= 29) {
                 collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             } else {
-                // API 26–28 fallback → пишемо у Files
+                // API 26–28 fallback → write to Files
                 collection = MediaStore.Files.getContentUri("external");
             }
 

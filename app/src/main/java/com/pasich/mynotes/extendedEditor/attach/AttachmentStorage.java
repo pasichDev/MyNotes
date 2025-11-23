@@ -14,6 +14,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 
+/**
+ * Utility class for managing note attachments stored in the app's internal storage.
+ * Handles validation, saving, resolving, reading, and deleting attachment files.
+ */
 public class AttachmentStorage {
 
     public static final long MAX_FILE_SIZE = 20L * 1024 * 1024; // 20 MB
@@ -22,9 +26,17 @@ public class AttachmentStorage {
     private static final String BASE_DIR = "attachments";
 
 
-
     /**
-     * Перевірити чи файл можна прикріпити
+     * Validates whether a file can be attached to a note.
+     * <p>
+     * Performs:
+     * - File size calculation
+     * - Maximum size check
+     * - Free internal storage space check
+     *
+     * @param ctx application context
+     * @param uri Uri of the selected file
+     * @return validation result containing status and optional error message
      */
     public static AttachmentValidationResult validateBeforeAttach(Context ctx, Uri uri) {
         long size = getFileSize(ctx, uri);
@@ -45,7 +57,11 @@ public class AttachmentStorage {
     }
 
     /**
-     * Розмір файла по Uri
+     * Retrieves file size from a content Uri using OpenableColumns.SIZE.
+     *
+     * @param ctx application context
+     * @param uri target file Uri
+     * @return file size in bytes, or -1 if not available
      */
     public static long getFileSize(Context ctx, Uri uri) {
         try (Cursor cursor = ctx.getContentResolver().query(uri, null, null, null, null)) {
@@ -59,7 +75,11 @@ public class AttachmentStorage {
     }
 
     /**
-     * Перевірка вільного місця
+     * Checks if internal storage has the required amount of free space.
+     *
+     * @param ctx           application context
+     * @param requiredBytes minimum required bytes
+     * @return true if available space ≥ requiredBytes, false otherwise
      */
     public static boolean hasEnoughSpace(Context ctx, long requiredBytes) {
         try {
@@ -72,13 +92,23 @@ public class AttachmentStorage {
         }
     }
 
-
+    /**
+     * Returns (and creates if necessary) the base attachment directory:
+     * /data/data/<package>/files/attachments
+     */
     private static File baseDir(Context ctx) {
         File dir = new File(ctx.getFilesDir(), BASE_DIR);
         if (!dir.exists()) dir.mkdirs();
         return dir;
     }
 
+    /**
+     * Returns (and creates if necessary) the directory for a specific note:
+     * /attachments/note_<id>
+     *
+     * @param ctx    application context
+     * @param noteId ID of the note
+     */
     private static File noteDir(Context ctx, int noteId) {
         File dir = new File(baseDir(ctx), "note_" + noteId);
         if (!dir.exists()) dir.mkdirs();
@@ -86,7 +116,16 @@ public class AttachmentStorage {
     }
 
     /**
-     * Зберігаємо файл як є
+     * Saves a file into the note-specific folder.
+     * <p>
+     * Automatically generates unique filename using:
+     * timestamp + hash(originalName) + extension
+     *
+     * @param ctx          app context
+     * @param noteId       target note id
+     * @param originalName original filename (used for extension extraction)
+     * @param raw          file raw bytes
+     * @return saved File object or null on failure
      */
     public static File save(Context ctx, int noteId, String originalName, byte[] raw) {
         try {
@@ -112,7 +151,11 @@ public class AttachmentStorage {
     }
 
     /**
-     * Читання файлу напряму
+     * Reads an attachment file by resolving its stored internal path.
+     *
+     * @param ctx app context
+     * @param att attachment model
+     * @return File instance or null if not found
      */
     public static File read(Context ctx, EditorAttachment att) {
         try {
@@ -123,7 +166,13 @@ public class AttachmentStorage {
     }
 
     /**
-     * Розвʼязуємо URL -> фізичний файл
+     * Resolves EditorAttachment.url → real File path inside internal storage.
+     * <p>
+     * Expected URL format: file://attachments/note_<id>/filename.ext
+     *
+     * @param ctx app context
+     * @param att attachment model
+     * @return File instance or null on error
      */
     public static File resolve(Context ctx, EditorAttachment att) {
         try {
@@ -142,6 +191,33 @@ public class AttachmentStorage {
         }
     }
 
+    /**
+     * Deletes the attachment file from internal storage.
+     *
+     * @param ctx app context
+     * @param att attachment model
+     * @return true if deletion succeeded, false otherwise
+     */
+    public static boolean delete(Context ctx, EditorAttachment att) {
+        try {
+            File file = read(ctx, att);
+            if (file != null && file.exists()) {
+                return file.delete();
+            }
+        } catch (Exception ignored) {
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Represents validation result for attachment checks.
+     * <p>
+     * Contains:
+     * - ok: validation success flag
+     * - error: user-readable error message (when ok == false)
+     */
     public static class AttachmentValidationResult {
 
         public final boolean ok;

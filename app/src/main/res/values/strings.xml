@@ -342,5 +342,12 @@
     <string name="dialog_delete_message">The file will be permanently deleted.</string>
     <string name="dialog_delete_confirm">Delete</string>
     <string name="dialog_delete_cancel">Cancel</string>
+    <string name="deleteAttachmentsErrorExits">The file could not be deleted. It may no longer exist.</string>
+    <string name="deleteAttachmentsSuccess">Attachments successfully deleted</string>
+    <string name="attachment_load_failed">Failed to load file</string>
+    <string name="attachment_open_with">Open with</string>
+    <string name="attachment_open_failed">Can\'t open file</string>
+    <string name="attachment_save_failed">Failed to save file</string>
+
 
 </resources>

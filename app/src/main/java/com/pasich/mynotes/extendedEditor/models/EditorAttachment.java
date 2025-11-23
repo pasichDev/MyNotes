@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import org.json.JSONObject;
+
 public class EditorAttachment {
     public String url;
     public String name;
@@ -15,6 +17,10 @@ public class EditorAttachment {
         this.name = name;
         this.extension = extension;
         this.size = size;
+    }
+
+    public EditorAttachment(String url) {
+        this.url = url;
     }
 
     public static EditorAttachment parseSingleAttachment(String json) {
@@ -29,6 +35,17 @@ public class EditorAttachment {
             Log.e("jsonToModel", "Failed to parse single attachment JSON", e);
             return null;
         }
+    }
+
+    public static EditorAttachment fromJsonObject(JSONObject fileObj) {
+        if (fileObj == null) return null;
+
+        return new EditorAttachment(
+                fileObj.optString("url", ""),
+                fileObj.optString("name", ""),
+                fileObj.optString("extension", ""),
+                fileObj.optLong("size", 0)
+        );
     }
 
 }

@@ -33,6 +33,7 @@ import java.util.Locale;
 public class NoteEditorView extends FrameLayout {
 
     public static final int FILE_CHOOSER_REQUEST = 2025;
+    private static final String TAG = "NoteEditorView";
     private WebView webView;
     private View loader;
     private EditorJSInterface editorInterface;
@@ -46,7 +47,6 @@ public class NoteEditorView extends FrameLayout {
     private OnAttachmentClickListener attachmentListener;
     private OnFileChooserListener fileChooserListener;
     private ValueCallback<Uri[]> fileCallback;
-
 
     public NoteEditorView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -65,18 +65,24 @@ public class NoteEditorView extends FrameLayout {
         setupWebView();
     }
 
+    /**
+     * Loads the editor HTML once the view is attached to window.
+     * This ensures WebView is fully initialized before loading local assets.
+     */
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
         if (!htmlLoaded) {
             htmlLoaded = true;
-
-
             webView.post(this::loadEditorHtml);
         }
     }
 
+    /**
+     * Loads the Editor.js HTML page from the app assets with the current locale.
+     */
 
     private void loadEditorHtml() {
         webView.loadUrl(
@@ -84,6 +90,10 @@ public class NoteEditorView extends FrameLayout {
         );
     }
 
+    /**
+     * Configures WebView, JS bridge, security settings and file chooser.
+     * Called once during initialization.
+     */
 
     @SuppressLint("SetJavaScriptEnabled")
     private void setupWebView() {
@@ -151,7 +161,7 @@ public class NoteEditorView extends FrameLayout {
 
             @Override
             public void onError(String error) {
-                handler.post(() -> Log.e("NoteActivityBeta", "Editor error: " + error));
+                handler.post(() -> Log.e(TAG, "NoteEditorView error:" + error));
             }
 
         }, webView, getContext());
@@ -165,7 +175,7 @@ public class NoteEditorView extends FrameLayout {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
-                Log.e("NoteActivityBeta", "WebView error: " + error.getDescription());
+                Log.e(TAG, "WebView error:" + error.getDescription());
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -198,6 +208,9 @@ public class NoteEditorView extends FrameLayout {
         webView.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
     }
 
+    /**
+     * Applies Android theme colors to the editor via JS bridge.
+     */
     public void applyTheme() {
         if (editorInterface != null) {
             editorInterface.setThemeColors(
@@ -213,6 +226,24 @@ public class NoteEditorView extends FrameLayout {
         webView.animate().alpha(1f).setDuration(400).setStartDelay(100).start();
     }
 
+    /**
+     * Toggles read-only mode inside Editor.js (title and blocks become non-editable).
+     */
+    public void actionRead() {
+        if (!editorIsReady) return;
+        editorInterface.toggleReadMode();
+    }
+
+
+    public void deleteBlock(String blockId, String fileUrl) {
+        if (!editorIsReady) return;
+        editorInterface.deleteAttachmentBlockRequest(blockId, fileUrl);
+    }
+
+    /**
+     * Loads a note into the editor.
+     * If the editor is not ready yet, the note is stored temporarily.
+     */
 
     public void load(Note mNote) {
 
@@ -230,28 +261,10 @@ public class NoteEditorView extends FrameLayout {
         }
     }
 
-
-    public void setOnTitleChangedListener(OnTitleChangedListener l) {
-        this.titleListener = l;
-    }
-
-    public void setOnContentChangedListener(OnContentChangedListener l) {
-        this.contentListener = l;
-    }
-
-    public void setOnAttachmentClickListener(OnAttachmentClickListener l) {
-        this.attachmentListener = l;
-    }
-
-    public void actionRead() {
-        if (!editorIsReady) return;
-        handler.post(() -> webView.evaluateJavascript("toggleReadModeFromAndroid();", null));
-    }
-
-    public void setOnFileChooserListener(OnFileChooserListener l) {
-        this.fileChooserListener = l;
-    }
-
+    /**
+     * Handles result from WebView file chooser, including validation
+     * (size limit, free space), before passing the file to JS.
+     */
     public void onFileChooserResult(int resultCode, Intent data) {
         if (fileCallback == null) return;
 
@@ -285,6 +298,10 @@ public class NoteEditorView extends FrameLayout {
         }
     }
 
+    /**
+     * Fully and safely destroys the WebView instance to prevent memory leaks.
+     * Must be called from Activity/Fragment onDestroy().
+     */
     public void release() {
         try {
             if (webView != null) {
@@ -294,12 +311,11 @@ public class NoteEditorView extends FrameLayout {
                 webView.clearCache(false);
                 webView.removeJavascriptInterface(EditorJSInterface.nameInterface);
                 webView.setWebChromeClient(null);
-                webView.setWebViewClient(null);
                 webView.destroy();
                 webView = null;
             }
         } catch (Exception e) {
-            Log.e("NoteEditorView", "WebView cleanup error: " + e.getMessage());
+            Log.e(TAG, "NoteEditorView cleanup error: " + e.getMessage());
         }
 
         editorInterface = null;
@@ -309,6 +325,25 @@ public class NoteEditorView extends FrameLayout {
             handler = null;
         }
     }
+
+
+    public void setOnTitleChangedListener(OnTitleChangedListener l) {
+        this.titleListener = l;
+    }
+
+    public void setOnContentChangedListener(OnContentChangedListener l) {
+        this.contentListener = l;
+    }
+
+    public void setOnAttachmentClickListener(OnAttachmentClickListener l) {
+        this.attachmentListener = l;
+    }
+
+
+    public void setOnFileChooserListener(OnFileChooserListener l) {
+        this.fileChooserListener = l;
+    }
+
 
     public interface OnTitleChangedListener {
         void onTitleChanged(String t);

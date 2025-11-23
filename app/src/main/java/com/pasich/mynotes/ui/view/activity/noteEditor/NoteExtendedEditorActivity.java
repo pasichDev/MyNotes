@@ -1,9 +1,11 @@
 package com.pasich.mynotes.ui.view.activity.noteEditor;
 
 import static android.view.View.VISIBLE;
+import static com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils.findBlockIdByAttachment;
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,8 +22,9 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.extendedEditor.NoteEditorView;
+import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
-import com.pasich.mynotes.ui.view.dialogs.AttachmentActionsDialog;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -106,12 +109,41 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void initListeners() {
         binding.noteEditor.setOnTitleChangedListener(this::processTitleChange);
         binding.noteEditor.setOnContentChangedListener(this::processTextChange);
-        binding.noteEditor.setOnAttachmentClickListener(att -> AttachmentActionsDialog.show(this, att, c -> {
-            // ТУТ видаляєш блок у WebView
-            //  noteEditorView.deleteAttachment(att);
-        }));
+        binding.noteEditor.setOnAttachmentClickListener(att ->
+                AttachmentActionsDialog.show(
+                        this,
+                        att,
+                        this::handleAttachmentDelete
+                )
+        );
+
         binding.noteEditor.setOnFileChooserListener(this);
     }
+
+    /**
+     * Handles attachment deletion flow:
+     * 1. Locates the block ID inside Editor.js JSON.
+     * 2. Passes the deletion request to the editor.
+     * 3. Sends either the real file URL or null (if file is already missing).
+     *
+     * @param attach The attachment metadata.
+     * @param lost   True if file does not exist on disk.
+     */
+    private void handleAttachmentDelete(EditorAttachment attach, boolean lost) {
+
+        String blockId = findBlockIdByAttachment(notePresenter.getNote(), attach);
+
+        if (blockId == null) {
+            Log.w("AttachmentDelete", "Block not found for attachment: " + attach.url);
+            return;
+        }
+
+        // If the file is missing → pass null to JS (Android should not delete)
+        String urlOrNull = lost ? null : attach.url;
+
+        binding.noteEditor.deleteBlock(blockId, urlOrNull);
+    }
+
 
     /**
      * Process title changes with enhanced features

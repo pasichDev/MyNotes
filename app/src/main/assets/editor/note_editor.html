@@ -86,6 +86,7 @@
             document.getElementById("loading").style.display = "none";
             document.getElementById("editorjs").style.display = "block";
             if (window.Android) window.Android.onEditorReady();
+            window.editor = editor;
           },
         });
       }
