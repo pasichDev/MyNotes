@@ -333,4 +333,8 @@
     <string name="saveDevice">Save to device</string>
     <string name="savedDownloads">Saved to Downloads</string>
     <string name="savedFailed">Save failed</string>
+    <string name="deleteAttach">Delete</string>
+    <string name="errorAttachFreeSize">Not enough free space (500 MB required)</string>
+    <string name="errorAttachLimitSize">The file is too large (maximum 20 MB)</string>
+    <string name="errorAttachCalculateSize">Unable to determine file size</string>
 </resources>

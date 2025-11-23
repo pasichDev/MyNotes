@@ -17,11 +17,13 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.core.view.ViewCompat;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
@@ -254,9 +256,26 @@ public class NoteEditorView extends FrameLayout {
         if (fileCallback == null) return;
 
         Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+
+        if (result != null && result.length > 0) {
+
+            Uri uri = result[0];
+
+            AttachmentStorage.AttachmentValidationResult validation =
+                    AttachmentStorage.validateBeforeAttach(getContext(), uri);
+
+            if (!validation.ok) {
+                Toast.makeText(getContext(), validation.error, Toast.LENGTH_SHORT).show();
+                fileCallback.onReceiveValue(null);
+                fileCallback = null;
+                return;
+            }
+        }
+
         fileCallback.onReceiveValue(result);
         fileCallback = null;
     }
+
 
     @Override
     protected void onDetachedFromWindow() {
@@ -272,7 +291,7 @@ public class NoteEditorView extends FrameLayout {
                 webView.stopLoading();
                 webView.loadUrl("about:blank");
                 webView.clearHistory();
-                webView.clearCache(false); // true не треба кожного разу
+                webView.clearCache(false);
                 webView.removeJavascriptInterface(EditorJSInterface.nameInterface);
                 webView.setWebChromeClient(null);
                 webView.setWebViewClient(null);
