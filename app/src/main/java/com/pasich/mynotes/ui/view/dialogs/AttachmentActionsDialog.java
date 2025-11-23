@@ -5,16 +5,19 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.BottomSheetAttachmentBinding;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.view.OnAttachmentDeleteListener;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,25 +25,79 @@ import java.io.OutputStream;
 
 public class AttachmentActionsDialog {
 
-    public static void show(Context ctx, EditorAttachment attachment) {
+    public static void show(
+            Context ctx,
+            EditorAttachment attachment,
+            OnAttachmentDeleteListener deleteListener
+    ) {
         BottomSheetDialog dialog = new BottomSheetDialog(ctx);
         BottomSheetAttachmentBinding binding =
                 BottomSheetAttachmentBinding.inflate(dialog.getLayoutInflater());
 
         binding.setAttachment(attachment);
 
-        binding.openAction.setOnClickListener(v -> {
-            dialog.dismiss();
-            openWith(ctx, attachment);
-        });
+        // Перевіряємо чи існує файл
+        File file = AttachmentStorage.read(ctx, attachment);
+        boolean exists = file != null && file.exists();
 
-        binding.downloadAction.setOnClickListener(v -> {
+        if (!exists) {
+            //  ФАЙЛУ НЕМА → показуємо заглушку
+            binding.previewItem.itemPreview.setVisibility(View.GONE);
+            binding.errorFile.setText(ctx.getString(R.string.attachment_file_unavailable));
+
+            binding.openAction.setVisibility(View.GONE);
+            binding.errorCard.setVisibility(View.VISIBLE);
+            binding.downloadAction.setVisibility(View.GONE);
+            binding.deleteAttach.setBackground(ctx.getDrawable(R.drawable.bg_item_full));
+        } else {
+            // Файл є → показуємо все
+            binding.openAction.setOnClickListener(v -> {
+                dialog.dismiss();
+                openWith(ctx, attachment);
+            });
+
+            binding.downloadAction.setOnClickListener(v -> {
+                dialog.dismiss();
+                saveToDownloads(ctx, attachment);
+            });
+        }
+
+        // DELETE — завжди видимий
+        binding.deleteAttach.setOnClickListener(v -> {
             dialog.dismiss();
-            saveToDownloads(ctx, attachment);
+
+            if (exists) {
+                // Показуємо підтвердження
+                showConfirmDelete(ctx, attachment, deleteListener);
+            } else {
+                // Файла нема — просто видаляємо без діалога
+                deleteListener.onDeleteAttachment(attachment);
+            }
         });
 
         dialog.setContentView(binding.getRoot());
         dialog.show();
+    }
+
+
+    private static void showConfirmDelete(Context ctx,
+                                          EditorAttachment att,
+                                          OnAttachmentDeleteListener listener) {
+
+        new MaterialAlertDialogBuilder(
+                ctx,
+                com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog
+        )
+                .setTitle(R.string.dialog_delete_title)
+                .setMessage(R.string.dialog_delete_message)
+                .setPositiveButton(R.string.dialog_delete_confirm, (dialog, which) -> {
+                    listener.onDeleteAttachment(att);
+                    dialog.dismiss();
+                })
+                .setNegativeButton(R.string.dialog_delete_cancel, (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .show();
     }
 
 

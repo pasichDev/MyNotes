@@ -337,4 +337,10 @@
     <string name="errorAttachFreeSize">Not enough free space (500 MB required)</string>
     <string name="errorAttachLimitSize">The file is too large (maximum 20 MB)</string>
     <string name="errorAttachCalculateSize">Unable to determine file size</string>
+    <string name="attachment_file_unavailable">File is unavailable. It may have been deleted or moved in the file system.\nYou can remove this attachment from the note to clear the invalid reference.</string>
+    <string name="dialog_delete_title">Delete file?</string>
+    <string name="dialog_delete_message">The file will be permanently deleted.</string>
+    <string name="dialog_delete_confirm">Delete</string>
+    <string name="dialog_delete_cancel">Cancel</string>
+
 </resources>

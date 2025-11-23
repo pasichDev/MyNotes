@@ -28,8 +28,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityNoteExtendedEditorBinding> implements NoteEditorView.OnFileChooserListener {
 
-    private boolean isReadMode = false;
-
     private final ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -41,6 +39,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
                 }
             }
     );
+    private boolean isReadMode = false;
 
     @Override
     protected int getMenuResId() {
@@ -107,7 +106,10 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void initListeners() {
         binding.noteEditor.setOnTitleChangedListener(this::processTitleChange);
         binding.noteEditor.setOnContentChangedListener(this::processTextChange);
-        binding.noteEditor.setOnAttachmentClickListener(att -> AttachmentActionsDialog.show(this, att));
+        binding.noteEditor.setOnAttachmentClickListener(att -> AttachmentActionsDialog.show(this, att, c -> {
+            // ТУТ видаляєш блок у WebView
+            //  noteEditorView.deleteAttachment(att);
+        }));
         binding.noteEditor.setOnFileChooserListener(this);
     }
 

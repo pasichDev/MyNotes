@@ -1,83 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="attachment"
             type="com.pasich.mynotes.extendedEditor.models.EditorAttachment" />
     </data>
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-    <View
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"/>
-
-    <include
-        layout="@layout/item_attachment"
-        android:id="@+id/previewItem"
-        app:attachment="@{attachment}" />
-
-    <TextView
-        android:id="@+id/fileName"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
     <LinearLayout
-        android:id="@+id/openAction"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_item_start"
-        android:layout_marginHorizontal="20dp"
-        android:orientation="horizontal"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="32dp"
-            android:contentDescription="@string/openWith"
-            android:src="@drawable/ic_arrow_forward" />
-
-        <TextView
+        <View
             android:layout_width="wrap_content"
+            android:layout_height="20dp" />
+
+        <include
+            android:id="@+id/previewItem"
+            layout="@layout/item_attachment"
+            app:attachment="@{attachment}" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/errorCard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/openWith"
-            android:textAppearance="?attr/textAppearanceBody1" />
-    </LinearLayout>
-    <View
-        android:layout_width="wrap_content"
-        android:layout_height="1dp"/>
-    <LinearLayout
-        android:id="@+id/downloadAction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:background="@drawable/bg_item_end"
-        android:orientation="horizontal"
-        android:padding="16dp">
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="?attr/colorError"
+            app:strokeWidth="1dp"
+            tool:visibility="visible">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="32dp"
-            android:contentDescription="@string/saveDevice"
-            android:src="@drawable/ic_arrow_forward" />
+            <TextView
+                android:id="@+id/errorFile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/railway_medium"
+                android:lineSpacingExtra="2dp"
+                android:padding="16dp"
+                android:text=""
+                android:textColor="?attr/colorError"
+                android:textSize="13sp"
+                tool:text="Errors" />
 
-        <TextView
+        </com.google.android.material.card.MaterialCardView>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp" />
+
+        <LinearLayout
+            android:id="@+id/openAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:background="@drawable/bg_item_start"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="32dp"
+                android:contentDescription="@string/openWith"
+                android:src="@drawable/ic_arrow_forward" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/openWith"
+                android:textAppearance="?attr/textAppearanceBody1" />
+        </LinearLayout>
+
+        <View
             android:layout_width="wrap_content"
+            android:layout_height="1dp" />
+
+        <LinearLayout
+            android:id="@+id/downloadAction"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/saveDevice"
-            android:textAppearance="?attr/textAppearanceBody1" />
+            android:layout_marginHorizontal="20dp"
+            android:background="@drawable/bg_item_middle"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="32dp"
+                android:contentDescription="@string/saveDevice"
+                android:src="@drawable/ic_arrow_forward" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/saveDevice"
+                android:textAppearance="?attr/textAppearanceBody1" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp" />
+
+        <LinearLayout
+            android:id="@+id/deleteAttach"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:background="@drawable/bg_item_end"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="32dp"
+                android:contentDescription="@string/deleteAttach"
+                android:src="@drawable/ic_trash_notes" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/deleteAttach"
+                android:textAppearance="?attr/textAppearanceBody1" />
+        </LinearLayout>
     </LinearLayout>
-
-
-</LinearLayout></layout>
+</layout>
