@@ -30,7 +30,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
 
     private boolean isReadMode = false;
 
-    private ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (binding != null) {
@@ -154,6 +154,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         super.onDestroy();
         if (binding != null) {
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
+            binding.noteEditor.release();
         }
 
     }

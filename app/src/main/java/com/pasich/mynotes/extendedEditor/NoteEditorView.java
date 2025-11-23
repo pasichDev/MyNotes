@@ -30,23 +30,20 @@ import java.util.Locale;
 
 public class NoteEditorView extends FrameLayout {
 
+    public static final int FILE_CHOOSER_REQUEST = 2025;
     private WebView webView;
     private View loader;
     private EditorJSInterface editorInterface;
     private Handler handler;
-
     private Note note;
     private Note pendingNote;
     private boolean editorIsReady = false;
-
     private boolean htmlLoaded = false;
     private OnTitleChangedListener titleListener;
     private OnContentChangedListener contentListener;
     private OnAttachmentClickListener attachmentListener;
     private OnFileChooserListener fileChooserListener;
     private ValueCallback<Uri[]> fileCallback;
-
-    public static final int FILE_CHOOSER_REQUEST = 2025;
 
 
     public NoteEditorView(Context context, AttributeSet attrs) {
@@ -72,12 +69,19 @@ public class NoteEditorView extends FrameLayout {
 
         if (!htmlLoaded) {
             htmlLoaded = true;
-            webView.loadUrl(
-                    "file:///android_asset/editor/note_editor.html?locale="
-                            + Locale.getDefault().getLanguage()
-            );
+
+
+            webView.post(this::loadEditorHtml);
         }
     }
+
+
+    private void loadEditorHtml() {
+        webView.loadUrl(
+                "file:///android_asset/editor/note_editor.html?locale=" + Locale.getDefault().getLanguage()
+        );
+    }
+
 
     @SuppressLint("SetJavaScriptEnabled")
     private void setupWebView() {
@@ -86,8 +90,14 @@ public class NoteEditorView extends FrameLayout {
         webSettings.setAllowFileAccess(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        webSettings.setGeolocationEnabled(false);
+        webSettings.setAllowUniversalAccessFromFileURLs(false);
+        webSettings.setOffscreenPreRaster(true);
 
-        webView.setWebViewClient(new WebViewClient());
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        webView.setLayerType(View.LAYER_TYPE_NONE, null);
+
         webView.setVerticalScrollBarEnabled(false);
         webView.setHorizontalScrollBarEnabled(false);
 
@@ -104,7 +114,7 @@ public class NoteEditorView extends FrameLayout {
                         pendingNote = null;
                     }
 
-                    showEditor();
+                    handler.postDelayed(NoteEditorView.this::showEditor, 120);
                 });
             }
 
@@ -231,31 +241,14 @@ public class NoteEditorView extends FrameLayout {
         this.attachmentListener = l;
     }
 
-    public interface OnTitleChangedListener {
-        void onTitleChanged(String t);
-    }
-
-    public interface OnContentChangedListener {
-        void onContentChanged(String json);
-    }
-
-    public interface OnAttachmentClickListener {
-        void onAttachmentClick(EditorAttachment attachment);
-    }
-
     public void actionRead() {
         if (!editorIsReady) return;
         handler.post(() -> webView.evaluateJavascript("toggleReadModeFromAndroid();", null));
     }
 
-    public interface OnFileChooserListener {
-        void onOpenFileChooser(Intent intent, int requestCode);
-    }
-
     public void setOnFileChooserListener(OnFileChooserListener l) {
         this.fileChooserListener = l;
     }
-
 
     public void onFileChooserResult(int resultCode, Intent data) {
         if (fileCallback == null) return;
@@ -268,28 +261,51 @@ public class NoteEditorView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+    }
 
+    public void release() {
         try {
             if (webView != null) {
                 webView.stopLoading();
                 webView.loadUrl("about:blank");
                 webView.clearHistory();
-                webView.clearCache(true);
+                webView.clearCache(false); // true не треба кожного разу
                 webView.removeJavascriptInterface(EditorJSInterface.nameInterface);
                 webView.setWebChromeClient(null);
-
+                webView.setWebViewClient(null);
                 webView.destroy();
+                webView = null;
             }
         } catch (Exception e) {
             Log.e("NoteEditorView", "WebView cleanup error: " + e.getMessage());
         }
 
+        editorInterface = null;
+
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
+            handler = null;
         }
+    }
 
-        editorInterface = null;
-        webView = null;
+    public interface OnTitleChangedListener {
+        void onTitleChanged(String t);
+    }
+
+
+    public interface OnContentChangedListener {
+        void onContentChanged(String json);
+    }
+
+    public interface OnAttachmentClickListener {
+        void onAttachmentClick(EditorAttachment attachment);
+    }
+
+    public interface OnFileChooserListener {
+        void onOpenFileChooser(Intent intent, int requestCode);
     }
 
 }
