@@ -46,9 +46,9 @@ public class AttachmentActionsDialog {
 
     private static void openWith(Context ctx, EditorAttachment att) {
         try {
-            File decrypted = AttachmentStorage.copyTemp(ctx, att);
-            if (decrypted == null) {
-                Toast.makeText(ctx, "Decrypt failed", Toast.LENGTH_SHORT).show();
+            File mFile = AttachmentStorage.read(ctx, att);
+            if (mFile == null) {
+                Toast.makeText(ctx, "Load file failed", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -58,7 +58,7 @@ public class AttachmentActionsDialog {
             var uri = FileProvider.getUriForFile(
                     ctx,
                     ctx.getPackageName() + ".provider",
-                    decrypted
+                    mFile
             );
 
             var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
@@ -75,9 +75,9 @@ public class AttachmentActionsDialog {
 
     private static void saveToDownloads(Context ctx, EditorAttachment att) {
         try {
-            File file = AttachmentStorage.copyTemp(ctx, att);
+            File file = AttachmentStorage.read(ctx, att);
             if (file == null) {
-                Toast.makeText(ctx, "Decrypt failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ctx, "Save file failed", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -126,7 +126,6 @@ public class AttachmentActionsDialog {
                 resolver.update(item, values, null, null);
             }
 
-            AttachmentStorage.cleanupTemp(ctx);
             Toast.makeText(ctx, ctx.getString(R.string.savedDownloads), Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {

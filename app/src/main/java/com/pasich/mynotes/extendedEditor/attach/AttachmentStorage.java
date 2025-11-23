@@ -7,16 +7,13 @@ import android.util.Log;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.nio.file.Files;
 import java.util.List;
 
 public class AttachmentStorage {
 
     private static final String TAG = "AttachmentStorage";
     private static final String BASE_DIR = "attachments";
-    private static final String TEMP_DIR = "attachments_temp";
 
     private static File baseDir(Context ctx) {
         File dir = new File(ctx.getFilesDir(), BASE_DIR);
@@ -30,6 +27,7 @@ public class AttachmentStorage {
         return dir;
     }
 
+    /** Зберігаємо файл як є */
     public static File save(Context ctx, int noteId, String originalName, byte[] raw) {
         try {
             File folder = noteDir(ctx, noteId);
@@ -38,7 +36,6 @@ public class AttachmentStorage {
             int dot = originalName.lastIndexOf('.');
             if (dot != -1) ext = originalName.substring(dot);
 
-            // Унікальна назва
             String finalName = System.currentTimeMillis() + "_" + Math.abs(originalName.hashCode()) + ext;
 
             File out = new File(folder, finalName);
@@ -54,14 +51,16 @@ public class AttachmentStorage {
         }
     }
 
-    public static byte[] read(File file) {
+    /** Читання файлу напряму */
+    public static File read(Context ctx, EditorAttachment att) {
         try {
-            return Files.readAllBytes(file.toPath());
+            return resolve(ctx, att);   // повертає реальний файл
         } catch (Exception e) {
             return null;
         }
     }
 
+    /** Розвʼязуємо URL -> фізичний файл */
     public static File resolve(Context ctx, EditorAttachment att) {
         try {
             Uri uri = Uri.parse(att.url);
@@ -79,39 +78,4 @@ public class AttachmentStorage {
         }
     }
 
-    public static File copyTemp(Context ctx, EditorAttachment att) {
-        try {
-            File original = resolve(ctx, att);
-            if (original == null) return null;
-
-            File tempDir = new File(ctx.getCacheDir(), TEMP_DIR);
-            if (!tempDir.exists()) tempDir.mkdirs();
-
-            File out = new File(tempDir, original.getName());
-
-            try (FileInputStream in = new FileInputStream(original);
-                 FileOutputStream outStream = new FileOutputStream(out)) {
-
-                byte[] buffer = new byte[8192];
-                int len;
-                while ((len = in.read(buffer)) > 0) {
-                    outStream.write(buffer, 0, len);
-                }
-            }
-
-            return out;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-
-    public static void cleanupTemp(Context ctx) {
-        File tempDir = new File(ctx.getCacheDir(), TEMP_DIR);
-
-        if (tempDir.exists() && tempDir.isDirectory()) {
-            File[] files = tempDir.listFiles();
-            if (files != null) for (File f : files) f.delete();
-        }
-    }
 }
