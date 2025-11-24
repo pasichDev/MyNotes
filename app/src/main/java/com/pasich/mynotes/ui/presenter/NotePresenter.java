@@ -521,7 +521,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public void extendedNoteChange(String jsonData) {
         final ParsedNote mNote = EditorJsonUtils.extendedNoteToOldNote(jsonData);
         getNote().setValue(mNote.plainText);
-        getNote().setAttachments(new Gson().toJson(mNote.attachments));
+        getNote().setAttachments(mNote.toAttachmentsJson());
         getNote().setValueJson(jsonData);
         getNote().setHasRichContent(true);
         onTextChanged();

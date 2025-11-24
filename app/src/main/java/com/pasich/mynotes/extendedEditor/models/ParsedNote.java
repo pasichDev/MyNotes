@@ -28,4 +28,14 @@ public class ParsedNote {
         }
     }
 
+    public String toAttachmentsJson() {
+        try {
+            return new Gson().toJson(attachments);
+        } catch (Exception e) {
+            Log.e("jsonToModel", "Failed to convert attachments to JSON", e);
+            return "[]"; // безпечний fallback
+        }
+    }
+
+
 }
