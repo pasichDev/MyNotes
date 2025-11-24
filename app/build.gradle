@@ -10,7 +10,7 @@ apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
 def appVersionCode = 41
-def appVersionName = "2.3.${appVersionCode}"
+def appVersionName = "2.4.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
     commandLine 'git', 'rev-parse', '--short', 'HEAD'

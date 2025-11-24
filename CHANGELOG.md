@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## [2.3.41] - XX.XX.XXXX
+## [2.4.41] - XX.XX.XXXX
+
+- **Advanced editor:** added the ability to attach files to notes (up to 20 MB).
+- Added new screen displaying the list of application dependencies.
 
 ## [2.3.40] - 13.10.2025
 
