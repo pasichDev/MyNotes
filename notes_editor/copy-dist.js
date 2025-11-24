@@ -2,70 +2,82 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// Емуляція __dirname в ESM
+// emulate __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Папка з бандлом
 const distDir = path.join(__dirname, 'dist')
 const srcDir = path.join(__dirname, 'src')
+const toolsDir = path.join(__dirname, 'src/tools')
+const customDir = path.join(__dirname, 'src/custom')
+const htmlFile = path.join(srcDir, 'editor.html')
 
-// Кінцева папка (Assets в Android)
-const destDir = path.join(
+// Android destination folder
+const destRoot = path.join(
   __dirname,
   '..',
   'app',
   'src',
   'main',
   'assets',
-  'editor',
-  'js'
+  'editor'
 )
 
-// Створюємо директорію, якщо нема
-if (!fs.existsSync(destDir)) {
-  fs.mkdirSync(destDir, { recursive: true })
+// paths inside assets/editor/
+const destJs = path.join(destRoot, 'js')
+const destCss = path.join(destRoot, 'css')
+
+// Ensure dirs exist
+for (const p of [destRoot, destJs, destCss]) {
+  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true })
 }
 
-// Копіювання файлів
-const copy = (src, dest, label) => {
+// --------- COPY HELPERS ---------
+function copy (src, dest, label) {
   fs.copyFileSync(src, dest)
-  console.log(`✅ Copied ${label}: ${dest}`)
+  console.log(`✅ Copied ${label} → ${dest}`)
 }
 
-// Мінімізований бандл
+// --------- COPY HTML ---------
+copy(htmlFile, path.join(destRoot, 'editor.html'), 'editor HTML')
+
+// --------- COPY JS bundles ---------
 copy(
   path.join(distDir, 'editor-bundle.min.js'),
-  path.join(destDir, 'editor-bundle.min.js'),
-  'bundle'
+  path.join(destJs, 'editor-bundle.min.js'),
+  'Editor.js bundle'
 )
 
-// Кастомні налаштування
 copy(
-  path.join(srcDir, 'custom.js'),
-  path.join(destDir, 'custom.min.js'),
-  'custom'
+  path.join(distDir, 'editor-init.min.js'),
+  path.join(destJs, 'editor-init.min.js'),
+  'Init'
 )
 
-// Локалізації
 copy(
-  path.join(srcDir, 'locales.js'),
-  path.join(destDir, 'locales.js'),
-  'locales'
+  path.join(distDir, 'runtime.min.js'),
+  path.join(destJs, 'runtime.min.js'),
+  'Runtime'
 )
 
-// --- Custom Attaches from src ---
-const attachesSrc = path.join(srcDir, 'attaches.umd.js')
-const attachesDest = path.join(destDir, 'attaches.umd.js')
+copy(
+  path.join(toolsDir, 'attaches.min.js'),
+  path.join(destJs, 'attaches.min.js'),
+  'Attaches'
+)
 
-if (fs.existsSync(attachesSrc)) {
-  copy(attachesSrc, attachesDest, 'attaches')
-} else {
-  console.log(`⚠️ Attaches skipped (file not found): ${attachesSrc}`)
-}
+// --------- COPY locales.js ---------
+copy(
+  path.join(customDir, 'locales.js'),
+  path.join(destJs, 'locales.js'),
+  'Locales'
+)
 
-// Видаляємо dist
-fs.rmSync(distDir, { recursive: true, force: true })
-console.log(`🗑️ Removed dist folder: ${distDir}`)
+// --------- COPY CSS built by plugin ---------
+copy(
+  path.join(srcDir, 'editor.css'),
+  path.join(destCss, 'editor.css'),
+  'Editor CSS'
+)
 
-console.log('🎉 Build process completed!')
+console.log('🎉 Build + copy completed successfully!')

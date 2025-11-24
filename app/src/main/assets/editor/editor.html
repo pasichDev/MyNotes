@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>My Notes Editor</title>
+
+    <link rel="stylesheet" href="./css/editor.css" />
+  </head>
+
+  <body>
+    <!-- Title -->
+    <div id="noteTitleInput" class="note-title" contenteditable="true"></div>
+
+    <!-- Loader -->
+    <div id="loading" class="loading">Loading editor...</div>
+
+    <!-- Editor container -->
+    <div id="editorjs" style="display: none"></div>
+
+    <!-- 1) EditorJS bundle (core + plugins) -->
+    <script src="js/editor-bundle.min.js"></script>
+
+    <!-- 2) Locales -->
+    <script src="js/locales.js"></script>
+
+    <!-- 3) Android Runtime Bridge -->
+    <script src="js/runtime.min.js"></script>
+
+    <!-- 4) Editor Initialization -->
+    <script src="js/editor-init.min.js"></script>
+
+    <!-- 5) Custom Attaches Tool -->
+    <script src="js/attaches.min.js"></script>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const locale =
+          new URLSearchParams(location.search).get("locale") || "en";
+
+        if (!window.getTranslationsForLocale) {
+          console.error("Locales not loaded!");
+          return;
+        }
+
+        const i18n = window.getTranslationsForLocale(locale);
+
+        if (!window.initEditor) {
+          console.error("Editor init module missing!");
+          return;
+        }
+
+        window.initEditor(locale, i18n);
+      });
+    </script>
+  </body>
+</html>

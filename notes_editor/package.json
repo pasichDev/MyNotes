@@ -3,9 +3,10 @@
   "version": "1.2.0",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "build": "rollup -c && node copy-dist.js"
-  },
+ "scripts": {
+  "build": "rollup -c && node copy-dist.js",
+  "dev": "rollup -c -w"
+},
   "keywords": [],
   "author": "pasichDev",
   "license": "ISC",

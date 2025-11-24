@@ -86,7 +86,7 @@ public class NoteEditorView extends FrameLayout {
 
     private void loadEditorHtml() {
         webView.loadUrl(
-                "file:///android_asset/editor/note_editor.html?locale=" + Locale.getDefault().getLanguage()
+                "file:///android_asset/editor/editor.html?locale=" + Locale.getDefault().getLanguage()
         );
     }
 

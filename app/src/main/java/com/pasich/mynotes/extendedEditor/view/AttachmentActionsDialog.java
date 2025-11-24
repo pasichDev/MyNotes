@@ -1,11 +1,13 @@
 package com.pasich.mynotes.extendedEditor.view;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
@@ -24,7 +26,9 @@ import java.io.FileInputStream;
 import java.io.OutputStream;
 
 public class AttachmentActionsDialog {
+    private static final String TAG = "AttachmentActionsDialog";
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     public static void show(
             Context ctx,
             EditorAttachment attachment,
@@ -123,6 +127,7 @@ public class AttachmentActionsDialog {
             ctx.startActivity(Intent.createChooser(intent, ctx.getString(R.string.attachment_open_with)));
 
         } catch (Exception e) {
+            Log.e(TAG, "openWith() aattachments failded", e);
             Toast.makeText(ctx, ctx.getString(R.string.attachment_open_failed), Toast.LENGTH_SHORT).show();
         }
     }
