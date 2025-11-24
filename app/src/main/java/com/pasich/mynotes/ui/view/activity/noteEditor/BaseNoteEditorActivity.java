@@ -59,7 +59,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     // Bind presenter to layout (if required)
 
     protected void onAfterPresenterReady() {
-    // Optional hook after presenter initialization
+        // Optional hook after presenter initialization
     }
 
     protected abstract void applyEdgeToEdgeInsets(View rootView);
@@ -68,9 +68,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     protected abstract void onNewNoteInit(Note note);
     // Load a new/empty note into the editor
 
-    protected void onExistingNoteLoaded(long id) {
-    // Optional hook after loading existing note
-    }
 
     protected abstract void setNewNoteTitle();
     // Set title for a new note
@@ -114,15 +111,13 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         // Existing note — load it
         if (id > 0) {
             notePresenter.loadingData(id);
-            onExistingNoteLoaded(id);
             return;
         }
 
         // New note case
         if (notePresenter.getNewNotesKey()) {
-
             // Optional tag
-            String tag = notePresenter.getTagNote();
+            String tag = notePresenter.getAssignedTagNote();
             if (tag != null && tag.length() >= 2) {
                 changeTag(tag, false);
             }
@@ -241,7 +236,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Override
     public void closeActivityNotSaved() {
-        notePresenter.setExitNoSave(true);
         finish();
     }
 

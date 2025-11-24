@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.contract;
 
-
 import android.content.Intent;
 
 import com.pasich.mynotes.base.view.ActionBar;
@@ -24,8 +23,6 @@ public interface NoteContract {
 
         void loadingNote(Note note);
 
-        void editIdNoteCreated(long idNote);
-
         void updateSaveStatus(SaveState saveState);
     }
 
@@ -37,8 +34,6 @@ public interface NoteContract {
         void loadingData(long idNote);
 
         void activateEditNote();
-
-        void autoSaveNote(Note note, AutoSaveCallback callback);
 
         void deleteNote(Note note);
 
@@ -54,13 +49,9 @@ public interface NoteContract {
 
         void setNote(Note mNote);
 
-        String getTagNote();
+        String getAssignedTagNote();
 
-        void setTagNote(String tagNote);
-
-        boolean getExitNoteSave();
-
-        void setExitNoSave(boolean exitNoSave);
+        void setAssignedTagNote(String tag);
 
         boolean getNewNotesKey();
 
@@ -68,17 +59,17 @@ public interface NoteContract {
 
         int getTypeFace(String textStyle);
 
-        void onTextChanged();
+        void onNoteChanged();
 
         boolean getExtendedEditor();
 
         void setExtendedEditor(boolean extendedEditor);
 
-        void extendedTitleChange(String title);
+        void extendedNoteChange(String title, String jsonData);
 
-        void extendedNoteChange(String jsonData);
+        void simpleNoteChange(String title, String value);
 
-
+        boolean hasNote();
     }
 
     interface AutoSaveCallback {

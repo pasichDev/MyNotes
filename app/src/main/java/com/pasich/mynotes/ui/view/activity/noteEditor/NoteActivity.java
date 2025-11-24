@@ -50,10 +50,12 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     protected void onNewNoteInit(Note note) {
         // Simple version
     }
+
     @Override
     protected void setNewNoteTitle() {
         binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
     }
+
     @Override
     protected int getMenuResId() {
         return R.menu.menu_activity_toolbar_note;
@@ -235,8 +237,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
             if (!keyboardWasVisible && keyboardWillBeVisible && binding.valueNote.isFocused()) {
                 lastCursorPosition = -1;
                 binding.valueNote.postDelayed(this::scrollToCursor, 200);
-            }
-            else if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
+            } else if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
                 binding.scrollView.post(() -> {
                     if (Math.abs(binding.scrollView.getScrollY() - savedScrollPosition) > 5) {
                         binding.scrollView.scrollTo(0, savedScrollPosition);
@@ -247,7 +248,6 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
             return insets;
         });
     }
-
 
 
     @Override
@@ -273,29 +273,25 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         binding.notesTitle.addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
+                if (!notePresenter.hasNote()) return;
                 if (s.toString().contains("\n")) {
                     binding.notesTitle.setText(s.toString().replace('\n', ' ').trim());
                     binding.valueNote.requestFocus();
                 }
                 String title = s.toString().trim();
                 binding.titleToolbarCollapsed.setText(!title.isEmpty() ? title : getString(R.string.noteTitle));
+                notePresenter.simpleNoteChange(title, null);
 
-                if (notePresenter != null && notePresenter.getNote() != null) {
-                    notePresenter.getNote().setTitle(title);
-                    notePresenter.getNote().setHasRichContent(false);
-                    notePresenter.onTextChanged();
-                }
             }
         });
 
         binding.valueNote.addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
-                if (notePresenter != null && notePresenter.getNote() != null) {
-                    notePresenter.getNote().setValue(s.toString());
-                    notePresenter.getNote().setValueJson("");
-                    notePresenter.getNote().setHasRichContent(false);
-                    notePresenter.onTextChanged();
+                if (!notePresenter.hasNote()) return;
+                String newValue = s.toString();
+                if (!newValue.equals(notePresenter.getNote().getValue())) {
+                    notePresenter.simpleNoteChange(null, newValue);
                 }
             }
         });
@@ -308,12 +304,6 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         });
 
     }
-
-    @Override
-    public void editIdNoteCreated(long idNote) {
-        notePresenter.getNote().setId(Math.toIntExact(idNote));
-    }
-
 
     @Override
     public void activatedActivity() {
@@ -422,7 +412,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     public void changeTag(String nameTag, boolean change) {
         if (change) {
             notePresenter.getNote().setTag(nameTag);
-            notePresenter.setTagNote(nameTag);
+            notePresenter.setAssignedTagNote(nameTag);
         }
         if (!nameTag.isEmpty()) {
             String tagText = getString(R.string.tagHastag, nameTag);

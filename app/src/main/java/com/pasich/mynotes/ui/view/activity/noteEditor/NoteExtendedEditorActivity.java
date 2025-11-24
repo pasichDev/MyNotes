@@ -149,22 +149,15 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
      * Process title changes with enhanced features
      */
     private void processTitleChange(String title) {
-        notePresenter.extendedTitleChange(title);
+        notePresenter.extendedNoteChange(title, null);
     }
 
     /**
      * Process text changes with enhanced features
      */
     private void processTextChange(String jsonData) {
-        notePresenter.extendedNoteChange(jsonData);
+        notePresenter.extendedNoteChange(null, jsonData);
     }
-
-    @Override
-    public void editIdNoteCreated(long idNote) {
-        binding.titleToolbarDataCollapsed.setText(getString(R.string.lastDateEditNote, lastDayEditNote(notePresenter.getNote().getDate())));
-        notePresenter.getNote().setId(Math.toIntExact(idNote));
-    }
-
 
     @Override
     public void activatedActivity() {
@@ -221,7 +214,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void changeTag(String nameTag, boolean change) {
         if (change) {
             notePresenter.getNote().setTag(nameTag);
-            notePresenter.setTagNote(nameTag);
+            notePresenter.setAssignedTagNote(nameTag);
         }
         if (!nameTag.isEmpty()) {
             String tagText = getString(R.string.tagHastag, nameTag);

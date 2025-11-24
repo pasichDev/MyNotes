@@ -18,19 +18,19 @@ public class Note {
 
     @SerializedName("b")
     private String title;
-    
+
     @SerializedName("c")
     private String value;
-    
+
     @SerializedName("d")
     private long date;
-    
+
     @SerializedName("e")
     private String tag;
-    
+
     @SerializedName("f")
     private String valueJson;
-    
+
     @SerializedName("g")
     private boolean hasRichContent;
 
@@ -67,7 +67,7 @@ public class Note {
     }
 
     public String getTitle() {
-        return this.title;
+        return Objects.requireNonNullElse(title, "");
     }
 
     public void setTitle(String title) {
@@ -116,7 +116,7 @@ public class Note {
     }
 
     public String getValueJson() {
-        return this.valueJson;
+        return Objects.requireNonNullElse(valueJson, "");
     }
 
     public void setValueJson(String valueJson) {
@@ -138,4 +138,6 @@ public class Note {
     public void setAttachments(String attachments) {
         this.attachments = attachments;
     }
+
+
 }

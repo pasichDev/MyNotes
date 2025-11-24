@@ -6,9 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
@@ -24,364 +21,29 @@ import javax.inject.Inject;
 
 import io.reactivex.disposables.CompositeDisposable;
 
+
 public class NotePresenter extends BasePresenter<NoteContract.view> implements NoteContract.presenter {
 
-    private static final long AUTO_SAVE_DELAY = 2000; // 2 секунди
-    // Автозбереження
-    private final Handler autoSaveHandler;
-    private String shareText, tagNote;
-    private long idKey;
-    private Note mNote;
-    private boolean exitNoSave = false, newNoteKey;
-    private Runnable autoSaveRunnable;
-    private String lastSavedTitle;
-    private String lastSavedValue;
-    private String lastSavedJsonValue;
+    private static final String TAG = "NotePresenter";
 
-    // Блокування закриття під час збереження
+    private static final long AUTO_SAVE_DELAY = 2000;
+    private final Handler autoSaveHandler;
+    // Last successfully saved version of the note
+    private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
+    private String shareText, assignedTag = "";
+    private long idKey;
+    private boolean newNoteKey;
+    private boolean extendedEditor = false;
+    private Runnable autoSaveRunnable;
     private boolean isSavingInProgress = false;
     private boolean pendingClose = false;
-
-    private boolean extendedEditor = false;
+    // Note downloaded from the database
+    private Note targetNote;
 
     @Inject
     public NotePresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
         autoSaveHandler = new Handler(Looper.getMainLooper());
-
-        lastSavedTitle = "";
-        lastSavedValue = "";
-        lastSavedJsonValue = "";
-        shareText = "";
-        tagNote = "";
-    }
-
-    @Override
-    public void onTextChanged() {
-        // КРИТИЧНО: Перевіряємо чи Activity ще живе
-        if (getView() == null) {
-            // Activity знищується, але є зміни - робимо екстрене збереження
-            if (hasValidContent(mNote)) {
-                performEmergencySave(mNote);
-            }
-            return;
-        }
-
-        // Перевіряємо чи є контент для збереження
-        if (!hasValidContent(mNote)) {
-            // Якщо нотатка пуста, приховуємо індикатор і не запускаємо збереження
-            updateSaveState(SaveState.IDLE);
-            return;
-        }
-
-        // Скасовуємо попередню заплановану операцію збереження
-        if (autoSaveRunnable != null) {
-            autoSaveHandler.removeCallbacks(autoSaveRunnable);
-        }
-
-        // Встановлюємо стан "очікування збереження" тільки якщо є контент
-        updateSaveState(SaveState.PENDING);
-
-        // Створюємо нову операцію автозбереження з затримкою
-        autoSaveRunnable = () -> {
-            if (mNote != null && getView() != null) {
-                performAutoSave();
-            }
-        };
-
-        autoSaveHandler.postDelayed(autoSaveRunnable, AUTO_SAVE_DELAY);
-    }
-
-    private void performAutoSave() {
-        if (mNote == null || getView() == null) return;
-
-        autoSaveNote(mNote, new NoteContract.AutoSaveCallback() {
-            @Override
-            public void onSuccess() {
-                updateSaveState(SaveState.SAVED);
-                // Через 3 секунди приховуємо індикатор
-                autoSaveHandler.postDelayed(() -> updateSaveState(SaveState.IDLE), 3000);
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                updateSaveState(SaveState.ERROR);
-                Log.e("NotePresenter", "Auto-save error", error);
-                // Через 5 секунд повертаємо до стану "очікування"
-                autoSaveHandler.postDelayed(() -> updateSaveState(SaveState.PENDING), 5000);
-            }
-        });
-    }
-
-    @Override
-    public void autoSaveNote(Note note, NoteContract.AutoSaveCallback callback) {
-        if (note == null) {
-            callback.onError(new Exception("Note is null"));
-            return;
-        }
-
-        // КРИТИЧНО: Перевіряємо чи Activity ще живе перед збереженням
-        if (getView() == null) {
-            // Activity знищене, але все одно зберігаємо дані синхронно
-            performEmergencySave(note);
-            return;
-        }
-
-        // Перевіряємо чи є валідний контент для збереження
-        if (!hasValidContent(note)) {
-            updateSaveState(SaveState.IDLE);
-            callback.onSuccess();
-            return;
-        }
-
-        if (note.getId() == 0) {
-            // Для нових нотаток
-            if (newNoteKey) {
-                updateSaveState(SaveState.SAVING);
-                // Викликаємо createNote з callback
-                createNoteWithCallback(note, callback);
-            } else {
-                callback.onSuccess();
-            }
-            return;
-        }
-
-        // Перевіряємо чи є зміни
-        boolean hasChanges = !note.getTitle().equals(lastSavedTitle) || hasValueChanges();
-
-        if (!hasChanges) {
-            updateSaveState(SaveState.IDLE);
-            return;
-        }
-
-        updateSaveState(SaveState.SAVING);
-        note.setDate(new Date().getTime());
-
-        getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-            lastSavedTitle = note.getTitle();
-            lastSavedValue = note.getValue();
-            lastSavedJsonValue = note.getValueJson();
-            callback.onSuccess();
-        }, callback::onError));
-    }
-
-    private void updateSaveState(SaveState newState) {
-        isSavingInProgress = (newState == SaveState.SAVING);
-
-        if (getView() != null) {
-            getView().updateSaveStatus(newState);
-        }
-
-        // Якщо збереження завершилось і очікується закриття
-        if (!isSavingInProgress && pendingClose) {
-            pendingClose = false;
-            if (getView() != null) {
-                getView().closeNoteActivity();
-            }
-        }
-    }
-
-    @Override
-    public void closeActivity() {
-        // 1. Якщо нотатка нова (id > 0) але немає валідного контенту → видаляємо
-        if (mNote != null && mNote.getId() > 0 && !hasValidContent(mNote)) {
-            deleteNote(mNote);
-            if (getView() != null) getView().closeNoteActivity();
-            return;
-        }
-
-        // Додаткова перевірка на null для mNote
-        if (mNote == null) {
-            if (getView() != null) {
-                getView().closeNoteActivity();
-            }
-            return;
-        }
-
-        // Перевіряємо, чи є незбережені зміни
-        if (hasUnsavedChanges()) {
-            if (isSavingInProgress) {
-                // Якщо зараз відбувається збереження, чекаємо його завершення
-                pendingClose = true;
-                return;
-            } else {
-                // Запускаємо збереження перед закриттям
-                pendingClose = true;
-
-                //Якщо ця на нотатка не була змінена та остання редакція в простому редаторі то канцесим її, також якщо це розширений редактор
-                String jsonValue = lastSavedJsonValue != null ? lastSavedJsonValue : "";
-                if (!mNote.hasRichContent() && jsonValue.isEmpty() && extendedEditor) {
-                    if (getView() != null) {
-                        getView().closeNoteActivity();
-                    }
-                    return;
-                }
-
-                performFinalSave();
-                return;
-            }
-        }
-
-        // Якщо немає змін, закриваємо одразу
-        if (getView() != null) {
-            getView().closeNoteActivity();
-        }
-    }
-
-    private boolean hasUnsavedChanges() {
-        if (mNote == null) return false;
-
-        // Спочатку перевіряємо чи є валідний контент
-        if (!hasValidContent(mNote)) {
-            return false; // Якщо контент пустий, не вважаємо це за зміни
-        }
-
-        // Для нових нотаток перевіряємо чи є контент
-        if (newNoteKey) {
-            return hasValidContent(mNote);
-        }
-
-        return hasValueChanges();
-    }
-
-    /**
-     * Перевіряє чи є зміни в нотатці враховуючи тип редактора
-     */
-    private boolean hasValueChanges() {
-        if (extendedEditor) {
-            Gson gson = new Gson();
-            // Перевіряємо на null перед використанням
-            String currentJson = mNote.getValueJson() != null ? mNote.getValueJson() : "";
-            String savedJson = lastSavedJsonValue != null ? lastSavedJsonValue : "";
-
-            JsonElement e1 = JsonParser.parseString(gson.toJson(currentJson));
-            JsonElement e2 = JsonParser.parseString(gson.toJson(savedJson));
-
-            return !e1.equals(e2);
-        } else {
-            // Перевіряємо на null перед використанням
-            String currentValue = mNote.getValue() != null ? mNote.getValue() : "";
-            String savedValue = lastSavedValue != null ? lastSavedValue : "";
-
-            return !currentValue.equals(savedValue);
-        }
-    }
-
-
-    /**
-     * Перевіряє чи має нотатка валідний контент (не пустий заголовок або текст)
-     */
-    private boolean hasValidContent(Note note) {
-        if (note == null) return false;
-
-        String title = note.getTitle() != null ? note.getTitle().trim() : "";
-        String value = note.getValue() != null ? note.getValue().trim() : "";
-
-        // Вважаємо контент валідним якщо є хоча б 1 символ в заголовку або тексті
-        return !title.isEmpty() || !value.isEmpty();
-    }
-
-    private void performFinalSave() {
-        if (mNote == null) return;
-
-        updateSaveState(SaveState.SAVING);
-
-        autoSaveNote(mNote, new NoteContract.AutoSaveCallback() {
-            @Override
-            public void onSuccess() {
-                updateSaveState(SaveState.SAVED);
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                updateSaveState(SaveState.ERROR);
-                // Навіть при помилці закриваємо через 2 секунди
-                autoSaveHandler.postDelayed(() -> {
-                    pendingClose = false;
-                    if (getView() != null) {
-                        getView().closeNoteActivity();
-                    }
-                }, 2000);
-            }
-        });
-    }
-
-    @Override
-    public void viewIsReady() {
-        getView().initParam();
-        getView().changeTextStyle();
-        getView().changeTextSizeOffline();
-        getView().settingsActionBar();
-        getView().initTypeActivity();
-        getView().initListeners();
-    }
-
-    @Override
-    public void getLoadIntentData(Intent mIntent) {
-        setIdKey(mIntent.getLongExtra("idNote", 0));
-        setTagNote(mIntent.getStringExtra("tagNote"));
-        setShareText(mIntent.getStringExtra("shareText"));
-        setNewNoteKey(mIntent.getBooleanExtra("NewNote", true));
-
-        // Для нових нотаток створюємо початковий об'єкт Note
-        if (newNoteKey) {
-            mNote = new Note().create("", shareText != null ? shareText : "", new Date().getTime(), tagNote);
-            lastSavedTitle = "";
-            lastSavedValue = "";
-            lastSavedJsonValue = "";
-            updateSaveState(SaveState.IDLE);
-        }
-    }
-
-    @Override
-    public void loadingData(long idNote) {
-        getCompositeDisposable().add(getDataManager()
-                .getNoteForId(idNote)
-                .subscribeOn(getSchedulerProvider().io())
-                .observeOn(getSchedulerProvider().ui())
-                .subscribe(note -> {
-                    if (note != null && getView() != null) {
-                        getView().loadingNote(note);
-                        setNote(note);
-                        // Оновлюємо збережені значення при завантаженні
-                        lastSavedTitle = note.getTitle() != null ? note.getTitle() : "";
-                        lastSavedValue = note.getValue() != null ? note.getValue() : "";
-                        lastSavedJsonValue = note.getValueJson() != null ? note.getValueJson() : "";
-                        updateSaveState(SaveState.IDLE);
-                    }
-                }, throwable -> Log.e("NotePresenter", "Error loading note", throwable)));
-    }
-
-    @Override
-    public void activateEditNote() {
-        getView().activatedActivity();
-    }
-
-    // Новий метод створення нотатки з callback'ом для автозбереження
-    private void createNoteWithCallback(Note note, NoteContract.AutoSaveCallback callback) {
-        getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(aLong -> {
-            note.setId(Math.toIntExact(aLong));
-            if (getView() != null) {
-                getView().editIdNoteCreated(aLong);
-            }
-            // Оновлюємо збережені значення після створення
-            lastSavedTitle = note.getTitle();
-            lastSavedValue = note.getValue();
-            lastSavedJsonValue = note.getValueJson();
-            setNewNoteKey(false);
-            callback.onSuccess();
-        }, throwable -> {
-            Log.e("NotePresenter", "Error creating note", throwable);
-            callback.onError(throwable);
-        }));
-    }
-
-
-    @Override
-    public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().deleteNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
-                }, // onComplete
-                throwable -> Log.e("NotePresenter", "Error deleting note", throwable)));
     }
 
     // Getters and Setters
@@ -402,19 +64,19 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     }
 
     public Note getNote() {
-        return mNote;
+        return targetNote;
     }
 
     public void setNote(Note mNote) {
-        this.mNote = mNote;
+        this.targetNote = mNote;
     }
 
-    public String getTagNote() {
-        return tagNote;
+    public String getAssignedTagNote() {
+        return assignedTag;
     }
 
-    public void setTagNote(String tagNote) {
-        this.tagNote = tagNote == null ? "" : tagNote;
+    public void setAssignedTagNote(String tag) {
+        this.assignedTag = tag == null ? "" : tag;
     }
 
     public boolean getNewNotesKey() {
@@ -423,80 +85,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     public void setNewNoteKey(boolean newNoteKey) {
         this.newNoteKey = newNoteKey;
-    }
-
-    public boolean getExitNoteSave() {
-        return exitNoSave;
-    }
-
-    public void setExitNoSave(boolean exitNoSave) {
-        this.exitNoSave = exitNoSave;
-    }
-
-    @Override
-    public int getTypeFace(String textStyle) {
-        return switch (textStyle) {
-            case "italic" -> Typeface.ITALIC;
-            case "bold" -> Typeface.BOLD;
-            case "bold-italic" -> Typeface.BOLD_ITALIC;
-            default -> Typeface.NORMAL;
-        };
-    }
-
-    /**
-     * Очищаємо Handler та callbacks при знищенні Activity
-     * КРИТИЧНО для уникнення memory leaks та крашів
-     */
-    public void cleanupHandlers() {
-        if (autoSaveHandler != null && autoSaveRunnable != null) {
-            autoSaveHandler.removeCallbacks(autoSaveRunnable);
-            autoSaveRunnable = null;
-        }
-        pendingClose = false;
-        isSavingInProgress = false;
-    }
-
-    /**
-     * Публічний метод для екстреного збереження з Activity
-     */
-    public void performEmergencySaveIfNeeded() {
-        if (mNote != null && hasUnsavedChanges()) {
-            performEmergencySave(mNote);
-        }
-    }
-
-    /**
-     * Екстрене збереження коли Activity знищується але є незбережені дані
-     * Виконується синхронно для гарантії збереження
-     */
-    private void performEmergencySave(Note note) {
-        try {
-            if (note.getId() == 0) {
-                // Нова нотатка - створюємо синхронно
-                if (newNoteKey && hasValidContent(note)) {
-                    getCompositeDisposable().add(getDataManager().addNote(note, false).subscribeOn(getSchedulerProvider().io()).subscribe(aLong -> {
-                        note.setId(Math.toIntExact(aLong));
-                        lastSavedTitle = note.getTitle();
-                        lastSavedValue = note.getValue();
-                        lastSavedJsonValue = note.getValueJson();
-                        setNewNoteKey(false);
-                    }, throwable -> Log.e("NotePresenter", "Emergency save failed", throwable)));
-                }
-            } else {
-                // Існуюча нотатка - оновлюємо синхронно
-                boolean hasChanges = !note.getTitle().equals(lastSavedTitle) || hasValueChanges();
-                if (hasChanges && hasValidContent(note)) {
-                    note.setDate(new Date().getTime());
-                    getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
-                        lastSavedTitle = note.getTitle();
-                        lastSavedValue = note.getValue();
-                        lastSavedJsonValue = note.getValueJson();
-                    }, throwable -> Log.e("NotePresenter", "Emergency update failed", throwable)));
-                }
-            }
-        } catch (Exception e) {
-            Log.e("NotePresenter", "Critical: Emergency save crashed", e);
-        }
     }
 
     @Override
@@ -509,21 +97,479 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         this.extendedEditor = extendedEditor;
     }
 
+    @Override
+    public boolean hasNote() {
+        return targetNote != null;
+    }
+
+    private void syncSavedSnapshot(Note note) {
+        savedNote.setTitle(note.getTitle());
+        savedNote.setValue(note.getValue());
+        savedNote.setValueJson(note.getValueJson());
+    }
+
+
+    /**
+     * Trigger auto-save for any text change.
+     * <p>
+     * Logic:
+     * 1) If the note is empty, do not save anything (IDLE).
+     * 2) Cancel the previous auto-save if the user continues to enter text.
+     * 3) Set status to PENDING — there are unsaved changes.
+     * 4) After a pause (AUTO_SAVE_DELAY), execute saveNote().
+     * - onSuccess → SAVED → after 3 seconds → IDLE
+     * - onError   → ERROR → after 5 seconds → PENDING
+     * <p>
+     * Works as “smart” autosave: saves only after a pause in typing.
+     */
 
     @Override
-    public void extendedTitleChange(String title) {
-        getNote().setTitle(title);
-        getNote().setHasRichContent(true);
-        onTextChanged();
+    public void onNoteChanged() {
+        if (!hasMeaningfulContent(targetNote)) {
+            updateSaveState(SaveState.IDLE);
+            return;
+        }
+
+        // Cancel the previously scheduled backup operation
+        if (autoSaveRunnable != null) {
+            autoSaveHandler.removeCallbacks(autoSaveRunnable);
+        }
+
+        updateSaveState(SaveState.PENDING);
+
+        autoSaveRunnable = () -> {
+            if (targetNote != null && !isViewDead()) {
+                saveNote(targetNote, new NoteContract.AutoSaveCallback() {
+                    @Override
+                    public void onSuccess() {
+                        updateSaveState(SaveState.SAVED);
+                        autoSaveHandler.postDelayed(() -> updateSaveState(SaveState.IDLE), 3000);
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        updateSaveState(SaveState.ERROR);
+                        autoSaveHandler.postDelayed(() -> updateSaveState(SaveState.PENDING), 5000);
+                    }
+                });
+            }
+        };
+
+        autoSaveHandler.postDelayed(autoSaveRunnable, AUTO_SAVE_DELAY);
+    }
+
+
+    /**
+     * Saves a note (updates an existing one).
+     * <p>
+     * Main logic:
+     * <p>
+     * 1) Null check:
+     * - If the note is missing, saving is impossible, so we return an error.
+     * <p>
+     * 2) Activity lifecycle check:
+     * - If View is destroyed, but there is data in the note — emergency saving is performed,
+     * which works without UI and without callback.
+     * <p>
+     * 3) Content check:
+     * - If the note is empty (title/value/valueJson), there is no point in saving.
+     * We return IDLE and success.
+     * <p>
+     * 4) Checking for changes:
+     * - If the note has not changed compared to the last saved version —
+     * we do not perform unnecessary writing to the database.
+     * <p>
+     * 5) Main saving:
+     * - We update the edit date.
+     * - Perform updateNote() via RxJava (IO → UI).
+     * - After successful saving, update lastSavedXXX
+     * so that the system correctly identifies the changed data next time.
+     * <p>
+     * 6) Error handling:
+     * - In case of failure — log and call callback.onError().
+     * <p>
+     * Note:
+     * The method is only responsible for updating an existing note.
+     */
+
+    private void saveNote(Note note, NoteContract.AutoSaveCallback callback) {
+        if (note == null) {
+            callback.onError(new Exception("Note is null"));
+            return;
+        }
+
+        // Check if Activity is still alive
+        // Activity is destroyed, but there are changes - perform emergency saving
+        if (isViewDead()) {
+            if (hasMeaningfulContent(targetNote)) {
+                performEmergencySave(targetNote);
+            }
+            return;
+        }
+
+        // Check if there is valid content to save
+        if (!hasMeaningfulContent(note)) {
+            updateSaveState(SaveState.IDLE);
+            callback.onSuccess();
+            return;
+        }
+
+        // Checking for changes
+        if (!(!note.getTitle().equals(savedNote.getTitle()) || isContentChanged())) {
+            updateSaveState(SaveState.IDLE);
+            return;
+        }
+
+        updateSaveState(SaveState.SAVING);
+        note.setDate(new Date().getTime());
+
+        getCompositeDisposable().add(getDataManager().updateNote(note)
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(() -> {
+                    syncSavedSnapshot(note);
+                    callback.onSuccess();
+                }, error -> {
+                    Log.e(TAG, "saveNote() failed", error);
+                    callback.onError(error);
+                }));
+    }
+
+    /**
+     * Public method for emergency saving from Activity simple editor
+     */
+    public void performEmergencySaveIfNeeded() {
+        if (targetNote != null && needsSave()) {
+            performEmergencySave(targetNote);
+        }
+    }
+
+    /**
+     * Emergency saving when Activity is destroyed but there is unsaved data.
+     * Performed synchronously to ensure saving.
+     * Only NoteActivity (SimpleEditor)
+     */
+    private void performEmergencySave(Note note) {
+        try {
+            boolean hasChanges = !note.getTitle().equals(savedNote.getTitle()) || isContentChanged();
+            if (hasChanges && hasMeaningfulContent(note)) {
+                note.setDate(new Date().getTime());
+                getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> syncSavedSnapshot(note), throwable -> Log.e(TAG, "Emergency update failed", throwable)));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Critical: Emergency save crashed", e);
+        }
+    }
+
+    /**
+     * Updates the save status and notifies the UI.
+     * If the save is complete and closing is expected, closes the screen.
+     */
+
+    private void updateSaveState(SaveState newState) {
+        isSavingInProgress = (newState == SaveState.SAVING);
+        if (isViewDead()) {
+            return;
+        }
+        getView().updateSaveStatus(newState);
+
+
+        // If saving is complete and closing is expected
+        if (!isSavingInProgress && pendingClose) {
+            pendingClose = false;
+            getView().closeNoteActivity();
+        }
+    }
+
+    /**
+     * Handles closing the note screen:
+     * - deletes empty new notes,
+     * - saves pending changes,
+     * - or closes immediately if nothing to save.
+     */
+    @Override
+    public void closeActivity() {
+
+        // Case: new empty note → delete and exit
+        if (targetNote != null && newNoteKey && !hasMeaningfulContent(targetNote)) {
+            deleteNote(targetNote);
+            if (!isViewDead()) getView().closeNoteActivity();
+            return;
+        }
+
+        // No note → just close
+        if (targetNote == null) {
+            if (!isViewDead()) getView().closeNoteActivity();
+            return;
+        }
+
+        // Handle unsaved changes
+        if (needsSave()) {
+
+            if (isSavingInProgress) {
+                pendingClose = true;
+                return;
+            }
+
+            pendingClose = true;
+
+            // Extended editor case: no JSON saved yet → just close
+            if (!targetNote.hasRichContent()
+                    && savedNote.getValueJson().isEmpty()
+                    && extendedEditor) {
+                if (!isViewDead()) getView().closeNoteActivity();
+                return;
+            }
+
+            saveNote(targetNote, new NoteContract.AutoSaveCallback() {
+                @Override
+                public void onSuccess() {
+                    updateSaveState(SaveState.SAVED);
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    updateSaveState(SaveState.ERROR);
+                    autoSaveHandler.postDelayed(() -> {
+                        pendingClose = false;
+                        if (!isViewDead()) {
+                            getView().closeNoteActivity();
+                        }
+                    }, AUTO_SAVE_DELAY);
+                }
+            });
+            return;
+        }
+
+        // Nothing to save → close immediately
+        if (!isViewDead()) getView().closeNoteActivity();
+    }
+
+    /**
+     * Determines if the note requires saving (new or modified).
+     */
+
+    private boolean needsSave() {
+        if (targetNote == null) return false;
+
+        // No content → definitely nothing to save
+        if (!hasMeaningfulContent(targetNote)) return false;
+
+        // New note with content → always unsaved
+        if (newNoteKey) return true;
+
+        // For existing ones — compare with saved
+        return isContentChanged();
+    }
+
+
+    /**
+     * Checks whether content differs from the last saved version.
+     */
+
+    private boolean isContentChanged() {
+        if (targetNote == null || savedNote == null) return false;
+
+        // Title changed
+        if (!targetNote.getTitle().equals(savedNote.getTitle())) return true;
+
+        if (extendedEditor) {
+            // JSON changed
+            return !targetNote.getValueJson().equals(savedNote.getValueJson());
+        } else {
+            // Plain text changed
+            return !targetNote.getValue().equals(savedNote.getValue());
+        }
+    }
+
+
+    /**
+     * Checks whether the note contains any meaningful data.
+     */
+
+    private boolean hasMeaningfulContent(Note note) {
+        if (note == null) return false;
+
+        // Simple editor
+        if (!note.getTitle().trim().isEmpty()) return true;
+        if (!note.getValue().trim().isEmpty()) return true;
+
+        // Attachments (extended editor too)
+        if (note.getAttachments() != null && !note.getAttachments().trim().isEmpty()) {
+            return true;
+        }
+
+        // Extended editor JSON
+        String json = note.getValueJson();
+        return json != null && !json.trim().isEmpty() && !json.equals("[]");
+    }
+
+
+    @Override
+    public void viewIsReady() {
+        getView().initParam();
+        getView().changeTextStyle();
+        getView().changeTextSizeOffline();
+        getView().settingsActionBar();
+        getView().initTypeActivity();
+        getView().initListeners();
+    }
+
+    /**
+     * Loads parameters passed to the Activity via Intent.
+     * Initializes presenter fields (id, tag, shared text, creation flag).
+     * If this is a new note, creates a fresh Note instance with default values.
+     */
+
+    @Override
+    public void getLoadIntentData(Intent mIntent) {
+        setIdKey(mIntent.getLongExtra("idNote", 0));
+        setAssignedTagNote(mIntent.getStringExtra("tagNote"));
+        setShareText(mIntent.getStringExtra("shareText"));
+        setNewNoteKey(mIntent.getBooleanExtra("NewNote", true));
+
+        // For new notes, we create an initial Note object
+        if (newNoteKey) {
+            targetNote = new Note().create("", shareText != null ? shareText : "", new Date().getTime(), assignedTag);
+            updateSaveState(SaveState.IDLE);
+        }
+    }
+
+    /**
+     * Loads a note from the database by its ID.
+     * Once received, forwards it to the View, updates the internal targetNote,
+     * synchronizes the savedNote snapshot, and resets the save state to IDLE.
+     */
+    @Override
+    public void loadingData(long idNote) {
+        Log.e(TAG, "load" + idNote);
+        getCompositeDisposable().add(getDataManager()
+                .getNoteForId(idNote)
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(note -> {
+                    if (note != null && !isViewDead()) {
+                        getView().loadingNote(note);
+                        setNote(note);
+                        // Update saved values on load
+                        syncSavedSnapshot(note);
+                        updateSaveState(SaveState.IDLE);
+                    }
+                }, throwable -> Log.e(TAG, "loadingData() failed", throwable)));
     }
 
     @Override
-    public void extendedNoteChange(String jsonData) {
-        final ParsedNote mNote = EditorJsonUtils.extendedNoteToOldNote(jsonData);
-        getNote().setValue(mNote.plainText);
-        getNote().setAttachments(mNote.toAttachmentsJson());
-        getNote().setValueJson(jsonData);
-        getNote().setHasRichContent(true);
-        onTextChanged();
+    public void activateEditNote() {
+        getView().activatedActivity();
     }
+
+    @Override
+    public void deleteNote(Note note) {
+        getCompositeDisposable().add(getDataManager().deleteNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
+                    // completion ignored intentionally
+                },
+                throwable -> Log.e(TAG, "deleteNote() failed", throwable)));
+    }
+
+
+    @Override
+    public int getTypeFace(String textStyle) {
+        return switch (textStyle) {
+            case "italic" -> Typeface.ITALIC;
+            case "bold" -> Typeface.BOLD;
+            case "bold-italic" -> Typeface.BOLD_ITALIC;
+            default -> Typeface.NORMAL;
+        };
+    }
+
+    /**
+     * Clean up Handler and callbacks when destroying Activity
+     */
+    public void cleanupHandlers() {
+        if (autoSaveHandler != null && autoSaveRunnable != null) {
+            autoSaveHandler.removeCallbacks(autoSaveRunnable);
+            autoSaveRunnable = null;
+        }
+        pendingClose = false;
+        isSavingInProgress = false;
+    }
+
+
+    /**
+     * Checks whether the View has already been destroyed.
+     * <p>
+     * Used before any saving operations:
+     * if the Activity/Fragment no longer exists
+     */
+    private boolean isViewDead() {
+        return getView() == null;
+    }
+
+
+    /**
+     * Updates note content coming from the advanced (Editor.js) editor.
+     *
+     * @param title    Optional updated title.
+     * @param jsonData Optional Editor.js JSON containing blocks.
+     *                 <p>
+     *                 If title is provided → update title.
+     *                 If jsonData is provided → parse blocks into:
+     *                 - plain text      → value
+     *                 - attachments     → attachments JSON
+     *                 - raw blocks JSON → valueJson
+     *                 <p>
+     *                 Marks the note as rich-content and triggers auto-save.
+     */
+    @Override
+    public void extendedNoteChange(String title, String jsonData) {
+        if (getNote() == null) return;
+
+        if (title != null) {
+            getNote().setTitle(title);
+        }
+
+        if (jsonData != null) {
+            ParsedNote parsed = EditorJsonUtils.extendedNoteToOldNote(jsonData);
+
+            getNote().setValue(parsed.plainText);
+            getNote().setAttachments(parsed.toAttachmentsJson());
+            getNote().setValueJson(jsonData);
+        }
+
+        getNote().setHasRichContent(true);
+
+        onNoteChanged();
+    }
+
+
+    /**
+     * Updates plain-text note fields (title/value) for the simple editor.
+     * <p>
+     * If title is not null → updates the title.
+     * If value is not null → updates the plain text and clears valueJson.
+     * <p>
+     * Marks the note as non-rich and triggers auto-save.
+     * Passing null means "do not modify this field".
+     */
+    @Override
+    public void simpleNoteChange(String title, String value) {
+        if (getNote() == null) {
+            return;
+        }
+
+        if (title != null) {
+            getNote().setTitle(title);
+        }
+
+        if (value != null) {
+            getNote().setValue(value);
+            getNote().setValueJson("");
+
+        }
+        getNote().setHasRichContent(false);
+        onNoteChanged();
+    }
+
 }
+
+
