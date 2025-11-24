@@ -31,7 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class AboutActivity extends BaseActivity {
 
-    public ActivityAboutBinding binding;
+    protected ActivityAboutBinding binding;
 
     @Inject
     public LinearLayoutManager mLinearLayoutManager;
@@ -85,6 +85,10 @@ public class AboutActivity extends BaseActivity {
 
     public void policyOpen() {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_PRIVACY_POLICY)));
+    }
+
+    public void listLibraryOpen() {
+        startActivity(new Intent(this, LibsActivity.class));
     }
 
     public void sendFeedback() {

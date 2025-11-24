@@ -1,0 +1,8 @@
+tasks.register("copyChangelog", Copy) {
+    description = "Copies CHANGELOG.md to res/raw"
+    group = "build"
+
+    from("${rootDir}/CHANGELOG.md")
+    into("${projectDir}/src/main/res/raw")
+    rename { "changelog.md" }
+}

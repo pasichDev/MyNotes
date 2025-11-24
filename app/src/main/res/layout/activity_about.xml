@@ -182,11 +182,37 @@
                     android:layout_height="1dp" />
 
                 <LinearLayout
+                    android:id="@+id/libsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_end"
+                    android:onClick="@{()-> activity.listLibraryOpen()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="Libraries used"
+                        android:src="@drawable/ic_libs"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="Libraries used"
+                        tools:ignore="HardcodedText" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
+
+                <LinearLayout
                     android:id="@+id/privacyApp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_middle"
+                    android:background="@drawable/bg_item_start"
                     android:onClick="@{()-> activity.policyOpen()}"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems">
