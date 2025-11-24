@@ -4,6 +4,8 @@
 
 - **Advanced editor:** added the ability to attach files to notes (up to 20 MB).
 - Added new screen displaying the list of application dependencies.
+- Added adaptive app icon, including a monochrome variant for Material You themed icons.
+
 
 ## [2.3.40] - 13.10.2025
 
