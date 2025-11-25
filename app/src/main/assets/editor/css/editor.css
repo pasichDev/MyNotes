@@ -255,3 +255,7 @@ body {
   color: var(--on-primary-color, #ffffff) !important;
   border-color: var(--primary-color, #1976d2) !important;
 }
+
+.ce-popover {
+  --max-height: 400px;
+}
