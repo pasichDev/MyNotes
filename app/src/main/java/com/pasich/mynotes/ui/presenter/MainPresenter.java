@@ -24,9 +24,10 @@ import io.reactivex.disposables.CompositeDisposable;
 @ActivityScoped
 public class MainPresenter extends BasePresenter<MainContract.view> implements MainContract.presenter {
 
+    private static final String TAG = "MainPresenter";
+    private final Handler uiHandler = new Handler(Looper.getMainLooper());
     private Note backupDeleteNote;
     private int mSwipe = 0;
-    private final Handler uiHandler = new Handler(Looper.getMainLooper());
     private Runnable swipeResetRunnable;
 
     @Inject
@@ -46,9 +47,9 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     public void loadingData() {
         getCompositeDisposable().add(getDataManager().getTags().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((tagList) -> {
             getView().loadingTags(TagsSorter.sortTags(tagList, getDataManager().getSortParamTags()));
-        }, throwable -> Log.e("com.pasich.myNotes", "loadTags", throwable)));
+        }, throwable -> Log.e(TAG, "loadTags", throwable)));
 
-        getCompositeDisposable().add(getDataManager().getNotes().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((noteList) -> getView().loadingNotes(noteList, getDataManager().getSortParam()), throwable -> Log.e("com.pasich.myNotes", "loadNotes", throwable)));
+        getCompositeDisposable().add(getDataManager().getNotes().subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe((noteList) -> getView().loadingNotes(noteList, getDataManager().getSortParam()), throwable -> Log.e(TAG, "loadNotes", throwable)));
     }
 
 
@@ -74,7 +75,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
             @Override
             public void onError(Throwable t) {
-                Log.e("NotePresenter", "Failed to create note", t);
+                Log.e(TAG, "Failed to create note", t);
             }
         });
     }
@@ -105,14 +106,14 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     public void deleteNote(Note note) {
         getCompositeDisposable().add(getDataManager().moveNoteToTrash(new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
                 }, // onComplete
-                throwable -> Log.e("MainPresenter", "Error deleting note", throwable)));
+                throwable -> Log.e(TAG, "Error deleting note", throwable)));
     }
 
     @Override
     public void restoreNote(Note nNote) {
         getCompositeDisposable().add(getDataManager().restoreNote(nNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
                 }, // onComplete
-                throwable -> Log.e("MainPresenter", "Error restoring note", throwable)));
+                throwable -> Log.e(TAG, "Error restoring note", throwable)));
     }
 
     @Override
@@ -121,18 +122,18 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             if (integer == 0) {
                 getCompositeDisposable().add(getDataManager().deleteTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
                         }, // onComplete
-                        throwable -> Log.e("MainPresenter", "Error deleting tag", throwable)));
+                        throwable -> Log.e(TAG, "Error deleting tag", throwable)));
             } else {
                 getView().startDeleteTagDialog(tag);
             }
-        }, throwable -> Log.e("MainPresenter", "Error checking tag count", throwable)));
+        }, throwable -> Log.e(TAG, "Error checking tag count", throwable)));
     }
 
     @Override
     public void editVisibleTag(Tag tag) {
         getCompositeDisposable().add(getDataManager().updateTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
                 }, // onComplete
-                throwable -> Log.e("MainPresenter", "Error updating tag", throwable)));
+                throwable -> Log.e(TAG, "Error updating tag", throwable)));
     }
 
 

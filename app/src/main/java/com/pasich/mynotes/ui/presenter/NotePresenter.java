@@ -13,6 +13,7 @@ import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.utils.enums.SaveState;
+import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.Date;
@@ -413,10 +414,10 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     @Override
     public void getLoadIntentData(Intent mIntent) {
-        setIdKey(mIntent.getLongExtra("idNote", 0));
-        setAssignedTagNote(mIntent.getStringExtra("tagNote"));
-        setShareText(mIntent.getStringExtra("shareText"));
-        setNewNoteKey(mIntent.getBooleanExtra("NewNote", true));
+        setIdKey(mIntent.getLongExtra(NoteExtras.EXTRA_ID_NOTE, 0));
+        setAssignedTagNote(mIntent.getStringExtra(NoteExtras.EXTRA_TAG_NOTE));
+        setShareText(mIntent.getStringExtra(NoteExtras.EXTRA_SHARE_TEXT));
+        setNewNoteKey(mIntent.getBooleanExtra(NoteExtras.EXTRA_NEW_NOTE, true));
 
         // For new notes, we create an initial Note object
         if (newNoteKey) {

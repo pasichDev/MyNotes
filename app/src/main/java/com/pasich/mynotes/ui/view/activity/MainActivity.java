@@ -21,7 +21,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -55,8 +54,6 @@ import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
-import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
-import com.pasich.mynotes.ui.view.activity.noteEditor.NoteExtendedEditorActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
@@ -76,6 +73,7 @@ import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
+import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
@@ -369,7 +367,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             @Override
             public void onClick(int position, Note model) {
                 if (!actionUtils.getAction()) {
-                    openNoteEdit(model.id, (MaterialCardView) staggeredGridLayoutManager.findViewByPosition(position));
+                    openNoteEdit(model, (MaterialCardView) staggeredGridLayoutManager.findViewByPosition(position));
                 } else selectItemAction(model, position, true);
 
             }
@@ -602,7 +600,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void openCopyNote(long idNote) {
-        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""));
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(idNote, false, "", "",
+                        null, String.valueOf(idNote), false);
+
 
     }
 
@@ -612,15 +613,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         snackBarRestoreNote();
     }
 
-    public void openNoteEdit(long idNote, MaterialCardView materialCardView) {
-        // Check if extended editor is enabled
-        if (themePreferencesCache.isExtendedEditorEnabled()) {
-            // Open beta note editor
-            startActivity(new Intent(this, NoteExtendedEditorActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
-        } else {
-            // Open standard editor
-            startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
-        }
+    public void openNoteEdit(Note note, MaterialCardView materialCardView) {
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(note, false, "", "",
+                        materialCardView, String.valueOf(note.getId()));
     }
 
 
@@ -633,30 +629,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 ? ""
                 : tagSelected.getNameTag();
 
-        Intent intent;
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(id, true, tagName, "",
+                        mActivityBinding.newNotesButton, NameTransition.fabTransaction, false);
 
-        if (themePreferencesCache.isExtendedEditorEnabled()) {
-            intent = new Intent(this, NoteExtendedEditorActivity.class)
-                    .putExtra("NewNote", false)
-                    .putExtra("idNote", id)
-                    .putExtra("tagNote", tagName)
-                    .putExtra("shareText", "");
-        } else {
-            intent = new Intent(this, NoteActivity.class)
-                    .putExtra("NewNote", false)
-                    .putExtra("idNote", id)
-                    .putExtra("tagNote", tagName)
-                    .putExtra("shareText", "");
-        }
-
-        startActivity(
-                intent,
-                ActivityOptionsCompat.makeSceneTransitionAnimation(
-                        this,
-                        mActivityBinding.newNotesButton,
-                        NameTransition.fabTransaction
-                ).toBundle()
-        );
     }
 
 

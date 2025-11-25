@@ -25,6 +25,7 @@ import com.pasich.mynotes.extendedEditor.NoteEditorView;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
+import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -57,11 +58,10 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     @Override
     protected Intent getCopyNoteIntent(long idNote) {
         return new Intent(this, NoteExtendedEditorActivity.class)
-                .putExtra("NewNote", false)
-                .putExtra("idNote", idNote)
-                .putExtra("shareText", "")
-                .putExtra("tagNote", "")
-                .putExtra("betaMode", true);
+                .putExtra(NoteExtras.EXTRA_NEW_NOTE, false)
+                .putExtra(NoteExtras.EXTRA_ID_NOTE, idNote)
+                .putExtra(NoteExtras.EXTRA_SHARE_TEXT, "")
+                .putExtra(NoteExtras.EXTRA_TAG_NOTE, "");
     }
 
     @Override

@@ -24,6 +24,7 @@ import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
 import com.pasich.mynotes.utils.CustomLinkMovementMethod;
+import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -69,10 +70,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     @Override
     protected Intent getCopyNoteIntent(long idNote) {
         return new Intent(this, NoteActivity.class)
-                .putExtra("NewNote", false)
-                .putExtra("idNote", idNote)
-                .putExtra("shareText", "")
-                .putExtra("tagNote", "");
+                .putExtra(NoteExtras.EXTRA_NEW_NOTE, false)
+                .putExtra(NoteExtras.EXTRA_ID_NOTE, idNote)
+                .putExtra(NoteExtras.EXTRA_SHARE_TEXT, "")
+                .putExtra(NoteExtras.EXTRA_TAG_NOTE, "");
     }
 
     @Override
