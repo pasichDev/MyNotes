@@ -144,9 +144,8 @@
         <item name="chipEndPadding">4dp</item>
         <item name="chipIconSize">0dp</item>
         <item name="android:textStyle">normal</item>
-    </style>
-
-    <style name="chipMediaItemNote" parent="chipTagItemNote">
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="chipMinTouchTargetSize">0dp</item>
     </style>
 
 
