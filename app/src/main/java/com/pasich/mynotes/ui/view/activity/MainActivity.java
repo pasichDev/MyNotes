@@ -956,15 +956,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }, 100));
             headerView.findViewById(R.id.newVersion).setVisibility(VISIBLE);
         }
-        if (!themePreferencesCache.isExtendedEditorEnabled()) {
-            headerView.findViewById(R.id.newEditor).setVisibility(VISIBLE);
-            headerView.findViewById(R.id.newEditor).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                Intent intent = new Intent(this, SettingsActivity.class);
-                intent.putExtra("startFragmentIndex", 1);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100));
-        }
     }
 
     /**

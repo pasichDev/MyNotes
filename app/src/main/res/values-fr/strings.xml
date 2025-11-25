@@ -286,8 +286,6 @@
     <string name="onExtendedEditorDescription">L\'éditeur avancé offre des options de formatage supplémentaires : titres, listes, citations, blocs de code et autres outils pour créer des notes structurées et visuellement attractives.</string>
     <string name="onExtendedEditorWarning">Si vous passez à l\'éditeur standard et modifiez une note créée ou modifiée en mode avancé, une partie de la mise en forme peut être perdue.</string>
     <string name="new_note">Nouvelle Note</string>
-    <string name="new_editor">Nouvel éditeur</string>
-    <string name="new_descrpt">Appuyez pour en savoir plus</string>
     <string name="help_extended_editor_title">Éditeur Étendu</string>
     <string name="help_extended_editor_descrpt">Prenez plus de contrôle sur vos notes : titres, listes, citations, blocs de code et autres outils qui seront ajoutés avec le temps. Peut être activé ou désactivé dans les paramètres.</string>
     <string name="countMediaNote">Fichiers multimédias: %1$d</string>

@@ -253,18 +253,13 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     @Override
     public void onStop() {
         super.onStop();
+
         // CRITICAL: Emergency saving when stopping Activity
         if (notePresenter != null && notePresenter.getNote() != null) {
             String currentTitle = binding != null ? binding.notesTitle.getText().toString() : "";
             String currentValue = binding != null ? binding.valueNote.getText().toString() : "";
-
-            notePresenter.getNote().setTitle(currentTitle);
-            notePresenter.getNote().setValue(currentValue);
-            notePresenter.getNote().setValueJson("");
-            notePresenter.getNote().setHasRichContent(false);
-
             // If there are unsaved changes, perform an emergency save.
-            ((NotePresenter) notePresenter).performEmergencySaveIfNeeded();
+            notePresenter.simpleNoteChange(currentTitle, currentValue, true);
         }
     }
 
@@ -280,7 +275,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                 }
                 String title = s.toString().trim();
                 binding.titleToolbarCollapsed.setText(!title.isEmpty() ? title : getString(R.string.noteTitle));
-                notePresenter.simpleNoteChange(title, null);
+                notePresenter.simpleNoteChange(title, null, false);
 
             }
         });
@@ -291,7 +286,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                 if (!notePresenter.hasNote()) return;
                 String newValue = s.toString();
                 if (!newValue.equals(notePresenter.getNote().getValue())) {
-                    notePresenter.simpleNoteChange(null, newValue);
+                    notePresenter.simpleNoteChange(null, newValue, false);
                 }
             }
         });

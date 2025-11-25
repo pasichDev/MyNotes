@@ -288,8 +288,6 @@
     <string name="onExtendedEditorDescription">Пашыраны рэдактар прапануе дадатковыя магчымасці фарматавання: загалоўкі, спісы, цытаты, блокі кода і іншыя інструменты для стварэння структураваных і візуальна прывабных нататак.</string>
     <string name="onExtendedEditorWarning">Калі вы пераключыцеся на звычайны рэдактар і адрэдагуеце нататку, створаную або змененую ў пашыраным рэжыме, частка фарматавання можа страціцца.</string>
     <string name="new_note">Новая нататка</string>
-    <string name="new_editor">Новы рэдактар</string>
-    <string name="new_descrpt">Націсніце, каб даведацца больш</string>
     <string name="help_extended_editor_title">Пашыраны рэдактар</string>
     <string name="help_extended_editor_descrpt">Атрымайце больш кантролю над нататкамі: загалоўкі, спісы, цытаты, блокі кода і іншыя інструменты, якія будуць дадавацца з цягам часу. Можна ўключыць або выключыць у наладах.</string>
     <string name="countMediaNote">Медыяфайлы: %1$d</string>

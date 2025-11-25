@@ -55,10 +55,6 @@ public class AppPreferencesCache {
             );
 
             initialized = true;
-            Log.d(TAG, "Cache initialized: version=" + lastKnownVersion
-                    + ", sort=" + sortPref
-                    + ", tagsSort=" + tagsSortPref
-                    + ", format=" + formatPref);
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize cache", e);

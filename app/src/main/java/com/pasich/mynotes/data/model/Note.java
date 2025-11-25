@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Objects;
@@ -32,10 +34,10 @@ public class Note {
     private String valueJson;
 
     @SerializedName("g")
-    private boolean hasRichContent;
+    private boolean hasRichContent;  // no use
 
     @SerializedName("h")
-    private String attachments; // JSON масив файлів
+    private String attachments; // JSON attachments
 
     @Ignore
     private boolean Checked;
@@ -123,16 +125,36 @@ public class Note {
         this.valueJson = valueJson;
     }
 
+    // no use
+    @Deprecated
     public boolean hasRichContent() {
         return this.hasRichContent;
     }
 
+    // no use
+    @Deprecated
     public void setHasRichContent(boolean hasRichContent) {
         this.hasRichContent = hasRichContent;
     }
 
+
     public String getAttachments() {
         return attachments;
+    }
+
+    public boolean isAttachments() {
+        String mAttachments = attachments;
+        if (mAttachments == null) return false;
+
+        mAttachments = mAttachments.trim();
+        if (mAttachments.isEmpty() || mAttachments.equals("[]")) return false;
+
+        try {
+            JsonArray arr = JsonParser.parseString(mAttachments).getAsJsonArray();
+            return !arr.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void setAttachments(String attachments) {

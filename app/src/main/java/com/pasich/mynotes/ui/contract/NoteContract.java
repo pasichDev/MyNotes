@@ -67,7 +67,7 @@ public interface NoteContract {
 
         void extendedNoteChange(String title, String jsonData);
 
-        void simpleNoteChange(String title, String value);
+        void simpleNoteChange(String title, String value, boolean emergencySave);
 
         boolean hasNote();
     }

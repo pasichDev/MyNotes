@@ -48,6 +48,7 @@ public class InteractionSettingsFragment extends Fragment {
     private void initViews() {
         binding.screenProtection.setChecked(themePreferencesCache.isScreenProtectionEnabled());
         binding.extendedEditor.setChecked(themePreferencesCache.isExtendedEditorEnabled());
+        binding.setExtendedDetailsVisible(false);
     }
 
     private void initListeners() {
@@ -57,6 +58,11 @@ public class InteractionSettingsFragment extends Fragment {
         binding.extendedEditor.setOnCheckedChangeListener((buttonView, isChecked) ->
                 themePreferencesCache.setExtendedEditor(isChecked));
         binding.feedbackNewEditor.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK_EDITOR))));
+        binding.detailsExtended.setOnClickListener(v -> toggleDetails());
+    }
+
+    public void toggleDetails() {
+        binding.setExtendedDetailsVisible(!binding.getExtendedDetailsVisible());
     }
 
     private void applyThemeColors() {

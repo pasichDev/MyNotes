@@ -291,8 +291,6 @@
     <string name="onExtendedEditorDescription">El editor avanzado proporciona opciones de formato adicionales: encabezados, listas, citas, bloques de código y otras herramientas para crear notas estructuradas y visualmente atractivas.</string>
     <string name="onExtendedEditorWarning">Si cambias al editor estándar y editas una nota creada o modificada en el modo avanzado, es posible que se pierda parte del formato.</string>
     <string name="new_note">Nueva Nota</string>
-    <string name="new_editor">Nuevo editor</string>
-    <string name="new_descrpt">Toca para saber más</string>
     <string name="help_extended_editor_title">Editor Extendido</string>
     <string name="help_extended_editor_descrpt">Obtén más control sobre tus notas: encabezados, listas, citas, bloques de código y otras herramientas que se agregarán con el tiempo. Se puede activar o desactivar en la configuración.</string>
     <string name="countMediaNote">Multimedia: %1$d</string>

@@ -236,15 +236,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     }
 
     /**
-     * Public method for emergency saving from Activity simple editor
-     */
-    public void performEmergencySaveIfNeeded() {
-        if (targetNote != null && needsSave()) {
-            performEmergencySave(targetNote);
-        }
-    }
-
-    /**
      * Emergency saving when Activity is destroyed but there is unsaved data.
      * Performed synchronously to ensure saving.
      * Only NoteActivity (SimpleEditor)
@@ -314,8 +305,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             pendingClose = true;
 
             // Extended editor case: no JSON saved yet → just close
-            if (!targetNote.hasRichContent()
-                    && savedNote.getValueJson().isEmpty()
+            if (savedNote.getValueJson().isEmpty()
                     && extendedEditor) {
                 if (!isViewDead()) getView().closeNoteActivity();
                 return;
@@ -522,7 +512,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
      */
     @Override
     public void extendedNoteChange(String title, String jsonData) {
-        if (getNote() == null) return;
+        if (getNote() == null || title == null && jsonData == null) return;
 
         if (title != null) {
             getNote().setTitle(title);
@@ -530,13 +520,11 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
         if (jsonData != null) {
             ParsedNote parsed = EditorJsonUtils.extendedNoteToOldNote(jsonData);
-
+            String attachmentsJson = parsed.toAttachmentsJson();
             getNote().setValue(parsed.plainText);
-            getNote().setAttachments(parsed.toAttachmentsJson());
+            getNote().setAttachments(attachmentsJson);
             getNote().setValueJson(jsonData);
         }
-
-        getNote().setHasRichContent(true);
 
         onNoteChanged();
     }
@@ -552,7 +540,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
      * Passing null means "do not modify this field".
      */
     @Override
-    public void simpleNoteChange(String title, String value) {
+    public void simpleNoteChange(String title, String value, boolean emergencySave) {
         if (getNote() == null) {
             return;
         }
@@ -566,7 +554,16 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             getNote().setValueJson("");
 
         }
-        getNote().setHasRichContent(false);
+
+        // повернненя нотатки з extended в simple при наявності вкладень неможливе
+        //  getNote().setHasRichContent(false);
+
+        // emergency save
+        if (emergencySave) {
+            performEmergencySave(targetNote);
+            return;
+        }
+
         onNoteChanged();
     }
 

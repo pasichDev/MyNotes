@@ -290,8 +290,6 @@
     <string name="onExtendedEditorDescription">Розширений редактор надає додаткові можливості форматування: заголовки, списки, цитати, код-блоки та інші інструменти для створення структурованих і яскравих нотаток.</string>
     <string name="onExtendedEditorWarning">Якщо ви переключитеся на звичайний редактор і відредагуєте нотатку, створену або змінену у розширеному режимі, деяке форматування може бути втрачено.</string>
     <string name="new_note">Нова нотатка</string>
-    <string name="new_editor">Новий редактор</string>
-    <string name="new_descrpt">Натисніть, щоб дізнатися більше</string>
     <string name="help_extended_editor_title">Розширений редактор</string>
     <string name="help_extended_editor_descrpt">Отримайте більше контролю над нотатками: заголовки, списки, цитати, код-блоки та інші інструменти, які будуть додаватися з часом. Можна увімкнути або вимкнути в налаштуваннях.</string>
     <string name="countMediaNote">Медіафайли: %1$d</string>

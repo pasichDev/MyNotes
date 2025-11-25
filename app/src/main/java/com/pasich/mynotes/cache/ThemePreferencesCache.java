@@ -68,9 +68,7 @@ public class ThemePreferencesCache {
             typeFaceNoteActivity = PowerPreference.getDefaultFile().getString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE);
 
             sizeTextNoteActivity = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE);
-
             initialized = true;
-            Log.d(TAG, "Cache initialized successfully - Theme Mode: " + themeMode + ", Theme ID: " + themeId + ", Dynamic Color: " + dynamicColor + ", Screen Protection: " + screenProtection + ", Extended Editor: " + extendedEditor);
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize cache", e);
