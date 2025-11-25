@@ -601,7 +601,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void openCopyNote(long idNote) {
         new NoteNavigator(this, themePreferencesCache)
-                .openNote(idNote, false, "", "",
+                .openNote(idNote, false, "",
                         null, String.valueOf(idNote), false);
 
 
@@ -615,7 +615,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     public void openNoteEdit(Note note, MaterialCardView materialCardView) {
         new NoteNavigator(this, themePreferencesCache)
-                .openNote(note, false, "", "",
+                .openNote(note, false, "",
                         materialCardView, String.valueOf(note.getId()));
     }
 
@@ -630,7 +630,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 : tagSelected.getNameTag();
 
         new NoteNavigator(this, themePreferencesCache)
-                .openNote(id, true, tagName, "",
+                .openNote(id, true, tagName,
                         mActivityBinding.newNotesButton, NameTransition.fabTransaction, false);
 
     }

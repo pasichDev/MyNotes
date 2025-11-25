@@ -31,7 +31,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     private final Handler autoSaveHandler;
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
-    private String shareText, assignedTag = "";
+    private String assignedTag = "";
     private long idKey;
     private boolean newNoteKey;
     private boolean extendedEditor = false;
@@ -45,15 +45,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public NotePresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
         autoSaveHandler = new Handler(Looper.getMainLooper());
-    }
-
-    // Getters and Setters
-    public String getShareText() {
-        return shareText;
-    }
-
-    public void setShareText(String shareText) {
-        this.shareText = shareText == null ? "" : shareText;
     }
 
     public long getIdKey() {
@@ -224,16 +215,13 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         updateSaveState(SaveState.SAVING);
         note.setDate(new Date().getTime());
 
-        getCompositeDisposable().add(getDataManager().updateNote(note)
-                .subscribeOn(getSchedulerProvider().io())
-                .observeOn(getSchedulerProvider().ui())
-                .subscribe(() -> {
-                    syncSavedSnapshot(note);
-                    callback.onSuccess();
-                }, error -> {
-                    Log.e(TAG, "saveNote() failed", error);
-                    callback.onError(error);
-                }));
+        getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+            syncSavedSnapshot(note);
+            callback.onSuccess();
+        }, error -> {
+            Log.e(TAG, "saveNote() failed", error);
+            callback.onError(error);
+        }));
     }
 
     /**
@@ -306,8 +294,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             pendingClose = true;
 
             // Extended editor case: no JSON saved yet → just close
-            if (savedNote.getValueJson().isEmpty()
-                    && extendedEditor) {
+            if (savedNote.getValueJson().isEmpty() && extendedEditor) {
                 if (!isViewDead()) getView().closeNoteActivity();
                 return;
             }
@@ -416,14 +403,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public void getLoadIntentData(Intent mIntent) {
         setIdKey(mIntent.getLongExtra(NoteExtras.EXTRA_ID_NOTE, 0));
         setAssignedTagNote(mIntent.getStringExtra(NoteExtras.EXTRA_TAG_NOTE));
-        setShareText(mIntent.getStringExtra(NoteExtras.EXTRA_SHARE_TEXT));
         setNewNoteKey(mIntent.getBooleanExtra(NoteExtras.EXTRA_NEW_NOTE, true));
-
-        // For new notes, we create an initial Note object
-        if (newNoteKey) {
-            targetNote = new Note().create("", shareText != null ? shareText : "", new Date().getTime(), assignedTag);
-            updateSaveState(SaveState.IDLE);
-        }
     }
 
     /**
@@ -434,19 +414,15 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     @Override
     public void loadingData(long idNote) {
         Log.e(TAG, "load" + idNote);
-        getCompositeDisposable().add(getDataManager()
-                .getNoteForId(idNote)
-                .subscribeOn(getSchedulerProvider().io())
-                .observeOn(getSchedulerProvider().ui())
-                .subscribe(note -> {
-                    if (note != null && !isViewDead()) {
-                        getView().loadingNote(note);
-                        setNote(note);
-                        // Update saved values on load
-                        syncSavedSnapshot(note);
-                        updateSaveState(SaveState.IDLE);
-                    }
-                }, throwable -> Log.e(TAG, "loadingData() failed", throwable)));
+        getCompositeDisposable().add(getDataManager().getNoteForId(idNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(note -> {
+            if (note != null && !isViewDead()) {
+                getView().loadingNote(note);
+                setNote(note);
+                // Update saved values on load
+                syncSavedSnapshot(note);
+                updateSaveState(SaveState.IDLE);
+            }
+        }, throwable -> Log.e(TAG, "loadingData() failed", throwable)));
     }
 
     @Override
@@ -457,9 +433,8 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     @Override
     public void deleteNote(Note note) {
         getCompositeDisposable().add(getDataManager().deleteNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
-                    // completion ignored intentionally
-                },
-                throwable -> Log.e(TAG, "deleteNote() failed", throwable)));
+            // completion ignored intentionally
+        }, throwable -> Log.e(TAG, "deleteNote() failed", throwable)));
     }
 
 

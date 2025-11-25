@@ -6,5 +6,4 @@ public final class NoteExtras {
     public static final String EXTRA_NEW_NOTE = "NewNote";
     public static final String EXTRA_ID_NOTE = "idNote";
     public static final String EXTRA_TAG_NOTE = "tagNote";
-    public static final String EXTRA_SHARE_TEXT = "shareText";
 }

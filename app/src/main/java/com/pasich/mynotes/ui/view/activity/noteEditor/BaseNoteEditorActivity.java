@@ -124,12 +124,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
             // Default title
             setNewNoteTitle();
-
-            // Text shared from another app
-            if (notePresenter.getShareText() != null &&
-                    notePresenter.getShareText().length() > 5) {
-                activatedActivity();
-            }
+            activatedActivity();
 
             // Here every Activity loads its own “empty note view”
             onNewNoteInit(notePresenter.getNote());

@@ -60,7 +60,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         return new Intent(this, NoteExtendedEditorActivity.class)
                 .putExtra(NoteExtras.EXTRA_NEW_NOTE, false)
                 .putExtra(NoteExtras.EXTRA_ID_NOTE, idNote)
-                .putExtra(NoteExtras.EXTRA_SHARE_TEXT, "")
                 .putExtra(NoteExtras.EXTRA_TAG_NOTE, "");
     }
 

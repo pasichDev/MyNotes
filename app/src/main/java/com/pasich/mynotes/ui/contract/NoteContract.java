@@ -37,10 +37,6 @@ public interface NoteContract {
 
         void deleteNote(Note note);
 
-        String getShareText();
-
-        void setShareText(String shareText);
-
         long getIdKey();
 
         void setIdKey(long idKey);

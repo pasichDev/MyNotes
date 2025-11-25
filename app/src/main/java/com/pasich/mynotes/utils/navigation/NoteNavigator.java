@@ -19,7 +19,6 @@ public record NoteNavigator(Activity activity, ThemePreferencesCache prefs) {
             @NonNull Note note,
             boolean isNew,
             String tag,
-            String shareText,
             View transitionView,
             String transitionName
     ) {
@@ -27,7 +26,6 @@ public record NoteNavigator(Activity activity, ThemePreferencesCache prefs) {
                 note.id,
                 isNew,
                 tag,
-                shareText,
                 transitionView,
                 transitionName,
                 note.isAttachments()
@@ -38,7 +36,6 @@ public record NoteNavigator(Activity activity, ThemePreferencesCache prefs) {
             long noteId,
             boolean isNew,
             String tag,
-            String shareText,
             View transitionView,
             String transitionName,
             boolean isAttachesNote
@@ -54,7 +51,6 @@ public record NoteNavigator(Activity activity, ThemePreferencesCache prefs) {
         intent.putExtra(NoteExtras.EXTRA_NEW_NOTE, isNew);
         intent.putExtra(NoteExtras.EXTRA_ID_NOTE, noteId);
         intent.putExtra(NoteExtras.EXTRA_TAG_NOTE, tag != null ? tag : "");
-        intent.putExtra(NoteExtras.EXTRA_SHARE_TEXT, shareText != null ? shareText : "");
 
         if (transitionView != null) {
             ActivityOptionsCompat options =
