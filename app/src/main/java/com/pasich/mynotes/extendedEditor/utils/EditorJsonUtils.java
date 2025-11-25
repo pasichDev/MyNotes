@@ -136,6 +136,10 @@ public class EditorJsonUtils {
                         handleAttachBlock(data, result);
                         break;
 
+                    case "image":
+                        handleImageBlock(data, result);
+                        break;
+
                     default:
                         // ignore others
                         break;
@@ -186,6 +190,27 @@ public class EditorJsonUtils {
 
         } catch (Exception e) {
             Log.e(TAG, "handleAttachBlock() failed", e);
+        }
+    }
+
+    /**
+     * Parses the “image” block (ImageTool) and adds attachments into ParsedNote.
+     * <p>
+     * Expected structure:
+     * data.file.url → string
+     */
+    private static void handleImageBlock(JSONObject data, ParsedNote result) {
+        try {
+            JSONObject fileObj = data.optJSONObject("file");
+            if (fileObj == null) return;
+
+            // EditorAttachment already supports parsing JSON properly
+            EditorAttachment att = EditorAttachment.fromJsonObject(fileObj);
+
+            result.attachments.add(att);
+
+        } catch (Exception e) {
+            Log.e(TAG, "handleImageBlock() failed", e);
         }
     }
 

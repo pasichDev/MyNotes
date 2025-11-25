@@ -13,6 +13,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -28,6 +29,8 @@ import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
 
+import java.io.File;
+import java.util.List;
 import java.util.Locale;
 
 public class NoteEditorView extends FrameLayout {
@@ -167,6 +170,59 @@ public class NoteEditorView extends FrameLayout {
         }, webView, getContext());
 
         webView.setWebViewClient(new WebViewClient() {
+
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                // Забороняємо відкривати editorjs:// у браузері
+                if ("editorjs".equals(uri.getScheme())) {
+                    return true;
+                }
+                return super.shouldOverrideUrlLoading(view, request);
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+
+                if ("editorjs".equals(uri.getScheme())) {
+                    try {
+                        // editorjs://attachments/note_146/file.jpg
+                        List<String> segments = uri.getPathSegments();
+                        if (segments.size() < 2) return super.shouldInterceptRequest(view, request);
+
+                        String noteStr = segments.get(0); // note_146
+                        String fileName = segments.get(1); // abc.jpg
+
+                        int noteId = Integer.parseInt(noteStr.replace("note_", ""));
+
+                        String fakeUrl = "file://attachments/note_" + noteId + "/" + fileName;
+                        EditorAttachment att = new EditorAttachment(fakeUrl);
+
+                        File file = AttachmentStorage.read(getContext(), att);
+
+                        if (file == null || !file.exists()) {
+                            return super.shouldInterceptRequest(view, request);
+                        }
+
+                        String mime = getMimeFromName(fileName);
+
+                        return new WebResourceResponse(
+                                mime,
+                                "UTF-8",
+                                new java.io.FileInputStream(file)
+                        );
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "intercept error " + e.getMessage());
+                        return super.shouldInterceptRequest(view, request);
+                    }
+                }
+
+                return super.shouldInterceptRequest(view, request);
+            }
+
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
@@ -206,6 +262,24 @@ public class NoteEditorView extends FrameLayout {
 
 
         webView.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
+    }
+    private String getMimeFromName(String name) {
+        String ext = name.substring(name.lastIndexOf('.') + 1).toLowerCase();
+        switch (ext) {
+            case "jpg":
+            case "jpeg":
+                return "image/jpeg";
+            case "png":
+                return "image/png";
+            case "gif":
+                return "image/gif";
+            case "webp":
+                return "image/webp";
+            case "mp4":
+                return "video/mp4";
+            default:
+                return "application/octet-stream";
+        }
     }
 
     /**

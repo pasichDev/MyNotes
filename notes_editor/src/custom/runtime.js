@@ -111,6 +111,25 @@ async function uploadAttachment (file) {
 }
 
 /**
+ * Upload image via Android and return ImageTool format.
+ */
+async function uploadImage (file) {
+  const base64 = await fileToBase64(file)
+  const respJson = safeAndroidCall('uploadImage', base64, file.name)
+
+  if (!respJson) {
+    return { success: 0 }
+  }
+
+  try {
+    return JSON.parse(respJson)
+  } catch (e) {
+    console.error('[ImageUpload] Invalid JSON:', respJson)
+    return { success: 0 }
+  }
+}
+
+/**
  * Delete attachment block from Android request.
  */
 window.deleteAttachmentBlockFromAndroid = function (blockId, fileUrl) {
@@ -166,3 +185,5 @@ window.loadNote = loadNote
 window.uploadAttachment = uploadAttachment
 window.toggleReadModeFromAndroid = toggleReadModeFromAndroid
 window.saveContent = saveContent
+// expose globally
+window.uploadImage = uploadImage

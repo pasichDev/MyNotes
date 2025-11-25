@@ -167,13 +167,39 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
         if (saved == null) return "";
 
         return new Uri.Builder()
-                .scheme("file")
+                .scheme("editorjs")
                 .authority("attachments")
                 .appendPath("note_" + noteId)
                 .appendPath(saved.getName())
                 .build()
                 .toString();
     }
+
+    //TODO
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public String uploadImage(String base64, String originalName) {
+
+        // Використовуємо існуючу логіку
+        String fileUrl = uploadFile(base64, originalName);
+
+        Log.e("uploadImage", "uploadFile returned: " + fileUrl);
+
+        if (fileUrl == null || fileUrl.isEmpty()) {
+            return "{\"success\":0}";
+        }
+
+        // Екрануємо лапки
+        String safeUrl = fileUrl.replace("\"", "\\\"");
+
+        String resp =
+                "{\"success\":1,\"file\":{\"url\":\"" + safeUrl + "\"}}";
+
+        Log.e("uploadImage", "RETURN JSON = " + resp);
+
+        return resp;
+    }
+
 
 
     /**

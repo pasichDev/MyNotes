@@ -73,7 +73,7 @@ copy(
   'Locales'
 )
 
-// --------- COPY CSS built by plugin ---------
+// --------- COPY CSS from src ---------
 copy(
   path.join(srcDir, 'editor.css'),
   path.join(destCss, 'editor.css'),

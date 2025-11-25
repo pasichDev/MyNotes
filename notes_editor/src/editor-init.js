@@ -5,6 +5,7 @@ import Paragraph from '@editorjs/paragraph'
 import Delimiter from '@editorjs/delimiter'
 import Marker from '@editorjs/marker'
 import InlineCode from '@editorjs/inline-code'
+import ImageTool from '@editorjs/image'
 
 window.EditorJS = EditorJS
 window.Header = Header
@@ -13,6 +14,7 @@ window.Paragraph = Paragraph
 window.Delimiter = Delimiter
 window.Marker = Marker
 window.InlineCode = InlineCode
+window.ImageTool = ImageTool
 ;(function (global) {
   function initEditor (locale, i18n) {
     global.__EDITOR_READY = false
@@ -50,6 +52,24 @@ window.InlineCode = InlineCode
             },
             openFile: file =>
               global.Android?.openAttachment(JSON.stringify(file))
+          }
+        },
+        image: {
+          class: ImageTool,
+          config: {
+            features: {
+              caption: false
+            },
+            uploader: {
+              uploadByFile: async file => {
+                return await window.uploadImage(file)
+              },
+
+              uploadByUrl: async url => {
+                // додамо потім
+                return { success: 0 }
+              }
+            }
           }
         }
       },

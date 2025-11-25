@@ -1,8 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import terser from '@rollup/plugin-terser'
-import css from 'rollup-plugin-css-only'
-
+import postcss from 'rollup-plugin-postcss'
 const isProd = true
 
 const banner = `/*!
@@ -43,6 +42,10 @@ export default [
     plugins: [
       resolve(),
       commonjs(),
+      postcss({
+        extract: true,
+        minimize: true
+      }),
       terser({
         keep_fnames: true,
         keep_classnames: true,
