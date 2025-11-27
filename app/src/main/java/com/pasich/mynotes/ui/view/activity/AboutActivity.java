@@ -102,6 +102,10 @@ public class AboutActivity extends BaseActivity {
         startActivity(new Intent(this, ChangelogActivity.class));
     }
 
+    public void openSupportDev() {
+        startActivity(new Intent(this, SupportActivity.class));
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_activity_toolbar, menu);

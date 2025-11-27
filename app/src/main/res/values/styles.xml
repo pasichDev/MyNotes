@@ -39,7 +39,6 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">28dp</item>
     </style>
-    <!-- Toolbar title style -->
 
 
     <style name="fab_custom" parent="Widget.Material3.FloatingActionButton.Primary">
@@ -50,7 +49,6 @@
         <item name="elevation">7dp</item>
     </style>
 
-    <!-- Стиль для параграфа -->
 
     <!-- Позиционирование елементов в BottomSheetsDialog -->
     <style name="marginDialogItem">
@@ -121,9 +119,6 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <style name="rounderIconApp">
-        <item name="cornerSize">10%</item>
-    </style>
 
     <style name="progressDialogRestore" parent="MaterialAlertDialog.Material3.Body.Text">
         <item name="android:windowCloseOnTouchOutside">false</item>
@@ -164,6 +159,18 @@
         <item name="android:layout_marginStart">10dp</item>
         <item name="android:layout_marginEnd">10dp</item>
         <item name="android:layout_gravity">center_vertical</item>
+    </style>
+
+    <style name="CardTopRounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeTopRight">16dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="IconRoundedShape">
+        <item name="cornerSize">10dp</item>
     </style>
 
 </resources>
