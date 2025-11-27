@@ -16,22 +16,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.billingclient.api.Purchase;
-
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
-
 import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
-import com.pasich.mynotes.utils.managers.BillingManager;
 import com.pasich.mynotes.data.model.DonationProduct;
 import com.pasich.mynotes.databinding.ActivitySupportBinding;
 import com.pasich.mynotes.utils.adapters.DonationProductAdapter;
+import com.pasich.mynotes.utils.managers.BillingManager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.ArrayList;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -39,16 +37,14 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class SupportActivity extends BaseActivity implements BillingManager.BillingManagerListener {
 
     private static final String TAG = "SupportActivity";
-    
+
     public ActivitySupportBinding binding;
     private BillingManager billingManager;
     private DonationProductAdapter donationAdapter;
-    
-    // Поля для керування спойлерами
+
     private LinearLayout donationContent, contactContent;
     private ImageView donationArrow, contactArrow;
-    
-    // Поля для BottomSheet з покупками
+
     private BottomSheetDialog purchasesBottomSheet;
     private RecyclerView bottomSheetRecyclerView;
     private View bottomSheetLoadingView, bottomSheetEmptyView;
@@ -78,24 +74,24 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
     public void initListeners() {
         donationContent = findViewById(R.id.donation_content);
         donationArrow = findViewById(R.id.donation_arrow);
-        
+
         contactContent = findViewById(R.id.contact_content);
         contactArrow = findViewById(R.id.contact_arrow);
 
         // Налаштовуємо спойлери тільки для donation та contact
         setupExpandableSection(
-            findViewById(R.id.donation_header),
-            donationContent,
-            donationArrow,
-            "donation", true
+                findViewById(R.id.donation_header),
+                donationContent,
+                donationArrow,
+                "donation", true
         );
 
         setupExpandableSection(
-            findViewById(R.id.contact_header),
-            contactContent,
-            contactArrow,
-            "contact",
-            false
+                findViewById(R.id.contact_header),
+                contactContent,
+                contactArrow,
+                "contact",
+                false
         );
     }
 
@@ -105,32 +101,27 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
     }
 
     private void setupPurchasesBottomSheet() {
-        @SuppressLint("InflateParams") 
+        @SuppressLint("InflateParams")
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_purchases, null);
-        
+
         purchasesBottomSheet = new BottomSheetDialog(this);
         purchasesBottomSheet.setContentView(bottomSheetView);
-        
-        // Налаштовуємо поведінку BottomSheet для відкриття на повну висоту
+
         BottomSheetBehavior<View> behavior = BottomSheetBehavior.from((View) bottomSheetView.getParent());
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        behavior.setSkipCollapsed(true);
-        behavior.setFitToContents(false);
-        behavior.setHalfExpandedRatio(0.8f);
-        
-        // Ініціалізуємо елементи
+        behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        behavior.setSkipCollapsed(false);
+
         bottomSheetRecyclerView = bottomSheetView.findViewById(R.id.donation_products_recycler);
         bottomSheetLoadingView = bottomSheetView.findViewById(R.id.purchases_loading);
         bottomSheetEmptyView = bottomSheetView.findViewById(R.id.purchases_empty);
-        
-        // Налаштовуємо RecyclerView
+
         donationAdapter = new DonationProductAdapter(product -> {
             if (billingManager != null) {
                 billingManager.launchBillingFlow(this, product.getId());
                 purchasesBottomSheet.dismiss();
             }
         });
-        
+
         bottomSheetRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         bottomSheetRecyclerView.setAdapter(donationAdapter);
     }
@@ -138,7 +129,6 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
     public void showPurchasesBottomSheet() {
         if (purchasesBottomSheet != null) {
             purchasesBottomSheet.show();
-            // Перезавантажуємо продукти при відкритті
             if (billingManager != null) {
                 billingManager.queryPurchases();
             }
@@ -248,7 +238,7 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
             if (bottomSheetLoadingView != null) {
                 bottomSheetLoadingView.setVisibility(View.GONE);
             }
-            
+
             if (products.isEmpty()) {
                 if (bottomSheetEmptyView != null) {
                     bottomSheetEmptyView.setVisibility(View.VISIBLE);
@@ -280,9 +270,9 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
         Log.e(TAG, "Purchase failed: " + responseCode + " - " + debugMessage);
         runOnUiThread(() -> {
             String errorMessage = BillingManager.getBillingErrorMessage(responseCode);
-            Snackbar.make(binding.getRoot(), 
-                "Purchase error: " + errorMessage, 
-                Snackbar.LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(),
+                    "Purchase error: " + errorMessage,
+                    Snackbar.LENGTH_LONG).show();
         });
     }
 
@@ -299,7 +289,7 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
             if (bottomSheetRecyclerView != null && bottomSheetRecyclerView.getParent() != null) {
                 ((View) bottomSheetRecyclerView.getParent()).setVisibility(View.GONE);
             }
-            
+
             Snackbar.make(binding.getRoot(), errorMessage, Snackbar.LENGTH_LONG).show();
         });
     }
