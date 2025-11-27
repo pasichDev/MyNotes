@@ -59,7 +59,9 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
     @SuppressWarnings("unused")
     @JavascriptInterface
     public void onContentChanged(String jsonData) {
+        Log.e("lll","changerNote" + jsonData);
         if (listener != null) listener.onContentChanged(jsonData);
+
     }
 
     /**
@@ -129,7 +131,7 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
 
             json.put("plainTextFallback", isPlainTextFallback);
             String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
-
+            Log.e("lll","loadnote" + json);
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
         } catch (Exception e) {
             Log.e(TAG, "Failed to load note: " + e.getMessage(), e);

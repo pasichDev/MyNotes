@@ -413,7 +413,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
      */
     @Override
     public void loadingData(long idNote) {
-        Log.e(TAG, "load" + idNote);
         getCompositeDisposable().add(getDataManager().getNoteForId(idNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(note -> {
             if (note != null && !isViewDead()) {
                 getView().loadingNote(note);

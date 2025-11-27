@@ -172,6 +172,7 @@ public class NoteEditorView extends FrameLayout {
         webView.setWebViewClient(new WebViewClient() {
 
 
+            // TODO
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -181,7 +182,7 @@ public class NoteEditorView extends FrameLayout {
                 }
                 return super.shouldOverrideUrlLoading(view, request);
             }
-
+            // TODO
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
