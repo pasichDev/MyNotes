@@ -25,6 +25,6 @@ public class SettingsPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // Два фрагменти: Інтерфейс та Взаємодія
+        return 2;
     }
 }

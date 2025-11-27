@@ -2,10 +2,7 @@ package com.pasich.mynotes.ui.view.dialogs;
 
 
 import android.content.DialogInterface;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +22,7 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.DialogMoreNoteBinding;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
-import com.pasich.mynotes.utils.GoogleTranslationIntent;
+import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
 
 import java.util.List;
@@ -211,21 +208,11 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
 
     private void initTranslate() {
-        PackageInfo pi = null;
-        try {
-            pi = requireActivity().getPackageManager().getPackageInfo(GoogleTranslationIntent.packageTranslator, 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e("Error initTranslate", String.valueOf(e));
-
-        }
-
-        if (pi != null) {
-            binding.translateNote.setVisibility(View.VISIBLE);
-            binding.translateNote.setOnClickListener(v -> {
-                new GoogleTranslationIntent().startTranslation(requireActivity(), mNote.getValue());
-                dismiss();
-            });
-        }
+        binding.translateNote.setVisibility(View.VISIBLE);
+        binding.translateNote.setOnClickListener(v -> {
+            GoogleTranslateHelper.startTranslation(requireActivity(), mNote.getValue());
+            dismiss();
+        });
     }
 
 

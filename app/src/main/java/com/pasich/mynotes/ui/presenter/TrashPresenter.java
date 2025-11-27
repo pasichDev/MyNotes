@@ -15,11 +15,10 @@ import java.util.ArrayList;
 import javax.inject.Inject;
 
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 
 
 public class TrashPresenter extends BasePresenter<TrashContract.view> implements TrashContract.presenter {
-
+    private static final String TAG = "TrashPresenter";
 
     @Inject
     public TrashPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
@@ -48,29 +47,31 @@ public class TrashPresenter extends BasePresenter<TrashContract.view> implements
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(trashNoteList -> getView().loadData(trashNoteList),
-                                throwable -> Log.wtf("MyNotes", "trashLoad", throwable)));
+                                throwable -> Log.wtf(TAG, "trashLoad", throwable)));
     }
 
     @Override
     public void restoreNotesArray(ArrayList<TrashNote> notes) {
         for (TrashNote tNote : notes) {
-            getDataManager().transferNoteOutTrash(tNote, new Note().create(tNote.getTitle(), tNote.getValue(), tNote.getDate()))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(
-                    () -> {}, // onComplete
-                    throwable -> Log.e("TrashPresenter", "Error restoring note", throwable)
-                );
+            getCompositeDisposable().add(getDataManager().transferNoteOutTrash(tNote, new Note().create(tNote.getTitle(), tNote.getValue(), tNote.getDate()))
+                    .subscribeOn(getSchedulerProvider().io())
+                    .subscribe(
+                            () -> {
+                            }, // onComplete
+                            throwable -> Log.e(TAG, "Error restoring note", throwable)
+                    ));
         }
     }
 
     @Override
     public void clearTrash() {
         getCompositeDisposable().add(getDataManager().deleteAll()
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("TrashPresenter", "Error clearing trash", throwable)
-            ));
+                .subscribeOn(getSchedulerProvider().io())
+                .subscribe(
+                        () -> {
+                        }, // onComplete
+                        throwable -> Log.e(TAG, "Error clearing trash", throwable)
+                ));
     }
 
 }

@@ -25,7 +25,7 @@ import io.reactivex.disposables.CompositeDisposable;
 
 @ActivityScoped
 public class TagsPresenter extends BasePresenter<TagsContract.view> implements TagsContract.presenter {
-
+    private static final String TAG = "TagsPresenter";
     private List<Tag> cachedTags = new ArrayList<>();
 
     @Inject
@@ -54,7 +54,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
                 displayTags(false);
             }
         }, throwable -> {
-            Log.e("TagsPresenter", "Error loading tags", throwable);
+            Log.e(TAG, "Error loading tags", throwable);
             if (isViewAttached()) {
                 getView().showToastMessage("Tag loading error");
             }
@@ -84,7 +84,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
                 updateTagInCache(tag);
                 displayTags(false);
             }
-        }, throwable -> Log.e("TagsPresenter", "Error toggling tag visibility", throwable)));
+        }, throwable -> Log.e(TAG, "Error toggling tag visibility", throwable)));
     }
 
     @Override
@@ -116,23 +116,20 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
     @Override
     public void onDragCompleted(List<Tag> currentTagOrders) {
 
-        // Якщо список посортовано по даті створення необхідно пересортувати
         if ("TagsCreationDateSort".equals(getDataManager().getSortParamTags())) {
             getDataManager().setSortParamTags("TagsPositionSort");
         }
 
-        // Фільтруємо тільки користувацькі теги
         List<Tag> userTags = currentTagOrders.stream().filter(tag -> tag.getSystemAction() == 0).collect(Collectors.toList());
 
-        // Оновлюємо позиції тільки для користувацьких тегів та видаляємо системні
         for (int i = 0; i < userTags.size(); i++) {
             userTags.get(i).setPosition(i);
         }
 
-        // Оновлюємо локальний кеш
+
         updateCacheWithNewPositions(userTags);
 
-        // Зберігаємо в БД
+
         getCompositeDisposable().add(getDataManager().updateTags(userTags).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
         }, throwable -> Log.e("TagsPresenter", "Error updating tag: ", throwable)));
 
@@ -150,7 +147,7 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
         if (tag == null || callback == null) return;
 
         getCompositeDisposable().add(getDataManager().getCountNotesTag(tag.getNameTag()).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(callback::onTagNotesCountReceived, throwable -> {
-            Log.e("TagsPresenter", "Error getting notes count for tag", throwable);
+            Log.e(TAG, "Error getting notes count for tag", throwable);
             callback.onTagNotesCountReceived(0);
         }));
     }
@@ -173,6 +170,6 @@ public class TagsPresenter extends BasePresenter<TagsContract.view> implements T
     @Override
     public void detachView() {
         super.detachView();
-        cachedTags.clear(); // Очищаємо кеш при відключенні
+        cachedTags.clear();
     }
 }

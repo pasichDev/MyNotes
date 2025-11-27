@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.processors;
+package com.pasich.mynotes.utils.shareProcessors;
 
 
 import com.pasich.mynotes.data.DataManager;

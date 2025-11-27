@@ -70,8 +70,6 @@ public interface MainContract {
 
         void setBackupDeleteNote(Note backupDeleteNote);
 
-        String getSortParam();
-
         boolean closeApp(boolean showSearchView);
     }
 

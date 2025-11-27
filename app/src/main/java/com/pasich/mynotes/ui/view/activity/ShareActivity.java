@@ -10,8 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.utils.navigation.NoteNavigator;
-import com.pasich.mynotes.utils.processors.ShareProcessor;
-import com.pasich.mynotes.utils.processors.SharedNoteCreator;
+import com.pasich.mynotes.utils.shareProcessors.ShareProcessor;
+import com.pasich.mynotes.utils.shareProcessors.SharedNoteCreator;
 
 import java.io.IOException;
 

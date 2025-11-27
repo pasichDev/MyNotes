@@ -58,7 +58,6 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
     /**
      * Save backup data algorithm and navigator
-     * Оптимізовано для великих об'ємів даних
      *
      * @param local - check repository
      */
@@ -129,7 +128,6 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
         if (jsonBackup.getTags() != null && !jsonBackup.getTags().isEmpty()) {
             for (int i = 0; i < jsonBackup.getTags().size(); i++) {
                 Tag tag = jsonBackup.getTags().get(i);
-                // (оставлен 0 по умолчанию, хотя в конструкторе create() устанавливается -1)
                 if (tag.getPosition() == 0 && tag.getSystemAction() == 0) {
                     tag.setPosition(-1);
                 }

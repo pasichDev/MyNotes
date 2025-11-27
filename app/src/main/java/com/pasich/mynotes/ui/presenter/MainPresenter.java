@@ -137,11 +137,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     }
 
 
-    @Override
-    public String getSortParam() {
-        return getDataManager().getSortParam();
-    }
-
     /**
      * Створення нової нотатки з поверненням її ID
      */
