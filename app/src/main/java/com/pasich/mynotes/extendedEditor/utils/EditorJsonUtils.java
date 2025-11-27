@@ -110,7 +110,6 @@ public class EditorJsonUtils {
             JSONArray blocks = new JSONArray(jsonData);
 
             for (int i = 0; i < blocks.length(); i++) {
-
                 JSONObject block = blocks.getJSONObject(i);
                 String type = block.optString("type");
                 JSONObject data = block.optJSONObject("data");

@@ -6,7 +6,7 @@ import Delimiter from '@editorjs/delimiter'
 import Marker from '@editorjs/marker'
 import InlineCode from '@editorjs/inline-code'
 import ImageTool from '@editorjs/image'
-
+import ImageTunePlus from "editorjs-image-tune-plus";
 window.EditorJS = EditorJS
 window.Header = Header
 window.List = List
@@ -15,6 +15,8 @@ window.Delimiter = Delimiter
 window.Marker = Marker
 window.InlineCode = InlineCode
 window.ImageTool = ImageTool
+window.ImageTunePlus = ImageTunePlus
+
 ;(function (global) {
   function initEditor (locale, i18n) {
     global.__EDITOR_READY = false
@@ -56,6 +58,7 @@ window.ImageTool = ImageTool
         },
         image: {
           class: ImageTool,
+          tunes: ['imageTunePlus'],
           config: {
             features: {
               caption: false
@@ -71,7 +74,10 @@ window.ImageTool = ImageTool
               }
             }
           }
-        }
+        },
+        imageTunePlus: {
+             class: ImageTunePlus,
+           }
       },
 
       onReady () {

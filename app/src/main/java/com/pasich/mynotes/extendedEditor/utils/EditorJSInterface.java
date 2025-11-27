@@ -128,7 +128,6 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
             }
 
             json.put("plainTextFallback", isPlainTextFallback);
-
             String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
 
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
