@@ -29,10 +29,9 @@ import javax.inject.Singleton;
         })
 @Singleton
 public abstract class AppDatabase extends RoomDatabase {
-
     /**
-     * Видаляємо старі системні теги
-     * Додаємо поле position до таблиці tags
+     * Remove old system tags
+     * Add the position field to the tags table
      */
     public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
@@ -40,10 +39,27 @@ public abstract class AppDatabase extends RoomDatabase {
             database.execSQL("ALTER TABLE tags ADD COLUMN position INTEGER NOT NULL DEFAULT 0");
         }
     };
+    /**
+     * Додаємо колонку attachments json до таблиці notes
+     * [
+     * {
+     * «url»: «file:///data/user/0/.../attachments/file1.pdf»,
+     * «name»: «file1.pdf»,
+     * «extension»: «pdf»,
+     * «size»: 12345
+     * }
+     * ]
+     */
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE notes ADD COLUMN attachments TEXT DEFAULT ''");
+        }
+    };
     private static Context appContext;
     /**
-     * Видаляємо старі системні теги
-     * Встановлюємо lastKnownVersion = "2.1.29" для міграції
+     * Remove old system tags
+     * Set lastKnownVersion = “2.1.29” for migration
      */
     public static final Migration MIGRATION_2_3 = new Migration(2, 3) {
         @Override
@@ -59,9 +75,9 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
     /**
-     * Додаємо колонку valueJson (nullable) до таблиці notes
-     * Додаємо колонку hasRichContent (boolean, NOT NULL, default false)
-     * Встановлюємо extendedEditorEnable = false для старих користувачів
+     * Add the valueJson column (nullable) to the notes table.
+     * Add the hasRichContent column (boolean, NOT NULL, default false).
+     * Set extendedEditorEnable = false for existing users.
      */
     public static final Migration MIGRATION_4_5 = new Migration(4, 5) {
         @Override
@@ -74,31 +90,6 @@ public abstract class AppDatabase extends RoomDatabase {
                 PowerPreference.getDefaultFile()
                         .setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, false);
             }
-        }
-    };
-
-    /**
-     * Додаємо колонку attachments json до таблиці notes
-     * [
-     *   {
-     *     "url": "file:///data/user/0/.../attachments/file1.pdf",
-     *     "name": "file1.pdf",
-     *     "extension": "pdf",
-     *     "size": 12345
-     *   },
-     *   {
-     *     "url": "file:///data/.../image.png",
-     *     "name": "image.png",
-     *     "extension": "png",
-     *     "size": 88521
-     *   }
-     * ]
-     */
-    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
-        @Override
-        public void migrate(@NonNull SupportSQLiteDatabase database) {
-            // Додаємо нове поле TEXT NOT NULL DEFAULT ''
-            database.execSQL("ALTER TABLE notes ADD COLUMN attachments TEXT DEFAULT ''");
         }
     };
 

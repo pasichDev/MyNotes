@@ -46,9 +46,7 @@ public abstract class Transactions {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     public abstract long addNote(Note note);
 
-    /**
-     * Атомарне додавання нотатки з гарантією синхронізації Flowable
-     */
+
     @Transaction
     public long addNoteTransaction(Note note) {
         return addNote(note);
@@ -60,12 +58,11 @@ public abstract class Transactions {
     @Delete
     public abstract void deleteTrashNotes(TrashNote note);
 
-
     /**
-     * Транзакция переноса заметки в корзину
+     * Transaction for moving a note to the basket
      *
-     * @param tNote - модель корзинной заметки
-     * @param mNote - заметка которую переносим
+     * @param tNote - basket note model
+     * @param mNote - note being moved
      */
     @Transaction
     public void transferNoteToTrash(TrashNote tNote, Note mNote) {
@@ -73,9 +70,7 @@ public abstract class Transactions {
         deleteNote(mNote);
     }
 
-    /**
-     * Перенос заметки из корзины
-     */
+    // Moving a note from the trash
     @Transaction
     public void transferNoteOutTrash(TrashNote tNote, Note mNote) {
         addNote(mNote);
@@ -83,22 +78,15 @@ public abstract class Transactions {
     }
 
 
-    /**
-     * Удаление метки и удаление метки с заметки
-     *
-     * @param tag - метка
-     */
+    // Deleting a tag
     @Transaction
     public void deleteTagForNotes(Tag tag) {
         deleteTagNotes(tag.getNameTag());
         deleteTag(tag);
     }
 
-    /**
-     * Удаление метки и вместе с ней заметки
-     *
-     * @param tag - метка
-     */
+
+    // Deleting a tag and the note associated with it
     @Transaction
     public void deleteTagAndNotes(Tag tag) {
         copyNoteToTrashFunctionDeleteTag(tag.getNameTag());
@@ -106,18 +94,13 @@ public abstract class Transactions {
         deleteTag(tag);
     }
 
-    /**
-     * Удаление метки и вместе с ней заметки
-     */
     @Transaction
     public void copyNotes(Note oNote, Note nNote, boolean noteActivity) {
         if (noteActivity) updateNote(oNote);
 
     }
 
-    /**
-     * Восстановление заметки и удаление из корзины через текст
-     */
+    // Restoring a note and deleting it from the trash via text
     @Transaction
     public void restoreNote(Note nNote) {
         addNote(nNote);
@@ -125,9 +108,8 @@ public abstract class Transactions {
 
     }
 
-    /**
-     * Метод переименования метки
-     */
+
+    // Method for renaming a label
     @Transaction
     public void renameTag(Tag mTag, String newName) {
         renameTagNotes(mTag.getNameTag(), newName);

@@ -34,17 +34,15 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     @Inject
     ThemePreferencesCache themePreferencesCache;
 
+    // Safe call to applyCurrentThemeMode with fallback
     @Override
     public void selectTheme() {
-        // Безпечний виклик applyCurrentThemeMode з fallback
         if (themePreferencesCache != null) {
             themePreferencesCache.applyCurrentThemeMode();
         } else {
-            // Fallback для раннього виклику до ініціалізації DI
             applyThemeMode();
         }
 
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
         boolean isDynamicEnabled = (themePreferencesCache != null) ?
                 themePreferencesCache.isDynamicColorEnabled() :
                 PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
@@ -72,14 +70,12 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
             getWindow().setSharedElementEnterTransition(null);
             getWindow().setSharedElementReturnTransition(null);
             getWindow().setSharedElementReenterTransition(null);
-        } catch (Exception e) {
-            // Ignore exceptions during cleanup
+        } catch (Exception ignored) {
         }
         super.onDestroy();
     }
 
     private void applyScreenProtection() {
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
         boolean isScreenProtectionEnabled = (themePreferencesCache != null) ?
                 themePreferencesCache.isScreenProtectionEnabled() :
                 PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
@@ -95,7 +91,6 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
      * Apply theme mode (light/dark/system)
      */
     private void applyThemeMode() {
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
         int themeMode = (themePreferencesCache != null) ?
                 themePreferencesCache.getThemeMode() :
                 PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
@@ -117,7 +112,6 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     }
 
     private int getSelectedTheme() {
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
         int themeId = (themePreferencesCache != null) ?
                 themePreferencesCache.getThemeId() :
                 PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
@@ -125,12 +119,10 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
         return new ThemesArray().getThemeStyle(themeId);
     }
 
-    // Метод для ресурсов
     public void onInfoSnack(int resID, View view, int typeInfo, int time) {
         onInfoSnack(getString(resID), view, typeInfo, time);
     }
 
-    // Метод для готового рядка
     public void onInfoSnack(String message, View view, int typeInfo, int time) {
         Snackbar snackbar = Snackbar.make(
                 view == null ? findViewById(android.R.id.content) : view,
@@ -161,18 +153,16 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
     }
 
     /**
-     * Налаштовує відступи для кореневого view з урахуванням системних барів
-     * Викликайте цей метод після setContentView() у дочірніх Activity
+     * Sets margins for the root view, taking into account system bars.
+     * Call this method after setContentView() in child Activities.
      */
     protected void setupEdgeToEdgeInsets(View rootView) {
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
 
-            // Отримуємо відступи для системних барів
             Insets systemBars = insets.getInsets(
                     WindowInsetsCompat.Type.systemBars()
             );
 
-            // Встановлюємо padding тільки зверху та знизу
             v.setPadding(
                     v.getPaddingLeft(),
                     systemBars.top,
