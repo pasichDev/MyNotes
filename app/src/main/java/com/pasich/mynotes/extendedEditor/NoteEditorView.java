@@ -43,6 +43,7 @@ public class NoteEditorView extends FrameLayout {
     private OnTitleChangedListener titleListener;
     private OnContentChangedListener contentListener;
     private OnAttachmentClickListener attachmentListener;
+    private OnImageClickListener imageClickListener;
     private OnFileChooserListener fileChooserListener;
     private ValueCallback<Uri[]> fileCallback;
 
@@ -149,6 +150,14 @@ public class NoteEditorView extends FrameLayout {
                 handler.post(() -> {
                     if (attachmentListener != null)
                         attachmentListener.onAttachmentClick(attachment);
+                });
+            }
+
+            @Override
+            public void openPhoto(String blockId) {
+                handler.post(() -> {
+                    if (imageClickListener != null)
+                        imageClickListener.onImageClick(blockId);
                 });
             }
 
@@ -325,6 +334,9 @@ public class NoteEditorView extends FrameLayout {
         this.attachmentListener = l;
     }
 
+    public void setOnImageClickListener(OnImageClickListener l) {
+        this.imageClickListener = l;
+    }
 
     public void setOnFileChooserListener(OnFileChooserListener l) {
         this.fileChooserListener = l;
@@ -344,8 +356,12 @@ public class NoteEditorView extends FrameLayout {
         void onAttachmentClick(EditorAttachment attachment);
     }
 
+    public interface OnImageClickListener {
+        void onImageClick(String blockId);
+    }
+
     public interface OnFileChooserListener {
         void onOpenFileChooser(Intent intent, int requestCode);
     }
-
 }
+

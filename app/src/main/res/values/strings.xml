@@ -349,5 +349,6 @@
     <string name="onExtendedEditor">Enable Extended Editor</string>
     <string name="showDetailsExtendedEditor">More details</string>
     <string name="hiddenDetailsExtendedEditor">Hidden details</string>
+    <string name="openImageError">Image unavailable for viewing</string>
 
 </resources>

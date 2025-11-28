@@ -7,6 +7,7 @@ import Marker from '@editorjs/marker'
 import InlineCode from '@editorjs/inline-code'
 import ImageTool from '@editorjs/image'
 import ImageTunePlus from "editorjs-image-tune-plus";
+import ImageToolClickable from './tools/ImageToolClickable.js';
 window.EditorJS = EditorJS
 window.Header = Header
 window.List = List
@@ -16,6 +17,7 @@ window.Marker = Marker
 window.InlineCode = InlineCode
 window.ImageTool = ImageTool
 window.ImageTunePlus = ImageTunePlus
+window.ImageToolClickable = ImageToolClickable
 
 ;(function (global) {
   function initEditor (locale, i18n) {
@@ -57,7 +59,7 @@ window.ImageTunePlus = ImageTunePlus
           }
         },
         image: {
-          class: ImageTool,
+          class: ImageToolClickable,
           tunes: ['imageTunePlus'],
           config: {
             features: {
@@ -69,7 +71,6 @@ window.ImageTunePlus = ImageTunePlus
               },
 
               uploadByUrl: async url => {
-                // додамо потім
                 return { success: 0 }
               }
             }

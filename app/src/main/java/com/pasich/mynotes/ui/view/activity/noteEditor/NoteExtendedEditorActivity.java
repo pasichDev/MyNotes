@@ -1,6 +1,7 @@
 package com.pasich.mynotes.ui.view.activity.noteEditor;
 
 import static android.view.View.VISIBLE;
+import static com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils.findAttachmentByBlockId;
 import static com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils.findBlockIdByAttachment;
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
 
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -26,6 +28,7 @@ import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
+import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -109,6 +112,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void initListeners() {
         binding.noteEditor.setOnTitleChangedListener(this::processTitleChange);
         binding.noteEditor.setOnContentChangedListener(this::processTextChange);
+        binding.noteEditor.setOnImageClickListener(this::handleImageOpen);
         binding.noteEditor.setOnAttachmentClickListener(att ->
                 AttachmentActionsDialog.show(
                         this,
@@ -119,6 +123,36 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
 
         binding.noteEditor.setOnFileChooserListener(this);
     }
+
+    /**
+     * Opens the full-size image viewer for a clicked Editor.js image block.
+     *
+     * @param blockId The unique ID of the Editor.js block.
+     */
+    private void handleImageOpen(String blockId) {
+        try {
+
+            // Try to find the matching EditorAttachment for this block
+            EditorAttachment image = findAttachmentByBlockId(notePresenter.getNote(), blockId);
+
+            if (image == null || image.url == null || image.url.isEmpty() || blockId == null || blockId.trim().isEmpty()) {
+                Toast.makeText(this, getString(R.string.openImageError), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Open PhotoViewActivity
+            Intent intent = new Intent(this, PhotoViewActivity.class);
+            intent.putExtra(PhotoViewActivity.EXTRA_URI, image.url);
+
+            startActivity(intent);
+
+        } catch (Exception e) {
+            // Any unexpected error
+            Toast.makeText(this, getString(R.string.openImageError), Toast.LENGTH_SHORT).show();
+            Log.e("PHOTO_OPEN", "handleImageOpen() failed", e);
+        }
+    }
+
 
     /**
      * Handles attachment deletion flow:

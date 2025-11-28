@@ -22,9 +22,8 @@ public class AttachmentStorage {
 
     public static final long MAX_FILE_SIZE = 20L * 1024 * 1024; // 20 MB
     public static final long MIN_FREE_SPACE = 500L * 1024 * 1024; // 500 MB
+    public static final String BASE_DIR = "attachments";
     private static final String TAG = "AttachmentStorage";
-    private static final String BASE_DIR = "attachments";
-
 
     /**
      * Validates whether a file can be attached to a note.
@@ -175,8 +174,12 @@ public class AttachmentStorage {
      * @return File instance or null on error
      */
     public static File resolve(Context ctx, EditorAttachment att) {
+        return resolve(ctx, att.url);
+    }
+
+    public static File resolve(Context ctx, String url) {
         try {
-            Uri uri = Uri.parse(att.url);
+            Uri uri = Uri.parse(url);
             List<String> seg = uri.getPathSegments();
 
             if (seg.size() < 2) return null;

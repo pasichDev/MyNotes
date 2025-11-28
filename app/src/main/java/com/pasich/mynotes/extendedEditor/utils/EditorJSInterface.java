@@ -260,7 +260,6 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
      * @param blockId The ID of the block to remove.
      * @param fileUrl URL of the attached file. If null → Android should not delete the physical file.
      */
-
     public void deleteAttachmentBlockRequest(String blockId, String fileUrl) {
         // If fileUrl == null → JS should receive “null” instead of “null string”
         String jsUrl = (fileUrl == null)
@@ -269,6 +268,15 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
 
         webView.evaluateJavascript("deleteAttachmentBlockFromAndroid('" + blockId + "', " + jsUrl + ");", null);
     }
+
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onImageBlockClick(String blockId) {
+        Log.d("EditorBridge", "Image block clicked: " + blockId);
+
+        listener.openPhoto(blockId);
+    }
+
 
     public interface EditorListener {
         void onEditorReady();
@@ -280,6 +288,8 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
         void onError(String error);
 
         void openFile(EditorAttachment attachment);
+
+        void openPhoto(String blockId);
 
         int getNoteId();
     }

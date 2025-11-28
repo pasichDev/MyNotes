@@ -53,7 +53,9 @@
         <activity
             android:name=".ui.view.activity.LibsActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".ui.view.activity.PhotoViewActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.view.activity.SettingsActivity"
             android:exported="true">

@@ -15,6 +15,55 @@ import java.util.Objects;
 public class EditorJsonUtils {
     private static final String TAG = "EditorJsonUtils";
 
+
+    /**
+     * Returns attachment object (EditorAttachment) for a given blockId.
+     * Supports both formats:
+     *  - data.file
+     *  - data.files[]
+     */
+    public static EditorAttachment findAttachmentByBlockId(Note note, String blockId) {
+        try {
+            if (note == null || blockId == null || blockId.isEmpty())
+                return null;
+
+            String json = note.getValueJson();
+            if (json == null || json.isEmpty())
+                return null;
+
+            JSONArray blocks = new JSONArray(json);
+
+            for (int i = 0; i < blocks.length(); i++) {
+                JSONObject block = blocks.optJSONObject(i);
+                if (block == null) continue;
+
+                if (!blockId.equals(block.optString("id"))) continue;
+
+                JSONObject data = block.optJSONObject("data");
+                if (data == null) return null;
+
+                //  data.file
+                JSONObject fileObj = data.optJSONObject("file");
+                if (fileObj != null) {
+                    return EditorAttachment.fromJsonObject(fileObj);
+                }
+
+                //  data.files[]
+                JSONArray filesArr = data.optJSONArray("files");
+                if (filesArr != null && filesArr.length() > 0) {
+                    JSONObject f = filesArr.optJSONObject(0);
+                    if (f != null) return EditorAttachment.fromJsonObject(f);
+                }
+
+                return null;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "findAttachmentByBlockId() failed", e);
+        }
+        return null;
+    }
+
     /**
      * Finds the Editor.js block ID that corresponds to the given attachment.
      * <p>
