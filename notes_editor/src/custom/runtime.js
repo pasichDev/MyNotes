@@ -4,6 +4,7 @@
 
 let editor = null
 let isReadMode = false
+let __lastSavedJson = null
 
 /**
  * Safe Android call with return value.
@@ -30,13 +31,26 @@ window.attachEditorInstance = function (instance) {
 /**
  * Save current blocks and send to Android.
  */
+
 function saveContent () {
   if (!editor) return
 
   editor
     .save()
     .then(output => {
-      safeAndroidCall('onContentChanged', JSON.stringify(output.blocks))
+      const blocks = output.blocks
+      const jsonStr = JSON.stringify(blocks)
+
+      // Якщо нічого не змінилось — ідемо спати
+      if (jsonStr === __lastSavedJson) {
+        return
+      }
+
+      // Оновлюємо останнє збереження
+      __lastSavedJson = jsonStr
+
+      // Шлемо в Android
+      safeAndroidCall('onContentChanged', jsonStr)
     })
     .catch(err => console.error('[Editor] Save failed:', err))
 }
@@ -75,7 +89,10 @@ function loadNote (note) {
     blocks = note.valueJson
   }
 
-  editor.render({ blocks })
+  editor.render({ blocks }).then(() => {
+      __lastSavedJson = JSON.stringify(blocks)
+  })
+
 }
 
 /**
