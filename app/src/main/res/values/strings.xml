@@ -350,5 +350,6 @@
     <string name="showDetailsExtendedEditor">More details</string>
     <string name="hiddenDetailsExtendedEditor">Hidden details</string>
     <string name="openImageError">Image unavailable for viewing</string>
+    <string name="shareError">Image share error</string>
 
 </resources>

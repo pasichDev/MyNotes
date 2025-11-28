@@ -20,6 +20,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            app:title=""
             android:layout_gravity="top"
             android:background="@android:color/transparent"
             android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"

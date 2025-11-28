@@ -1,11 +1,17 @@
 package com.pasich.mynotes.ui.view.activity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -39,6 +45,7 @@ public class PhotoViewActivity extends BaseActivity {
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
         String rawUrl = getIntent().getStringExtra(EXTRA_URI);
@@ -58,6 +65,49 @@ public class PhotoViewActivity extends BaseActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_photo_view, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.shareMenu) {
+            String rawUrl = getIntent().getStringExtra(EXTRA_URI);
+            File file = AttachmentStorage.resolve(this, rawUrl);
+            if (file != null && file.exists()) {
+                shareImage(file);
+            } else {
+                Toast.makeText(this, getString(R.string.openImageError), Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    private void shareImage(File file) {
+        try {
+            Uri uri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".provider",
+                    file
+            );
+
+            Intent share = new Intent(Intent.ACTION_SEND);
+            share.setType("image/*");
+            share.putExtra(Intent.EXTRA_STREAM, uri);
+            share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(share, getString(R.string.share)));
+
+        } catch (Exception e) {
+            Toast.makeText(this, getString(R.string.shareError), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadImage(File file) {
