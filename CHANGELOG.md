@@ -2,10 +2,12 @@
 
 ## [2.4.41] - XX.XX.XXXX
 
+- **Advanced editor:** added full support for inserting images into notes.
 - **Advanced editor:** added the ability to attach files to notes (up to 20 MB).
 - Added new screen displaying the list of application dependencies.
 - Added adaptive app icon, including a monochrome variant for Material You themed icons.
-
+- Code review and optimization performed, obsolete and unnecessary functionality removed, known bugs
+  fixed
 
 ## [2.3.40] - 13.10.2025
 
