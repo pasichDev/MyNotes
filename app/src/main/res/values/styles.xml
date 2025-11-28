@@ -173,4 +173,13 @@
         <item name="cornerSize">10dp</item>
     </style>
 
+    <style name="M3BottomSheetAnim" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:windowAnimationStyle">@style/M3BottomSheetWindowAnim</item>
+    </style>
+
+    <style name="M3BottomSheetWindowAnim">
+        <item name="android:windowEnterAnimation">@anim/m3_sheet_enter</item>
+        <item name="android:windowExitAnimation">@anim/m3_sheet_exit</item>
+    </style>
+
 </resources>

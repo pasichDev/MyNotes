@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -36,7 +35,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SupportActivity extends BaseActivity implements BillingManager.BillingManagerListener {
 
-    private static final String TAG = "SupportActivity";
+    public static final String PURCHASES_OPEN_EXTRA = "open_bottom_sheet";
 
     public ActivitySupportBinding binding;
     private BillingManager billingManager;
@@ -51,17 +50,27 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activitySupport));
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
         selectTheme();
         binding = ActivitySupportBinding.inflate(getLayoutInflater());
+        getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activitySupport));
+
         setContentView(binding.getRoot());
         setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);
         initActivity();
         initListeners();
         initBilling();
+
+        boolean autoOpen = getIntent().getBooleanExtra(PURCHASES_OPEN_EXTRA, false);
+        if (autoOpen) {
+            binding.getRoot().postDelayed(() -> {
+                if (billingManager != null) {
+                    showPurchasesBottomSheet();
+                }
+            }, 300);
+        }
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -104,7 +113,7 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
         @SuppressLint("InflateParams")
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_purchases, null);
 
-        purchasesBottomSheet = new BottomSheetDialog(this);
+        purchasesBottomSheet = new BottomSheetDialog(this, R.style.M3BottomSheetAnim);
         purchasesBottomSheet.setContentView(bottomSheetView);
 
         BottomSheetBehavior<View> behavior = BottomSheetBehavior.from((View) bottomSheetView.getParent());
@@ -233,7 +242,6 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
 
     @Override
     public void onProductsLoaded(List<DonationProduct> products) {
-        Log.d(TAG, "Products loaded: " + products.size());
         runOnUiThread(() -> {
             if (bottomSheetLoadingView != null) {
                 bottomSheetLoadingView.setVisibility(View.GONE);
@@ -267,7 +275,6 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
 
     @Override
     public void onPurchaseFailed(int responseCode, String debugMessage) {
-        Log.e(TAG, "Purchase failed: " + responseCode + " - " + debugMessage);
         runOnUiThread(() -> {
             String errorMessage = BillingManager.getBillingErrorMessage(responseCode);
             Snackbar.make(binding.getRoot(),
@@ -278,7 +285,6 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
 
     @Override
     public void onBillingError(String errorMessage) {
-        Log.e(TAG, "Billing error: " + errorMessage);
         runOnUiThread(() -> {
             if (bottomSheetLoadingView != null) {
                 bottomSheetLoadingView.setVisibility(View.GONE);
@@ -296,7 +302,6 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
 
     @Override
     public void onPurchasesLoaded(List<Purchase> purchases) {
-        Log.d(TAG, "Purchases loaded: " + purchases.size());
         runOnUiThread(this::updateProductsWithPurchaseStatus);
     }
 

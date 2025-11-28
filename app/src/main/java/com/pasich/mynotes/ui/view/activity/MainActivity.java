@@ -56,6 +56,7 @@ import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
+import com.pasich.mynotes.ui.view.dialogs.UpdateChangelogDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
@@ -137,6 +138,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     UpdateChecker updateChecker;
     @Inject
     ThemePreferencesCache themePreferencesCache;
+
     // Navigation Drawer variables
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -191,7 +193,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         });
 
         handleShortcuts(getIntent());
-
+        checkAppUpdateAndShowChangelog();
     }
 
     @Override
@@ -945,5 +947,17 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             return insets;
         });
     }
+
+    /**
+     * Show changelog dialog if app was updated to a newer version.
+     */
+    private void checkAppUpdateAndShowChangelog() {
+        if (updateChecker.hasNewVersion()) {
+            UpdateChangelogDialog.newInstance()
+                    .show(getSupportFragmentManager(), "UpdateChangelogDialog");
+        }
+
+    }
+
 
 }

@@ -27,6 +27,9 @@ import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.components.SingletonComponent;
+import io.noties.markwon.Markwon;
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
+import io.noties.markwon.linkify.LinkifyPlugin;
 
 @Module
 @InstallIn(SingletonComponent.class)
@@ -72,9 +75,19 @@ public class ApplicationModule {
         }
         return flag;
     }
+
     @Provides
     @Singleton
     public SafePreferences provideSafePreferences(@ApplicationContext Context context) {
         return new SafePreferences(context);
+    }
+
+    @Provides
+    @Singleton
+    public Markwon provideMarkwon(@ApplicationContext Context context) {
+        return Markwon.builder(context)
+                .usePlugin(StrikethroughPlugin.create())
+                .usePlugin(LinkifyPlugin.create())
+                .build();
     }
 }
