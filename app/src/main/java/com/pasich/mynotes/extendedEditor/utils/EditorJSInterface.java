@@ -1,6 +1,8 @@
 package com.pasich.mynotes.extendedEditor.utils;
 
 
+import static com.pasich.mynotes.extendedEditor.utils.EditorJsScheme.EDITORJS_SCHEME;
+
 import android.content.Context;
 import android.net.Uri;
 import android.util.Base64;
@@ -59,7 +61,6 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
     @SuppressWarnings("unused")
     @JavascriptInterface
     public void onContentChanged(String jsonData) {
-        Log.e("lll","changerNote" + jsonData);
         if (listener != null) listener.onContentChanged(jsonData);
 
     }
@@ -117,7 +118,7 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
 
             boolean isPlainTextFallback = false;
 
-            if (!note.hasRichContent() && (note.getValueJson() == null || note.getValueJson().isEmpty())) {
+            if (!note.isAttachments() && (note.getValueJson() == null || note.getValueJson().isEmpty())) {
                 // old note → transfer plainText
                 isPlainTextFallback = true;
                 json.put("plainText", note.getValue() != null ? note.getValue() : "");
@@ -131,7 +132,6 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
 
             json.put("plainTextFallback", isPlainTextFallback);
             String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
-            Log.e("lll","loadnote" + json);
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
         } catch (Exception e) {
             Log.e(TAG, "Failed to load note: " + e.getMessage(), e);
@@ -151,9 +151,7 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
     @SuppressWarnings("unused")
     @JavascriptInterface
     public String uploadFile(String base64, String originalName) {
-
         originalName = originalName.replace("'", "_").replace(" ", "_");
-
 
         int noteId = listener.getNoteId();
 
@@ -166,9 +164,8 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
 
         File saved = AttachmentStorage.save(appContext, noteId, originalName, raw);
         if (saved == null) return "";
-
         return new Uri.Builder()
-                .scheme("editorjs")
+                .scheme(EDITORJS_SCHEME)
                 .authority("attachments")
                 .appendPath("note_" + noteId)
                 .appendPath(saved.getName())
@@ -176,31 +173,43 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
                 .toString();
     }
 
-    //TODO
+    /**
+     * Accepts a base64 image from Editor.js, stores it in internal storage,
+     * and returns an Editor.js-compatible response in the following format:
+     * {
+     * “success”: 1,
+     * “file”: { ‘url’: “editorjs://attachments/...” }
+     * }
+     * <p>
+     * Returns on error:
+     * { “success”: 0 }
+     * <p>
+     * - uploadFile(...) performs the actual save and returns a URL or “”
+     */
     @SuppressWarnings("unused")
     @JavascriptInterface
     public String uploadImage(String base64, String originalName) {
-
-        // Використовуємо існуючу логіку
         String fileUrl = uploadFile(base64, originalName);
 
-        Log.e("uploadImage", "uploadFile returned: " + fileUrl);
+        try {
+            JSONObject root = new JSONObject();
+            if (fileUrl.isEmpty()) {
+                root.put("success", 0);
+                return root.toString();
+            }
 
-        if (fileUrl == null || fileUrl.isEmpty()) {
+            JSONObject fileObj = new JSONObject();
+            fileObj.put("url", fileUrl);
+
+            root.put("success", 1);
+            root.put("file", fileObj);
+
+            return root.toString();
+
+        } catch (Exception e) {
             return "{\"success\":0}";
         }
-
-        // Екрануємо лапки
-        String safeUrl = fileUrl.replace("\"", "\\\"");
-
-        String resp =
-                "{\"success\":1,\"file\":{\"url\":\"" + safeUrl + "\"}}";
-
-        Log.e("uploadImage", "RETURN JSON = " + resp);
-
-        return resp;
     }
-
 
 
     /**
