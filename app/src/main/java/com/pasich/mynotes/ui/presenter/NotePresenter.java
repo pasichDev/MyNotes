@@ -94,12 +94,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         return targetNote != null;
     }
 
-    private void syncSavedSnapshot(Note note) {
-        savedNote.setTitle(note.getTitle());
-        savedNote.setValue(note.getValue());
-        savedNote.setValueJson(note.getValueJson());
-    }
-
 
     /**
      * Trigger auto-save for any text change.
@@ -135,6 +129,10 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
                     @Override
                     public void onSuccess() {
                         updateSaveState(SaveState.SAVED);
+                        if (!isViewDead()) {
+                            getView().runAttachmentsCleanup(targetNote);
+                        }
+
                         autoSaveHandler.postDelayed(() -> updateSaveState(SaveState.IDLE), 3000);
                     }
 
@@ -216,7 +214,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         note.setDate(new Date().getTime());
 
         getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-            syncSavedSnapshot(note);
+            savedNote.copyFrom(note);
             callback.onSuccess();
         }, error -> {
             Log.e(TAG, "saveNote() failed", error);
@@ -234,7 +232,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             boolean hasChanges = !note.getTitle().equals(savedNote.getTitle()) || isContentChanged();
             if (hasChanges && hasMeaningfulContent(note)) {
                 note.setDate(new Date().getTime());
-                getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> syncSavedSnapshot(note), throwable -> Log.e(TAG, "Emergency update failed", throwable)));
+                getCompositeDisposable().add(getDataManager().updateNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> savedNote.copyFrom(note), throwable -> Log.e(TAG, "Emergency update failed", throwable)));
             }
         } catch (Exception e) {
             Log.e(TAG, "Critical: Emergency save crashed", e);
@@ -283,9 +281,10 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             return;
         }
 
-        // Handle unsaved changes
+        // ---- THERE ARE UNSAVED CHANGES ----
         if (needsSave()) {
 
+            // If autosave is currently running → wait
             if (isSavingInProgress) {
                 pendingClose = true;
                 return;
@@ -293,35 +292,42 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
             pendingClose = true;
 
-            // Extended editor case: no JSON saved yet → just close
+            // Special case for extended editor: raw JSON not saved yet
             if (savedNote.getValueJson().isEmpty() && extendedEditor) {
                 if (!isViewDead()) getView().closeNoteActivity();
                 return;
             }
 
             saveNote(targetNote, new NoteContract.AutoSaveCallback() {
+
                 @Override
                 public void onSuccess() {
                     updateSaveState(SaveState.SAVED);
+
+                    // only NOW we close the activity
+                    if (pendingClose && !isViewDead()) {
+                        pendingClose = false;
+                        if (!isViewDead()) {
+                            getView().runAttachmentsCleanup(targetNote);
+                        }
+                        getView().closeNoteActivity();
+                    }
                 }
 
                 @Override
                 public void onError(Throwable error) {
                     updateSaveState(SaveState.ERROR);
-                    autoSaveHandler.postDelayed(() -> {
-                        pendingClose = false;
-                        if (!isViewDead()) {
-                            getView().closeNoteActivity();
-                        }
-                    }, AUTO_SAVE_DELAY);
+                    pendingClose = false;
                 }
             });
+
             return;
         }
 
         // Nothing to save → close immediately
         if (!isViewDead()) getView().closeNoteActivity();
     }
+
 
     /**
      * Determines if the note requires saving (new or modified).
@@ -418,7 +424,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
                 getView().loadingNote(note);
                 setNote(note);
                 // Update saved values on load
-                syncSavedSnapshot(note);
+                savedNote.copyFrom(note);
                 updateSaveState(SaveState.IDLE);
             }
         }, throwable -> Log.e(TAG, "loadingData() failed", throwable)));
@@ -530,8 +536,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
         }
 
-        // повернненя нотатки з extended в simple при наявності вкладень неможливе
-        //  getNote().setHasRichContent(false);
 
         // emergency save
         if (emergencySave) {
@@ -542,6 +546,5 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         onNoteChanged();
     }
 
+
 }
-
-

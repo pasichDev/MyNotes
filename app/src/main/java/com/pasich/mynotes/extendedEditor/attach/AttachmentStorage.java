@@ -109,7 +109,7 @@ public class AttachmentStorage {
      * @param ctx    application context
      * @param noteId ID of the note
      */
-    private static File noteDir(Context ctx, int noteId) {
+    public static File noteFolder(Context ctx, int noteId) {
         File dir = new File(baseDir(ctx), "note_" + noteId);
         if (!dir.exists()) dir.mkdirs();
         return dir;
@@ -129,7 +129,7 @@ public class AttachmentStorage {
      */
     public static File save(Context ctx, int noteId, String originalName, byte[] raw) {
         try {
-            File folder = noteDir(ctx, noteId);
+            File folder = noteFolder(ctx, noteId);
             String ext = "";
 
             int dot = originalName.lastIndexOf('.');

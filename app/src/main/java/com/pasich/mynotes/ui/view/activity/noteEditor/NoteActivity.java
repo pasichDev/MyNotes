@@ -443,4 +443,9 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         super.openCopyNote(idNote);
         finish();
     }
+
+    @Override
+    public void runAttachmentsCleanup(Note note) {
+        // Not implemented extended
+    }
 }

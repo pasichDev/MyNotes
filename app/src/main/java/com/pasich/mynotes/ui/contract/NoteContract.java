@@ -24,6 +24,9 @@ public interface NoteContract {
         void loadingNote(Note note);
 
         void updateSaveStatus(SaveState saveState);
+
+        void runAttachmentsCleanup(Note note);
+
     }
 
     interface presenter extends BasePresenter<view> {

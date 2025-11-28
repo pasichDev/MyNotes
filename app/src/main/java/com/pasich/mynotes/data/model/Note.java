@@ -162,4 +162,18 @@ public class Note {
     }
 
 
+    public void copyFrom(Note other) {
+        if (other == null) return;
+
+        this.title = other.title;
+        this.value = other.value;
+        this.date = other.date;
+        this.tag = other.tag;
+        this.valueJson = other.valueJson;
+        this.hasRichContent = other.hasRichContent;
+        this.attachments = other.attachments;
+        this.Checked = other.Checked;
+    }
+
+
 }

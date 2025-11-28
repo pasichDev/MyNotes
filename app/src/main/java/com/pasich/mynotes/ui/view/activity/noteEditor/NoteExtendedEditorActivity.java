@@ -22,6 +22,7 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.extendedEditor.NoteEditorView;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
@@ -234,4 +235,11 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void onOpenFileChooser(Intent intent, int requestCode) {
         fileChooserLauncher.launch(intent);
     }
+
+
+    @Override
+    public void runAttachmentsCleanup(Note note) {
+        new Thread(() -> AttachmentCleaner.cleanup(this, note)).start();
+    }
+
 }
