@@ -8,8 +8,6 @@ import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-import com.preference.PowerPreference;
-import com.preference.Preference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -20,18 +18,15 @@ public class AppPreferencesHelper implements PreferenceHelper {
     private final AppPreferencesCache appCache;
 
     private final ThemePreferencesCache themeCache;
+    private final SafePreferences prefs;
 
     @Inject
-    AppPreferencesHelper(AppPreferencesCache appCache, ThemePreferencesCache themeCache) {
+    AppPreferencesHelper(AppPreferencesCache appCache, ThemePreferencesCache themeCache, SafePreferences prefs) {
+        this.prefs = prefs;
         this.appCache = appCache;
         this.themeCache = themeCache;
         this.appCache.initialize();
         this.themeCache.initialize();
-    }
-
-    @Override
-    public Preference getDefaultPreferences() {
-        return PowerPreference.getDefaultFile();
     }
 
 
@@ -68,15 +63,50 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public PreferencesBackup getListPreferences() {
-        return new PreferencesBackup(getFormatCount(), getTypeFaceNoteActivity(), getSortParam(), getSizeTextNoteActivity(), PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE), PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE), PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE));
+        return new PreferencesBackup(
+                getFormatCount(),
+                getTypeFaceNoteActivity(),
+                getSortParam(),
+                getSizeTextNoteActivity(),
+
+                prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE),
+
+                prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+                        PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE),
+
+                prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE)
+        );
     }
 
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
         if (preferences.isCreated()) {
-            getDefaultPreferences().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, preferences.getFormatCount()).putString(ARGUMENT_PREFERENCE_TEXT_STYLE, preferences.getTypeFaceNoteActivity()).putString(ARGUMENT_PREFERENCE_SORT, preferences.getSortParam()).putInt(ARGUMENT_PREFERENCE_TEXT_SIZE, preferences.getSizeTextNote()).putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, preferences.getThemeValue()).putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, preferences.isDynamicTheme()).putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
+
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
+                    preferences.getFormatCount());
+
+            prefs.putString(ARGUMENT_PREFERENCE_TEXT_STYLE,
+                    preferences.getTypeFaceNoteActivity());
+
+            prefs.putString(ARGUMENT_PREFERENCE_SORT,
+                    preferences.getSortParam());
+
+            prefs.putInt(ARGUMENT_PREFERENCE_TEXT_SIZE,
+                    preferences.getSizeTextNote());
+
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
+                    preferences.getThemeValue());
+
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+                    preferences.isDynamicTheme());
+
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                    preferences.getThemeMode());
 
             appCache.refresh();
+            themeCache.refresh();
         }
     }
 

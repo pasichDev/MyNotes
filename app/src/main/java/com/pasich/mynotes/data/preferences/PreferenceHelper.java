@@ -2,12 +2,9 @@ package com.pasich.mynotes.data.preferences;
 
 
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
-import com.preference.Preference;
 
 
 public interface PreferenceHelper {
-
-    Preference getDefaultPreferences();
 
     int getFormatCount();
 

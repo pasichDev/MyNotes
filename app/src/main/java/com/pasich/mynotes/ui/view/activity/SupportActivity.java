@@ -51,11 +51,11 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        selectTheme();
-        binding = ActivitySupportBinding.inflate(getLayoutInflater());
         getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activitySupport));
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
+        selectTheme();
+        binding = ActivitySupportBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);

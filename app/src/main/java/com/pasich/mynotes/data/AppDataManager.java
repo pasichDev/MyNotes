@@ -12,7 +12,6 @@ import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
-import com.preference.Preference;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,11 +44,6 @@ public class AppDataManager implements DataManager {
     /**
      * PreferencesBackup
      */
-    @Override
-    public Preference getDefaultPreferences() {
-        return preferencesHelper.getDefaultPreferences();
-    }
-
 
     @Override
     public int getFormatCount() {

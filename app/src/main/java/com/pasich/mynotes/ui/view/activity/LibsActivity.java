@@ -31,9 +31,9 @@ public class LibsActivity extends BaseActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         binding = ActivityLibsBinding.inflate(getLayoutInflater());
-        super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
         setupEdgeToEdgeInsets(binding.getRoot());
 

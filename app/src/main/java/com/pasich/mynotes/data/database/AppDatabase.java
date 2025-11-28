@@ -16,9 +16,9 @@ import com.pasich.mynotes.data.database.dao.TrashDao;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.TrashNote;
+import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.DatabaseConstants;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-import com.preference.PowerPreference;
 
 import javax.inject.Singleton;
 
@@ -29,6 +29,7 @@ import javax.inject.Singleton;
         })
 @Singleton
 public abstract class AppDatabase extends RoomDatabase {
+
     /**
      * Remove old system tags
      * Add the position field to the tags table
@@ -68,9 +69,7 @@ public abstract class AppDatabase extends RoomDatabase {
             database.execSQL("DELETE FROM tags WHERE name = 'allNotes' AND visibility = 0 AND systemAction = 2");
 
             if (appContext != null) {
-                PowerPreference.init(appContext);
-                PowerPreference.getDefaultFile()
-                        .setString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "2.1.29");
+                prefs().putString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "2.1.29");
             }
         }
     };
@@ -86,12 +85,14 @@ public abstract class AppDatabase extends RoomDatabase {
             database.execSQL("ALTER TABLE notes ADD COLUMN hasRichContent INTEGER NOT NULL DEFAULT 0");
 
             if (appContext != null) {
-                PowerPreference.init(appContext);
-                PowerPreference.getDefaultFile()
-                        .setBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, false);
+                prefs().putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, false);
             }
         }
     };
+
+    private static SafePreferences prefs() {
+        return new SafePreferences(appContext);
+    }
 
     public static void setContext(Context context) {
         appContext = context.getApplicationContext();

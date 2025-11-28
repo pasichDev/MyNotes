@@ -44,9 +44,9 @@ public class AboutActivity extends BaseActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         binding = ActivityAboutBinding.inflate(getLayoutInflater());
-        super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
         setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);

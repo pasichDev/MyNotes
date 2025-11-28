@@ -42,9 +42,9 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         activitySettingsBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
-        super.onCreate(savedInstanceState);
         setContentView(activitySettingsBinding.getRoot());
         setupEdgeToEdgeInsets(activitySettingsBinding.getRoot());
         themeIdStartActivity = themePreferencesCache.getThemeId();

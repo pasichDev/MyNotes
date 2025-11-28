@@ -75,6 +75,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         settingsStatusBar(getWindow());
 
@@ -82,8 +83,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         binding = inflateBinding(getLayoutInflater());
         setupSharedTransition(binding.getRoot(), idNote);
-
-        super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
 
         applyEdgeToEdgeInsets(binding.getRoot());

@@ -40,11 +40,11 @@ public class ChangelogActivity extends BaseActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        selectTheme();
-        binding = ActivityChangelogBinding.inflate(getLayoutInflater());
         getWindow().setEnterTransition(new MaterialFade().addTarget(binding.activityChangelog));
         getWindow().setAllowEnterTransitionOverlap(true);
         super.onCreate(savedInstanceState);
+        selectTheme();
+        binding = ActivityChangelogBinding.inflate(getLayoutInflater());
         setupEdgeToEdgeInsets(binding.getRoot());
         setContentView(binding.getRoot());
         initActivity();

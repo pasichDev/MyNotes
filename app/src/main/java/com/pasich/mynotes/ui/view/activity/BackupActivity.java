@@ -49,13 +49,6 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
     @Inject
     public BackupContract.presenter presenter;
-
-    public ActivityBackupBinding binding;
-
-
-    private OtherAppImportDialog importDialog;
-
-
     /**
      * Save local backup intent
      */
@@ -66,7 +59,6 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
             }
         }
     });
-
     /**
      * Restore local backup intent
      */
@@ -77,8 +69,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
             }
         }
     });
-
-
+    public ActivityBackupBinding binding;
     ActivityResultLauncher<Intent> launcherImportDrive = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -94,7 +85,6 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                 }
             }
     );
-
     ActivityResultLauncher<Intent> launcherExportDrive = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -105,15 +95,15 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                 }
             }
     );
-
-
+    private OtherAppImportDialog importDialog;
     private Dialog progressDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         binding = ActivityBackupBinding.inflate(getLayoutInflater());
-        super.onCreate(savedInstanceState);
+
         setContentView(binding.getRoot());
 
         setupEdgeToEdgeInsets(binding.getRoot());

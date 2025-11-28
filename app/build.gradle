@@ -104,7 +104,6 @@ gradle.taskGraph.whenReady { graph ->
 
 ext {
     markwon_version = '4.6.2'
-    powerPrefenceVersion = '2.1.0'
     roomVersion = '2.8.1'
 }
 dependencies {
@@ -132,9 +131,8 @@ dependencies {
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'com.android.billingclient:billing:8.0.0'
 
-    //Other lib (Gson/Glide/PowerPreferences)
+    //Other lib (Gson)
     implementation 'com.google.code.gson:gson:2.13.2'
-    implementation "com.github.AliAsadi:PowerPreference:$powerPrefenceVersion"
 
     //Markwon https://noties.io/Markwon/docs/v4/
     implementation"io.noties.markwon:core:$markwon_version"
