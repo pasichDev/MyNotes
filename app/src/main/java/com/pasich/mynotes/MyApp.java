@@ -14,7 +14,7 @@ import io.reactivex.plugins.RxJavaPlugins;
 @HiltAndroidApp
 public class MyApp extends Application {
 
-    private static final String TAG = "MyApp";
+    private static final String TAG = "MyNotesApp";
 
     @Inject
     ThemePreferencesCache themePreferencesCache;

@@ -1,4 +1,4 @@
-package com.pasich.mynotes.ui.view.fragment;
+package com.pasich.mynotes.ui.view.fragment.mydata;
 
 import android.app.Activity;
 import android.content.Intent;

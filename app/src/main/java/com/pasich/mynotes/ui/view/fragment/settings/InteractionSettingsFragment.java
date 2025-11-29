@@ -1,4 +1,4 @@
-package com.pasich.mynotes.ui.view.fragment;
+package com.pasich.mynotes.ui.view.fragment.settings;
 
 import static com.pasich.mynotes.utils.constants.ContactLink.SEND_FEEDBACK_EDITOR;
 import static com.pasich.mynotes.utils.themes.ManualRedrawSwitch.updateSwitchColors;

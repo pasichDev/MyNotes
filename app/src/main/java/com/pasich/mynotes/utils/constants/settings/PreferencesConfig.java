@@ -37,4 +37,7 @@ public class PreferencesConfig {
     //ThemeMode
     public static final String ARGUMENT_PREFERENCE_THEME_MODE = "themeMode";
     public static final int ARGUMENT_DEFAULT_THEME_MODE_VALUE = 0; // 0 = Follow System, 1 = Light, 2 = Dark
+
+    public static final String ARGUMENT_PREFERENCE_IMAGEOPT = "image_opt";
+    public static final boolean ARGUMENT_DEFAULT_IMAGEOPT_VALUE = false;
 }

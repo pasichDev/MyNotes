@@ -213,6 +213,29 @@ public class AttachmentStorage {
         return false;
     }
 
+    public static long getTotalAttachmentsSize(Context ctx) {
+        long total = 0;
+        File base = new File(ctx.getFilesDir(), BASE_DIR);
+
+        if (!base.exists()) return 0;
+
+        File[] noteDirs = base.listFiles();
+        if (noteDirs == null) return 0;
+
+        for (File dir : noteDirs) {
+            if (dir.isDirectory()) {
+                File[] files = dir.listFiles();
+                if (files == null) continue;
+
+                for (File f : files) {
+                    if (f.isFile()) total += f.length();
+                }
+            }
+        }
+
+        return total;
+    }
+
 
     /**
      * Represents validation result for attachment checks.

@@ -21,6 +21,8 @@ public class AppPreferencesCache {
     private volatile String sortPref;
     private volatile String tagsSortPref;
     private volatile int formatPref;
+
+    private volatile boolean imageOptEnable;
     private volatile boolean initialized = false;
 
     @Inject
@@ -54,6 +56,11 @@ public class AppPreferencesCache {
                     PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE
             );
 
+            imageOptEnable = prefs.getBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                    PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE
+            );
+
             initialized = true;
 
         } catch (Exception e) {
@@ -67,6 +74,7 @@ public class AppPreferencesCache {
         sortPref = PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF;
         tagsSortPref = PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
         formatPref = PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE;
+        imageOptEnable = PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE;
         initialized = true;
     }
 
@@ -106,7 +114,22 @@ public class AppPreferencesCache {
         }
     }
 
-    // ===================== SETTERS =====================
+    public boolean getImageOpt() {
+        ensureInitialized();
+        return imageOptEnable;
+    }
+
+    public synchronized void setImageOpt(boolean mImageOpt) {
+        try {
+            imageOptEnable = mImageOpt;
+            prefs.putBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                    mImageOpt
+            );
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to image_opt preference", e);
+        }
+    }
 
     public String getTagsSortPref() {
         ensureInitialized();

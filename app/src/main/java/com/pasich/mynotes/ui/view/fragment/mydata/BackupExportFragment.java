@@ -1,4 +1,4 @@
-package com.pasich.mynotes.ui.view.fragment;
+package com.pasich.mynotes.ui.view.fragment.mydata;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
@@ -17,8 +19,9 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
-import com.pasich.mynotes.ui.view.fragment.InteractionSettingsFragment;
-import com.pasich.mynotes.ui.view.fragment.InterfaceSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.InteractionSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.InterfaceSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.MediaSettingsFragment;
 import com.pasich.mynotes.utils.adapters.SettingsPagerAdapter;
 import com.pasich.mynotes.utils.themes.ThemesArray;
 
@@ -70,6 +73,23 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         ViewPager2 viewPager = activitySettingsBinding.viewPager;
 
         tabLayout = activitySettingsBinding.tabLayout;
+        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+
+        // Add margins between tabs
+        tabLayout.post(() -> {
+            ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
+            int margin = (int) (12 * getResources().getDisplayMetrics().density);
+
+            for (int i = 0; i < tabStrip.getChildCount(); i++) {
+                View tabView = tabStrip.getChildAt(i);
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
+                params.setMargins(margin, 0, margin, 0);
+                tabView.setLayoutParams(params);
+
+                tabView.requestLayout();
+            }
+        });
+
         pagerAdapter = new SettingsPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
@@ -82,6 +102,9 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
                             break;
                         case 1:
                             tab.setText(getString(R.string.interaction_tab));
+                            break;
+                        case 2:
+                            tab.setText(getString(R.string.mediaTab));
                             break;
                     }
                 }
@@ -188,6 +211,8 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
                     ((InterfaceSettingsFragment) fragment).updateThemeColors();
                 } else if (fragment instanceof InteractionSettingsFragment) {
                     ((InteractionSettingsFragment) fragment).updateThemeColors();
+                } else if (fragment instanceof MediaSettingsFragment) {
+                    ((MediaSettingsFragment) fragment).updateThemeColors();
                 }
             }
         }

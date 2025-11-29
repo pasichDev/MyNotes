@@ -5,9 +5,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.pasich.mynotes.ui.contract.BackupContract;
-import com.pasich.mynotes.ui.view.fragment.BackupExportFragment;
-import com.pasich.mynotes.ui.view.fragment.ImportDataFragment;
+import com.pasich.mynotes.ui.view.fragment.mydata.BackupExportFragment;
+import com.pasich.mynotes.ui.view.fragment.mydata.ImportDataFragment;
 
 public class BackupPagerAdapter extends FragmentStateAdapter {
 

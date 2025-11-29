@@ -351,5 +351,9 @@
     <string name="hiddenDetailsExtendedEditor">Hidden details</string>
     <string name="openImageError">Image unavailable for viewing</string>
     <string name="shareError">Image share error</string>
+    <string name="mediaTab">Media</string>
+    <string name="img_opt_title">Enable enhanced compression</string>
+    <string name="img_opt_summary">Default light compression is always applied. This option increases compression only for newly added images. It does not modify existing images and does not apply to any other attachment types.</string>
+    <string name="media_usage_title">App\'s media files take up</string>
 
 </resources>

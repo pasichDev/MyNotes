@@ -5,8 +5,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.pasich.mynotes.ui.view.fragment.InteractionSettingsFragment;
-import com.pasich.mynotes.ui.view.fragment.InterfaceSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.InteractionSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.InterfaceSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.MediaSettingsFragment;
 
 public class SettingsPagerAdapter extends FragmentStateAdapter {
 
@@ -18,6 +19,7 @@ public class SettingsPagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         return switch (position) {
+            case 2 -> new MediaSettingsFragment();
             case 1 -> new InteractionSettingsFragment();
             default -> new InterfaceSettingsFragment();
         };
@@ -25,6 +27,6 @@ public class SettingsPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2;
+        return 3;
     }
 }

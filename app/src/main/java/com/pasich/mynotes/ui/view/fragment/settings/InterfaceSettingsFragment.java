@@ -1,4 +1,4 @@
-package com.pasich.mynotes.ui.view.fragment;
+package com.pasich.mynotes.ui.view.fragment.settings;
 
 import static com.pasich.mynotes.utils.themes.ManualRedrawSwitch.updateSwitchColors;
 
@@ -70,9 +70,6 @@ public class InterfaceSettingsFragment extends Fragment {
 
         // Initialize color preview and accent card state
         updateAccentCardState(enableDynamic);
-
-        // Apply current theme colors
-        //     applyThemeColors();
     }
 
     private void initListeners() {
