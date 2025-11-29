@@ -33,7 +33,7 @@
                 android:id="@+id/nameNote"
                 style="@style/itemNoteTitle"
                 android:text="@{Note.title}"
-                android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
+                android:visibility="@{Note.title.isEmpty() ?  View.GONE : View.VISIBLE }"
                 tools:text="Title Note" />
 
             <TextView
