@@ -365,5 +365,6 @@
     <string name="font_size_default">Default</string>
     <string name="font_size_l">Large</string>
     <string name="font_size_xl">Extra Large</string>
+    <string name="delete">Delete</string>
 
 </resources>
