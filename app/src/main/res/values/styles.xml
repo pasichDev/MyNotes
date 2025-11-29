@@ -182,4 +182,24 @@
         <item name="android:windowExitAnimation">@anim/m3_sheet_exit</item>
     </style>
 
+    <style name="SettingsCardView.Base" parent="Widget.Material3.CardView.Elevated">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="contentPadding">5dp</item>
+        <item name="android:layout_marginTop">12dp</item>
+    </style>
+
+    <style name="SettingsCardViewTop" parent="SettingsCardView.Base">
+        <item name="shapeAppearance">@style/ShapeAppearance.SettingsCard.Top</item>
+        <item name="android:layout_marginTop">12dp</item>
+    </style>
+
+    <style name="SettingsCardViewBottom" parent="SettingsCardView.Base">
+        <item name="shapeAppearance">@style/ShapeAppearance.SettingsCard.Bottom</item>
+        <item name="cardBackgroundColor">?attr/colorSecondaryContainer</item>
+        <item name="android:layout_marginTop">0dp</item>
+    </style>
+
 </resources>

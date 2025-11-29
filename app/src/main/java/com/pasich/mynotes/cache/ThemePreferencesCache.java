@@ -35,6 +35,7 @@ public class ThemePreferencesCache {
     private volatile boolean initialized = false;
     private volatile String typeFaceNoteActivity;
     private volatile int sizeTextNoteActivity;
+    private volatile float uiFontScale;
 
     @Inject
     public ThemePreferencesCache(SafePreferences prefs) {
@@ -66,6 +67,8 @@ public class ThemePreferencesCache {
             typeFaceNoteActivity = prefs.getString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE);
 
             sizeTextNoteActivity = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE);
+
+            uiFontScale = prefs.getFloat(PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE);
             initialized = true;
 
         } catch (Exception e) {
@@ -85,6 +88,7 @@ public class ThemePreferencesCache {
         extendedEditor = PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE;
         typeFaceNoteActivity = PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE;
         sizeTextNoteActivity = PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE;
+        uiFontScale = PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE;
         initialized = true;
         Log.d(TAG, "Set default values after initialization failure");
     }
@@ -163,10 +167,23 @@ public class ThemePreferencesCache {
     public synchronized void setSizeTextNoteActivity(int size) {
         try {
             this.sizeTextNoteActivity = size;
-            // Use asynchronous put method to avoid UI blocking
             prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, size);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set size text note", e);
+        }
+    }
+
+    public float getUiFontScale() {
+        ensureInitialized();
+        return uiFontScale;
+    }
+
+    public synchronized void setUiFontScale(float value) {
+        try {
+            this.uiFontScale = value;
+            prefs.putFloat(PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, uiFontScale);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set Ui Font Scale note", e);
         }
     }
 
@@ -178,12 +195,12 @@ public class ThemePreferencesCache {
     public synchronized void setTypeFaceNoteActivity(String typeFace) {
         try {
             this.typeFaceNoteActivity = typeFace;
-            // Use asynchronous put method to avoid UI blocking
             prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, typeFace);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set type font note note", e);
         }
     }
+
 
     /**
      * Set dynamic color with asynchronous persistence
@@ -191,7 +208,6 @@ public class ThemePreferencesCache {
     public synchronized void setDynamicColor(boolean enabled) {
         try {
             this.dynamicColor = enabled;
-            // Use asynchronous put method to avoid UI blocking
             prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, enabled);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set dynamic color", e);
@@ -204,7 +220,6 @@ public class ThemePreferencesCache {
     public synchronized void setScreenProtection(boolean enabled) {
         try {
             this.screenProtection = enabled;
-            // Use asynchronous put method to avoid UI blocking
             prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, enabled);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set screen protection", e);
@@ -217,7 +232,6 @@ public class ThemePreferencesCache {
     public synchronized void setExtendedEditor(boolean enabled) {
         try {
             this.extendedEditor = enabled;
-            // Use asynchronous put method to avoid UI blocking
             prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, enabled);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set extended editor", e);
@@ -232,9 +246,7 @@ public class ThemePreferencesCache {
      * Safe method with fallback for early calls before DI initialization
      */
     public void applyCurrentThemeMode() {
-        // Безпечна ініціалізація з fallback
         if (!initialized) {
-            // Fallback: читаємо безпосередньо з SharedPreferences без блокування UI
             try {
                 int fallbackThemeMode = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
                 applyThemeModeInternal(fallbackThemeMode);

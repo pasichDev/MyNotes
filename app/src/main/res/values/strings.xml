@@ -321,11 +321,13 @@
     <string name="onExtendedEditorWarning">If you switch to the standard editor and edit a note created or modified in extended mode, some formatting may be lost.</string>
 
     <string name="new_note">New Note</string>
+    <string name="font_preview_sample" translatable="false">The quick brown fox jumps over the lazy dog</string>
 
     <string name="help_extended_editor_title">Extended Editor</string>
     <string name="help_extended_editor_descrpt">Get more control over your notes: headings, lists, quotes, code blocks, and other tools that will be added over time. Can be enabled or disabled in settings.</string>
-    <string name="countMediaNote">Media files: %1$d </string>
 
+
+    <string name="countMediaNote">Media files: %1$d </string>
     <string name="openWith">Open with..</string>
     <string name="saveDevice">Save to device</string>
     <string name="savedDownloads">Saved to Downloads</string>
@@ -355,5 +357,13 @@
     <string name="img_opt_title">Enable enhanced compression</string>
     <string name="img_opt_summary">Default light compression is always applied. This option increases compression only for newly added images. It does not modify existing images and does not apply to any other attachment types.</string>
     <string name="media_usage_title">App\'s media files take up</string>
+    <string name="ui_text_scale_title">Interface text size</string>
+    <string name="ui_text_scale_description">Adjust the size of text across the app’s interface.</string>
+    <string name="font_size_auto">Auto</string>
+    <string name="font_size_xs">Extra Small</string>
+    <string name="font_size_s">Small</string>
+    <string name="font_size_default">Default</string>
+    <string name="font_size_l">Large</string>
+    <string name="font_size_xl">Extra Large</string>
 
 </resources>

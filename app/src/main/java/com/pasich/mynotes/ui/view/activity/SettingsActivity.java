@@ -43,6 +43,8 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     private SettingsPagerAdapter pagerAdapter;
     private TabLayout tabLayout;
 
+    private float fontScaleWasChanged = -0.2f;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,6 +161,10 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
             setResult(11, new Intent().putExtra("updateThemeMode", true));
         }
 
+        if (fontScaleWasChanged != -0.2f) {
+            setResult(11, new Intent().putExtra("updateFontScale", true));
+        }
+
         supportFinishAfterTransition();
         return true;
     }
@@ -177,6 +183,11 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     @Override
     public void onThemeChanged(int themeStyle) {
         redrawActivity(themeStyle);
+    }
+
+    @Override
+    public void onFontScaleChanged(float value) {
+        fontScaleWasChanged = value;
     }
 
 

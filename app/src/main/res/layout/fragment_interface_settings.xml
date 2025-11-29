@@ -17,16 +17,7 @@
             <!-- Theme Mode Selection -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/themeModeCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                style="@style/SettingsCardView.Base">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -103,16 +94,7 @@
             <!-- Accent Color Selection -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/accentColorCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                style="@style/SettingsCardView.Base">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -187,13 +169,7 @@
             <!-- Dynamic Color Switch -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/dynamicColorCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                style="@style/SettingsCardView.Base">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -228,6 +204,79 @@
                         android:textSize="12sp" />
 
                 </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+            <!-- Font Size Selection -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/fontSizeCard"
+                style="@style/SettingsCardViewTop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/fontSizeTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ui_text_scale_title"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/fontSizeDescription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="@font/railway_medium"
+                        android:text="@string/ui_text_scale_description"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="12sp" />
+
+                    <!-- Slider -->
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/fontSizeSlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:stepSize="1"
+                        android:valueFrom="0"
+                        android:valueTo="5"
+                        app:labelBehavior="gone" />
+
+                    <!-- Value preview -->
+                    <TextView
+                        android:id="@+id/fontSizeValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/railway_medium"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp"
+                        tools:text="Default" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/fontPreviewCard"
+                style="@style/SettingsCardViewBottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/fontPreviewText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:text="@string/font_preview_sample"
+                    android:textAppearance="?attr/textAppearanceBodyMedium" />
 
             </com.google.android.material.card.MaterialCardView>
 

@@ -25,13 +25,8 @@
             <!-- Screen Protection Switch -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/screenProtectionCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+
+                style="@style/SettingsCardView.Base">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -71,13 +66,7 @@
             <!-- Extended Editor Switch -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/extendedEditorCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                style="@style/SettingsCardView.Base">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -168,16 +157,17 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/detailsExtended"
-                            style="@style/Widget.Material3.Button.Icon"
                             android:visibility="@{!extendedDetailsVisible ? View.VISIBLE : View.GONE}"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:backgroundTint="?attr/colorSecondary"
-                            android:paddingVertical="8dp"
-                            android:textColor="?attr/colorOnPrimary"
-                            app:cornerRadius="8dp"
-                            app:icon="@drawable/ic_info" />
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            app:iconGravity="textStart"
+                            app:iconSize="24dp"
+                            app:iconPadding="0dp"
+                            app:iconTint="?attr/colorPrimary"
+                            android:backgroundTint="?attr/colorSecondaryContainer"
+                            style="@style/Widget.Material3.Button.ElevatedButton"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_help" />
                     </LinearLayout>
 
                 </LinearLayout>
