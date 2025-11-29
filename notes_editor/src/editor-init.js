@@ -97,10 +97,7 @@ window.ImageToolClickable = ImageToolClickable
       onChange () {
         if (!global.__EDITOR_READY) return
 
-        clearTimeout(global.__saveTimer)
-        global.__saveTimer = setTimeout(() => {
           global.saveContent?.()
-        }, 120)
       }
     })
 
