@@ -21,21 +21,24 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.pasich.mynotes.R;
+import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.extendedEditor.NoteEditorView;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.models.SettingsEditorJsBridge;
+import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import jakarta.inject.Inject;
 
 @AndroidEntryPoint
 public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityNoteExtendedEditorBinding> implements NoteEditorView.OnFileChooserListener {
-
     private final ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -47,6 +50,8 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
                 }
             }
     );
+    @Inject
+    AppPreferencesCache appPreferencesCache;
     private boolean isReadMode = false;
 
     @Override
@@ -80,6 +85,58 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     @Override
     protected void onAfterPresenterReady() {
         notePresenter.setExtendedEditor(true);
+
+        EditorJSInterface bridge = new EditorJSInterface(
+                new EditorJSInterface.EditorListener() {
+
+                    @Override
+                    public void onEditorReady() {
+                        binding.noteEditor.onEditorReadyFromBridge();
+                    }
+
+                    @Override
+                    public void onContentChanged(String json) {
+                        runOnUiThread(() -> processTextChange(json));
+                    }
+
+                    @Override
+                    public void onTitleChanged(String title) {
+                        runOnUiThread(() -> processTitleChange(title));
+
+                    }
+
+                    @Override
+                    public void openPhoto(String blockId) {
+                        handleImageOpen(blockId);
+                    }
+
+                    @Override
+                    public void openFile(EditorAttachment att) {
+                        runOnUiThread(() -> AttachmentActionsDialog.show(
+                                NoteExtendedEditorActivity.this,
+                                att,
+                                (at, ls) -> handleAttachmentDelete(at, ls)
+                        ));
+
+
+                    }
+
+                    @Override
+                    public int getNoteId() {
+                        return notePresenter.getNote().getId();
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e("ExtendedEditor", "NoteEditorView error:" + error);
+                    }
+                },
+                binding.noteEditor.getWebView(),
+                this,
+                new SettingsEditorJsBridge(appPreferencesCache.getImageOpt())
+        );
+
+        binding.noteEditor.setEditorInterface(bridge);
     }
 
     @Override
@@ -110,17 +167,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
 
     @Override
     public void initListeners() {
-        binding.noteEditor.setOnTitleChangedListener(this::processTitleChange);
-        binding.noteEditor.setOnContentChangedListener(this::processTextChange);
-        binding.noteEditor.setOnImageClickListener(this::handleImageOpen);
-        binding.noteEditor.setOnAttachmentClickListener(att ->
-                AttachmentActionsDialog.show(
-                        this,
-                        att,
-                        this::handleAttachmentDelete
-                )
-        );
-
         binding.noteEditor.setOnFileChooserListener(this);
     }
 
@@ -264,6 +310,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         super.openCopyNote(idNote);
         finish();
     }
+
 
     @Override
     public void onOpenFileChooser(Intent intent, int requestCode) {

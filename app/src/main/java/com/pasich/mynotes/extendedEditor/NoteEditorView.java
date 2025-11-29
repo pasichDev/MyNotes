@@ -21,7 +21,6 @@ import androidx.core.view.ViewCompat;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
-import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.utils.EditorAttachmentsWebViewClient;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
@@ -36,14 +35,9 @@ public class NoteEditorView extends FrameLayout {
     private View loader;
     private EditorJSInterface editorInterface;
     private Handler handler;
-    private Note note;
     private Note pendingNote;
     private boolean editorIsReady = false;
     private boolean htmlLoaded = false;
-    private OnTitleChangedListener titleListener;
-    private OnContentChangedListener contentListener;
-    private OnAttachmentClickListener attachmentListener;
-    private OnImageClickListener imageClickListener;
     private OnFileChooserListener fileChooserListener;
     private ValueCallback<Uri[]> fileCallback;
 
@@ -51,7 +45,6 @@ public class NoteEditorView extends FrameLayout {
         super(context, attrs);
         init(context);
     }
-
 
     private void init(Context context) {
         inflate(context, R.layout.view_note_editor, this);
@@ -111,70 +104,7 @@ public class NoteEditorView extends FrameLayout {
 
         webView.setVerticalScrollBarEnabled(false);
         webView.setHorizontalScrollBarEnabled(false);
-
-        editorInterface = new EditorJSInterface(new EditorJSInterface.EditorListener() {
-
-            @Override
-            public void onEditorReady() {
-                handler.post(() -> {
-                    editorIsReady = true;
-                    applyTheme();
-
-                    if (pendingNote != null) {
-                        editorInterface.loadNoteToEditor(pendingNote);
-                        pendingNote = null;
-                    }
-
-                    handler.postDelayed(NoteEditorView.this::showEditor, 120);
-                });
-            }
-
-
-            @Override
-            public void onTitleChanged(String title) {
-                handler.post(() -> {
-                    if (titleListener != null) titleListener.onTitleChanged(title);
-                });
-            }
-
-
-            @Override
-            public void onContentChanged(String json) {
-                handler.post(() -> {
-                    if (contentListener != null) contentListener.onContentChanged(json);
-                });
-            }
-
-            @Override
-            public void openFile(EditorAttachment attachment) {
-                handler.post(() -> {
-                    if (attachmentListener != null)
-                        attachmentListener.onAttachmentClick(attachment);
-                });
-            }
-
-            @Override
-            public void openPhoto(String blockId) {
-                handler.post(() -> {
-                    if (imageClickListener != null)
-                        imageClickListener.onImageClick(blockId);
-                });
-            }
-
-            @Override
-            public int getNoteId() {
-                return (note != null && note.getId() > 0) ? note.getId() : 0;
-            }
-
-            @Override
-            public void onError(String error) {
-                handler.post(() -> Log.e(TAG, "NoteEditorView error:" + error));
-            }
-
-        }, webView, getContext());
-
         webView.setWebViewClient(new EditorAttachmentsWebViewClient(getContext()));
-
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView,
@@ -199,8 +129,29 @@ public class NoteEditorView extends FrameLayout {
 
         });
 
+    }
 
-        webView.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
+    public WebView getWebView() {
+        return webView;
+    }
+
+    public void onEditorReadyFromBridge() {
+        handler.post(() -> {
+            editorIsReady = true;
+            applyTheme();
+            if (pendingNote != null) {
+                editorInterface.loadNoteToEditor(pendingNote);
+                pendingNote = null;
+            }
+            handler.postDelayed(this::showEditor, 120);
+        });
+    }
+
+    public void setEditorInterface(EditorJSInterface editorInterface) {
+        this.editorInterface = editorInterface;
+        if (webView != null) {
+            webView.addJavascriptInterface(editorInterface, EditorJSInterface.nameInterface);
+        }
     }
 
     /**
@@ -246,8 +197,6 @@ public class NoteEditorView extends FrameLayout {
             pendingNote = null;
             return;
         }
-
-        note = mNote;
 
         if (editorIsReady) {
             editorInterface.loadNoteToEditor(mNote);
@@ -321,44 +270,10 @@ public class NoteEditorView extends FrameLayout {
         }
     }
 
-
-    public void setOnTitleChangedListener(OnTitleChangedListener l) {
-        this.titleListener = l;
-    }
-
-    public void setOnContentChangedListener(OnContentChangedListener l) {
-        this.contentListener = l;
-    }
-
-    public void setOnAttachmentClickListener(OnAttachmentClickListener l) {
-        this.attachmentListener = l;
-    }
-
-    public void setOnImageClickListener(OnImageClickListener l) {
-        this.imageClickListener = l;
-    }
-
     public void setOnFileChooserListener(OnFileChooserListener l) {
         this.fileChooserListener = l;
     }
 
-
-    public interface OnTitleChangedListener {
-        void onTitleChanged(String t);
-    }
-
-
-    public interface OnContentChangedListener {
-        void onContentChanged(String json);
-    }
-
-    public interface OnAttachmentClickListener {
-        void onAttachmentClick(EditorAttachment attachment);
-    }
-
-    public interface OnImageClickListener {
-        void onImageClick(String blockId);
-    }
 
     public interface OnFileChooserListener {
         void onOpenFileChooser(Intent intent, int requestCode);

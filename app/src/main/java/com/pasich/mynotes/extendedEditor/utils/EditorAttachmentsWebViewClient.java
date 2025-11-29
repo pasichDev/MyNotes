@@ -30,7 +30,6 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
         Uri uri = request.getUrl();
-        // Блокуємо відкриття editorjs:// у зовнішньому браузері
         return EDITORJS_SCHEME.equals(uri.getScheme());
     }
 
@@ -42,7 +41,6 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
             return super.shouldInterceptRequest(view, request);
 
         try {
-            // editorjs://attachments/note_146/file.jpg
             List<String> segments = uri.getPathSegments();
             if (segments.size() < 2)
                 return super.shouldInterceptRequest(view, request);
@@ -53,7 +51,14 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
             int noteId = Integer.parseInt(noteStr.replace("note_", ""));
 
             // Формуємо правильний EditorAttachment URL
-            String internalUrl = "file://attachments/note_" + noteId + "/" + fileName;
+            String internalUrl = new Uri.Builder()
+                    .scheme(EDITORJS_SCHEME)
+                    .authority("attachments")
+                    .appendPath("note_" + noteId)
+                    .appendPath(fileName)
+                    .build()
+                    .toString();
+
             EditorAttachment att = new EditorAttachment(internalUrl);
 
             File file = AttachmentStorage.read(context, att);
@@ -65,7 +70,7 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
 
             return new WebResourceResponse(
                     mime,
-                    null, // бо це binary, не текст
+                    null,
                     new FileInputStream(file)
             );
 

@@ -1,6 +1,7 @@
 package com.pasich.mynotes.extendedEditor.utils;
 
 
+import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.BASE_DIR;
 import static com.pasich.mynotes.extendedEditor.utils.EditorJsScheme.EDITORJS_SCHEME;
 
 import android.content.Context;
@@ -15,12 +16,14 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
+import com.pasich.mynotes.extendedEditor.models.SettingsEditorJsBridge;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.util.Map;
+
 
 /**
  * JavaScript bridge used to communicate between Android and Editor.js inside the WebView.
@@ -30,15 +33,25 @@ import java.util.Map;
  * to JavaScript through @JavascriptInterface methods.
  */
 
+public class EditorJSInterface {
 
-public record EditorJSInterface(EditorListener listener, WebView webView, Context appContext) {
     public static final String nameInterface = "Android";
     private static final String TAG = "EditorJSInterface";
 
-    public EditorJSInterface(EditorListener listener, WebView webView, Context appContext) {
+    private final EditorListener listener;
+    private final WebView webView;
+    private final Context appContext;
+    private final SettingsEditorJsBridge settings;
+
+    public EditorJSInterface(EditorListener listener,
+                             WebView webView,
+                             Context appContext,
+                             SettingsEditorJsBridge settings) {
+
         this.listener = listener;
         this.webView = webView;
         this.appContext = appContext.getApplicationContext();
+        this.settings = settings;
     }
 
     /**
@@ -162,11 +175,11 @@ public record EditorJSInterface(EditorListener listener, WebView webView, Contex
         byte[] raw = Base64.decode(base64, Base64.DEFAULT);
         if (raw == null || raw.length == 0) return "";
 
-        File saved = AttachmentStorage.save(appContext, noteId, originalName, raw);
+        File saved = AttachmentStorage.save(appContext, noteId, originalName, raw, settings.isExtraOptimizeEnabled());
         if (saved == null) return "";
         return new Uri.Builder()
                 .scheme(EDITORJS_SCHEME)
-                .authority("attachments")
+                .authority(BASE_DIR)
                 .appendPath("note_" + noteId)
                 .appendPath(saved.getName())
                 .build()

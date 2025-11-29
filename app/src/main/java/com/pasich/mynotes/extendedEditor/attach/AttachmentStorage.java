@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
+import com.pasich.mynotes.utils.file.ImageOptimizer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -126,9 +127,24 @@ public class AttachmentStorage {
      * @param raw          file raw bytes
      * @return saved File object or null on failure
      */
-    public static File save(Context ctx, int noteId, String originalName, byte[] raw) {
+    public static File save(Context ctx, int noteId, String originalName, byte[] raw, boolean isExtraOptimizeEnabled) {
         try {
             File folder = noteFolder(ctx, noteId);
+
+            // We determine the format based on the first bytes
+            ImageOptimizer.OutFormat detectedFormat = ImageOptimizer.detectFormat(raw);
+
+            boolean isImage =
+                    detectedFormat == ImageOptimizer.OutFormat.JPEG ||
+                            detectedFormat == ImageOptimizer.OutFormat.PNG ||
+                            detectedFormat == ImageOptimizer.OutFormat.WEBP;
+
+            // If it's an image, let's optimize it
+            if (isImage) {
+                raw = ImageOptimizer.optimizeRawImage(raw, detectedFormat, isExtraOptimizeEnabled);
+            }
+
+            // File name generation
             String ext = "";
 
             int dot = originalName.lastIndexOf('.');
@@ -143,11 +159,13 @@ public class AttachmentStorage {
             }
 
             return out;
+
         } catch (Exception e) {
             Log.e(TAG, "save() error", e);
             return null;
         }
     }
+
 
     /**
      * Reads an attachment file by resolving its stored internal path.
