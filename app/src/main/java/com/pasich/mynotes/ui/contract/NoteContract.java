@@ -38,8 +38,6 @@ public interface NoteContract {
 
         void activateEditNote();
 
-        void deleteNote(Note note);
-
         long getIdKey();
 
         void setIdKey(long idKey);

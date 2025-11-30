@@ -270,10 +270,16 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
         // Case: new empty note → delete and exit
         if (targetNote != null && newNoteKey && !hasMeaningfulContent(targetNote)) {
-            deleteNote(targetNote); // TODO видалити нотатку зовсім а не в корзину
+            getCompositeDisposable().add(getDataManager().deleteNote(targetNote).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
+                // completion ignored intentionally
+            }, throwable -> Log.e(TAG, "deleteNote() failed", throwable)));
             if (!isViewDead()) getView().closeNoteActivity();
             return;
         }
+
+        /*
+
+         */
 
         // No note → just close
         if (targetNote == null) {
@@ -434,14 +440,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public void activateEditNote() {
         getView().activatedActivity();
     }
-
-    @Override
-    public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().deleteNote(note).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
-            // completion ignored intentionally
-        }, throwable -> Log.e(TAG, "deleteNote() failed", throwable)));
-    }
-
 
     @Override
     public int getTypeFace(String textStyle) {
