@@ -300,7 +300,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }
         });
 
-        searchNotesAdapter.setItemClickListener((idNote, view) -> openNoteEdit(idNote, view));
+        searchNotesAdapter.setItemClickListener(this::openNoteEdit);
         mActivityBinding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
@@ -461,7 +461,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
+                int position = viewHolder.getBindingAdapterPosition();
 
                 if (direction == ItemTouchHelper.LEFT) {
                     selectItemAction(mNoteAdapter.getCurrentList().get(position), position, false);
