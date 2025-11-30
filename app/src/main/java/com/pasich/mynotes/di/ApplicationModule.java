@@ -3,6 +3,7 @@ package com.pasich.mynotes.di;
 
 import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_4_5;
 import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_5_6;
+import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_6_7;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -40,7 +41,7 @@ public class ApplicationModule {
     AppDatabase providesAppDatabase(@ApplicationContext Context context) {
         AppDatabase.setContext(context);
         return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, DatabaseConstants.DB_NAME)
-                .addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build();
+                .addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build();
     }
 
 

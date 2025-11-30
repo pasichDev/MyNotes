@@ -470,7 +470,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 } else {
                     Note sNote = mNoteAdapter.getCurrentList().get(position);
                     mainPresenter.setBackupDeleteNote(sNote);
-                    mainPresenter.deleteNote(sNote);
+                    mainPresenter.noteMoveToTrash(sNote);
                     snackBarRestoreNote();
                 }
             }
@@ -480,7 +480,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     public void snackBarRestoreNote() {
         Snackbar snackbar = Snackbar.make(mActivityBinding.drawerLayout, getString(R.string.noteMoveTrashSnackbar), Snackbar.LENGTH_LONG);
-        snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNote(mainPresenter.getBackupDeleteNote()));
+        snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNoteLastMoveToTrash(mainPresenter.getBackupDeleteNote()));
         snackbar.setAnchorView(mActivityBinding.newNotesButton);
         snackbar.show();
 

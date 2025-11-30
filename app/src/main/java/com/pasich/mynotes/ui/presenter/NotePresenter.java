@@ -270,7 +270,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
         // Case: new empty note → delete and exit
         if (targetNote != null && newNoteKey && !hasMeaningfulContent(targetNote)) {
-            deleteNote(targetNote);
+            deleteNote(targetNote); // TODO видалити нотатку зовсім а не в корзину
             if (!isViewDead()) getView().closeNoteActivity();
             return;
         }

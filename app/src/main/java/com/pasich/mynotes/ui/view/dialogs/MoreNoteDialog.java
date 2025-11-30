@@ -186,7 +186,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
             initTranslate();
             binding.moveToTrash.setOnClickListener(v -> {
-                mPresenter.deleteNote(mNote);
+                mPresenter.noteMoveToTrash(mNote);
 
                 if (!activityNote) {
                     mainActivity.callbackDeleteNote(mNote);

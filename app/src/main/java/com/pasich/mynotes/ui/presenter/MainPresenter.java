@@ -9,12 +9,12 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsSorter;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -94,24 +94,37 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         }
     }
 
-
     @Override
     public void deleteNotesArray(ArrayList<Note> notes) {
-        for (Note note : notes) {
-            deleteNote(note);
-        }
+        List<Integer> ids = new ArrayList<>();
+        for (Note note : notes) ids.add(note.getId());
+        getCompositeDisposable().add(
+                getDataManager()
+                        .moveNotesToTrash(ids)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                () -> {},
+                                throwable -> Log.e(TAG, "Error restoring notes", throwable)
+                        )
+        );
     }
 
+
     @Override
-    public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().moveNoteToTrash(new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+    public void noteMoveToTrash(Note note) {
+        getCompositeDisposable().add(getDataManager().moveNoteToTrash(note.getId()).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
                 }, // onComplete
                 throwable -> Log.e(TAG, "Error deleting note", throwable)));
     }
 
     @Override
-    public void restoreNote(Note nNote) {
-        getCompositeDisposable().add(getDataManager().restoreNote(nNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
+    public void restoreNoteLastMoveToTrash(Note nNote) {
+        getCompositeDisposable().add(getDataManager()
+                .transferNoteOutTrash(nNote.getId())
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(() -> {
                 }, // onComplete
                 throwable -> Log.e(TAG, "Error restoring note", throwable)));
     }

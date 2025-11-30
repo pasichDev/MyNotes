@@ -1,29 +1,23 @@
-package com.pasich.mynotes.data.model;
+package com.pasich.mynotes.data.model.deprecated;
 
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
 
 import com.google.gson.annotations.SerializedName;
 
-@Entity(
-        tableName = "trash")
+@Deprecated
 public class TrashNote {
 
-    @PrimaryKey(autoGenerate = true)
     @SerializedName("a")
     public int id;
 
     @SerializedName("b")
     private String title;
-    
+
     @SerializedName("c")
     private String value;
-    
+
     @SerializedName("d")
     private long date;
 
-    @Ignore
     private boolean Checked;
 
     public TrashNote create(String title, String value, long date) {

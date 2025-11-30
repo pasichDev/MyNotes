@@ -18,6 +18,8 @@ public interface DbNotesHelper {
 
     Flowable<List<Note>> getNotes();
 
+    Flowable<List<Note>> getNotesInTrash();
+
     Completable addNotes(List<Note> notes);
 
     Observable<List<Note>> getNotesForTag(String nameTag);
@@ -38,5 +40,14 @@ public interface DbNotesHelper {
 
     Completable setTagNote(String nameTag, int idNote);
 
+    // New trash actions
+    Completable moveNoteToTrash(int id);
 
+    Completable transferNoteOutTrash(int id);
+
+    Completable moveNotesToTrash(List<Integer> ids);
+
+    Completable transferNotesOutTrash(List<Integer> ids);
+
+    Completable clearTrash();
 }

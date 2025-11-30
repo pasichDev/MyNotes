@@ -3,15 +3,14 @@ package com.pasich.mynotes.data;
 
 import android.net.Uri;
 
-import com.pasich.mynotes.utils.backup.local.LocalBackup;
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.data.model.backup.PreferencesBackup;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
+import com.pasich.mynotes.utils.backup.local.LocalBackup;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -145,60 +144,42 @@ public class AppDataManager implements DataManager {
         return dbHelper.updateTags(tags);
     }
 
-    /**
-     * Trash
-     */
+
     @Override
-    public Flowable<List<TrashNote>> getTrashNotesLoad() {
-        return dbHelper.getTrashNotesLoad();
+    public Completable clearTagInNotes(Tag tag) {
+        return dbHelper.clearTagInNotes(tag);
     }
 
     @Override
-    public Completable addTrashNotes(List<TrashNote> noteList) {
-        return dbHelper.addTrashNotes(noteList);
-    }
-
-
-    @Override
-    public Completable deleteTrashNotes(List<TrashNote> note) {
-        return dbHelper.deleteTrashNotes(note);
-    }
-
-
-    @Override
-    public Completable deleteAll() {
-        return dbHelper.deleteAll();
+    public Completable deleteTagAndMoveNotesToTrash(Tag tag) {
+        return dbHelper.deleteTagAndMoveNotesToTrash(tag);
     }
 
     @Override
-    public Completable addTrashNote(TrashNote note) {
-        return dbHelper.addTrashNote(note);
+    public Completable moveNoteToTrash(int id) {
+        return dbHelper.moveNoteToTrash(id);
     }
 
     @Override
-    public Completable moveNoteToTrash(TrashNote tNote, Note mNote) {
-        return dbHelper.moveNoteToTrash(tNote, mNote);
+    public Completable transferNoteOutTrash(int id) {
+        return dbHelper.transferNoteOutTrash(id);
     }
 
     @Override
-    public Completable deleteTagForNotes(Tag tag) {
-        return dbHelper.deleteTagForNotes(tag);
+    public Completable moveNotesToTrash(List<Integer> ids) {
+        return dbHelper.moveNotesToTrash(ids);
     }
 
     @Override
-    public Completable deleteTagAndNotes(Tag tag) {
-        return dbHelper.deleteTagAndNotes(tag);
+    public Completable transferNotesOutTrash(List<Integer> ids) {
+        return dbHelper.transferNotesOutTrash(ids);
     }
 
     @Override
-    public Completable transferNoteOutTrash(TrashNote tNote, Note mNote) {
-        return dbHelper.transferNoteOutTrash(tNote, mNote);
+    public Completable clearTrash() {
+        return dbHelper.clearTrash();
     }
 
-    @Override
-    public Completable restoreNote(Note mNote) {
-        return dbHelper.restoreNote(mNote);
-    }
 
     @Override
     public Completable renameTag(Tag mTag, String newName) {
@@ -217,6 +198,11 @@ public class AppDataManager implements DataManager {
     @Override
     public Flowable<List<Note>> getNotes() {
         return dbHelper.getNotes();
+    }
+
+    @Override
+    public Flowable<List<Note>> getNotesInTrash() {
+        return dbHelper.getNotesInTrash();
     }
 
     @Override

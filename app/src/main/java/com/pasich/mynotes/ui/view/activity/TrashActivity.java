@@ -10,15 +10,15 @@ import androidx.activity.OnBackPressedCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
-import com.pasich.mynotes.data.model.TrashNote;
+import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityTrashBinding;
-import com.pasich.mynotes.databinding.ItemNoteTrashBinding;
+import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.TrashContract;
 import com.pasich.mynotes.ui.presenter.TrashPresenter;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 import com.pasich.mynotes.utils.actionPanel.tool.TrashNoteActionTool;
-import com.pasich.mynotes.utils.adapters.notes.TrashAdapter;
+import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 
 import java.util.List;
@@ -30,15 +30,17 @@ import javax.inject.Named;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class TrashActivity extends BaseActivity implements TrashContract.view, ManagerViewAction<TrashNote> {
+public class TrashActivity extends BaseActivity implements TrashContract.view, ManagerViewAction<Note> {
 
     @Inject
     public TrashPresenter trashPresenter;
     public ActivityTrashBinding binding;
     @Inject
     public TrashNoteActionTool trashNoteActionTool;
+
     @Inject
-    public TrashAdapter<ItemNoteTrashBinding> mNotesTrashAdapter;
+    public NoteAdapter<ItemNoteBinding> mNotesTrashAdapter;
+
     @Inject
     public ActionUtils actionUtils;
 
@@ -137,8 +139,8 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     }
 
     @Override
-    public void loadData(List<TrashNote> trashList) {
-        mNotesTrashAdapter.sortListTrash(trashList);
+    public void loadData(List<Note> trashList) {
+        mNotesTrashAdapter.submitList(trashList);
         if (trashList.isEmpty()) showEmptyTrash();
     }
 
@@ -184,7 +186,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     }
 
     @Override
-    public void selectItemAction(TrashNote note, int position, boolean payloads) {
+    public void selectItemAction(Note note, int position, boolean payloads) {
         if (note.getChecked()) {
             note.setChecked(false);
             if (!trashNoteActionTool.isCheckedItemFalse(note)) actionUtils.closeActionPanel();

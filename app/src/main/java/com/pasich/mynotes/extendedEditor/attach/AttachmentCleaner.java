@@ -1,5 +1,7 @@
 package com.pasich.mynotes.extendedEditor.attach;
 
+import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.BASE_DIR;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -69,7 +71,8 @@ public class AttachmentCleaner {
             d("Cleanup start");
 
             String json = note.getAttachments();
-            Type type = new TypeToken<List<EditorAttachment>>() {}.getType();
+            Type type = new TypeToken<List<EditorAttachment>>() {
+            }.getType();
             List<EditorAttachment> list = gson.fromJson(json, type);
             if (list == null) list = new ArrayList<>();
 
@@ -93,7 +96,7 @@ public class AttachmentCleaner {
             }
 
             // folder
-            File folder = new File(new File(ctx.getFilesDir(), "attachments"), "note_" + noteId);
+            File folder = new File(new File(ctx.getFilesDir(), BASE_DIR), "note_" + noteId);
             if (!folder.exists() || !folder.isDirectory()) {
                 d("No folder → nothing to clean");
                 return;
@@ -116,4 +119,39 @@ public class AttachmentCleaner {
             e("cleanup failed", ex);
         }
     }
+
+    public static void deleteAttachmentFolderByNoteId(Context ctx, long noteId) {
+        try {
+            File base = new File(ctx.getFilesDir(), BASE_DIR);
+            File folder = new File(base, "note_" + noteId);
+
+            if (!folder.exists()) {
+                d("Folder note_" + noteId + " → not found");
+                return;
+            }
+
+            boolean result = deleteRecursively(folder);
+
+            d("Deleted folder note_" + noteId + ": " + result);
+
+        } catch (Exception ex) {
+            e("deleteAttachmentFolderByNoteId failed", ex);
+        }
+    }
+
+    private static boolean deleteRecursively(File file) {
+        if (file == null || !file.exists()) return false;
+
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+
+        return file.delete();
+    }
+
 }

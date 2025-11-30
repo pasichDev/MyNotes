@@ -3,12 +3,9 @@ package com.pasich.mynotes.ui.presenter;
 import android.net.Uri;
 import android.util.Log;
 
-import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
-import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.ui.contract.BackupContract;
@@ -17,15 +14,10 @@ import com.pasich.mynotes.utils.backup.otherApp.GoogleKeepImportService;
 import com.pasich.mynotes.utils.constants.CloudErrors;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.inject.Inject;
 
 import dagger.hilt.android.scopes.ActivityScoped;
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -63,7 +55,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
      */
     @Override
     public void saveBackupPresenter(boolean local) {
-        getCompositeDisposable().add(Single.fromCallable(JsonBackup::new).flatMap(jsonBackupTemp -> Flowable.zip(getDataManager().getNotes(), getDataManager().getTrashNotesLoad(), getDataManager().getTagsUser(), (noteList, trashNoteList, tagList) -> {
+     /*   getCompositeDisposable().add(Single.fromCallable(JsonBackup::new).flatMap(jsonBackupTemp -> Flowable.zip(getDataManager().getNotes(), getDataManager().getTrashNotesLoad(), getDataManager().getTagsUser(), (noteList, trashNoteList, tagList) -> {
             jsonBackupTemp.setNotes(noteList);
             jsonBackupTemp.setTrashNotes(trashNoteList);
             jsonBackupTemp.setTags(tagList);
@@ -84,6 +76,8 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
                 getView().emptyDataToBackup();
             }
         }, throwable -> Log.e("RxError", "Error: ", throwable)));
+
+      */
     }
 
 
@@ -134,10 +128,12 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
             }
         }
 
-        getCompositeDisposable().add(Completable.fromAction(() -> getDataManager().setListPreferences(jsonBackup.getPreferences())).subscribeOn(getSchedulerProvider().io()).andThen(Completable.mergeArray(getDataManager().addNotes(jsonBackup.getNotes()), getDataManager().addTags(jsonBackup.getTags()), getDataManager().addTrashNotes(jsonBackup.getTrashNotes()))).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE), throwable -> {
+    /*    getCompositeDisposable().add(Completable.fromAction(() -> getDataManager().setListPreferences(jsonBackup.getPreferences())).subscribeOn(getSchedulerProvider().io()).andThen(Completable.mergeArray(getDataManager().addNotes(jsonBackup.getNotes()), getDataManager().addTags(jsonBackup.getTags()), getDataManager().addTrashNotes(jsonBackup.getTrashNotes()))).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE), throwable -> {
             Log.e("BackupRestore", "Error restore: " + throwable.getMessage(), throwable);
             getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
         }));
+
+     */
     }
 
 
@@ -210,7 +206,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
     @Override
     public void importDataOtherApp(GoogleKeepImportResult result) {
-        getCompositeDisposable().add(Flowable.zip(getDataManager().getNotes().firstOrError().toFlowable(), getDataManager().getTrashNotesLoad().firstOrError().toFlowable(), getDataManager().getTagsUser().firstOrError().toFlowable(), (existingNotes, existingTrashNotes, existingTags) -> {
+     /*   getCompositeDisposable().add(Flowable.zip(getDataManager().getNotes().firstOrError().toFlowable(), getDataManager().getTrashNotesLoad().firstOrError().toFlowable(), getDataManager().getTagsUser().firstOrError().toFlowable(), (existingNotes, existingTrashNotes, existingTags) -> {
 
             // Фільтруємо нотатки по вмісту
             List<Note> newNotes = new ArrayList<>();
@@ -263,6 +259,9 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
             return jsonBackup;
         }).subscribeOn(getSchedulerProvider().computation()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::restoreData, throwable -> getView().showErrorsText(0, R.string.empty_data_import)));
+
+
+      */
     }
 
 

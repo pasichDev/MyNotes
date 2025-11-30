@@ -39,6 +39,9 @@ public class Note {
     @SerializedName("h")
     private String attachments; // JSON attachments
 
+    // NEW: instead of TrashNote table
+    @SerializedName("i")
+    private boolean isTrash = false;
     @Ignore
     private boolean Checked;
 
@@ -58,6 +61,16 @@ public class Note {
         this.date = date;
         this.Checked = false;
         return this;
+    }
+
+    @Deprecated
+    public boolean hasRichContent() {
+        return hasRichContent;
+    }
+
+    @Deprecated
+    public void setHasRichContent(boolean hasRichContent) {
+        this.hasRichContent = hasRichContent;
     }
 
     public int getId() {
@@ -125,18 +138,14 @@ public class Note {
         this.valueJson = valueJson;
     }
 
-    // no use
-    @Deprecated
-    public boolean hasRichContent() {
-        return this.hasRichContent;
+
+    public boolean isTrash() {
+        return isTrash;
     }
 
-    // no use
-    @Deprecated
-    public void setHasRichContent(boolean hasRichContent) {
-        this.hasRichContent = hasRichContent;
+    public void setTrash(boolean trash) {
+        isTrash = trash;
     }
-
 
     public String getAttachments() {
         return attachments;

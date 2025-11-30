@@ -1,9 +1,11 @@
 package com.pasich.mynotes.data.database;
 
 
+import android.content.Context;
+
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.TrashNote;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -22,9 +25,11 @@ public class AppDbHelper implements DbHelper {
 
     private final AppDatabase appDatabase;
 
+    private final Context appContext;
     @Inject
-    AppDbHelper(AppDatabase appDatabase) {
+    AppDbHelper(AppDatabase appDatabase, @ApplicationContext Context context) {
         this.appDatabase = appDatabase;
+        this.appContext = context;
     }
 
     @Override
@@ -70,59 +75,60 @@ public class AppDbHelper implements DbHelper {
         return Completable.fromAction(() -> appDatabase.tagsDao().updateTags(tags));
     }
 
-    /**
-     * Trash
-     */
     @Override
-    public Flowable<List<TrashNote>> getTrashNotesLoad() {
-        return appDatabase.trashDao().getTrash();
-    }
-
-
-    @Override
-    public Completable deleteTrashNotes(List<TrashNote> note) {
-        return null;
+    public Completable clearTagInNotes(Tag tag) {
+         return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagButKeepNotes(tag));
     }
 
     @Override
-    public Completable deleteAll() {
-        return Completable.fromAction(() -> appDatabase.trashDao().deleteAll());
+    public Completable deleteTagAndMoveNotesToTrash(Tag tag) {
+          return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagAndMoveNotesToTrash(tag));
     }
 
     @Override
-    public Completable addTrashNote(TrashNote note) {
-        return Completable.fromAction(() -> appDatabase.trashDao().addNote(note));
+    public Completable moveNoteToTrash(int id) {
+        return Completable.fromCallable(() -> {
+            appDatabase.noteDao().moveNoteToTrash(id);
+            return null;
+        });
     }
 
     @Override
-    public Completable moveNoteToTrash(TrashNote tNote, Note mNote) {
-        return Completable.fromAction(() -> appDatabase.transactionsNote().transferNoteToTrash(tNote, mNote));
+    public Completable moveNotesToTrash(List<Integer> ids) {
+        return Completable.fromAction(() -> appDatabase.noteDao().moveNotesToTrash(ids));
     }
 
     @Override
-    public Completable addTrashNotes(List<TrashNote> noteList) {
-        return Completable.fromAction(() -> appDatabase.trashDao().addNotes(noteList));
+    public Completable transferNoteOutTrash(int id) {
+        return Completable.fromCallable(() -> {
+            appDatabase.noteDao().restoreNoteFromTrash(id);
+            return null;
+        });
     }
 
     @Override
-    public Completable deleteTagForNotes(Tag tag) {
-        return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagForNotes(tag));
+    public Completable transferNotesOutTrash(List<Integer> ids) {
+        return Completable.fromAction(() -> appDatabase.noteDao().restoreNotesFromTrash(ids));
     }
 
     @Override
-    public Completable deleteTagAndNotes(Tag tag) {
-        return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagAndNotes(tag));
+    public Completable clearTrash() {
+        return Completable.fromAction(() -> {
+            List<Note> trashNotes = appDatabase.noteDao().getTrashNotesSync();
+
+            // Deleting attachments
+            for (Note note : trashNotes) {
+                AttachmentCleaner.deleteAttachmentFolderByNoteId(appContext, note.getId());
+            }
+
+            // Deleting notes
+            appDatabase.noteDao().deleteAllTrashNotes();
+        });
     }
 
-    @Override
-    public Completable transferNoteOutTrash(TrashNote tNote, Note mNote) {
-        return Completable.fromAction(() -> appDatabase.transactionsNote().transferNoteOutTrash(tNote, mNote));
-    }
 
-    @Override
-    public Completable restoreNote(Note mNote) {
-        return Completable.fromAction(() -> appDatabase.transactionsNote().restoreNote(mNote));
-    }
+
+
 
     @Override
     public Completable renameTag(Tag mTag, String newName) {
@@ -135,12 +141,18 @@ public class AppDbHelper implements DbHelper {
         return Single.fromCallable(() -> appDatabase.noteDao().getDataCount());
     }
 
+
     /**
      * Notes
      */
     @Override
     public Flowable<List<Note>> getNotes() {
         return appDatabase.noteDao().getNotesAll();
+    }
+
+    @Override
+    public Flowable<List<Note>> getNotesInTrash() {
+        return appDatabase.noteDao().getTrashNotes();
     }
 
 
