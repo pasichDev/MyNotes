@@ -386,6 +386,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         // Tag
         String tag = note.getTag();
         changeTag(tag != null ? tag : "", false);
+
+        if (notePresenter.getNewNotesKey()) {
+            activatedActivity();
+        }
     }
 
     @Override
