@@ -53,10 +53,10 @@ public class TrashPresenter extends BasePresenter<TrashContract.view> implements
     @Override
     public void restoreNotesArray(ArrayList<Note> notes) {
         List<Integer> ids = new ArrayList<>();
-        for (Note note : notes) ids.add(note.getId());
+        for (Note n : notes) ids.add(n.getId());
         getCompositeDisposable().add(
                 getDataManager()
-                        .transferNotesOutTrash(ids)
+                        .restoreNotesAndFixTags(ids)
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
@@ -80,8 +80,6 @@ public class TrashPresenter extends BasePresenter<TrashContract.view> implements
                         )
         );
     }
-
-
 
 
 }

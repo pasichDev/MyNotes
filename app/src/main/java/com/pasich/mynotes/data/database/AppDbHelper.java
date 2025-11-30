@@ -26,6 +26,7 @@ public class AppDbHelper implements DbHelper {
     private final AppDatabase appDatabase;
 
     private final Context appContext;
+
     @Inject
     AppDbHelper(AppDatabase appDatabase, @ApplicationContext Context context) {
         this.appDatabase = appDatabase;
@@ -75,14 +76,15 @@ public class AppDbHelper implements DbHelper {
         return Completable.fromAction(() -> appDatabase.tagsDao().updateTags(tags));
     }
 
+
     @Override
     public Completable clearTagInNotes(Tag tag) {
-         return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagButKeepNotes(tag));
+        return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagButKeepNotes(tag));
     }
 
     @Override
     public Completable deleteTagAndMoveNotesToTrash(Tag tag) {
-          return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagAndMoveNotesToTrash(tag));
+        return Completable.fromAction(() -> appDatabase.transactionsNote().deleteTagAndMoveNotesToTrash(tag));
     }
 
     @Override
@@ -126,13 +128,14 @@ public class AppDbHelper implements DbHelper {
         });
     }
 
-
-
-
-
     @Override
     public Completable renameTag(Tag mTag, String newName) {
         return Completable.fromAction(() -> appDatabase.transactionsNote().renameTag(mTag, newName));
+    }
+
+    @Override
+    public Completable restoreNotesAndFixTags(List<Integer> ids) {
+        return Completable.fromAction(() -> appDatabase.transactionsNote().restoreNotesAndFixTags(ids));
     }
 
 

@@ -144,7 +144,6 @@ public class AppDataManager implements DataManager {
         return dbHelper.updateTags(tags);
     }
 
-
     @Override
     public Completable clearTagInNotes(Tag tag) {
         return dbHelper.clearTagInNotes(tag);
@@ -184,6 +183,11 @@ public class AppDataManager implements DataManager {
     @Override
     public Completable renameTag(Tag mTag, String newName) {
         return dbHelper.renameTag(mTag, newName);
+    }
+
+    @Override
+    public Completable restoreNotesAndFixTags(List<Integer> ids) {
+        return dbHelper.restoreNotesAndFixTags(ids);
     }
 
 

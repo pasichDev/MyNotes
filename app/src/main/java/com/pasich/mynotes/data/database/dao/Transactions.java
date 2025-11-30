@@ -10,6 +10,8 @@ import androidx.room.Transaction;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 
+import java.util.List;
+
 
 @Dao
 public abstract class Transactions {
@@ -31,6 +33,12 @@ public abstract class Transactions {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     public abstract long addNote(Note note);
+
+    @Query("UPDATE notes SET tag='' WHERE tag NOT IN (SELECT name FROM tags)")
+    protected abstract void clearInvalidTags();
+
+    @Query("UPDATE notes SET isTrash = 0 WHERE id IN (:ids)")
+    protected abstract void restoreNotesInternal(List<Integer> ids);
 
     @Transaction
     public long addNoteTransaction(Note note) {
@@ -57,6 +65,13 @@ public abstract class Transactions {
         moveNotesWithTagToTrash(tag.getNameTag());
         clearTagInNotes(tag.getNameTag());
         deleteTag(tag);
+    }
+
+
+    @Transaction
+    public void restoreNotesAndFixTags(List<Integer> ids) {
+        clearInvalidTags();
+        restoreNotesInternal(ids);
     }
 }
 

@@ -2,6 +2,8 @@ package com.pasich.mynotes.data.database.helpers;
 
 import com.pasich.mynotes.data.model.Tag;
 
+import java.util.List;
+
 import io.reactivex.Completable;
 
 public interface DbTransactionsHelper {
@@ -13,4 +15,5 @@ public interface DbTransactionsHelper {
 
     Completable renameTag(Tag mTag, String newName);
 
+    Completable restoreNotesAndFixTags(List<Integer> ids);
 }
