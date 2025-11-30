@@ -37,6 +37,7 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     public void noteMoveToTrash(Note note) {
         getCompositeDisposable().add(getDataManager().moveNoteToTrash(note.getId())
                 .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
                 .subscribe(
                         () -> {
                         }, // onComplete

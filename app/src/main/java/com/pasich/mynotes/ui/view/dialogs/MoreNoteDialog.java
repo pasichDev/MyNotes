@@ -111,8 +111,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     @Override
     public void loadingTagsOfChips(Flowable<List<Tag>> tagsList) {
         mPresenter.getCompositeDisposable().add(tagsList.subscribeOn(mPresenter.getSchedulerProvider().io()).observeOn(mPresenter.getSchedulerProvider().ui()).subscribe(this::createChipsTag));
-
-
     }
 
 
@@ -125,6 +123,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             mainActivity = (MoreNoteMainActivityView) requireActivity();
             noteActivity = null;
         }
+
     }
 
     @Override
@@ -175,44 +174,42 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
 
-        if (mNote.getValue() != null && mNote.getValue().length() >= 2) {
-            binding.share.setVisibility(View.VISIBLE);
-            binding.share.setOnClickListener(v -> {
-                // Open share options dialog
-                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mNote);
-                shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
-                dismiss();
-            });
+        binding.share.setVisibility(View.VISIBLE);
+        binding.share.setOnClickListener(v -> {
+            // Open share options dialog
+            ShareOptionsDialog shareDialog = new ShareOptionsDialog(mNote);
+            shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+            dismiss();
+        });
 
-            initTranslate();
-            binding.moveToTrash.setOnClickListener(v -> {
-                mPresenter.noteMoveToTrash(mNote);
-
-                if (!activityNote) {
-                    mainActivity.callbackDeleteNote(mNote);
-                    dismiss();
-                } else {
-                    noteActivity.closeActivityNotSaved();
-                }
-
-            });
-
-            binding.copyNote.setOnClickListener(v -> {
-                mPresenter.copyNote(mNote, activityNote);
-                dismiss();
-            });
-
-        }
-
-    }
-
-
-    private void initTranslate() {
         binding.translateNote.setVisibility(View.VISIBLE);
         binding.translateNote.setOnClickListener(v -> {
             GoogleTranslateHelper.startTranslation(requireActivity(), mNote.getValue());
             dismiss();
         });
+        binding.moveToTrash.setOnClickListener(v -> {
+            mPresenter.noteMoveToTrash(mNote);
+
+            if (!activityNote) {
+                mainActivity.callbackDeleteNote(mNote);
+                dismiss();
+            } else {
+                noteActivity.closeActivityNotSaved();
+            }
+
+        });
+
+        binding.copyNote.setOnClickListener(v -> {
+            mPresenter.copyNote(mNote, activityNote);
+            dismiss();
+        });
+
+
+        if (mNote.getValue() == null && mNote.getValue().isEmpty()) {
+            binding.translateNote.setVisibility(View.GONE);
+            binding.share.setVisibility(View.GONE);
+            binding.copyNote.setVisibility(View.GONE);
+        }
     }
 
 
