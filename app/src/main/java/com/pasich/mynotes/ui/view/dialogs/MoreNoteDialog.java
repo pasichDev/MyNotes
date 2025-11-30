@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -116,15 +117,33 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     @Override
     public void initInterfaces() {
-        if (activityNote) {
-            noteActivity = (MoreNoteNoteActivityView) requireActivity();
-            mainActivity = null;
-        } else {
-            mainActivity = (MoreNoteMainActivityView) requireActivity();
-            noteActivity = null;
+        try {
+            if (activityNote) {
+                if (requireActivity() instanceof MoreNoteNoteActivityView) {
+                    noteActivity = (MoreNoteNoteActivityView) requireActivity();
+                    mainActivity = null;
+                } else {
+                    Toast.makeText(requireContext(),
+                            R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+                    dismiss();
+                }
+            } else {
+                if (requireActivity() instanceof MoreNoteMainActivityView) {
+                    mainActivity = (MoreNoteMainActivityView) requireActivity();
+                    noteActivity = null;
+                } else {
+                    Toast.makeText(requireContext(),
+                            R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+                    dismiss();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(requireContext(),
+                    R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+            dismiss();
         }
-
     }
+
 
     @Override
     public void callableCopyNote(long newNoteId) {

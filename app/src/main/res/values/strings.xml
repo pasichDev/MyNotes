@@ -366,5 +366,6 @@
     <string name="font_size_l">Large</string>
     <string name="font_size_xl">Extra Large</string>
     <string name="delete">Delete</string>
+    <string name="error_dialog_wrong_context">Error: I can\'t open this menu here</string>
 
 </resources>
