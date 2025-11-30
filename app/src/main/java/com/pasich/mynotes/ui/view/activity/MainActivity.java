@@ -34,7 +34,6 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.search.SearchView;
 import com.google.android.material.snackbar.Snackbar;
@@ -301,7 +300,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }
         });
 
-        searchNotesAdapter.setItemClickListener((idNote, view) -> openNoteEdit(idNote, (MaterialCardView) view));
+        searchNotesAdapter.setItemClickListener((idNote, view) -> openNoteEdit(idNote, view));
         mActivityBinding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
@@ -366,7 +365,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             @Override
             public void onClick(int position, Note model) {
                 if (!actionUtils.getAction()) {
-                    openNoteEdit(model, (MaterialCardView) staggeredGridLayoutManager.findViewByPosition(position));
+                    openNoteEdit(model, staggeredGridLayoutManager.findViewByPosition(position));
                 } else selectItemAction(model, position, true);
 
             }
@@ -612,10 +611,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         snackBarRestoreNote();
     }
 
-    public void openNoteEdit(Note note, MaterialCardView materialCardView) {
+    public void openNoteEdit(Note note, View view) {
         new NoteNavigator(this, themePreferencesCache)
                 .openNote(note, false, "",
-                        materialCardView, String.valueOf(note.getId()));
+                        view, String.valueOf(note.getId()));
     }
 
 

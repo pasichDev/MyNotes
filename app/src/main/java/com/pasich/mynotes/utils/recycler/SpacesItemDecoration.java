@@ -12,22 +12,24 @@ import dagger.hilt.android.scopes.ActivityScoped;
 
 @ActivityScoped
 public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
-  private final int space;
+    private final int vertical;
+    private final int horizontal;
 
-  @Inject
-  public SpacesItemDecoration(int space) {
-    this.space = space;
-  }
+    @Inject
+    public SpacesItemDecoration(int vertical, int horizontal) {
+        this.vertical = vertical;
+        this.horizontal = horizontal;
+    }
 
-  @Override
-  public void getItemOffsets(
-          Rect outRect,
-          @NonNull View view,
-          @NonNull RecyclerView parent,
-          @NonNull RecyclerView.State state) {
-    outRect.bottom = space;
-    outRect.left = space;
-    outRect.top = space;
-    outRect.right = space;
-  }
+    @Override
+    public void getItemOffsets(
+            Rect outRect,
+            @NonNull View view,
+            @NonNull RecyclerView parent,
+            @NonNull RecyclerView.State state) {
+        outRect.bottom = vertical;
+        outRect.left = horizontal;
+        outRect.top = vertical;
+        outRect.right = horizontal;
+    }
 }

@@ -202,4 +202,11 @@
         <item name="android:layout_marginTop">0dp</item>
     </style>
 
+    <style name="ItemNoteCardBottom" parent="Widget.Material3.CardView.Outlined">
+        <item name="shapeAppearance">@style/ShapeAppearance.SettingsCard.Bottom</item>
+        <item name="cardBackgroundColor">?attr/colorSecondaryContainer</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="contentPadding">1dp</item>
+        <item name="contentPaddingLeft">5dp</item>
+    </style>
 </resources>

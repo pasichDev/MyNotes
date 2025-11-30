@@ -7,10 +7,11 @@ import android.widget.TextView;
 import androidx.databinding.BindingAdapter;
 
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.shape.ShapeAppearanceModel;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.utils.FormattedDataUtil;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
+import com.pasich.mynotes.utils.FormattedDataUtil;
 
 public class NoteBindingAdapters {
 
@@ -18,7 +19,7 @@ public class NoteBindingAdapters {
     public static void setDataNote(TextView textView, Note note) {
         if (note != null && note.getDate() > 0) {
             textView.setText(
-                    textView.getContext().getString(R.string.lastDateEditNote,  FormattedDataUtil.lastDayEditNote(note.getDate()))
+                    textView.getContext().getString(R.string.lastDateEditNote, FormattedDataUtil.lastDayEditNote(note.getDate()))
             );
             textView.setVisibility(View.VISIBLE);
         } else {
@@ -83,4 +84,42 @@ public class NoteBindingAdapters {
         );
     }
 
+    @BindingAdapter("dynamicShapeTop")
+    public static void setDynamicShapeTop(MaterialCardView card, boolean needTop) {
+        int style = needTop
+                ? R.style.ShapeAppearance_SettingsCard_Top
+                : R.style.ShapeAppearance_SettingsCard_Base;
+        card.setShapeAppearanceModel(
+                ShapeAppearanceModel.builder(card.getContext(), style, 0).build()
+        );
+    }
+
+    @BindingAdapter("dynamicShapeBottom")
+    public static void setDynamicShapeBottom(MaterialCardView card, boolean needBottom) {
+        int style = needBottom
+                ? R.style.ShapeAppearance_SettingsCard_Base : R.style.ShapeAppearance_SettingsCard_Bottom;
+        card.setShapeAppearanceModel(
+                ShapeAppearanceModel.builder(card.getContext(), style, 0).build()
+        );
+    }
+
+    @BindingAdapter("paddingVerticalDynamic")
+    public static void setDynamicVerticalPadding(View view, Note note) {
+        if (note == null) return;
+
+        int paddingValue;
+
+        if (note.getTitle().isEmpty() && note.getValuePreview().isEmpty()) {
+            paddingValue = view.getContext().getResources().getDimensionPixelSize(R.dimen.marginItemsNote);
+        } else {
+            paddingValue = view.getContext().getResources().getDimensionPixelSize(R.dimen.marginItemsNoteBottomCard);
+        }
+
+        view.setPadding(
+                view.getPaddingLeft(),
+                paddingValue,
+                view.getPaddingRight(),
+                paddingValue
+        );
+    }
 }

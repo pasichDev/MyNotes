@@ -12,63 +12,101 @@
             type="com.pasich.mynotes.data.model.Note" />
     </data>
 
-    <com.google.android.material.card.MaterialCardView
+    <LinearLayout
         android:id="@+id/item_Note"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@{Note.checked ? @color/item_bindig_note_surface_variant : @color/item_bindig_note_surface}"
-        app:noteStrokeColor="@{Note}"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium">
+        android:orientation="vertical">
 
-
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/marginItemsNote"
-            android:paddingTop="15dp"
-            app:noteBottomPadding="@{Note}">
+            android:visibility="@{Note.title.isEmpty() &amp;&amp; Note.valuePreview.isEmpty() ? View.GONE : View.VISIBLE}"
+            app:cardBackgroundColor="@{Note.checked ? @color/item_bindig_note_surface_variant : @color/item_bindig_note_surface}"
+            app:dynamicShapeTop="@{Note.tag.length() > 0 || Note.isAttachments()}"
+            app:noteStrokeColor="@{Note}">
 
-            <TextView
-                android:id="@+id/nameNote"
-                style="@style/itemNoteTitle"
-                android:text="@{Note.title}"
-                android:visibility="@{Note.title.isEmpty() ?  View.GONE : View.VISIBLE }"
-                tools:text="Title Note" />
-
-            <TextView
-                android:id="@+id/previewNote"
-                style="@style/itemNotePreview"
-                android:text="@{Note.valuePreview}"
-                android:visibility="@{Note.valuePreview.isEmpty() ? View.GONE : View.VISIBLE}"
-                tools:text="Preview Note Check" />
-
-
-            <com.google.android.material.chip.ChipGroup
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="8dp"
-                android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments()) ? View.VISIBLE : View.GONE}">
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/marginItemsNote"
+                android:paddingVertical="15dp"
+                app:noteBottomPadding="@{Note}">
 
-                <com.google.android.material.chip.Chip
+                <TextView
+                    android:id="@+id/nameNote"
+                    style="@style/itemNoteTitle"
+                    android:text="@{Note.title}"
+                    android:visibility="@{Note.title.isEmpty() ?  View.GONE : View.VISIBLE }"
+                    tools:text="Title Note" />
+
+                <TextView
+                    android:id="@+id/previewNote"
+                    style="@style/itemNotePreview"
+                    android:text="@{Note.valuePreview}"
+                    android:visibility="@{Note.valuePreview.isEmpty() ? View.GONE : View.VISIBLE}"
+                    tools:text="Preview Note Check" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments())  ? View.VISIBLE : View.GONE}" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/item_note_bottom"
+            style="@style/ItemNoteCardBottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments()) ? View.VISIBLE : View.GONE}"
+            app:dynamicShapeBottom="@{Note.title.isEmpty() &amp;&amp; Note.valuePreview.isEmpty()}"
+            app:noteStrokeColor="@{Note}">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="0dp"
+                android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments()) ? View.VISIBLE : View.GONE}"
+                app:paddingVerticalDynamic="@{Note}">
+
+                <!-- TAG BLOCK -->
+                <TextView
                     android:id="@+id/tagNote"
-                    style="@style/chipTagItemNote"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{'#'+Note.tag}"
+                    android:fontFamily="@font/ptsans_regular"
+                    android:paddingHorizontal="6dp"
+                    android:text="@{'#' + Note.tag}"
+                    android:textColor="?attr/colorOnSecondaryContainer"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
                     android:visibility="@{Note.tag.length() >= 1 ? View.VISIBLE : View.GONE}"
-                    tools:text="tag" />
+                    tools:text="#tag" />
 
-                <com.google.android.material.chip.Chip
+                <Space
+                    android:id="@+id/tagSpacer"
+                    android:layout_width="6dp"
+                    android:layout_height="0dp"
+                    android:visibility="@{Note.tag.length() >= 1 ? View.VISIBLE : View.GONE}" />
+
+                <TextView
                     android:id="@+id/mediaCount"
-                    style="@style/chipTagItemNote"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/ptsans_regular"
+                    android:paddingHorizontal="6dp"
+                    android:textColor="?attr/colorOnSecondaryContainer"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
                     app:noteMediaCount="@{Note}"
-                    tools:text="countMedia" />
-            </com.google.android.material.chip.ChipGroup>
+                    tools:text="3 files" />
+            </LinearLayout>
 
+        </com.google.android.material.card.MaterialCardView>
 
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 </layout>

@@ -33,7 +33,7 @@
                 android:id="@+id/nameNote"
                 style="@style/itemNoteTitle"
                 android:text="@{Note.title}"
-                android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
+                android:visibility="@{Note.title.isEmpty() ? View.GONE : View.VISIBLE }"
                 tools:text="Title Note" />
 
             <TextView
@@ -41,6 +41,7 @@
                 style="@style/itemNotePreview"
                 android:maxLines="2"
                 android:text="@{Note.valuePreview}"
+                android:visibility="@{Note.valuePreview.isEmpty() ? View.GONE : View.VISIBLE }"
                 tools:text="Preview Note Check" />
 
             <LinearLayout
@@ -64,8 +65,10 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
+                        android:contentDescription="extended_editor"
                         android:src="@drawable/ic_extended"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="?attr/colorPrimary"
+                        tools:ignore="HardcodedText" />
 
                 </FrameLayout>
 
