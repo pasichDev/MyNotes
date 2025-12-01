@@ -1,10 +1,9 @@
 package com.pasich.mynotes.ui.contract;
 
-
 import com.pasich.mynotes.base.view.ActionBar;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
-import com.pasich.mynotes.data.model.TrashNote;
+import com.pasich.mynotes.data.model.Note;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ public interface TrashContract {
 
         void cleanTrashDialogShow();
 
-        void loadData(List<TrashNote> trashList);
+        void loadData(List<Note> trashList);
     }
 
     interface presenter extends BasePresenter<view> {
@@ -28,6 +27,6 @@ public interface TrashContract {
 
         void clearTrash();
 
-        void restoreNotesArray(ArrayList<TrashNote> notes);
+        void restoreNotesArray(ArrayList<Note> notes);
     }
 }

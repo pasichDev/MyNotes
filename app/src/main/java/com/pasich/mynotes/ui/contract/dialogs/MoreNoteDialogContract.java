@@ -24,7 +24,7 @@ public interface MoreNoteDialogContract {
     }
 
     interface presenter extends BasePresenter<view> {
-        void deleteNote(Note note);
+        void noteMoveToTrash(Note note);
 
         void editSizeText(int value);
 

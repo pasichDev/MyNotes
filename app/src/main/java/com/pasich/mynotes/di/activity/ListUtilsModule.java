@@ -12,15 +12,11 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
-import com.pasich.mynotes.databinding.ItemNoteTrashBinding;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
-import com.pasich.mynotes.utils.adapters.notes.TrashAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilNote;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTag;
-import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTrash;
 
 import javax.inject.Named;
 
@@ -38,26 +34,13 @@ public class ListUtilsModule {
     @Provides
     @ActivityScoped
     SpacesItemDecoration providerSpaceItemDecorationNotes() {
-        return new SpacesItemDecoration(10);
+        return new SpacesItemDecoration(15, 10);
     }
 
     @Provides
     @ActivityScoped
     NoteAdapter<ItemNoteBinding> providerGenericAdapter(@Named("Note") DiffUtil.ItemCallback<Note> diff) {
         return new NoteAdapter<>((DiffUtilNote) diff, R.layout.item_note, ItemNoteBinding::setNote);
-    }
-
-    @Provides
-    @ActivityScoped
-    TrashAdapter<ItemNoteTrashBinding> providerTrashAdapter(@Named("Trash") DiffUtil.ItemCallback<TrashNote> diff) {
-        return new TrashAdapter<>((DiffUtilTrash) diff, R.layout.item_note_trash, ItemNoteTrashBinding::setNote);
-    }
-
-    @Named("Trash")
-    @Provides
-    @ActivityScoped
-    DiffUtil.ItemCallback<TrashNote> providesDiffUtilCallbackNoteTrash(DiffUtilTrash diffUtil) {
-        return diffUtil;
     }
 
     @Named("Note")
@@ -96,7 +79,7 @@ public class ListUtilsModule {
     @Provides
     @ActivityScoped
     SpacesItemDecoration providerSpaceItemDecorationTags() {
-        return new SpacesItemDecoration(8);
+        return new SpacesItemDecoration(8, 8);
     }
 
 

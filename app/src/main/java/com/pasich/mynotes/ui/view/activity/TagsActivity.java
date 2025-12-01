@@ -44,8 +44,8 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        selectTheme();
         super.onCreate(savedInstanceState);
+        selectTheme();
         binding = ActivityTagsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setupEdgeToEdgeInsets(binding.getRoot());

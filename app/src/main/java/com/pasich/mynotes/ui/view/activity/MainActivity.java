@@ -2,6 +2,9 @@ package com.pasich.mynotes.ui.view.activity;
 
 
 import static android.view.View.VISIBLE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_FONT_SCALE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_MODE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -21,7 +24,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -35,7 +37,6 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.search.SearchView;
 import com.google.android.material.snackbar.Snackbar;
@@ -57,6 +58,7 @@ import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
+import com.pasich.mynotes.ui.view.dialogs.UpdateChangelogDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
@@ -74,6 +76,7 @@ import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
+import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
@@ -91,14 +94,16 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
     private static final int REQUEST_UPDATE = 100;
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
-    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+
+    // Update theme listener
+    final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         Intent data = result.getData();
         if (result.getResultCode() == 11) {
             assert data != null;
-            if (data.getBooleanExtra("updateThemeMode", false)) {
+            if (data.getBooleanExtra(EXTRA_UPDATE_THEME_MODE, false) || data.getBooleanExtra(EXTRA_UPDATE_FONT_SCALE, false)) {
                 recreate();
             } else {
-                this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+                this.redrawActivity(data.getIntExtra(EXTRA_UPDATE_THEME_STYLE, 0));
             }
         }
     });
@@ -137,6 +142,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     UpdateChecker updateChecker;
     @Inject
     ThemePreferencesCache themePreferencesCache;
+
     // Navigation Drawer variables
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -144,7 +150,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     result -> {
                         if (result.getResultCode() == Activity.RESULT_OK) {
-                            ///  Ховаємо показ пр онову версію
                             boolean hasNewVersion = updateChecker.hasNewVersion();
                             navigationView.getHeaderView(0).findViewById(R.id.newVersion).setVisibility(hasNewVersion ? VISIBLE : View.GONE);
                         }
@@ -155,12 +160,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
-        selectTheme();
         setExitSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
         getWindow().setSharedElementsUseOverlay(false);
-
         super.onCreate(savedInstanceState);
+        selectTheme();
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
 
@@ -194,7 +197,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         });
 
         handleShortcuts(getIntent());
-
+        checkAppUpdateAndShowChangelog();
     }
 
     @Override
@@ -302,7 +305,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             }
         });
 
-        searchNotesAdapter.setItemClickListener((idNote, view) -> openNoteEdit(idNote, (MaterialCardView) view));
+        searchNotesAdapter.setItemClickListener(this::openNoteEdit);
         mActivityBinding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
@@ -367,7 +370,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             @Override
             public void onClick(int position, Note model) {
                 if (!actionUtils.getAction()) {
-                    openNoteEdit(model.id, (MaterialCardView) staggeredGridLayoutManager.findViewByPosition(position));
+                    openNoteEdit(model, staggeredGridLayoutManager.findViewByPosition(position));
                 } else selectItemAction(model, position, true);
 
             }
@@ -463,7 +466,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
+                int position = viewHolder.getBindingAdapterPosition();
 
                 if (direction == ItemTouchHelper.LEFT) {
                     selectItemAction(mNoteAdapter.getCurrentList().get(position), position, false);
@@ -471,7 +474,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 } else {
                     Note sNote = mNoteAdapter.getCurrentList().get(position);
                     mainPresenter.setBackupDeleteNote(sNote);
-                    mainPresenter.deleteNote(sNote);
+                    mainPresenter.noteMoveToTrash(sNote);
                     snackBarRestoreNote();
                 }
             }
@@ -481,7 +484,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     public void snackBarRestoreNote() {
         Snackbar snackbar = Snackbar.make(mActivityBinding.drawerLayout, getString(R.string.noteMoveTrashSnackbar), Snackbar.LENGTH_LONG);
-        snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNote(mainPresenter.getBackupDeleteNote()));
+        snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNoteLastMoveToTrash(mainPresenter.getBackupDeleteNote()));
         snackbar.setAnchorView(mActivityBinding.newNotesButton);
         snackbar.show();
 
@@ -600,7 +603,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void openCopyNote(long idNote) {
-        startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""));
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(idNote, false, "",
+                        null, String.valueOf(idNote), false);
+
 
     }
 
@@ -610,31 +616,26 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         snackBarRestoreNote();
     }
 
-    public void openNoteEdit(long idNote, MaterialCardView materialCardView) {
-        // Check if extended editor is enabled
-        if (themePreferencesCache.isExtendedEditorEnabled()) {
-            // Open beta note editor
-            startActivity(new Intent(this, NoteExtendedEditorActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
-        } else {
-            // Open standard editor
-            startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", false).putExtra("idNote", idNote).putExtra("shareText", "").putExtra("tagNote", ""), ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, materialCardView, String.valueOf(idNote)).toBundle());
-        }
+    public void openNoteEdit(Note note, View view) {
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(note, false, "",
+                        view, String.valueOf(note.getId()));
     }
 
 
     @Override
-    public void newNotesButton() {
+    public void openNewNoteWithId(long id) {
         Tag tagSelected = tagsAdapter.getTagSelected();
-        String tagName = tagSelected == null ? "" : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
+        String tagName = tagSelected == null
+                ? ""
+                : tagSelected.getSystemAction() == 2
+                ? ""
+                : tagSelected.getNameTag();
 
-        // Check if extended editor is enabled
-        if (themePreferencesCache.isExtendedEditorEnabled()) {
-            // Open beta note editor for new notes
-            startActivity(new Intent(this, NoteExtendedEditorActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
-        } else {
-            // Open standard editor for new notes
-            startActivity(new Intent(this, NoteActivity.class).putExtra("NewNote", true).putExtra("tagNote", tagName), ActivityOptionsCompat.makeSceneTransitionAnimation(this, mActivityBinding.newNotesButton, NameTransition.fabTransaction).toBundle());
-        }
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(id, true, tagName,
+                        mActivityBinding.newNotesButton, NameTransition.fabTransaction, false);
+
     }
 
 
@@ -893,55 +894,28 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         drawerLayout.closeDrawer(GravityCompat.START);
         // Основні кнопки
-        headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startTagsActivity.launch(new Intent(this, TagsActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startTagsActivity.launch(new Intent(this, TagsActivity.class)), 100));
 
-        headerView.findViewById(R.id.nav_trash).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, TrashActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_trash).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, TrashActivity.class)), 100));
 
         // Налаштування / управління
-        headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startSettingsActivity.launch(new Intent(this, SettingsActivity.class)), 100));
+        headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, SettingsActivity.class)), 100));
 
-        headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, BackupActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, BackupActivity.class)), 100));
 
         // About з описом
-        headerView.findViewById(R.id.nav_about).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, AboutActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_about).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, AboutActivity.class)), 100));
 
         // Support кнопка
         View navSupport = headerView.findViewById(R.id.nav_support);
         if (navSupport != null) {
-            navSupport.setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(this, SupportActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100));
+            navSupport.setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, SupportActivity.class)), 100));
         }
 
         // Нова версія додатку
         if (updateChecker.hasNewVersion()) {
-            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                openChangelogActivity();
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100));
+            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(this::openChangelogActivity, 100));
             headerView.findViewById(R.id.newVersion).setVisibility(VISIBLE);
-        }
-        if (!themePreferencesCache.isExtendedEditorEnabled()) {
-            headerView.findViewById(R.id.newEditor).setVisibility(VISIBLE);
-            headerView.findViewById(R.id.newEditor).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                Intent intent = new Intent(this, SettingsActivity.class);
-                intent.putExtra("startFragmentIndex", 1);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100));
         }
     }
 
@@ -959,5 +933,17 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             return insets;
         });
     }
+
+    /**
+     * Show changelog dialog if app was updated to a newer version.
+     */
+    private void checkAppUpdateAndShowChangelog() {
+        if (updateChecker.hasNewVersion()) {
+            UpdateChangelogDialog.newInstance()
+                    .show(getSupportFragmentManager(), "UpdateChangelogDialog");
+        }
+
+    }
+
 
 }

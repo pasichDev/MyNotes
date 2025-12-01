@@ -8,11 +8,10 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.TrashNote;
-import com.pasich.mynotes.data.model.backup.JsonBackup;
-import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
+import com.pasich.mynotes.utils.backup.models.JsonBackup;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.utils.backup.otherApp.GoogleKeepImportService;
 import com.pasich.mynotes.utils.constants.CloudErrors;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
@@ -58,33 +57,37 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
     /**
      * Save backup data algorithm and navigator
-     * Оптимізовано для великих об'ємів даних
      *
      * @param local - check repository
      */
     @Override
     public void saveBackupPresenter(boolean local) {
-        getCompositeDisposable().add(Single.fromCallable(JsonBackup::new).flatMap(jsonBackupTemp -> Flowable.zip(getDataManager().getNotes(), getDataManager().getTrashNotesLoad(), getDataManager().getTagsUser(), (noteList, trashNoteList, tagList) -> {
-            jsonBackupTemp.setNotes(noteList);
-            jsonBackupTemp.setTrashNotes(trashNoteList);
-            jsonBackupTemp.setTags(tagList);
-            return noteList.size() + trashNoteList.size() + tagList.size();
-        }).firstOrError().map(countData -> {
-            if (countData != 0) {
-                jsonBackupTemp.setPreferences(getDataManager().getListPreferences());
-            }
-            return new AbstractMap.SimpleEntry<>(jsonBackupTemp, countData);
-        })).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(result -> {
-            JsonBackup jsonBackup = result.getKey();
-            Integer countData = result.getValue();
+        getCompositeDisposable().add(Single.fromCallable(JsonBackup::new)
+                .flatMap(jsonBackupTemp -> Flowable.zip(
+                        getDataManager().getNotes(), getDataManager().getNotesInTrash(),
+                        getDataManager().getTagsUser(), (noteList, trashNoteList, tagList) -> {
+                            jsonBackupTemp.setNotes(noteList);
+                            jsonBackupTemp.setNewTrashNotes(trashNoteList);
+                            jsonBackupTemp.setTags(tagList);
+                            return noteList.size() + trashNoteList.size() + tagList.size();
+                        }).firstOrError().map(countData -> {
+                    if (countData != 0) {
+                        jsonBackupTemp.setPreferences(getDataManager().getListPreferences());
+                    }
+                    return new AbstractMap.SimpleEntry<>(jsonBackupTemp, countData);
+                })).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(result -> {
+                    JsonBackup jsonBackup = result.getKey();
+                    Integer countData = result.getValue();
 
-            if (countData != 0) {
-                serviceCache.setJsonBackup(jsonBackup);
-                getView().openIntentSaveBackup(jsonBackup);
-            } else {
-                getView().emptyDataToBackup();
-            }
-        }, throwable -> Log.e("RxError", "Error: ", throwable)));
+                    if (countData != 0) {
+                        serviceCache.setJsonBackup(jsonBackup);
+                        getView().openIntentSaveBackup(jsonBackup);
+                    } else {
+                        getView().emptyDataToBackup();
+                    }
+                }, throwable -> Log.e("RxError", "Error: ", throwable)));
+
+        /*  */
     }
 
 
@@ -129,17 +132,30 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
         if (jsonBackup.getTags() != null && !jsonBackup.getTags().isEmpty()) {
             for (int i = 0; i < jsonBackup.getTags().size(); i++) {
                 Tag tag = jsonBackup.getTags().get(i);
-                // (оставлен 0 по умолчанию, хотя в конструкторе create() устанавливается -1)
                 if (tag.getPosition() == 0 && tag.getSystemAction() == 0) {
                     tag.setPosition(-1);
                 }
             }
         }
 
-        getCompositeDisposable().add(Completable.fromAction(() -> getDataManager().setListPreferences(jsonBackup.getPreferences())).subscribeOn(getSchedulerProvider().io()).andThen(Completable.mergeArray(getDataManager().addNotes(jsonBackup.getNotes()), getDataManager().addTags(jsonBackup.getTags()), getDataManager().addTrashNotes(jsonBackup.getTrashNotes()))).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE), throwable -> {
-            Log.e("BackupRestore", "Error restore: " + throwable.getMessage(), throwable);
-            getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
-        }));
+        getCompositeDisposable().add(Completable.fromAction(() ->
+                        getDataManager()
+                                .setListPreferences(jsonBackup.getPreferences()))
+                .subscribeOn(getSchedulerProvider().io())
+                .andThen(Completable.mergeArray(
+                        getDataManager().addNotes(jsonBackup.getNotes()),// main notes
+                        getDataManager().addTags(jsonBackup.getTags()), // tags
+                        getDataManager().addNotes(jsonBackup.getTrashNotesUnified()) // trash notes
+                ))
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(() -> {
+                            getView().onRestoreSuccessFlag();
+                            getView().restoreFinish(CloudErrors.OKAY_RESTORE);
+                        }, throwable -> {
+                            Log.e("BackupRestore", "Error restore: " + throwable.getMessage(), throwable);
+                            getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
+                        }));
     }
 
 
@@ -212,59 +228,65 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
 
     @Override
     public void importDataOtherApp(GoogleKeepImportResult result) {
-        getCompositeDisposable().add(Flowable.zip(getDataManager().getNotes().firstOrError().toFlowable(), getDataManager().getTrashNotesLoad().firstOrError().toFlowable(), getDataManager().getTagsUser().firstOrError().toFlowable(), (existingNotes, existingTrashNotes, existingTags) -> {
+        getCompositeDisposable().add(Flowable.zip(
+                getDataManager().getNotes().firstOrError().toFlowable(),
+                getDataManager().getNotesInTrash().firstOrError().toFlowable(),
+                getDataManager().getTagsUser().firstOrError().toFlowable(),
+                (existingNotes, existingTrashNotes, existingTags) -> {
 
-            // Фільтруємо нотатки по вмісту
-            List<Note> newNotes = new ArrayList<>();
-            for (Note note : result.toAppNotes()) {
-                boolean duplicate = false;
-                for (Note existing : existingNotes) {
-                    if (note.getTitle().equals(existing.getTitle()) && note.getValue().equals(existing.getValue()) && note.getDate() == existing.getDate()) {
-                        duplicate = true;
-                        break;
+                    // Фільтруємо нотатки по вмісту
+                    List<Note> newNotes = new ArrayList<>();
+                    for (Note note : result.toAppNotes()) {
+                        boolean duplicate = false;
+                        for (Note existing : existingNotes) {
+                            if (note.getTitle().equals(existing.getTitle()) && note.getValue().equals(existing.getValue()) && note.getDate() == existing.getDate()) {
+                                duplicate = true;
+                                break;
+                            }
+                        }
+                        if (!duplicate) newNotes.add(note);
                     }
-                }
-                if (!duplicate) newNotes.add(note);
-            }
 
-            // Фільтруємо видалені нотатки по вмісту
-            List<TrashNote> newTrashNotes = new ArrayList<>();
-            for (TrashNote trash : result.toAppTrashedNotes()) {
-                boolean duplicate = false;
-                for (TrashNote existing : existingTrashNotes) {
-                    if (trash.getTitle().equals(existing.getTitle()) && trash.getValue().equals(existing.getValue()) && trash.getDate() == existing.getDate()) {
-                        duplicate = true;
-                        break;
+                    // Фільтруємо видалені нотатки по вмісту
+                    List<Note> newTrashNotes = new ArrayList<>();
+                    for (Note trash : result.toAppTrashedNotes()) {
+                        boolean duplicate = false;
+                        for (Note existing : existingTrashNotes) {
+                            if (trash.getTitle().equals(existing.getTitle()) && trash.getValue().equals(existing.getValue()) && trash.getDate() == existing.getDate()) {
+                                duplicate = true;
+                                break;
+                            }
+                        }
+                        if (!duplicate) newTrashNotes.add(trash);
                     }
-                }
-                if (!duplicate) newTrashNotes.add(trash);
-            }
 
-            // Фільтруємо теги по назві
-            List<Tag> newTags = new ArrayList<>();
-            for (Tag tag : result.toAppTags()) {
-                boolean duplicate = false;
-                for (Tag existing : existingTags) {
-                    if (tag.getNameTag().equals(existing.getNameTag())) {
-                        duplicate = true;
-                        break;
+                    // Фільтруємо теги по назві
+                    List<Tag> newTags = new ArrayList<>();
+                    for (Tag tag : result.toAppTags()) {
+                        boolean duplicate = false;
+                        for (Tag existing : existingTags) {
+                            if (tag.getNameTag().equals(existing.getNameTag())) {
+                                duplicate = true;
+                                break;
+                            }
+                        }
+                        if (!duplicate) newTags.add(tag);
                     }
-                }
-                if (!duplicate) newTags.add(tag);
-            }
 
-            // Якщо нічого немає для імпорту — викидаємо помилку
-            if (newNotes.isEmpty() && newTrashNotes.isEmpty() && newTags.isEmpty()) {
-                throw new Exception("No new data to import");
-            }
+                    // Якщо нічого немає для імпорту — викидаємо помилку
+                    if (newNotes.isEmpty() && newTrashNotes.isEmpty() && newTags.isEmpty()) {
+                        throw new Exception("No new data to import");
+                    }
 
-            JsonBackup jsonBackup = new JsonBackup();
-            jsonBackup.setNotes(newNotes);
-            jsonBackup.setTrashNotes(newTrashNotes);
-            jsonBackup.setTags(newTags);
+                    JsonBackup jsonBackup = new JsonBackup();
+                    jsonBackup.setNotes(newNotes);
+                    jsonBackup.setNewTrashNotes(newTrashNotes);
+                    jsonBackup.setTags(newTags);
 
-            return jsonBackup;
-        }).subscribeOn(getSchedulerProvider().computation()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::restoreData, throwable -> getView().showErrorsText(0, R.string.empty_data_import)));
+                    return jsonBackup;
+                }).subscribeOn(getSchedulerProvider().computation()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::restoreData, throwable -> getView().showErrorsText(0, R.string.empty_data_import)));
+
+
     }
 
 

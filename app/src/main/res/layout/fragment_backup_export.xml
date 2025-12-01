@@ -85,6 +85,16 @@
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="14sp" />
 
+                    <TextView
+                        android:id="@+id/backupWarring"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp"
+                        android:fontFamily="@font/railway_medium"
+                        android:text="@string/newBackupsDescrpt"
+                        android:textColor="?attr/colorError"
+                        android:textSize="14sp" />
+
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="10dp" />
@@ -187,6 +197,16 @@
                         android:lineSpacingMultiplier="1.2"
                         android:text="@string/dataExportDescription"
                         android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/attachWarring"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp"
+                        android:fontFamily="@font/railway_medium"
+                        android:text="@string/export_warning_no_attachments"
+                        android:textColor="?attr/colorError"
                         android:textSize="14sp" />
 
                     <!-- Export Button -->

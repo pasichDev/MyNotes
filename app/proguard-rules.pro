@@ -29,10 +29,6 @@
 
 -keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
 
--keepclassmembers class * {
-  @com.google.api.client.util.Key <fields>;
-}
-
 # Needed by google-http-client-android when linking against an older platform version
 
 -dontwarn com.google.api.client.extensions.android.**

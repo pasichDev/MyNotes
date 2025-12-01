@@ -1,11 +1,17 @@
 package com.pasich.mynotes.ui.view.activity;
 
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_FONT_SCALE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_MODE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE_THEME_UPDATE;
 
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
@@ -18,8 +24,9 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
-import com.pasich.mynotes.ui.view.fragment.InteractionSettingsFragment;
-import com.pasich.mynotes.ui.view.fragment.InterfaceSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.InteractionSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.InterfaceSettingsFragment;
+import com.pasich.mynotes.ui.view.fragment.settings.MediaSettingsFragment;
 import com.pasich.mynotes.utils.adapters.SettingsPagerAdapter;
 import com.pasich.mynotes.utils.themes.ThemesArray;
 
@@ -35,23 +42,23 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     public ActivitySettingsBinding activitySettingsBinding;
     @Inject
     ThemePreferencesCache themePreferencesCache;
-    int targetPage = 0;
     private int themeIdStartActivity;
-    private boolean enableDynamic, themeDynamicStartActivity;
+    private boolean themeDynamicStartActivity;
     private int themeModeStartActivity;
     private SettingsPagerAdapter pagerAdapter;
     private TabLayout tabLayout;
 
+    private float fontScaleWasChanged = -0.2f;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         activitySettingsBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
-        super.onCreate(savedInstanceState);
         setContentView(activitySettingsBinding.getRoot());
         setupEdgeToEdgeInsets(activitySettingsBinding.getRoot());
         themeIdStartActivity = themePreferencesCache.getThemeId();
-        enableDynamic = themePreferencesCache.isDynamicColorEnabled();
-        themeDynamicStartActivity = enableDynamic;
+        themeDynamicStartActivity = themePreferencesCache.isDynamicColorEnabled();
         themeModeStartActivity = themePreferencesCache.getThemeMode();
         setSupportActionBar(activitySettingsBinding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -73,6 +80,23 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         ViewPager2 viewPager = activitySettingsBinding.viewPager;
 
         tabLayout = activitySettingsBinding.tabLayout;
+        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+
+        // Add margins between tabs
+        tabLayout.post(() -> {
+            ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
+            int margin = (int) (12 * getResources().getDisplayMetrics().density);
+
+            for (int i = 0; i < tabStrip.getChildCount(); i++) {
+                View tabView = tabStrip.getChildAt(i);
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
+                params.setMargins(margin, 0, margin, 0);
+                tabView.setLayoutParams(params);
+
+                tabView.requestLayout();
+            }
+        });
+
         pagerAdapter = new SettingsPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
@@ -85,6 +109,9 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
                             break;
                         case 1:
                             tab.setText(getString(R.string.interaction_tab));
+                            break;
+                        case 2:
+                            tab.setText(getString(R.string.mediaTab));
                             break;
                     }
                 }
@@ -122,21 +149,25 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
 
         if (themeIdStartActivity != currentThemeId) {
             int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
-            setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
+            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, themeStyle));
         }
 
         if (themeDynamicStartActivity != enableDynamicColor) {
             if (enableDynamicColor) {
-                setResult(11, new Intent().putExtra("updateThemeStyle", R.style.AppThemeDynamic));
+                setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, R.style.AppThemeDynamic));
             } else {
                 int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
-                setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
+                setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, themeStyle));
             }
         }
 
         if (themeModeStartActivity != currentThemeMode) {
             // Theme mode changed, trigger recreation
-            setResult(11, new Intent().putExtra("updateThemeMode", true));
+            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_MODE, true));
+        }
+
+        if (fontScaleWasChanged != -0.2f) {
+            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_FONT_SCALE, true));
         }
 
         supportFinishAfterTransition();
@@ -159,6 +190,11 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         redrawActivity(themeStyle);
     }
 
+    @Override
+    public void onFontScaleChanged(float value) {
+        fontScaleWasChanged = value;
+    }
+
 
     @Override
     public void redrawActivity(int themeStyle) {
@@ -176,8 +212,8 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     }
 
     private void applyTabColors() {
-        int colorPrimary = MaterialColors.getColor(this, R.attr.colorPrimary, Color.GRAY);
-        int colorOnSurfaceVariant = MaterialColors.getColor(this, R.attr.colorOnSurfaceVariant, Color.GRAY);
+        int colorPrimary = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimaryVariant, Color.GRAY);
+        int colorOnSurfaceVariant = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
 
         tabLayout.setTabTextColors(colorOnSurfaceVariant, colorPrimary);
         tabLayout.setSelectedTabIndicatorColor(colorPrimary);
@@ -191,6 +227,8 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
                     ((InterfaceSettingsFragment) fragment).updateThemeColors();
                 } else if (fragment instanceof InteractionSettingsFragment) {
                     ((InteractionSettingsFragment) fragment).updateThemeColors();
+                } else if (fragment instanceof MediaSettingsFragment) {
+                    ((MediaSettingsFragment) fragment).updateThemeColors();
                 }
             }
         }

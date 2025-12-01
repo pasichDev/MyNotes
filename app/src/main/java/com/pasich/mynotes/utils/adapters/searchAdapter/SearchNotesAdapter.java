@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.color.MaterialColors;
-import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.IndexFilter;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ItemResultBinding;
@@ -29,16 +28,6 @@ import dagger.hilt.android.scopes.ActivityScoped;
 @ActivityScoped
 public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.ViewHolder> {
 
-    private List<Note> defaultListNotes = new ArrayList<>();
-    private List<IndexFilter> indexValue = new ArrayList<>();
-    private SetItemClickListener onItemClickListener;
-    private String textSearch;
-
-    @Inject
-    public SearchNotesAdapter() {
-        super(DIFF_CALLBACK);
-    }
-
     private static final DiffUtil.ItemCallback<Note> DIFF_CALLBACK = new DiffUtil.ItemCallback<>() {
         @Override
         public boolean areItemsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
@@ -51,6 +40,15 @@ public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.Vie
             return oldItem.equals(newItem);
         }
     };
+    private List<Note> defaultListNotes = new ArrayList<>();
+    private List<IndexFilter> indexValue = new ArrayList<>();
+    private SetItemClickListener onItemClickListener;
+    private String textSearch;
+
+    @Inject
+    public SearchNotesAdapter() {
+        super(DIFF_CALLBACK);
+    }
 
     public void setItemClickListener(SetItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
@@ -76,7 +74,7 @@ public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.Vie
         Note note = getItem(position);
         holder.binding.setNote(note);
 
-        final int colorSpannable = MaterialColors.getColor(holder.itemView.getContext(), R.attr.colorSurfaceVariant, Color.GRAY);
+        final int colorSpannable = MaterialColors.getColor(holder.itemView.getContext(), com.google.android.material.R.attr.colorSurfaceVariant, Color.GRAY);
 
         Spannable titleNote = highlightMatch(note.getTitle(), note.getId(), true, colorSpannable);
         Spannable valueNote = highlightMatch(note.getValue(), note.getId(), false, colorSpannable);
@@ -87,7 +85,7 @@ public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.Vie
 
         if (onItemClickListener != null) {
             holder.itemView.setOnClickListener(v ->
-                    onItemClickListener.onClick(note.getId(), holder.binding.itemNote)
+                    onItemClickListener.onClick(note, holder.binding.itemNote)
             );
         }
     }

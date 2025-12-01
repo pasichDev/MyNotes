@@ -1,6 +1,5 @@
 package com.pasich.mynotes.utils.file;
 
-import static com.preference.provider.PreferenceProvider.context;
 
 import android.content.Context;
 
@@ -42,7 +41,7 @@ public class HtmlTemplateGenerator {
                 .append("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n")
                 .append("    <title>").append(escapeHtml(notesTitle)).append("</title>\n")
                 .append("    <style>\n")
-                .append(loadCssFromAssets())
+                .append(loadCssFromAssets(context))
                 .append("    </style>\n")
                 .append("</head>\n")
                 .append("<body>\n")
@@ -147,7 +146,7 @@ public class HtmlTemplateGenerator {
         };
     }
 
-    private static String loadCssFromAssets() {
+    private static String loadCssFromAssets(Context context) {
         try {
             assert context != null;
             try (InputStream is = context.getAssets().open("notes_styles.css");

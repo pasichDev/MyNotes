@@ -70,7 +70,6 @@ public class TagDragCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean isItemViewSwipeEnabled() {
-        // Disable swipe
         return false;
     }
 }

@@ -29,13 +29,13 @@ public class HelpActivity extends BaseActivity {
     @Named("NotesItemSpaceDecoration")
     public SpacesItemDecoration itemDecoration;
 
-    private final String actualVersionHelp = "2.3.39";
+    private final String actualVersionHelp = "2.4.41";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         binding = ActivityHelpBinding.inflate(getLayoutInflater());
-        super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
         
         setupToolbar();

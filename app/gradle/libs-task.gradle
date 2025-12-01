@@ -1,0 +1,77 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+// Generates libs.json from Gradle + package.json
+tasks.register('generateLibsJson') {
+
+    def gradleFile = file("${rootDir}/app/build.gradle")
+    def packageJson = file("${rootDir}/notes_editor/package.json")
+    def rawDir = file("${projectDir}/src/main/res/raw")
+
+    inputs.files gradleFile, packageJson
+    outputs.dir rawDir
+
+    doLast {
+        println ">>> [libs] Generating libs.json..."
+
+        if (!rawDir.exists()) rawDir.mkdirs()
+
+        def text = gradleFile.text
+        def vars = [:]
+
+        // Version variables
+        text.eachLine { line ->
+            def m = line =~ /^\s*(?:ext\.)?(\w+)\s*=\s*['"]([^'"]+)['"]/
+            if (m.find()) {
+                vars[m.group(1)] = m.group(2)
+            }
+        }
+
+        //  Gradle dependencies
+        def depPattern = ~/((implementation|api|kapt|compileOnly|runtimeOnly|debugImplementation|releaseImplementation)\s*['"]([^'"]+)['"])/
+        def matcher = depPattern.matcher(text)
+        def list = []
+
+        while (matcher.find()) {
+            def coord = matcher.group(3)
+            if (coord.startsWith("project(") || coord.startsWith("files(")) continue
+
+            def parts = coord.split(":")
+            if (parts.size() < 2) continue
+
+            def id = parts[0] + ":" + parts[1]
+            def ver = parts.size() > 2 ? parts[2] : null
+
+            if (ver?.startsWith("\$")) {
+                def key = ver.substring(1)
+                ver = vars[key] ?: ver
+            }
+
+            list << [id: id, version: ver, source: "gradle"]
+        }
+
+        // notes_editor/package.json
+        if (packageJson.exists()) {
+            println ">>> [libs] Reading package.json..."
+
+            def json = new JsonSlurper().parse(packageJson)
+
+            def addDeps = { map, src ->
+                map?.each { k, v ->
+                    list << [id: k, version: v, source: src]
+                }
+            }
+
+            addDeps(json.dependencies, "js")
+            addDeps(json.devDependencies, "js-dev")
+        }
+
+        // Write output
+        def jsonOut = JsonOutput.prettyPrint(JsonOutput.toJson(list))
+
+        def outFile = new File(rawDir, "libs.json")
+        outFile.text = jsonOut
+
+        println ">>> [libs] libs.json created at ${outFile}"
+    }
+}

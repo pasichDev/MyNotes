@@ -3,19 +3,20 @@ package com.pasich.mynotes.utils.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pasich.mynotes.BuildConfig;
 import com.pasich.mynotes.R;
+import com.pasich.mynotes.data.model.HelpSection;
+import com.pasich.mynotes.databinding.ItemHelpFeatureBinding;
 import com.pasich.mynotes.databinding.ItemHelpHeaderBinding;
 import com.pasich.mynotes.databinding.ItemHelpSectionTitleBinding;
-import com.pasich.mynotes.databinding.ItemHelpFeatureBinding;
-import com.pasich.mynotes.data.model.HelpSection;
+
 import java.util.List;
 
 public class HelpSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    
+
     private final List<HelpSection> sections;
 
     public HelpSectionAdapter(List<HelpSection> sections) {
@@ -76,7 +77,7 @@ public class HelpSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         void bind(HelpSection section) {
-            binding.versionActual.setText( itemView.getContext().getString(
+            binding.versionActual.setText(itemView.getContext().getString(
                     R.string.actual_version,
                     section.additionalInfo()
             ));
@@ -119,7 +120,7 @@ public class HelpSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         void bind(HelpSection section) {
             binding.featureTitle.setText(section.title());
             binding.featureDescription.setText(section.description());
-            
+
             if (section.iconRes() != null) {
                 binding.featureIcon.setImageResource(section.iconRes());
                 binding.featureIcon.setVisibility(View.VISIBLE);

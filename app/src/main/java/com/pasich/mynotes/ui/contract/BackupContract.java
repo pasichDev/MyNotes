@@ -8,9 +8,8 @@ import androidx.annotation.StringRes;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.backup.JsonBackup;
-import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
-import com.pasich.mynotes.utils.backup.BackupCacheHelper;
+import com.pasich.mynotes.utils.backup.models.JsonBackup;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 
 import dagger.hilt.android.scopes.ActivityScoped;
 
@@ -43,6 +42,9 @@ public interface BackupContract {
         void setupImportCallbackOtherApp(GoogleKeepImportResult result);
 
         void processSelectedFileOtherApp(Uri fileUri);
+
+        void onRestoreSuccessFlag();
+
     }
 
 
@@ -64,6 +66,7 @@ public interface BackupContract {
         void importFromZipOtherApp(Uri fileUri);
 
         void startProcessSelectedFileOtherApp(Uri fileUri);
+
 
     }
 }

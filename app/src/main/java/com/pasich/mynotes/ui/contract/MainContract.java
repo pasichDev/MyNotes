@@ -17,12 +17,12 @@ import dagger.hilt.android.scopes.ActivityScoped;
 
 public interface MainContract {
 
-    interface view extends BaseView, MoreNoteMainActivityView, MainSortView, ManagerViewAction<Note>{
+    interface view extends BaseView, MoreNoteMainActivityView, MainSortView, ManagerViewAction<Note> {
         void settingsSearchView();
 
         void settingsLists();
 
-        void newNotesButton();
+        void openNewNoteWithId(long id);
 
         void choiceTagDialog(Tag tag, View mView);
 
@@ -41,7 +41,7 @@ public interface MainContract {
         void finishActivityOtPresenter();
 
         void hideSearchView();
-        
+
         void openChangelogActivity();
     }
 
@@ -56,11 +56,9 @@ public interface MainContract {
 
         void deleteNotesArray(ArrayList<Note> notes);
 
-        void addNote(Note note);
+        void noteMoveToTrash(Note note);
 
-        void deleteNote(Note note);
-
-        void restoreNote(Note nNote);
+        void restoreNoteLastMoveToTrash(Note nNote);
 
         void deleteTag(Tag tag);
 
@@ -72,8 +70,13 @@ public interface MainContract {
 
         void setBackupDeleteNote(Note backupDeleteNote);
 
-        String getSortParam();
-
         boolean closeApp(boolean showSearchView);
     }
+
+    interface CreateNoteCallback {
+        void onCreated(long id);
+
+        void onError(Throwable t);
+    }
+
 }

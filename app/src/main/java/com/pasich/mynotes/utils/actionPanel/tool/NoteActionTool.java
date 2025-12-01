@@ -3,7 +3,6 @@ package com.pasich.mynotes.utils.actionPanel.tool;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
-import com.pasich.mynotes.utils.adapters.baseGenericAdapter.GenericAdapter;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 
 import java.util.ArrayList;
@@ -14,7 +13,7 @@ import javax.inject.Inject;
 public class NoteActionTool {
 
     private final ArrayList<Note> ArrayChecked = new ArrayList<>();
-    private final GenericAdapter mAdapter;
+    private final NoteAdapter<ItemNoteBinding> mAdapter;
     private final ActionUtils actionUtils;
 
     @Inject
@@ -37,7 +36,7 @@ public class NoteActionTool {
     }
 
     public void checkedClean() {
-        List<Note> data = (List<Note>) mAdapter.getCurrentList();
+        List<Note> data = mAdapter.getCurrentList();
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).getChecked()) data.get(i).setChecked(false);
             mAdapter.notifyItemChanged(i, 22);

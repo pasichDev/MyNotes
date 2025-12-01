@@ -8,7 +8,7 @@
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="com.pasich.mynotes"
-            android:targetClass="com.pasich.mynotes.ui.view.activity.NoteActivity">
+            android:targetClass="com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity">
             <extra
                 android:name="NewNote"
                 android:value="true" />

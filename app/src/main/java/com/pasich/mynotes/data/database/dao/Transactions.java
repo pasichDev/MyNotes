@@ -6,132 +6,72 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
-import androidx.room.Update;
 
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.TrashNote;
+
+import java.util.List;
 
 
 @Dao
 public abstract class Transactions {
 
-    @Query("UPDATE NOTES SET tag=:newTag WHERE tag=:oldTag")
+    @Query("UPDATE notes SET tag = :newTag WHERE tag = :oldTag")
     public abstract void renameTagNotes(String oldTag, String newTag);
-
-    @Update
-    public abstract void updateNote(Note note);
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    public abstract void moveToTrash(TrashNote note);
-
-    @Delete
-    public abstract void deleteNote(Note note);
 
     @Delete
     public abstract void deleteTag(Tag tag);
 
-    @Query("UPDATE NOTES SET tag='' WHERE tag=:tag")
-    public abstract void deleteTagNotes(String tag);
+    @Query("UPDATE notes SET tag = '' WHERE tag = :tag")
+    public abstract void clearTagInNotes(String tag);
 
-    @Query("DELETE FROM NOTES  WHERE tag=:tag")
-    public abstract void deleteTagAndNotes(String tag);
+    @Query("UPDATE notes SET isTrash = 1 WHERE tag = :tag")
+    public abstract void moveNotesWithTagToTrash(String tag);
 
-    @Query("UPDATE tags SET name=:newName WHERE id=:tagId")
-    public abstract void setTagNote(String newName, long tagId);
-
-    @Query(" INSERT INTO trash SELECT null,title,value,date FROM notes WHERE tag = :tag")
-    public abstract void copyNoteToTrashFunctionDeleteTag(String tag);
+    @Query("UPDATE tags SET name = :newName WHERE id = :tagId")
+    public abstract void updateTagName(String newName, long tagId);
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     public abstract long addNote(Note note);
 
-    /**
-     * Атомарне додавання нотатки з гарантією синхронізації Flowable
-     */
+    @Query("UPDATE notes SET tag='' WHERE tag NOT IN (SELECT name FROM tags)")
+    protected abstract void clearInvalidTags();
+
+    @Query("UPDATE notes SET isTrash = 0 WHERE id IN (:ids)")
+    protected abstract void restoreNotesInternal(List<Integer> ids);
+
     @Transaction
     public long addNoteTransaction(Note note) {
         return addNote(note);
     }
 
-    @Query("DELETE FROM trash WHERE value=:text ")
-    public abstract void deleteNoteForText(String text);
-
-    @Delete
-    public abstract void deleteTrashNotes(TrashNote note);
-
-
-    /**
-     * Транзакция переноса заметки в корзину
-     *
-     * @param tNote - модель корзинной заметки
-     * @param mNote - заметка которую переносим
-     */
+    // Only rename tag
     @Transaction
-    public void transferNoteToTrash(TrashNote tNote, Note mNote) {
-        moveToTrash(tNote);
-        deleteNote(mNote);
+    public void renameTag(Tag tag, String newName) {
+        renameTagNotes(tag.getNameTag(), newName);
+        updateTagName(newName, tag.id);
     }
 
-    /**
-     * Перенос заметки из корзины
-     */
+    // Delete tag but keep notes
     @Transaction
-    public void transferNoteOutTrash(TrashNote tNote, Note mNote) {
-        addNote(mNote);
-        deleteTrashNotes(tNote);
-    }
-
-
-    /**
-     * Удаление метки и удаление метки с заметки
-     *
-     * @param tag - метка
-     */
-    @Transaction
-    public void deleteTagForNotes(Tag tag) {
-        deleteTagNotes(tag.getNameTag());
+    public void deleteTagButKeepNotes(Tag tag) {
+        clearTagInNotes(tag.getNameTag());
         deleteTag(tag);
     }
 
-    /**
-     * Удаление метки и вместе с ней заметки
-     *
-     * @param tag - метка
-     */
+    // Delete tag → move notes to trash
     @Transaction
-    public void deleteTagAndNotes(Tag tag) {
-        copyNoteToTrashFunctionDeleteTag(tag.getNameTag());
-        deleteTagAndNotes(tag.getNameTag());
+    public void deleteTagAndMoveNotesToTrash(Tag tag) {
+        moveNotesWithTagToTrash(tag.getNameTag());
+        clearTagInNotes(tag.getNameTag());
         deleteTag(tag);
     }
 
-    /**
-     * Удаление метки и вместе с ней заметки
-     */
+
     @Transaction
-    public void copyNotes(Note oNote, Note nNote, boolean noteActivity) {
-        if (noteActivity) updateNote(oNote);
-
-    }
-
-    /**
-     * Восстановление заметки и удаление из корзины через текст
-     */
-    @Transaction
-    public void restoreNote(Note nNote) {
-        addNote(nNote);
-        deleteNoteForText(nNote.getValue());
-
-    }
-
-    /**
-     * Метод переименования метки
-     */
-    @Transaction
-    public void renameTag(Tag mTag, String newName) {
-        renameTagNotes(mTag.getNameTag(), newName);
-        setTagNote(newName, mTag.id);
-
+    public void restoreNotesAndFixTags(List<Integer> ids) {
+        clearInvalidTags();
+        restoreNotesInternal(ids);
     }
 }
+

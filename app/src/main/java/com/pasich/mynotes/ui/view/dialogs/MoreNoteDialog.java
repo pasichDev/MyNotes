@@ -2,13 +2,11 @@ package com.pasich.mynotes.ui.view.dialogs;
 
 
 import android.content.DialogInterface;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +23,7 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.DialogMoreNoteBinding;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
-import com.pasich.mynotes.utils.GoogleTranslationIntent;
+import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
 
 import java.util.List;
@@ -114,21 +112,38 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     @Override
     public void loadingTagsOfChips(Flowable<List<Tag>> tagsList) {
         mPresenter.getCompositeDisposable().add(tagsList.subscribeOn(mPresenter.getSchedulerProvider().io()).observeOn(mPresenter.getSchedulerProvider().ui()).subscribe(this::createChipsTag));
-
-
     }
 
 
     @Override
     public void initInterfaces() {
-        if (activityNote) {
-            noteActivity = (MoreNoteNoteActivityView) requireActivity();
-            mainActivity = null;
-        } else {
-            mainActivity = (MoreNoteMainActivityView) requireActivity();
-            noteActivity = null;
+        try {
+            if (activityNote) {
+                if (requireActivity() instanceof MoreNoteNoteActivityView) {
+                    noteActivity = (MoreNoteNoteActivityView) requireActivity();
+                    mainActivity = null;
+                } else {
+                    Toast.makeText(requireContext(),
+                            R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+                    dismiss();
+                }
+            } else {
+                if (requireActivity() instanceof MoreNoteMainActivityView) {
+                    mainActivity = (MoreNoteMainActivityView) requireActivity();
+                    noteActivity = null;
+                } else {
+                    Toast.makeText(requireContext(),
+                            R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+                    dismiss();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(requireContext(),
+                    R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+            dismiss();
         }
     }
+
 
     @Override
     public void callableCopyNote(long newNoteId) {
@@ -178,53 +193,41 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
 
-        if (mNote.getValue() != null && mNote.getValue().length() >= 2) {
-            binding.share.setVisibility(View.VISIBLE);
-            binding.share.setOnClickListener(v -> {
-                // Open share options dialog
-                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mNote);
-                shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+        binding.share.setVisibility(View.VISIBLE);
+        binding.share.setOnClickListener(v -> {
+            // Open share options dialog
+            ShareOptionsDialog shareDialog = new ShareOptionsDialog(mNote);
+            shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+            dismiss();
+        });
+
+        binding.translateNote.setVisibility(View.VISIBLE);
+        binding.translateNote.setOnClickListener(v -> {
+            GoogleTranslateHelper.startTranslation(requireActivity(), mNote.getValue());
+            dismiss();
+        });
+        binding.moveToTrash.setOnClickListener(v -> {
+            mPresenter.noteMoveToTrash(mNote);
+
+            if (!activityNote) {
+                mainActivity.callbackDeleteNote(mNote);
                 dismiss();
-            });
+            } else {
+                noteActivity.closeActivityNotSaved();
+            }
 
-            initTranslate();
-            binding.moveToTrash.setOnClickListener(v -> {
-                mPresenter.deleteNote(mNote);
+        });
 
-                if (!activityNote) {
-                    mainActivity.callbackDeleteNote(mNote);
-                    dismiss();
-                } else {
-                    noteActivity.closeActivityNotSaved();
-                }
-
-            });
-
-            binding.copyNote.setOnClickListener(v -> {
-                mPresenter.copyNote(mNote, activityNote);
-                dismiss();
-            });
-
-        }
-
-    }
+        binding.copyNote.setOnClickListener(v -> {
+            mPresenter.copyNote(mNote, activityNote);
+            dismiss();
+        });
 
 
-    private void initTranslate() {
-        PackageInfo pi = null;
-        try {
-            pi = requireActivity().getPackageManager().getPackageInfo(GoogleTranslationIntent.packageTranslator, 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e("Error initTranslate", String.valueOf(e));
-
-        }
-
-        if (pi != null) {
-            binding.translateNote.setVisibility(View.VISIBLE);
-            binding.translateNote.setOnClickListener(v -> {
-                new GoogleTranslationIntent().startTranslation(requireActivity(), mNote.getValue());
-                dismiss();
-            });
+        if (mNote.getValue() == null && mNote.getValue().isEmpty()) {
+            binding.translateNote.setVisibility(View.GONE);
+            binding.share.setVisibility(View.GONE);
+            binding.copyNote.setVisibility(View.GONE);
         }
     }
 

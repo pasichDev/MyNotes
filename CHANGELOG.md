@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [2.2.40] - 13.10.2025
+## [2.4.41] - XX.XX.XXXX
+
+- **Advanced editor:** added full support for inserting images into notes.
+- **Advanced editor:** added the ability to attach files to notes (up to 20 MB).
+- Added adjustable UI text scale (independent from system font).
+- Added new screen displaying the list of application dependencies.
+- Added automatic optimization of uploaded images.
+- Added adaptive app icon, including a monochrome variant for Material You themed icons.
+- Incorrect processing of backups has been fixed and compatibility with previous versions has been improved.
+- Code review and optimization performed, obsolete and unnecessary functionality removed, known bugs
+  fixed
+
+## [2.3.40] - 13.10.2025
 
 - Optimized code and improved app stability
 - Added translation support for the advanced editor

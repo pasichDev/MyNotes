@@ -1,10 +1,9 @@
 package com.pasich.mynotes.utils.actionPanel.tool;
 
-import com.pasich.mynotes.data.model.TrashNote;
-import com.pasich.mynotes.databinding.ItemNoteTrashBinding;
+import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
-import com.pasich.mynotes.utils.adapters.baseGenericAdapter.GenericAdapter;
-import com.pasich.mynotes.utils.adapters.notes.TrashAdapter;
+import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,22 +12,22 @@ import javax.inject.Inject;
 
 public class TrashNoteActionTool {
 
-    private final ArrayList<TrashNote> ArrayChecked = new ArrayList<>();
-    private final GenericAdapter tAdapter;
+    private final ArrayList<Note> ArrayChecked = new ArrayList<>();
+    private final NoteAdapter<ItemNoteBinding> tAdapter;
     private final ActionUtils actionUtils;
 
     @Inject
-    public TrashNoteActionTool(TrashAdapter<ItemNoteTrashBinding> adapter, ActionUtils actionUtils) {
+    public TrashNoteActionTool(NoteAdapter<ItemNoteBinding> adapter, ActionUtils actionUtils) {
         this.tAdapter = adapter;
         this.actionUtils = actionUtils;
     }
 
-    public ArrayList<TrashNote> getArrayChecked() {
+    public ArrayList<Note> getArrayChecked() {
         return this.ArrayChecked;
     }
 
     public int getCountCheckedItem() {
-        List<TrashNote> data = tAdapter.getCurrentList();
+        List<Note> data = tAdapter.getCurrentList();
         int count = 0;
         for (int i = 0; i < data.size(); i++) {
             count = data.get(i).getChecked() ? count + 1 : count;
@@ -37,7 +36,7 @@ public class TrashNoteActionTool {
     }
 
     public void checkedClean() {
-        List<TrashNote> data = tAdapter.getCurrentList();
+        List<Note> data = tAdapter.getCurrentList();
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).getChecked()) data.get(i).setChecked(false);
             tAdapter.notifyItemChanged(i, 22);
@@ -45,13 +44,13 @@ public class TrashNoteActionTool {
         }
     }
 
-    public void isCheckedItem(TrashNote note) {
+    public void isCheckedItem(Note note) {
         if (!getArrayChecked().contains(note)) getArrayChecked().add(note);
         else getArrayChecked().remove(note);
         if (!actionUtils.getAction()) actionUtils.setAction(true);
     }
 
-    public boolean isCheckedItemFalse(TrashNote note) {
+    public boolean isCheckedItemFalse(Note note) {
         if (getCountCheckedItem() == 0) {
             getArrayChecked().clear();
             actionUtils.setAction(false);

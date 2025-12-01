@@ -4,6 +4,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Objects;
@@ -18,23 +20,28 @@ public class Note {
 
     @SerializedName("b")
     private String title;
-    
+
     @SerializedName("c")
     private String value;
-    
+
     @SerializedName("d")
     private long date;
-    
+
     @SerializedName("e")
     private String tag;
-    
+
     @SerializedName("f")
     private String valueJson;
-    
+
     @SerializedName("g")
-    private boolean hasRichContent;
+    private boolean hasRichContent;  // no use
 
+    @SerializedName("h")
+    private String attachments; // JSON attachments
 
+    // NEW: instead of TrashNote table
+    @SerializedName("i")
+    private boolean isTrash = false;
     @Ignore
     private boolean Checked;
 
@@ -56,6 +63,16 @@ public class Note {
         return this;
     }
 
+    @Deprecated
+    public boolean hasRichContent() {
+        return hasRichContent;
+    }
+
+    @Deprecated
+    public void setHasRichContent(boolean hasRichContent) {
+        this.hasRichContent = hasRichContent;
+    }
+
     public int getId() {
         return this.id;
     }
@@ -65,7 +82,7 @@ public class Note {
     }
 
     public String getTitle() {
-        return this.title;
+        return Objects.requireNonNullElse(title, "");
     }
 
     public void setTitle(String title) {
@@ -114,19 +131,58 @@ public class Note {
     }
 
     public String getValueJson() {
-        return this.valueJson;
+        return Objects.requireNonNullElse(valueJson, "");
     }
 
     public void setValueJson(String valueJson) {
         this.valueJson = valueJson;
     }
 
-    public boolean hasRichContent() {
-        return this.hasRichContent;
+
+    public boolean isTrash() {
+        return isTrash;
     }
 
-    public void setHasRichContent(boolean hasRichContent) {
-        this.hasRichContent = hasRichContent;
+    public void setTrash(boolean trash) {
+        isTrash = trash;
     }
+
+    public String getAttachments() {
+        return attachments;
+    }
+
+    public boolean isAttachments() {
+        String mAttachments = attachments;
+        if (mAttachments == null) return false;
+
+        mAttachments = mAttachments.trim();
+        if (mAttachments.isEmpty() || mAttachments.equals("[]")) return false;
+
+        try {
+            JsonArray arr = JsonParser.parseString(mAttachments).getAsJsonArray();
+            return !arr.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void setAttachments(String attachments) {
+        this.attachments = attachments;
+    }
+
+
+    public void copyFrom(Note other) {
+        if (other == null) return;
+
+        this.title = other.title;
+        this.value = other.value;
+        this.date = other.date;
+        this.tag = other.tag;
+        this.valueJson = other.valueJson;
+        this.hasRichContent = other.hasRichContent;
+        this.attachments = other.attachments;
+        this.Checked = other.Checked;
+    }
+
 
 }

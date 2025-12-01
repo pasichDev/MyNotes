@@ -7,109 +7,71 @@
         <variable
             name="presenter"
             type="com.pasich.mynotes.ui.presenter.NotePresenter" />
-        
+
         <variable
             name="activateEdit"
             type="boolean" />
     </data>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/noteLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/colorSurfaceContainerLow">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/appBarLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <!-- Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorSurfaceContainerLow"
-            app:elevation="0dp">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:gravity="center_vertical">
 
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
+            <!-- Весь контент toolbar'а всередині нього -->
+            <LinearLayout
+                android:id="@+id/endContent"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorSurfaceContainerLow"
-                app:layout_scrollFlags="scroll|enterAlways|snap">
-                <LinearLayout
-                    android:id="@+id/endContent"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="100dp"
-                    android:gravity="start|center_vertical"
-                    android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/titleToolbarTagCollapsed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/railway_medium"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="11sp"
-                        android:visibility="gone" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="start|center_vertical"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/titleToolbarDataCollapsed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/railway_medium"
-                            android:text="@string/lastDateEditNote"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="11sp" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </com.google.android.material.appbar.MaterialToolbar>
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-
-        <!-- Main Content -->
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-            <!-- Rich Editor Container -->
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                tools:ignore="UselessParent">
-
-                <!-- Лоадер -->
-                <ProgressBar
-                    android:id="@+id/editorLoader"
-                    style="?android:attr/progressBarStyleLarge"
+                <TextView
+                    android:id="@+id/titleToolbarTagCollapsed"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:indeterminateTint="?attr/colorPrimary" />
+                    android:fontFamily="@font/railway_medium"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="11sp"
+                    android:visibility="gone" />
 
-                <!-- WebView for Editor.js -->
-                <WebView
-                    android:id="@+id/richEditor"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone"
-                    android:paddingBottom="10dp"
-                    android:background="?attr/colorSurfaceContainerLow" />
-            </FrameLayout>
+                <TextView
+                    android:id="@+id/titleToolbarDataCollapsed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/railway_medium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
 
 
-        </LinearLayout>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <!-- Note Editor -->
+        <com.pasich.mynotes.extendedEditor.NoteEditorView
+            android:id="@+id/noteEditor"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+         />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -17,38 +17,60 @@ import io.reactivex.Single;
 @Dao
 public interface NoteDao {
 
-  @Query("SELECT COUNT() FROM notes  , trash")
-  int getDataCount();
+    @Query("SELECT COUNT() FROM notes")
+    int getDataCount();
 
-  @Query("SELECT * FROM notes")
-  Flowable<List<Note>> getNotesAll();
+    @Query("SELECT * FROM notes WHERE isTrash = 0")
+    Flowable<List<Note>> getNotesAll();
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  Long addNote(Note note);
+    @Query("SELECT * FROM notes WHERE isTrash = 1")
+    Flowable<List<Note>> getTrashNotes();
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  Long addNoteCopy(Note note);
+    @Query("SELECT * FROM notes WHERE isTrash = 1")
+    List<Note> getTrashNotesSync();
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  void addNotes(List<Note> notes);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Long addNote(Note note);
 
-  @Update
-  void updateNote(Note note);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    Long addNoteCopy(Note note);
 
-  @Delete
-  void deleteNote(Note note);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void addNotes(List<Note> notes);
 
-  @Query("SELECT COUNT(tag) FROM notes WHERE tag = :nameTag")
-  int getCountNotesTag(String nameTag);
+    @Update
+    void updateNote(Note note);
 
-  @Query("SELECT * FROM notes WHERE tag = :nameTag")
-  List<Note> getNotesForTag(String nameTag);
+    @Delete
+    void deleteNote(Note note);
 
-  @Query("SELECT * FROM notes WHERE id=:idNote")
-  Single<Note> getNoteForId(long idNote);
+    @Query("SELECT COUNT(tag) FROM notes WHERE tag = :nameTag AND isTrash = 0")
+    int getCountNotesTag(String nameTag);
 
-  @Query("UPDATE NOTES SET tag=:tag WHERE id=:noteID")
-  void setTagNote(String tag, int noteID);
+    @Query("SELECT * FROM notes WHERE tag = :nameTag AND isTrash = 0")
+    List<Note> getNotesForTag(String nameTag);
+
+    @Query("SELECT * FROM notes WHERE id=:idNote")
+    Single<Note> getNoteForId(long idNote);
+
+    @Query("UPDATE NOTES SET tag=:tag WHERE id=:noteID")
+    void setTagNote(String tag, int noteID);
+
+
+    @Query("UPDATE notes SET isTrash = 1 WHERE id IN (:ids)")
+    void moveNotesToTrash(List<Integer> ids);
+
+    @Query("UPDATE notes SET isTrash = 0 WHERE id IN (:ids)")
+    void restoreNotesFromTrash(List<Integer> ids);
+
+    @Query("UPDATE notes SET isTrash = 1 WHERE id = :id")
+    void moveNoteToTrash(int id);
+
+    @Query("UPDATE notes SET isTrash = 0 WHERE id = :id")
+    void restoreNoteFromTrash(int id);
+
+    @Query("DELETE FROM notes WHERE isTrash = 1")
+    void deleteAllTrashNotes();
 
 
 }

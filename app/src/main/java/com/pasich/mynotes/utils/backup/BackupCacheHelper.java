@@ -1,7 +1,7 @@
 package com.pasich.mynotes.utils.backup;
 
 
-import com.pasich.mynotes.data.model.backup.JsonBackup;
+import com.pasich.mynotes.utils.backup.models.JsonBackup;
 
 import javax.inject.Inject;
 

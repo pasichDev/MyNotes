@@ -6,7 +6,6 @@ import android.util.Log;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
@@ -35,10 +34,10 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
 
 
     @Override
-    public void deleteNote(Note note) {
-        getCompositeDisposable().add(getDataManager().moveNoteToTrash(
-                        new TrashNote().create(note.getTitle(), note.getValue(), note.getDate()), note)
+    public void noteMoveToTrash(Note note) {
+        getCompositeDisposable().add(getDataManager().moveNoteToTrash(note.getId())
                 .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
                 .subscribe(
                         () -> {
                         }, // onComplete

@@ -2,18 +2,15 @@ package com.pasich.mynotes.di;
 
 
 import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_4_5;
+import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_5_6;
+import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_6_7;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import androidx.annotation.NonNull;
 import androidx.room.Room;
-import androidx.room.RoomDatabase;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.pasich.mynotes.cache.AppPreferencesCache;
-import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.AppDataManager;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.database.AppDatabase;
@@ -21,6 +18,7 @@ import com.pasich.mynotes.data.database.AppDbHelper;
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
+import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.DatabaseConstants;
 
 import javax.inject.Singleton;
@@ -30,6 +28,9 @@ import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.components.SingletonComponent;
+import io.noties.markwon.Markwon;
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
+import io.noties.markwon.linkify.LinkifyPlugin;
 
 @Module
 @InstallIn(SingletonComponent.class)
@@ -37,31 +38,10 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    AppDatabase providesAppDatabase(@ApplicationContext Context context, RoomDatabase.Callback sRoomDatabaseCallback) {
+    AppDatabase providesAppDatabase(@ApplicationContext Context context) {
         AppDatabase.setContext(context);
         return Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, DatabaseConstants.DB_NAME)
-                .addCallback(sRoomDatabaseCallback)
-                .addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, MIGRATION_4_5).build();
-    }
-
-
-    @Provides
-    @Singleton
-    RoomDatabase.Callback providerRoomDatabaseCallback() {
-        return new RoomDatabase.Callback() {
-
-            @Override
-            public void onCreate(@NonNull SupportSQLiteDatabase db) {
-                super.onCreate(db);
-                // Системні мітки тепер управляються через SystemTagsManager
-            }
-
-
-            @Override
-            public void onOpen(@NonNull SupportSQLiteDatabase db) {
-                super.onOpen(db);
-            }
-        };
+                .addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build();
     }
 
 
@@ -97,22 +77,18 @@ public class ApplicationModule {
         return flag;
     }
 
-
     @Provides
     @Singleton
-    ThemePreferencesCache providesThemePreferencesCache() {
-        final ThemePreferencesCache themePreferencesCache = new ThemePreferencesCache();
-        themePreferencesCache.initialize();
-        return themePreferencesCache;
+    public SafePreferences provideSafePreferences(@ApplicationContext Context context) {
+        return new SafePreferences(context);
     }
 
     @Provides
     @Singleton
-    AppPreferencesCache providesAppPreferencesCache() {
-        final AppPreferencesCache appPreferencesCache = new AppPreferencesCache();
-        appPreferencesCache.initialize();
-        return appPreferencesCache;
+    public Markwon provideMarkwon(@ApplicationContext Context context) {
+        return Markwon.builder(context)
+                .usePlugin(StrikethroughPlugin.create())
+                .usePlugin(LinkifyPlugin.create())
+                .build();
     }
-
-
 }

@@ -1,30 +1,92 @@
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import terser from '@rollup/plugin-terser'
+import postcss from 'rollup-plugin-postcss'
+const isProd = true
 
 const banner = `/*!
- * This project uses Editor.js (MIT License)
- * https://github.com/codex-team/editor.js
+ * My Notes — Editor Runtime Build
+ * (c) 2025 pasichDev. Editor.js — MIT
  */`
 
 export default [
-  // 1️⃣ Editor.js + плагіни
+  // ----------------------------------------------------
+  // 1) Editor.js core + plugins
+  // ----------------------------------------------------
+  // ----------------------------------------------
+  // BUNDLE: EditorJS core + plugins
+  // ----------------------------------------------
   {
-    input: 'index.js',
+    input: 'src/index.js',
     output: {
       file: 'dist/editor-bundle.min.js',
-      format: 'umd',
+      format: 'iife',
       name: 'EditorBundle',
-      sourcemap: true,
+      sourcemap: false
+    },
+    plugins: [resolve(), commonjs(), terser()]
+  },
+
+  // ----------------------------------------------------
+  // 2) Initialization module (initEditor)
+  // ----------------------------------------------------
+  {
+    input: 'src/editor-init.js',
+    output: {
+      file: 'dist/editor-init.min.js',
+      format: 'iife',
+      name: 'EditorInitModule',
+      sourcemap: !isProd,
       banner
     },
     plugins: [
       resolve(),
       commonjs(),
+      postcss({
+        extract: true,
+        minimize: true
+      }),
       terser({
-        mangle: { keep_fnames: true },
-        format: { comments: false }
+        keep_fnames: true,
+        keep_classnames: true,
+        mangle: false
       })
+    ]
+  },
+
+  // ----------------------------------------------------
+  // 3) Android bridge runtime (save/load/delete/etc.)
+  // ----------------------------------------------------
+  {
+    input: 'src/custom/runtime.js',
+    treeshake: false,
+    output: {
+      file: 'dist/runtime.min.js',
+      format: 'iife',
+      sourcemap: !isProd,
+      banner
+    },
+    plugins: [
+      resolve(),
+      commonjs(),
+      ...(isProd
+        ? [
+            terser({
+              mangle: {
+                keep_fnames: true,
+                reserved: [
+                  'attachEditorInstance',
+                  'deleteAttachmentBlockFromAndroid',
+                  'toggleReadModeFromAndroid',
+                  'saveContent',
+                  'uploadAttachment',
+                  'loadNote',
+                  'setThemeColors'
+                ]
+              }
+            })
+          ]
+        : [])
     ]
   }
 ]

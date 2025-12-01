@@ -14,7 +14,7 @@ import io.reactivex.plugins.RxJavaPlugins;
 @HiltAndroidApp
 public class MyApp extends Application {
 
-    private static final String TAG = "MyApp";
+    private static final String TAG = "MyNotesApp";
 
     @Inject
     ThemePreferencesCache themePreferencesCache;
@@ -23,10 +23,10 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Ініціалізація кешу тем для покращення продуктивності
+        // Initializing the theme cache to improve performance
         initThemeCache();
 
-        // Глобальний RxJava ErrorHandler для уникнення UndeliverableException
+        // Global RxJava ErrorHandler to avoid UndeliverableException
         RxJavaPlugins.setErrorHandler(e -> {
             if (e instanceof UndeliverableException) {
                 Throwable cause = e.getCause();
@@ -41,7 +41,7 @@ public class MyApp extends Application {
     }
 
     /**
-     * Ініціалізація кешу налаштувань тем для покращення продуктивності
+     * Initializing the theme settings cache to improve performance
      */
     private void initThemeCache() {
         try {

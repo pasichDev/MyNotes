@@ -6,9 +6,9 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
-import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepLabel;
-import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepNote;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepLabel;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepNote;
 
 import java.io.BufferedReader;
 import java.io.IOException;

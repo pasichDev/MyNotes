@@ -27,9 +27,7 @@
     <application
         android:name=".MyApp"
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
@@ -49,6 +47,12 @@
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.ChangelogActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.LibsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.PhotoViewActivity"
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.SettingsActivity"
@@ -96,11 +100,11 @@
             android:name=".ui.view.activity.TagsActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.view.activity.NoteActivity"
+            android:name=".ui.view.activity.noteEditor.NoteActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ui.view.activity.NoteExtendedEditorActivity"
+            android:name=".ui.view.activity.noteEditor.NoteExtendedEditorActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity

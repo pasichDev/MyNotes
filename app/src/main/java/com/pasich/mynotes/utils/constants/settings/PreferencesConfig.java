@@ -31,10 +31,17 @@ public class PreferencesConfig {
     public static final boolean ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE = false;
     //ExtendedEditor
     public static final String ARGUMENT_PREFERENCE_EXTENDED_EDITOR = "extendedEditorEnable";
-    public static final boolean ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE = false;
+    public static final boolean ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE = true; //default new user
     //LastKnownVersion
     public static final String ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION = "lastKnownVersion";
     //ThemeMode
     public static final String ARGUMENT_PREFERENCE_THEME_MODE = "themeMode";
     public static final int ARGUMENT_DEFAULT_THEME_MODE_VALUE = 0; // 0 = Follow System, 1 = Light, 2 = Dark
+    //Image extended editor optimization
+    public static final String ARGUMENT_PREFERENCE_IMAGEOPT = "image_opt";
+    public static final boolean ARGUMENT_DEFAULT_IMAGEOPT_VALUE = false;
+
+    //font scaling app
+    public static final String ARGUMENT_PREFERENCE_UI_SCALING = "uiFontScale";
+    public static final float ARGUMENT_DEFAULT_UI_SCALING_VALUE = 0.0f;
 }

@@ -39,8 +39,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="20dp"
-                    android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="16dp"
+                    app:shapeAppearanceOverlay="@style/CardTopRounded"
                     app:strokeWidth="0dp">
 
                     <LinearLayout
@@ -53,8 +52,13 @@
                         <com.google.android.material.imageview.ShapeableImageView
                             android:layout_width="42dp"
                             android:layout_height="42dp"
-                            android:src="@mipmap/ic_launcher"
-                            app:shapeAppearanceOverlay="@style/rounderIconApp" />
+                            android:src="@drawable/ic_splash_logo"
+                            android:scaleType="centerInside"
+                            android:backgroundTint="?attr/colorSurfaceVariant"
+                            android:background="@drawable/bg_icon_square"
+                            app:tint="?attr/colorOnSurface"
+                            app:shapeAppearanceOverlay="@style/IconRoundedShape"/>
+
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -67,7 +71,7 @@
                                 android:layout_height="match_parent"
                                 android:text="@string/app_name"
                                 android:textColor="?attr/colorOnSurface"
-                                android:textSize="18sp" />
+                                android:textSize="16sp" />
 
                             <TextView
                                 android:id="@+id/versionApp"
@@ -76,12 +80,49 @@
                                 android:paddingVertical="2dp"
                                 android:text="@string/developer"
                                 android:textColor="?attr/colorOutline"
-                                android:textSize="14sp" />
+                                android:textSize="12sp" />
                         </LinearLayout>
 
 
                     </LinearLayout>
+
                 </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:id="@+id/supportDev"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_accent_end"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:onClick="@{()-> activity.openSupportDev()}"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="@string/help_title"
+                        android:src="@drawable/ic_heart_support"
+                        app:tint="?attr/colorOnPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/supportDeveloper"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
 
                 <LinearLayout
                     android:id="@+id/help"
@@ -182,11 +223,37 @@
                     android:layout_height="1dp" />
 
                 <LinearLayout
+                    android:id="@+id/libsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_end"
+                    android:onClick="@{()-> activity.listLibraryOpen()}"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconActivityList"
+                        android:contentDescription="Libraries used"
+                        android:src="@drawable/ic_libs"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="Libraries used"
+                        tools:ignore="HardcodedText" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
+
+                <LinearLayout
                     android:id="@+id/privacyApp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_middle"
+                    android:background="@drawable/bg_item_start"
                     android:onClick="@{()-> activity.policyOpen()}"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems">

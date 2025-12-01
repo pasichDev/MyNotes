@@ -31,7 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class AboutActivity extends BaseActivity {
 
-    public ActivityAboutBinding binding;
+    protected ActivityAboutBinding binding;
 
     @Inject
     public LinearLayoutManager mLinearLayoutManager;
@@ -44,9 +44,9 @@ public class AboutActivity extends BaseActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         selectTheme();
         binding = ActivityAboutBinding.inflate(getLayoutInflater());
-        super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
         setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);
@@ -87,6 +87,10 @@ public class AboutActivity extends BaseActivity {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_PRIVACY_POLICY)));
     }
 
+    public void listLibraryOpen() {
+        startActivity(new Intent(this, LibsActivity.class));
+    }
+
     public void sendFeedback() {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK)));
     }
@@ -96,6 +100,10 @@ public class AboutActivity extends BaseActivity {
     }
     public void openChangelog() {
         startActivity(new Intent(this, ChangelogActivity.class));
+    }
+
+    public void openSupportDev() {
+        startActivity(new Intent(this, SupportActivity.class));
     }
 
     @Override

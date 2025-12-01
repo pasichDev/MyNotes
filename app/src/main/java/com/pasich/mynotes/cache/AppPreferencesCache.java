@@ -2,8 +2,8 @@ package com.pasich.mynotes.cache;
 
 import android.util.Log;
 
+import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-import com.preference.PowerPreference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,17 +15,19 @@ import javax.inject.Singleton;
 public class AppPreferencesCache {
 
     private static final String TAG = "AppPreferencesCache";
-
+    private final SafePreferences prefs;
     // Cached values
     private volatile String lastKnownVersion;
     private volatile String sortPref;
     private volatile String tagsSortPref;
     private volatile int formatPref;
 
+    private volatile boolean imageOptEnable;
     private volatile boolean initialized = false;
 
     @Inject
-    public AppPreferencesCache() {
+    public AppPreferencesCache(SafePreferences prefs) {
+        this.prefs = prefs;
     }
 
     /**
@@ -35,30 +37,31 @@ public class AppPreferencesCache {
         if (initialized) return;
 
         try {
-            lastKnownVersion = PowerPreference.getDefaultFile().getString(
+            lastKnownVersion = prefs.getString(
                     PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "0"
             );
 
-            sortPref = PowerPreference.getDefaultFile().getString(
+            sortPref = prefs.getString(
                     PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
                     PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF
             );
 
-            tagsSortPref = PowerPreference.getDefaultFile().getString(
+            tagsSortPref = prefs.getString(
                     PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT,
                     PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF
             );
 
-            formatPref = PowerPreference.getDefaultFile().getInt(
+            formatPref = prefs.getInt(
                     PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
                     PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE
             );
 
+            imageOptEnable = prefs.getBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                    PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE
+            );
+
             initialized = true;
-            Log.d(TAG, "Cache initialized: version=" + lastKnownVersion
-                    + ", sort=" + sortPref
-                    + ", tagsSort=" + tagsSortPref
-                    + ", format=" + formatPref);
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize cache", e);
@@ -71,6 +74,7 @@ public class AppPreferencesCache {
         sortPref = PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF;
         tagsSortPref = PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
         formatPref = PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE;
+        imageOptEnable = PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE;
         initialized = true;
     }
 
@@ -81,27 +85,10 @@ public class AppPreferencesCache {
         return lastKnownVersion;
     }
 
-    public String getSortPref() {
-        ensureInitialized();
-        return sortPref;
-    }
-
-    public String getTagsSortPref() {
-        ensureInitialized();
-        return tagsSortPref;
-    }
-
-    public int getFormatPref() {
-        ensureInitialized();
-        return formatPref;
-    }
-
-    // ===================== SETTERS =====================
-
     public synchronized void setLastKnownVersion(String version) {
         try {
             lastKnownVersion = version;
-            PowerPreference.getDefaultFile().putString(
+            prefs.putString(
                     PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION,
                     version
             );
@@ -110,10 +97,15 @@ public class AppPreferencesCache {
         }
     }
 
+    public String getSortPref() {
+        ensureInitialized();
+        return sortPref;
+    }
+
     public synchronized void setSortPref(String sort) {
         try {
             sortPref = sort;
-            PowerPreference.getDefaultFile().putString(
+            prefs.putString(
                     PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
                     sort
             );
@@ -122,10 +114,32 @@ public class AppPreferencesCache {
         }
     }
 
+    public boolean getImageOpt() {
+        ensureInitialized();
+        return imageOptEnable;
+    }
+
+    public synchronized void setImageOpt(boolean mImageOpt) {
+        try {
+            imageOptEnable = mImageOpt;
+            prefs.putBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                    mImageOpt
+            );
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to image_opt preference", e);
+        }
+    }
+
+    public String getTagsSortPref() {
+        ensureInitialized();
+        return tagsSortPref;
+    }
+
     public synchronized void setTagsSortPref(String tagsSort) {
         try {
             tagsSortPref = tagsSort;
-            PowerPreference.getDefaultFile().putString(
+            prefs.putString(
                     PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT,
                     tagsSort
             );
@@ -134,10 +148,15 @@ public class AppPreferencesCache {
         }
     }
 
+    public int getFormatPref() {
+        ensureInitialized();
+        return formatPref;
+    }
+
     public synchronized void setFormatPref(int format) {
         try {
             formatPref = format;
-            PowerPreference.getDefaultFile().putInt(
+            prefs.putInt(
                     PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
                     format
             );

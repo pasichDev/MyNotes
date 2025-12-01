@@ -2,11 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content "
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="?attr/colorSurface"
+    android:background="?attr/colorSurfaceContainerHighest"
     android:paddingTop="8dp"
-    android:minHeight="400dp">
+    android:minHeight="300dp">
 
     <!-- Handle -->
     <View
@@ -129,9 +129,8 @@
 
     </FrameLayout>
 
-    <!-- Safe area for bottom -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="16dp" />
+        android:layout_height="15dp" />
 
 </LinearLayout>

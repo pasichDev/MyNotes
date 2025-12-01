@@ -6,20 +6,19 @@ import android.util.Log;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.TrashNote;
 import com.pasich.mynotes.ui.contract.TrashContract;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 
 
 public class TrashPresenter extends BasePresenter<TrashContract.view> implements TrashContract.presenter {
-
+    private static final String TAG = "TrashPresenter";
 
     @Inject
     public TrashPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
@@ -44,33 +43,43 @@ public class TrashPresenter extends BasePresenter<TrashContract.view> implements
     @Override
     public void loadingTrash() {
         getCompositeDisposable().add(
-                getDataManager().getTrashNotesLoad()
+                getDataManager().getNotesInTrash()
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(trashNoteList -> getView().loadData(trashNoteList),
-                                throwable -> Log.wtf("MyNotes", "trashLoad", throwable)));
+                                throwable -> Log.wtf(TAG, "trashLoad", throwable)));
     }
 
     @Override
-    public void restoreNotesArray(ArrayList<TrashNote> notes) {
-        for (TrashNote tNote : notes) {
-            getDataManager().transferNoteOutTrash(tNote, new Note().create(tNote.getTitle(), tNote.getValue(), tNote.getDate()))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(
-                    () -> {}, // onComplete
-                    throwable -> Log.e("TrashPresenter", "Error restoring note", throwable)
-                );
-        }
+    public void restoreNotesArray(ArrayList<Note> notes) {
+        List<Integer> ids = new ArrayList<>();
+        for (Note n : notes) ids.add(n.getId());
+        getCompositeDisposable().add(
+                getDataManager()
+                        .restoreNotesAndFixTags(ids)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                () -> {
+                                },
+                                throwable -> Log.e(TAG, "Error restoring notes", throwable)
+                        )
+        );
     }
+
 
     @Override
     public void clearTrash() {
-        getCompositeDisposable().add(getDataManager().deleteAll()
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(
-                () -> {}, // onComplete
-                throwable -> Log.e("TrashPresenter", "Error clearing trash", throwable)
-            ));
+        getCompositeDisposable().add(
+                getDataManager().clearTrash()
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                () -> getView().loadData(new ArrayList<>()),
+                                throwable -> Log.e(TAG, "clearTrash failed", throwable)
+                        )
+        );
     }
+
 
 }

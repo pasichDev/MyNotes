@@ -370,8 +370,6 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                     "Requested product is not available for purchase";
             case BillingClient.BillingResponseCode.SERVICE_DISCONNECTED ->
                     "Play Store service is not connected now";
-            case BillingClient.BillingResponseCode.SERVICE_TIMEOUT ->
-                    "The request has reached the maximum timeout before Google Play responds";
             case BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE ->
                     "Network connection is down";
             case BillingClient.BillingResponseCode.USER_CANCELED ->
@@ -381,8 +379,8 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
     }
 
     /**
-     * Витягує числове значення ціни з рядка ціни
-     * Наприклад: "₴40.00" -> 40.0, "200,00 UAH" -> 200.0
+     * Extracts the numerical value of the price from the price string.
+     * For example: “₴40.00” -> 40.0, “200,00 UAH” -> 200.0
      */
     private double extractPrice(String priceString) {
         if (priceString == null || priceString.isEmpty()) {
@@ -390,19 +388,16 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         }
         
         try {
-            // Видаляємо всі символи, крім цифр, крапок та ком
             String cleanPrice = priceString.replaceAll("[^\\d.,]", "");
-            
-            // Замінюємо кому на крапку для уніфікації
+
             cleanPrice = cleanPrice.replace(",", ".");
-            
-            // Якщо є кілька крапок, залишаємо тільки останню
+
             int lastDotIndex = cleanPrice.lastIndexOf(".");
             if (lastDotIndex != -1 && lastDotIndex != cleanPrice.indexOf(".")) {
-                cleanPrice = cleanPrice.substring(0, lastDotIndex).replace(".", "") + 
+                cleanPrice = cleanPrice.substring(0, lastDotIndex).replace(".", "") +
                            cleanPrice.substring(lastDotIndex);
             }
-            
+
             return Double.parseDouble(cleanPrice);
         } catch (NumberFormatException e) {
             Log.w(TAG, "Failed to parse price: " + priceString, e);
@@ -431,18 +426,4 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                 });
     }
 
-    /**
-     * Публічний метод для очищення всіх наявних покупок
-     * Використовувати в налагодженні або для вирішення проблем
-     */
-    public void consumeAllPurchases() {
-        if (!isServiceConnected) {
-            Log.w(TAG, "Billing service not connected, can't consume purchases");
-            return;
-        }
-        
-        consumeAllExistingPurchases(() -> {
-            Log.d(TAG, "All purchases consumed successfully");
-        });
-    }
 }

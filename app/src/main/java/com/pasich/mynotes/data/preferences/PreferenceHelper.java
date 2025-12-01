@@ -1,13 +1,10 @@
 package com.pasich.mynotes.data.preferences;
 
 
-import com.pasich.mynotes.data.model.backup.PreferencesBackup;
-import com.preference.Preference;
+import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 
 
 public interface PreferenceHelper {
-
-    Preference getDefaultPreferences();
 
     int getFormatCount();
 

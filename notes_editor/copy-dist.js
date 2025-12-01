@@ -1,46 +1,83 @@
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-// Папка з бандлом
+// emulate __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 const distDir = path.join(__dirname, 'dist')
 const srcDir = path.join(__dirname, 'src')
+const toolsDir = path.join(__dirname, 'src/tools')
+const customDir = path.join(__dirname, 'src/custom')
+const htmlFile = path.join(srcDir, 'editor.html')
 
-// Кінцева папка (Assets в Android проекті)
-const destDir = path.join(
+// Android destination folder
+const destRoot = path.join(
   __dirname,
   '..',
   'app',
   'src',
   'main',
   'assets',
-  'editor',
-  'js'
+  'editor'
 )
 
-// Створюємо директорію, якщо нема
-if (!fs.existsSync(destDir)) {
-  fs.mkdirSync(destDir, { recursive: true })
+// paths inside assets/editor/
+const destJs = path.join(destRoot, 'js')
+const destCss = path.join(destRoot, 'css')
+
+// Ensure dirs exist
+for (const p of [destRoot, destJs, destCss]) {
+  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true })
 }
 
-// Мінімізований бандл
-const bundleSrc = path.join(distDir, 'editor-bundle.min.js')
-const bundleDest = path.join(destDir, 'editor-bundle.min.js')
-fs.copyFileSync(bundleSrc, bundleDest)
-console.log(`✅ Copied bundle: ${bundleDest}`)
+// --------- COPY HELPERS ---------
+function copy (src, dest, label) {
+  fs.copyFileSync(src, dest)
+  console.log(`✅ Copied ${label} → ${dest}`)
+}
 
-// Мінімізований бандл кастомних налаштувань
-const customSrc = path.join(srcDir, 'custom.js')
-const customDest = path.join(destDir, 'custom.min.js')
-fs.copyFileSync(customSrc, customDest)
-console.log(`✅ Copied custom: ${customDest}`)
+// --------- COPY HTML ---------
+copy(htmlFile, path.join(destRoot, 'editor.html'), 'editor HTML')
 
-// Локалізації
-const localesSrc = path.join(srcDir, 'locales.js')
-const localesDest = path.join(destDir, 'locales.js')
-fs.copyFileSync(localesSrc, localesDest)
-console.log(`✅ Copied locales: ${localesDest}`)
+// --------- COPY JS bundles ---------
+copy(
+  path.join(distDir, 'editor-bundle.min.js'),
+  path.join(destJs, 'editor-bundle.min.js'),
+  'Editor.js bundle'
+)
 
-// Видаляємо папку dist після копіювання
-fs.rmSync(distDir, { recursive: true, force: true })
-console.log(`🗑️ Removed dist folder: ${distDir}`)
-console.log('🎉 Build process completed!')
+copy(
+  path.join(distDir, 'editor-init.min.js'),
+  path.join(destJs, 'editor-init.min.js'),
+  'Init'
+)
+
+copy(
+  path.join(distDir, 'runtime.min.js'),
+  path.join(destJs, 'runtime.min.js'),
+  'Runtime'
+)
+
+copy(
+  path.join(toolsDir, 'attaches.min.js'),
+  path.join(destJs, 'attaches.min.js'),
+  'Attaches'
+)
+
+// --------- COPY locales.js ---------
+copy(
+  path.join(customDir, 'locales.js'),
+  path.join(destJs, 'locales.js'),
+  'Locales'
+)
+
+// --------- COPY CSS from src ---------
+copy(
+  path.join(srcDir, 'editor.css'),
+  path.join(destCss, 'editor.css'),
+  'Editor CSS'
+)
+
+console.log('🎉 Build + copy completed successfully!')

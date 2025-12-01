@@ -39,7 +39,6 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">28dp</item>
     </style>
-    <!-- Toolbar title style -->
 
 
     <style name="fab_custom" parent="Widget.Material3.FloatingActionButton.Primary">
@@ -50,7 +49,6 @@
         <item name="elevation">7dp</item>
     </style>
 
-    <!-- Стиль для параграфа -->
 
     <!-- Позиционирование елементов в BottomSheetsDialog -->
     <style name="marginDialogItem">
@@ -121,9 +119,6 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <style name="rounderIconApp">
-        <item name="cornerSize">10%</item>
-    </style>
 
     <style name="progressDialogRestore" parent="MaterialAlertDialog.Material3.Body.Text">
         <item name="android:windowCloseOnTouchOutside">false</item>
@@ -138,10 +133,14 @@
         <item name="chipBackgroundColor">?attr/colorSurfaceContainerHigh</item>
         <item name="android:textSize">12sp</item>
         <item name="chipMinHeight">24dp</item>
+        <item name="android:paddingTop">1dp</item>
+        <item name="android:paddingBottom">1dp</item>
         <item name="chipStartPadding">4dp</item>
         <item name="chipEndPadding">4dp</item>
         <item name="chipIconSize">0dp</item>
         <item name="android:textStyle">normal</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="chipMinTouchTargetSize">0dp</item>
     </style>
 
 
@@ -162,4 +161,52 @@
         <item name="android:layout_gravity">center_vertical</item>
     </style>
 
+    <style name="CardTopRounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeTopRight">16dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="IconRoundedShape">
+        <item name="cornerSize">10dp</item>
+    </style>
+
+    <style name="M3BottomSheetAnim" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:windowAnimationStyle">@style/M3BottomSheetWindowAnim</item>
+    </style>
+
+    <style name="M3BottomSheetWindowAnim">
+        <item name="android:windowEnterAnimation">@anim/m3_sheet_enter</item>
+        <item name="android:windowExitAnimation">@anim/m3_sheet_exit</item>
+    </style>
+
+    <style name="SettingsCardView.Base" parent="Widget.Material3.CardView.Elevated">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="contentPadding">5dp</item>
+        <item name="android:layout_marginTop">12dp</item>
+    </style>
+
+    <style name="SettingsCardViewTop" parent="SettingsCardView.Base">
+        <item name="shapeAppearance">@style/ShapeAppearance.SettingsCard.Top</item>
+        <item name="android:layout_marginTop">12dp</item>
+    </style>
+
+    <style name="SettingsCardViewBottom" parent="SettingsCardView.Base">
+        <item name="shapeAppearance">@style/ShapeAppearance.SettingsCard.Bottom</item>
+        <item name="cardBackgroundColor">?attr/colorSecondaryContainer</item>
+        <item name="android:layout_marginTop">0dp</item>
+    </style>
+
+    <style name="ItemNoteCardBottom" parent="Widget.Material3.CardView.Outlined">
+        <item name="shapeAppearance">@style/ShapeAppearance.SettingsCard.Bottom</item>
+        <item name="cardBackgroundColor">?attr/colorSecondaryContainer</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="contentPadding">1dp</item>
+        <item name="contentPaddingLeft">5dp</item>
+    </style>
 </resources>

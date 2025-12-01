@@ -16,12 +16,10 @@ public class RoutingActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        selectTheme();
-        
         EdgeToEdge.enable(this);
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
-
+        selectTheme();
         splashScreen.setKeepOnScreenCondition(() -> true);
         startNextActivity();
     }

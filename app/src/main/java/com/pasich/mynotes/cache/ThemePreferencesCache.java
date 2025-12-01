@@ -4,9 +4,9 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.themes.ThemesArray;
-import com.preference.PowerPreference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,22 +25,21 @@ import javax.inject.Singleton;
 public class ThemePreferencesCache {
 
     private static final String TAG = "ThemePreferencesCache";
-
+    private final SafePreferences prefs;
     // Cached values (volatile for thread safety)
     private volatile int themeMode;
     private volatile int themeId;
     private volatile boolean dynamicColor;
     private volatile boolean screenProtection;
     private volatile boolean extendedEditor;
-
     private volatile boolean initialized = false;
-
     private volatile String typeFaceNoteActivity;
     private volatile int sizeTextNoteActivity;
-
+    private volatile float uiFontScale;
 
     @Inject
-    public ThemePreferencesCache() {
+    public ThemePreferencesCache(SafePreferences prefs) {
+        this.prefs = prefs;
     }
 
     /**
@@ -55,22 +54,22 @@ public class ThemePreferencesCache {
 
         try {
             // Load all values from SharedPreferences in one batch
-            themeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+            themeMode = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
 
-            themeId = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
+            themeId = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
 
-            dynamicColor = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
+            dynamicColor = prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
 
-            screenProtection = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
+            screenProtection = prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
 
-            extendedEditor = PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE);
+            extendedEditor = prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE);
 
-            typeFaceNoteActivity = PowerPreference.getDefaultFile().getString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE);
+            typeFaceNoteActivity = prefs.getString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE);
 
-            sizeTextNoteActivity = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE);
+            sizeTextNoteActivity = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE);
 
+            uiFontScale = prefs.getFloat(PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE);
             initialized = true;
-            Log.d(TAG, "Cache initialized successfully - Theme Mode: " + themeMode + ", Theme ID: " + themeId + ", Dynamic Color: " + dynamicColor + ", Screen Protection: " + screenProtection + ", Extended Editor: " + extendedEditor);
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize cache", e);
@@ -89,6 +88,7 @@ public class ThemePreferencesCache {
         extendedEditor = PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE;
         typeFaceNoteActivity = PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE;
         sizeTextNoteActivity = PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE;
+        uiFontScale = PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE;
         initialized = true;
         Log.d(TAG, "Set default values after initialization failure");
     }
@@ -108,7 +108,7 @@ public class ThemePreferencesCache {
         try {
             this.themeMode = themeMode;
             // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, themeMode);
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, themeMode);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set theme mode", e);
         }
@@ -129,7 +129,7 @@ public class ThemePreferencesCache {
         try {
             this.themeId = themeId;
             // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, themeId);
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, themeId);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set theme ID", e);
         }
@@ -167,10 +167,23 @@ public class ThemePreferencesCache {
     public synchronized void setSizeTextNoteActivity(int size) {
         try {
             this.sizeTextNoteActivity = size;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, size);
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, size);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set size text note", e);
+        }
+    }
+
+    public float getUiFontScale() {
+        ensureInitialized();
+        return uiFontScale;
+    }
+
+    public synchronized void setUiFontScale(float value) {
+        try {
+            this.uiFontScale = value;
+            prefs.putFloat(PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, uiFontScale);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set Ui Font Scale note", e);
         }
     }
 
@@ -182,12 +195,12 @@ public class ThemePreferencesCache {
     public synchronized void setTypeFaceNoteActivity(String typeFace) {
         try {
             this.typeFaceNoteActivity = typeFace;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, typeFace);
+            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, typeFace);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set type font note note", e);
         }
     }
+
 
     /**
      * Set dynamic color with asynchronous persistence
@@ -195,8 +208,7 @@ public class ThemePreferencesCache {
     public synchronized void setDynamicColor(boolean enabled) {
         try {
             this.dynamicColor = enabled;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, enabled);
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, enabled);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set dynamic color", e);
         }
@@ -208,8 +220,7 @@ public class ThemePreferencesCache {
     public synchronized void setScreenProtection(boolean enabled) {
         try {
             this.screenProtection = enabled;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, enabled);
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, enabled);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set screen protection", e);
         }
@@ -221,8 +232,7 @@ public class ThemePreferencesCache {
     public synchronized void setExtendedEditor(boolean enabled) {
         try {
             this.extendedEditor = enabled;
-            // Use asynchronous put method to avoid UI blocking
-            PowerPreference.getDefaultFile().putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, enabled);
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, enabled);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set extended editor", e);
         }
@@ -236,11 +246,9 @@ public class ThemePreferencesCache {
      * Safe method with fallback for early calls before DI initialization
      */
     public void applyCurrentThemeMode() {
-        // Безпечна ініціалізація з fallback
         if (!initialized) {
-            // Fallback: читаємо безпосередньо з SharedPreferences без блокування UI
             try {
-                int fallbackThemeMode = PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+                int fallbackThemeMode = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
                 applyThemeModeInternal(fallbackThemeMode);
                 Log.d(TAG, "Applied fallback theme mode: " + fallbackThemeMode);
             } catch (Exception e) {

@@ -1,15 +1,9 @@
 package com.pasich.mynotes.data.preferences;
 
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_SORT;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE;
-import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE;
-
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
-import com.pasich.mynotes.data.model.backup.PreferencesBackup;
+import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-import com.preference.PowerPreference;
-import com.preference.Preference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -20,18 +14,15 @@ public class AppPreferencesHelper implements PreferenceHelper {
     private final AppPreferencesCache appCache;
 
     private final ThemePreferencesCache themeCache;
+    private final SafePreferences prefs;
 
     @Inject
-    AppPreferencesHelper(AppPreferencesCache appCache, ThemePreferencesCache themeCache) {
+    AppPreferencesHelper(AppPreferencesCache appCache, ThemePreferencesCache themeCache, SafePreferences prefs) {
+        this.prefs = prefs;
         this.appCache = appCache;
         this.themeCache = themeCache;
         this.appCache.initialize();
         this.themeCache.initialize();
-    }
-
-    @Override
-    public Preference getDefaultPreferences() {
-        return PowerPreference.getDefaultFile();
     }
 
 
@@ -68,17 +59,103 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     @Override
     public PreferencesBackup getListPreferences() {
-        return new PreferencesBackup(getFormatCount(), getTypeFaceNoteActivity(), getSortParam(), getSizeTextNoteActivity(), PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE), PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE), PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE));
+        return new PreferencesBackup(
+                // OLD FIELDS
+                getFormatCount(),
+                getTypeFaceNoteActivity(),
+                getSortParam(),
+                getSizeTextNoteActivity(),
+
+                prefs.getInt(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE
+                ),
+
+                prefs.getBoolean(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+                        PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE
+                ),
+
+                prefs.getInt(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE
+                ),
+
+                prefs.getBoolean(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                        PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE
+                ),
+                prefs.getBoolean(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
+                        PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE
+                ),
+
+                prefs.getBoolean(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR,
+                        PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE
+                ),
+
+                prefs.getFloat(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING,
+                        PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE
+                )
+        );
     }
+
 
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
-        if (preferences.isCreated()) {
-            getDefaultPreferences().putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, preferences.getFormatCount()).putString(ARGUMENT_PREFERENCE_TEXT_STYLE, preferences.getTypeFaceNoteActivity()).putString(ARGUMENT_PREFERENCE_SORT, preferences.getSortParam()).putInt(ARGUMENT_PREFERENCE_TEXT_SIZE, preferences.getSizeTextNote()).putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, preferences.getThemeValue()).putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, preferences.isDynamicTheme()).putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
 
+        if (preferences.isCreated()) {
+
+            // OLD FIELDS
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
+                    preferences.getFormatCount());
+
+            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE,
+                    preferences.getTypeFaceNoteActivity());
+
+            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
+                    preferences.getSortParam());
+
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE,
+                    preferences.getSizeTextNote());
+
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
+                    preferences.getThemeValue());
+
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+                    preferences.isDynamicTheme());
+
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                    preferences.getThemeMode());
+
+            prefs.putBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                    preferences.isImageOptimizationEnabled()
+            );
+
+            prefs.putBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
+                    preferences.isScreenProtection()
+            );
+
+            prefs.putBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR,
+                    preferences.isExtendedEditor()
+            );
+
+            prefs.putFloat(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING,
+                    preferences.getUiFontScale()
+            );
+
+            // Refresh caches
             appCache.refresh();
+            themeCache.refresh();
         }
     }
+
 
     @Override
     public String getTypeFaceNoteActivity() {

@@ -18,7 +18,8 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
         android:backgroundTint="?attr/colorSurfaceContainer"
-        android:padding="10dp">
+        android:padding="10dp"
+        app:strokeWidth="1dp">
 
 
         <LinearLayout
@@ -32,7 +33,7 @@
                 android:id="@+id/nameNote"
                 style="@style/itemNoteTitle"
                 android:text="@{Note.title}"
-                android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
+                android:visibility="@{Note.title.isEmpty() ? View.GONE : View.VISIBLE }"
                 tools:text="Title Note" />
 
             <TextView
@@ -40,6 +41,7 @@
                 style="@style/itemNotePreview"
                 android:maxLines="2"
                 android:text="@{Note.valuePreview}"
+                android:visibility="@{Note.valuePreview.isEmpty() ? View.GONE : View.VISIBLE }"
                 tools:text="Preview Note Check" />
 
             <LinearLayout
@@ -49,6 +51,27 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:visibility="@{Note.isAttachments() ? View.VISIBLE : View.GONE }"
+                    app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                    app:cardElevation="0dp"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small"
+                    app:strokeWidth="0dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="extended_editor"
+                        android:src="@drawable/ic_extended"
+                        app:tint="?attr/colorPrimary"
+                        tools:ignore="HardcodedText" />
+
+                </FrameLayout>
+
                 <TextView
                     android:id="@+id/dataNote"
                     style="@style/itemNotePreview"
@@ -57,28 +80,6 @@
                     app:dataNote="@{Note}"
                     tools:text="01.01.2025" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="15dp"
-                    android:layout_marginTop="0dp"
-                    android:visibility="@{Note.hasRichContent() ? View.VISIBLE : View.GONE }"
-                    app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-                    app:cardElevation="0dp"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Small"
-                    app:strokeWidth="0dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="2dp"
-                        android:text="Extended Editor"
-                        android:textColor="@color/chip_text_alpha"
-                        android:textSize="12sp"
-                        tools:ignore="HardcodedText" />
-
-                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 

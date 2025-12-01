@@ -18,7 +18,6 @@ public class DiffUtilNote extends DiffUtil.ItemCallback<Note> {
 
     @Override
     public boolean areItemsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
-        // Якщо один з елементів має ID = 0, порівнюємо за датою та вмістом
         if (oldItem.getId() == 0 || newItem.getId() == 0) {
             return oldItem.getDate() == newItem.getDate() && 
                    oldItem.getTitle().equals(newItem.getTitle()) &&

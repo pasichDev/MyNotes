@@ -1,9 +1,14 @@
 package com.pasich.mynotes.base.activity;
 
+import static com.pasich.mynotes.data.preferences.SafePreferences.raw;
+
+import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -11,7 +16,6 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -24,8 +28,6 @@ import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-import com.pasich.mynotes.utils.themes.ThemesArray;
-import com.preference.PowerPreference;
 
 import javax.inject.Inject;
 
@@ -36,22 +38,34 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     @Override
     public void selectTheme() {
-        // Безпечний виклик applyCurrentThemeMode з fallback
-        if (themePreferencesCache != null) {
-            themePreferencesCache.applyCurrentThemeMode();
-        } else {
-            // Fallback для раннього виклику до ініціалізації DI
-            applyThemeMode();
-        }
 
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
-        boolean isDynamicEnabled = (themePreferencesCache != null) ?
-                themePreferencesCache.isDynamicColorEnabled() :
-                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
+        // Темний/світлий режим
+        themePreferencesCache.applyCurrentThemeMode();
 
-        setTheme(isDynamicEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?
-                R.style.AppThemeDynamic : getSelectedTheme());
+        boolean isDynamicEnabled = themePreferencesCache.isDynamicColorEnabled();
+
+        setTheme(isDynamicEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? R.style.AppThemeDynamic : themePreferencesCache.getCurrentThemeStyle());
+
         applyScreenProtection();
+    }
+
+    @Override
+    protected void attachBaseContext(Context ctx) {
+        float scale = readUiFontScale(ctx);
+        Configuration config = new Configuration(ctx.getResources().getConfiguration());
+        if (scale != 0.0f) {
+            config.fontScale = scale;
+        } else {
+            config.fontScale = ctx.getResources().getConfiguration().fontScale;
+        }
+        config.densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE;
+        Context scaledContext = ctx.createConfigurationContext(config);
+        super.attachBaseContext(scaledContext);
+    }
+
+
+    private float readUiFontScale(Context ctx) {
+        return raw(ctx).getFloat(PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE);
     }
 
     @Override
@@ -62,7 +76,6 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     @Override
     protected void onDestroy() {
-        // Clear exit transition coordinator
         try {
             getWindow().setExitTransition(null);
             getWindow().setEnterTransition(null);
@@ -72,116 +85,51 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
             getWindow().setSharedElementEnterTransition(null);
             getWindow().setSharedElementReturnTransition(null);
             getWindow().setSharedElementReenterTransition(null);
-        } catch (Exception e) {
-            // Ignore exceptions during cleanup
+        } catch (Exception ignored) {
         }
         super.onDestroy();
     }
 
     private void applyScreenProtection() {
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
-        boolean isScreenProtectionEnabled = (themePreferencesCache != null) ?
-                themePreferencesCache.isScreenProtectionEnabled() :
-                PowerPreference.getDefaultFile().getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
-
-        if (isScreenProtectionEnabled) {
+        if (themePreferencesCache.isScreenProtectionEnabled()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
     }
 
-    /**
-     * Apply theme mode (light/dark/system)
-     */
-    private void applyThemeMode() {
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
-        int themeMode = (themePreferencesCache != null) ?
-                themePreferencesCache.getThemeMode() :
-                PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
-
-        switch (themeMode) {
-            case 0: // Follow System
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-            case 1: // Light
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                break;
-            case 2: // Dark
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
-            default:
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-        }
-    }
-
-    private int getSelectedTheme() {
-        // Безпечна перевірка для ранніх викликів до ініціалізації DI
-        int themeId = (themePreferencesCache != null) ?
-                themePreferencesCache.getThemeId() :
-                PowerPreference.getDefaultFile().getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
-
-        return new ThemesArray().getThemeStyle(themeId);
-    }
-
-    // Метод для ресурсов
     public void onInfoSnack(int resID, View view, int typeInfo, int time) {
         onInfoSnack(getString(resID), view, typeInfo, time);
     }
 
-    // Метод для готового рядка
     public void onInfoSnack(String message, View view, int typeInfo, int time) {
-        Snackbar snackbar = Snackbar.make(
-                view == null ? findViewById(android.R.id.content) : view,
-                message,
-                time
-        );
+        Snackbar snackbar = Snackbar.make(view == null ? findViewById(android.R.id.content) : view, message, time);
+
+        TextView snackbarTextView = snackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text);
 
         if (typeInfo != SnackBarInfo.Info) {
-            TextView snackbarTextView = snackbar.getView().findViewById(com.google.android.material.R.id.snackbar_text);
             snackbarTextView.setTypeface(snackbarTextView.getTypeface(), Typeface.BOLD);
         }
 
         switch (typeInfo) {
-            case SnackBarInfo.Info:
-                break;
             case SnackBarInfo.Success:
                 snackbar.setBackgroundTint(ContextCompat.getColor(this, R.color.successColorBackground));
                 snackbar.setActionTextColor(ContextCompat.getColor(this, R.color.successTextOnColor));
                 break;
             case SnackBarInfo.Error:
-                snackbar.setBackgroundTint(MaterialColors.getColor(this, R.attr.colorError, Color.DKGRAY));
-                snackbar.setActionTextColor(MaterialColors.getColor(this, R.attr.colorOnError, Color.GRAY));
+                snackbar.setBackgroundTint(MaterialColors.getColor(this, com.google.android.material.R.attr.colorErrorContainer, Color.DKGRAY));
+                snackbar.setActionTextColor(MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnError, Color.GRAY));
                 break;
-            default:
         }
 
         snackbar.show();
     }
 
-    /**
-     * Налаштовує відступи для кореневого view з урахуванням системних барів
-     * Викликайте цей метод після setContentView() у дочірніх Activity
-     */
     protected void setupEdgeToEdgeInsets(View rootView) {
         ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-
-            // Отримуємо відступи для системних барів
-            Insets systemBars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars()
-            );
-
-            // Встановлюємо padding тільки зверху та знизу
-            v.setPadding(
-                    v.getPaddingLeft(),
-                    systemBars.top,
-                    v.getPaddingRight(),
-                    systemBars.bottom
-            );
-
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), systemBars.bottom);
             return insets;
         });
     }
-
 }
