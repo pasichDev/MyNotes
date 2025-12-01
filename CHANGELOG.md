@@ -8,6 +8,7 @@
 - Added new screen displaying the list of application dependencies.
 - Added automatic optimization of uploaded images.
 - Added adaptive app icon, including a monochrome variant for Material You themed icons.
+- Incorrect processing of backups has been fixed and compatibility with previous versions has been improved.
 - Code review and optimization performed, obsolete and unnecessary functionality removed, known bugs
   fixed
 
