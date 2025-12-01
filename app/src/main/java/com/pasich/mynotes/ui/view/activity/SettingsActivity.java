@@ -212,7 +212,7 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     }
 
     private void applyTabColors() {
-        int colorPrimary = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
+        int colorPrimary = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimaryVariant, Color.GRAY);
         int colorOnSurfaceVariant = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
 
         tabLayout.setTabTextColors(colorOnSurfaceVariant, colorPrimary);

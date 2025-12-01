@@ -195,7 +195,7 @@ public class InterfaceSettingsFragment extends Fragment {
     private void applyThemeColors() {
         if (getContext() == null) return;
 
-        int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
+        int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryVariant, Color.GRAY);
         int colorOnSurface = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurface, Color.GRAY);
         int colorOnSurfaceVariant = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
         int colorSurfaceContainer = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorSurfaceContainer, Color.GRAY);
@@ -287,7 +287,7 @@ public class InterfaceSettingsFragment extends Fragment {
                         themeName.setTypeface(themeName.getTypeface(), android.graphics.Typeface.BOLD);
 
                         // Use primary color for selected text
-                        int primaryColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
+                        int primaryColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryVariant, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
                         themeName.setTextColor(primaryColor);
                     } else {
                         selectedIndicator.setVisibility(View.GONE);
@@ -353,7 +353,7 @@ public class InterfaceSettingsFragment extends Fragment {
 
             // Update icon color to match current theme
             if (getContext() != null) {
-                int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
+                int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryVariant, Color.GRAY);
                 binding.themeModeIcon.setImageTintList(ColorStateList.valueOf(colorPrimary));
             }
         }
@@ -392,7 +392,7 @@ public class InterfaceSettingsFragment extends Fragment {
                         themeModeName.setTypeface(themeModeName.getTypeface(), android.graphics.Typeface.BOLD);
 
                         // Use primary color for selected text
-                        int primaryColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
+                        int primaryColor = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryVariant, ContextCompat.getColor(getContext(), android.R.color.holo_blue_bright));
                         themeModeName.setTextColor(primaryColor);
                     } else {
                         selectedIndicator.setVisibility(View.GONE);
@@ -433,7 +433,7 @@ public class InterfaceSettingsFragment extends Fragment {
 
     private void applySliderColors(Slider slider) {
         int colorPrimary = MaterialColors.getColor(requireContext(),
-                com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
+                com.google.android.material.R.attr.colorPrimaryVariant, Color.GRAY);
 
         int colorOnSurfaceVariant = MaterialColors.getColor(requireContext(),
                 com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
