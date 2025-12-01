@@ -29,7 +29,7 @@ public class HelpActivity extends BaseActivity {
     @Named("NotesItemSpaceDecoration")
     public SpacesItemDecoration itemDecoration;
 
-    private final String actualVersionHelp = "2.3.39";
+    private final String actualVersionHelp = "2.4.41";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
