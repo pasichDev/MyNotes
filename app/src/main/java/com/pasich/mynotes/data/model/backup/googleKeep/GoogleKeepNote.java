@@ -2,7 +2,6 @@ package com.pasich.mynotes.data.model.backup.googleKeep;
 
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.deprecated.TrashNote;
 
 import java.util.List;
 
@@ -56,16 +55,17 @@ public class GoogleKeepNote {
     /**
      * Конвертує нотатку з Google Keep у формат застосунку
      */
-    public Note toAppNote() {
+    public Note toAppNotes() {
         Note note = new Note();
         long timestamp = userEditedTimestampUsec / 1000;
         return note.create(title, textContent, timestamp, getFirstLabel().getName());
     }
 
-    public TrashNote toAppTrashNote() {
-        TrashNote note = new TrashNote();
+    public Note toAppNotesTrash() {
+        Note note = new Note();
+        note.setTrash(true);
         long timestamp = userEditedTimestampUsec / 1000;
-        return note.create(title, textContent, timestamp);
+        return note.create(title, textContent, timestamp, getFirstLabel().getName());
     }
 }
 

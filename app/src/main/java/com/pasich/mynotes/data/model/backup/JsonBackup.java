@@ -1,5 +1,6 @@
 package com.pasich.mynotes.data.model.backup;
 
+
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -17,6 +18,7 @@ public class JsonBackup {
     private List<Note> notes;
 
     @SerializedName("c")
+    @Deprecated
     private List<TrashNote> trashNotes;
 
     @SerializedName("d")
@@ -24,6 +26,9 @@ public class JsonBackup {
 
     @SerializedName("e")
     private boolean errorCode = false;
+
+    @SerializedName("f")
+    private List<Note> newTrashNotes;
 
     public JsonBackup() {
         this.preferences = new PreferencesBackup();
@@ -37,21 +42,22 @@ public class JsonBackup {
         return this;
     }
 
-    public void setNotes(List<Note> notes) {
-        this.notes = notes;
-    }
-
-    public void setTrashNotes(List<TrashNote> trashNotes) {
-        this.trashNotes = trashNotes;
-    }
-
-
     public List<Note> getNotes() {
         return notes == null ? new ArrayList<>() : notes;
     }
 
+    public void setNotes(List<Note> notes) {
+        this.notes = notes;
+    }
+
+    @Deprecated
     public List<TrashNote> getTrashNotes() {
         return trashNotes == null ? new ArrayList<>() : trashNotes;
+    }
+
+    @Deprecated
+    public void setTrashNotes(List<TrashNote> trashNotes) {
+        this.trashNotes = trashNotes;
     }
 
     public List<Tag> getTags() {
@@ -62,12 +68,12 @@ public class JsonBackup {
         this.tags = tags;
     }
 
-    public void setPreferences(PreferencesBackup preferences) {
-        this.preferences = preferences;
-    }
-
     public PreferencesBackup getPreferences() {
         return preferences == null ? new PreferencesBackup() : preferences;
+    }
+
+    public void setPreferences(PreferencesBackup preferences) {
+        this.preferences = preferences;
     }
 
     public boolean isError() {
@@ -78,4 +84,33 @@ public class JsonBackup {
         this.errorCode = error;
         return this;
     }
+
+    public List<Note> getNewTrashNotes() {
+        return newTrashNotes == null ? new ArrayList<>() : newTrashNotes;
+    }
+
+    public void setNewTrashNotes(List<Note> newTrashNotes) {
+        this.newTrashNotes = newTrashNotes;
+    }
+
+    public List<Note> getTrashNotesUnified() {
+        // Якщо новий формат НЕ пустий — використовуємо його
+        if (newTrashNotes != null && !newTrashNotes.isEmpty()) {
+            return newTrashNotes;
+        }
+
+        // Якщо новий пустий, але є старий — значить бекап старий → треба конвертнути
+        if (trashNotes != null && !trashNotes.isEmpty()) {
+            List<Note> migrated = new ArrayList<>();
+
+            for (TrashNote old : trashNotes) {
+                migrated.add(old.toNote());
+            }
+            return migrated;
+        }
+
+        // Обидва пусті
+        return new ArrayList<>();
+    }
+
 }

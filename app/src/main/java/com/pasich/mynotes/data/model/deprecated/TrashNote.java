@@ -2,6 +2,7 @@ package com.pasich.mynotes.data.model.deprecated;
 
 
 import com.google.gson.annotations.SerializedName;
+import com.pasich.mynotes.data.model.Note;
 
 @Deprecated
 public class TrashNote {
@@ -65,5 +66,20 @@ public class TrashNote {
         this.date = date;
     }
 
+    public Note toNote() {
+        Note note = new Note();
+
+        note.setTitle(this.title);      // назва
+        note.setValue(this.value);      // текст
+        note.setDate(this.date);        // дата створення
+
+        note.setTag("");                // старий формат не мав тегів
+        note.setValueJson("");          // у старому форматі їх не було
+        note.setAttachments(null);      // старий формат не мав вкладень
+
+        note.setTrash(true);            // ключове: це ТРАШ-нота у новому форматі
+
+        return note;
+    }
 
 }

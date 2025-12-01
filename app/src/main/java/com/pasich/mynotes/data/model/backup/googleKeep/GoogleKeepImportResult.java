@@ -2,7 +2,6 @@ package com.pasich.mynotes.data.model.backup.googleKeep;
 
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.deprecated.TrashNote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +34,7 @@ public class GoogleKeepImportResult {
     public List<GoogleKeepNote> getTrashedNotes() {
         return trashedNotes;
     }
+
     public List<GoogleKeepLabel> getLabels() {
         return labels;
     }
@@ -55,16 +55,16 @@ public class GoogleKeepImportResult {
     public List<Note> toAppNotes() {
         List<Note> appNotes = new ArrayList<>();
         for (GoogleKeepNote note : notes) {
-            appNotes.add(note.toAppNote());
+            appNotes.add(note.toAppNotes());
         }
         return appNotes;
     }
 
     // Конвертація видалених нотаток у рідні
-    public List<TrashNote> toAppTrashedNotes() {
-        List<TrashNote> appNotes = new ArrayList<>();
+    public List<Note> toAppTrashedNotes() {
+        List<Note> appNotes = new ArrayList<>();
         for (GoogleKeepNote note : trashedNotes) {
-            appNotes.add(note.toAppTrashNote());
+            appNotes.add(note.toAppNotesTrash());
         }
         return appNotes;
     }
