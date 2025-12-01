@@ -8,10 +8,10 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.utils.backup.models.JsonBackup;
-import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
+import com.pasich.mynotes.utils.backup.models.JsonBackup;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.utils.backup.otherApp.GoogleKeepImportService;
 import com.pasich.mynotes.utils.constants.CloudErrors;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
@@ -149,10 +149,13 @@ public class BackupPresenter extends BasePresenter<BackupContract.view> implemen
                 ))
                 .subscribeOn(getSchedulerProvider().io())
                 .observeOn(getSchedulerProvider().ui())
-                .subscribe(() -> getView().restoreFinish(CloudErrors.OKAY_RESTORE), throwable -> {
-                    Log.e("BackupRestore", "Error restore: " + throwable.getMessage(), throwable);
-                    getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
-                }));
+                .subscribe(() -> {
+                            getView().onRestoreSuccessFlag();
+                            getView().restoreFinish(CloudErrors.OKAY_RESTORE);
+                        }, throwable -> {
+                            Log.e("BackupRestore", "Error restore: " + throwable.getMessage(), throwable);
+                            getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
+                        }));
     }
 
 

@@ -42,6 +42,9 @@ public interface BackupContract {
         void setupImportCallbackOtherApp(GoogleKeepImportResult result);
 
         void processSelectedFileOtherApp(Uri fileUri);
+
+        void onRestoreSuccessFlag();
+
     }
 
 
@@ -63,6 +66,7 @@ public interface BackupContract {
         void importFromZipOtherApp(Uri fileUri);
 
         void startProcessSelectedFileOtherApp(Uri fileUri);
+
 
     }
 }

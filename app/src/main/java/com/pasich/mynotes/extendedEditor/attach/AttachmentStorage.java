@@ -23,7 +23,7 @@ public class AttachmentStorage {
 
     public static final long MAX_FILE_SIZE = 20L * 1024 * 1024; // 20 MB
     public static final long MIN_FREE_SPACE = 500L * 1024 * 1024; // 500 MB
-    public static final String BASE_DIR = "attachments";
+    public static final String ATTACHMENTS_BASE_DIR = "attachments";
     private static final String TAG = "AttachmentStorage";
 
     /**
@@ -97,7 +97,7 @@ public class AttachmentStorage {
      * /data/data/<package>/files/attachments
      */
     private static File baseDir(Context ctx) {
-        File dir = new File(ctx.getFilesDir(), BASE_DIR);
+        File dir = new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR);
         if (!dir.exists()) dir.mkdirs();
         return dir;
     }
@@ -205,7 +205,7 @@ public class AttachmentStorage {
             String folder = seg.get(0);
             String name = seg.get(1);
 
-            return new File(new File(ctx.getFilesDir(), BASE_DIR), folder + "/" + name);
+            return new File(new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR), folder + "/" + name);
 
         } catch (Exception e) {
             return null;
@@ -233,7 +233,7 @@ public class AttachmentStorage {
 
     public static long getTotalAttachmentsSize(Context ctx) {
         long total = 0;
-        File base = new File(ctx.getFilesDir(), BASE_DIR);
+        File base = new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR);
 
         if (!base.exists()) return 0;
 

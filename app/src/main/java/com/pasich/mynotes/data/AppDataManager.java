@@ -272,8 +272,4 @@ public class AppDataManager implements DataManager {
         return apiBackup.readBackupLocalFile(uriLocalFile);
     }
 
-    @Override
-    public File writeTempBackup(JsonBackup jsonBackup) {
-        return apiBackup.writeTempBackup(jsonBackup);
-    }
 }

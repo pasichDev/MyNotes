@@ -1,7 +1,7 @@
 package com.pasich.mynotes.extendedEditor.utils;
 
 
-import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.BASE_DIR;
+import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.ATTACHMENTS_BASE_DIR;
 import static com.pasich.mynotes.extendedEditor.utils.EditorJsScheme.EDITORJS_SCHEME;
 
 import android.content.Context;
@@ -179,7 +179,7 @@ public class EditorJSInterface {
         if (saved == null) return "";
         return new Uri.Builder()
                 .scheme(EDITORJS_SCHEME)
-                .authority(BASE_DIR)
+                .authority(ATTACHMENTS_BASE_DIR)
                 .appendPath("note_" + noteId)
                 .appendPath(saved.getName())
                 .build()

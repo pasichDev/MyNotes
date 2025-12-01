@@ -366,6 +366,7 @@
     <string name="font_size_l">Large</string>
     <string name="font_size_xl">Extra Large</string>
     <string name="delete">Delete</string>
+    <string name="file_wrong_format">Unsupported file format. Please select a valid backup file.</string>
     <string name="error_dialog_wrong_context">Error: I can\'t open this menu here</string>
     <string name="export_warning_no_attachments">Please note: only text content is saved during export. Files, photos, and other attachments are omitted to ensure that the exported document is lightweight, convenient, and error-free when opened.</string>
 

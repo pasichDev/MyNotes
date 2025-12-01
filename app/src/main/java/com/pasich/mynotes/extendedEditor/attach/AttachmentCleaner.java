@@ -1,6 +1,6 @@
 package com.pasich.mynotes.extendedEditor.attach;
 
-import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.BASE_DIR;
+import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.ATTACHMENTS_BASE_DIR;
 
 import android.content.Context;
 import android.util.Log;
@@ -96,7 +96,7 @@ public class AttachmentCleaner {
             }
 
             // folder
-            File folder = new File(new File(ctx.getFilesDir(), BASE_DIR), "note_" + noteId);
+            File folder = new File(new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR), "note_" + noteId);
             if (!folder.exists() || !folder.isDirectory()) {
                 d("No folder → nothing to clean");
                 return;
@@ -122,7 +122,7 @@ public class AttachmentCleaner {
 
     public static void deleteAttachmentFolderByNoteId(Context ctx, long noteId) {
         try {
-            File base = new File(ctx.getFilesDir(), BASE_DIR);
+            File base = new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR);
             File folder = new File(base, "note_" + noteId);
 
             if (!folder.exists()) {

@@ -1,5 +1,10 @@
 package com.pasich.mynotes.ui.view.activity;
 
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_FONT_SCALE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_MODE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE_THEME_UPDATE;
+
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -144,25 +149,25 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
 
         if (themeIdStartActivity != currentThemeId) {
             int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
-            setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
+            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, themeStyle));
         }
 
         if (themeDynamicStartActivity != enableDynamicColor) {
             if (enableDynamicColor) {
-                setResult(11, new Intent().putExtra("updateThemeStyle", R.style.AppThemeDynamic));
+                setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, R.style.AppThemeDynamic));
             } else {
                 int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
-                setResult(11, new Intent().putExtra("updateThemeStyle", themeStyle));
+                setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, themeStyle));
             }
         }
 
         if (themeModeStartActivity != currentThemeMode) {
             // Theme mode changed, trigger recreation
-            setResult(11, new Intent().putExtra("updateThemeMode", true));
+            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_MODE, true));
         }
 
         if (fontScaleWasChanged != -0.2f) {
-            setResult(11, new Intent().putExtra("updateFontScale", true));
+            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_FONT_SCALE, true));
         }
 
         supportFinishAfterTransition();

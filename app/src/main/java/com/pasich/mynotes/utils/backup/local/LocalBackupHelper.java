@@ -13,7 +13,4 @@ public interface LocalBackupHelper {
 
     JsonBackup readBackupLocalFile(Uri uriLocalFile);
 
-    File writeTempBackup(JsonBackup jsonBackup);
-
-
 }

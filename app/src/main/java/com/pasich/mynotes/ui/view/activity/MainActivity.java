@@ -2,6 +2,9 @@ package com.pasich.mynotes.ui.view.activity;
 
 
 import static android.view.View.VISIBLE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_FONT_SCALE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_MODE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -91,14 +94,16 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
     private static final int REQUEST_UPDATE = 100;
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
-    final private ActivityResultLauncher<Intent> startSettingsActivity = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+
+    // Update theme listener
+    final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         Intent data = result.getData();
         if (result.getResultCode() == 11) {
             assert data != null;
-            if (data.getBooleanExtra("updateThemeMode", false) || data.getBooleanExtra("updateFontScale", false)) {
+            if (data.getBooleanExtra(EXTRA_UPDATE_THEME_MODE, false) || data.getBooleanExtra(EXTRA_UPDATE_FONT_SCALE, false)) {
                 recreate();
             } else {
-                this.redrawActivity(data.getIntExtra("updateThemeStyle", 0));
+                this.redrawActivity(data.getIntExtra(EXTRA_UPDATE_THEME_STYLE, 0));
             }
         }
     });
@@ -900,12 +905,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         }, 100));
 
         // Налаштування / управління
-        headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startSettingsActivity.launch(new Intent(this, SettingsActivity.class)), 100));
+        headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, SettingsActivity.class)), 100));
 
-        headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, BackupActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, BackupActivity.class)), 100));
 
         // About з описом
         headerView.findViewById(R.id.nav_about).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
