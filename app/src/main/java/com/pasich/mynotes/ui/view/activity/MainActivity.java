@@ -894,15 +894,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         drawerLayout.closeDrawer(GravityCompat.START);
         // Основні кнопки
-        headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startTagsActivity.launch(new Intent(this, TagsActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startTagsActivity.launch(new Intent(this, TagsActivity.class)), 100));
 
-        headerView.findViewById(R.id.nav_trash).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, TrashActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_trash).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, TrashActivity.class)), 100));
 
         // Налаштування / управління
         headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, SettingsActivity.class)), 100));
@@ -910,26 +904,17 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, BackupActivity.class)), 100));
 
         // About з описом
-        headerView.findViewById(R.id.nav_about).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            startActivity(new Intent(this, AboutActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        }, 100));
+        headerView.findViewById(R.id.nav_about).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, AboutActivity.class)), 100));
 
         // Support кнопка
         View navSupport = headerView.findViewById(R.id.nav_support);
         if (navSupport != null) {
-            navSupport.setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                startActivity(new Intent(this, SupportActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100));
+            navSupport.setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, SupportActivity.class)), 100));
         }
 
         // Нова версія додатку
         if (updateChecker.hasNewVersion()) {
-            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                openChangelogActivity();
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            }, 100));
+            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(this::openChangelogActivity, 100));
             headerView.findViewById(R.id.newVersion).setVisibility(VISIBLE);
         }
     }
