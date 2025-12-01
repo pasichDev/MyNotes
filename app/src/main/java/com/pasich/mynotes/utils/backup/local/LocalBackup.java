@@ -7,9 +7,9 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import com.pasich.mynotes.data.model.backup.JsonBackup;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.ScramblerBackupHelper;
+import com.pasich.mynotes.utils.backup.models.JsonBackup;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -28,12 +28,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @Singleton
 public class LocalBackup implements LocalBackupHelper {
+
+    private static final String TAG = "LocalBackup";
     private final Context mContext;
 
     @Inject
     public LocalBackup(@ApplicationContext Context context) {
         this.mContext = context;
     }
+
     @Override
     public boolean writeBackupLocalFile(BackupCacheHelper serviceCache, Uri uriLocalFile) {
         if (!checkServiceCache(serviceCache)) return false;
@@ -44,7 +47,7 @@ public class LocalBackup implements LocalBackupHelper {
                     .getBytes(StandardCharsets.UTF_8));
             return true;
         } catch (IOException e) {
-            Log.e("LocalBackup", "Failed to write backup file", e);
+            Log.e(TAG, "Failed to write backup file", e);
             return false;
         }
     }
@@ -62,7 +65,7 @@ public class LocalBackup implements LocalBackupHelper {
 
             return ScramblerBackupHelper.decodeString(jsonFile.toString());
         } catch (Exception e) {
-            Log.e("LocalBackup", "Failed to read backup file", e);
+            Log.e(TAG, "Failed to read backup file", e);
             return new JsonBackup().error();
         }
     }
@@ -74,7 +77,7 @@ public class LocalBackup implements LocalBackupHelper {
             bw.write(ScramblerBackupHelper.encodeString(jsonBackup));
             return backupTemp;
         } catch (IOException e) {
-            Log.e("LocalBackup", "Failed to write temp file", e);
+            Log.e(TAG, "Failed to write temp file", e);
             return null;
         }
     }

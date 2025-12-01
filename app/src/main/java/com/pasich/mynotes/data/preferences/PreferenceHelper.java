@@ -1,7 +1,7 @@
 package com.pasich.mynotes.data.preferences;
 
 
-import com.pasich.mynotes.data.model.backup.PreferencesBackup;
+import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 
 
 public interface PreferenceHelper {

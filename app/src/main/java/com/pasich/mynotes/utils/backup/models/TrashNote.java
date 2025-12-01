@@ -1,9 +1,19 @@
-package com.pasich.mynotes.data.model.deprecated;
+package com.pasich.mynotes.utils.backup.models;
 
 
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
 
+/**
+ * Legacy TrashNote model.
+ *
+ * <p>This class is kept only for backward compatibility with
+ * old backup files created before the introduction of "isTrash"
+ * field inside the Note model.</p>
+ *
+ * <p>Once support for old backups is no longer needed,
+ * this class can be safely removed.</p>
+ */
 @Deprecated
 public class TrashNote {
 
@@ -66,18 +76,24 @@ public class TrashNote {
         this.date = date;
     }
 
+    /**
+     * Converts this legacy TrashNote into a modern Note object
+     * using the new unified "isTrash" flag.
+     */
     public Note toNote() {
         Note note = new Note();
 
-        note.setTitle(this.title);      // назва
-        note.setValue(this.value);      // текст
-        note.setDate(this.date);        // дата створення
+        note.setTitle(this.title);
+        note.setValue(this.value);
+        note.setDate(this.date);
 
-        note.setTag("");                // старий формат не мав тегів
-        note.setValueJson("");          // у старому форматі їх не було
-        note.setAttachments(null);      // старий формат не мав вкладень
+        // Legacy backups didn't contain these fields
+        note.setTag("");
+        note.setValueJson("");
+        note.setAttachments(null);
 
-        note.setTrash(true);            // ключове: це ТРАШ-нота у новому форматі
+        // Important: mark migrated notes as trash in the new format
+        note.setTrash(true);
 
         return note;
     }

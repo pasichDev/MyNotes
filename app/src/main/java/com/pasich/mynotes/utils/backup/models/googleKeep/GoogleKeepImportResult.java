@@ -1,4 +1,4 @@
-package com.pasich.mynotes.data.model.backup.googleKeep;
+package com.pasich.mynotes.utils.backup.models.googleKeep;
 
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;

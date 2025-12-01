@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.pasich.mynotes.data.model.backup.googleKeep.GoogleKeepImportResult;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.databinding.DialogOtherAppImportBinding;
 
 public class OtherAppImportDialog extends BottomSheetDialogFragment {

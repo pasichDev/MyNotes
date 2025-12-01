@@ -1,10 +1,9 @@
-package com.pasich.mynotes.data.model.backup;
+package com.pasich.mynotes.utils.backup.models;
 
 
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.data.model.deprecated.TrashNote;
 
 import java.util.ArrayList;
 import java.util.List;
