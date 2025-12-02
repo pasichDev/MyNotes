@@ -9,7 +9,7 @@ apply from: "$projectDir/gradle/libs-task.gradle"
 apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
-def appVersionCode = 41
+def appVersionCode = 42
 def appVersionName = "2.4.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {

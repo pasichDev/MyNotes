@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## [2.4.41] - XX.XX.XXXX
+## [2.4.42] - XX.XX.XXXX
+
+## [2.4.41] - 01.12.2025
 
 - **Advanced editor:** added full support for inserting images into notes.
 - **Advanced editor:** added the ability to attach files to notes (up to 20 MB).
