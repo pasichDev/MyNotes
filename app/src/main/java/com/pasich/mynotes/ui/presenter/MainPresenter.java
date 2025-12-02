@@ -37,7 +37,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void viewIsReady() {
-        getView().settingsSearchView();
         getView().settingsLists();
         loadingData();
         getView().initListeners();

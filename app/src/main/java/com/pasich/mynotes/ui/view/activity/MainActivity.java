@@ -11,11 +11,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.Editable;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
@@ -23,7 +21,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -38,7 +35,6 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.search.SearchView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -48,13 +44,13 @@ import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
-import com.pasich.mynotes.base.simplifications.TextWatcher;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
+import com.pasich.mynotes.ui.controllers.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
@@ -93,7 +89,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
     private static final int REQUEST_UPDATE = 100;
-    private final Handler searchHandler = new Handler(Looper.getMainLooper());
 
     // Update theme listener
     final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -143,9 +138,20 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     ThemePreferencesCache themePreferencesCache;
 
+    private AppUpdateManager appUpdateManager;
+    private int previousNotesCount = 0;
     // Navigation Drawer variables
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+
+    /**
+     * New CODE
+     */
+    private SearchController searchController;
+
+
+
+
     private final ActivityResultLauncher<Intent> changelogLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     result -> {
@@ -154,9 +160,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                             navigationView.getHeaderView(0).findViewById(R.id.newVersion).setVisibility(hasNewVersion ? VISIBLE : View.GONE);
                         }
                     });
-    private AppUpdateManager appUpdateManager;
-    private int previousNotesCount = 0;
-    private Runnable searchRunnable;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -198,6 +202,28 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         handleShortcuts(getIntent());
         checkAppUpdateAndShowChangelog();
+
+
+        /**
+         * NEWW
+         */
+
+        searchController = new SearchController(
+                mActivityBinding,
+                searchNotesAdapter,
+                new SearchController.Listener() {
+                    @Override
+                    public void onSearchOpen() {
+                        mActivityBinding.listNotes.setNestedScrollingEnabled(false);
+                    }
+
+                    @Override
+                    public void onSearchClose() {
+                        mActivityBinding.listNotes.setNestedScrollingEnabled(true);
+                    }
+                }
+        );
+
     }
 
     @Override
@@ -228,14 +254,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (searchHandler != null && searchRunnable != null) {
-            searchHandler.removeCallbacks(searchRunnable);
-            searchRunnable = null;
-        }
+        searchController.destroy();
+
         if (isDestroyed()) {
             mainPresenter.detachView();
             variablesNull();
-
         }
     }
 
@@ -296,36 +319,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void initListeners() {
         mActivityBinding.actionSearch.setOnClickListener(v -> mActivityBinding.searchView.show());
 
-        mActivityBinding.searchView.addTransitionListener((searchView, previousState, newState) -> {
-            if (newState == SearchView.TransitionState.SHOWING) {
-                mActivityBinding.listNotes.setNestedScrollingEnabled(false);
-                ensureSearchViewFullScreen();
-            } else if (newState == SearchView.TransitionState.HIDDEN) {
-                mActivityBinding.listNotes.setNestedScrollingEnabled(true);
-            }
-        });
-
         searchNotesAdapter.setItemClickListener(this::openNoteEdit);
-        mActivityBinding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
-            @Override
-            protected void changeText(Editable s) {
-                // Відміняємо попередній запуск
-                if (searchRunnable != null) {
-                    searchHandler.removeCallbacks(searchRunnable);
-                }
-
-                searchRunnable = () -> {
-                    if (s.length() >= 2) {
-                        searchNotesAdapter.filter(s.toString());
-                    } else {
-                        searchNotesAdapter.cleanResult();
-                    }
-                };
-
-                // Запускаємо з затримкою 400ms
-                searchHandler.postDelayed(searchRunnable, 400);
-            }
-        });
 
         mActivityBinding.actionSearch.setOnMenuItemClickListener(menuItem -> {
             int idItem = menuItem.getItemId();
@@ -401,46 +395,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     @Override
-    public void settingsSearchView() {
-        formatList.init(mActivityBinding.actionSearch.getMenu().findItem(R.id.format));
-        setupSearchBarAndView();
-    }
-
-    private void setupSearchBarAndView() {
-        try {
-            mActivityBinding.actionSearch.setHint(getString(R.string.search));
-
-            // Програмно налаштовуємо зв'язок без layout_anchor для повноекранного режиму
-            mActivityBinding.searchView.setupWithSearchBar(mActivityBinding.actionSearch);
-
-            // Переконуємося, що SearchView займає весь екран
-            ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
-            if (params instanceof CoordinatorLayout.LayoutParams coordinatorParams) {
-                // Видаляємо будь-які anchor behavior, щоб SearchView був повноекранним
-                coordinatorParams.setAnchorId(View.NO_ID);
-                coordinatorParams.setBehavior(null);
-
-                mActivityBinding.searchView.setLayoutParams(coordinatorParams);
-            }
-        } catch (Exception e) {
-            Log.e("SearchSetup", "Error setting up SearchBar and SearchView: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Забезпечує повноекранний режим для SearchView
-     */
-    private void ensureSearchViewFullScreen() {
-        ViewGroup.LayoutParams params = mActivityBinding.searchView.getLayoutParams();
-        if (params != null) {
-            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
-            mActivityBinding.searchView.setLayoutParams(params);
-            mActivityBinding.searchView.requestLayout();
-        }
-    }
-
-    @Override
     public void settingsLists() {
         mActivityBinding.listTags.addItemDecoration(itemDecorationTags);
         mActivityBinding.listTags.setLayoutManager(mLinearLayoutManager);
@@ -455,9 +409,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
         mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
 
-        // Додаткові налаштування для результатів пошуку в повноекранному SearchView
-        mActivityBinding.resultsSearchList.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        mActivityBinding.resultsSearchList.setNestedScrollingEnabled(true);
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean isItemViewSwipeEnabled() {
@@ -513,7 +464,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             showEmptyNotes(!(countNotes >= 1));
         }
 
-        searchNotesAdapter.setDefaultListNotes(noteList);
+        searchController.setDefaultNotesList(noteList);
     }
 
     @Override

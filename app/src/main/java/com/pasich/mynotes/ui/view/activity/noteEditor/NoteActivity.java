@@ -252,7 +252,6 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     @Override
     public void onStop() {
         super.onStop();
-
         // CRITICAL: Emergency saving when stopping Activity
         if (notePresenter != null && notePresenter.getNote() != null) {
             String currentTitle = binding != null ? binding.notesTitle.getText().toString() : "";
