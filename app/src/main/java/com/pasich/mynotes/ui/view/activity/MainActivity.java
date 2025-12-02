@@ -32,16 +32,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
-import com.google.android.play.core.appupdate.AppUpdateInfo;
-import com.google.android.play.core.appupdate.AppUpdateManager;
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
-import com.google.android.play.core.install.model.AppUpdateType;
-import com.google.android.play.core.install.model.UpdateAvailability;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
@@ -50,11 +44,11 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
+import com.pasich.mynotes.ui.controllers.AppUpdateController;
 import com.pasich.mynotes.ui.controllers.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
-import com.pasich.mynotes.ui.view.dialogs.UpdateChangelogDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
@@ -88,7 +82,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
-    private static final int REQUEST_UPDATE = 100;
 
     // Update theme listener
     final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -138,7 +131,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     ThemePreferencesCache themePreferencesCache;
 
-    private AppUpdateManager appUpdateManager;
     private int previousNotesCount = 0;
     // Navigation Drawer variables
     private DrawerLayout drawerLayout;
@@ -148,8 +140,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
      * New CODE
      */
     private SearchController searchController;
-
-
+    private AppUpdateController appUpdateController;
 
 
     private final ActivityResultLauncher<Intent> changelogLauncher =
@@ -175,34 +166,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
-
-        // Ініціалізуємо перевірку версій
-        updateChecker.initializeVersionCheck();
         actionUtils.setMangerView(mActivityBinding.getRoot());
-
-        // Ініціалізуйте AppUpdateManager
-        appUpdateManager = AppUpdateManagerFactory.create(this);
-
-        // Перевірте доступність оновлення
-        checkForUpdate();
-
-        // Ініціалізуємо Navigation Drawer
-        setupNavigationDrawer();
-
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    setEnabled(finishActivity());
-                }
-            }
-        });
-
-        handleShortcuts(getIntent());
-        checkAppUpdateAndShowChangelog();
-
 
         /**
          * NEWW
@@ -223,6 +187,30 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     }
                 }
         );
+        appUpdateController = new AppUpdateController(
+                this,
+                updateChecker,
+                changelogLauncher
+        );
+        appUpdateController.showChangelogIfNeeded();
+
+        // Ініціалізуємо Navigation Drawer
+        setupNavigationDrawer();
+
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    setEnabled(finishActivity());
+                }
+            }
+        });
+
+        handleShortcuts(getIntent());
+
+
 
     }
 
@@ -265,31 +253,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     protected void onResume() {
         super.onResume();
-        appUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                startUpdateFlow(appUpdateInfo);
-            }
-        });
-    }
-
-    private void checkForUpdate() {
-        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
-        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-            Log.d("AppUpdate", "Update availability: " + appUpdateInfo.updateAvailability());
-
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
-                startUpdateFlow(appUpdateInfo);
-            }
-        }).addOnFailureListener(e -> Log.d("AppUpdate", "Error checking for updates: " + e.getMessage()));
-
-    }
-
-    private void startUpdateFlow(AppUpdateInfo appUpdateInfo) {
-        try {
-            appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.IMMEDIATE, this, REQUEST_UPDATE);
-        } catch (Exception e) {
-            Log.d("AppUpdate", "Unable to start the update: " + e.getMessage());
-        }
+        appUpdateController.handleOnResume();
     }
 
     @Override
@@ -864,10 +828,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         }
 
         // Нова версія додатку
-        if (updateChecker.hasNewVersion()) {
-            headerView.findViewById(R.id.newVersion).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(this::openChangelogActivity, 100));
-            headerView.findViewById(R.id.newVersion).setVisibility(VISIBLE);
-        }
+        appUpdateController.bindHeaderNewVersion(headerView);
+
     }
 
     /**
@@ -883,17 +845,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
             return insets;
         });
-    }
-
-    /**
-     * Show changelog dialog if app was updated to a newer version.
-     */
-    private void checkAppUpdateAndShowChangelog() {
-        if (updateChecker.hasNewVersion()) {
-            UpdateChangelogDialog.newInstance()
-                    .show(getSupportFragmentManager(), "UpdateChangelogDialog");
-        }
-
     }
 
 
