@@ -22,8 +22,7 @@ import com.pasich.mynotes.base.simplifications.TextWatcher;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
-import com.pasich.mynotes.ui.view.dialogs.note.LinkInfoDialog;
-import com.pasich.mynotes.utils.CustomLinkMovementMethod;
+import com.pasich.mynotes.utils.linkMovement.CustomLinkMovementMethod;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -356,17 +355,8 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         binding.notesTitle.setText(title != null && !title.isEmpty() ? title : "");
 
         binding.valueNote.setText(value != null ? value : "");
+        binding.valueNote.setMovementMethod(CustomLinkMovementMethod.getInstance());
 
-        binding.valueNote.setMovementMethod(new CustomLinkMovementMethod() {
-            @Override
-            protected void onClickLink(String link, int type) {
-                if (link != null) {
-                    link = link.replace("mailto:", "").replace("tel:", "");
-                    new LinkInfoDialog(link, type)
-                            .show(getSupportFragmentManager(), "LinkInfoDialog");
-                }
-            }
-        });
 
         String formattedDate = getString(
                 R.string.lastDateEditNote,
