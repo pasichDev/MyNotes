@@ -12,20 +12,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.core.graphics.Insets;
-import androidx.core.view.GravityCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,7 +26,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
@@ -45,6 +37,7 @@ import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.controllers.AppUpdateController;
+import com.pasich.mynotes.ui.controllers.NavigationController;
 import com.pasich.mynotes.ui.controllers.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
@@ -132,15 +125,13 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     ThemePreferencesCache themePreferencesCache;
 
     private int previousNotesCount = 0;
-    // Navigation Drawer variables
-    private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
 
     /**
      * New CODE
      */
     private SearchController searchController;
     private AppUpdateController appUpdateController;
+    private NavigationController navigationController;
 
 
     private final ActivityResultLauncher<Intent> changelogLauncher =
@@ -148,7 +139,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                     result -> {
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             boolean hasNewVersion = updateChecker.hasNewVersion();
-                            navigationView.getHeaderView(0).findViewById(R.id.newVersion).setVisibility(hasNewVersion ? VISIBLE : View.GONE);
+                            if (navigationController != null)
+                                navigationController.updateNewVersionIndicator(hasNewVersion);
                         }
                     });
 
@@ -161,16 +153,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         selectTheme();
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
-
-        setupEdgeToEdgeForDrawer();
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
         actionUtils.setMangerView(mActivityBinding.getRoot());
 
-        /**
-         * NEWW
-         */
 
         searchController = new SearchController(
                 mActivityBinding,
@@ -194,55 +181,41 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         );
         appUpdateController.showChangelogIfNeeded();
 
-        // Ініціалізуємо Navigation Drawer
-        setupNavigationDrawer();
-
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    setEnabled(finishActivity());
-                }
-            }
-        });
-
-        handleShortcuts(getIntent());
+        navigationController = new NavigationController(
+                this,
+                mActivityBinding,
+                startTagsActivity,
+                themeUpdateListener,
+                appUpdateController,
+                this::finishActivity
+        );
 
 
+        navigationController.init();
 
+        navigationController.handleShortcuts(getIntent());
     }
 
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        handleShortcuts(intent);
+        navigationController.handleShortcuts(intent);
     }
 
-    /**
-     * Обробка App Shortcuts
-     */
-    private void handleShortcuts(Intent intent) {
-        if (intent != null) {
-            // Обробка пошукового shortcuts
-            if (intent.getBooleanExtra("open_search", false)) {
-
-                // Відкриваємо пошук з невеликою затримкою після створення активності
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    if (mActivityBinding != null) {
-                        mActivityBinding.searchView.show();
-                    }
-                }, 100);
-            }
-        }
-    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        searchController.destroy();
+        if (navigationController != null) {
+            navigationController.destroy();
+            navigationController = null;
+        }
+
+        if (searchController != null) {
+            searchController.destroy();
+            searchController = null;
+        }
 
         if (isDestroyed()) {
             mainPresenter.detachView();
@@ -768,84 +741,5 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         changelogLauncher.launch(new Intent(this, ChangelogActivity.class));
 
     }
-
-
-    /**
-     * Налаштування Navigation Drawer
-     */
-    private void setupNavigationDrawer() {
-        drawerLayout = mActivityBinding.drawerLayout;
-        navigationView = mActivityBinding.navigationView;
-
-        // Налаштовуємо burger іконку для відкриття drawer
-        mActivityBinding.actionSearch.setNavigationOnClickListener(v -> {
-            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                drawerLayout.closeDrawer(GravityCompat.START);
-            } else {
-                drawerLayout.openDrawer(GravityCompat.START);
-            }
-        });
-
-        // Налаштовуємо menu click listener для Navigation Drawer
-        navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
-
-        // Налаштування listeners для header Navigation Drawer
-        setupNavigationHeaderListeners();
-    }
-
-    /**
-     * Обробка кліків по пунктах меню Navigation Drawer
-     */
-    private boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    /**
-     * Налаштування listeners для header Navigation Drawer
-     */
-    private void setupNavigationHeaderListeners() {
-        View headerView = navigationView.getHeaderView(0);
-
-        drawerLayout.closeDrawer(GravityCompat.START);
-        // Основні кнопки
-        headerView.findViewById(R.id.nav_tags).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startTagsActivity.launch(new Intent(this, TagsActivity.class)), 100));
-
-        headerView.findViewById(R.id.nav_trash).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, TrashActivity.class)), 100));
-
-        // Налаштування / управління
-        headerView.findViewById(R.id.nav_settings).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, SettingsActivity.class)), 100));
-
-        headerView.findViewById(R.id.nav_backups).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> themeUpdateListener.launch(new Intent(this, BackupActivity.class)), 100));
-
-        // About з описом
-        headerView.findViewById(R.id.nav_about).setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, AboutActivity.class)), 100));
-
-        // Support кнопка
-        View navSupport = headerView.findViewById(R.id.nav_support);
-        if (navSupport != null) {
-            navSupport.setOnClickListener(v -> new Handler(Looper.getMainLooper()).postDelayed(() -> startActivity(new Intent(this, SupportActivity.class)), 100));
-        }
-
-        // Нова версія додатку
-        appUpdateController.bindHeaderNewVersion(headerView);
-
-    }
-
-    /**
-     * Налаштовує Edge-to-Edge для DrawerLayout
-     */
-    private void setupEdgeToEdgeForDrawer() {
-        ViewCompat.setOnApplyWindowInsetsListener(mActivityBinding.getRoot(), (v, insets) -> {
-            ViewCompat.setOnApplyWindowInsetsListener(mActivityBinding.activityMain, (mainView, mainInsets) -> {
-                Insets systemBars = mainInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-                mainView.setPadding(0, systemBars.top, 0, systemBars.bottom);
-                return WindowInsetsCompat.CONSUMED;
-            });
-
-            return insets;
-        });
-    }
-
 
 }

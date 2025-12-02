@@ -38,14 +38,9 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     @Override
     public void selectTheme() {
-
-        // Темний/світлий режим
         themePreferencesCache.applyCurrentThemeMode();
-
         boolean isDynamicEnabled = themePreferencesCache.isDynamicColorEnabled();
-
         setTheme(isDynamicEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? R.style.AppThemeDynamic : themePreferencesCache.getCurrentThemeStyle());
-
         applyScreenProtection();
     }
 
