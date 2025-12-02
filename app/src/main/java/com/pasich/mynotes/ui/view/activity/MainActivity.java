@@ -1,6 +1,4 @@
 package com.pasich.mynotes.ui.view.activity;
-
-
 import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_FONT_SCALE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_MODE;
@@ -25,7 +23,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
@@ -36,7 +33,9 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
+import com.pasich.mynotes.ui.controllers.AnimationController;
 import com.pasich.mynotes.ui.controllers.AppUpdateController;
+import com.pasich.mynotes.ui.controllers.EmptyStateController;
 import com.pasich.mynotes.ui.controllers.NavigationController;
 import com.pasich.mynotes.ui.controllers.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
@@ -132,7 +131,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private SearchController searchController;
     private AppUpdateController appUpdateController;
     private NavigationController navigationController;
-
+    private EmptyStateController emptyStateController;
 
     private final ActivityResultLauncher<Intent> changelogLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -192,8 +191,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
 
         navigationController.init();
-
         navigationController.handleShortcuts(getIntent());
+
+        emptyStateController = new EmptyStateController(mActivityBinding, new AnimationController());
+
     }
 
     @Override
@@ -393,15 +394,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         // Оновлюємо лічильник для наступної перевірки
         previousNotesCount = noteList.size();
-
-        // Використовуємо анімований метод тільки якщо активність вже створена
-        if (mActivityBinding.listNotes.getAnimation() != null || mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
-            showEmptyNotesAnimated(!(countNotes >= 1));
-        } else {
-            showEmptyNotes(!(countNotes >= 1));
-        }
-
+        emptyStateController.showState(!(countNotes >= 1), tagsAdapter.getTagSelected());
         searchController.setDefaultNotesList(noteList);
+
     }
 
     @Override
@@ -428,60 +423,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         int countNotes = mNoteAdapter.setNameTagsHidden(Objects.requireNonNull(tagList), tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag());
 
-        if (mActivityBinding.listNotes.getAnimation() != null || mActivityBinding.includeEmpty.emptyViewNote.getAnimation() != null) {
-            showEmptyNotesAnimated(!(countNotes >= 1));
-        } else {
-            showEmptyNotes(!(countNotes >= 1));
-        }
-    }
-
-    private void showEmptyNotes(boolean flag) {
-        mActivityBinding.setEmptyNotes(flag);
-        if (getResources().getDisplayMetrics().density < 2.2)
-            mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
-        mActivityBinding.includeEmpty.emptyViewNote.setVisibility(flag ? VISIBLE : View.GONE);
-
-        // Управління поведінкою AppBar залежно від наявності нотаток
-        setAppBarScrollBehavior(!flag);
-
-        if (flag) {
-            Tag selectedTag = tagsAdapter.getTagSelected();
-            if (selectedTag != null && selectedTag.getSystemAction() != 2 && !selectedTag.getNameTag().equals("allNotes")) {
-                // Якщо вибраний конкретний тег (не "Всі нотатки")
-                mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotesForTag, selectedTag.getNameTag()));
-            } else {
-                // Якщо вибрано "Всі нотатки" або немає тегу
-                mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
-            }
-        }
-    }
-
-    private void showEmptyNotesAnimated(boolean flag) {
-        mActivityBinding.setEmptyNotes(flag);
-        if (getResources().getDisplayMetrics().density < 2.2)
-            mActivityBinding.includeEmpty.imageEmpty.setVisibility(View.GONE);
-
-        // Управління поведінкою AppBar залежно від наявності нотаток
-        setAppBarScrollBehavior(!flag);
-
-        if (flag) {
-            Tag selectedTag = tagsAdapter.getTagSelected();
-            if (selectedTag != null && selectedTag.getSystemAction() != 2 && !selectedTag.getNameTag().equals("allNotes")) {
-                mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotesForTag, selectedTag.getNameTag()));
-            } else {
-                mActivityBinding.includeEmpty.emptyNotesText.setText(getString(R.string.emptyNotes));
-            }
-
-            // Використовуємо ViewPropertyAnimator для кращої продуктивності
-            mActivityBinding.includeEmpty.emptyViewNote.setVisibility(VISIBLE);
-            mActivityBinding.includeEmpty.emptyViewNote.setAlpha(0f);
-            mActivityBinding.includeEmpty.emptyViewNote.animate().alpha(1f).setDuration(300).start();
-        } else {
-            mActivityBinding.includeEmpty.emptyViewNote.setVisibility(View.GONE);
-            mActivityBinding.listNotes.setVisibility(VISIBLE);
-            mActivityBinding.listNotes.setAlpha(0f);
-            mActivityBinding.listNotes.animate().alpha(1f).setDuration(300).start();
-        }
+        emptyStateController.showState(!(countNotes >= 1), tagsAdapter.getTagSelected());
     }
 
     @Override
@@ -638,7 +580,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             int noteCount = mNoteAdapter.filter(tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(), false);
 
             // Оновлюємо AppBar поведінку залежно від кількості нотаток
-            setAppBarScrollBehavior(noteCount >= 1);
+            emptyStateController.showState(noteCount == 0, tagsAdapter.getTagSelected());
 
             showNewContent(!(noteCount >= 1));
         });
@@ -674,15 +616,20 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     private void showNewContent(boolean showEmpty) {
-        // Невелика затримка для плавності переходу
         mActivityBinding.getRoot().postDelayed(() -> {
+
             if (!showEmpty) {
-                // Оновлюємо список нотаток перед показом
-                mNoteAdapter.filter(tagsAdapter.getTagSelected() == null ? "allNotes" : tagsAdapter.getTagSelected().getNameTag(), true);
+                String tag = tagsAdapter.getTagSelected() == null
+                        ? "allNotes"
+                        : tagsAdapter.getTagSelected().getNameTag();
+
+                mNoteAdapter.filter(tag, true);
             }
-            showEmptyNotesAnimated(showEmpty);
+            emptyStateController.showState(showEmpty, tagsAdapter.getTagSelected());
+
         }, 50);
     }
+
 
     private void variablesNull() {
         if (mNoteAdapter != null) {
@@ -708,26 +655,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         searchNotesAdapter = null;
     }
 
-    /**
-     * Управління поведінкою AppBar - дозволяє або забороняє прокручування
-     *
-     * @param canScroll true - дозволити прокручування, false - заборонити
-     */
-    private void setAppBarScrollBehavior(boolean canScroll) {
-        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) mActivityBinding.actionSearch.getLayoutParams();
-
-        if (canScroll) {
-            // Дозволяємо прокручування - встановлюємо scroll|enterAlways
-            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS);
-        } else {
-            // Забороняємо прокручування - прибираємо всі scroll flags
-            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL);
-            // Розширюємо AppBar до повного розміру
-            mActivityBinding.appBarMainActivity.setExpanded(true, true);
-        }
-
-        mActivityBinding.actionSearch.setLayoutParams(params);
-    }
 
     @Override
     public void redrawActivity(int themeStyle) {
