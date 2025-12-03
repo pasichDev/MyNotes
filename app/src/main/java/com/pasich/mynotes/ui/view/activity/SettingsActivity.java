@@ -1,7 +1,5 @@
 package com.pasich.mynotes.ui.view.activity;
 
-import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_FONT_SCALE;
-import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_MODE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE_THEME_UPDATE;
 
@@ -24,11 +22,11 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
+import com.pasich.mynotes.ui.controllers.RedrawThemeController;
 import com.pasich.mynotes.ui.view.fragment.settings.InteractionSettingsFragment;
 import com.pasich.mynotes.ui.view.fragment.settings.InterfaceSettingsFragment;
 import com.pasich.mynotes.ui.view.fragment.settings.MediaSettingsFragment;
 import com.pasich.mynotes.utils.adapters.SettingsPagerAdapter;
-import com.pasich.mynotes.utils.themes.ThemesArray;
 
 import java.util.Objects;
 
@@ -100,7 +98,6 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         pagerAdapter = new SettingsPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
-        // Налаштування TabLayout з ViewPager2
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
                     switch (position) {
@@ -133,7 +130,6 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         if (item.getItemId() == android.R.id.home) {
             finishActivity();
         }
@@ -141,43 +137,39 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         return true;
     }
 
-
     private boolean finishActivity() {
+
+        boolean hasChanges = false;
+
         int currentThemeId = themePreferencesCache.getThemeId();
         boolean enableDynamicColor = themePreferencesCache.isDynamicColorEnabled();
         int currentThemeMode = themePreferencesCache.getThemeMode();
 
+        // Any theme changes?
         if (themeIdStartActivity != currentThemeId) {
-            int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
-            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, themeStyle));
+            hasChanges = true;
         }
 
         if (themeDynamicStartActivity != enableDynamicColor) {
-            if (enableDynamicColor) {
-                setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, R.style.AppThemeDynamic));
-            } else {
-                int themeStyle = new ThemesArray().getThemeStyle(currentThemeId);
-                setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, themeStyle));
-            }
+            hasChanges = true;
         }
 
         if (themeModeStartActivity != currentThemeMode) {
-            // Theme mode changed, trigger recreation
-            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_MODE, true));
+            hasChanges = true;
         }
 
         if (fontScaleWasChanged != -0.2f) {
-            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_FONT_SCALE, true));
+            hasChanges = true;
+        }
+
+        // If anything changed — send one flag
+        if (hasChanges) {
+            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, true));
+
         }
 
         supportFinishAfterTransition();
         return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        super.onDestroy();
     }
 
     @Override
@@ -195,7 +187,6 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         fontScaleWasChanged = value;
     }
 
-
     @Override
     public void redrawActivity(int themeStyle) {
         super.redrawActivity(themeStyle);
@@ -212,11 +203,7 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
     }
 
     private void applyTabColors() {
-        int colorPrimary = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimaryVariant, Color.GRAY);
-        int colorOnSurfaceVariant = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
-
-        tabLayout.setTabTextColors(colorOnSurfaceVariant, colorPrimary);
-        tabLayout.setSelectedTabIndicatorColor(colorPrimary);
+        RedrawThemeController.styleTabs(tabLayout, this);
     }
 
     private void updateFragmentThemes() {

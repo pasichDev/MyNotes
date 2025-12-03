@@ -1,8 +1,6 @@
 package com.pasich.mynotes.ui.view.fragment.settings;
 
-import static com.pasich.mynotes.utils.themes.ManualRedrawSwitch.updateSwitchColors;
-
-import android.graphics.Color;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,11 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.color.MaterialColors;
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.FragmentMediaSettingsBinding;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
+import com.pasich.mynotes.ui.controllers.RedrawThemeController;
 
 import javax.inject.Inject;
 
@@ -60,29 +58,25 @@ public class MediaSettingsFragment extends Fragment {
 
     }
 
-    private void applyThemeColors() {
-        if (getContext() == null) return;
-        // Apply theme colors to views
-        int colorSurfaceContainer = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorSurfaceContainer, Color.GRAY);
-        int colorOnSurface = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurface, Color.GRAY);
-        int colorOnSurfaceVariant = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorOnSurfaceVariant, Color.GRAY);
-        int colorPrimary = MaterialColors.getColor(getContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.GRAY);
-
-
-        // imgOptSwitch Card and Switch
-        binding.imgOpt.setCardBackgroundColor(colorSurfaceContainer);
-        binding.imgOptSwitch.setTextColor(colorOnSurface);
-        binding.imgOptDescription.setTextColor(colorOnSurfaceVariant);
-
-
-        updateSwitchColors(binding.imgOptSwitch, colorPrimary, colorOnSurfaceVariant);
-    }
-
-
     public void updateThemeColors() {
-        applyThemeColors();
+        if (getContext() == null) return;
+        RedrawThemeController.styleCardBlock(
+                binding.imgOpt,
+                null,
+                binding.imgOptDescription,
+                binding.imgOptSwitch,
+                requireContext()
+        );
+        RedrawThemeController.styleCardBlock(
+                binding.memory,
+                binding.memoryTitle,
+                binding.memoryValue,
+                null,
+                requireContext()
+        );
     }
 
+    @SuppressLint("DefaultLocale")
     private void updateMemoryUsage() {
         if (getContext() == null) return;
         long usedBytes = AttachmentStorage.getTotalAttachmentsSize(getContext());

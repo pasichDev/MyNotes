@@ -1,8 +1,6 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import static android.view.View.VISIBLE;
-import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_FONT_SCALE;
-import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_MODE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 
 import android.app.Activity;
@@ -21,7 +19,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
@@ -75,15 +72,12 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
 
-
     // Update theme listener
     final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         Intent data = result.getData();
         if (result.getResultCode() == 11) {
             assert data != null;
-            if (data.getBooleanExtra(EXTRA_UPDATE_THEME_MODE, false) || data.getBooleanExtra(EXTRA_UPDATE_FONT_SCALE, false)) {
-                recreate();
-            } else {
+            if (data.getBooleanExtra(EXTRA_UPDATE_THEME_STYLE, false)) {
                 this.redrawActivity(data.getIntExtra(EXTRA_UPDATE_THEME_STYLE, 0));
             }
         }
