@@ -1,5 +1,6 @@
 package com.pasich.mynotes.ui.controllers;
 
+import android.content.res.Resources;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -13,17 +14,20 @@ public class EmptyStateController {
 
     private final ActivityMainBinding binding;
     private final AnimationController animationController;
+    private final Resources res;
 
     public EmptyStateController(ActivityMainBinding binding,
                                 AnimationController animationController) {
         this.binding = binding;
         this.animationController = animationController;
+        this.res = binding.getRoot().getResources();
     }
 
+    public void showState(boolean isEmpty, @Nullable Tag selectedTag, int notesCount) {
 
-    public void showState(boolean isEmpty, @Nullable Tag selectedTag) {
+        String emptyText = new EmptyStateBuilder().build(selectedTag, notesCount);
 
-        updateEmptyText(selectedTag);
+        updateEmptyText(emptyText);
         updateAppBarBehavior(!isEmpty);
 
         if (isEmpty) {
@@ -40,20 +44,9 @@ public class EmptyStateController {
         }
     }
 
-    private void updateEmptyText(Tag selectedTag) {
-        if (selectedTag != null &&
-                selectedTag.getSystemAction() != 2 &&
-                !selectedTag.getNameTag().equals("allNotes")) {
 
-            binding.includeEmpty.emptyNotesText.setText(
-                    binding.getRoot().getContext().getString(
-                            R.string.emptyNotesForTag,
-                            selectedTag.getNameTag()
-                    )
-            );
-        } else {
-            binding.includeEmpty.emptyNotesText.setText(R.string.emptyNotes);
-        }
+    private void updateEmptyText(String emptyText) {
+        binding.includeEmpty.emptyNotesText.setText(emptyText);
 
         // low density hack
         if (binding.getRoot().getResources().getDisplayMetrics().density < 2.2) {
@@ -77,4 +70,22 @@ public class EmptyStateController {
 
         binding.actionSearch.setLayoutParams(params);
     }
+
+    /**
+     * Винесена логіка формування тексту пустого стану
+     */
+    private class EmptyStateBuilder {
+        String build(@Nullable Tag selectedTag, int notesCount) {
+
+            if (notesCount > 0) return "";
+
+            if (selectedTag == null || "allNotes".equals(selectedTag.getNameTag())) {
+                return res.getString(R.string.emptyNotes);
+            }
+
+            return res.getString(R.string.emptyNotesForTag, selectedTag.getNameTag());
+        }
+    }
+
+
 }

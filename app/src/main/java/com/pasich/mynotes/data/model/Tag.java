@@ -23,17 +23,17 @@ public class Tag {
     @ColumnInfo(name = "visibility")
     @SerializedName("c")
     private int visibility = 0;
-    
+
     /**
-     * SystemAction - тип Системной метки (1) - добавить метку (2) - все заметки (0) -
-     * пользовательский тэг
+     * SystemAction - System tag type (1) - add tag (2) - all notes (0) -
+     * user tag
      */
     @ColumnInfo(name = "systemAction")
     @SerializedName("d")
     private int systemAction = 0;
 
     /**
-     * Position - позиція тегу для кастомного сортування
+     * Position - tag position for custom sorting
      */
     @ColumnInfo(name = "position")
     @SerializedName("e")
@@ -83,11 +83,6 @@ public class Tag {
         this.selected = sel;
     }
 
-    public Tag setSelectedReturn(boolean sel) {
-        this.selected = sel;
-        return this;
-    }
-
     public int getVisibility() {
         return this.visibility;
     }
@@ -107,6 +102,21 @@ public class Tag {
 
     public void setPosition(int position) {
         this.position = position;
+    }
+
+    public Tag copy() {
+        Tag t = new Tag();
+
+        t.id = this.id;
+        t.nameTag = this.nameTag;
+        t.visibility = this.visibility;
+        t.systemAction = this.systemAction;
+        t.position = this.position;
+
+        // selected Not part of the database, but important for the UI
+        t.selected = this.selected;
+
+        return t;
     }
 
 }

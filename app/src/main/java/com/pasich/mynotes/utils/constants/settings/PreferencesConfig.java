@@ -12,7 +12,7 @@ public class PreferencesConfig {
     public static final int ARGUMENT_DEFAULT_TEXT_SIZE = 16;
     //SortPrefix
     public static final String ARGUMENT_PREFERENCE_SORT = "sortPref";
-    public static final String ARGUMENT_DEFAULT_SORT_PREF = "DataSort";
+    public static final String ARGUMENT_DEFAULT_SORT_PREF = SortParam.DataSort;
     //TagsSortPrefix
     public static final String ARGUMENT_PREFERENCE_TAGS_SORT = "tagsSortPref";
     public static final String ARGUMENT_DEFAULT_TAGS_SORT_PREF = "TagsCreationDateSort";

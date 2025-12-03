@@ -30,7 +30,6 @@ public class NavigationController {
     private final AppCompatActivity activity;
     private final ActivityMainBinding binding;
 
-    private final ActivityResultLauncher<Intent> startTagsActivity;
     private final ActivityResultLauncher<Intent> themeActivityLauncher;
 
     private final AppUpdateController appUpdateController;
@@ -47,7 +46,6 @@ public class NavigationController {
 
     public NavigationController(AppCompatActivity activity,
                                 ActivityMainBinding binding,
-                                ActivityResultLauncher<Intent> startTagsActivity,
                                 ActivityResultLauncher<Intent> themeActivityLauncher,
                                 AppUpdateController appUpdateController,
                                 BackHandler backHandler) {
@@ -55,7 +53,6 @@ public class NavigationController {
 
         this.activity = activity;
         this.binding = binding;
-        this.startTagsActivity = startTagsActivity;
         this.themeActivityLauncher = themeActivityLauncher;
         this.appUpdateController = appUpdateController;
         this.backHandler = backHandler;
@@ -109,7 +106,7 @@ public class NavigationController {
         View header = binding.navigationView.getHeaderView(0);
 
         header.findViewById(R.id.nav_tags).setOnClickListener(v ->
-                delay(() -> startTagsActivity.launch(new Intent(activity, TagsActivity.class)))
+                delay(() -> activity.startActivity(new Intent(activity, TagsActivity.class)))
         );
 
         header.findViewById(R.id.nav_trash).setOnClickListener(v ->

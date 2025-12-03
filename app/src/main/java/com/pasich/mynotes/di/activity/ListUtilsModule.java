@@ -4,9 +4,9 @@ package com.pasich.mynotes.di.activity;
 import android.content.Context;
 
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
@@ -24,6 +24,7 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.android.components.ActivityComponent;
+import dagger.hilt.android.qualifiers.ActivityContext;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.android.scopes.ActivityScoped;
 
@@ -59,8 +60,8 @@ public class ListUtilsModule {
 
     @Provides
     @ActivityScoped
-    StaggeredGridLayoutManager providesStaggeredGridLayoutManager(int spanCount) {
-        return new StaggeredGridLayoutManager(spanCount, LinearLayoutManager.VERTICAL);
+    GridLayoutManager providesStaggeredGridLayoutManager(@ActivityContext Context context, int spanCount) {
+        return new GridLayoutManager(context, spanCount);
     }
 
     @Provides
