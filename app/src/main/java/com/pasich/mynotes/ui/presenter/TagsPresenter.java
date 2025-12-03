@@ -10,7 +10,7 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.contract.TagsContract;
-import com.pasich.mynotes.utils.adapters.tagAdapter.TagsSorter;
+import com.pasich.mynotes.utils.TagsSorter;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 

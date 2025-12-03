@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.adapters.tagAdapter;
+package com.pasich.mynotes.utils;
 
 
 import com.pasich.mynotes.data.model.Tag;
@@ -10,12 +10,12 @@ import java.util.List;
 
 public class TagsSorter {
 
+    // Unified sorting logic for system tags (by weight) and user tags (by position or creation date)
     public static List<Tag> sortTags(List<Tag> tags, String sortParam) {
         if (tags == null || tags.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // Створюємо копію, щоб не мутувати оригінальний список
         List<Tag> sortedList = new ArrayList<>(tags);
 
         sortedList.sort((o1, o2) -> {
@@ -34,18 +34,14 @@ public class TagsSorter {
                 return sComp;
             }
 
-            // Користувацькі теги
             if (o1.getSystemAction() == 0 && o2.getSystemAction() == 0) {
                 if ("TagsPositionSort".equals(sortParam)) {
-                    // Сортування за позицією
                     return Integer.compare(o1.getPosition(), o2.getPosition());
                 } else {
-                    // Сортування за датою створення (ID)
                     return Long.compare(o2.getId(), o1.getId());
                 }
             }
 
-            // Для системних тегів за замовчуванням сортуємо за ID
             return Long.compare(o2.getId(), o1.getId());
         });
 

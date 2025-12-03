@@ -80,31 +80,33 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
             Tag tag = getItem(position);
 
             for (Object payload : payloads) {
-                List<String> list = (List<String>) payload;
+                if (payload instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> list = (List<String>) payload;
 
-                for (String type : list) {
+                    for (String type : list) {
+                        switch (type) {
+                            case TagPayloads.SELECTED:
+                                holder.binding.setCheckedTag(tag.getSelected());
+                                break;
 
-                    switch (type) {
-                        case TagPayloads.SELECTED:
-                            holder.binding.setCheckedTag(tag.getSelected());
-                            break;
-
-                        case TagPayloads.NAME:
-                        case TagPayloads.VISIBILITY:
-                        case TagPayloads.SYSTEM:
-                            // full rebind
-                            holder.bind(tag);
-                            break;
+                            case TagPayloads.NAME:
+                            case TagPayloads.VISIBILITY:
+                            case TagPayloads.SYSTEM:
+                                holder.bind(tag);
+                                break;
+                        }
                     }
                 }
             }
+
             return;
         }
 
         super.onBindViewHolder(holder, position, payloads);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         final ItemTagBinding binding;
 

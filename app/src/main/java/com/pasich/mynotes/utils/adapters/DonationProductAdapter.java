@@ -18,13 +18,8 @@ import java.util.List;
 
 public class DonationProductAdapter extends RecyclerView.Adapter<DonationProductAdapter.ViewHolder> {
 
-    public interface OnProductClickListener {
-        void onProductClick(DonationProduct product);
-    }
-
-    private List<DonationProduct> products = new ArrayList<>();
     private final OnProductClickListener listener;
-
+    private List<DonationProduct> products = new ArrayList<>();
     public DonationProductAdapter(OnProductClickListener listener) {
         this.listener = listener;
     }
@@ -58,7 +53,7 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
         diffResult.dispatchUpdatesTo(this);
     }
 
-    public void updatePurchasedProducts(List<String> purchasedProductIds) {
+    public void updatePurchasedProducts() {
         setProducts(new ArrayList<>(products));
     }
 
@@ -81,7 +76,11 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
         return products.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public interface OnProductClickListener {
+        void onProductClick(DonationProduct product);
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView iconImageView;
         private final TextView titleTextView;
         private final TextView descriptionTextView;
@@ -99,7 +98,7 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
             titleTextView.setText(getLocalizedTitle(product.getId()));
             descriptionTextView.setText(getLocalizedDescription(product.getId()));
             priceTextView.setText(product.getPrice());
-            
+
             // Set icon based on product type
             int iconRes = getIconResource(product.getIconResource());
             iconImageView.setImageResource(iconRes);
@@ -108,7 +107,7 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
             if (product.isPurchased()) {
                 // Make item look purchased/disabled
                 itemView.setAlpha(0.5f);
-              //  priceTextView.setText(itemView.getContext().getString(R.string.purchased));
+                //  priceTextView.setText(itemView.getContext().getString(R.string.purchased));
                 itemView.setOnClickListener(null); // Disable click
             } else {
                 // Normal state

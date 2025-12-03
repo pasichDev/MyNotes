@@ -1,5 +1,6 @@
 package com.pasich.mynotes.utils.adapters;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -112,6 +113,7 @@ public class LibsSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             version = v.findViewById(R.id.libVersion);
         }
 
+        @SuppressLint("SetTextI18n")
         void bind(LibItem it) {
             id.setText(it.id());
             version.setText("Version: " + (it.version() != null ? it.version() : "-"));

@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils;
+package com.pasich.mynotes.utils.file;
 
 import android.content.Context;
 import android.graphics.Bitmap;

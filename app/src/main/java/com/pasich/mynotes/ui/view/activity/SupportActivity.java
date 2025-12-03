@@ -26,7 +26,6 @@ import com.pasich.mynotes.databinding.ActivitySupportBinding;
 import com.pasich.mynotes.utils.adapters.DonationProductAdapter;
 import com.pasich.mynotes.utils.managers.BillingManager;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -307,7 +306,7 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
 
     private void updateProductsWithPurchaseStatus() {
         if (donationAdapter != null) {
-            donationAdapter.updatePurchasedProducts(new ArrayList<>());
+            donationAdapter.updatePurchasedProducts();
         }
     }
 

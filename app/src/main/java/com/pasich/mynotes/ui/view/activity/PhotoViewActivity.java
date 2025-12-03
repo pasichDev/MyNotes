@@ -17,7 +17,7 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityImageViewerBinding;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
-import com.pasich.mynotes.utils.SafeImageLoader;
+import com.pasich.mynotes.utils.file.SafeImageLoader;
 
 import java.io.File;
 import java.util.Objects;
