@@ -4,7 +4,6 @@ import android.view.View;
 
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
-import com.pasich.mynotes.base.view.MainSortView;
 import com.pasich.mynotes.base.view.MoreNoteMainActivityView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -12,10 +11,8 @@ import com.pasich.mynotes.ui.state.MainViewState;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import dagger.hilt.android.scopes.ActivityScoped;
-import io.reactivex.Observable;
 
 public interface MainContract {
 
@@ -64,7 +61,6 @@ public interface MainContract {
         void onTagSelected(Tag tag);
 
         void onSortChanged(String newSort);
-        void resetScrollFlag();
     }
 
     interface CreateNoteCallback {
