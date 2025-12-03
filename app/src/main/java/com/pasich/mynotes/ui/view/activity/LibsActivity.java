@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class LibsActivity extends BaseActivity {
 
     protected ActivityLibsBinding binding;
