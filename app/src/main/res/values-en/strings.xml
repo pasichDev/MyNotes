@@ -12,7 +12,6 @@
     <string name="exitWhat">To exit, you need to repeat the action</string>
     <string name="notFoundPlayMarket">Missing Play Market app</string>
     <string name="notSupportedShare">This content is not supported.</string>
-    <string name="copyX">Copied</string>
     <string name="cd_format">Format notes</string>
 
 
@@ -32,8 +31,6 @@
     <string name="createNewTag">Enter tag name</string>
     <string name="sort_Date_Increase">Date modified: newest first</string>
     <string name="sort_Date_Decrease">Date changed: old first</string>
-    <string name="sort_Title_Increase">Title: A-Z</string>
-    <string name="sort_Title_Decrease">Title: Z-A</string>
     <string name="sortHead">Sort by:</string>
     <string name="shareApp">Share App</string>
     <string name="privacyApp">Privacy Policy</string>
@@ -61,11 +58,6 @@
     <string name="contentDescrChangeStyleText">Change text style</string>
     <string name="copyNoteEdits">Edit copy</string>
     <string name="noteMoveTrashSnackbar">Note moved to trash</string>
-    <string name="button_edit">Edit</string>
-    <string name="button_copy">Copy</string>
-    <string name="button_phone">Call</string>
-    <string name="button_mail">Write</string>
-    <string name="button_url">Go to</string>
 
 
     <!-- Strings that are not translated  -->
@@ -84,7 +76,6 @@
     <string name="renameTag">Rename</string>
 
 
-    <string name="settingsInterface">Interface settings</string>
     <string name="settings">Settings</string>
     <string name="aboutApps">About App</string>
     <string name="trash">Trash</string>
@@ -329,8 +320,6 @@
     <string name="attachment_open_failed">Can\'t open file</string>
     <string name="attachment_save_failed">Failed to save file</string>
     <string name="onExtendedEditorAttachWarning">If a note contains attachments or added media files, its backward compatibility with the simple editor is lost — such a note can only be edited in the advanced editor.</string>
-    <string name="showDetailsExtendedEditor">More details</string>
-    <string name="hiddenDetailsExtendedEditor">Hidden details</string>
     <string name="openImageError">Image unavailable for viewing</string>
     <string name="shareError">Image share error</string>
     <string name="mediaTab">Media</string>

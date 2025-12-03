@@ -14,7 +14,6 @@
     <string name="telegram">Ouvrir les contacts des développeurs</string>
     <string name="notSupportedShare">Ce contenu n\'est pas pris en charge.</string>
     <string name="notFoundPlayMarket">PlayMarket est manquant</string>
-    <string name="copyX">Copié</string>
     <string name="cd_format">Notes de mise en forme</string>
     <string name="search">Rechercher dans les notes </string>
     <string name="close">Fermer</string>
@@ -32,8 +31,6 @@
     <string name="createNewTag">Entrez un nom de balise</string>
     <string name="sort_Date_Increase">Date de la dernière modification: nouvelle par rapport au-dessus</string>
     <string name="sort_Date_Decrease">Date du dernier changement: ancien en haut</string>
-    <string name="sort_Title_Increase">Titre: AZ</string>
-    <string name="sort_Title_Decrease">Titre: de Z à A</string>
     <string name="sortHead">Trier par:</string>
     <string name="shareApp">Partager l\'application</string>
     <string name="privacyApp">Politique de confidentialité</string>
@@ -62,15 +59,9 @@
     <string name="copyNoteEdits">Modifier une copie d\'une note</string>
     <string name="noteMoveTrashSnackbar">Note déplacée vers la corbeille</string>
 
-    <string name="button_edit">Modifier</string>
-    <string name="button_copy">Copier</string>
-    <string name="button_phone">Appeler</string>
-    <string name="button_mail">Écrire</string>
-    <string name="button_url">Ouvrir le lien</string>
     <string name="hiddeTag">Masquer les notes</string>
     <string name="visibleTag">Afficher les notes</string>
     <string name="renameTag">Renommer</string>
-    <string name="settingsInterface">Paramètres d\'interface</string>
     <string name="settings">Paramètres</string>
     <string name="aboutApps">À propos de l\'application</string>
     <string name="trash">Corbeille</string>
@@ -309,8 +300,6 @@
     <string name="attachment_open_failed">Impossible d’ouvrir le fichier</string>
     <string name="attachment_save_failed">Impossible d’enregistrer le fichier</string>
     <string name="onExtendedEditorAttachWarning">Si une note contient des pièces jointes ou des médias, elle perd la compatibilité avec l’éditeur simple — elle ne peut être modifiée que dans l’éditeur avancé.</string>
-    <string name="showDetailsExtendedEditor">Plus de détails</string>
-    <string name="hiddenDetailsExtendedEditor">Masquer</string>
     <string name="openImageError">Image indisponible</string>
     <string name="shareError">Erreur lors du partage de l’image</string>
     <string name="mediaTab">Médias</string>

@@ -14,7 +14,6 @@
     <string name="telegram">Відкрити контакти розробника</string>
     <string name="notSupportedShare">Цей вміст не підтримується.</string>
     <string name="notFoundPlayMarket">Відсутній  Play Market</string>
-    <string name="copyX">Скопійовано</string>
     <string name="cd_format">Форматувати нотатки</string>
     <string name="search">Пошук у нотатках </string>
     <string name="close">Закрити</string>
@@ -32,8 +31,6 @@
     <string name="createNewTag">Введіть назву тега</string>
     <string name="sort_Date_Increase">Датою останньої зміни: зверху нові</string>
     <string name="sort_Date_Decrease">Датою останньої зміни: зверху старі</string>
-    <string name="sort_Title_Increase">Назвою: від А-Я</string>
-    <string name="sort_Title_Decrease">Назвою: від Я-А</string>
     <string name="sortHead">Сортувати за:</string>
     <string name="shareApp">Поділитись додатком</string>
     <string name="privacyApp">Політика конфіденційності</string>
@@ -62,15 +59,9 @@
     <string name="copyNoteEdits">Редагувати копію нотатки</string>
     <string name="noteMoveTrashSnackbar">Нотатку переміщена в кошик</string>
 
-    <string name="button_edit">Редагувати</string>
-    <string name="button_copy">Копіювати</string>
-    <string name="button_phone">Зателефонувати</string>
-    <string name="button_mail">Написати</string>
-    <string name="button_url">Відкрити посилання</string>
     <string name="hiddeTag">Приховати нотатки</string>
     <string name="visibleTag">Відображати нотатки</string>
     <string name="renameTag">Перейменувати</string>
-    <string name="settingsInterface">Налаштування інтерфейсу</string>
     <string name="settings">Налаштування</string>
     <string name="aboutApps">Про програму</string>
     <string name="trash">Кошик</string>
@@ -313,8 +304,6 @@
     <string name="attachment_open_failed">Не вдалося відкрити файл</string>
     <string name="attachment_save_failed">Не вдалося зберегти файл</string>
     <string name="onExtendedEditorAttachWarning">Якщо нотатка містить вкладення чи медіафайли, вона втрачає сумісність зі звичайним редактором — редагування можливе лише у розширеному редакторі.</string>
-    <string name="showDetailsExtendedEditor">Докладніше</string>
-    <string name="hiddenDetailsExtendedEditor">Згорнути</string>
     <string name="openImageError">Зображення недоступне для перегляду</string>
     <string name="shareError">Помилка під час надсилання зображення</string>
     <string name="mediaTab">Медіа</string>

@@ -25,7 +25,6 @@
     <string name="telegram">Открыть контакты разработчика</string>
     <string name="notSupportedShare">Этот контент не поддерживается.</string>
     <string name="notFoundPlayMarket">Отсутствует приложение Play Market</string>
-    <string name="copyX">"Скопировано "</string>
     <string name="cd_format">Форматировать заметки</string>
 
     <string name="search">Поиск в заметках </string>
@@ -44,8 +43,6 @@
     <string name="createNewTag">Введите название метки</string>
     <string name="sort_Date_Increase">Дате изменения: сначала новые</string>
     <string name="sort_Date_Decrease">Дате изменения: сначала старые</string>
-    <string name="sort_Title_Increase">Названии: от А-Я</string>
-    <string name="sort_Title_Decrease">Названии: от Я-А</string>
     <string name="sortHead">Cортировать по:</string>
     <string name="shareApp">Поделиться приложением</string>
     <string name="privacyApp">Политика Конфиденциальности</string>
@@ -73,17 +70,11 @@
     <string name="contentDescrChangeStyleText">Изменить стиль текста</string>
     <string name="copyNoteEdits">Редактировать копию</string>
     <string name="noteMoveTrashSnackbar">Заметку перемещено в корзину</string>
-    <string name="button_edit">Редактировать</string>
-    <string name="button_copy">Копировать</string>
-    <string name="button_phone">Позвонить</string>
-    <string name="button_mail">Написать</string>
-    <string name="button_url">Перейти</string>
 
     <string name="hiddeTag">Скрыть заметки</string>
     <string name="visibleTag">Отображать заметки</string>
     <string name="renameTag">Переименовать</string>
 
-    <string name="settingsInterface">Настройки интерфейса</string>
     <string name="settings">Настройки</string>
     <string name="aboutApps">О приложении</string>
     <string name="trash">Корзина</string>
@@ -316,8 +307,6 @@
     <string name="attachment_open_failed">Не удалось открыть файл</string>
     <string name="attachment_save_failed">Не удалось сохранить файл</string>
     <string name="onExtendedEditorAttachWarning">Если заметка содержит вложения или медиа, она теряет совместимость с простым редактором — редактирование возможно только в расширенном.</string>
-    <string name="showDetailsExtendedEditor">Подробнее</string>
-    <string name="hiddenDetailsExtendedEditor">Скрыть</string>
     <string name="openImageError">Изображение недоступно для просмотра</string>
     <string name="shareError">Ошибка при отправке изображения</string>
     <string name="mediaTab">Медиа</string>

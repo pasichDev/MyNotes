@@ -14,7 +14,6 @@
     <string name="telegram">Apri contatti sviluppatore</string>
     <string name="notSupportedShare">Questo contenuto non è supportato.</string>
     <string name="notFoundPlayMarket">Manca Play Market</string>
-    <string name="copyX">Copiato</string>
     <string name="cd_format">Formatta le note</string>
     <string name="search">Cerca nelle note </string>
     <string name="close">Chiudi</string>
@@ -32,8 +31,6 @@
     <string name="createNewTag">Inserisci un nome per il tag</string>
     <string name="sort_Date_Increase">Data dell\'ultima modifica: nuovo dall\'alto</string>
     <string name="sort_Date_Decrease">Data dell\'ultima modifica: vecchio in alto</string>
-    <string name="sort_Title_Increase">Titolo: AZ</string>
-    <string name="sort_Title_Decrease">Titolo: Dalla Z alla A</string>
     <string name="sortHead">Ordina per:</string>
     <string name="shareApp">Condividi app</string>
     <string name="privacyApp">Informativa sulla privacy</string>
@@ -61,15 +58,9 @@
     <string name="contentDescrChangeStyleText">Cambia lo stile del testo</string>
     <string name="copyNoteEdits">Modifica una copia di una nota</string>
     <string name="noteMoveTrashSnackbar">Nota spostata nel cestino</string>
-    <string name="button_edit">Modifica</string>
-    <string name="button_copy">Copia</string>
-    <string name="button_phone">Chiama</string>
-    <string name="button_mail">Scrivi</string>
-    <string name="button_url">Apri collegamento</string>
     <string name="hiddeTag">Nascondi note</string>
     <string name="visibleTag">Mostra note</string>
      <string name="renameTag">Rinomina</string>
-    <string name="settingsInterface">Impostazioni interfaccia</string>
     <string name="settings">Impostazioni</string>
     <string name="aboutApps">Informazioni sull\'app</string>
     <string name="trash">Cestino</string>
@@ -311,8 +302,6 @@
     <string name="attachment_open_failed">Impossibile aprire il file</string>
     <string name="attachment_save_failed">Impossibile salvare il file</string>
     <string name="onExtendedEditorAttachWarning">Se una nota contiene allegati o media, perde la compatibilità con l’editor semplice — può essere modificata solo nell’editor avanzato.</string>
-    <string name="showDetailsExtendedEditor">Mostra dettagli</string>
-    <string name="hiddenDetailsExtendedEditor">Nascondi</string>
     <string name="openImageError">Impossibile visualizzare l’immagine</string>
     <string name="shareError">Errore durante la condivisione dell’immagine</string>
     <string name="mediaTab">Media</string>

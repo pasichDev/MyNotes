@@ -14,7 +14,6 @@
     <string name="telegram">Otwórz kontakty programistów</string>
     <string name="notSupportedShare">Ta zawartość nie jest obsługiwana.</string>
     <string name="notFoundPlayMarket">Brak aplikacji Play Market</string>
-    <string name="copyX">Skopiowane</string>
     <string name="cd_format">Formatuj notatki</string>
 
     <string name="search">Szukaj w notatkach</string>
@@ -33,8 +32,6 @@
     <string name="createNewTag">Wprowadź nazwę tagu</string>
     <string name="sort_Date_Increase">Data modyfikacji: od najnowszych</string>
     <string name="sort_Date_Decrease">Data zmiany: najpierw stare</string>
-    <string name="sort_Title_Increase">Tytuł: A-Z</string>
-    <string name="sort_Title_Decrease">Tytuł: Z-A</string>
     <string name="sortHead">Sortuj według:</string>
     <string name="shareApp">Udostępnij aplikację</string>
     <string name="privacyApp">Polityka prywatności</string>
@@ -62,17 +59,11 @@
     <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
     <string name="copyNoteEdits">Edytuj kopię</string>
     <string name="noteMoveTrashSnackbar">Notatka przeniesiona do kosza</string>
-    <string name="button_edit">Edytuj</string>
-    <string name="button_copy">Kopiuj</string>
-    <string name="button_phone">Zadzwoń</string>
-    <string name="button_mail">Zapisz</string>
-    <string name="button_url">Idź do</string>
     <!-- Wyczyść następną wersję -->
     <string name="hiddeTag">Ukryj notatki</string>
     <string name="visibleTag">Pokaż notatki</string>
     <string name="renameTag">Zmień nazwę</string>
 
-    <string name="settingsInterface">Ustawienia interfejsu</string>
     <string name="settings">Ustawienia</string>
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>
@@ -312,8 +303,6 @@
     <string name="attachment_open_failed">Nie można otworzyć pliku</string>
     <string name="attachment_save_failed">Nie można zapisać pliku</string>
     <string name="onExtendedEditorAttachWarning">Jeśli notatka zawiera załączniki lub multimedia, traci kompatybilność z prostym edytorem — można ją edytować tylko w edytorze rozszerzonym.</string>
-    <string name="showDetailsExtendedEditor">Pokaż więcej</string>
-    <string name="hiddenDetailsExtendedEditor">Ukryj</string>
     <string name="openImageError">Obraz jest niedostępny</string>
     <string name="shareError">Błąd udostępniania obrazu</string>
     <string name="mediaTab">Media</string>

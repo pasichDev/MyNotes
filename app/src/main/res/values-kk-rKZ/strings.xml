@@ -14,7 +14,6 @@
     <string name="telegram">Әзірлеуші ​​контактілерін ашыңыз</string>
     <string name="notSupportedShare">Бұл мазмұнға қолдау көрсетілмейді.</string>
     <string name="notFoundPlayMarket">Play Market қолданбасы жоқ</string>
-    <string name="copyX">Көшірілген</string>
     <string name="cd_format">Жазбаларды пішімдеу</string>
     <string name="search">Ескертпелердегі іздеу</string>
     <string name="close">Жабу</string>
@@ -32,8 +31,6 @@
     <string name="createNewTag">Тег атауын енгізіңіз</string>
     <string name="sort_Date_Increase">Өзгертілген күні: ең жаңасы бірінші</string>
     <string name="sort_Date_Decrease">Өзгертілген күні: алдымен ескі</string>
-    <string name="sort_Title_Increase">Тақырып: A-Z</string>
-    <string name="sort_Title_Decrease">Тақырып: Z-A</string>
     <string name="sortHead">Сұрыптау:</string>
     <string name="shareApp">Қолданбаны ортақ пайдалану</string>
     <string name="privacyApp">Құпиялылық саясаты</string>
@@ -61,17 +58,11 @@
     <string name="contentDescrChangeStyleText">Мәтін мәнерін өзгерту</string>
     <string name="copyNoteEdits">Көшірмені өңдеу</string>
     <string name="noteMoveTrashSnackbar">Ескертпе себетке жіберілді</string>
-    <string name="button_edit">Өңдеу</string>
-    <string name="button_copy">Көшіру</string>
-    <string name="button_phone">Қоңырау шалу</string>
-    <string name="button_mail">Жазу</string>
-    <string name="button_url">өтіңіз</string>
     <!-- Келесі нұсқаны тазалау -->
     <string name="hiddeTag">Ескертпелерді жасыру</string>
     <string name="visibleTag">Ескертпелерді көрсету</string>
     <string name="renameTag">Атын өзгерту</string>
 
-    <string name="settingsInterface">Интерфейс параметрлері</string>
     <string name="settings">Параметрлер</string>
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>
@@ -310,8 +301,6 @@
     <string name="attachment_open_failed">Файлды ашу мүмкін емес</string>
     <string name="attachment_save_failed">Файлды сақтау мүмкін емес</string>
     <string name="onExtendedEditorAttachWarning">Егер жазбада тіркемелер немесе медиафайлдар болса, ол қарапайым өңдегішпен үйлесімділігін жоғалтады — өңдеу тек кеңейтілген өңдегіште мүмкін.</string>
-    <string name="showDetailsExtendedEditor">Көбірек ақпарат</string>
-    <string name="hiddenDetailsExtendedEditor">Жасыру</string>
     <string name="openImageError">Суретті көру мүмкін емес</string>
     <string name="shareError">Суретті бөлісу қатесі</string>
     <string name="mediaTab">Медиа</string>

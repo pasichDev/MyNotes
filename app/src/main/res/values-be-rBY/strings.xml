@@ -14,7 +14,6 @@
     <string name="telegram">Адкрыць кантакты распрацоўніка</string>
     <string name="notSupportedShare">Гэты кантэнт не падтрымліваецца.</string>
     <string name="notFoundPlayMarket">Адсутнічае прыкладанне Play Market</string>
-    <string name="copyX">Скапіравана</string>
     <string name="cd_format">Фарматаваць нататкі</string>
 
     <string name="search">Пошук у нататках </string>
@@ -33,8 +32,6 @@
     <string name="createNewTag">Увядзіце назву пазнакі</string>
     <string name="sort_Date_Increase">Даце змены: спачатку новыя</string>
     <string name="sort_Date_Decrease">Даце змены: спачатку старыя</string>
-    <string name="sort_Title_Increase">Назве: ад А-Я</string>
-    <string name="sort_Title_Decrease">Назве: ад Я-А</string>
     <string name="sortHead">Картаваць па:</string>
     <string name="shareApp">Падзяліцца дадаткам</string>
     <string name="privacyApp">Палітыка прыватнасці</string>
@@ -62,16 +59,10 @@
     <string name="contentDescrChangeStyleText">Змяніць стыль тэксту</string>
     <string name="copyNoteEdits">Рэдагаваць копію</string>
     <string name="noteMoveTrashSnackbar">Нататку перамешчана ў кошык</string>
-    <string name="button_edit">Рэдагаваць</string>
-    <string name="button_copy">Капіяваць</string>
-    <string name="button_phone">Патэлефанаваць</string>
-    <string name="button_mail">Напісаць</string>
-    <string name="button_url">Перайсці</string>
     <string name="hiddeTag">Схаваць нататкі</string>
     <string name="visibleTag">Адлюстроўваць нататкі</string>
     <string name="renameTag">Перайменаваць</string>
 
-    <string name="settingsInterface">Налады інтэрфейсу</string>
     <string name="settings">Налады</string>
     <string name="aboutApps">Аб дадатку</string>
     <string name="trash">Кошык</string>
@@ -311,8 +302,6 @@
     <string name="attachment_save_failed">Не ўдалося захаваць файл</string>
     <string name="onExtendedEditorAttachWarning">Калі нататка змяшчае ўкладанні або медыя, яна страчвае сумяшчальнасць з простым рэдактарам — рэдагаванне магчыма толькі ў пашыраным.</string>
     <string name="onExtendedEditor">Уключыць пашыраны рэдактар</string>
-    <string name="showDetailsExtendedEditor">Падрабязней</string>
-    <string name="hiddenDetailsExtendedEditor">Схаваць</string>
     <string name="openImageError">Выява недаступная</string>
     <string name="shareError">Памылка падчас адпраўкі выявы</string>
     <string name="mediaTab">Медыя</string>
