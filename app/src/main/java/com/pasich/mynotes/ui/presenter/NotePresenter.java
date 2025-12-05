@@ -273,11 +273,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         // Case: new empty note → delete and exit
         if (targetNote != null && newNoteKey && !hasMeaningfulContent(targetNote)) {
 
-            getCompositeDisposable().add(getDataManager().deleteNote(targetNote).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
-                getView().runAttachmentsCleanup(targetNote);
-            }, throwable -> {
-                Log.e(TAG, "deleteNote(): FAILED", throwable);
-            }));
+            getCompositeDisposable().add(getDataManager().deleteNote(targetNote).subscribeOn(getSchedulerProvider().io()).subscribe(() -> getView().runAttachmentsCleanup(targetNote), throwable -> Log.e(TAG, "deleteNote(): FAILED", throwable)));
 
             if (!isViewDead()) {
                 getView().closeNoteActivity();

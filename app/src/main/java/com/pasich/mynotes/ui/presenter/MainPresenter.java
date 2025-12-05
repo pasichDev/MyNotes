@@ -359,20 +359,18 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         if (!showSearchView) {
             mSwipe = mSwipe + 1;
             if (mSwipe == 1) {
-                getView().exitWhat();
 
-                // Очищаємо попередній callback якщо він існує
+                if (isViewAttached()) getView().exitWhat();
+
                 if (swipeResetRunnable != null) {
                     uiHandler.removeCallbacks(swipeResetRunnable);
                 }
 
-                // Оптимізовано: зменшуємо затримку та спрощуємо логіку
                 swipeResetRunnable = () -> mSwipe = 0;
-                uiHandler.postDelayed(swipeResetRunnable, 3000); // Зменшили з 5000 до 3000
+                uiHandler.postDelayed(swipeResetRunnable, 3000);
 
                 return false;
             } else if (mSwipe == 2) {
-                // Очищаємо callback перед завершенням
                 if (swipeResetRunnable != null) {
                     uiHandler.removeCallbacks(swipeResetRunnable);
                 }
