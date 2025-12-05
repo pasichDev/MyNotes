@@ -408,8 +408,4 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         selectedTag.onNext(tag);
     }
 
-    @Override
-    public void resetScrollFlag() {
-        scrollToTop.onNext(false);
-    }
 }
