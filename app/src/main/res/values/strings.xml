@@ -364,6 +364,7 @@
     <string name="toolTipSimpleEditor">Simple Editor</string>
     <string name="toolTipExtebdedEditor">Extended Editor</string>
     <string name="duplicateTag">duplicate</string>
+    <string name="empty">Empty</string>
 
 </resources>
 

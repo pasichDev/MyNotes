@@ -122,4 +122,26 @@ public class NoteBindingAdapters {
                 paddingValue
         );
     }
+
+    @BindingAdapter("bindNoteItemTop")
+    public static void bindNoteItemTop(MaterialCardView tv, Note note) {
+        if (note == null) {
+            tv.setVisibility(View.GONE);
+            return;
+        }
+
+        String title = note.getTitle() != null ? note.getTitle().trim() : "";
+        String value = note.getValue() != null ? note.getValue().trim() : "";
+        String valueJson = note.getValueJson() != null ? note.getValueJson().trim() : "";
+        String attaches = note.getAttachments() != null ? note.getAttachments().trim() : "";
+
+        boolean isGone = title.isEmpty() && value.isEmpty() && note.isAttachments();
+
+        if (isGone) {
+            tv.setVisibility(View.GONE);
+        } else {
+            tv.setVisibility(View.VISIBLE);
+        }
+    }
+
 }

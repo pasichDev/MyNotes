@@ -272,11 +272,16 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
         // Case: new empty note → delete and exit
         if (targetNote != null && newNoteKey && !hasMeaningfulContent(targetNote)) {
+
             getCompositeDisposable().add(getDataManager().deleteNote(targetNote).subscribeOn(getSchedulerProvider().io()).subscribe(() -> {
                 getView().runAttachmentsCleanup(targetNote);
-                // completion ignored intentionally
-            }, throwable -> Log.e(TAG, "deleteNote() failed", throwable)));
-            if (!isViewDead()) getView().closeNoteActivity();
+            }, throwable -> {
+                Log.e(TAG, "deleteNote(): FAILED", throwable);
+            }));
+
+            if (!isViewDead()) {
+                getView().closeNoteActivity();
+            }
             return;
         }
 
@@ -286,10 +291,8 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             return;
         }
 
-        // ---- THERE ARE UNSAVED CHANGES ----
         if (needsSave()) {
 
-            // If autosave is currently running → wait
             if (isSavingInProgress) {
                 pendingClose = true;
                 return;
@@ -297,8 +300,8 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
             pendingClose = true;
 
-            // Special case for extended editor: raw JSON not saved yet
-            if (savedNote.getValueJson().isEmpty() && extendedEditor) {
+            // Extended editor "empty JSON" check is WRONG — replace with targetNote
+            if (extendedEditor && !hasMeaningfulContent(targetNote)) {
                 if (!isViewDead()) getView().closeNoteActivity();
                 return;
             }
@@ -309,12 +312,9 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
                 public void onSuccess() {
                     updateSaveState(SaveState.SAVED);
 
-                    // only NOW we close the activity
                     if (pendingClose && !isViewDead()) {
                         pendingClose = false;
-                        if (!isViewDead()) {
-                            getView().runAttachmentsCleanup(targetNote);
-                        }
+                        getView().runAttachmentsCleanup(targetNote);
                         getView().closeNoteActivity();
                     }
                 }
@@ -328,8 +328,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
             return;
         }
-
-        // Nothing to save → close immediately
         if (!isViewDead()) getView().closeNoteActivity();
     }
 
@@ -547,38 +545,28 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     public void copyNoteRequest() {
         if (targetNote == null) return;
 
-        getCompositeDisposable().add(
-                getDataManager().copyNote(targetNote)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(newId -> {
+        getCompositeDisposable().add(getDataManager().copyNote(targetNote).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(newId -> {
 
-                            // load new note
-                            getCompositeDisposable().add(
-                                    getDataManager().getNoteForId(newId)
-                                            .subscribeOn(getSchedulerProvider().io())
-                                            .observeOn(getSchedulerProvider().ui())
-                                            .subscribe(note -> {
-                                                targetNote = note;
-                                                savedNote.copyFrom(note);
-                                                idKey = newId;
-                                                newNoteKey = false;
+            // load new note
+            getCompositeDisposable().add(getDataManager().getNoteForId(newId).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(note -> {
+                targetNote = note;
+                savedNote.copyFrom(note);
+                idKey = newId;
+                newNoteKey = false;
 
-                                                if (!isViewDead()) {
-                                                    if (getExtendedEditor()) {
-                                                        getView().reloadExtendedEditor();
-                                                    }
-                                                    getView().runCopyAnimation();
-                                                    getView().loadingNote(note);
-                                                    getView().onNoteCopied(newId);
+                if (!isViewDead()) {
+                    if (getExtendedEditor()) {
+                        getView().reloadExtendedEditor();
+                    }
+                    getView().runCopyAnimation();
+                    getView().loadingNote(note);
+                    getView().onNoteCopied(newId);
 
-                                                }
+                }
 
-                                            }, err -> Log.e(TAG, "load failed", err))
-                            );
+            }, err -> Log.e(TAG, "load failed", err)));
 
-                        }, err -> Log.e(TAG, "copy failed", err))
-        );
+        }, err -> Log.e(TAG, "copy failed", err)));
     }
 
 }
