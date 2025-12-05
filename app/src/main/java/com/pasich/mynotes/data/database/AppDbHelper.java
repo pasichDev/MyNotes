@@ -180,6 +180,11 @@ public class AppDbHelper implements DbHelper {
         return Single.fromCallable(() -> copyNote ? appDatabase.noteDao().addNoteCopy(note) : appDatabase.transactionsNote().addNoteTransaction(note));
     }
 
+    public Single<Long> copyNote(Note original) {
+        return addNote(original.duplicate(), true);
+    }
+
+
     @Override
     public Completable addNotes(List<Note> notes) {
         return Completable.fromAction(() -> appDatabase.noteDao().addNotes(notes));

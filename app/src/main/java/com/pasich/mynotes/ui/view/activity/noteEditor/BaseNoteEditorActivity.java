@@ -2,7 +2,6 @@ package com.pasich.mynotes.ui.view.activity.noteEditor;
 
 import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -28,6 +27,7 @@ import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.utils.enums.SaveState;
+import com.pasich.mynotes.utils.transition.CopyNoteAnimationUtil;
 
 import java.util.Objects;
 
@@ -49,8 +49,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     protected abstract Toolbar getToolbar();
     // Returns toolbar instance
 
-    protected abstract Intent getCopyNoteIntent(long idNote);
-    // Intent for opening a copied note
 
     protected abstract T inflateBinding(LayoutInflater inflater);
     // Inflate and return view binding
@@ -235,8 +233,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Override
     public void openCopyNote(long idNote) {
-        Intent intent = getCopyNoteIntent(idNote);
-        if (intent != null) startActivity(intent);
+        notePresenter.copyNoteRequest();
     }
 
     @Override
@@ -257,6 +254,11 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     @Override
     public void initParam() {
         // Not implemented extended
+    }
+
+    @Override
+    public void runCopyAnimation() {
+        CopyNoteAnimationUtil.runCopyAnimation(binding.getRoot());
     }
 
 }

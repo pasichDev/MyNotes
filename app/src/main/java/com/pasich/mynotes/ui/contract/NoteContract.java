@@ -27,6 +27,11 @@ public interface NoteContract {
 
         void runAttachmentsCleanup(Note note);
 
+        void runCopyAnimation();
+
+        void onNoteCopied(long newNoteId);
+
+        void reloadExtendedEditor();
     }
 
     interface presenter extends BasePresenter<view> {
@@ -67,6 +72,9 @@ public interface NoteContract {
         void simpleNoteChange(String title, String value, boolean emergencySave);
 
         boolean hasNote();
+
+        void copyNoteRequest();
+
     }
 
     interface AutoSaveCallback {

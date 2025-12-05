@@ -1,5 +1,6 @@
 package com.pasich.mynotes.ui.presenter;
 
+
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Handler;
@@ -12,6 +13,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils;
 import com.pasich.mynotes.ui.contract.NoteContract;
+import com.pasich.mynotes.utils.constants.AutoSave;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
@@ -27,7 +29,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     private static final String TAG = "NotePresenter";
 
-    private static final long AUTO_SAVE_DELAY = 2000;
+
     private final Handler autoSaveHandler;
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
@@ -145,7 +147,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             }
         };
 
-        autoSaveHandler.postDelayed(autoSaveRunnable, AUTO_SAVE_DELAY);
+        autoSaveHandler.postDelayed(autoSaveRunnable, AutoSave.AUTO_SAVE_DELAY);
     }
 
 
@@ -541,5 +543,42 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
         onNoteChanged();
     }
 
+    @Override
+    public void copyNoteRequest() {
+        if (targetNote == null) return;
+
+        getCompositeDisposable().add(
+                getDataManager().copyNote(targetNote)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(newId -> {
+
+                            // load new note
+                            getCompositeDisposable().add(
+                                    getDataManager().getNoteForId(newId)
+                                            .subscribeOn(getSchedulerProvider().io())
+                                            .observeOn(getSchedulerProvider().ui())
+                                            .subscribe(note -> {
+                                                targetNote = note;
+                                                savedNote.copyFrom(note);
+                                                idKey = newId;
+                                                newNoteKey = false;
+
+                                                if (!isViewDead()) {
+                                                    if (getExtendedEditor()) {
+                                                        getView().reloadExtendedEditor();
+                                                    }
+                                                    getView().runCopyAnimation();
+                                                    getView().loadingNote(note);
+                                                    getView().onNoteCopied(newId);
+
+                                                }
+
+                                            }, err -> Log.e(TAG, "load failed", err))
+                            );
+
+                        }, err -> Log.e(TAG, "copy failed", err))
+        );
+    }
 
 }

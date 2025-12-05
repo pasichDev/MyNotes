@@ -2,6 +2,8 @@
 
 ## [2.4.42] - XX.XX.XXXX
 
+- Improved interaction when copying notes
+
 ## [2.4.41] - 01.12.2025
 
 - **Advanced editor:** added full support for inserting images into notes.

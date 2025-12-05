@@ -32,6 +32,6 @@ public interface MoreNoteDialogContract {
 
         void editTagNote(String nameTag, int idNote);
 
-        void copyNote(Note note, boolean noteActivity);
+        void copyNoteMainActivity(Note note);
     }
 }

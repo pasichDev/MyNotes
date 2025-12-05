@@ -40,6 +40,7 @@ public interface DbNotesHelper {
 
     Completable setTagNote(String nameTag, int idNote);
 
+    Single<Long> copyNote(Note original);
     // New trash actions
     Completable moveNoteToTrash(int id);
 
@@ -50,4 +51,6 @@ public interface DbNotesHelper {
     Completable transferNotesOutTrash(List<Integer> ids);
 
     Completable clearTrash();
+
+
 }

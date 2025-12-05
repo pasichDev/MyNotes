@@ -73,20 +73,9 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     }
 
     @Override
-    public void copyNote(Note note, boolean noteActivity) {
-
-        if (noteActivity) {
-            getCompositeDisposable().add(getDataManager().updateNote(note)
-                    .subscribeOn(getSchedulerProvider().io())
-                    .subscribe(
-                            () -> {
-                            }, // onComplete
-                            throwable -> Log.e("MoreNoteDialogPresenter", "Error updating note", throwable)
-                    ));
-        }
-
+    public void copyNoteMainActivity(Note note) {
         getCompositeDisposable().add(getDataManager()
-                .addNote(new Note().create(note.getTitle() + " (2)", note.getValue() + " ", new Date().getTime(), note.getTag()), true)
+                .addNote(new Note().create(note.getTitle() + " (copy)", note.getValue() + " ", new Date().getTime(), note.getTag()), true)
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(
                         aLong -> getView().callableCopyNote(aLong),

@@ -147,17 +147,12 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     @Override
     public void callableCopyNote(long newNoteId) {
-        if (activityNote) {
-            noteActivity.openCopyNote(Math.toIntExact(newNoteId));
-        } else {
-            mainActivity.openCopyNote(Math.toIntExact(newNoteId));
-        }
+        mainActivity.openCopyNote(Math.toIntExact(newNoteId));
     }
 
 
     @Override
     public void initListeners() {
-        // Перевіряємо що mNote не null
         if (mNote == null) {
             return;
         }
@@ -219,7 +214,12 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         });
 
         binding.copyNote.setOnClickListener(v -> {
-            mPresenter.copyNote(mNote, activityNote);
+            if (activityNote) {
+                noteActivity.openCopyNote(mNote.getId());
+            } else {
+                mPresenter.copyNoteMainActivity(mNote);
+            }
+
             dismiss();
         });
 

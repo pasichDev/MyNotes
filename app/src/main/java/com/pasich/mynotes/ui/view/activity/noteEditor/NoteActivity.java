@@ -1,9 +1,9 @@
 package com.pasich.mynotes.ui.view.activity.noteEditor;
 
+import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.Editable;
 import android.text.Layout;
 import android.view.LayoutInflater;
@@ -23,7 +23,6 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.utils.linkMovement.CustomLinkMovementMethod;
-import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -64,14 +63,6 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     @Override
     protected Toolbar getToolbar() {
         return binding.toolbar;
-    }
-
-    @Override
-    protected Intent getCopyNoteIntent(long idNote) {
-        return new Intent(this, NoteActivity.class)
-                .putExtra(NoteExtras.EXTRA_NEW_NOTE, false)
-                .putExtra(NoteExtras.EXTRA_ID_NOTE, idNote)
-                .putExtra(NoteExtras.EXTRA_TAG_NOTE, "");
     }
 
     @Override
@@ -432,13 +423,18 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     }
 
     @Override
-    public void openCopyNote(long idNote) {
-        super.openCopyNote(idNote);
-        finish();
+    public void runAttachmentsCleanup(Note note) {
+        // Not implemented extended
     }
 
     @Override
-    public void runAttachmentsCleanup(Note note) {
+    public void reloadExtendedEditor() {
         // Not implemented extended
+    }
+
+    @Override
+    public void onNoteCopied(long newNoteId) {
+        binding.duplicateTag.setTag("#" + getString(R.string.duplicateTag));
+        binding.duplicateTag.setVisibility(VISIBLE);
     }
 }

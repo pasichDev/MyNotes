@@ -173,7 +173,6 @@ public class Note {
 
     public void copyFrom(Note other) {
         if (other == null) return;
-
         this.title = other.title;
         this.value = other.value;
         this.date = other.date;
@@ -182,6 +181,19 @@ public class Note {
         this.hasRichContent = other.hasRichContent;
         this.attachments = other.attachments;
         this.Checked = other.Checked;
+    }
+
+    public Note duplicate() {
+        Note c = new Note();
+        c.setId(0);
+        c.setTitle(title);
+        c.setValue(value);
+        c.setValueJson(valueJson);
+        c.setAttachments(attachments);
+        c.setTag(tag);
+        c.setDate(System.currentTimeMillis());
+        c.setTrash(false);
+        return c;
     }
 
 

@@ -12,7 +12,6 @@ import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.local.LocalBackup;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -260,6 +259,11 @@ public class AppDataManager implements DataManager {
     @Override
     public Completable setTagNote(String nameTag, int idNote) {
         return dbHelper.setTagNote(nameTag, idNote);
+    }
+
+    @Override
+    public Single<Long> copyNote(Note original) {
+        return dbHelper.copyNote(original);
     }
 
     @Override
