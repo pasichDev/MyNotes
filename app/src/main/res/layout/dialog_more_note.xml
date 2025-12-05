@@ -59,8 +59,33 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}"
-                    android:layout_height="30dp" />
+                    android:layout_height="30dp"
+                    android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="20dp"
+                    android:gravity="start"
+                    android:orientation="vertical">
+
+                    <com.pasich.mynotes.ui.view.widgets.TwoSideSwitchView
+                        android:id="@+id/twoSideSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:inactiveColor="?attr/colorOutline"
+                        app:leftActiveColor="?attr/colorOnPrimaryContainer"
+                        app:leftIcon="@drawable/ic_edit"
+                        app:rightActiveColor="?attr/colorOnPrimaryContainer"
+                        app:rightIcon="@drawable/ic_extended"
+                        app:mode="left"
+                        />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp" />
 
                 <LinearLayout
                     android:id="@+id/action_panel_activate"

@@ -359,4 +359,10 @@
     <string name="error_dialog_wrong_context">Error: I can\'t open this menu here</string>
     <string name="export_warning_no_attachments">Please note: only text content is saved during export. Files, photos, and other attachments are omitted to ensure that the exported document is lightweight, convenient, and error-free when opened.</string>
     <string name="newBackupsDescrpt">Added support for new versions of backups with attachments and maintained compatibility with older formats.</string>
+
+
+    <string name="toolTipSimpleEditor">Simple Editor</string>
+    <string name="toolTipExtebdedEditor">Extended Editor</string>
+
 </resources>
+

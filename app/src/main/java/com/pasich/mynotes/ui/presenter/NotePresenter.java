@@ -278,10 +278,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             return;
         }
 
-        /*
-
-         */
-
         // No note → just close
         if (targetNote == null) {
             if (!isViewDead()) getView().closeNoteActivity();
