@@ -297,23 +297,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         }
     }
 
- /*   @Override
-    public void changeEditor(long idNote) {
-        Intent intent = new Intent(this, NoteActivity.class);
-        intent.putExtra(NoteExtras.EXTRA_ID_NOTE, idNote);
-
-        // 🧙‍♂️ Гладкий перехід MaterialContainerTransform
-        getWindow().setExitTransition(null);
-        getWindow().setEnterTransition(null);
-
-        startActivity(intent);
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-
-        finish();
-    }
-
-  */
-
     @Override
     public void onOpenFileChooser(Intent intent, int requestCode) {
         fileChooserLauncher.launch(intent);
