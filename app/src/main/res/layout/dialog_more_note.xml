@@ -38,7 +38,8 @@
 
             <include
                 android:id="@+id/settingsActivity"
-                layout="@layout/view_set_note_activity" />
+                layout="@layout/view_set_note_activity"
+                android:visibility="gone"/>
 
 
             <LinearLayout
@@ -59,7 +60,7 @@
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="30dp"
+                    android:layout_height="20dp"
                     android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}" />
 
                 <LinearLayout
@@ -71,13 +72,13 @@
                     android:visibility="@{activityNote ?  View.VISIBLE  : View.GONE , default = gone}">
 
                     <com.pasich.mynotes.ui.view.widgets.TwoSideSwitchView
-                        android:id="@+id/twoSideSwitch"
+                        android:id="@+id/changeTypeEditor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:inactiveColor="?attr/colorOutline"
                         app:leftActiveColor="?attr/colorOnPrimaryContainer"
                         app:leftIcon="@drawable/ic_edit"
-                        app:mode="left"
+                        app:modeEditor="inactive"
                         app:rightActiveColor="?attr/colorOnPrimaryContainer"
                         app:rightIcon="@drawable/ic_extended" />
 

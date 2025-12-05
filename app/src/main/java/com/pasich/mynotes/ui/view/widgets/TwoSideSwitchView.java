@@ -83,13 +83,13 @@ public class TwoSideSwitchView extends LinearLayout {
             rightActiveColor = a.getColor(R.styleable.TwoSideSwitchView_rightActiveColor, rightActiveColor);
             inactiveColor = a.getColor(R.styleable.TwoSideSwitchView_inactiveColor, inactiveColor);
 
-            int modeValue = a.getInt(R.styleable.TwoSideSwitchView_mode, 0);
+            int modeValue = a.getInt(R.styleable.TwoSideSwitchView_modeEditor, 0);
             switch (modeValue) {
                 case 1:
-                    currentMode = Mode.LEFT;
+                    currentMode = Mode.SIMPLE;
                     break;
                 case 2:
-                    currentMode = Mode.RIGHT;
+                    currentMode = Mode.EXTENDED;
                     break;
                 default:
                     currentMode = Mode.INACTIVE;
@@ -100,12 +100,12 @@ public class TwoSideSwitchView extends LinearLayout {
 
         // ---------- APPLY STARTUP STATE ----------
         switch (currentMode) {
-            case RIGHT:
+            case EXTENDED:
                 switchView.setChecked(true);
                 currentThumbColor = rightActiveColor;
                 break;
 
-            case LEFT:
+            case SIMPLE:
                 switchView.setChecked(false);
                 currentThumbColor = leftActiveColor;
                 break;
@@ -123,37 +123,53 @@ public class TwoSideSwitchView extends LinearLayout {
 
         // ---------- LISTENERS ----------
         switchView.setOnCheckedChangeListener((btn, checked) -> {
-            currentMode = checked ? Mode.RIGHT : Mode.LEFT;
+            if (currentMode == Mode.INACTIVE) return;
+            currentMode = checked ? Mode.EXTENDED : Mode.SIMPLE;
             applyCurrentState(false);
             notifyModeChanged();
         });
 
         leftIcon.setOnClickListener(v -> {
-            currentMode = Mode.LEFT;
+            if (currentMode == Mode.INACTIVE) return;
+            currentMode = Mode.SIMPLE;
             switchView.setChecked(false);
             applyCurrentState(false);
             notifyModeChanged();
         });
 
         rightIcon.setOnClickListener(v -> {
-            currentMode = Mode.RIGHT;
+            if (currentMode == Mode.INACTIVE) return;
+            currentMode = Mode.EXTENDED;
             switchView.setChecked(true);
             applyCurrentState(false);
             notifyModeChanged();
         });
+        applyInteractionState();
+    }
+
+    private void applyInteractionState() {
+        boolean active = currentMode != Mode.INACTIVE;
+
+        leftIcon.setEnabled(active);
+        rightIcon.setEnabled(active);
+        switchView.setEnabled(active);
+
+        setEnabled(active);
+        setClickable(active);
+        setFocusable(active);
     }
 
     private void applyCurrentState(boolean instant) {
         switch (currentMode) {
 
-            case RIGHT:
+            case EXTENDED:
                 animateIconTint(leftIcon, getIconTint(leftIcon), inactiveColor, instant);
                 animateIconTint(rightIcon, getIconTint(rightIcon), rightActiveColor, instant);
                 animateThumbTint(currentThumbColor, rightActiveColor, instant);
                 currentThumbColor = rightActiveColor;
                 break;
 
-            case LEFT:
+            case SIMPLE:
                 animateIconTint(leftIcon, getIconTint(leftIcon), leftActiveColor, instant);
                 animateIconTint(rightIcon, getIconTint(rightIcon), inactiveColor, instant);
                 animateThumbTint(currentThumbColor, leftActiveColor, instant);
@@ -208,14 +224,15 @@ public class TwoSideSwitchView extends LinearLayout {
 
     public void setMode(Mode mode) {
         this.currentMode = mode;
-        switchView.setChecked(mode == Mode.RIGHT);
+        switchView.setChecked(mode == Mode.EXTENDED);
         applyCurrentState(true);
+        applyInteractionState();
     }
 
     public enum Mode {
         INACTIVE,
-        LEFT,
-        RIGHT
+        SIMPLE,
+        EXTENDED
     }
 
     public interface OnModeChangedListener {

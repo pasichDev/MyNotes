@@ -23,6 +23,7 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
@@ -175,10 +176,19 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         }
 
         if (item.getItemId() == R.id.moreBut) {
-            new MoreNoteDialog(notePresenter.getNote(), notePresenter.getNewNotesKey(), true, 0, true).show(getSupportFragmentManager(), "MoreNote");
+            new MoreNoteDialog(notePresenter.getNote(),
+                    notePresenter.getNewNotesKey(),
+                    isExtendedEditor() ? MoreNoteDialog.RootActivity.ExtendedActivity : MoreNoteDialog.RootActivity.NoteActivity,
+                    0)
+                    .show(getSupportFragmentManager(), "MoreNote");
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    protected boolean isExtendedEditor() {
+        return binding instanceof ActivityNoteExtendedEditorBinding;
     }
 
     @Override
