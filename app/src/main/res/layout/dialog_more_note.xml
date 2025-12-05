@@ -8,10 +8,6 @@
         <import type="android.view.View" />
 
         <variable
-            name="newNote"
-            type="boolean" />
-
-        <variable
             name="activityNote"
             type="boolean" />
 
@@ -39,7 +35,7 @@
             <include
                 android:id="@+id/settingsActivity"
                 layout="@layout/view_set_note_activity"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
 
             <LinearLayout
@@ -171,7 +167,7 @@
                     android:background="@drawable/bg_item_middle"
                     android:orientation="horizontal"
                     android:padding="@dimen/paddingItems"
-                    android:visibility="@{newNote ? View.GONE : View.VISIBLE, default = gone}">
+                    android:visibility="@{valuesText ? View.VISIBLE : View.GONE, default = gone}">
 
                     <ImageView
                         style="@style/iconDialogList"
@@ -195,8 +191,7 @@
                     android:layout_marginHorizontal="20dp"
                     android:background="@drawable/bg_item_end"
                     android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="@{newNote ? View.GONE : View.VISIBLE, default = gone}">
+                    android:padding="@dimen/paddingItems">
 
                     <ImageView
                         style="@style/iconDialogList"
@@ -243,8 +238,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="17dp"
                     android:paddingVertical="5dp"
-                    android:scrollbars="none"
-                    android:visibility="@{!newNote ?  View.VISIBLE :View.GONE , default = gone}">
+                    android:scrollbars="none">
 
                     <com.google.android.material.chip.ChipGroup
                         android:id="@+id/chipGroupSystem"

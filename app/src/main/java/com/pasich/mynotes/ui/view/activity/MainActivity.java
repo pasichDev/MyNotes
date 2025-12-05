@@ -399,7 +399,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void choiceNoteDialog(Note note, int position) {
-        new MoreNoteDialog(note, false, MoreNoteDialog.RootActivity.MainActivity, position).show(getSupportFragmentManager(), "ChoiceDialog");
+        new MoreNoteDialog(note, MoreNoteDialog.RootActivity.MainActivity, position).show(getSupportFragmentManager(), "ChoiceDialog");
     }
 
     private boolean finishActivity() {

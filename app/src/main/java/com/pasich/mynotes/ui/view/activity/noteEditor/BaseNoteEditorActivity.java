@@ -181,7 +181,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         if (item.getItemId() == R.id.moreBut) {
             new MoreNoteDialog(notePresenter.getNote(),
-                    notePresenter.getNewNotesKey(),
                     isExtendedEditor() ? MoreNoteDialog.RootActivity.ExtendedActivity : MoreNoteDialog.RootActivity.NoteActivity,
                     0)
                     .show(getSupportFragmentManager(), "MoreNote");

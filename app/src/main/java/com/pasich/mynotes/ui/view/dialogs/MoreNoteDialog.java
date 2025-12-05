@@ -42,7 +42,6 @@ import io.reactivex.Flowable;
 public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDialogContract.view {
 
     private final Note mNote;
-    private final boolean newNoteActivity;
     private final RootActivity activityNote;
 
     @Inject
@@ -57,9 +56,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     private MoreNoteNoteActivityView noteActivity;
     private MoreNoteMainActivityView mainActivity;
 
-    public MoreNoteDialog(Note note, boolean newNoteActivity, RootActivity activityNote, int position) {
+    public MoreNoteDialog(Note note, RootActivity activityNote, int position) {
         this.mNote = note;
-        this.newNoteActivity = newNoteActivity;
         this.activityNote = activityNote;
         this.positionItem = position;
     }
@@ -72,16 +70,15 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
         mPresenter.attachView(this);
         mPresenter.viewIsReady();
-        binding.setNewNote(newNoteActivity);
         binding.setActivityNote(activityNote != RootActivity.MainActivity);
         binding.setNote(mNote);
         binding.setValuesText(mNote.getValue().length() > 1);
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
         setHideTextSize();
         setChangeTypeEditor();
+        goneCopyNotesExtended();
         return binding.getRoot();
     }
-
 
     @Override
     public void setState(BottomSheetDialog dialog) {
@@ -90,7 +87,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     // Ховає зміну шрифту на новій версії редактора
     public void setHideTextSize() {
-        binding.settingsActivity.getRoot().setVisibility(activityNote == RootActivity.NoteActivity ? View.VISIBLE : GONE);
+        binding.settingsActivity.getRoot().setVisibility(activityNote == RootActivity.NoteActivity ? View.VISIBLE : View.GONE);
     }
 
     public void setChangeTypeEditor() {
@@ -100,8 +97,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             return;
         }
         binding.changeTypeEditor.setMode(activityNote == RootActivity.ExtendedActivity ? TwoSideSwitchView.Mode.EXTENDED : TwoSideSwitchView.Mode.SIMPLE);
+    }
 
-
+    public void goneCopyNotesExtended() {
+        binding.copyNote.setVisibility(mNote.isAttachments() ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -180,13 +179,13 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             });
 
             binding.changeTypeEditor.setOnModeChangedListener(mode -> binding.changeTypeEditor.postDelayed(() -> {
-                switch (mode) {
-                    case SIMPLE, EXTENDED -> noteActivity.changeEditor(mNote.getId());
-                    case INACTIVE -> {
-                    }
-                }
-                dismiss();
-            }, 300)
+                        switch (mode) {
+                            case SIMPLE, EXTENDED -> noteActivity.changeEditor(mNote.getId());
+                            case INACTIVE -> {
+                            }
+                        }
+                        dismiss();
+                    }, 300)
             );
 
         } else {
@@ -223,6 +222,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         });
 
         binding.copyNote.setOnClickListener(v -> {
+            if(mNote.isAttachments()) return;
             if (activityNote != RootActivity.MainActivity) {
                 noteActivity.openCopyNote(mNote.getId());
             } else {
