@@ -29,6 +29,8 @@ public class TwoSideSwitchView extends LinearLayout {
     private int currentThumbColor;
     private Mode currentMode = Mode.INACTIVE;
     private OnModeChangedListener modeChangedListener;
+    private boolean suppressCallback = false;
+
 
     public TwoSideSwitchView(Context context) {
         super(context);
@@ -50,6 +52,7 @@ public class TwoSideSwitchView extends LinearLayout {
     }
 
     private void notifyModeChanged() {
+        if (suppressCallback) return;
         if (modeChangedListener != null) {
             modeChangedListener.onModeChanged(currentMode);
         }
@@ -223,10 +226,12 @@ public class TwoSideSwitchView extends LinearLayout {
     }
 
     public void setMode(Mode mode) {
+        suppressCallback = true;
         this.currentMode = mode;
         switchView.setChecked(mode == Mode.EXTENDED);
         applyCurrentState(true);
         applyInteractionState();
+        suppressCallback = false;
     }
 
     public enum Mode {

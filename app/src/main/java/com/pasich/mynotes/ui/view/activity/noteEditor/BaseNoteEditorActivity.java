@@ -1,10 +1,13 @@
 package com.pasich.mynotes.ui.view.activity.noteEditor;
 
+import static com.pasich.mynotes.utils.navigation.NoteExtras.EXTRA_ID_NOTE;
 import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +31,7 @@ import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.utils.enums.SaveState;
+import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.transition.CopyNoteAnimationUtil;
 
 import java.util.Objects;
@@ -187,7 +191,21 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     }
 
 
+    /**
+     * Determines whether the current note editor screen is using
+     * the Extended Editor layout (ActivityNoteExtendedEditorBinding).
+     * <p>
+     * This method is defensive:
+     * - safely handles null binding
+     *
+     * @return true if this Activity is using the Extended Editor, false otherwise.
+     */
     protected boolean isExtendedEditor() {
+        if (binding == null) {
+            Log.w("BaseNoteActivity", "isExtendedEditor(): binding is null!");
+            return false;
+        }
+
         return binding instanceof ActivityNoteExtendedEditorBinding;
     }
 
@@ -247,6 +265,26 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     }
 
     @Override
+    public void changeEditor(long idNote) {
+        Intent intent = new Intent(this, isExtendedEditor() ? NoteActivity.class : NoteExtendedEditorActivity.class);
+        intent.putExtra(NoteExtras.EXTRA_NEW_NOTE, false);
+        intent.putExtra(EXTRA_ID_NOTE, idNote);
+
+        getWindow().setExitTransition(null);
+        getWindow().setEnterTransition(null);
+
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+
+        finish();
+    }
+
+    @Override
+    public void runCopyAnimation() {
+        CopyNoteAnimationUtil.runCopyAnimation(binding.getRoot());
+    }
+
+    @Override
     public void changeTextStyle() {
         // Not implemented extended
     }
@@ -264,11 +302,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     @Override
     public void initParam() {
         // Not implemented extended
-    }
-
-    @Override
-    public void runCopyAnimation() {
-        CopyNoteAnimationUtil.runCopyAnimation(binding.getRoot());
     }
 
 }

@@ -2,7 +2,8 @@
 
 ## [2.4.42] - XX.XX.XXXX
 
-- Improved interaction when copying notes
+- Enhanced user experience when copying notes (improved animation & feedback)
+- Introduced seamless switching between editors directly from the note screen
 
 ## [2.4.41] - 01.12.2025
 

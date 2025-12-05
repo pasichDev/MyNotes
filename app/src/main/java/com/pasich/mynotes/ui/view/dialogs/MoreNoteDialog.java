@@ -3,6 +3,7 @@ package com.pasich.mynotes.ui.view.dialogs;
 
 import static android.view.View.GONE;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -118,31 +119,29 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     @Override
     public void initInterfaces() {
-        try {
-            if (activityNote != RootActivity.MainActivity) {
-                if (requireActivity() instanceof MoreNoteNoteActivityView) {
-                    noteActivity = (MoreNoteNoteActivityView) requireActivity();
-                    mainActivity = null;
-                } else {
-                    Toast.makeText(requireContext(),
-                            R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
-                    dismiss();
-                }
-            } else {
-                if (requireActivity() instanceof MoreNoteMainActivityView) {
-                    mainActivity = (MoreNoteMainActivityView) requireActivity();
-                    noteActivity = null;
-                } else {
-                    Toast.makeText(requireContext(),
-                            R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
-                    dismiss();
-                }
+        Activity activity = requireActivity();
+
+        // Якщо діалог відкрито НЕ з головної активності → очікуємо NoteActivity
+        if (activityNote != RootActivity.MainActivity) {
+
+            if (activity instanceof MoreNoteNoteActivityView) {
+                noteActivity = (MoreNoteNoteActivityView) activity;
+                mainActivity = null;
+                return;
             }
-        } catch (Exception e) {
-            Toast.makeText(requireContext(),
-                    R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
-            dismiss();
+
+        } else {
+            // Інакше — очікуємо MainActivity
+            if (activity instanceof MoreNoteMainActivityView) {
+                mainActivity = (MoreNoteMainActivityView) activity;
+                noteActivity = null;
+                return;
+            }
         }
+
+        // Якщо ми сюди дійшли — це помилковий контекст
+        Toast.makeText(requireContext(), R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+        dismiss();
     }
 
 
@@ -179,6 +178,16 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                 textStylePreferences.changeArgument();
                 noteActivity.changeTextStyle();
             });
+
+            binding.changeTypeEditor.setOnModeChangedListener(mode -> binding.changeTypeEditor.postDelayed(() -> {
+                switch (mode) {
+                    case SIMPLE, EXTENDED -> noteActivity.changeEditor(mNote.getId());
+                    case INACTIVE -> {
+                    }
+                }
+                dismiss();
+            }, 300)
+            );
 
         } else {
             binding.actionPanelActivate.setOnClickListener(view -> {

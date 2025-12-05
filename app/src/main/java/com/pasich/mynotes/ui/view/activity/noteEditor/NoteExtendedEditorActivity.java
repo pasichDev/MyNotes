@@ -32,6 +32,7 @@ import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
+import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import jakarta.inject.Inject;
@@ -295,6 +296,23 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
             binding.titleToolbarTagCollapsed.setVisibility(View.GONE);
         }
     }
+
+ /*   @Override
+    public void changeEditor(long idNote) {
+        Intent intent = new Intent(this, NoteActivity.class);
+        intent.putExtra(NoteExtras.EXTRA_ID_NOTE, idNote);
+
+        // 🧙‍♂️ Гладкий перехід MaterialContainerTransform
+        getWindow().setExitTransition(null);
+        getWindow().setEnterTransition(null);
+
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+
+        finish();
+    }
+
+  */
 
     @Override
     public void onOpenFileChooser(Intent intent, int requestCode) {
