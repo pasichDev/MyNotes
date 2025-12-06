@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.utils.recycler.TagPayloads;
+import com.pasich.mynotes.utils.recycler.payloads.TagPayloads;
 
 
 import java.util.ArrayList;

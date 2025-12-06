@@ -1,7 +1,6 @@
 package com.pasich.mynotes.utils.actionPanel.tool;
 
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 
@@ -13,11 +12,11 @@ import javax.inject.Inject;
 public class TrashNoteActionTool {
 
     private final ArrayList<Note> ArrayChecked = new ArrayList<>();
-    private final NoteAdapter<ItemNoteBinding> tAdapter;
+    private final NoteAdapter tAdapter;
     private final ActionUtils actionUtils;
 
     @Inject
-    public TrashNoteActionTool(NoteAdapter<ItemNoteBinding> adapter, ActionUtils actionUtils) {
+    public TrashNoteActionTool(NoteAdapter adapter, ActionUtils actionUtils) {
         this.tAdapter = adapter;
         this.actionUtils = actionUtils;
     }

@@ -35,10 +35,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
     private final BehaviorSubject<Tag> selectedTag = BehaviorSubject.createDefault(new Tag());
     private final BehaviorSubject<String> sortParam = BehaviorSubject.create();
-    private final BehaviorSubject<Boolean> scrollToTop = BehaviorSubject.createDefault(false);
-    // Output stream
-    private final BehaviorSubject<MainViewState> viewState =
-            BehaviorSubject.createDefault(MainViewState.empty());
+    private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
     private Note backupDeleteNote;
     private int mSwipe = 0;
     private Runnable swipeResetRunnable;
@@ -108,7 +105,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                                 selectedTag,
                                 sortParam,
                                 hiddenTagsStream,
-                                scrollToTop,
                                 this::buildState
                         )
                         .subscribeOn(getSchedulerProvider().io())
@@ -127,29 +123,24 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             List<Note> notes,
             Tag selectedTag,
             String sort,
-            Set<String> hiddenTags,
-            boolean scrollToTopFlag
+            Set<String> hiddenTags
     ) {
         String tagName = selectedTag == null ? "allNotes" : selectedTag.getNameTag();
 
-        // 1) Фільтр по прихованих тегах
+        // Фільтр по прихованих тегах
         List<Note> visible = filterHidden(notes, hiddenTags);
 
-        // 2) Фільтр по обраному тегу
+        // Фільтр по обраному тегу
         List<Note> filtered = filterNotes(visible, tagName);
 
-        // 3) Сортування
+        // Сортування
         List<Note> sorted = sortNotes(filtered, sort);
 
 
         return new MainViewState(
                 tags,
                 sorted,
-                selectedTag,
-                sort,
-                sorted.isEmpty(),
-                sorted.size(),
-                hiddenTags
+                selectedTag
         );
     }
 
@@ -199,7 +190,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     public void onSortChanged(String newSort) {
         sortParam.onNext(newSort);
-        scrollToTop.onNext(true);
     }
 
 

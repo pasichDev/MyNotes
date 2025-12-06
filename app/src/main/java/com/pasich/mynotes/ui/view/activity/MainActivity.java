@@ -15,10 +15,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
@@ -28,12 +28,10 @@ import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
-import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
-import com.pasich.mynotes.ui.controllers.AnimationController;
 import com.pasich.mynotes.ui.controllers.AppUpdateController;
-import com.pasich.mynotes.ui.controllers.EmptyStateController;
 import com.pasich.mynotes.ui.controllers.NavigationController;
+import com.pasich.mynotes.ui.controllers.RenderMainActivityController;
 import com.pasich.mynotes.ui.controllers.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.state.MainViewState;
@@ -48,8 +46,8 @@ import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 import com.pasich.mynotes.utils.actionPanel.tool.NoteActionTool;
-import com.pasich.mynotes.utils.adapters.baseGenericAdapter.OnItemClickListener;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
+import com.pasich.mynotes.utils.adapters.notes.OnItemClickListener;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
 import com.pasich.mynotes.utils.adapters.tagAdapter.OnItemClickListenerTag;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
@@ -92,11 +90,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     public TagsAdapter tagsAdapter;
     @Inject
-    public GridLayoutManager gridLayoutManager;
+    public StaggeredGridLayoutManager staggeredGridLayoutManager;
     @Inject
     public ActionUtils actionUtils;
     @Inject
-    public NoteAdapter<ItemNoteBinding> mNoteAdapter;
+    public NoteAdapter mNoteAdapter;
     @Named("TagsItemSpaceDecoration")
     @Inject
     public SpacesItemDecoration itemDecorationTags;
@@ -121,7 +119,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 navigationController.updateNewVersionIndicator(hasNewVersion);
         }
     });
-    private EmptyStateController emptyStateController;
+    private RenderMainActivityController renderMainActivityController;
     private Tag currentSelectedTag = null;
 
     @Override
@@ -156,24 +154,29 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         navigationController.init();
         navigationController.handleShortcuts(getIntent());
 
-        emptyStateController = new EmptyStateController(mActivityBinding, new AnimationController());
+        renderMainActivityController = new RenderMainActivityController(mActivityBinding);
     }
-
 
     @Override
     public void render(MainViewState state) {
-        emptyStateController.showState(
-                state.isEmpty(),
-                state.selectedTag(),
-                state.notes().size()
-        );
-        tagsAdapter.submitList(state.tags());
         currentSelectedTag = state.selectedTag();
-        mNoteAdapter.submitList(state.notes());
-
+        // render notes list
+        renderNotes(state.notes(), state.selectedTag());
+        // render tags list
+        renderTags(state.tags());
+        // search adapter
         searchController.setDefaultNotesList(state.notes());
     }
 
+
+    private void renderTags(List<Tag> tags) {
+        renderMainActivityController.renderListTags(tags);
+        tagsAdapter.submitList(tags);
+    }
+
+    private void renderNotes(List<Note> notes, Tag currentSelectedTag) {
+        mNoteAdapter.submitList(notes, () -> renderMainActivityController.showStateNoteList(currentSelectedTag, notes.size()));
+    }
 
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
@@ -223,7 +226,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             } else if (idItem == R.id.format) {
                 if (!actionUtils.getAction()) {
                     formatList.formatNote(menuItem);
-                    gridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
+                    staggeredGridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
                 }
             }
 
@@ -258,7 +261,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             @Override
             public void onClick(int position, Note model) {
                 if (!actionUtils.getAction()) {
-                    openNoteEdit(model, gridLayoutManager.findViewByPosition(position));
+                    openNoteEdit(model, staggeredGridLayoutManager.findViewByPosition(position));
                 } else selectItemAction(model, position, true);
 
             }
@@ -303,7 +306,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listTags.setLayoutManager(mLinearLayoutManager);
         mActivityBinding.listTags.setAdapter(tagsAdapter);
         mActivityBinding.listNotes.addItemDecoration(itemDecorationNotes);
-        mActivityBinding.listNotes.setLayoutManager(gridLayoutManager);
+        mActivityBinding.listNotes.setLayoutManager(staggeredGridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
         mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
 

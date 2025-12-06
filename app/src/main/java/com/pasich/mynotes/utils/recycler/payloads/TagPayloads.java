@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.recycler;
+package com.pasich.mynotes.utils.recycler.payloads;
 
 public final class TagPayloads {
     public static final String SELECTED = "payload_selected";

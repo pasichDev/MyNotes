@@ -12,7 +12,6 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityTrashBinding;
-import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.TrashContract;
 import com.pasich.mynotes.ui.presenter.TrashPresenter;
 import com.pasich.mynotes.utils.actionPanel.ActionUtils;
@@ -39,7 +38,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     public TrashNoteActionTool trashNoteActionTool;
 
     @Inject
-    public NoteAdapter<ItemNoteBinding> mNotesTrashAdapter;
+    public NoteAdapter mNotesTrashAdapter;
 
     @Inject
     public ActionUtils actionUtils;

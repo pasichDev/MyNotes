@@ -1,4 +1,4 @@
-package com.pasich.mynotes.utils.adapters.baseGenericAdapter;
+package com.pasich.mynotes.utils.adapters.notes;
 
 
 public interface OnItemClickListener<T> {

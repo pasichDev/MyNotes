@@ -13,11 +13,11 @@ import javax.inject.Inject;
 public class NoteActionTool {
 
     private final ArrayList<Note> ArrayChecked = new ArrayList<>();
-    private final NoteAdapter<ItemNoteBinding> mAdapter;
+    private final NoteAdapter mAdapter;
     private final ActionUtils actionUtils;
 
     @Inject
-    public NoteActionTool(NoteAdapter<ItemNoteBinding> adapter, ActionUtils actionUtils) {
+    public NoteActionTool(NoteAdapter adapter, ActionUtils actionUtils) {
         this.mAdapter = adapter;
         this.actionUtils = actionUtils;
     }

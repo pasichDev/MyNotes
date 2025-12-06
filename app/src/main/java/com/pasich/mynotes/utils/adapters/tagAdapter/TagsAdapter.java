@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagBinding;
-import com.pasich.mynotes.utils.recycler.TagPayloads;
+import com.pasich.mynotes.utils.recycler.payloads.TagPayloads;
 
 import java.util.List;
 

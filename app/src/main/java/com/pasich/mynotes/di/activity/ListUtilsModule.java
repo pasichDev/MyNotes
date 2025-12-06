@@ -4,18 +4,14 @@ package com.pasich.mynotes.di.activity;
 import android.content.Context;
 
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
-import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
-import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilNote;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTag;
 
 import javax.inject.Named;
@@ -24,7 +20,6 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.android.components.ActivityComponent;
-import dagger.hilt.android.qualifiers.ActivityContext;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.android.scopes.ActivityScoped;
 
@@ -40,15 +35,13 @@ public class ListUtilsModule {
 
     @Provides
     @ActivityScoped
-    NoteAdapter<ItemNoteBinding> providerGenericAdapter(@Named("Note") DiffUtil.ItemCallback<Note> diff) {
-        return new NoteAdapter<>((DiffUtilNote) diff, R.layout.item_note, ItemNoteBinding::setNote);
+    StaggeredGridLayoutManager providesStaggeredGridLayoutManager(int spanCount) {
+        return new StaggeredGridLayoutManager(spanCount, LinearLayoutManager.VERTICAL);
     }
 
-    @Named("Note")
     @Provides
-    @ActivityScoped
-    DiffUtil.ItemCallback<Note> providesDiffUtilCallbackNote(DiffUtilNote diffUtil) {
-        return diffUtil;
+    public NoteAdapter provideNoteAdapter() {
+        return new NoteAdapter();
     }
 
     @Named("Tag")
@@ -58,11 +51,6 @@ public class ListUtilsModule {
         return diffUtil;
     }
 
-    @Provides
-    @ActivityScoped
-    GridLayoutManager providesStaggeredGridLayoutManager(@ActivityContext Context context, int spanCount) {
-        return new GridLayoutManager(context, spanCount);
-    }
 
     @Provides
     @ActivityScoped
