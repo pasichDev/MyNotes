@@ -16,9 +16,9 @@ import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -106,7 +106,8 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                                 sortParam,
                                 hiddenTagsStream,
                                 this::buildState
-                        )
+                        ).debounce(5, TimeUnit.MILLISECONDS)
+                        .distinctUntilChanged()
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
@@ -125,67 +126,33 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             String sort,
             Set<String> hiddenTags
     ) {
+        // 1. Filter hidden
+        List<Note> visible = hiddenTags == null || hiddenTags.isEmpty()
+                ? notes
+                : notes.stream()
+                .filter(n -> !hiddenTags.contains(n.getTag()))
+                .toList();
+
+        // 2. Filter by tag
         String tagName = selectedTag == null ? "allNotes" : selectedTag.getNameTag();
+        List<Note> filtered = tagName.equals("allNotes")
+                ? visible
+                : visible.stream()
+                .filter(n -> tagName.equals(n.getTag()))
+                .toList();
 
-        // Фільтр по прихованих тегах
-        List<Note> visible = filterHidden(notes, hiddenTags);
+        // ⚠️ FIX: Make mutable copy before sorting
+        List<Note> sorted = new ArrayList<>(filtered);
 
-        // Фільтр по обраному тегу
-        List<Note> filtered = filterNotes(visible, tagName);
-
-        // Сортування
-        List<Note> sorted = sortNotes(filtered, sort);
-
-
-        return new MainViewState(
-                tags,
-                sorted,
-                selectedTag
+        // 3. Sort
+        sorted.sort((a, b) ->
+                sort.equals(SortParam.DataSort)
+                        ? Long.compare(b.getDate(), a.getDate())
+                        : Long.compare(a.getDate(), b.getDate())
         );
+
+        return new MainViewState(tags, sorted, selectedTag);
     }
-
-
-    private List<Note> filterHidden(List<Note> notes, Set<String> hiddenTags) {
-        if (hiddenTags == null || hiddenTags.isEmpty()) return notes;
-
-        List<Note> result = new ArrayList<>(notes.size());
-        for (Note note : notes) {
-            if (!hiddenTags.contains(note.getTag())) {
-                result.add(note);
-            }
-        }
-        return result;
-    }
-
-
-    private List<Note> filterNotes(List<Note> notes, String tagName) {
-        if (tagName == null || tagName.equals("allNotes")) {
-            return notes;
-        }
-
-        List<Note> result = new ArrayList<>();
-        for (Note note : notes) {
-            if (tagName.equals(note.getTag())) {
-                result.add(note);
-            }
-        }
-        return result;
-    }
-
-
-    private List<Note> sortNotes(List<Note> notes, String sort) {
-        List<Note> sorted = new ArrayList<>(notes);
-        Comparator<Note> comparator;
-        if (sort.equals(SortParam.DataSort)) {
-            comparator = (e1, e2) -> Long.compare(e2.getDate(), e1.getDate());
-        } else {
-            comparator = Comparator.comparingLong(Note::getDate);
-        }
-
-        sorted.sort(comparator);
-        return sorted;
-    }
-
 
     @Override
     public void onSortChanged(String newSort) {

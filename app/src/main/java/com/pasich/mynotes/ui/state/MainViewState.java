@@ -4,6 +4,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 
 import java.util.List;
+import java.util.Objects;
 
 public record MainViewState(
         List<Tag> tags,
@@ -17,5 +18,24 @@ public record MainViewState(
                 null
         );
     }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MainViewState other)) return false;
+
+        return tags.equals(other.tags)
+                && notes.equals(other.notes)
+                && ((selectedTag == null && other.selectedTag == null)
+                || (selectedTag != null && selectedTag.equals(other.selectedTag)));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tags, notes, selectedTag);
+    }
+
+
 }
 

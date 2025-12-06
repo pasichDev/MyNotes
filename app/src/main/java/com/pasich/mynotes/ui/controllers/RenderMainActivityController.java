@@ -19,6 +19,7 @@ public class RenderMainActivityController {
 
     private final ActivityMainBinding binding;
     private final Resources res;
+    private int countNotes = 0;
 
     public RenderMainActivityController(ActivityMainBinding binding) {
         this.binding = binding;
@@ -29,19 +30,21 @@ public class RenderMainActivityController {
      * Handles switching between the notes list and the empty state view,
      * including fade/scale animations and optional smooth scrolling.
      */
-    public void showStateNoteList(@Nullable Tag selectedTag, int notesCount) {
+    public void showStateNoteList(@Nullable Tag selectedTag, int mNotesCount) {
+        final int lastCount = countNotes;
+        countNotes = mNotesCount;
 
-        if (notesCount == 0) {
+        if (mNotesCount == 0) {
             animateHideList(binding.listNotes);
             animateShowEmpty(binding.includeEmpty.emptyViewNote);
-            updateEmptyText(new EmptyStateBuilder().build(selectedTag, notesCount));
+            updateEmptyText(new EmptyStateBuilder().build(selectedTag, mNotesCount));
             return;
         }
 
         animateHideEmpty(binding.includeEmpty.emptyViewNote);
         animateShowList(binding.listNotes);
 
-        if (notesCount >= 5) {
+        if (mNotesCount >= 5 && lastCount != countNotes) {
             binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
         }
     }

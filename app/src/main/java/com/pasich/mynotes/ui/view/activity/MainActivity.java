@@ -15,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -90,7 +91,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     public TagsAdapter tagsAdapter;
     @Inject
-    public StaggeredGridLayoutManager staggeredGridLayoutManager;
+    public GridLayoutManager gridLayoutManager;
     @Inject
     public ActionUtils actionUtils;
     @Inject
@@ -226,7 +227,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             } else if (idItem == R.id.format) {
                 if (!actionUtils.getAction()) {
                     formatList.formatNote(menuItem);
-                    staggeredGridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
+                    gridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
                 }
             }
 
@@ -261,7 +262,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             @Override
             public void onClick(int position, Note model) {
                 if (!actionUtils.getAction()) {
-                    openNoteEdit(model, staggeredGridLayoutManager.findViewByPosition(position));
+                    openNoteEdit(model, gridLayoutManager.findViewByPosition(position));
                 } else selectItemAction(model, position, true);
 
             }
@@ -306,7 +307,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listTags.setLayoutManager(mLinearLayoutManager);
         mActivityBinding.listTags.setAdapter(tagsAdapter);
         mActivityBinding.listNotes.addItemDecoration(itemDecorationNotes);
-        mActivityBinding.listNotes.setLayoutManager(staggeredGridLayoutManager);
+        mActivityBinding.listNotes.setLayoutManager(gridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
         mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
 
