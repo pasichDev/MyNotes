@@ -30,11 +30,12 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.controllers.AppUpdateController;
+import com.pasich.mynotes.ui.controllers.MainRenderListsController;
 import com.pasich.mynotes.ui.controllers.NavigationController;
-import com.pasich.mynotes.ui.controllers.RenderMainActivityController;
 import com.pasich.mynotes.ui.controllers.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.state.MainViewState;
+import com.pasich.mynotes.ui.state.UiEvent;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
@@ -61,6 +62,7 @@ import com.pasich.mynotes.utils.tool.FormatListTool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -119,7 +121,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 navigationController.updateNewVersionIndicator(hasNewVersion);
         }
     });
-    private RenderMainActivityController renderMainActivityController;
+    private MainRenderListsController mainRenderListsController;
     private Tag currentSelectedTag = null;
 
     @Override
@@ -154,14 +156,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         navigationController.init();
         navigationController.handleShortcuts(getIntent());
 
-        renderMainActivityController = new RenderMainActivityController(mActivityBinding);
+        mainRenderListsController = new MainRenderListsController(mActivityBinding);
     }
 
     @Override
     public void render(MainViewState state) {
         currentSelectedTag = state.selectedTag();
         // render notes list
-        renderNotes(state.notes(), state.selectedTag());
+        renderNotes(state.notes(), state.selectedTag(), state.uiEvent());
         // render tags list
         renderTags(state.tags());
         // search adapter
@@ -170,12 +172,32 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
 
     private void renderTags(List<Tag> tags) {
-        renderMainActivityController.renderListTags(tags);
+        mainRenderListsController.renderListTags(tags);
         tagsAdapter.submitList(tags);
     }
 
-    private void renderNotes(List<Note> notes, Tag currentSelectedTag) {
-        mNoteAdapter.submitList(notes, () -> renderMainActivityController.showStateNoteList(currentSelectedTag, notes.size()));
+    private void renderNotes(List<Note> notes, Tag currentSelectedTag, UiEvent event) {
+        // TODO не працює створення ноататки
+        if (Objects.requireNonNull(event) == UiEvent.SORT_CHANGED) {
+            mNoteAdapter.submitList(new ArrayList<>(notes), () -> {
+                mNoteAdapter.notifyDataSetChanged();
+                mActivityBinding.listNotes.scheduleLayoutAnimation();
+            });
+        } else {
+            boolean shouldScrollUp =
+                    event == UiEvent.TAG_CHANGED || event == UiEvent.NOTE_CREATED;
+
+
+            mNoteAdapter.submitList(notes, () -> {
+                mainRenderListsController.showStateNoteList(currentSelectedTag, notes.size());
+                if (shouldScrollUp) {
+                    mainRenderListsController.scrollUpNoteList();
+                }
+            });
+        }
+        mainPresenter.clearUiEvent();
+
+
     }
 
     @Override
@@ -214,6 +236,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void hideSearchView() {
         mActivityBinding.searchView.hide();
     }
+
 
     @Override
     public void initListeners() {

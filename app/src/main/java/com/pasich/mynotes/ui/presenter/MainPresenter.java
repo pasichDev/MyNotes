@@ -10,6 +10,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.state.MainViewState;
+import com.pasich.mynotes.ui.state.UiEvent;
 import com.pasich.mynotes.utils.TagsSorter;
 import com.pasich.mynotes.utils.constants.settings.SortParam;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
@@ -38,6 +39,9 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             BehaviorSubject.createDefault(SystemTagsManager.createAllNotesTag());
     private final BehaviorSubject<String> sortParam = BehaviorSubject.create();
     private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
+    private UiEvent lastUiEvent = UiEvent.NONE;
+
+
     private Note backupDeleteNote;
     private int mSwipe = 0;
     private Runnable swipeResetRunnable;
@@ -104,10 +108,12 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
-                                viewState::onNext,
+                                state -> getView().render(state),
                                 throwable -> Log.e(TAG, "combineLatest", throwable)
                         )
         );
+
+
     }
 
     private MainViewState buildState(
@@ -167,14 +173,20 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                         : Long.compare(a.getDate(), b.getDate())   // oldest first
         );
 
-        return new MainViewState(tags, sorted, selectedTag);
+
+        return new MainViewState(tags, sorted, selectedTag, lastUiEvent);
     }
 
     @Override
     public void onSortChanged(String newSort) {
+        lastUiEvent = UiEvent.SORT_CHANGED;
         sortParam.onNext(newSort);
     }
 
+    @Override
+    public void clearUiEvent() {
+        lastUiEvent = UiEvent.NONE;
+    }
 
     @Override
     public void newNotesClick() {
@@ -311,6 +323,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                         .subscribe(id -> {
                             note.setId(Math.toIntExact(id));
                             callback.onCreated(id);
+                            lastUiEvent = UiEvent.NOTE_CREATED;
                         }, callback::onError)
         );
     }
@@ -376,6 +389,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void onTagSelected(Tag tag) {
+        lastUiEvent = UiEvent.TAG_CHANGED;
         selectedTag.onNext(tag);
     }
 

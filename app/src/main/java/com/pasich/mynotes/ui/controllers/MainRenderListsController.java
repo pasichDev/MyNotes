@@ -15,13 +15,12 @@ import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.List;
 
-public class RenderMainActivityController {
+public class MainRenderListsController {
 
     private final ActivityMainBinding binding;
     private final Resources res;
-    private int countNotes = 0;
 
-    public RenderMainActivityController(ActivityMainBinding binding) {
+    public MainRenderListsController(ActivityMainBinding binding) {
         this.binding = binding;
         this.res = binding.getRoot().getResources();
     }
@@ -31,9 +30,6 @@ public class RenderMainActivityController {
      * including fade/scale animations and optional smooth scrolling.
      */
     public void showStateNoteList(@Nullable Tag selectedTag, int mNotesCount) {
-        final int lastCount = countNotes;
-        countNotes = mNotesCount;
-
         if (mNotesCount == 0) {
             animateHideList(binding.listNotes);
             animateShowEmpty(binding.includeEmpty.emptyViewNote);
@@ -44,9 +40,10 @@ public class RenderMainActivityController {
         animateHideEmpty(binding.includeEmpty.emptyViewNote);
         animateShowList(binding.listNotes);
 
-        if (mNotesCount >= 5 && mNotesCount > lastCount) {
-            binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
-        }
+    }
+
+    public void scrollUpNoteList(){
+        binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
     }
 
     /**

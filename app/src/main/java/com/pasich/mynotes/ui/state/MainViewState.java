@@ -9,13 +9,15 @@ import java.util.Objects;
 public record MainViewState(
         List<Tag> tags,
         List<Note> notes,
-        Tag selectedTag
+        Tag selectedTag,
+        UiEvent uiEvent
 ) {
     public static MainViewState empty() {
         return new MainViewState(
                 List.of(),
                 List.of(),
-                null
+                null,
+                UiEvent.NONE
         );
     }
 

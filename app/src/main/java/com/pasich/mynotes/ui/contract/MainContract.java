@@ -8,6 +8,7 @@ import com.pasich.mynotes.base.view.MoreNoteMainActivityView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.state.MainViewState;
+import com.pasich.mynotes.ui.state.UiEvent;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public interface MainContract {
         void finishActivityOtPresenter();
 
         void hideSearchView();
+
     }
 
 
@@ -61,6 +63,8 @@ public interface MainContract {
         void onTagSelected(Tag tag);
 
         void onSortChanged(String newSort);
+
+        void clearUiEvent();
     }
 
     interface CreateNoteCallback {
