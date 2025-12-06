@@ -63,9 +63,8 @@ public class SystemTagsManager {
     }
 
     /**
-     * Creates the "All notes" system entry (deprecated).
+     * Creates the "All notes" system entry
      */
-    @Deprecated
     public static Tag createAllNotesTag() {
         Tag tag = new Tag();
         tag.setNameTag("allNotes");

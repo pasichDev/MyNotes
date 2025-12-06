@@ -1,8 +1,6 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import static android.view.View.VISIBLE;
-import static androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS;
-import static androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_NONE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 
 import android.app.Activity;

@@ -16,6 +16,7 @@ import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +34,8 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     private static final String TAG = "MainPresenter";
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
-    private final BehaviorSubject<Tag> selectedTag = BehaviorSubject.createDefault(new Tag());
+    private final BehaviorSubject<Tag> selectedTag =
+            BehaviorSubject.createDefault(SystemTagsManager.createAllNotesTag());
     private final BehaviorSubject<String> sortParam = BehaviorSubject.create();
     private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
     private Note backupDeleteNote;
@@ -41,7 +43,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     private Runnable swipeResetRunnable;
     private Observable<List<Tag>> tagsStream;
     private Observable<List<Note>> notesStream;
-    private Observable<Set<String>> hiddenTagsStream;
 
 
     @Inject
@@ -87,13 +88,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         notesStream = getDataManager().getNotes()
                 .toObservable();
 
-        hiddenTagsStream = tagsStream
-                .map(tags -> tags.stream()
-                        .filter(t -> t.getVisibility() == 1)
-                        .map(Tag::getNameTag)
-                        .collect(Collectors.toSet())
-                );
-
 
     }
 
@@ -104,7 +98,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                                 notesStream,
                                 selectedTag,
                                 sortParam,
-                                hiddenTagsStream,
                                 this::buildState
                         ).debounce(5, TimeUnit.MILLISECONDS)
                         .distinctUntilChanged()
@@ -114,8 +107,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                                 viewState::onNext,
                                 throwable -> Log.e(TAG, "combineLatest", throwable)
                         )
-
-
         );
     }
 
@@ -123,32 +114,57 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             List<Tag> tags,
             List<Note> notes,
             Tag selectedTag,
-            String sort,
-            Set<String> hiddenTags
+            String sort
     ) {
+
+        // 0. Build hidden tags set
+        Set<String> hidden = new HashSet<>();
+        for (Tag t : tags) {
+            if (t.getVisibility() == 1) {
+                hidden.add(t.getNameTag());
+            }
+        }
+
         // 1. Filter hidden
-        List<Note> visible = hiddenTags == null || hiddenTags.isEmpty()
-                ? notes
-                : notes.stream()
-                .filter(n -> !hiddenTags.contains(n.getTag()))
-                .toList();
+        List<Note> visible = new ArrayList<>(notes.size());
+        if (hidden.isEmpty()) {
+            visible.addAll(notes);
+        } else {
+            for (Note n : notes) {
+                if (!hidden.contains(n.getTag())) {
+                    visible.add(n);
+                }
+            }
+        }
 
-        // 2. Filter by tag
-        String tagName = selectedTag == null ? "allNotes" : selectedTag.getNameTag();
-        List<Note> filtered = tagName.equals("allNotes")
-                ? visible
-                : visible.stream()
-                .filter(n -> tagName.equals(n.getTag()))
-                .toList();
+        // 2. Determine if we show ALL notes
+        boolean isAllNotes =
+                selectedTag == null ||
+                        selectedTag.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES;
 
-        // ⚠️ FIX: Make mutable copy before sorting
+        // 3. Filter by selected tag
+        List<Note> filtered;
+        if (isAllNotes) {
+            filtered = visible;
+        } else {
+            String tagName = selectedTag.getNameTag();
+            filtered = new ArrayList<>();
+            for (Note n : visible) {
+                if (tagName.equals(n.getTag())) {
+                    filtered.add(n);
+                }
+            }
+        }
+
+        // 4. Copy before sort
         List<Note> sorted = new ArrayList<>(filtered);
 
-        // 3. Sort
+        // 5. Sort
+        boolean sortByNew = SortParam.DataSort.equals(sort);
         sorted.sort((a, b) ->
-                sort.equals(SortParam.DataSort)
-                        ? Long.compare(b.getDate(), a.getDate())
-                        : Long.compare(a.getDate(), b.getDate())
+                sortByNew
+                        ? Long.compare(b.getDate(), a.getDate())   // newest first
+                        : Long.compare(a.getDate(), b.getDate())   // oldest first
         );
 
         return new MainViewState(tags, sorted, selectedTag);

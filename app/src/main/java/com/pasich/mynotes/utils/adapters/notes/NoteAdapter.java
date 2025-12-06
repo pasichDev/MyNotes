@@ -10,9 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.utils.recycler.diffutil.NoteDiff;
-import com.pasich.mynotes.utils.recycler.payloads.NotePayload;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -48,32 +45,6 @@ public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
         holder.bind(getItem(position));
     }
 
-    @Override
-    public void onBindViewHolder(
-            @NonNull NoteHolder holder,
-            int position,
-            @NonNull List<Object> payloads
-    ) {
-        Note note = getItem(position);
-
-        if (payloads.isEmpty()) {
-            holder.bind(note);
-            return;
-        }
-
-        for (Object payload : payloads) {
-            if (payload instanceof Integer) {
-                switch ((int) payload) {
-
-                    case NotePayload.CHECK_CHANGED, NotePayload.CONTENT_CHANGED:
-                        holder.binding.setNote(note);
-                        holder.binding.executePendingBindings();
-                        break;
-
-                }
-            }
-        }
-    }
 
     public void setOnItemClickListener(OnItemClickListener<Note> listener) {
         this.listener = listener;
