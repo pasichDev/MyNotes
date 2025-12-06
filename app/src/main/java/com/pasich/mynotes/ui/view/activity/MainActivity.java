@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import static android.view.View.VISIBLE;
+import static androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS;
+import static androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_NONE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 
 import android.app.Activity;
@@ -15,7 +17,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -91,7 +92,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     public TagsAdapter tagsAdapter;
     @Inject
-    public GridLayoutManager gridLayoutManager;
+    public StaggeredGridLayoutManager gridLayoutManager;
     @Inject
     public ActionUtils actionUtils;
     @Inject

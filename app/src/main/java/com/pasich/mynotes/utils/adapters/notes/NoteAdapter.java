@@ -12,7 +12,6 @@ import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.utils.recycler.diffutil.NoteDiff;
 import com.pasich.mynotes.utils.recycler.payloads.NotePayload;
 
-
 import java.util.List;
 
 import javax.inject.Inject;

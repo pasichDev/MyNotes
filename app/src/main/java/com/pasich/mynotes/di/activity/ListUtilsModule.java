@@ -4,7 +4,6 @@ package com.pasich.mynotes.di.activity;
 import android.content.Context;
 
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -21,7 +20,6 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.android.components.ActivityComponent;
-import dagger.hilt.android.qualifiers.ActivityContext;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.android.scopes.ActivityScoped;
 
@@ -37,9 +35,10 @@ public class ListUtilsModule {
 
     @Provides
     @ActivityScoped
-    GridLayoutManager providesStaggeredGridLayoutManager(@ActivityContext Context context, int spanCount) {
-        return new GridLayoutManager(context, spanCount);
+    StaggeredGridLayoutManager providesStaggeredGridLayoutManager(int spanCount) {
+        return new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
     }
+
     @Provides
     public NoteAdapter provideNoteAdapter() {
         return new NoteAdapter();

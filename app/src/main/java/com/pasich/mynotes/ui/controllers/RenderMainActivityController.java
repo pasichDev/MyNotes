@@ -44,7 +44,7 @@ public class RenderMainActivityController {
         animateHideEmpty(binding.includeEmpty.emptyViewNote);
         animateShowList(binding.listNotes);
 
-        if (mNotesCount >= 5 && lastCount != countNotes) {
+        if (mNotesCount >= 5 && mNotesCount > lastCount) {
             binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
         }
     }
