@@ -138,7 +138,6 @@ public class Note {
         this.valueJson = valueJson;
     }
 
-
     public boolean isTrash() {
         return isTrash;
     }
@@ -195,6 +194,5 @@ public class Note {
         c.setTrash(false);
         return c;
     }
-
 
 }

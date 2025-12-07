@@ -33,31 +33,22 @@ public class NavigationController {
     private final ActivityResultLauncher<Intent> themeActivityLauncher;
 
     private final AppUpdateController appUpdateController;
-
-    private DrawerLayout drawerLayout;
     private final BackHandler backHandler;
+    private DrawerLayout drawerLayout;
 
-    /**
-     * true – if the activity needs to be closed, false – if only back has been processed (like closing the panel/snack)
-     */
-    public interface BackHandler {
-        boolean onRootBack();
-    }
+    private int swipeClose = 0;
 
     public NavigationController(AppCompatActivity activity,
                                 ActivityMainBinding binding,
                                 ActivityResultLauncher<Intent> themeActivityLauncher,
                                 AppUpdateController appUpdateController,
                                 BackHandler backHandler) {
-
-
         this.activity = activity;
         this.binding = binding;
         this.themeActivityLauncher = themeActivityLauncher;
         this.appUpdateController = appUpdateController;
         this.backHandler = backHandler;
     }
-
 
     public void init() {
         drawerLayout = binding.drawerLayout;
@@ -164,7 +155,6 @@ public class NavigationController {
         }
     }
 
-
     private void delay(Runnable r) {
         new Handler(Looper.getMainLooper()).postDelayed(r, 100);
     }
@@ -173,7 +163,6 @@ public class NavigationController {
         activity.getOnBackPressedDispatcher().addCallback(activity, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-
                 // Спочатку — drawer
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
@@ -184,11 +173,9 @@ public class NavigationController {
                 if (backHandler != null) {
                     boolean shouldFinish = backHandler.onRootBack();
                     if (shouldFinish) {
-                        // реально закриваємо екран
                         activity.finish();
                     }
                 } else {
-                    // fallback, якщо раптом без handler
                     activity.finish();
                 }
             }
@@ -231,6 +218,21 @@ public class NavigationController {
         ViewCompat.setOnApplyWindowInsetsListener(binding.activityMain, null);
 
         drawerLayout = null;
+    }
+
+    public void addSwipeClose(int delta) {
+        this.swipeClose += delta;
+    }
+
+    public int getSwipeClose() {
+        return swipeClose;
+    }
+
+    /**
+     * true – if the activity needs to be closed, false – if only back has been processed (like closing the panel/snack)
+     */
+    public interface BackHandler {
+        boolean onRootBack();
     }
 
 }

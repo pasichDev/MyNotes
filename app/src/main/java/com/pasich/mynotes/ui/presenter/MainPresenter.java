@@ -41,10 +41,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
     private UiEvent lastUiEvent = UiEvent.NONE;
 
-
     private Note backupDeleteNote;
-    private int mSwipe = 0;
-    private Runnable swipeResetRunnable;
     private Observable<List<Tag>> tagsStream;
     private Observable<List<Note>> notesStream;
 
@@ -62,14 +59,13 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         getView().initListeners();
         initStreams();
         startStateCombiner();
-        getCompositeDisposable().add(
-                viewState.hide()
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                state -> getView().render(state),
-                                throwable -> Log.e(TAG, "observeState", throwable)
-                        )
+        getCompositeDisposable().add(viewState.hide()
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(
+                        state -> getView().render(state),
+                        throwable -> Log.e(TAG, "observeState", throwable)
+                )
         );
     }
 
@@ -91,29 +87,17 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
         notesStream = getDataManager().getNotes()
                 .toObservable();
-
-
     }
 
     private void startStateCombiner() {
         getCompositeDisposable().add(
-                Observable.combineLatest(
-                                tagsStream,
-                                notesStream,
-                                selectedTag,
-                                sortParam,
-                                this::buildState
-                        ).debounce(5, TimeUnit.MILLISECONDS)
+                Observable.combineLatest(tagsStream, notesStream, selectedTag, sortParam, this::buildState)
+                        .debounce(5, TimeUnit.MILLISECONDS)
                         .distinctUntilChanged()
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                state -> getView().render(state),
-                                throwable -> Log.e(TAG, "combineLatest", throwable)
-                        )
+                        .subscribe(state -> getView().render(state), throwable -> Log.e(TAG, "combineLatest", throwable))
         );
-
-
     }
 
     private MainViewState buildState(
@@ -123,7 +107,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             String sort
     ) {
 
-        // 0. Build hidden tags set
+        // Build hidden tags set
         Set<String> hidden = new HashSet<>();
         for (Tag t : tags) {
             if (t.getVisibility() == 1) {
@@ -131,7 +115,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             }
         }
 
-        // 1. Filter hidden
+        // Filter hidden
         List<Note> visible = new ArrayList<>(notes.size());
         if (hidden.isEmpty()) {
             visible.addAll(notes);
@@ -143,12 +127,10 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             }
         }
 
-        // 2. Determine if we show ALL notes
-        boolean isAllNotes =
-                selectedTag == null ||
-                        selectedTag.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES;
+        // Determine if we show ALL notes
+        boolean isAllNotes = selectedTag == null || selectedTag.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES;
 
-        // 3. Filter by selected tag
+        // Filter by selected tag
         List<Note> filtered;
         if (isAllNotes) {
             filtered = visible;
@@ -162,10 +144,10 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             }
         }
 
-        // 4. Copy before sort
+        // Copy before sort
         List<Note> sorted = new ArrayList<>(filtered);
 
-        // 5. Sort
+        // Sort
         boolean sortByNew = SortParam.DataSort.equals(sort);
         sorted.sort((a, b) ->
                 sortByNew
@@ -184,6 +166,12 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     }
 
     @Override
+    public void onTagSelected(Tag tag) {
+        lastUiEvent = UiEvent.TAG_CHANGED;
+        selectedTag.onNext(tag);
+    }
+
+    @Override
     public void clearUiEvent() {
         lastUiEvent = UiEvent.NONE;
     }
@@ -191,25 +179,16 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     public void newNotesClick() {
         if (!isViewAttached()) return;
-        createNewNote(new Note().create(
-                "",
-                "",
-                System.currentTimeMillis(),
-                ""
-        ), new MainContract.CreateNoteCallback() {
-            @Override
-            public void onCreated(long id) {
-                // Кажемо View відкрити нову нотатку вже з ID
-                if (isViewAttached()) {
-                    getView().openNewNoteWithId(id);
-                }
-            }
+        getCompositeDisposable().add(
+                getDataManager().addNote(new Note().create("", "", System.currentTimeMillis(), ""), false)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(id -> {
+                            lastUiEvent = UiEvent.NOTE_CREATED;
+                            new Handler(Looper.getMainLooper()).postDelayed(() -> getView().openNewNoteWithId(id), 80);
+                        }, throwable -> Log.e(TAG, "Failed to create note", throwable))
+        );
 
-            @Override
-            public void onError(Throwable t) {
-                Log.e(TAG, "Failed to create note", t);
-            }
-        });
     }
 
     @Override
@@ -223,18 +202,17 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
                                 () -> {
-                                },
-                                throwable -> Log.e(TAG, "Error restoring notes", throwable)
-                        )
+                                }, throwable -> Log.e(TAG, "Error restoring notes", throwable))
         );
     }
 
 
     @Override
     public void noteMoveToTrash(Note note) {
-        getCompositeDisposable().add(getDataManager().moveNoteToTrash(note.getId()).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-                }, // onComplete
-                throwable -> Log.e(TAG, "Error deleting note", throwable)));
+        getCompositeDisposable().add(getDataManager().moveNoteToTrash(note.getId()).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui())
+                .subscribe(() -> {
+                        }, // onComplete
+                        throwable -> Log.e(TAG, "Error deleting note", throwable)));
     }
 
     @Override
@@ -275,27 +253,12 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         );
     }
 
-    private Tag findAllNotesTag() {
-        return viewState.getValue().tags().stream()
-                .filter(t -> t.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES)
-                .findFirst()
-                .orElse(null);
-    }
-
-
     @Override
     public void requestDeleteTag(Tag tag) {
-
-        // Якщо видаляємо той, що зараз вибраний → перемикаємось
-        if (selectedTag.getValue() != null &&
-                selectedTag.getValue().getId() == tag.getId()) {
-
-            Tag all = findAllNotesTag();
-            selectedTag.onNext(all);
+        if (selectedTag.getValue() != null && selectedTag.getValue().getId() == tag.getId()) {
+            selectedTag.onNext(SystemTagsManager.createAllNotesTag());
         }
-
-        // Затримка тільки тут
-        uiHandler.postDelayed(() -> performDelete(tag), 700);
+        uiHandler.postDelayed(() -> performDelete(tag), 300);
     }
 
 
@@ -306,29 +269,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                 throwable -> Log.e(TAG, "Error updating tag", throwable)));
     }
 
-
-    /**
-     * Створення нової нотатки з поверненням її ID
-     */
-    public void createNewNote(Note note, MainContract.CreateNoteCallback callback) {
-        if (note == null) {
-            callback.onError(new Exception("Note is null"));
-            return;
-        }
-
-        getCompositeDisposable().add(
-                getDataManager().addNote(note, false)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(id -> {
-                            lastUiEvent = UiEvent.NOTE_CREATED;
-                            note.setId(Math.toIntExact(id));
-                            callback.onCreated(id);
-                        }, callback::onError)
-        );
-    }
-
-
     public Note getBackupDeleteNote() {
         return backupDeleteNote;
     }
@@ -337,60 +277,10 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         this.backupDeleteNote = backupDeleteNote;
     }
 
-    /**
-     * Method The method that implements the closing of the application
-     */
-    @Override
-    public boolean closeApp(boolean showSearchView) {
-        if (!showSearchView) {
-            mSwipe = mSwipe + 1;
-            if (mSwipe == 1) {
-
-                if (isViewAttached()) getView().exitWhat();
-
-                if (swipeResetRunnable != null) {
-                    uiHandler.removeCallbacks(swipeResetRunnable);
-                }
-
-                swipeResetRunnable = () -> mSwipe = 0;
-                uiHandler.postDelayed(swipeResetRunnable, 3000);
-
-                return false;
-            } else if (mSwipe == 2) {
-                if (swipeResetRunnable != null) {
-                    uiHandler.removeCallbacks(swipeResetRunnable);
-                }
-                getView().finishActivityOtPresenter();
-                mSwipe = 0;
-                return true;
-            }
-        } else {
-            getView().hideSearchView();
-            return false;
-        }
-        return false;
-    }
-
-
     @Override
     public void detachView() {
-        if (swipeResetRunnable != null) {
-            uiHandler.removeCallbacks(swipeResetRunnable);
-        }
         super.detachView();
         backupDeleteNote = null;
-        swipeResetRunnable = null;
-    }
-
-
-    /**
-     * NEW
-     */
-
-    @Override
-    public void onTagSelected(Tag tag) {
-        lastUiEvent = UiEvent.TAG_CHANGED;
-        selectedTag.onNext(tag);
     }
 
 }

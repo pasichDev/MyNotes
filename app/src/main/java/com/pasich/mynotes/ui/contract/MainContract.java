@@ -31,11 +31,11 @@ public interface MainContract {
 
         void startDeleteTagDialog(Tag tag);
 
-        void exitWhat();
+     //   void exitWhat();
 
-        void finishActivityOtPresenter();
+    //    void finishActivityOtPresenter();
 
-        void hideSearchView();
+    //    void hideSearchView();
 
     }
 
@@ -58,7 +58,7 @@ public interface MainContract {
 
         void setBackupDeleteNote(Note backupDeleteNote);
 
-        boolean closeApp(boolean showSearchView);
+   //     boolean closeApp(boolean showSearchView);
 
         void onTagSelected(Tag tag);
 
@@ -67,10 +67,12 @@ public interface MainContract {
         void clearUiEvent();
     }
 
-    interface CreateNoteCallback {
+/*    interface CreateNoteCallback {
         void onCreated(long id);
 
         void onError(Throwable t);
     }
+
+ */
 
 }

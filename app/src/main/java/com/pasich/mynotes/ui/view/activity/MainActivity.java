@@ -125,6 +125,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private MainRenderListsController mainRenderListsController;
     private Tag currentSelectedTag = null;
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setExitSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
@@ -182,10 +183,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         switch (event) {
             case SORT_CHANGED, TAG_CHANGED ->
                     mNoteAdapter.submitList(new ArrayList<>(notes), () -> {
-                     //   animateListChange();
                         mNoteAdapter.notifyDataSetChanged();
                         animateListChange();
-                        //    mActivityBinding.listNotes.scheduleLayoutAnimation();
                     });
             default -> {
                 boolean shouldScrollUp = event == UiEvent.NOTE_CREATED;
@@ -200,17 +199,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         mainPresenter.clearUiEvent();
     }
+
     private void animateListChange() {
-
-
         mActivityBinding.listNotes.animate()
                 .alpha(0f)
                 .scaleY(0.97f)
                 .setDuration(120)
                 .withEndAction(() -> {
-                    // коли fade-out закінчився — запускаємо layout animation
                     mActivityBinding.listNotes.scheduleLayoutAnimation();
-
                     mActivityBinding.listNotes.animate()
                             .alpha(1f)
                             .scaleY(1f)
@@ -239,25 +235,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void startDeleteTagDialog(Tag tag) {
         new DeleteTagDialog(tag).show(getSupportFragmentManager(), "deleteTag");
     }
-
-    @Override
-    public void exitWhat() {
-        if (!isDestroyed() && mActivityBinding != null) {
-            onInfoSnack(R.string.exitWhat, mActivityBinding.drawerLayout, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
-        }
-    }
-
-
-    @Override
-    public void finishActivityOtPresenter() {
-        finish();
-    }
-
-    @Override
-    public void hideSearchView() {
-        mActivityBinding.searchView.hide();
-    }
-
 
     @Override
     public void initListeners() {
@@ -449,13 +426,29 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         new MoreNoteDialog(note, MoreNoteDialog.RootActivity.MainActivity, position).show(getSupportFragmentManager(), "ChoiceDialog");
     }
 
+
     private boolean finishActivity() {
+        if (mActivityBinding.searchView.isShowing()) {
+            mActivityBinding.searchView.hide();
+            return false;
+        }
         if (actionUtils.getAction()) {
             actionUtils.closeActionPanel();
             return false;
-        } else {
-            return mainPresenter.closeApp(mActivityBinding.searchView.isShowing());
         }
+
+        navigationController.addSwipeClose(1);
+        if (navigationController.getSwipeClose() < 2) {
+            if (!isDestroyed() && mActivityBinding != null) {
+                onInfoSnack(R.string.exitWhat, mActivityBinding.drawerLayout, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+            }
+            return false;
+        }
+
+        finish();
+        return true;
+
+
     }
 
     @Override
