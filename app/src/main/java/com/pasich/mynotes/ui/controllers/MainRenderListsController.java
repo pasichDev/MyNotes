@@ -1,6 +1,7 @@
 package com.pasich.mynotes.ui.controllers;
 
 import android.content.res.Resources;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
@@ -43,6 +44,7 @@ public class MainRenderListsController {
     }
 
     public void scrollUpNoteList(){
+        Log.e("scroll", "scrollview");
         binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
     }
 

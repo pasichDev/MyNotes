@@ -3,6 +3,7 @@ package com.pasich.mynotes.ui.view.activity;
 import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.OvershootInterpolator;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -62,7 +64,6 @@ import com.pasich.mynotes.utils.tool.FormatListTool;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -176,28 +177,48 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         tagsAdapter.submitList(tags);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void renderNotes(List<Note> notes, Tag currentSelectedTag, UiEvent event) {
-        // TODO не працює створення ноататки
-        if (Objects.requireNonNull(event) == UiEvent.SORT_CHANGED) {
-            mNoteAdapter.submitList(new ArrayList<>(notes), () -> {
-                mNoteAdapter.notifyDataSetChanged();
-                mActivityBinding.listNotes.scheduleLayoutAnimation();
-            });
-        } else {
-            boolean shouldScrollUp =
-                    event == UiEvent.TAG_CHANGED || event == UiEvent.NOTE_CREATED;
-
-
-            mNoteAdapter.submitList(notes, () -> {
-                mainRenderListsController.showStateNoteList(currentSelectedTag, notes.size());
-                if (shouldScrollUp) {
-                    mainRenderListsController.scrollUpNoteList();
-                }
-            });
+        switch (event) {
+            case SORT_CHANGED, TAG_CHANGED ->
+                    mNoteAdapter.submitList(new ArrayList<>(notes), () -> {
+                     //   animateListChange();
+                        mNoteAdapter.notifyDataSetChanged();
+                        animateListChange();
+                        //    mActivityBinding.listNotes.scheduleLayoutAnimation();
+                    });
+            default -> {
+                boolean shouldScrollUp = event == UiEvent.NOTE_CREATED;
+                mNoteAdapter.submitList(notes, () -> {
+                    mainRenderListsController.showStateNoteList(currentSelectedTag, notes.size());
+                    if (shouldScrollUp) {
+                        mainRenderListsController.scrollUpNoteList();
+                    }
+                });
+            }
         }
+
         mainPresenter.clearUiEvent();
+    }
+    private void animateListChange() {
 
 
+        mActivityBinding.listNotes.animate()
+                .alpha(0f)
+                .scaleY(0.97f)
+                .setDuration(120)
+                .withEndAction(() -> {
+                    // коли fade-out закінчився — запускаємо layout animation
+                    mActivityBinding.listNotes.scheduleLayoutAnimation();
+
+                    mActivityBinding.listNotes.animate()
+                            .alpha(1f)
+                            .scaleY(1f)
+                            .setInterpolator(new OvershootInterpolator(0.6f))
+                            .setDuration(220)
+                            .start();
+                })
+                .start();
     }
 
     @Override

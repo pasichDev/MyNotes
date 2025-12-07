@@ -321,9 +321,9 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(id -> {
+                            lastUiEvent = UiEvent.NOTE_CREATED;
                             note.setId(Math.toIntExact(id));
                             callback.onCreated(id);
-                            lastUiEvent = UiEvent.NOTE_CREATED;
                         }, callback::onError)
         );
     }
