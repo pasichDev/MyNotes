@@ -72,5 +72,15 @@ public interface NoteDao {
     @Query("DELETE FROM notes WHERE isTrash = 1")
     void deleteAllTrashNotes();
 
+    // stats
+    @Query("SELECT COUNT(*) FROM notes WHERE isTrash = 0")
+    Single<Integer> getNotesCount();
+
+    @Query("SELECT COUNT(*) FROM notes WHERE date >= :timestamp AND isTrash = 0")
+    Single<Integer> getNotesCreatedSince(long timestamp);
+
+    @Query("SELECT SUM(LENGTH(value)) FROM notes WHERE isTrash = 0")
+    Single<Long> getTotalCharacters();
+
 
 }

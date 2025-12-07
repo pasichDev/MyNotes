@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.OvershootInterpolator;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -37,6 +38,7 @@ import com.pasich.mynotes.ui.controllers.NavigationController;
 import com.pasich.mynotes.ui.controllers.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.state.MainViewState;
+import com.pasich.mynotes.ui.state.StatsData;
 import com.pasich.mynotes.ui.state.UiEvent;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
@@ -202,6 +204,25 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
         mainPresenter.clearUiEvent();
     }
+
+    @Override
+    public void onDrawerOpened() {
+        mainPresenter.loadDrawerStats();
+    }
+
+    @Override
+    public void renderDrawerStats(StatsData stats) {
+        View header = mActivityBinding.navigationView.getHeaderView(0);
+
+        TextView now = header.findViewById(R.id.drawerStatsNotesNow);
+        TextView month = header.findViewById(R.id.drawerStatsNotesMonth);
+        TextView chars = header.findViewById(R.id.drawerStatsChars);
+
+        now.setText(String.valueOf(stats.notesNow()));
+        month.setText(String.valueOf(stats.notesMonth()));
+        chars.setText(String.valueOf(stats.chars()));
+    }
+
 
     private void animateListChange() {
         mActivityBinding.listNotes.animate()

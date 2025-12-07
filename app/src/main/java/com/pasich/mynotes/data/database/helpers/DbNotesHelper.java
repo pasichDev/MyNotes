@@ -11,9 +11,6 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 
 public interface DbNotesHelper {
-    /**
-     * Notes
-     */
     Single<Integer> getCountData();
 
     Flowable<List<Note>> getNotes();

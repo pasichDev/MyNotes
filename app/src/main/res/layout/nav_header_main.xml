@@ -224,23 +224,127 @@
         android:layout_height="15dp" />
 
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/drawerStatsCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+        app:shapeAppearanceOverlay="@style/CardTopRounded"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:weightSum="3">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/drawerStatsNotesNow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/ptsans_regular"
+                    android:paddingTop="4dp"
+                    android:text="0"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tool:text="0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/drawerStatsNotes"
+                    android:textColor="?attr/colorOutline"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/drawerStatsNotesMonth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/ptsans_regular"
+                    android:paddingTop="4dp"
+                    android:text="0"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tool:text="0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/drawerStatsLastMonth"
+                    android:textColor="?attr/colorOutline"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/drawerStatsChars"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/ptsans_regular"
+                    android:paddingTop="4dp"
+                    android:text="0"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tool:text="0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/drawerStatsChart"
+                    android:textColor="?attr/colorOutline"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
     <LinearLayout
         android:id="@+id/nav_support"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="4dp"
-        android:background="@drawable/bg_item_accent"
+        android:background="@drawable/bg_item_accent_end"
         android:clickable="true"
         android:focusable="true"
-        android:gravity="center_vertical"
+        android:gravity="center_horizontal"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:paddingVertical="8dp"
+        android:paddingHorizontal="16dp">
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="16dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="8dp"
             android:contentDescription="@string/help_title"
+            android:layout_gravity="center_vertical"
             android:src="@drawable/ic_heart_support"
             app:tint="?attr/colorOnPrimary" />
 
@@ -248,8 +352,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/supportDeveloper"
+            android:layout_gravity="center_vertical"
+            android:fontFamily="@font/ptsans_regular"
+            android:textStyle="bold"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
     </LinearLayout>
 
     <View

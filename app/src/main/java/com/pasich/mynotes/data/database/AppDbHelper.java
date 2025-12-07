@@ -218,4 +218,20 @@ public class AppDbHelper implements DbHelper {
         return Completable.fromAction(() -> appDatabase.noteDao().setTagNote(nameTag, idNote));
     }
 
+    @Override
+    public Single<Integer> getNotesCount() {
+        return appDatabase.noteDao().getNotesCount();
+
+    }
+
+    @Override
+    public Single<Integer> getNotesCreatedLastMonth() {
+        long monthAgo = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000;
+        return appDatabase.noteDao().getNotesCreatedSince(monthAgo);
+    }
+
+    @Override
+    public Single<Long> getTotalCharacters() {
+        return appDatabase.noteDao().getTotalCharacters();
+    }
 }

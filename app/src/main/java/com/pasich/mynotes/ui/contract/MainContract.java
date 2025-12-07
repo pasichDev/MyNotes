@@ -8,6 +8,7 @@ import com.pasich.mynotes.base.view.MoreNoteMainActivityView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.state.MainViewState;
+import com.pasich.mynotes.ui.state.StatsData;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ public interface MainContract {
 
         void renderSearch(List<Note> filtered);
 
+        void renderDrawerStats(StatsData stats);
+        void onDrawerOpened();
     }
 
 
@@ -61,6 +64,8 @@ public interface MainContract {
         void clearUiEvent();
 
         void updateSearchQuery(String query);
+
+        void loadDrawerStats();
     }
 
 }

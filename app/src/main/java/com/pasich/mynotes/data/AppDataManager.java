@@ -6,11 +6,11 @@ import android.net.Uri;
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.utils.backup.models.JsonBackup;
-import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.local.LocalBackup;
+import com.pasich.mynotes.utils.backup.models.JsonBackup;
+import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -276,4 +276,18 @@ public class AppDataManager implements DataManager {
         return apiBackup.readBackupLocalFile(uriLocalFile);
     }
 
+    @Override
+    public Single<Integer> getNotesCount() {
+        return dbHelper.getNotesCount();
+    }
+
+    @Override
+    public Single<Integer> getNotesCreatedLastMonth() {
+        return dbHelper.getNotesCreatedLastMonth();
+    }
+
+    @Override
+    public Single<Long> getTotalCharacters() {
+        return dbHelper.getTotalCharacters();
+    }
 }

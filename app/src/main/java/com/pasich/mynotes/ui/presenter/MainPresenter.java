@@ -10,6 +10,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.state.MainViewState;
+import com.pasich.mynotes.ui.state.StatsData;
 import com.pasich.mynotes.ui.state.UiEvent;
 import com.pasich.mynotes.utils.TagsSorter;
 import com.pasich.mynotes.utils.constants.settings.SortParam;
@@ -217,6 +218,26 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     public void clearUiEvent() {
         lastUiEvent = UiEvent.NONE;
     }
+
+
+    @Override
+    public void loadDrawerStats() {
+        getCompositeDisposable().add(
+                Observable.combineLatest(
+                                getDataManager().getNotesCount().toObservable(),
+                                getDataManager().getNotesCreatedLastMonth().toObservable(),
+                                getDataManager().getTotalCharacters().toObservable(),
+                                StatsData::new
+                        )
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                stats -> getView().renderDrawerStats(stats),
+                                throwable -> Log.e(TAG, "loadDrawerStats() errors", throwable)
+                        )
+        );
+    }
+
 
     @Override
     public void newNotesClick() {

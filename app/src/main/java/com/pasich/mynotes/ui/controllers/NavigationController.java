@@ -18,6 +18,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
+import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.view.activity.AboutActivity;
 import com.pasich.mynotes.ui.view.activity.BackupActivity;
 import com.pasich.mynotes.ui.view.activity.SettingsActivity;
@@ -50,12 +51,36 @@ public class NavigationController {
 
     public void init() {
         drawerLayout = binding.drawerLayout;
+        setupDrawerStatsListener();
 
         setupEdgeToEdge();
         setupDrawerButton();
         setupNavigationMenu();
         setupHeaderButtons();
         handleBackPressed();
+    }
+
+    private void setupDrawerStatsListener() {
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                if (activity instanceof MainContract.view) {
+                    ((MainContract.view) activity).onDrawerOpened();
+                }
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
     }
 
     /**
@@ -114,12 +139,13 @@ public class NavigationController {
                 delay(() -> activity.startActivity(new Intent(activity, AboutActivity.class)))
         );
 
-        View navSupport = header.findViewById(R.id.nav_support);
-        if (navSupport != null) {
-            navSupport.setOnClickListener(v ->
-                    delay(() -> activity.startActivity(new Intent(activity, SupportActivity.class)))
-            );
-        }
+        header.findViewById(R.id.nav_support).setOnClickListener(v ->
+                delay(() -> activity.startActivity(new Intent(activity, SupportActivity.class)))
+        );
+
+        header.findViewById(R.id.drawerStatsCard).setOnClickListener(v ->
+                delay(() -> activity.startActivity(new Intent(activity, SupportActivity.class)))
+        );
 
         bindHeaderNewVersion(header);
     }
@@ -199,11 +225,9 @@ public class NavigationController {
             header.findViewById(R.id.nav_settings).setOnClickListener(null);
             header.findViewById(R.id.nav_backups).setOnClickListener(null);
             header.findViewById(R.id.nav_about).setOnClickListener(null);
+            header.findViewById(R.id.nav_support).setOnClickListener(null);
+            header.findViewById(R.id.drawerStatsCard).setOnClickListener(null);
 
-            View navSupport = header.findViewById(R.id.nav_support);
-            if (navSupport != null) {
-                navSupport.setOnClickListener(null);
-            }
             View newVersion = header.findViewById(R.id.newVersion);
             if (newVersion != null) {
                 newVersion.setOnClickListener(null);
