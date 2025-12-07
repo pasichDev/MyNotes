@@ -8,10 +8,10 @@ import com.pasich.mynotes.base.view.MoreNoteMainActivityView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.state.MainViewState;
-import com.pasich.mynotes.ui.state.UiEvent;
 import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import dagger.hilt.android.scopes.ActivityScoped;
 
@@ -31,11 +31,7 @@ public interface MainContract {
 
         void startDeleteTagDialog(Tag tag);
 
-     //   void exitWhat();
-
-    //    void finishActivityOtPresenter();
-
-    //    void hideSearchView();
+        void renderSearch(List<Note> filtered);
 
     }
 
@@ -58,21 +54,13 @@ public interface MainContract {
 
         void setBackupDeleteNote(Note backupDeleteNote);
 
-   //     boolean closeApp(boolean showSearchView);
-
         void onTagSelected(Tag tag);
 
         void onSortChanged(String newSort);
 
         void clearUiEvent();
+
+        void updateSearchQuery(String query);
     }
-
-/*    interface CreateNoteCallback {
-        void onCreated(long id);
-
-        void onError(Throwable t);
-    }
-
- */
 
 }

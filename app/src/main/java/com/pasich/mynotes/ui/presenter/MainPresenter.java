@@ -17,6 +17,7 @@ import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,8 +40,10 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             BehaviorSubject.createDefault(SystemTagsManager.createAllNotesTag());
     private final BehaviorSubject<String> sortParam = BehaviorSubject.create();
     private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
-    private UiEvent lastUiEvent = UiEvent.NONE;
+    private final BehaviorSubject<String> searchQuery =
+            BehaviorSubject.createDefault("");
 
+    private UiEvent lastUiEvent = UiEvent.NONE;
     private Note backupDeleteNote;
     private Observable<List<Tag>> tagsStream;
     private Observable<List<Note>> notesStream;
@@ -54,11 +57,15 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     public void viewIsReady() {
         sortParam.onNext(getDataManager().getSortParam());
-
         getView().settingsLists();
         getView().initListeners();
         initStreams();
         startStateCombiner();
+        starListsRenderStream();
+        startSearchStream();
+    }
+
+    void starListsRenderStream() {
         getCompositeDisposable().add(viewState.hide()
                 .subscribeOn(getSchedulerProvider().io())
                 .observeOn(getSchedulerProvider().ui())
@@ -157,6 +164,41 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
 
         return new MainViewState(tags, sorted, selectedTag, lastUiEvent);
+    }
+
+    private void startSearchStream() {
+        getCompositeDisposable().add(
+                Observable.combineLatest(
+                                notesStream,
+                                searchQuery,
+                                this::filterNotes
+                        )
+                        .debounce(150, TimeUnit.MILLISECONDS)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                filtered -> getView().renderSearch(filtered),
+                                throwable -> Log.e(TAG, "search error", throwable)
+                        )
+        );
+    }
+
+    private List<Note> filterNotes(List<Note> notes, String query) {
+        if (query == null || query.trim().length() < 2)
+            return Collections.emptyList();
+
+        String q = query.toLowerCase().trim();
+
+        return notes.stream()
+                .filter(n ->
+                        n.getTitle().toLowerCase().contains(q) ||
+                                n.getValue().toLowerCase().contains(q)
+                )
+                .collect(Collectors.toList());
+    }
+
+    public void updateSearchQuery(String query) {
+        searchQuery.onNext(query);
     }
 
     @Override

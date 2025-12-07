@@ -10,29 +10,20 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.search.SearchView;
-import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.base.simplifications.TextWatcher;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
-import com.pasich.mynotes.base.simplifications.TextWatcher;
-
-import java.util.List;
+import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 
 public class SearchController {
 
-    private static final int DEBOUNCE_DELAY = 400;
-
+    private static final String TAG = "SearchController";
+    private static final int DEBOUNCE_DELAY = 350;
     private final ActivityMainBinding binding;
     private final SearchNotesAdapter searchAdapter;
-
     private final Handler handler = new Handler(Looper.getMainLooper());
-      private Runnable searchRunnable;
-
-    public interface Listener {
-        void onSearchOpen();
-        void onSearchClose();
-    }
-
     private final Listener listener;
+    private Runnable searchRunnable;
 
     public SearchController(ActivityMainBinding binding,
                             SearchNotesAdapter searchAdapter,
@@ -54,6 +45,8 @@ public class SearchController {
         binding.resultsSearchList.setLayoutManager(
                 new LinearLayoutManager(binding.getRoot().getContext())
         );
+
+        binding.resultsSearchList.addItemDecoration(new SpacesItemDecoration(15, 10));
         binding.resultsSearchList.setAdapter(searchAdapter);
         binding.resultsSearchList.setOverScrollMode(ViewGroup.OVER_SCROLL_NEVER);
     }
@@ -85,13 +78,10 @@ public class SearchController {
                 if (searchRunnable != null)
                     handler.removeCallbacks(searchRunnable);
 
-                searchRunnable = () -> {
-                    if (s.length() >= 2) {
-                        searchAdapter.filter(s.toString());
-                    } else {
-                        searchAdapter.cleanResult();
-                    }
-                };
+                String query = s.toString();
+
+                searchRunnable = () ->
+                        listener.onSearchQuery(query);
 
                 handler.postDelayed(searchRunnable, DEBOUNCE_DELAY);
             }
@@ -115,22 +105,26 @@ public class SearchController {
             binding.searchView.requestLayout();
 
         } catch (Exception e) {
-            Log.e("SearchController", "ensureFullScreen error: " + e.getMessage());
+            Log.e(TAG, "ensureFullScreen error: " + e.getMessage());
         }
-    }
-
-    public void setDefaultNotesList(List<Note> notes) {
-        searchAdapter.setDefaultListNotes(notes);
     }
 
     public void clearSearch() {
         binding.searchView.getEditText().setText("");
-        searchAdapter.cleanResult();
+        listener.onSearchQuery("");
     }
 
     public void destroy() {
         if (searchRunnable != null)
             handler.removeCallbacks(searchRunnable);
         searchRunnable = null;
+    }
+
+    public interface Listener {
+        void onSearchOpen();
+
+        void onSearchClose();
+
+        void onSearchQuery(String query);
     }
 }

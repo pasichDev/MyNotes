@@ -29,9 +29,7 @@ public class NavigationController {
 
     private final AppCompatActivity activity;
     private final ActivityMainBinding binding;
-
     private final ActivityResultLauncher<Intent> themeActivityLauncher;
-
     private final AppUpdateController appUpdateController;
     private final BackHandler backHandler;
     private DrawerLayout drawerLayout;

@@ -150,6 +150,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void onSearchClose() {
                 mActivityBinding.listNotes.setNestedScrollingEnabled(true);
             }
+
+            @Override
+            public void onSearchQuery(String query) {
+                mainPresenter.updateSearchQuery(query);
+            }
         });
         appUpdateController = new AppUpdateController(this, updateChecker, changelogLauncher);
         appUpdateController.showChangelogIfNeeded();
@@ -168,8 +173,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         renderNotes(state.notes(), state.selectedTag(), state.uiEvent());
         // render tags list
         renderTags(state.tags());
-        // search adapter
-        searchController.setDefaultNotesList(state.notes());
     }
 
 
@@ -234,6 +237,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Override
     public void startDeleteTagDialog(Tag tag) {
         new DeleteTagDialog(tag).show(getSupportFragmentManager(), "deleteTag");
+    }
+
+    @Override
+    public void renderSearch(List<Note> filtered) {
+        searchNotesAdapter.submitList(filtered);
     }
 
     @Override
@@ -331,11 +339,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
         mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
 
-
-        mActivityBinding.resultsSearchList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        mActivityBinding.resultsSearchList.addItemDecoration(itemDecorationNotes);
-        mActivityBinding.resultsSearchList.setAdapter(searchNotesAdapter);
-
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean isItemViewSwipeEnabled() {
@@ -365,8 +368,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNoteLastMoveToTrash(mainPresenter.getBackupDeleteNote()));
         snackbar.setAnchorView(mActivityBinding.newNotesButton);
         snackbar.show();
-
-
     }
 
     @Override
