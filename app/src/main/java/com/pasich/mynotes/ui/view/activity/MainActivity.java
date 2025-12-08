@@ -3,6 +3,7 @@ package com.pasich.mynotes.ui.view.activity;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
+import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE_THEME_UPDATE;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -78,7 +79,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     // Update theme listener
     final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         Intent data = result.getData();
-        if (result.getResultCode() == 11) {
+        if (result.getResultCode() == RESULT_CODE_THEME_UPDATE) {
             assert data != null;
             if (data.hasExtra(EXTRA_UPDATE_THEME_STYLE)) {
                 this.redrawActivity();
