@@ -378,7 +378,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
 
                 if (direction == ItemTouchHelper.LEFT) {
                     selectItemAction(mNoteAdapter.getCurrentList().get(position));
-
+                    mNoteAdapter.notifyItemChanged(position);
                 } else {
                     Note sNote = mNoteAdapter.getCurrentList().get(position);
                     mainPresenter.setBackupDeleteNote(sNote);

@@ -153,7 +153,7 @@
     <string name="purchase_error_no_products">No donation products available</string>
 
     <string name="support_solo_developer_title">Support developer</string>
-    <string name="support_solo_developer_description">Hi! I'm a solo developer working on My Notes in my spare time. The app will always remain free. Your support helps me dedicate more time to improving it. Every contribution matters! 💖</string>
+    <string name="support_solo_developer_description">Hi! I\'m a solo developer working on My Notes in my spare time. The app will always remain free. Your support helps me dedicate more time to improving it. Every contribution matters! 💖</string>
 
     <string name="help_title">Help</string>
     <string name="help_subtitle">Learn how to get the most out of My Notes</string>

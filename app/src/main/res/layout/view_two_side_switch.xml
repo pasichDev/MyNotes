@@ -27,7 +27,7 @@
             android:layout_height="24dp"
             android:layout_marginStart="8dp"
             android:contentDescription="@null"
-            android:tooltipText="@string/toolTipExtebdedEditor" />
+            android:tooltipText="@string/toolTipExtendedEditor" />
 
     </LinearLayout>
 
