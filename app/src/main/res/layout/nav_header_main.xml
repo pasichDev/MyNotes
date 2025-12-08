@@ -4,12 +4,7 @@
     xmlns:tool="http://schemas.android.com/tools">
 
     <data>
-
         <import type="android.view.View" />
-
-        <variable
-            name="stats"
-            type="com.pasich.mynotes.ui.state.StatsData" />
 
     </data>
 
@@ -267,7 +262,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/ptsans_regular"
                         android:paddingTop="4dp"
-                        android:text='@{String.valueOf(stats.notesNow())}'
+                        android:text='0'
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:textStyle="bold"
@@ -294,7 +289,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/ptsans_regular"
                         android:paddingTop="4dp"
-                        android:text='@{String.valueOf(stats.notesMonth())}'
+                        android:text='0'
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:textStyle="bold"
@@ -321,7 +316,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/ptsans_regular"
                         android:paddingTop="4dp"
-                        android:text='@{String.valueOf(stats.chars())}'
+                        android:text='0'
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:textStyle="bold"

@@ -18,6 +18,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
+import com.pasich.mynotes.databinding.NavHeaderMainBinding;
 import com.pasich.mynotes.ui.view.activity.AboutActivity;
 import com.pasich.mynotes.ui.view.activity.BackupActivity;
 import com.pasich.mynotes.ui.view.activity.SettingsActivity;
@@ -33,6 +34,8 @@ public class NavigationController {
     private final AppUpdateController appUpdateController;
     private final BackHandler backHandler;
     private DrawerLayout drawerLayout;
+    private NavHeaderMainBinding headerBinding;
+
 
     private int swipeClose = 0;
 
@@ -50,12 +53,17 @@ public class NavigationController {
 
     public void init() {
         drawerLayout = binding.drawerLayout;
+        headerBinding = NavHeaderMainBinding.bind(binding.navigationView.getHeaderView(0));
 
         setupEdgeToEdge();
         setupDrawerButton();
         setupNavigationMenu();
         setupHeaderButtons();
         handleBackPressed();
+    }
+
+    public NavHeaderMainBinding getHeaderBinding() {
+        return headerBinding;
     }
 
 

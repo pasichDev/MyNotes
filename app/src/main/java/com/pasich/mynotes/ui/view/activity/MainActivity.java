@@ -16,7 +16,6 @@ import android.view.animation.AnimationUtils;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -31,7 +30,6 @@ import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
-import com.pasich.mynotes.databinding.NavHeaderMainBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.controllers.AppUpdateController;
 import com.pasich.mynotes.ui.controllers.MainRenderListsController;
@@ -209,13 +207,11 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void renderDrawerStats(StatsData stats) {
-        NavHeaderMainBinding headerBinding =
-                NavHeaderMainBinding.bind(mActivityBinding.navigationView.getHeaderView(0));
 
-        headerBinding.setLifecycleOwner((LifecycleOwner) this);
-        headerBinding.setStats(stats);
+        navigationController.getHeaderBinding().drawerStatsNotesNow.setText(String.valueOf(stats.notesNow()));
+        navigationController.getHeaderBinding().drawerStatsNotesMonth.setText(String.valueOf(stats.notesMonth()));
+        navigationController.getHeaderBinding().drawerStatsChars.setText(String.valueOf(stats.chars()));
 
-        Log.e("lll", "kkk" + stats.notesNow());
     }
 
 

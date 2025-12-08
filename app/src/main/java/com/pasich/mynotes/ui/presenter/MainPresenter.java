@@ -69,21 +69,42 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     }
 
     void startStatsStream() {
+        Flowable<Integer> notesCount = getDataManager().getNotesCount()
+                .doOnNext(v -> Log.d(TAG, "notesCount = " + v));
+
+        Flowable<Integer> notesLastMonth = getDataManager().getNotesCreatedLastMonth()
+                .doOnNext(v -> Log.d(TAG, "notesLastMonth = " + v));
+
+        Flowable<Long> totalCharacters = getDataManager().getTotalCharacters()
+                .doOnNext(v -> Log.d(TAG, "totalCharacters = " + v));
+
         getCompositeDisposable().add(
                 Flowable.combineLatest(
-                                getDataManager().getNotesCount(),
-                                getDataManager().getNotesCreatedLastMonth(),
-                                getDataManager().getTotalCharacters(),
-                                StatsData::new
+                                notesCount,
+                                notesLastMonth,
+                                totalCharacters,
+                                (count, lastMonth, chars) -> {
+                                    Log.d(TAG, "combineLatest → count=" + count +
+                                            ", lastMonth=" + lastMonth +
+                                            ", chars=" + chars);
+                                    return new StatsData(count, lastMonth, chars);
+                                }
+                        )
+                        .doOnNext(stats ->
+                                Log.d(TAG, "StatsData emitted: " + stats.toString())
                         )
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
-                                stats -> getView().renderDrawerStats(stats),
-                                error -> Log.e(TAG, "drawer stats stream", error)
+                                stats -> {
+                                    Log.d(TAG, "renderDrawerStats(stats) → " + stats);
+                                    getView().renderDrawerStats(stats);
+                                },
+                                error -> Log.e(TAG, "drawer stats stream error", error)
                         )
         );
     }
+
 
     void starListsRenderStream() {
         getCompositeDisposable().add(viewState.hide()
