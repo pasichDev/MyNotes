@@ -18,7 +18,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
-import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.view.activity.AboutActivity;
 import com.pasich.mynotes.ui.view.activity.BackupActivity;
 import com.pasich.mynotes.ui.view.activity.SettingsActivity;
@@ -51,7 +50,6 @@ public class NavigationController {
 
     public void init() {
         drawerLayout = binding.drawerLayout;
-        setupDrawerStatsListener();
 
         setupEdgeToEdge();
         setupDrawerButton();
@@ -60,28 +58,6 @@ public class NavigationController {
         handleBackPressed();
     }
 
-    private void setupDrawerStatsListener() {
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-            }
-
-            @Override
-            public void onDrawerOpened(@NonNull View drawerView) {
-                if (activity instanceof MainContract.view) {
-                    ((MainContract.view) activity).onDrawerOpened();
-                }
-            }
-
-            @Override
-            public void onDrawerClosed(@NonNull View drawerView) {
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-            }
-        });
-    }
 
     /**
      * Edge-to-Edge for Drawer/Root

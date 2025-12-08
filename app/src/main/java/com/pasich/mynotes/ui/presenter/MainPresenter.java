@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import dagger.hilt.android.scopes.ActivityScoped;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
@@ -64,6 +65,24 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         startStateCombiner();
         starListsRenderStream();
         startSearchStream();
+        startStatsStream();
+    }
+
+    void startStatsStream() {
+        getCompositeDisposable().add(
+                Flowable.combineLatest(
+                                getDataManager().getNotesCount(),
+                                getDataManager().getNotesCreatedLastMonth(),
+                                getDataManager().getTotalCharacters(),
+                                StatsData::new
+                        )
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                stats -> getView().renderDrawerStats(stats),
+                                error -> Log.e(TAG, "drawer stats stream", error)
+                        )
+        );
     }
 
     void starListsRenderStream() {
@@ -218,7 +237,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     public void requestTagSelection() {
         getCompositeDisposable().add(
                 tagsStream
-                        .take(1)
                         .map(tags -> {
                             List<Tag> filtered = new ArrayList<>();
                             for (Tag t : tags) {
@@ -241,26 +259,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     public void clearUiEvent() {
         lastUiEvent = UiEvent.NONE;
     }
-
-
-    @Override
-    public void loadDrawerStats() {
-        getCompositeDisposable().add(
-                Observable.combineLatest(
-                                getDataManager().getNotesCount().toObservable(),
-                                getDataManager().getNotesCreatedLastMonth().toObservable(),
-                                getDataManager().getTotalCharacters().toObservable(),
-                                StatsData::new
-                        )
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                stats -> getView().renderDrawerStats(stats),
-                                throwable -> Log.e(TAG, "loadDrawerStats() errors", throwable)
-                        )
-        );
-    }
-
 
     @Override
     public void newNotesClick() {

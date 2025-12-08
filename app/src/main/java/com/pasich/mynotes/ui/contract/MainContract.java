@@ -36,8 +36,6 @@ public interface MainContract {
 
         void renderDrawerStats(StatsData stats);
 
-        void onDrawerOpened();
-
         void allTagSelectDialog(List<Tag> tagsList);
     }
 
@@ -67,8 +65,6 @@ public interface MainContract {
         void clearUiEvent();
 
         void updateSearchQuery(String query);
-
-        void loadDrawerStats();
 
         void requestTagSelection();
     }

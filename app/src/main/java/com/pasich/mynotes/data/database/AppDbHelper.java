@@ -219,19 +219,19 @@ public class AppDbHelper implements DbHelper {
     }
 
     @Override
-    public Single<Integer> getNotesCount() {
-        return appDatabase.noteDao().getNotesCount();
+    public Flowable<Integer> getNotesCount() {
+        return appDatabase.noteDao().getNotesCount().map(v -> v == null ? 0 : v);
 
     }
 
     @Override
-    public Single<Integer> getNotesCreatedLastMonth() {
+    public Flowable<Integer> getNotesCreatedLastMonth() {
         long monthAgo = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000;
-        return appDatabase.noteDao().getNotesCreatedSince(monthAgo);
+        return appDatabase.noteDao().getNotesCreatedSince(monthAgo).map(v -> v == null ? 0 : v);
     }
 
     @Override
-    public Single<Long> getTotalCharacters() {
-        return appDatabase.noteDao().getTotalCharacters();
+    public Flowable<Long> getTotalCharacters() {
+        return appDatabase.noteDao().getTotalCharacters().map(v -> v == null ? 0 : v);
     }
 }

@@ -74,13 +74,13 @@ public interface NoteDao {
 
     // stats
     @Query("SELECT COUNT(*) FROM notes WHERE isTrash = 0")
-    Single<Integer> getNotesCount();
+    Flowable<Integer> getNotesCount();
 
     @Query("SELECT COUNT(*) FROM notes WHERE date >= :timestamp AND isTrash = 0")
-    Single<Integer> getNotesCreatedSince(long timestamp);
+    Flowable<Integer> getNotesCreatedSince(long timestamp);
 
     @Query("SELECT SUM(LENGTH(value)) FROM notes WHERE isTrash = 0")
-    Single<Long> getTotalCharacters();
+    Flowable<Long> getTotalCharacters();
 
 
 }

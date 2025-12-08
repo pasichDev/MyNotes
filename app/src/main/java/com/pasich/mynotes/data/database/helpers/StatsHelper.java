@@ -1,12 +1,12 @@
 package com.pasich.mynotes.data.database.helpers;
 
-import io.reactivex.Single;
+import io.reactivex.Flowable;
 
 public interface StatsHelper {
 
-    Single<Integer> getNotesCount();
+    Flowable<Integer> getNotesCount();
 
-    Single<Integer> getNotesCreatedLastMonth();
+    Flowable<Integer> getNotesCreatedLastMonth();
 
-    Single<Long> getTotalCharacters();
+    Flowable<Long> getTotalCharacters();
 }

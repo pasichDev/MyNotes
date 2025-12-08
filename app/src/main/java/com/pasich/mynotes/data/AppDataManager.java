@@ -277,17 +277,17 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public Single<Integer> getNotesCount() {
+    public Flowable<Integer> getNotesCount() {
         return dbHelper.getNotesCount();
     }
 
     @Override
-    public Single<Integer> getNotesCreatedLastMonth() {
+    public Flowable<Integer> getNotesCreatedLastMonth() {
         return dbHelper.getNotesCreatedLastMonth();
     }
 
     @Override
-    public Single<Long> getTotalCharacters() {
+    public Flowable<Long> getTotalCharacters() {
         return dbHelper.getTotalCharacters();
     }
 }

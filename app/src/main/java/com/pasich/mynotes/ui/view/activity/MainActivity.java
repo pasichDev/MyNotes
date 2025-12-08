@@ -1,5 +1,6 @@
 package com.pasich.mynotes.ui.view.activity;
 
+import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 
@@ -15,6 +16,7 @@ import android.view.animation.AnimationUtils;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -206,16 +208,14 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
     @Override
-    public void onDrawerOpened() {
-        mainPresenter.loadDrawerStats();
-    }
-
-    @Override
     public void renderDrawerStats(StatsData stats) {
         NavHeaderMainBinding headerBinding =
                 NavHeaderMainBinding.bind(mActivityBinding.navigationView.getHeaderView(0));
+
+        headerBinding.setLifecycleOwner((LifecycleOwner) this);
         headerBinding.setStats(stats);
 
+        Log.e("lll", "kkk" + stats.notesNow());
     }
 
 
@@ -462,7 +462,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void activateActionPanel() {
-        mActivityBinding.newNotesButton.setVisibility(View.GONE);
+        mActivityBinding.newNotesButton.setVisibility(GONE);
     }
 
     @Override
