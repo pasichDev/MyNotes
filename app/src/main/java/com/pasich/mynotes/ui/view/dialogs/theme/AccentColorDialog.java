@@ -4,13 +4,17 @@ package com.pasich.mynotes.ui.view.dialogs.theme;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Theme;
-import com.pasich.mynotes.utils.adapters.ThemeSelectionAdapter;
+import com.pasich.mynotes.utils.adapters.AccentColorAdapter;
 import com.pasich.mynotes.utils.themes.ThemesArray;
 
 import java.util.ArrayList;
@@ -21,49 +25,35 @@ public class AccentColorDialog {
         if (ctx == null) return;
 
         ArrayList<Theme> themes = new ThemesArray().getThemes();
-
         if (themes.isEmpty()) return;
 
-        int currentNightMode = ctx.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        int mode = ctx.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
 
-        int[] colorResources = getAccentColors(currentNightMode);
+        int[] colorResources = getAccentColors(mode);
 
-        String[] names = new String[]{
-                ctx.getString(R.string.themeBlue),
-                ctx.getString(R.string.themeGreen),
-                ctx.getString(R.string.themeSunset),
-                ctx.getString(R.string.themeYellow),
-                ctx.getString(R.string.themePurple),
-                ctx.getString(R.string.themeCoralRed)
-        };
+        View dialogView = LayoutInflater.from(ctx)
+                .inflate(R.layout.dialog_accent_picker, null);
 
-        int maxItems = Math.min(themes.size(), names.length);
-
-        ThemeSelectionAdapter adapter = new ThemeSelectionAdapter(
+        RecyclerView rv = dialogView.findViewById(R.id.accentGrid);
+        rv.setLayoutManager(new GridLayoutManager(ctx, 4));
+        rv.setAdapter(new AccentColorAdapter(
                 ctx,
                 themes,
-                names,
                 colorResources,
-                cache.getThemeId()
-        );
+                cache.getThemeId(),
+                selected -> {
+                    cache.setThemeId(selected.getId());
+                    callback.onSelected(selected);
+                }
+        ));
 
-        AlertDialog dialog = new AlertDialog.Builder(ctx, R.style.Theme_MyNotes_Dialog)
+        new AlertDialog.Builder(ctx, R.style.Theme_MyNotes_Dialog)
                 .setTitle(ctx.getString(R.string.selectAccentColor))
-                .setAdapter(adapter, (d, which) -> {
-                    if (which < maxItems) {
-                        Theme selected = themes.get(which);
-                        cache.setThemeId(selected.getId());
-                        callback.onSelected(selected);
-                    }
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .create();
+                .setView(dialogView)
+                .setNegativeButton(R.string.close, null)
+                .show();
 
-        dialog.show();
-
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(R.drawable.dialog_rounded_background);
-        }
     }
 
     private static int[] getAccentColors(int mode) {
@@ -74,7 +64,7 @@ public class AccentColorDialog {
                     R.color.red_pale_theme_dark_primary,
                     R.color.yellow_theme_dark_primary,
                     R.color.purple_theme_dark_primary,
-                    R.color.red_pale_theme_dark_primary
+                    R.color.silver_theme_dark_primary
             };
         } else {
             return new int[]{
@@ -83,7 +73,7 @@ public class AccentColorDialog {
                     R.color.red_pale_theme_light_primary,
                     R.color.yellow_theme_light_primary,
                     R.color.purple_theme_light_primary,
-                    R.color.red_pale_theme_light_primary
+                    R.color.silver_theme_primary
             };
         }
     }

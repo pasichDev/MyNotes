@@ -110,11 +110,6 @@
     <string name="nextRestore">Restore from Cloud</string>
     <string name="messageRestoreProcess"><b>Restoring data</b> \nThis window will close automatically when completed.</string>
 
-    <!-- Arrays AutoBackup -->
-
-    <!-- AutoBackup strings -->
-
-
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">No data to backup</string>
     <string name="creteLocalCopyOkay">The backup was created successfully</string>
@@ -122,9 +117,7 @@
     <string name="restoreDataOkay">Data restore completed successfully</string>
     <string name="restoreDataFall">Error: Backup corrupted</string>
     <string name="errorDriveSync">Server error or poor internet quality</string>
-
     <string name="sortNotes">Sort notes</string>
-
 
     <!-- Product offer -->
     <string name="thanks_title">Dear User</string>
@@ -149,8 +142,6 @@
     <string name="whats_new_description" translatable="false">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
     <string name="changelog_subtitle">Stay up to date with all the changes and improvements in this version</string>
     <string name="whatNewVersion" translatable="false" tools:ignore="ResourceCycle">@string/whatNewVersion</string>
-
-
     <string name="leaveFeedback">Leave  feedback</string>
 
     <!-- Donation Products -->
@@ -367,6 +358,6 @@
     <string name="drawerStatsNotes">Notes</string>
     <string name="drawerStatsLastMonth">Per month</string>
     <string name="drawerStatsChart">Сharacters</string>
-
+    <string name="themeSilver">Silver</string>
 </resources>
 

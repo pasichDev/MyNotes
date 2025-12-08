@@ -16,6 +16,7 @@ public class ThemesArray {
         themes.add(new Theme(2, R.style.SunsetTheme));
         themes.add(new Theme(3, R.style.YellowTheme));
         themes.add(new Theme(4, R.style.PurpleTheme));
+        themes.add(new Theme(5, R.style.SilverTheme));
     }
 
     public ArrayList<Theme> getThemes() {
