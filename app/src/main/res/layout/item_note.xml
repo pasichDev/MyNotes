@@ -27,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:bindNoteItemTop="@{Note}"
-
+            app:elevation="0dp"
             android:activated="@{activated}"
             app:cardBackgroundColorActivated="@{activated}"
             app:dynamicShapeTop="@{Note.tag.length() > 0 || Note.isAttachments()}"

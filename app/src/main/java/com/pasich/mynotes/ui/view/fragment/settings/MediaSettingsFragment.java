@@ -2,6 +2,8 @@ package com.pasich.mynotes.ui.view.fragment.settings;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,7 @@ import com.pasich.mynotes.ui.controllers.mainActivity.RedrawThemeController;
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.schedulers.Schedulers;
 
 @AndroidEntryPoint
 public class MediaSettingsFragment extends Fragment {
@@ -79,10 +82,20 @@ public class MediaSettingsFragment extends Fragment {
     @SuppressLint("DefaultLocale")
     private void updateMemoryUsage() {
         if (getContext() == null) return;
-        long usedBytes = AttachmentStorage.getTotalAttachmentsSize(getContext());
-        float usedMB = usedBytes / 1024f / 1024f;
-        binding.memoryValue.setText(String.format("%.1f MB", usedMB));
+
+        Schedulers.io().scheduleDirect(() -> {
+            long usedBytes = AttachmentStorage.getTotalAttachmentsSize(getContext());
+
+            float usedMB = usedBytes / 1024f / 1024f;
+
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (binding != null) {
+                    binding.memoryValue.setText(String.format("%.1f MB", usedMB));
+                }
+            });
+        });
     }
+
 
     @Override
     public void onDestroyView() {

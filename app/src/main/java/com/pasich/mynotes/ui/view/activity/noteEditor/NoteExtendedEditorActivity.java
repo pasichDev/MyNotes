@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -253,7 +254,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         super.onDestroy();
         if (binding != null) {
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
-            binding.noteEditor.release();
+            ((ViewGroup) binding.noteEditor.getParent()).removeView(binding.noteEditor);
         }
 
     }

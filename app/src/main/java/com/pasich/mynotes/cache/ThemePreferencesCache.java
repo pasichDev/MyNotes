@@ -259,7 +259,6 @@ public class ThemePreferencesCache {
         }
 
         applyThemeModeInternal(themeMode);
-        Log.d(TAG, "Applied theme mode from cache: " + themeMode);
     }
 
     /**

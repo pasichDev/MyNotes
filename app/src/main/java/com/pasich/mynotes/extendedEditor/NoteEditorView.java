@@ -9,6 +9,8 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -247,26 +249,36 @@ public class NoteEditorView extends FrameLayout {
     public void release() {
         try {
             if (webView != null) {
+
+                ViewParent parent = webView.getParent();
+                if (parent instanceof ViewGroup vg) {
+                    vg.removeView(webView);
+                }
+
                 webView.stopLoading();
                 webView.loadUrl("about:blank");
+
                 webView.clearHistory();
-                webView.clearCache(false);
+                webView.clearCache(true);
+                webView.removeAllViews();
                 webView.removeJavascriptInterface(EditorJSInterface.nameInterface);
                 webView.setWebChromeClient(null);
+                webView.setWebViewClient(null);
+
                 webView.destroy();
                 webView = null;
             }
-        } catch (Exception e) {
-            Log.e(TAG, "NoteEditorView cleanup error: " + e.getMessage());
+        } catch (Throwable t) {
+            Log.e(TAG, "Error while destroying WebView", t);
         }
 
         editorInterface = null;
 
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
-            handler = null;
         }
     }
+
 
     /**
      * Soft refresh animation:

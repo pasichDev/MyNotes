@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 
+import java.util.concurrent.Executors;
+
 import javax.inject.Inject;
 
 import dagger.hilt.android.HiltAndroidApp;
@@ -15,7 +17,9 @@ import io.reactivex.plugins.RxJavaPlugins;
 public class MyApp extends Application {
 
     private static final String TAG = "MyNotesApp";
-
+    public static volatile float GLOBAL_FONT_SCALE = 1.0f;
+    public static volatile boolean CACHE_READY = false;
+    public static ThemePreferencesCache CACHE;
     @Inject
     ThemePreferencesCache themePreferencesCache;
 
@@ -23,8 +27,12 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Initializing the theme cache to improve performance
-        initThemeCache();
+        CACHE = themePreferencesCache;
+        Executors.newSingleThreadExecutor().execute(() -> {
+            themePreferencesCache.initialize();
+            GLOBAL_FONT_SCALE = themePreferencesCache.getUiFontScale();
+            CACHE_READY = true;
+        });
 
         // Global RxJava ErrorHandler to avoid UndeliverableException
         RxJavaPlugins.setErrorHandler(e -> {
@@ -38,16 +46,5 @@ public class MyApp extends Application {
                 Log.w(TAG, "Unhandled RxJava exception", e);
             }
         });
-    }
-
-    /**
-     * Initializing the theme settings cache to improve performance
-     */
-    private void initThemeCache() {
-        try {
-            themePreferencesCache.initialize();
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to initialize theme preferences cache", e);
-        }
     }
 }

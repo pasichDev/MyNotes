@@ -23,6 +23,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.snackbar.Snackbar;
+import com.pasich.mynotes.MyApp;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
@@ -46,7 +47,14 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseView
 
     @Override
     protected void attachBaseContext(Context ctx) {
-        float scale = readUiFontScale(ctx);
+        float scale;
+
+        if (MyApp.CACHE_READY) {
+            scale = MyApp.CACHE.getUiFontScale();
+        } else {
+            scale = MyApp.GLOBAL_FONT_SCALE;
+        }
+
         Configuration config = new Configuration(ctx.getResources().getConfiguration());
         if (scale != 0.0f) {
             config.fontScale = scale;
