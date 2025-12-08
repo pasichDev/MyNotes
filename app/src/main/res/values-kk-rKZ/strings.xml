@@ -67,12 +67,6 @@
     <string name="aboutApps">Қолданба туралы</string>
     <string name="trash">Себет</string>
     <string name="themes">Тақырып</string>
-    <string name="themeBlue">Мұхиттық көк</string>
-    <string name="themeGreen">Зұбаржат жасыл</string>
-    <string name="themeSunset">Күн батысының сарғыш</string>
-    <string name="themeYellow">Алтын сары</string>
-    <string name="themePurple">Терең күлгін</string>
-    <string name="themeCoralRed">Маржан қызыл</string>
     <string name="accentColorDescription">Тақырып құрылатын акцент түсін таңдаңыз</string>
     <string name="selectAccentColor">Акцент түсін таңдау</string>
     <string name="onDynamicColor">Динамикалық түсті қосу</string>

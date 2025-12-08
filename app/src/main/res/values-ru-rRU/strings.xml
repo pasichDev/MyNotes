@@ -2,12 +2,6 @@
 <resources>
     <string name="app_name">Мои Заметки</string>
     <string name="save_to_notes">Сохранить в Мои Заметки</string>
-    <string name="themeBlue">Океанский синий</string>
-    <string name="themeGreen">Изумрудно-зелёный</string>
-    <string name="themeSunset">Оранжевый закат</string>
-    <string name="themeYellow">Золотисто-жёлтый</string>
-    <string name="themePurple">Глубокий фиолетовый</string>
-    <string name="themeCoralRed">Коралловый красный</string>
     <string name="accentColorDescription">Выберите акцентный цвет из которого построится тема</string>
     <string name="selectAccentColor">Выбрать акцентный цвет</string>
     <string name="onDynamicColor">Включить Dynamic Color</string>

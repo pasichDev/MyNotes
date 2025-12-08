@@ -67,12 +67,6 @@
     <string name="aboutApps">Аб дадатку</string>
     <string name="trash">Кошык</string>
     <string name="themes">Тэма</string>
-    <string name="themeBlue">Акеанскі сіні</string>
-    <string name="themeGreen">Смарагдавы зялёны</string>
-    <string name="themeSunset">Аранжавы захад</string>
-    <string name="themeYellow">Залацісты жоўты</string>
-    <string name="themePurple">Глыбокі фіялетавы</string>
-    <string name="themeCoralRed">Каралавы чырвоны</string>
     <string name="accentColorDescription">Выберыце акцэнтны колер з якога збудуецца тэма</string>
     <string name="selectAccentColor">Выбраць акцэнтны колер</string>
     <string name="onDynamicColor">Уключыць Dynamic Color</string>

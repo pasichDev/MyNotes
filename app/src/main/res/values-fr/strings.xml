@@ -66,12 +66,6 @@
     <string name="aboutApps">À propos de l\'application</string>
     <string name="trash">Corbeille</string>
     <string name="themes">Thème</string>
-    <string name="themeBlue">Bleu océan</string>
-    <string name="themeGreen">Vert émeraude</string>
-    <string name="themeSunset">Orange coucher de soleil</string>
-    <string name="themeYellow">Jaune doré</string>
-    <string name="themePurple">Violet profond</string>
-    <string name="themeCoralRed">Rouge corail</string>
     <string name="accentColorDescription">Choisissez la couleur d\'accent à partir de laquelle le thème sera construit</string>
     <string name="selectAccentColor">Sélectionner la couleur d\'accent</string>
     <string name="onDynamicColor">Activer la couleur dynamique</string>

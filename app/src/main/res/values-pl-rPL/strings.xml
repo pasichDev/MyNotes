@@ -68,12 +68,6 @@
     <string name="aboutApps">Informacje o aplikacji</string>
     <string name="trash">Kosz</string>
     <string name="themes">Motyw</string>
-    <string name="themeBlue">Niebieski oceanu</string>
-    <string name="themeGreen">Szmaragdowa zieleń</string>
-    <string name="themeSunset">Pomarańczowy zachód</string>
-    <string name="themeYellow">Złocista żółć</string>
-    <string name="themePurple">Głęboki fiolet</string>
-    <string name="themeCoralRed">Koralowa czerwień</string>
     <string name="accentColorDescription">Wybierz kolor akcentu z którego zostanie zbudowany motyw</string>
     <string name="selectAccentColor">Wybierz kolor akcentu</string>
     <string name="onDynamicColor">Włącz kolor dynamiczny</string>

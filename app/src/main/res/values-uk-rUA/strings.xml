@@ -122,12 +122,6 @@
     <string name="changelog_subtitle">Залишайтеся в курсі всіх змін та покращень у цій версії</string>
 
     <!-- Themes names -->
-    <string name="themeBlue">Океанський синій</string>
-    <string name="themeGreen">Смарагдовий зелений</string>
-    <string name="themeSunset">Помаранчевий захід</string>
-    <string name="themeYellow">Золотисто-жовтий</string>
-    <string name="themePurple">Глибокий фіолетовий</string>
-    <string name="themeCoralRed">Кораловий червоний</string>
 
     <string name="leaveFeedback">Залишити відгук</string>
 

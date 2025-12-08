@@ -65,12 +65,6 @@
     <string name="aboutApps">Informazioni sull\'app</string>
     <string name="trash">Cestino</string>
     <string name="themes">Tema</string>
-    <string name="themeBlue">Blu oceano</string>
-    <string name="themeGreen">Verde smeraldo</string>
-    <string name="themeSunset">Arancione tramonto</string>
-    <string name="themeYellow">Giallo dorato</string>
-    <string name="themePurple">Viola profondo</string>
-    <string name="themeCoralRed">Rosso corallo</string>
     <string name="accentColorDescription">Scegli colore accento da cui verrà costruito il tema</string>
     <string name="selectAccentColor">Seleziona colore accento</string>
     <string name="onDynamicColor">Abilita colore dinamico</string>

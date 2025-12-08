@@ -80,12 +80,6 @@
     <string name="aboutApps">About App</string>
     <string name="trash">Trash</string>
     <string name="themes">Theme</string>
-    <string name="themeBlue">Ocean Blue</string>
-    <string name="themeGreen">Emerald Green</string>
-    <string name="themeSunset">Sunset Orange</string>
-    <string name="themeYellow">Golden Yellow</string>
-    <string name="themePurple">Deep Purple</string>
-    <string name="themeCoralRed">Coral Red</string>
     <string name="accentColorDescription">Choose accent color from which the theme will be built</string>
     <string name="selectAccentColor">Select accent color</string>
     <string name="onDynamicColor">Enable Dynamic Color</string>

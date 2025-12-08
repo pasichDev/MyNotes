@@ -70,12 +70,6 @@
     <string name="aboutApps">Acerca de la aplicación</string>
     <string name="trash">Papelera</string>
     <string name="themes">Tema</string>
-    <string name="themeBlue">Azul océano</string>
-    <string name="themeGreen">Verde esmeralda</string>
-    <string name="themeSunset">Naranja atardecer</string>
-    <string name="themeYellow">Amarillo dorado</string>
-    <string name="themePurple">Púrpura profundo</string>
-    <string name="themeCoralRed">Rojo coral</string>
     <string name="accentColorDescription">Elige color de acento con el que se construirá el tema</string>
     <string name="selectAccentColor">Seleccionar color de acento</string>
     <string name="onDynamicColor">Habilitar color dinámico</string>

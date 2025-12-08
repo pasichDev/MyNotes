@@ -65,12 +65,6 @@
     <string name="aboutApps">Über die App</string>
     <string name="trash">Papierkorb</string>
     <string name="themes">Design</string>
-    <string name="themeBlue">Ozeanblau</string>
-    <string name="themeGreen">Smaragdgrün</string>
-    <string name="themeSunset">Sonnenuntergang Orange</string>
-    <string name="themeYellow">Goldgelb</string>
-    <string name="themePurple">Tiefviolett</string>
-    <string name="themeCoralRed">Korallenrot</string>
     <string name="accentColorDescription">Akzentfarbe wählen, aus der das Design erstellt wird</string>
     <string name="selectAccentColor">Akzentfarbe auswählen</string>
     <string name="onDynamicColor">Dynamische Farbe aktivieren</string>
