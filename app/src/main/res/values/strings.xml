@@ -355,5 +355,13 @@
     <string name="titleTagPicker">Tag Overview</string>
     <string name="helpTitleTagOverview">Tag Overview</string>
     <string name="helpDescTagOverview">To quickly browse all tags, hold down the “All Notes” button on the main screen. A dialog with all tags will appear — just pick the one you need.</string>
+    <string name="trash_info_title">Trash Help</string>
+    <string name="trash_info_message">
+    • To restore a note, simply tap on it. You will automatically enter multi-selection mode and can restore several notes at once.\n\n
+    • To empty the trash, tap the action button (FAB). All notes will be permanently deleted with no way to undo.\n\n
+    • You can use the trash as an archive — items do not disappear automatically and will remain there until you manually clear them.
+    </string>
+    <string name="trash_info_ok">Got it</string>
+
 </resources>
 

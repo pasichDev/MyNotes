@@ -15,6 +15,7 @@ import com.pasich.mynotes.databinding.ActivityTrashBinding;
 import com.pasich.mynotes.ui.contract.TrashContract;
 import com.pasich.mynotes.ui.controllers.SelectionController;
 import com.pasich.mynotes.ui.presenter.TrashPresenter;
+import com.pasich.mynotes.ui.view.dialogs.TrashInfoDialog;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 
@@ -104,7 +105,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity_toolbar, menu);
+        getMenuInflater().inflate(R.menu.menu_trash_toolbar, menu);
         return true;
     }
 
@@ -118,7 +119,9 @@ public class TrashActivity extends BaseActivity implements TrashContract.view {
                 finishActivity();
             }
         }
-
+        if (item.getItemId() == R.id.helpTrash) {
+            TrashInfoDialog.show(this);
+        }
         return true;
     }
 
