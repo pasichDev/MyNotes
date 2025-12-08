@@ -1,11 +1,30 @@
 # CHANGELOG
 
-## [2.4.42] - XX.XX.XXXX
+## [2.4.42] - 08.12.2025
 
-- Added new Silver theme color
-- Tag Overview dialog — long-press “All Notes” to quickly browse and select tags.
-- Enhanced user experience when copying notes (improved animation & feedback)
-- Introduced seamless switching between editors directly from the note screen
+**New**
+
+- Added a new Silver accent theme for improved visual customization.
+- Introduced the Tag Overview dialog — long-press on “All Notes” to quickly browse and select tags.
+- Implemented seamless switching between the Simple Editor and Extended Editor directly from the
+  note editing screen.
+- Enhanced user experience when copying notes — improved animations and clearer visual feedback.
+
+**Improvements**
+
+- Conducted extensive code and UI review to improve overall application stability and
+  maintainability.
+- Refined the interface and visual design across multiple screens: polished spacing, colors,
+  animations, and component behavior.
+- Improved interaction logic in the notes list, including selection modes, swipe actions, and tag
+  operations.
+
+**Fixes**
+
+- Resolved a large number of bugs affecting note rendering, list updates, tag behavior, and
+  selection mode.
+- Fixed issues related to trash restore actions, animations, and state synchronization.
+- Improved overall performance and stability to ensure a smoother and more reliable user experience.
 
 ## [2.4.41] - 01.12.2025
 
