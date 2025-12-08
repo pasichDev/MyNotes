@@ -1,7 +1,6 @@
 package com.pasich.mynotes.data.model;
 
 import androidx.room.Entity;
-import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.google.gson.JsonArray;
@@ -42,15 +41,12 @@ public class Note {
     // NEW: instead of TrashNote table
     @SerializedName("i")
     private boolean isTrash = false;
-    @Ignore
-    private boolean Checked;
 
     public Note create(String title, String value, long date, String tag) {
         this.title = title;
         this.tag = tag;
         this.value = value;
         this.date = date;
-        this.Checked = false;
         return this;
     }
 
@@ -59,7 +55,6 @@ public class Note {
         this.tag = "";
         this.value = value;
         this.date = date;
-        this.Checked = false;
         return this;
     }
 
@@ -113,14 +108,6 @@ public class Note {
         return value.length() > 400 ? value.substring(0, 400) : value;
     }
 
-
-    public boolean getChecked() {
-        return this.Checked;
-    }
-
-    public void setChecked(boolean arg) {
-        this.Checked = arg;
-    }
 
     public long getDate() {
         return this.date;
@@ -179,7 +166,6 @@ public class Note {
         this.valueJson = other.valueJson;
         this.hasRichContent = other.hasRichContent;
         this.attachments = other.attachments;
-        this.Checked = other.Checked;
     }
 
     public Note duplicate() {
