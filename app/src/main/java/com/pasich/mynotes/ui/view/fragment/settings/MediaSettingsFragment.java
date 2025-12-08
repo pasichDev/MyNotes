@@ -14,7 +14,7 @@ import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.FragmentMediaSettingsBinding;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
-import com.pasich.mynotes.ui.controllers.RedrawThemeController;
+import com.pasich.mynotes.ui.controllers.mainActivity.RedrawThemeController;
 
 import javax.inject.Inject;
 

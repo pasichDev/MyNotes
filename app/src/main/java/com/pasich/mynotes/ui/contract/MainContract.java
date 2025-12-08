@@ -9,7 +9,6 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.state.MainViewState;
 import com.pasich.mynotes.ui.state.StatsData;
-import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ import dagger.hilt.android.scopes.ActivityScoped;
 
 public interface MainContract {
 
-    interface view extends BaseView, MoreNoteMainActivityView, ManagerViewAction<Note> {
+    interface view extends BaseView, MoreNoteMainActivityView {
 
         void render(MainViewState state);
 

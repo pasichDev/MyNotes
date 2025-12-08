@@ -1,7 +1,5 @@
 package com.pasich.mynotes.ui.view.activity;
 
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE_THEME_UPDATE;
 
@@ -9,7 +7,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -32,10 +29,11 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
-import com.pasich.mynotes.ui.controllers.AppUpdateController;
-import com.pasich.mynotes.ui.controllers.MainRenderListsController;
-import com.pasich.mynotes.ui.controllers.NavigationController;
-import com.pasich.mynotes.ui.controllers.SearchController;
+import com.pasich.mynotes.ui.controllers.SelectionController;
+import com.pasich.mynotes.ui.controllers.mainActivity.AppUpdateController;
+import com.pasich.mynotes.ui.controllers.mainActivity.MainRenderListsController;
+import com.pasich.mynotes.ui.controllers.mainActivity.NavigationController;
+import com.pasich.mynotes.ui.controllers.mainActivity.SearchController;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
 import com.pasich.mynotes.ui.state.MainViewState;
 import com.pasich.mynotes.ui.state.StatsData;
@@ -49,9 +47,6 @@ import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTag;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTagOnClickListener;
 import com.pasich.mynotes.utils.UpdateChecker;
-import com.pasich.mynotes.utils.actionPanel.ActionUtils;
-import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
-import com.pasich.mynotes.utils.actionPanel.tool.NoteActionTool;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.adapters.notes.OnItemClickListener;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
@@ -74,7 +69,7 @@ import javax.inject.Named;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class MainActivity extends BaseActivity implements MainContract.view, ManagerViewAction<Note> {
+public class MainActivity extends BaseActivity implements MainContract.view {
 
     // Update theme listener
     final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -92,13 +87,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     @Inject
     public FormatListTool formatList;
     @Inject
-    public NoteActionTool noteActionTool;
-    @Inject
     public TagsAdapter tagsAdapter;
     @Inject
     public StaggeredGridLayoutManager gridLayoutManager;
-    @Inject
-    public ActionUtils actionUtils;
+
     @Inject
     public NoteAdapter mNoteAdapter;
     @Named("TagsItemSpaceDecoration")
@@ -128,6 +120,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     private MainRenderListsController mainRenderListsController;
     private Tag currentSelectedTag = null;
 
+    private SelectionController selectionController;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -137,10 +130,16 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         selectTheme();
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
+
+        // set selection
+        selectionController = new SelectionController(mNoteAdapter, mActivityBinding.getRoot());
+        mNoteAdapter.setSelectionController(selectionController);
+        selectionController.setPanelMode(SelectionController.Mode.NORMAL);
+
+
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
-        actionUtils.setMangerView(mActivityBinding.getRoot());
 
 
         searchController = new SearchController(mActivityBinding, searchNotesAdapter, new SearchController.Listener() {
@@ -167,10 +166,16 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         navigationController.handleShortcuts(getIntent());
 
         mainRenderListsController = new MainRenderListsController(mActivityBinding);
+
+
     }
 
     @Override
     public void render(MainViewState state) {
+        if (selectionController.isInSelectionMode()) {
+            return;
+        }
+
         currentSelectedTag = state.selectedTag();
         // render notes list
         renderNotes(state.notes(), state.selectedTag(), state.uiEvent());
@@ -253,9 +258,9 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mActivityBinding.actionSearch.setOnMenuItemClickListener(menuItem -> {
             int idItem = menuItem.getItemId();
             if (idItem == R.id.sort) {
-                if (!actionUtils.getAction()) showSortDialog();
+                if (!selectionController.isInSelectionMode()) showSortDialog();
             } else if (idItem == R.id.format) {
-                if (!actionUtils.getAction()) {
+                if (!selectionController.isInSelectionMode()) {
                     formatList.formatNote(menuItem);
                     gridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
                 }
@@ -267,7 +272,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         tagsAdapter.setOnItemClickListener(new OnItemClickListenerTag() {
             @Override
             public void onClick(int position) {
-                if (!actionUtils.getAction()) {
+                if (!selectionController.isInSelectionMode()) {
                     Tag clickedTag = tagsAdapter.getCurrentList().get(position);
                     if (clickedTag.getSelected()) {
                         shakeTagAt(position);
@@ -279,7 +284,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
             @Override
             public void onLongClick(int position, View mView) {
-                if (actionUtils.getAction()) return;
+                if (selectionController.isInSelectionMode()) return;
                 Tag tag = tagsAdapter.getCurrentList().get(position);
                 if (SystemTagsManager.isSystemTag(tag)) {
                     mainPresenter.requestTagSelection();
@@ -294,15 +299,32 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         mNoteAdapter.setOnItemClickListener(new OnItemClickListener<>() {
             @Override
             public void onClick(int position, Note model) {
-                if (!actionUtils.getAction()) {
+                if (!selectionController.isInSelectionMode()) {
                     openNoteEdit(model, gridLayoutManager.findViewByPosition(position));
-                } else selectItemAction(model, position, true);
+                } else selectionController.toggle(model);
 
             }
 
             @Override
             public void onLongClick(int position, Note model) {
-                if (!actionUtils.getAction()) choiceNoteDialog(model, position);
+                if (!selectionController.isInSelectionMode()) choiceNoteDialog(model, position);
+            }
+
+        });
+        selectionController.setListener(new SelectionController.Listener() {
+            @Override
+            public void onSelectionModeChanged(boolean active) {
+                mActivityBinding.newNotesButton.setVisibility(active ? View.GONE : View.VISIBLE);
+            }
+
+            @Override
+            public void onDeleteRequested() {
+                deleteNotes();
+            }
+
+            @Override
+            public void onShareRequested() {
+                shareNotes();
             }
 
         });
@@ -347,7 +369,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean isItemViewSwipeEnabled() {
-                return !actionUtils.getAction() && mainPresenter.getDataManager().getFormatCount() == 1;
+                return !selectionController.isInSelectionMode() && mainPresenter.getDataManager().getFormatCount() == 1;
             }
 
             @Override
@@ -355,7 +377,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 int position = viewHolder.getBindingAdapterPosition();
 
                 if (direction == ItemTouchHelper.LEFT) {
-                    selectItemAction(mNoteAdapter.getCurrentList().get(position), position, false);
+                    selectItemAction(mNoteAdapter.getCurrentList().get(position));
 
                 } else {
                     Note sNote = mNoteAdapter.getCurrentList().get(position);
@@ -365,7 +387,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
                 }
             }
         }).attachToRecyclerView(mActivityBinding.listNotes);
-
     }
 
     public void snackBarRestoreNote() {
@@ -377,7 +398,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void actionStartNote(Note note, int position) {
-        selectItemAction(note, position, true);
+        selectItemAction(note);
     }
 
     @Override
@@ -438,8 +459,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             mActivityBinding.searchView.hide();
             return false;
         }
-        if (actionUtils.getAction()) {
-            actionUtils.closeActionPanel();
+        if (selectionController.isInSelectionMode()) {
+            selectionController.clearSelection();
             return false;
         }
 
@@ -457,62 +478,41 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     }
 
-    @Override
-    public void activateActionPanel() {
-        mActivityBinding.newNotesButton.setVisibility(GONE);
-    }
-
-    @Override
-    public void deactivationActionPanel() {
-        mActivityBinding.newNotesButton.setVisibility(VISIBLE);
-    }
-
-    @Override
     public void deleteNotes() {
-        if (noteActionTool.getArrayChecked().size() == mNoteAdapter.getItemCount()) {
+        List<Note> selected = selectionController.getSelectedNotes();
+
+        if (selected.size() == mNoteAdapter.getItemCount()) {
             mActivityBinding.appBarMainActivity.setExpanded(true);
-
         }
-        mainPresenter.deleteNotesArray(noteActionTool.getArrayChecked());
-        actionUtils.closeActionPanel();
+
+        if (!selected.isEmpty()) {
+            mainPresenter.deleteNotesArray(new ArrayList<>(selectionController.getSelectedNotes()));
+        }
+
+        selectionController.clearSelection();
     }
 
-    @Override
+
     public void shareNotes() {
-        List<Note> selectedNotes = noteActionTool.getArrayChecked();
-        if (!selectedNotes.isEmpty()) {
-            // Create a copy of the list to avoid issues with clearing
-            List<Note> notesCopy = new ArrayList<>(selectedNotes);
-            ShareOptionsDialog shareDialog = new ShareOptionsDialog(notesCopy);
-            shareDialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
+        List<Note> selected = selectionController.getSelectedNotes();
 
-            // Close action panel after dialog is shown
-            actionUtils.closeActionPanel();
+        if (!selected.isEmpty()) {
+            ShareOptionsDialog dialog = new ShareOptionsDialog(selected);
+            dialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
+        }
+
+        selectionController.clearSelection();
+    }
+
+
+    public void selectItemAction(Note note) {
+        if (!selectionController.isInSelectionMode()) {
+            selectionController.startSelection(note);
         } else {
-            Log.w("MainActivity", "No notes selected for sharing");
-            actionUtils.closeActionPanel();
+            selectionController.toggle(note);
         }
     }
 
-    @Override
-    public void selectItemAction(Note note, int position, boolean payloads) {
-        if (note.getChecked()) {
-            note.setChecked(false);
-            if (!noteActionTool.isCheckedItemFalse(note)) actionUtils.closeActionPanel();
-        } else {
-            noteActionTool.isCheckedItem(note);
-            note.setChecked(true);
-        }
-
-        actionUtils.manageActionPanel(noteActionTool.getCountCheckedItem());
-        if (payloads) mNoteAdapter.notifyItemChanged(position, 22);
-        else mNoteAdapter.notifyItemChanged(position);
-    }
-
-    @Override
-    public void toolCleanChecked() {
-        noteActionTool.checkedClean();
-    }
 
     @Override
     protected void onDestroy() {
@@ -544,12 +544,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             searchNotesAdapter.setItemClickListener(null);
         }
 
-        // Очистка ActionPanel ресурсов
-        if (actionUtils != null) {
-            actionUtils.cleanup();
-        }
-        if (noteActionTool != null) {
-            noteActionTool.cleanup();
+        if (selectionController != null) {
+            selectionController.cleanup();
         }
 
         mNoteAdapter = null;

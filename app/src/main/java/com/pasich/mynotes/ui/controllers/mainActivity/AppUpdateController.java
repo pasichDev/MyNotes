@@ -1,4 +1,4 @@
-package com.pasich.mynotes.ui.controllers;
+package com.pasich.mynotes.ui.controllers.mainActivity;
 
 import android.app.Activity;
 import android.content.Intent;

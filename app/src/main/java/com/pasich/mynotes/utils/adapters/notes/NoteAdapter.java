@@ -9,19 +9,30 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ItemNoteBinding;
+import com.pasich.mynotes.ui.controllers.SelectionController;
 import com.pasich.mynotes.utils.recycler.diffutil.NoteDiff;
+import com.pasich.mynotes.utils.recycler.payloads.NotePayloads;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
+import dagger.hilt.android.scopes.ActivityScoped;
 
+@ActivityScoped
 public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
 
     private OnItemClickListener<Note> listener;
+    private SelectionController selectionController;
 
     @Inject
     public NoteAdapter() {
         super(new NoteDiff());
         setHasStableIds(true);
+    }
+
+    public void setSelectionController(SelectionController controller) {
+        this.selectionController = controller;
     }
 
     @Override
@@ -41,10 +52,22 @@ public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
     }
 
     @Override
+    public void onBindViewHolder(
+            @NonNull NoteHolder holder,
+            int position,
+            @NonNull List<Object> payloads
+    ) {
+        if (!payloads.isEmpty() && payloads.contains(NotePayloads.PAYLOAD_SELECTION)) {
+            holder.bindSelectionState(getItem(position));
+        } else {
+            super.onBindViewHolder(holder, position, payloads);
+        }
+    }
+
+    @Override
     public void onBindViewHolder(@NonNull NoteHolder holder, int position) {
         holder.bind(getItem(position));
     }
-
 
     public void setOnItemClickListener(OnItemClickListener<Note> listener) {
         this.listener = listener;
@@ -63,8 +86,11 @@ public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
             binding.setNote(note);
             binding.executePendingBindings();
 
+            bindSelectionState(note);
+
             binding.getRoot().setOnClickListener(v ->
-                    listener.onClick(getBindingAdapterPosition(), note));
+                    listener.onClick(getBindingAdapterPosition(), note)
+            );
 
             binding.getRoot().setOnLongClickListener(v -> {
                 listener.onLongClick(getBindingAdapterPosition(), note);
@@ -72,6 +98,19 @@ public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
             });
 
             binding.getRoot().setTransitionName("note_" + note.getId());
+        }
+
+        void bindSelectionState(Note note) {
+
+            boolean isSelected =
+                    selectionController != null &&
+                            selectionController.isSelected(note.getId());
+
+            binding.setActivated(isSelected);
+            binding.itemTop.setActivated(isSelected);
+            binding.itemNoteBottom.setActivated(isSelected);
+
+            binding.executePendingBindings();
         }
     }
 }

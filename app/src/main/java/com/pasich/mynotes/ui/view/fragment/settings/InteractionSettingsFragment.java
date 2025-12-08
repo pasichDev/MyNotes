@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.FragmentInteractionSettingsBinding;
-import com.pasich.mynotes.ui.controllers.RedrawThemeController;
+import com.pasich.mynotes.ui.controllers.mainActivity.RedrawThemeController;
 
 import javax.inject.Inject;
 

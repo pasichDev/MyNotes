@@ -19,7 +19,7 @@ import com.google.android.material.slider.Slider;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.FragmentInterfaceSettingsBinding;
-import com.pasich.mynotes.ui.controllers.RedrawThemeController;
+import com.pasich.mynotes.ui.controllers.mainActivity.RedrawThemeController;
 import com.pasich.mynotes.ui.view.dialogs.theme.AccentColorDialog;
 import com.pasich.mynotes.ui.view.dialogs.theme.ThemeModeDialog;
 import com.pasich.mynotes.utils.themes.ThemesArray;

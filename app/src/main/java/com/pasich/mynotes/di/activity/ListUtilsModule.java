@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTag;
 
@@ -39,10 +38,6 @@ public class ListUtilsModule {
         return new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
     }
 
-    @Provides
-    public NoteAdapter provideNoteAdapter() {
-        return new NoteAdapter();
-    }
 
     @Named("Tag")
     @Provides
@@ -70,6 +65,5 @@ public class ListUtilsModule {
     SpacesItemDecoration providerSpaceItemDecorationTags() {
         return new SpacesItemDecoration(8, 8);
     }
-
 
 }

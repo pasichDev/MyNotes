@@ -14,6 +14,16 @@ import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import com.pasich.mynotes.utils.FormattedDataUtil;
 
 public class NoteBindingAdapters {
+    @BindingAdapter("cardBackgroundColorActivated")
+    public static void setCardBackgroundColorActivated(MaterialCardView view, boolean activated) {
+        Context ctx = view.getContext();
+
+        int color = activated
+                ? ctx.getColor(R.color.item_bindig_note_surface_variant)
+                : ctx.getColor(R.color.item_bindig_note_surface);
+
+        view.setCardBackgroundColor(color);
+    }
 
     @BindingAdapter("dataNote")
     public static void setDataNote(TextView textView, Note note) {
@@ -50,18 +60,14 @@ public class NoteBindingAdapters {
         Context ctx = card.getContext();
         int color;
 
-        if (note.getChecked()) {
-            // вибране
+        if (card.isActivated()) {
             color = ctx.getColor(R.color.item_bindig_note_primary);
-
         } else if (note.isAttachments()) {
-            // нотатка з розширеним редактором
             color = ctx.getColor(R.color.item_bindig_note_extended_stroke);
-
         } else {
-            // звичайна
             color = ctx.getColor(R.color.item_bindig_note_surface_variant);
         }
+
 
         card.setStrokeColor(color);
     }
@@ -132,8 +138,6 @@ public class NoteBindingAdapters {
 
         String title = note.getTitle() != null ? note.getTitle().trim() : "";
         String value = note.getValue() != null ? note.getValue().trim() : "";
-        String valueJson = note.getValueJson() != null ? note.getValueJson().trim() : "";
-        String attaches = note.getAttachments() != null ? note.getAttachments().trim() : "";
 
         boolean isGone = title.isEmpty() && value.isEmpty() && note.isAttachments();
 

@@ -22,7 +22,7 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.ActivitySettingsBinding;
-import com.pasich.mynotes.ui.controllers.RedrawThemeController;
+import com.pasich.mynotes.ui.controllers.mainActivity.RedrawThemeController;
 import com.pasich.mynotes.ui.view.fragment.settings.InteractionSettingsFragment;
 import com.pasich.mynotes.ui.view.fragment.settings.InterfaceSettingsFragment;
 import com.pasich.mynotes.ui.view.fragment.settings.MediaSettingsFragment;
