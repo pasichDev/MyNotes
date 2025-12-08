@@ -179,7 +179,7 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
 
     @Override
     public void onThemeChanged(int themeStyle) {
-        redrawActivity(themeStyle);
+        redrawSettingsActivity(themeStyle);
     }
 
     @Override
@@ -187,9 +187,9 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         fontScaleWasChanged = value;
     }
 
-    @Override
-    public void redrawActivity(int themeStyle) {
-        super.redrawActivity(themeStyle);
+
+    public void redrawSettingsActivity(int themeStyle) {
+        super.redrawActivity();
         setTheme(themeStyle);
 
         // Background

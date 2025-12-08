@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,6 +29,7 @@ import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
+import com.pasich.mynotes.databinding.NavHeaderMainBinding;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.controllers.AppUpdateController;
 import com.pasich.mynotes.ui.controllers.MainRenderListsController;
@@ -80,8 +80,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
         Intent data = result.getData();
         if (result.getResultCode() == 11) {
             assert data != null;
-            if (data.getBooleanExtra(EXTRA_UPDATE_THEME_STYLE, false)) {
-                this.redrawActivity(data.getIntExtra(EXTRA_UPDATE_THEME_STYLE, 0));
+            if (data.hasExtra(EXTRA_UPDATE_THEME_STYLE)) {
+                this.redrawActivity();
             }
         }
     });
@@ -212,15 +212,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void renderDrawerStats(StatsData stats) {
-        View header = mActivityBinding.navigationView.getHeaderView(0);
+        NavHeaderMainBinding headerBinding =
+                NavHeaderMainBinding.bind(mActivityBinding.navigationView.getHeaderView(0));
+        headerBinding.setStats(stats);
 
-        TextView now = header.findViewById(R.id.drawerStatsNotesNow);
-        TextView month = header.findViewById(R.id.drawerStatsNotesMonth);
-        TextView chars = header.findViewById(R.id.drawerStatsChars);
-
-        now.setText(String.valueOf(stats.notesNow()));
-        month.setText(String.valueOf(stats.notesMonth()));
-        chars.setText(String.valueOf(stats.chars()));
     }
 
 
@@ -567,8 +562,8 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
 
     @Override
-    public void redrawActivity(int themeStyle) {
-        super.redrawActivity(themeStyle);
+    public void redrawActivity() {
+        super.redrawActivity();
         recreate();
     }
 
