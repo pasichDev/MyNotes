@@ -224,7 +224,5 @@
 
     <style name="DialogTitle" parent="TextAppearance.Material3.TitleLarge" />
 
-    <style name="DialogBody" parent="TextAppearance.Material3.BodyMedium" />
-
 
 </resources>
