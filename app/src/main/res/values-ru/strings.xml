@@ -320,5 +320,17 @@
     <string name="error_dialog_wrong_context">Ошибка: это меню нельзя открыть здесь</string>
     <string name="export_warning_no_attachments">Внимание: при экспорте сохраняется только текст. Файлы, фото и другие вложения пропускаются, чтобы документ был лёгким и стабильным.</string>
     <string name="newBackupsDescrpt">Добавлена поддержка новых версий резервных копий с вложениями и сохранена совместимость со старыми форматами.</string>
+    <string name="toolTipSimpleEditor">Простой редактор</string>
+    <string name="toolTipExtendedEditor">Расширенный редактор</string>
+    <string name="duplicateTag">Дубликат</string>
+    <string name="drawerStatsNotes">Заметки</string>
+    <string name="drawerStatsLastMonth">За месяц</string>
+    <string name="drawerStatsChart">Символы</string>
+    <string name="titleTagPicker">Обзор тегов</string>
+    <string name="helpTitleTagOverview">Обзор тегов</string>
+    <string name="helpDescTagOverview">Чтобы быстро просмотреть все теги, удерживайте кнопку «Все заметки». Появится диалог со всеми тегами.</string>
+    <string name="trash_info_title">Справка корзины</string>
+    <string name="trash_info_message">• Чтобы восстановить заметку, нажмите на неё — автоматически включится режим множественного выбора.\n\n• Чтобы очистить корзину, нажмите кнопку действия (FAB). Все заметки будут удалены безвозвратно.\n\n• Корзину можно использовать как архив — данные сохраняются, пока вы не очистите её вручную.</string>
+    <string name="trash_info_ok">Понятно</string>
 
 </resources>

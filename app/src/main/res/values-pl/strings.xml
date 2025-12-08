@@ -316,5 +316,17 @@
     <string name="error_dialog_wrong_context">Błąd: nie można otworzyć tego menu tutaj</string>
     <string name="export_warning_no_attachments">Uwaga: podczas eksportu zapisywana jest tylko treść tekstowa. Pliki, zdjęcia i inne załączniki są pomijane, aby dokument był lekki i stabilny.</string>
     <string name="newBackupsDescrpt">Dodano obsługę nowych wersji kopii zapasowych z załącznikami i zachowano kompatybilność ze starszymi formatami.</string>
+    <string name="toolTipSimpleEditor">Prosty edytor</string>
+    <string name="toolTipExtendedEditor">Zaawansowany edytor</string>
+    <string name="duplicateTag">Duplikat</string>
+    <string name="drawerStatsNotes">Notatki</string>
+    <string name="drawerStatsLastMonth">Miesięcznie</string>
+    <string name="drawerStatsChart">Znaki</string>
+    <string name="titleTagPicker">Przegląd tagów</string>
+    <string name="helpTitleTagOverview">Przegląd tagów</string>
+    <string name="helpDescTagOverview">Aby szybko wyświetlić wszystkie tagi, przytrzymaj przycisk „Wszystkie notatki”. Pojawi się okno dialogowe z listą tagów.</string>
+    <string name="trash_info_title">Pomoc dotycząca kosza</string>
+    <string name="trash_info_message">• Aby przywrócić notatkę, dotknij ją — automatycznie włączysz tryb wielokrotnego wyboru.\n\n• Aby opróżnić kosz, naciśnij przycisk FAB. Wszystkie notatki zostaną trwale usunięte.\n\n• Kosz może działać jako archiwum — dane pozostają, dopóki nie opróżnisz go ręcznie.</string>
+    <string name="trash_info_ok">OK</string>
 
 </resources>

@@ -347,7 +347,7 @@
 
 
     <string name="toolTipSimpleEditor">Simple Editor</string>
-    <string name="toolTipExtebdedEditor">Extended Editor</string>
+    <string name="toolTipExtendedEditor">Extended Editor</string>
     <string name="duplicateTag">duplicate</string>
     <string name="drawerStatsNotes">Notes</string>
     <string name="drawerStatsLastMonth">Per month</string>

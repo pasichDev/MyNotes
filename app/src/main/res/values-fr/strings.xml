@@ -313,5 +313,17 @@
     <string name="error_dialog_wrong_context">Erreur : je ne peux pas ouvrir ce menu ici</string>
     <string name="export_warning_no_attachments">Veuillez noter : seul le texte est enregistré lors de l’exportation. Les fichiers, photos et autres pièces jointes sont ignorés afin d’assurer un document léger et stable.</string>
     <string name="newBackupsDescrpt">Ajout de la prise en charge des nouvelles versions de sauvegardes avec pièces jointes tout en préservant la compatibilité avec les anciens formats.</string>
+    <string name="toolTipSimpleEditor">Éditeur simple</string>
+    <string name="toolTipExtendedEditor">Éditeur avancé</string>
+    <string name="duplicateTag">Dupliquer</string>
+    <string name="drawerStatsNotes">Notes</string>
+    <string name="drawerStatsLastMonth">Par mois</string>
+    <string name="drawerStatsChart">Caractères</string>
+    <string name="titleTagPicker">Aperçu des tags</string>
+    <string name="helpTitleTagOverview">Aperçu des tags</string>
+    <string name="helpDescTagOverview">Pour parcourir rapidement tous les tags, maintenez le bouton « Toutes les notes » appuyé. Un dialogue apparaîtra avec tous les tags.</string>
+    <string name="trash_info_title">Aide de la corbeille</string>
+    <string name="trash_info_message">• Pour restaurer une note, appuyez dessus. Le mode de sélection multiple s’activera automatiquement.\n\n• Pour vider la corbeille, appuyez sur le bouton d’action (FAB). Toutes les notes seront supprimées définitivement.\n\n• Vous pouvez utiliser la corbeille comme archive — rien ne disparaît automatiquement.</string>
+    <string name="trash_info_ok">Compris</string>
 
 </resources>

@@ -315,5 +315,17 @@
     <string name="error_dialog_wrong_context">Памылка: гэта меню тут адкрыць нельга</string>
     <string name="export_warning_no_attachments">Звярніце ўвагу: падчас экспарту захоўваецца толькі тэкст. Файлы, фота і іншыя ўкладанні прапускаюцца, каб дакумент быў лёгкім і стабільным.</string>
     <string name="newBackupsDescrpt">Дададзена падтрымка новых версій рэзервовых копій з укладаннямі і захавана сумяшчальнасць са старымі фарматамі.</string>
+    <string name="toolTipSimpleEditor">Просты рэдактар</string>
+    <string name="toolTipExtendedEditor">Пашыраны рэдактар</string>
+    <string name="duplicateTag">Дублікаты</string>
+    <string name="drawerStatsNotes">Нататкі</string>
+    <string name="drawerStatsLastMonth">За месяц</string>
+    <string name="drawerStatsChart">Сімвалы</string>
+    <string name="titleTagPicker">Агляд тэгаў</string>
+    <string name="helpTitleTagOverview">Агляд тэгаў</string>
+    <string name="helpDescTagOverview">Каб хутка паглядзець усе тэгі, утрымлівайце кнопку «Усе нататкі». Адкрыецца дыялог са спісам тэгаў.</string>
+    <string name="trash_info_title">Даведка па кошыку</string>
+    <string name="trash_info_message">• Каб аднавіць нататку, націсніце на яе. Аўтаматычна ўключыцца шматразовы выбар.\n\n• Каб ачысціць кошык, націсніце кнопку FAB. Усе нататкі будуць выдалены назаўжды.\n\n• Кошык можна выкарыстоўваць як архіў — запісы не знікаюць самі.</string>
+    <string name="trash_info_ok">Зразумела</string>
 
 </resources>

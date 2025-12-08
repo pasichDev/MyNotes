@@ -315,5 +315,17 @@
     <string name="error_dialog_wrong_context">Errore: impossibile aprire questo menu qui</string>
     <string name="export_warning_no_attachments">Nota: durante l’esportazione viene salvato solo il testo. File, foto e altri allegati vengono ignorati per mantenere il documento leggero e stabile.</string>
     <string name="newBackupsDescrpt">Aggiunto supporto per nuove versioni dei backup con allegati, mantenendo la compatibilità con i formati precedenti.</string>
+    <string name="toolTipSimpleEditor">Editor semplice</string>
+    <string name="toolTipExtendedEditor">Editor avanzato</string>
+    <string name="duplicateTag">Duplicato</string>
+    <string name="drawerStatsNotes">Note</string>
+    <string name="drawerStatsLastMonth">Al mese</string>
+    <string name="drawerStatsChart">Caratteri</string>
+    <string name="titleTagPicker">Panoramica tag</string>
+    <string name="helpTitleTagOverview">Panoramica tag</string>
+    <string name="helpDescTagOverview">Per visualizzare rapidamente tutti i tag, tieni premuto il pulsante “Tutte le note”. Apparirà un dialogo con tutti i tag.</string>
+    <string name="trash_info_title">Guida al cestino</string>
+    <string name="trash_info_message">• Per ripristinare una nota, toccala. Entrerai automaticamente nella modalità di selezione multipla.\n\n• Per svuotare il cestino, tocca il pulsante di azione (FAB). Tutte le note verranno eliminate definitivamente.\n\n• Puoi usare il cestino come archivio: gli elementi restano finché non lo svuoti manualmente.</string>
+    <string name="trash_info_ok">OK</string>
 
 </resources>

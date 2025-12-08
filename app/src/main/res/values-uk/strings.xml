@@ -317,6 +317,18 @@
     <string name="error_dialog_wrong_context">Помилка: це меню неможливо відкрити тут</string>
     <string name="export_warning_no_attachments">Зверніть увагу: під час експорту зберігається лише текст. Файли, фото та інші вкладення пропускаються, щоб документ був легким і безпомилковим.</string>
     <string name="newBackupsDescrpt">Додано підтримку нових версій резервних копій із вкладеннями та збережено сумісність зі старими форматами.</string>
+    <string name="toolTipSimpleEditor">Звичайний редактор</string>
+    <string name="toolTipExtendedEditor">Розширений редактор</string>
+    <string name="duplicateTag">Дублікат</string>
+    <string name="drawerStatsNotes">Нотатки</string>
+    <string name="drawerStatsLastMonth">За місяць</string>
+    <string name="drawerStatsChart">Символи</string>
+    <string name="titleTagPicker">Огляд тегів</string>
+    <string name="helpTitleTagOverview">Огляд тегів</string>
+    <string name="helpDescTagOverview">Щоб швидко переглянути всі теги, утримуйте кнопку «Всі нотатки». Зʼявиться діалог з усіма тегами.</string>
+    <string name="trash_info_title">Довідка по кошику</string>
+    <string name="trash_info_message">• Щоб відновити нотатку — натисніть на неї. Режим множинного вибору увімкнеться автоматично.\n\n• Щоб очистити кошик — натисніть кнопку FAB. Усі нотатки буде видалено безповоротно.\n\n• Кошик можна використовувати як архів — записи не зникають самостійно.</string>
+    <string name="trash_info_ok">Зрозуміло</string>
 
 
 </resources>

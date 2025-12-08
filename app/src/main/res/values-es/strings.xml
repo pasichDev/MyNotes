@@ -318,5 +318,17 @@
     <string name="error_dialog_wrong_context">Error: no puedo abrir este menú aquí</string>
     <string name="export_warning_no_attachments">Nota: solo se guarda el contenido de texto durante la exportación. Los archivos, fotos y otros adjuntos se omiten para mantener un documento ligero y estable.</string>
     <string name="newBackupsDescrpt">Se añadió compatibilidad con nuevas versiones de copias de seguridad con adjuntos y se mantuvo la compatibilidad con formatos antiguos.</string>
+    <string name="toolTipSimpleEditor">Editor simple</string>
+    <string name="toolTipExtendedEditor">Editor avanzado</string>
+    <string name="duplicateTag">Duplicar</string>
+    <string name="drawerStatsNotes">Notas</string>
+    <string name="drawerStatsLastMonth">Por mes</string>
+    <string name="drawerStatsChart">Caracteres</string>
+    <string name="titleTagPicker">Vista de etiquetas</string>
+    <string name="helpTitleTagOverview">Vista de etiquetas</string>
+    <string name="helpDescTagOverview">Para ver rápidamente todas las etiquetas, mantén pulsado el botón “Todas las notas”. Aparecerá un diálogo con todas las etiquetas.</string>
+    <string name="trash_info_title">Ayuda de la papelera</string>
+    <string name="trash_info_message">• Para restaurar una nota, tócalo. Entrarás automáticamente en el modo de selección múltiple.\n\n• Para vaciar la papelera, toca el botón de acción (FAB). Todas las notas se eliminarán permanentemente.\n\n• Puedes usar la papelera como archivo — los elementos permanecen hasta que los elimines manualmente.</string>
+    <string name="trash_info_ok">Entendido</string>
 
 </resources>

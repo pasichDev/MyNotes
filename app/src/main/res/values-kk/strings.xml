@@ -314,5 +314,17 @@
     <string name="error_dialog_wrong_context">Қате: бұл мәзірді осында ашу мүмкін емес</string>
     <string name="export_warning_no_attachments">Ескерту: экспорт кезінде тек мәтін сақталады. Файлдар, фотолар және басқа тіркемелер өткізіледі, құжат жеңіл және тұрақты болуы үшін.</string>
     <string name="newBackupsDescrpt">Тіркемелері бар жаңа резервтік нұсқаларға қолдау қосылды және ескі форматтармен үйлесімділік сақталды.</string>
+    <string name="toolTipSimpleEditor">Қарапайым редактор</string>
+    <string name="toolTipExtendedEditor">Кеңейтілген редактор</string>
+    <string name="duplicateTag">Дубликат</string>
+    <string name="drawerStatsNotes">Жазбалар</string>
+    <string name="drawerStatsLastMonth">Айына</string>
+    <string name="drawerStatsChart">Таңбалар</string>
+    <string name="titleTagPicker">Тегтер тізімі</string>
+    <string name="helpTitleTagOverview">Тегтер тізімі</string>
+    <string name="helpDescTagOverview">Барлық тегтерді жылдам қарау үшін «Барлық жазбалар» түймесін басып тұрыңыз. Барлық тегтері бар терезе ашылады.</string>
+    <string name="trash_info_title">Қоқыс себеті туралы анықтама</string>
+    <string name="trash_info_message">• Жазбаны қалпына келтіру үшін оны түртіңіз — көптік таңдау режимі автоматты түрде қосылады.\n\n• Қоқыс себетін тазарту үшін FAB түймесін басыңыз. Барлық жазбалар біржола өшіріледі.\n\n• Қоқыс себетін архив ретінде пайдалануға болады — деректер қолмен тазартпайынша жоғалмайды.</string>
+    <string name="trash_info_ok">Түсіндім</string>
 
 </resources>
