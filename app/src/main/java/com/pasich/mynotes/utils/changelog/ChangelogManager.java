@@ -38,7 +38,19 @@ public class ChangelogManager {
             StringBuilder content = new StringBuilder();
             String line;
 
+            boolean skipHeader = true;
+
             while ((line = reader.readLine()) != null) {
+
+                // Skip ‘# CHANGELOG’ and all empty lines after it
+                if (skipHeader) {
+                    if (line.trim().equalsIgnoreCase("# CHANGELOG") || line.trim().isEmpty()) {
+                        continue;
+                    } else {
+                        skipHeader = false;
+                    }
+                }
+
                 content.append(line).append("\n");
             }
 
@@ -61,7 +73,7 @@ public class ChangelogManager {
         int start = fullText.indexOf(tag);
 
         if (start == -1) {
-            return ""; // немає блоку
+            return "";
         }
 
         int nextHeader = fullText.indexOf("## [", start + tag.length());
