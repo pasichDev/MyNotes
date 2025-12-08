@@ -9,8 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 
@@ -58,7 +58,7 @@ public class ThemeModeDialog {
             }
         };
 
-        new AlertDialog.Builder(ctx, R.style.Theme_MyNotes_Dialog)
+        new MaterialAlertDialogBuilder(ctx, R.style.Theme_MyNotes_Dialog)
                 .setTitle(ctx.getString(R.string.selectThemeMode))
                 .setAdapter(adapter, (d, which) -> {
                     cache.setThemeMode(which);

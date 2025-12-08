@@ -352,5 +352,8 @@
     <string name="drawerStatsNotes">Notes</string>
     <string name="drawerStatsLastMonth">Per month</string>
     <string name="drawerStatsChart">Сharacters</string>
+    <string name="titleTagPicker">Tag Overview</string>
+    <string name="helpTitleTagOverview">Tag Overview</string>
+    <string name="helpDescTagOverview">To quickly browse all tags, hold down the “All Notes” button on the main screen. A dialog with all tags will appear — just pick the one you need.</string>
 </resources>
 

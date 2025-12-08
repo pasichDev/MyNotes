@@ -209,4 +209,22 @@
         <item name="contentPadding">1dp</item>
         <item name="contentPaddingLeft">5dp</item>
     </style>
+
+    <style name="Theme.MyNotes.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearance">@style/DialogShape</item>
+        <item name="shapeAppearanceOverlay">@style/DialogShape</item>
+        <item name="titleTextStyle">@style/DialogTitle</item>
+        <item name="backgroundColor">?attr/colorSurfaceContainerHigh</item>
+
+    </style>
+
+    <style name="DialogShape" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerSize">22dp</item>
+    </style>
+
+    <style name="DialogTitle" parent="TextAppearance.Material3.TitleLarge" />
+
+    <style name="DialogBody" parent="TextAppearance.Material3.BodyMedium" />
+
+
 </resources>

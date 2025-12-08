@@ -2,9 +2,10 @@
 
 ## [2.4.42] - XX.XX.XXXX
 
+- Added new Silver theme color
+- Tag Overview dialog — long-press “All Notes” to quickly browse and select tags.
 - Enhanced user experience when copying notes (improved animation & feedback)
 - Introduced seamless switching between editors directly from the note screen
-- Added new Silver theme color
 
 ## [2.4.41] - 01.12.2025
 
@@ -14,7 +15,8 @@
 - Added new screen displaying the list of application dependencies.
 - Added automatic optimization of uploaded images.
 - Added adaptive app icon, including a monochrome variant for Material You themed icons.
-- Incorrect processing of backups has been fixed and compatibility with previous versions has been improved.
+- Incorrect processing of backups has been fixed and compatibility with previous versions has been
+  improved.
 - Code review and optimization performed, obsolete and unnecessary functionality removed, known bugs
   fixed
 

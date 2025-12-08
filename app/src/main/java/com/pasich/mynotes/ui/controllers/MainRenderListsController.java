@@ -25,6 +25,24 @@ public class MainRenderListsController {
         this.res = binding.getRoot().getResources();
     }
 
+
+    public void animateNoteListChange() {
+        binding.listNotes.animate()
+                .alpha(0f)
+                .scaleY(0.97f)
+                .setDuration(120)
+                .withEndAction(() -> {
+                    binding.listNotes.scheduleLayoutAnimation();
+                    binding.listNotes.animate()
+                            .alpha(1f)
+                            .scaleY(1f)
+                            .setInterpolator(new OvershootInterpolator(0.6f))
+                            .setDuration(220)
+                            .start();
+                })
+                .start();
+    }
+
     /**
      * Handles switching between the notes list and the empty state view,
      * including fade/scale animations and optional smooth scrolling.

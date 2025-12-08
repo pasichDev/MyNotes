@@ -1,7 +1,6 @@
 package com.pasich.mynotes.ui.view.dialogs.theme;
 
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.view.LayoutInflater;
@@ -11,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Theme;
@@ -48,7 +48,7 @@ public class AccentColorDialog {
                 }
         ));
 
-        new AlertDialog.Builder(ctx, R.style.Theme_MyNotes_Dialog)
+        new MaterialAlertDialogBuilder(ctx, R.style.Theme_MyNotes_Dialog)
                 .setTitle(ctx.getString(R.string.selectAccentColor))
                 .setView(dialogView)
                 .setNegativeButton(R.string.close, null)

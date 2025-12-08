@@ -319,12 +319,4 @@
         <item name="colorSurfaceContainerHighest">@color/silver_theme_surfaceContainerHighest</item>
     </style>
 
-    <!-- Theme for accent color selection dialog -->
-    <style name="Theme.MyNotes.Dialog" parent="Theme.Material3.Light.Dialog">
-        <item name="android:windowBackground">@drawable/dialog_rounded_background</item>
-        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
-        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
-    </style>
-
-
 </resources>

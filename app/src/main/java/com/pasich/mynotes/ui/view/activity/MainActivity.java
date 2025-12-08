@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -42,6 +41,7 @@ import com.pasich.mynotes.ui.state.StatsData;
 import com.pasich.mynotes.ui.state.UiEvent;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
+import com.pasich.mynotes.ui.view.dialogs.main.AllTagSelectDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
@@ -189,7 +189,7 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             case SORT_CHANGED, TAG_CHANGED ->
                     mNoteAdapter.submitList(new ArrayList<>(notes), () -> {
                         mNoteAdapter.notifyDataSetChanged();
-                        animateListChange();
+                        mainRenderListsController.animateNoteListChange();
                     });
             default -> {
                 boolean shouldScrollUp = event == UiEvent.NOTE_CREATED;
@@ -224,23 +224,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     }
 
 
-    private void animateListChange() {
-        mActivityBinding.listNotes.animate()
-                .alpha(0f)
-                .scaleY(0.97f)
-                .setDuration(120)
-                .withEndAction(() -> {
-                    mActivityBinding.listNotes.scheduleLayoutAnimation();
-                    mActivityBinding.listNotes.animate()
-                            .alpha(1f)
-                            .scaleY(1f)
-                            .setInterpolator(new OvershootInterpolator(0.6f))
-                            .setDuration(220)
-                            .start();
-                })
-                .start();
-    }
-
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
@@ -259,6 +242,12 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
     public void startDeleteTagDialog(Tag tag) {
         new DeleteTagDialog(tag).show(getSupportFragmentManager(), "deleteTag");
     }
+
+    @Override
+    public void allTagSelectDialog(List<Tag> tagsList) {
+        AllTagSelectDialog.show(this, tagsList, tag -> mainPresenter.onTagSelected(tag));
+    }
+
 
     @Override
     public void renderSearch(List<Note> filtered) {
@@ -300,7 +289,10 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
             public void onLongClick(int position, View mView) {
                 if (actionUtils.getAction()) return;
                 Tag tag = tagsAdapter.getCurrentList().get(position);
-                if (SystemTagsManager.isSystemTag(tag)) return;
+                if (SystemTagsManager.isSystemTag(tag)) {
+                    mainPresenter.requestTagSelection();
+                    return;
+                }
 
                 choiceTagDialog(tag, mView);
             }
@@ -512,7 +504,6 @@ public class MainActivity extends BaseActivity implements MainContract.view, Man
 
     @Override
     public void selectItemAction(Note note, int position, boolean payloads) {
-
         if (note.getChecked()) {
             note.setChecked(false);
             if (!noteActionTool.isCheckedItemFalse(note)) actionUtils.closeActionPanel();
