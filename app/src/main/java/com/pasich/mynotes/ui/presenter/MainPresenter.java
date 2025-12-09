@@ -236,23 +236,24 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void requestTagSelection() {
-        getCompositeDisposable().add(
-                tagsStream
-                        .map(tags -> {
-                            List<Tag> filtered = new ArrayList<>();
-                            for (Tag t : tags) {
-                                if (!SystemTagsManager.isSystemTag(t)) {
-                                    filtered.add(t);
+            getCompositeDisposable().add(
+                    tagsStream
+                            .take(1)
+                            .map(tags -> {
+                                List<Tag> filtered = new ArrayList<>();
+                                for (Tag t : tags) {
+                                    if (!SystemTagsManager.isSystemTag(t)) {
+                                        filtered.add(t);
+                                    }
                                 }
-                            }
-                            return filtered;
-                        })
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                tags -> getView().allTagSelectDialog(tags),
-                                err -> Log.e(TAG, "requestTagSelection()", err)
-                        )
-        );
+                                return filtered;
+                            })
+                            .observeOn(getSchedulerProvider().ui())
+                            .subscribe(
+                                    tags -> getView().allTagSelectDialog(tags),
+                                    err -> Log.e(TAG, "requestTagSelection()", err)
+                            )
+            );
     }
 
 

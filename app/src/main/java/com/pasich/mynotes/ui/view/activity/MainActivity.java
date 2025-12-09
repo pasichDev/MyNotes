@@ -175,7 +175,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         if (selectionController.isInSelectionMode()) {
             return;
         }
-
         currentSelectedTag = state.selectedTag();
         // render notes list
         renderNotes(state.notes(), state.selectedTag(), state.uiEvent());
@@ -194,6 +193,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         switch (event) {
             case SORT_CHANGED, TAG_CHANGED ->
                     mNoteAdapter.submitList(new ArrayList<>(notes), () -> {
+                        mainRenderListsController.showStateNoteList(currentSelectedTag, notes.size());
                         mNoteAdapter.notifyDataSetChanged();
                         mainRenderListsController.animateNoteListChange();
                     });
