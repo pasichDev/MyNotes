@@ -270,12 +270,53 @@
         <item name="colorSurfaceContainerHighest">@color/purple_theme_light_surfaceContainerHighest</item>
     </style>
 
-    <!-- Theme for accent color selection dialog -->
-    <style name="Theme.MyNotes.Dialog" parent="Theme.Material3.Light.Dialog">
-        <item name="android:windowBackground">@drawable/dialog_rounded_background</item>
-        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
-        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
+    <style name="SilverTheme" parent="@style/themeBaseLight">
+        <item name="colorPrimary">@color/silver_theme_primary</item>
+        <item name="colorOnPrimary">@color/silver_theme_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/silver_theme_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/silver_theme_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/silver_theme_secondary</item>
+        <item name="colorOnSecondary">@color/silver_theme_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/silver_theme_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/silver_theme_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/silver_theme_tertiary</item>
+        <item name="colorOnTertiary">@color/silver_theme_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/silver_theme_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/silver_theme_onTertiaryContainer</item>
+        <item name="colorError">@color/silver_theme_error</item>
+        <item name="colorOnError">@color/silver_theme_onError</item>
+        <item name="colorErrorContainer">@color/silver_theme_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/silver_theme_onErrorContainer</item>
+        <item name="android:colorBackground">@color/silver_theme_background</item>
+        <item name="colorOnBackground">@color/silver_theme_onBackground</item>
+        <item name="colorSurface">@color/silver_theme_surface</item>
+        <item name="colorOnSurface">@color/silver_theme_onSurface</item>
+        <item name="colorSurfaceVariant">@color/silver_theme_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/silver_theme_onSurfaceVariant</item>
+        <item name="colorOutline">@color/silver_theme_outline</item>
+        <item name="colorOutlineVariant">@color/silver_theme_outlineVariant</item>
+        <item name="colorSurfaceInverse">@color/silver_theme_inverseSurface</item>
+        <item name="colorOnSurfaceInverse">@color/silver_theme_inverseOnSurface</item>
+        <item name="colorPrimaryInverse">@color/silver_theme_inversePrimary</item>
+        <item name="colorPrimaryFixed">@color/silver_theme_primaryFixed</item>
+        <item name="colorOnPrimaryFixed">@color/silver_theme_onPrimaryFixed</item>
+        <item name="colorPrimaryFixedDim">@color/silver_theme_primaryFixedDim</item>
+        <item name="colorOnPrimaryFixedVariant">@color/silver_theme_onPrimaryFixedVariant</item>
+        <item name="colorSecondaryFixed">@color/silver_theme_secondaryFixed</item>
+        <item name="colorOnSecondaryFixed">@color/silver_theme_onSecondaryFixed</item>
+        <item name="colorSecondaryFixedDim">@color/silver_theme_secondaryFixedDim</item>
+        <item name="colorOnSecondaryFixedVariant">@color/silver_theme_onSecondaryFixedVariant</item>
+        <item name="colorTertiaryFixed">@color/silver_theme_tertiaryFixed</item>
+        <item name="colorOnTertiaryFixed">@color/silver_theme_onTertiaryFixed</item>
+        <item name="colorTertiaryFixedDim">@color/silver_theme_tertiaryFixedDim</item>
+        <item name="colorOnTertiaryFixedVariant">@color/silver_theme_onTertiaryFixedVariant</item>
+        <item name="colorSurfaceDim">@color/silver_theme_surfaceDim</item>
+        <item name="colorSurfaceBright">@color/silver_theme_surfaceBright</item>
+        <item name="colorSurfaceContainerLowest">@color/silver_theme_surfaceContainerLowest</item>
+        <item name="colorSurfaceContainerLow">@color/silver_theme_surfaceContainerLow</item>
+        <item name="colorSurfaceContainer">@color/silver_theme_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/silver_theme_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/silver_theme_surfaceContainerHighest</item>
     </style>
-
 
 </resources>

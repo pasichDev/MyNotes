@@ -14,7 +14,7 @@ public interface BaseView {
 
     void onInfoSnack(@StringRes int resID, View view, int typeInfo, int time);
 
-    default void redrawActivity(int themeStyle) {
+    default void redrawActivity() {
     }
 
     default void vibrateOpenDialog(boolean vibrate) {

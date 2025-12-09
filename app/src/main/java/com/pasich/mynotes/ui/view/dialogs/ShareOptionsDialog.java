@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,29 +22,28 @@ import com.pasich.mynotes.utils.file.FileExportUtils;
 
 import java.util.List;
 
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * Dialog for advanced sharing options
  */
 public class ShareOptionsDialog extends BaseDialogBottomSheets {
 
-    private static final String TAG = "ShareOptionsDialog";
 
     private Note mNote;
     private List<Note> mSelectedNotes;
     private boolean isDataExport;
     private DialogShareOptionsBinding binding;
-
-    public ShareOptionsDialog() {
-    }
-
     // Activity result launchers for file saving
     private ActivityResultLauncher<Intent> saveTxtLauncher;
     private ActivityResultLauncher<Intent> savePdfLauncher;
     private ActivityResultLauncher<Intent> saveHtmlLauncher;
-
     // Current data for saving
     private String currentNoteTitle;
     private String currentNoteContent;
+
+    public ShareOptionsDialog() {
+    }
 
     public ShareOptionsDialog(Note note) {
         this();
@@ -104,9 +102,7 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
                         Uri uri = result.getData().getData();
 
                         if (uri != null && currentNoteTitle != null && currentNoteContent != null) {
-                            FileExportUtils.saveTxtToUri(requireContext(), uri, currentNoteTitle, currentNoteContent);
-                        } else {
-                            Log.e(TAG, "Missing data for TXT save - URI: " + uri + ", Title: " + currentNoteTitle + ", Content: " + (currentNoteContent != null ? "available" : "null"));
+                            Schedulers.io().scheduleDirect(() -> FileExportUtils.saveTxtToUri(requireContext(), uri, currentNoteTitle, currentNoteContent));
                         }
                     }
                     dismiss(); // Dismiss after handling result

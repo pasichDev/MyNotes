@@ -125,7 +125,6 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
 
     @Override
     public void showTagOptionsDialog(Tag tag, View anchorView) {
-        // Получаем количество заметок для этого тега
         presenter.getTagNotesCount(tag, count -> {
             TagOptionsBottomSheet bottomSheet = new TagOptionsBottomSheet(tag, count, new TagOptionsBottomSheet.TagOptionsListener() {
                 @Override

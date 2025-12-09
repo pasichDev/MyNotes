@@ -4,11 +4,11 @@ import android.view.View;
 
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
-import com.pasich.mynotes.base.view.MainSortView;
 import com.pasich.mynotes.base.view.MoreNoteMainActivityView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
+import com.pasich.mynotes.ui.state.MainViewState;
+import com.pasich.mynotes.ui.state.StatsData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +17,9 @@ import dagger.hilt.android.scopes.ActivityScoped;
 
 public interface MainContract {
 
-    interface view extends BaseView, MoreNoteMainActivityView, MainSortView, ManagerViewAction<Note> {
-        void settingsSearchView();
+    interface view extends BaseView, MoreNoteMainActivityView {
+
+        void render(MainViewState state);
 
         void settingsLists();
 
@@ -28,21 +29,13 @@ public interface MainContract {
 
         void choiceNoteDialog(Note note, int position);
 
-        void selectTagUser(int position);
-
-        void loadingNotes(List<Note> noteList, String sortParam);
-
-        void loadingTags(List<Tag> tagList);
-
         void startDeleteTagDialog(Tag tag);
 
-        void exitWhat();
+        void renderSearch(List<Note> filtered);
 
-        void finishActivityOtPresenter();
+        void renderDrawerStats(StatsData stats);
 
-        void hideSearchView();
-
-        void openChangelogActivity();
+        void allTagSelectDialog(List<Tag> tagsList);
     }
 
 
@@ -50,33 +43,29 @@ public interface MainContract {
     interface presenter extends BasePresenter<view> {
         void newNotesClick();
 
-        void clickTag(Tag tag, int position);
-
-        void clickLongTag(Tag tag, View mView);
-
         void deleteNotesArray(ArrayList<Note> notes);
 
         void noteMoveToTrash(Note note);
 
         void restoreNoteLastMoveToTrash(Note nNote);
 
-        void deleteTag(Tag tag);
+        void requestDeleteTag(Tag tag);
 
         void editVisibleTag(Tag tag);
-
-        void loadingData();
 
         Note getBackupDeleteNote();
 
         void setBackupDeleteNote(Note backupDeleteNote);
 
-        boolean closeApp(boolean showSearchView);
-    }
+        void onTagSelected(Tag tag);
 
-    interface CreateNoteCallback {
-        void onCreated(long id);
+        void onSortChanged(String newSort);
 
-        void onError(Throwable t);
+        void clearUiEvent();
+
+        void updateSearchQuery(String query);
+
+        void requestTagSelection();
     }
 
 }

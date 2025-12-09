@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
 
@@ -23,7 +24,7 @@
 
             <!-- Memory usage bar -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/imgAnltc"
+                android:id="@+id/memory"
                 style="@style/SettingsCardView.Base">
 
                 <LinearLayout
@@ -53,7 +54,8 @@
                         android:text="0 MB"
                         android:paddingBottom="10dp"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        tools:ignore="HardcodedText" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

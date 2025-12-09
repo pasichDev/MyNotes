@@ -2,10 +2,8 @@ package com.pasich.mynotes.di.fragment;
 
 import com.pasich.mynotes.ui.contract.dialogs.DeleteTagDialogContract;
 import com.pasich.mynotes.ui.contract.dialogs.NameTagDialogContract;
-import com.pasich.mynotes.ui.contract.dialogs.SearchDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.DeleteTagDialogPresenter;
 import com.pasich.mynotes.ui.presenter.dialogs.NameTagDialogPresenter;
-import com.pasich.mynotes.ui.presenter.dialogs.SearchDialogPresenter;
 
 import dagger.Module;
 import dagger.Provides;
@@ -30,12 +28,5 @@ public class FragmentModule {
     DeleteTagDialogContract.presenter providerDeleteTagDialogPresenter(DeleteTagDialogPresenter presenter) {
         return presenter;
     }
-
-    @Provides
-    @FragmentScoped
-    SearchDialogContract.presenter providerSearchDialogPresenter(SearchDialogPresenter presenter) {
-        return presenter;
-    }
-
 
 }

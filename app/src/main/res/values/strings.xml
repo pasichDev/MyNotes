@@ -12,7 +12,6 @@
     <string name="exitWhat">To exit, you need to repeat the action</string>
     <string name="notFoundPlayMarket">Missing Play Market app</string>
     <string name="notSupportedShare">This content is not supported.</string>
-    <string name="copyX">Copied</string>
     <string name="cd_format">Format notes</string>
 
 
@@ -32,8 +31,6 @@
     <string name="createNewTag">Enter tag name</string>
     <string name="sort_Date_Increase">Date modified: newest first</string>
     <string name="sort_Date_Decrease">Date changed: old first</string>
-    <string name="sort_Title_Increase">Title: A-Z</string>
-    <string name="sort_Title_Decrease">Title: Z-A</string>
     <string name="sortHead">Sort by:</string>
     <string name="shareApp">Share App</string>
     <string name="privacyApp">Privacy Policy</string>
@@ -62,11 +59,6 @@
     <string name="contentDescrChangeStyleText">Change text style</string>
     <string name="copyNoteEdits">Edit copy</string>
     <string name="noteMoveTrashSnackbar">Note moved to trash</string>
-    <string name="button_edit">Edit</string>
-    <string name="button_copy">Copy</string>
-    <string name="button_phone">Call</string>
-    <string name="button_mail">Write</string>
-    <string name="button_url">Go to</string>
 
 
     <!-- Strings that are not translated  -->
@@ -83,17 +75,10 @@
     <string name="renameTag">Rename</string>
 
 
-    <string name="settingsInterface">Interface settings</string>
     <string name="settings">Settings</string>
     <string name="aboutApps">About App</string>
     <string name="trash">Trash</string>
     <string name="themes">Theme</string>
-    <string name="themeBlue">Ocean Blue</string>
-    <string name="themeGreen">Emerald Green</string>
-    <string name="themeSunset">Sunset Orange</string>
-    <string name="themeYellow">Golden Yellow</string>
-    <string name="themePurple">Deep Purple</string>
-    <string name="themeCoralRed">Coral Red</string>
     <string name="accentColorDescription">Select an accent color to build your theme around</string>
     <string name="selectAccentColor">Select accent color</string>
     <string name="onDynamicColor">Enable Dynamic Color</string>
@@ -119,11 +104,6 @@
     <string name="nextRestore">Restore from Cloud</string>
     <string name="messageRestoreProcess"><b>Restoring data</b> \nThis window will close automatically when completed.</string>
 
-    <!-- Arrays AutoBackup -->
-
-    <!-- AutoBackup strings -->
-
-
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">No data to backup</string>
     <string name="creteLocalCopyOkay">The backup was created successfully</string>
@@ -131,9 +111,7 @@
     <string name="restoreDataOkay">Data restore completed successfully</string>
     <string name="restoreDataFall">Error: Backup corrupted</string>
     <string name="errorDriveSync">Server error or poor internet quality</string>
-
     <string name="sortNotes">Sort notes</string>
-
 
     <!-- Product offer -->
     <string name="thanks_title">Dear User</string>
@@ -158,8 +136,6 @@
     <string name="whats_new_description" translatable="false">Discover the latest updates, new features, and improvements that make your note-taking experience even better. We\'re constantly working to enhance the app based on your feedback!</string>
     <string name="changelog_subtitle">Stay up to date with all the changes and improvements in this version</string>
     <string name="whatNewVersion" translatable="false" tools:ignore="ResourceCycle">@string/whatNewVersion</string>
-
-
     <string name="leaveFeedback">Leave  feedback</string>
 
     <!-- Donation Products -->
@@ -349,8 +325,6 @@
     <string name="attachment_save_failed">Failed to save file</string>
     <string name="onExtendedEditorAttachWarning">If a note contains attachments or added media files, its backward compatibility with the simple editor is lost — such a note can only be edited in the advanced editor.</string>
     <string name="onExtendedEditor">Enable Extended Editor</string>
-    <string name="showDetailsExtendedEditor">More details</string>
-    <string name="hiddenDetailsExtendedEditor">Hidden details</string>
     <string name="openImageError">Image unavailable for viewing</string>
     <string name="shareError">Image share error</string>
     <string name="mediaTab">Media</string>
@@ -370,4 +344,24 @@
     <string name="error_dialog_wrong_context">Error: I can\'t open this menu here</string>
     <string name="export_warning_no_attachments">Please note: only text content is saved during export. Files, photos, and other attachments are omitted to ensure that the exported document is lightweight, convenient, and error-free when opened.</string>
     <string name="newBackupsDescrpt">Added support for new versions of backups with attachments and maintained compatibility with older formats.</string>
+
+
+    <string name="toolTipSimpleEditor">Simple Editor</string>
+    <string name="toolTipExtendedEditor">Extended Editor</string>
+    <string name="duplicateTag">duplicate</string>
+    <string name="drawerStatsNotes">Notes</string>
+    <string name="drawerStatsLastMonth">Per month</string>
+    <string name="drawerStatsChart">Сharacters</string>
+    <string name="titleTagPicker">Tag Overview</string>
+    <string name="helpTitleTagOverview">Tag Overview</string>
+    <string name="helpDescTagOverview">To quickly browse all tags, hold down the “All Notes” button on the main screen. A dialog with all tags will appear — just pick the one you need.</string>
+    <string name="trash_info_title">Trash Help</string>
+    <string name="trash_info_message">
+    • To restore a note, simply tap on it. You will automatically enter multi-selection mode and can restore several notes at once.\n\n
+    • To empty the trash, tap the action button (FAB). All notes will be permanently deleted with no way to undo.\n\n
+    • You can use the trash as an archive — items do not disappear automatically and will remain there until you manually clear them.
+    </string>
+    <string name="trash_info_ok">Got it</string>
+
 </resources>
+

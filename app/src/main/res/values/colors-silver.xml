@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="silver_theme_primary">#68686D</color>
+    <color name="silver_theme_onPrimary">#FFFFFF</color>
+    <color name="silver_theme_primaryContainer">#ECEBF0</color>
+    <color name="silver_theme_onPrimaryContainer">#1A1B1F</color>
+    <color name="silver_theme_primaryFixed">#ECEBF0</color>
+    <color name="silver_theme_onPrimaryFixed">#1A1B1F</color>
+    <color name="silver_theme_primaryFixedDim">#D0CFD4</color>
+    <color name="silver_theme_onPrimaryFixedVariant">#4F4F53</color>
+    <color name="silver_theme_secondary">#69696E</color>
+    <color name="silver_theme_onSecondary">#FFFFFF</color>
+    <color name="silver_theme_secondaryContainer">#ECEBF0</color>
+    <color name="silver_theme_onSecondaryContainer">#1B1B1F</color>
+    <color name="silver_theme_secondaryFixed">#ECEBF0</color>
+    <color name="silver_theme_onSecondaryFixed">#1B1B1F</color>
+    <color name="silver_theme_secondaryFixedDim">#D0CFD4</color>
+    <color name="silver_theme_onSecondaryFixedVariant">#4F4F53</color>
+    <color name="silver_theme_tertiary">#818187</color>
+    <color name="silver_theme_onTertiary">#FFFFFF</color>
+    <color name="silver_theme_tertiaryContainer">#F0EFF4</color>
+    <color name="silver_theme_onTertiaryContainer">#1E1E23</color>
+    <color name="silver_theme_tertiaryFixed">#F0EFF4</color>
+    <color name="silver_theme_onTertiaryFixed">#1E1E23</color>
+    <color name="silver_theme_tertiaryFixedDim">#D4D3D9</color>
+    <color name="silver_theme_onTertiaryFixedVariant">#55555A</color>
+    <color name="silver_theme_error">#BA1A1A</color>
+    <color name="silver_theme_onError">#FFFFFF</color>
+    <color name="silver_theme_errorContainer">#FFDAD6</color>
+    <color name="silver_theme_onErrorContainer">#410002</color>
+    <color name="silver_theme_background">#F6F5F8</color>
+    <color name="silver_theme_onBackground">#1C1C1F</color>
+    <color name="silver_theme_surface">#F6F5F8</color>
+    <color name="silver_theme_onSurface">#1C1C1F</color>
+    <color name="silver_theme_surfaceVariant">#E8E7ED</color>
+    <color name="silver_theme_onSurfaceVariant">#4B4A50</color>
+    <color name="silver_theme_outline">#7E7E83</color>
+    <color name="silver_theme_outlineVariant">#D2D1D7</color>
+    <color name="silver_theme_surfaceDim">#EDECF0</color>
+    <color name="silver_theme_surfaceBright">#FAFAFD</color>
+    <color name="silver_theme_surfaceContainerLowest">#FFFFFF</color>
+    <color name="silver_theme_surfaceContainerLow">#F4F3F7</color>
+    <color name="silver_theme_surfaceContainer">#ECEBF0</color>
+    <color name="silver_theme_surfaceContainerHigh">#E5E4E9</color>
+    <color name="silver_theme_surfaceContainerHighest">#DEDEE3</color>
+    <color name="silver_theme_inverseSurface">#313034</color>
+    <color name="silver_theme_inverseOnSurface">#F3F1F6</color>
+    <color name="silver_theme_inversePrimary">#C9C8CD</color>
+
+
+
+    <color name="silver_theme_dark_primary">#C6C5CA</color>
+    <color name="silver_theme_dark_onPrimary">#2F2F33</color>
+    <color name="silver_theme_dark_primaryContainer">#454549</color>
+    <color name="silver_theme_dark_onPrimaryContainer">#E2E2E6</color>
+    <color name="silver_theme_dark_primaryFixed">#E2E2E6</color>
+    <color name="silver_theme_dark_onPrimaryFixed">#1A1B1F</color>
+    <color name="silver_theme_dark_primaryFixedDim">#C6C5CA</color>
+    <color name="silver_theme_dark_onPrimaryFixedVariant">#46464B</color>
+    <color name="silver_theme_dark_secondary">#C6C5CA</color>
+    <color name="silver_theme_dark_onSecondary">#2F2F33</color>
+    <color name="silver_theme_dark_secondaryContainer">#454449</color>
+    <color name="silver_theme_dark_onSecondaryContainer">#E2E2E6</color>
+    <color name="silver_theme_dark_secondaryFixed">#E2E2E6</color>
+    <color name="silver_theme_dark_onSecondaryFixed">#1B1B1F</color>
+    <color name="silver_theme_dark_secondaryFixedDim">#C6C5CA</color>
+    <color name="silver_theme_dark_onSecondaryFixedVariant">#46464B</color>
+    <color name="silver_theme_dark_tertiary">#CAC9CE</color>
+    <color name="silver_theme_dark_onTertiary">#2F2F33</color>
+    <color name="silver_theme_dark_tertiaryContainer">#4B4B50</color>
+    <color name="silver_theme_dark_onTertiaryContainer">#E6E5EA</color>
+    <color name="silver_theme_dark_error">#FFB4AB</color>
+    <color name="silver_theme_dark_onError">#690005</color>
+    <color name="silver_theme_dark_errorContainer">#93000A</color>
+    <color name="silver_theme_dark_onErrorContainer">#FFDAD6</color>
+    <color name="silver_theme_dark_background">#1B1B1F</color>
+    <color name="silver_theme_dark_onBackground">#E3E2E6</color>
+
+    <color name="silver_theme_dark_surface">#1B1B1F</color>
+    <color name="silver_theme_dark_onSurface">#E3E2E6</color>
+
+    <color name="silver_theme_dark_surfaceVariant">#46464B</color>
+    <color name="silver_theme_dark_onSurfaceVariant">#C7C6CC</color>
+    <color name="silver_theme_dark_outline">#919096</color>
+    <color name="silver_theme_dark_outlineVariant">#46464B</color>
+    <color name="silver_theme_dark_surfaceDim">#1A1A1D</color>
+    <color name="silver_theme_dark_surfaceBright">#3E3E42</color>
+
+    <color name="silver_theme_dark_surfaceContainerLowest">#0E0E11</color>
+    <color name="silver_theme_dark_surfaceContainerLow">#222225</color>
+    <color name="silver_theme_dark_surfaceContainer">#2C2C30</color>
+    <color name="silver_theme_dark_surfaceContainerHigh">#36363A</color>
+    <color name="silver_theme_dark_surfaceContainerHighest">#414145</color>
+    <color name="silver_theme_dark_inverseSurface">#E3E2E6</color>
+    <color name="silver_theme_dark_inverseOnSurface">#303033</color>
+    <color name="silver_theme_dark_inversePrimary">#5E5E62</color>
+    <color name="silver_theme_dark_tertiaryFixed">#E6E5EA</color>
+    <color name="silver_theme_dark_onTertiaryFixed">#1E1E23</color>
+    <color name="silver_theme_dark_tertiaryFixedDim">#CAC9CE</color>
+    <color name="silver_theme_dark_onTertiaryFixedVariant">#4B4B50</color>
+
+        <!-- mediumContrast -->
+
+    <!-- highContrast -->
+</resources>
+

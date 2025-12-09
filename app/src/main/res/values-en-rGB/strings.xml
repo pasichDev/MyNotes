@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="NewNote">Create note</string>
+    <string name="trashNotes">Move to bin</string>
+    <string name="trashClean">Empty bin</string>
+    <string name="share">Share</string>
+    <string name="yesCleanTrash">Yes, clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="telegram">Open developer contacts</string>
+    <string name="noSave">Close without saving</string>
+    <string name="ratingApp">Rate this app</string>
+    <string name="exitWhat">Repeat the action to exit</string>
+    <string name="notFoundPlayMarket">Google Play app not found</string>
+    <string name="notSupportedShare">This content is not supported.</string>
+    <string name="cd_format">Format notes</string>
+
+    <string name="search">Search notes</string>
+    <string name="close">Close</string>
+    <string name="addTag">Add tag</string>
+    <string name="deleteTag">Delete</string>
+    <string name="deleteTagAndNotes">Delete tag and tagged notes</string>
+    <string name="countTagsError">You cannot create more than %1$s tags</string>
+    <string name="allNotes">All notes</string>
+    <string name="more">More</string>
+    <string name="noteTitle">Title</string>
+    <string name="deleteSelectTag">Delete tag</string>
+    <string name="deleteSelectTagTextMassage">Are you sure you want to delete this tag? After deletion, it will be removed from all associated notes.</string>
+    <string name="cleanTrashMessage">Are you sure you want to empty the bin? All notes will be permanently deleted.</string>
+    <string name="selectAll">Select this and more notes</string>
+    <string name="createNewTag">Enter tag name</string>
+
+    <string name="sort_Date_Increase">Last modified: newest first</string>
+    <string name="sort_Date_Decrease">Last modified: oldest first</string>
+    <string name="sortHead">Sort by:</string>
+
+    <string name="shareApp">Share app</string>
+    <string name="privacyApp">Privacy Policy</string>
+    <string name="translateNote">Translate note</string>
+    <string name="hintTextNote">Text</string>
+    <string name="notInstaledAppTranslate">Google Translate must be installed to use this feature</string>
+    <string name="lastDateEditNote">Last edit: %1$s</string>
+    <string name="restore">Restore</string>
+    <string name="searchNotesFromTitle">Start typing</string>
+    <string name="errorNewTagInput">Error: A tag name may contain up to %1$d characters</string>
+    <string name="emptyTrash">Your deleted notes will appear here</string>
+    <string name="emptyNotes">Your notes will appear here</string>
+    <string name="emptyNotesForTag">Notes marked with the tag “%1$s” will appear here</string>
+
+    <!-- Share Dialog -->
+    <string name="shareOptions">Sharing options</string>
+    <string name="saveToGoogleDrive">Save to Google Drive</string>
+    <string name="saveAsTxt">Save as TXT</string>
+    <string name="saveAsPdf">Save as PDF</string>
+    <string name="saveAsHtml">Save as HTML</string>
+    <string name="shareViaApps">Share via other apps</string>
+    <string name="errorSavingFile">Error saving file</string>
+    <string name="fileSavedSuccessfully">File saved successfully</string>
+    <string name="googleDriveNotInstalled">Google Drive is not installed</string>
+    <string name="contentDescrChangeStyleText">Change text style</string>
+    <string name="copyNoteEdits">Edit copy</string>
+    <string name="noteMoveTrashSnackbar">Note moved to bin</string>
+
+    <!-- Non-translated -->
+    <string name="tagHastag" translatable="false">#%1$s</string>
+    <string name="app_name">My Notes</string>
+    <string name="save_to_notes">Save to My Notes</string>
+    <string name="telegram_nick" translatable="false">"@"pasichDev</string>
+    <string name="email_address" translatable="false">pasichDev@gmail.com</string>
+    <string name="editNoteButton" translatable="false">EditNote</string>
+    <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
+    <string name="thanksImage" translatable="false">Thanks byy</string>
+    <string name="sliderTextSize" translatable="false">Slider edit text size</string>
+
+    <string name="hiddeTag">Hide notes</string>
+    <string name="visibleTag">Show notes</string>
+    <string name="renameTag">Rename</string>
+
+    <string name="settings">Settings</string>
+    <string name="aboutApps">About app</string>
+    <string name="trash">Bin</string>
+    <string name="themes">Theme</string>
+    <string name="accentColorDescription">Choose the accent colour used to build the theme</string>
+    <string name="selectAccentColor">Select accent colour</string>
+    <string name="onDynamicColor">Enable dynamic colour</string>
+    <string name="onDynamicColorDescription">Adapts the app’s colours to your wallpaper (Android 12+)</string>
+    <string name="onScreenProtection">Enable screen protection</string>
+    <string name="onScreenProtectionDescription">Prevents screenshots and screen recording. Takes effect after restarting the app.</string>
+    <string name="themeMode">Theme mode</string>
+    <string name="selectThemeMode">Select theme mode</string>
+    <string name="themeModeFollowSystem">Follow system</string>
+    <string name="themeModeLight">Light</string>
+    <string name="themeModeDark">Dark</string>
+
+    <string name="importLocalBackup">Restore from backups</string>
+    <string name="exportLocalBackup">Create backup</string>
+
+    <!-- Data Export -->
+    <string name="dataExport">Data export</string>
+    <string name="dataExportDescription">Export all your current notes for viewing. Only active notes are exported — deleted notes and tags are ignored.</string>
+    <string name="exportAllNotes">Export all notes</string>
+
+    <string name="restoreNotesTitle">Data restore</string>
+    <string name="restoreNotesMessage">New notes will be added before existing ones. Duplicates will be ignored.</string>
+    <string name="selectRestore">Select backup</string>
+    <string name="nextRestore">Restore from cloud</string>
+    <string name="messageRestoreProcess"><b>Restoring data</b>\nThis window will close automatically when finished.</string>
+
+    <string name="emptyDataToBackup">No data to back up</string>
+    <string name="creteLocalCopyOkay">Backup created successfully</string>
+    <string name="creteLocalCopyFail">Error: backup not saved</string>
+    <string name="restoreDataOkay">Data restored successfully</string>
+    <string name="restoreDataFall">Error: backup is corrupted</string>
+    <string name="errorDriveSync">Server error or poor network quality</string>
+    <string name="sortNotes">Sort notes</string>
+
+    <!-- Donations -->
+    <string name="thanks_title">Dear user</string>
+    <string name="thanks_donate">Thank you for your support! Your contribution helps us grow and improve.\n<b>With appreciation, My Notes.</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Support developer</string>
+    <string name="inAppPurchases">In-app purchases</string>
+    <string name="donationMethods">Donation methods</string>
+    <string name="kofiDescription">Buy me a coffee on Ko-Fi</string>
+    <string name="ratingAppDescription">Rate us 5 stars on Google Play</string>
+    <string name="contactDeveloper">Contact developer</string>
+    <string name="inAppPurchasesDescription">Support the app by using in-app purchases</string>
+    <string name="viewDonationProducts">View support options</string>
+    <string name="purchaseBottomSheetDescription">Choose a convenient way to support app development. Every contribution helps improve features and add new functionality.</string>
+
+    <!-- Changelog -->
+    <string name="changelog">What’s new</string>
+    <string name="version_acknowledged">Got it!</string>
+    <string name="whats_new_title">New features &amp; improvements</string>
+    <string name="whats_new_description">Explore the latest updates designed to enhance your note-taking experience.</string>
+    <string name="changelog_subtitle">Stay informed about changes in this version</string>
+    <string name="leaveFeedback">Leave feedback</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Seed of Ideas</string>
+    <string name="donation_seed_description">Plant the first seed for future innovations</string>
+    <string name="donation_spark_title">Spark of Inspiration</string>
+    <string name="donation_spark_description">Ignite creativity and fuel development</string>
+    <string name="donation_midnight_title">Midnight Notebook</string>
+    <string name="donation_midnight_description">Support late-night coding sessions</string>
+    <string name="donation_wave_title">Wave of Support</string>
+    <string name="donation_wave_description">Send a powerful wave of encouragement</string>
+    <string name="donation_universe_title">Universe of Inspiration</string>
+    <string name="donation_universe_description">Unlock limitless possibilities</string>
+
+    <string name="purchase_loading">Loading products…</string>
+    <string name="purchase_error_no_products">No donation products available</string>
+
+    <string name="support_solo_developer_title">Support developer</string>
+    <string name="support_solo_developer_description">Hi! I\'m a solo developer working on My Notes in my spare time. The app will always remain free. Your support helps me dedicate more time to improving it. Every contribution matters! 💖</string>
+
+    <string name="help_title">Help</string>
+    <string name="help_subtitle">Learn how to get the most out of My Notes</string>
+
+    <!-- Tags Help -->
+    <string name="help_tags_title">Tags</string>
+    <string name="help_tags_func_title">Tag interactions</string>
+    <string name="help_tags_func_description">Create, edit and reorder your tags by dragging them. This helps keep your notes organised.</string>
+    <string name="help_tags_edit_title">Editing tags</string>
+    <string name="help_tags_edit_description">Hold a tag to open its menu. Here you can rename, delete or hide it.</string>
+    <string name="help_tags_hide_title">Hide notes</string>
+    <string name="help_tags_hide_description">Hide notes marked with this tag in the main list while keeping access through the tag itself.</string>
+    <string name="help_tags_limit_title">Tag limit</string>
+    <string name="help_tags_limit_description">You can create up to 25 tags for better organisation.</string>
+
+    <!-- Navigation Help -->
+    <string name="help_navigation_title">Navigation</string>
+    <string name="help_navigation_drawer_title">Main menu</string>
+    <string name="help_navigation_drawer_description">Tap the menu icon in the top left corner to open the drawer.</string>
+    <string name="help_navigation_search_title">Search</string>
+    <string name="help_navigation_search_description">Quickly find notes by title or content.</string>
+    <string name="help_navigation_sort_title">Sorting</string>
+    <string name="help_navigation_sort_description">Sort notes by name or modification date.</string>
+    <string name="help_navigation_format_title">Display format</string>
+    <string name="help_navigation_format_description">Switch between list and grid view.</string>
+
+    <string name="help_navigation_swipe_title">Swipe gestures</string>
+    <string name="help_navigation_swipe_description">Swipe left to enter multi-selection mode, swipe right to delete a note. Available only in single-column mode.</string>
+
+    <!-- Other -->
+    <string name="help_other_security_title">Screen protection</string>
+    <string name="help_other_security_description">Prevents screenshots and hides content in the recent apps list. Requires app restart.</string>
+    <string name="help_other_shortcuts_title">App shortcuts</string>
+    <string name="help_other_shortcuts_description">Long-press the app icon to quickly create a new note or search notes.</string>
+
+    <!-- Notes -->
+    <string name="help_notes_title">Notes</string>
+    <string name="help_notes_limit_title">Character limit</string>
+    <string name="help_notes_limit_description">Each note may contain up to 20,000 characters.</string>
+    <string name="help_notes_translate_title">Translation</string>
+    <string name="help_notes_translate_description">Translate note content directly (requires Google Translate).</string>
+    <string name="help_notes_text_size_title">Text size</string>
+    <string name="help_notes_text_size_description">Adjust the text size when editing notes.</string>
+    <string name="help_notes_copy_title">Edit copy</string>
+    <string name="help_notes_copy_description">Create an editable duplicate of a note while keeping the original.</string>
+
+    <string name="actual_version">Up to date for version %1$s</string>
+
+    <!-- Backup & Export -->
+    <string name="help_other_backup_export_title">Sync &amp; data export</string>
+    <string name="help_other_backup_export_description">Export notes in TXT, PDF or HTML format for backup or external use.</string>
+
+    <string name="help_notes_share_title">Share &amp; export</string>
+    <string name="help_notes_share_description">Share multiple notes, save to Google Drive, or export as TXT, PDF or HTML with formatting.</string>
+
+    <!-- Shortcuts -->
+    <string name="shortcut_new_note_short">New note</string>
+    <string name="shortcut_new_note_long">Create new note</string>
+    <string name="shortcut_search_short">Search</string>
+    <string name="shortcut_search_long">Search notes</string>
+    <string name="shortcut_disabled_message">This feature is unavailable</string>
+
+    <string name="saveStatus">Save status</string>
+    <string name="saveStatusSaved">Saved</string>
+    <string name="saveStatusPending">Unsaved changes</string>
+    <string name="saveStatusSaving">Saving…</string>
+    <string name="saveStatusError">Save error</string>
+
+    <string name="help_notes_autosave_title">Auto-save</string>
+    <string name="help_notes_autosave_description">
+        Notes are automatically saved 2 seconds after you stop typing.
+        The status indicator shows:
+        • blue dot — unsaved changes
+        • animated icon — saving in progress
+        • green tick — saved successfully
+        Your latest edits will not be lost even if the app closes or crashes.
+    </string>
+
+    <string name="tags_management">Tags</string>
+    <string name="create_tag">Tap this button to create a tag.</string>
+    <string name="tag_options">Tag options</string>
+    <string name="createTag">Create tag</string>
+    <string name="toastTagVisible">Notes with this tag are visible in the main list.</string>
+    <string name="toastTagHidde">Notes with this tag are hidden from the main list.</string>
+
+    <string name="sort_tags_position">Custom</string>
+    <string name="sort_tags_creation_date">By creation date</string>
+
+    <!-- Tabs -->
+    <string name="backup_and_export">Backup &amp; export</string>
+    <string name="import_data">Import data</string>
+
+    <!-- Import -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Import notes from Google Keep</string>
+    <string name="google_keep_description">Import notes exported via Google Takeout.</string>
+    <string name="import_from_google_keep">Import from Google Keep</string>
+
+    <string name="other_apps">Other apps</string>
+    <string name="import_from_other_note_apps">Import from other note-taking apps</string>
+    <string name="other_apps_description">Supported apps: OneNote, Evernote, Notion and more.</string>
+    <string name="coming_soon">Coming soon</string>
+
+    <string name="instructions">Instructions</string>
+    <string name="google_takeout_instructions">How to export from Google Keep</string>
+
+    <string name="google_takeout_description">
+        To export your notes from Google Keep:\n\n
+        1. Visit Google Takeout: https://takeout.google.com\n
+        2. Select only “Keep”\n
+        3. Click “Next step” and configure export options\n
+        4. Click “Create export”\n
+        5. Download the .zip file when ready\n
+        6. Import the .zip directly — no need to extract it\n\n
+        Note: only text is imported. Images, audio and drawings are not supported.
+    </string>
+
+    <string name="google_keep_import_title">Import from Google Keep</string>
+    <string name="found_notes">Found data</string>
+    <string name="import_error">Import error</string>
+    <string name="active_notes">Notes</string>
+    <string name="trashed_notes">Bin</string>
+    <string name="labels">Tags</string>
+    <string name="import_notes">Import data</string>
+    <string name="empty_data_import">No new data to import</string>
+
+    <string name="aboutApps_subtitle">Feedback · Help · Version</string>
+
+    <string name="backup">Backup</string>
+    <string name="device_storage">Device storage</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Save backup</string>
+    <string name="restore_backup">Restore backup</string>
+    <string name="file_not_selected">No file selected</string>
+    <string name="drive_selected_error">Google Drive error</string>
+    <string name="export_drive_error">You cancelled the action or an error occurred.</string>
+    <string name="backup_descrpt">Create a backup of your notes, tags and app settings, stored locally or on Google Drive.</string>
+    <string name="your_data">Your data</string>
+
+    <string name="interface_tab">Interface</string>
+    <string name="interaction_tab">Interaction</string>
+
+    <string name="onExtendedEditor">Enable extended editor</string>
+    <string name="onExtendedEditorDescription">Provides additional tools such as headings, lists, quotes and code blocks.</string>
+    <string name="onExtendedEditorWarning">Switching to the basic editor may remove formatting created in the extended editor.</string>
+
+    <string name="new_note">New note</string>
+
+    <string name="help_extended_editor_title">Extended editor</string>
+    <string name="help_extended_editor_descrpt">Gain more control with headings, lists, quotes and code blocks. Can be enabled or disabled in settings.</string>
+
+    <string name="countMediaNote">Media files: %1$d</string>
+
+    <string name="openWith">Open with…</string>
+    <string name="saveDevice">Save to device</string>
+    <string name="savedDownloads">Saved to Downloads</string>
+    <string name="savedFailed">Save failed</string>
+
+    <string name="deleteAttach">Delete</string>
+    <string name="errorAttachFreeSize">Not enough free space (minimum 500 MB required)</string>
+    <string name="errorAttachLimitSize">File is too large (max 20 MB)</string>
+    <string name="errorAttachCalculateSize">Unable to determine file size</string>
+    <string name="attachment_file_unavailable">The file is unavailable. It may have been deleted or moved. You may remove this attachment to clear the invalid reference.</string>
+
+    <string name="dialog_delete_title">Delete file?</string>
+    <string name="dialog_delete_message">The file will be permanently deleted.</string>
+    <string name="dialog_delete_confirm">Delete</string>
+    <string name="dialog_delete_cancel">Cancel</string>
+
+    <string name="deleteAttachmentsErrorExits">Unable to delete the file. It may no longer exist.</string>
+    <string name="deleteAttachmentsSuccess">Attachments deleted successfully</string>
+
+    <string name="attachment_load_failed">Failed to load file</string>
+    <string name="attachment_open_with">Open with</string>
+    <string name="attachment_open_failed">Cannot open file</string>
+    <string name="attachment_save_failed">Failed to save file</string>
+
+    <string name="onExtendedEditorAttachWarning">Notes containing attachments or media can only be edited using the extended editor due to compatibility limitations.</string>
+
+    <string name="openImageError">Image unavailable</string>
+    <string name="shareError">Image sharing error</string>
+
+    <string name="mediaTab">Media</string>
+
+    <string name="img_opt_title">Enable enhanced compression</string>
+    <string name="img_opt_summary">Default light compression is always applied. This increases compression only for newly added images.</string>
+
+    <string name="media_usage_title">App media storage usage</string>
+
+    <string name="ui_text_scale_title">Interface text size</string>
+    <string name="ui_text_scale_description">Adjust the size of text across the app.</string>
+
+    <string name="font_size_auto">Auto</string>
+    <string name="font_size_xs">Extra small</string>
+    <string name="font_size_s">Small</string>
+    <string name="font_size_default">Default</string>
+    <string name="font_size_l">Large</string>
+    <string name="font_size_xl">Extra large</string>
+
+    <string name="delete">Delete</string>
+    <string name="file_wrong_format">Unsupported file format. Please select a valid backup.</string>
+    <string name="error_dialog_wrong_context">Error: cannot open this menu here</string>
+
+    <string name="export_warning_no_attachments">Only text is exported. Images and other attachments are not included.</string>
+    <string name="newBackupsDescrpt">Added support for new backup versions with attachments while maintaining compatibility with older formats.</string>
+    <string name="toolTipSimpleEditor">Simple Editor</string>
+    <string name="toolTipExtendedEditor">Extended Editor</string>
+    <string name="duplicateTag">Duplicate</string>
+    <string name="drawerStatsNotes">Notes</string>
+    <string name="drawerStatsLastMonth">Per month</string>
+    <string name="drawerStatsChart">Characters</string>
+    <string name="titleTagPicker">Tag Overview</string>
+    <string name="helpTitleTagOverview">Tag Overview</string>
+    <string name="helpDescTagOverview">To quickly browse all tags, hold the “All Notes” button on the main screen. A dialog will appear with all tags — simply choose the one you need.</string>
+    <string name="trash_info_title">Bin Help</string>
+    <string name="trash_info_message">• To restore a note, tap it. You will automatically enter multi-selection mode and can restore several notes at once.\n\n• To empty the bin, tap the action button (FAB). All notes will be permanently deleted.\n\n• You can use the bin as an archive — items remain until you manually clear them.</string>
+    <string name="trash_info_ok">Got it</string>
+
+</resources>

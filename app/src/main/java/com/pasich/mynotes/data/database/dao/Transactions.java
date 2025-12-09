@@ -31,7 +31,7 @@ public abstract class Transactions {
     @Query("UPDATE tags SET name = :newName WHERE id = :tagId")
     public abstract void updateTagName(String newName, long tagId);
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract long addNote(Note note);
 
     @Query("UPDATE notes SET tag='' WHERE tag NOT IN (SELECT name FROM tags)")

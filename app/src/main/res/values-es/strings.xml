@@ -16,7 +16,6 @@
     <string name="telegram">Abrir contactos de desarrollador</string>
     <string name="notSupportedShare">Este contenido no es compatible.</string>
     <string name="notFoundPlayMarket">Falta la aplicación Play Market</string>
-    <string name="copyX">"Copiado"</string>
     <string name="cd_format">Formato de notas</string>
 
     <string name="search">Buscar en notas</string>
@@ -35,8 +34,6 @@
     <string name="createNewTag">Ingrese el nombre de la etiqueta</string>
     <string name="sort_Date_Increase">Fecha de modificación: más reciente primero</string>
     <string name="sort_Date_Decrease">Fecha de cambio: antiguo primero</string>
-    <string name="sort_Title_Increase">Título: A-Z</string>
-    <string name="sort_Title_Decrease">Título: Z-A</string>
     <string name="sortHead">Ordenar por:</string>
     <string name="shareApp">Compartir aplicación</string>
     <string name="privacyApp">Política de privacidad</string>
@@ -64,27 +61,15 @@
     <string name="contentDescrChangeStyleText">Cambiar estilo de texto</string>
     <string name="copyNoteEdits">Editar copia</string>
     <string name="noteMoveTrashSnackbar">Nota movida a la papelera</string>
-    <string name="button_edit">Editar</string>
-    <string name="button_copy">Copiar</string>
-    <string name="button_phone">Llamar</string>
-    <string name="button_mail">Escribir</string>
-    <string name="button_url">Ir a</string>
 
     <string name="hiddeTag">Ocultar notas</string>
     <string name="visibleTag">Mostrar notas</string>
     <string name="renameTag">Renombrar</string>
 
-    <string name="settingsInterface">Configuración de la interfaz</string>
     <string name="settings">Configuración</string>
     <string name="aboutApps">Acerca de la aplicación</string>
     <string name="trash">Papelera</string>
     <string name="themes">Tema</string>
-    <string name="themeBlue">Azul océano</string>
-    <string name="themeGreen">Verde esmeralda</string>
-    <string name="themeSunset">Naranja atardecer</string>
-    <string name="themeYellow">Amarillo dorado</string>
-    <string name="themePurple">Púrpura profundo</string>
-    <string name="themeCoralRed">Rojo coral</string>
     <string name="accentColorDescription">Elige color de acento con el que se construirá el tema</string>
     <string name="selectAccentColor">Seleccionar color de acento</string>
     <string name="onDynamicColor">Habilitar color dinámico</string>
@@ -314,8 +299,6 @@
     <string name="attachment_save_failed">No se pudo guardar el archivo</string>
     <string name="onExtendedEditorAttachWarning">Si una nota contiene adjuntos o archivos multimedia, pierde compatibilidad con el editor simple — solo puede editarse en el editor avanzado.</string>
     <string name="onExtendedEditor">Activar editor avanzado</string>
-    <string name="showDetailsExtendedEditor">Más información</string>
-    <string name="hiddenDetailsExtendedEditor">Ocultar</string>
     <string name="openImageError">Imagen no disponible</string>
     <string name="shareError">Error al compartir la imagen</string>
     <string name="mediaTab">Medios</string>
@@ -335,5 +318,17 @@
     <string name="error_dialog_wrong_context">Error: no puedo abrir este menú aquí</string>
     <string name="export_warning_no_attachments">Nota: solo se guarda el contenido de texto durante la exportación. Los archivos, fotos y otros adjuntos se omiten para mantener un documento ligero y estable.</string>
     <string name="newBackupsDescrpt">Se añadió compatibilidad con nuevas versiones de copias de seguridad con adjuntos y se mantuvo la compatibilidad con formatos antiguos.</string>
+    <string name="toolTipSimpleEditor">Editor simple</string>
+    <string name="toolTipExtendedEditor">Editor avanzado</string>
+    <string name="duplicateTag">Duplicar</string>
+    <string name="drawerStatsNotes">Notas</string>
+    <string name="drawerStatsLastMonth">Por mes</string>
+    <string name="drawerStatsChart">Caracteres</string>
+    <string name="titleTagPicker">Vista de etiquetas</string>
+    <string name="helpTitleTagOverview">Vista de etiquetas</string>
+    <string name="helpDescTagOverview">Para ver rápidamente todas las etiquetas, mantén pulsado el botón “Todas las notas”. Aparecerá un diálogo con todas las etiquetas.</string>
+    <string name="trash_info_title">Ayuda de la papelera</string>
+    <string name="trash_info_message">• Para restaurar una nota, tócalo. Entrarás automáticamente en el modo de selección múltiple.\n\n• Para vaciar la papelera, toca el botón de acción (FAB). Todas las notas se eliminarán permanentemente.\n\n• Puedes usar la papelera como archivo — los elementos permanecen hasta que los elimines manualmente.</string>
+    <string name="trash_info_ok">Entendido</string>
 
 </resources>

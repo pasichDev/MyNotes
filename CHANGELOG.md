@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## [2.4.42] - 09.12.2025
+
+**New**
+
+- Added a new Silver accent theme for improved visual customization.
+- Introduced the Tag Overview dialog — long-press on “All Notes” to quickly browse and select tags.
+- Implemented seamless switching between the Simple Editor and Extended Editor directly from the
+  note editing screen.
+- Enhanced user experience when copying notes — improved animations and clearer visual feedback.
+
+**Improvements**
+
+- Conducted extensive code and UI review to improve overall application stability and
+  maintainability.
+- Refined the interface and visual design across multiple screens: polished spacing, colors,
+  animations, and component behavior.
+- Improved interaction logic in the notes list, including selection modes, swipe actions, and tag
+  operations.
+
+**Fixes**
+
+- Resolved a large number of bugs affecting note rendering, list updates, tag behavior, and
+  selection mode.
+- Fixed issues related to trash restore actions, animations, and state synchronization.
+- Fixed incorrect ordering of tags in MoreNotes Dialog (now uses unified TagsSorter logic).
+- Improved overall performance and stability to ensure a smoother and more reliable user experience.
+
 ## [2.4.41] - 01.12.2025
 
 - **Advanced editor:** added full support for inserting images into notes.
@@ -8,7 +35,8 @@
 - Added new screen displaying the list of application dependencies.
 - Added automatic optimization of uploaded images.
 - Added adaptive app icon, including a monochrome variant for Material You themed icons.
-- Incorrect processing of backups has been fixed and compatibility with previous versions has been improved.
+- Incorrect processing of backups has been fixed and compatibility with previous versions has been
+  improved.
 - Code review and optimization performed, obsolete and unnecessary functionality removed, known bugs
   fixed
 

@@ -7,6 +7,7 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
+import com.pasich.mynotes.utils.TagsSorter;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.Date;
@@ -16,7 +17,7 @@ import javax.inject.Inject;
 import io.reactivex.disposables.CompositeDisposable;
 
 public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContract.view> implements MoreNoteDialogContract.presenter {
-
+    private static final String TAG = "MoreNoteDialogPresenter";
 
     @Inject
     public MoreNoteDialogPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
@@ -27,7 +28,7 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     @Override
     public void viewIsReady() {
         getView().initInterfaces();
-        getView().loadingTagsOfChips(getDataManager().getTagsUser());
+        requestTagsOneShot();
         getView().initListeners();
         getView().setSliderValue(getDataManager().getSizeTextNoteActivity());
     }
@@ -41,7 +42,7 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
                 .subscribe(
                         () -> {
                         }, // onComplete
-                        throwable -> Log.e("MoreNoteDialogPresenter", "Error deleting note", throwable)
+                        throwable -> Log.e(TAG, "Error deleting note", throwable)
                 ));
     }
 
@@ -57,7 +58,7 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
                 .subscribe(
                         () -> {
                         }, // onComplete
-                        throwable -> Log.e("MoreNoteDialogPresenter", "Error removing tag", throwable)
+                        throwable -> Log.e(TAG, "Error removing tag", throwable)
                 ));
     }
 
@@ -68,30 +69,36 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
                 .subscribe(
                         () -> {
                         }, // onComplete
-                        throwable -> Log.e("MoreNoteDialogPresenter", "Error editing tag", throwable)
+                        throwable -> Log.e(TAG, "Error editing tag", throwable)
                 ));
     }
 
     @Override
-    public void copyNote(Note note, boolean noteActivity) {
-
-        if (noteActivity) {
-            getCompositeDisposable().add(getDataManager().updateNote(note)
-                    .subscribeOn(getSchedulerProvider().io())
-                    .subscribe(
-                            () -> {
-                            }, // onComplete
-                            throwable -> Log.e("MoreNoteDialogPresenter", "Error updating note", throwable)
-                    ));
-        }
-
+    public void copyNoteMainActivity(Note note) {
         getCompositeDisposable().add(getDataManager()
-                .addNote(new Note().create(note.getTitle() + " (2)", note.getValue() + " ", new Date().getTime(), note.getTag()), true)
+                .addNote(new Note().create(note.getTitle() + " (copy)", note.getValue() + " ", new Date().getTime(), note.getTag()), true)
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(
                         aLong -> getView().callableCopyNote(aLong),
-                        throwable -> Log.e("MoreNoteDialogPresenter", "Error copying note", throwable)
+                        throwable -> Log.e(TAG, "Error copying note", throwable)
                 ));
 
     }
+
+    @Override
+    public void requestTagsOneShot() {
+        getCompositeDisposable().add(
+                getDataManager()
+                        .getTagsUser()
+                        .take(1)
+                        .map(tags -> TagsSorter.sortTags(tags, getDataManager().getSortParamTags()))
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                sorted -> getView().createChipsTag(sorted),
+                                err -> Log.e(TAG, "requestTagsOneShot()", err)
+                        )
+        );
+    }
+
+
 }

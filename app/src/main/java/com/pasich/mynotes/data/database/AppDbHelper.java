@@ -180,6 +180,11 @@ public class AppDbHelper implements DbHelper {
         return Single.fromCallable(() -> copyNote ? appDatabase.noteDao().addNoteCopy(note) : appDatabase.transactionsNote().addNoteTransaction(note));
     }
 
+    public Single<Long> copyNote(Note original) {
+        return addNote(original.duplicate(), true);
+    }
+
+
     @Override
     public Completable addNotes(List<Note> notes) {
         return Completable.fromAction(() -> appDatabase.noteDao().addNotes(notes));
@@ -213,4 +218,20 @@ public class AppDbHelper implements DbHelper {
         return Completable.fromAction(() -> appDatabase.noteDao().setTagNote(nameTag, idNote));
     }
 
+    @Override
+    public Flowable<Integer> getNotesCount() {
+        return appDatabase.noteDao().getNotesCount().map(v -> v == null ? 0 : v);
+
+    }
+
+    @Override
+    public Flowable<Integer> getNotesCreatedLastMonth() {
+        long monthAgo = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000;
+        return appDatabase.noteDao().getNotesCreatedSince(monthAgo).map(v -> v == null ? 0 : v);
+    }
+
+    @Override
+    public Flowable<Long> getTotalCharacters() {
+        return appDatabase.noteDao().getTotalCharacters().map(v -> v == null ? 0 : v);
+    }
 }

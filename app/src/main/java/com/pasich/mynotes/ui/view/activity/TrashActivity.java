@@ -12,15 +12,14 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityTrashBinding;
-import com.pasich.mynotes.databinding.ItemNoteBinding;
 import com.pasich.mynotes.ui.contract.TrashContract;
+import com.pasich.mynotes.ui.controllers.SelectionController;
 import com.pasich.mynotes.ui.presenter.TrashPresenter;
-import com.pasich.mynotes.utils.actionPanel.ActionUtils;
-import com.pasich.mynotes.utils.actionPanel.interfaces.ManagerViewAction;
-import com.pasich.mynotes.utils.actionPanel.tool.TrashNoteActionTool;
+import com.pasich.mynotes.ui.view.dialogs.TrashInfoDialog;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,24 +29,17 @@ import javax.inject.Named;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class TrashActivity extends BaseActivity implements TrashContract.view, ManagerViewAction<Note> {
+public class TrashActivity extends BaseActivity implements TrashContract.view {
 
     @Inject
     public TrashPresenter trashPresenter;
     public ActivityTrashBinding binding;
     @Inject
-    public TrashNoteActionTool trashNoteActionTool;
-
-    @Inject
-    public NoteAdapter<ItemNoteBinding> mNotesTrashAdapter;
-
-    @Inject
-    public ActionUtils actionUtils;
-
+    public NoteAdapter mNotesTrashAdapter;
     @Named("NotesItemSpaceDecoration")
     @Inject
     public SpacesItemDecoration itemDecorationNotes;
-
+    private SelectionController selectionController;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,17 +47,22 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
         selectTheme();
         binding = ActivityTrashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // set selection trash
+        selectionController = new SelectionController(mNotesTrashAdapter, binding.getRoot());
+        mNotesTrashAdapter.setSelectionController(selectionController);
+        selectionController.setPanelMode(SelectionController.Mode.RESTORE);
+
+
         setupEdgeToEdgeInsets(binding.getRoot());
         trashPresenter.attachView(this);
         trashPresenter.viewIsReady();
         binding.setPresenter(trashPresenter);
-        actionUtils.setMangerView(binding.getRoot());
-        actionUtils.setTrash();
+
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (actionUtils.getAction()) {
-                    actionUtils.closeActionPanel();
+                if (selectionController.isInSelectionMode()) {
+                    selectionController.clearSelection();
                 } else {
                     finishActivity();
                 }
@@ -86,7 +83,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
 
     @Override
     public void initListeners() {
-        mNotesTrashAdapter.setOnItemClickListener((position, model) -> selectItemAction(model, position, true));
+        mNotesTrashAdapter.setOnItemClickListener((position, model) -> selectItemAction(model));
 
     }
 
@@ -108,7 +105,7 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity_toolbar, menu);
+        getMenuInflater().inflate(R.menu.menu_trash_toolbar, menu);
         return true;
     }
 
@@ -116,13 +113,15 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == android.R.id.home) {
-            if (actionUtils.getAction()) {
-                actionUtils.closeActionPanel();
+            if (selectionController.isInSelectionMode()) {
+                selectionController.clearSelection();
             } else {
                 finishActivity();
             }
         }
-
+        if (item.getItemId() == R.id.helpTrash) {
+            TrashInfoDialog.show(this);
+        }
         return true;
     }
 
@@ -135,6 +134,18 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     public void settingsNotesList() {
         binding.ListTrash.addItemDecoration(itemDecorationNotes);
         binding.ListTrash.setAdapter(mNotesTrashAdapter);
+        selectionController.setListener(new SelectionController.Listener() {
+            @Override
+            public void onSelectionModeChanged(boolean active) {
+                binding.cleanTrash.setVisibility(active ? View.GONE : View.VISIBLE);
+            }
+
+            @Override
+            public void onRestoreRequested() {
+                restoreNotes();
+            }
+
+        });
 
     }
 
@@ -163,40 +174,19 @@ public class TrashActivity extends BaseActivity implements TrashContract.view, M
     }
 
 
-    @Override
-    public void activateActionPanel() {
-        binding.cleanTrash.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void deactivationActionPanel() {
-        binding.cleanTrash.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void toolCleanChecked() {
-        trashNoteActionTool.checkedClean();
-    }
-
-
-    @Override
     public void restoreNotes() {
-        trashPresenter.restoreNotesArray(trashNoteActionTool.getArrayChecked());
-        actionUtils.closeActionPanel();
+
+        trashPresenter.restoreNotesArray(new ArrayList<>(selectionController.getSelectedNotes()));
+        selectionController.clearSelection();
     }
 
-    @Override
-    public void selectItemAction(Note note, int position, boolean payloads) {
-        if (note.getChecked()) {
-            note.setChecked(false);
-            if (!trashNoteActionTool.isCheckedItemFalse(note)) actionUtils.closeActionPanel();
-        } else {
-            trashNoteActionTool.isCheckedItem(note);
-            note.setChecked(true);
-        }
 
-        actionUtils.manageActionPanel(trashNoteActionTool.getCountCheckedItem());
-        mNotesTrashAdapter.notifyItemChanged(position, 22);
+    public void selectItemAction(Note note) {
+        if (!selectionController.isInSelectionMode()) {
+            selectionController.startSelection(note);
+        } else {
+            selectionController.toggle(note);
+        }
     }
 
 }

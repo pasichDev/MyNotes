@@ -63,7 +63,6 @@ public class ChangelogActivity extends BaseActivity {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         executor = Executors.newSingleThreadExecutor();
-        // Перевіряємо, чи потрібно показувати кнопку "Ознайомився"
         updateAcknowledgeButtonVisibility();
     }
 
@@ -75,10 +74,6 @@ public class ChangelogActivity extends BaseActivity {
 
     private void loadLocalChangelog() {
         String content = changelogManager.readRawChangelog();
-
-        if (content.isEmpty()) {
-            content = changelogManager.readRawChangelog();
-        }
 
         showContent(content);
     }

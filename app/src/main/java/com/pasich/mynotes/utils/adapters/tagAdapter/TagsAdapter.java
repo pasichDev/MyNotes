@@ -4,15 +4,13 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagBinding;
-import com.pasich.mynotes.utils.constants.AppPayloads;
-import com.pasich.mynotes.utils.managers.SystemTagsManager;
+import com.pasich.mynotes.utils.recycler.payloads.TagPayloads;
 
 import java.util.List;
 
@@ -21,156 +19,106 @@ import javax.inject.Named;
 
 public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
 
-    private OnItemClickListenerTag mOnItemClickListener;
-    private Tag mTagSelected;
-    private boolean isInitialized = false;
+    private OnItemClickListenerTag clickListener;
 
     @Inject
     public TagsAdapter(@NonNull @Named("Tag") DiffUtil.ItemCallback<Tag> diffCallback) {
         super(diffCallback);
+        setHasStableIds(true);
     }
 
-    public void setOnItemClickListener(OnItemClickListenerTag onItemClickListener) {
-        this.mOnItemClickListener = onItemClickListener;
+    @Override
+    public long getItemId(int position) {
+        return getItem(position).getId();
     }
 
-
-    public Tag getTagSelected() {
-        return this.mTagSelected;
+    public void setOnItemClickListener(OnItemClickListenerTag listener) {
+        this.clickListener = listener;
     }
-
-
-    public void setTagSelected(@Nullable Tag selected) {
-        this.mTagSelected = selected;
-    }
-
 
     @NonNull
     @Override
-    public TagsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ViewHolder view = new ViewHolder(ItemTagBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false));
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        ItemTagBinding binding = ItemTagBinding.inflate(
+                LayoutInflater.from(parent.getContext()),
+                parent,
+                false
+        );
 
-        if (mOnItemClickListener != null) {
-            view.itemView.setOnClickListener(v -> {
-                int position = view.getBindingAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    mOnItemClickListener.onClick(position);
-                }
-            });
+        ViewHolder holder = new ViewHolder(binding);
 
-            view.itemView.setOnLongClickListener(v -> {
-                int position = view.getBindingAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    Tag tag = getItem(position);
-                    if (!SystemTagsManager.isSystemTag(tag) || SystemTagsManager.isAllNotesTag(tag)) {
-                        mOnItemClickListener.onLongClick(position, view.itemView);
-                    }
-                }
-                return true;
-            });
-        }
+        holder.itemView.setOnClickListener(v -> {
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && clickListener != null) {
+                clickListener.onClick(pos);
+            }
+        });
 
-        return view;
+        holder.itemView.setOnLongClickListener(v -> {
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && clickListener != null) {
+                clickListener.onLongClick(pos, holder.itemView);
+            }
+            return true;
+        });
+
+        return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Tag tag = getItem(position);
-        holder.ItemBinding.setTag(tag);
-        holder.ItemBinding.setCheckedTag(tag.getSelected());
+        holder.bind(tag);
     }
 
     @Override
-    public void submitList(@Nullable List<Tag> list) {
-        if (list == null) return;
+    public void onBindViewHolder(@NonNull ViewHolder holder,
+                                 int position,
+                                 @NonNull List<Object> payloads) {
 
+        if (!payloads.isEmpty()) {
+            Tag tag = getItem(position);
 
-        // Далі робиш свою логіку з вибором AllNotes при першій ініціалізації
-        if (!isInitialized) {
-            boolean hasSelectedTag = false;
-            Tag allNotesTag = null;
+            for (Object payload : payloads) {
+                if (payload instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> list = (List<String>) payload;
 
-            for (Tag tag : list) {
-                if (tag.getSelected() && !SystemTagsManager.isAllNotesTag(tag)) {
-                    hasSelectedTag = true;
-                    mTagSelected = tag;
+                    for (String type : list) {
+                        switch (type) {
+                            case TagPayloads.SELECTED:
+                                holder.binding.setCheckedTag(tag.getSelected());
+                                break;
+
+                            case TagPayloads.NAME:
+                            case TagPayloads.VISIBILITY:
+                            case TagPayloads.SYSTEM:
+                                holder.bind(tag);
+                                break;
+                        }
+                    }
                 }
-                if (SystemTagsManager.isAllNotesTag(tag)) {
-                    allNotesTag = tag;
-                }
             }
 
-            if (!hasSelectedTag && allNotesTag != null) {
-                mTagSelected = allNotesTag.setSelectedReturn(true);
-            }
-
-            isInitialized = true;
-        }
-
-        super.submitList(list);
-    }
-
-
-    @Override
-    public void onBindViewHolder(@NonNull TagsAdapter.ViewHolder holder, int position, @NonNull List<Object> payloads) {
-        if (payloads.isEmpty()) {
-            super.onBindViewHolder(holder, position, payloads);
-        } else {
-            if (payloads.contains(AppPayloads.PAYLOADS_TAG_EDIT)) {
-                holder.ItemBinding.setCheckedTag(getItem(position).getSelected());
-            }
-        }
-    }
-
-    /**
-     * Метод который возвращет позицию метки по ее названию
-     *
-     * @return - позиция метки
-     */
-    public int getTagForName(String nameTagSearch) {
-        for (int i = 0; i < getCurrentList().size(); i++)
-            if (getItem(i).getNameTag().equals(nameTagSearch)) return i;
-        return 0;
-    }
-
-
-    /**
-     * Метод який реалізує вибір тегу з логікою взаємовиключення
-     *
-     * @param position - позація метки которую выбрали
-     */
-    public void chooseTag(int position) {
-        Tag selectedTag = getItem(position);
-
-        // Якщо це тег change або addTag - не дозволяємо їх вибирати
-        if (SystemTagsManager.isAddTag(selectedTag)) {
             return;
         }
 
-        // Знімаємо вибір з усіх тегів (включаючи "Всі нотатки"), крім changelog
-        for (int i = 0; i < getCurrentList().size(); i++) {
-            Tag tag = getItem(i);
-            if (tag.getSelected() && i != position) {
-                tag.setSelectedReturn(false);
-                notifyItemChanged(i, AppPayloads.PAYLOADS_TAG_EDIT);
-            }
-        }
-
-        // Встановлюємо новий вибраний тег
-        setTagSelected(selectedTag.setSelectedReturn(true));
-        notifyItemChanged(position, AppPayloads.PAYLOADS_TAG_EDIT);
+        super.onBindViewHolder(holder, position, payloads);
     }
 
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ItemTagBinding ItemBinding;
+
+        final ItemTagBinding binding;
 
         ViewHolder(ItemTagBinding binding) {
             super(binding.getRoot());
-            ItemBinding = binding;
+            this.binding = binding;
+        }
+
+        void bind(Tag tag) {
+            binding.setTag(tag);
+            binding.setCheckedTag(tag.getSelected());
+            binding.executePendingBindings();
         }
     }
-
-
 }

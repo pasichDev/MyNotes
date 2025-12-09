@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name"> Moje notatki </string>
+    <string name="NewNote"> Utwórz notatkę </string>
+    <string name="trashNotes">Przenieś do koszyka</string>
+    <string name="trashClean"> Wyczyść kosz </string>
+    <string name="share"> Udostępnij </string>
+    <string name="yesCleanTrash"> Tak, wyczyść </string>
+    <string name="cancel"> Cofnij </string>
+    <string name="noSave"> Zamknij bez zapisywania </string>
+    <string name="ratingApp"> Oceń aplikację </string>
+    <string name="exitWhat">Aby wyjść, musisz powtórzyć czynność</string>
+
+    <string name="telegram">Otwórz kontakty programistów</string>
+    <string name="notSupportedShare">Ta zawartość nie jest obsługiwana.</string>
+    <string name="notFoundPlayMarket">Brak aplikacji Play Market</string>
+    <string name="cd_format">Formatuj notatki</string>
+
+    <string name="search">Szukaj w notatkach</string>
+    <string name="close">Zamknij</string>
+    <string name="addTag">Dodaj tag</string>
+    <string name="deleteTag">Usuń</string>
+    <string name="deleteTagAndNotes">Usuń tag i oznaczone notatki</string>
+    <string name="countTagsError">Nie można utworzyć więcej niż %1$s tagów</string>
+    <string name="allNotes">Wszystkie notatki</string>
+    <string name="more">Więcej</string>
+    <string name="noteTitle">Tytuł</string>
+    <string name="deleteSelectTag">Usuń tag</string>
+    <string name="deleteSelectTagTextMassage">Czy na pewno chcesz usunąć tag? Po usunięciu znacznik zniknie ze wszystkich zaznaczonych notatek.</string>
+    <string name="cleanTrashMessage">Czy na pewno chcesz opróżnić Kosz? Wszystkie notatki zostaną trwale usunięte.</string>
+    <string name="selectAll">Wybierz tę i kilka innych notatek</string>
+    <string name="createNewTag">Wprowadź nazwę tagu</string>
+    <string name="sort_Date_Increase">Data modyfikacji: od najnowszych</string>
+    <string name="sort_Date_Decrease">Data zmiany: najpierw stare</string>
+    <string name="sortHead">Sortuj według:</string>
+    <string name="shareApp">Udostępnij aplikację</string>
+    <string name="privacyApp">Polityka prywatności</string>
+    <string name="translateNote">Przetłumacz notatkę</string>
+    <string name="hintTextNote">Tekst</string>
+    <string name="notInstaledAppTranslate">Tłumacz Google musi być zainstalowany, aby korzystać z tej funkcji</string>
+    <string name="lastDateEditNote">Ostatnia edycja: %1$s </string>
+    <string name="restore">Przywróć</string>
+    <string name="searchNotesFromTitle">Zacznij pisać</string>
+    <string name="errorNewTagInput">Błąd: Maksymalna liczba znaków, jaką może zawierać nazwa znacznika, to %1$d </string>
+    <string name="emptyTrash">Twoje usunięte notatki są wyświetlane tutaj</string>
+    <string name="emptyNotes">Notatki, które utworzysz, pojawią się tutaj</string>
+    <string name="emptyNotesForTag">Tutaj będą wyświetlane notatki które oznaczysz tagiem "%1$s"</string>
+
+    <!-- Share Dialog -->
+    <string name="shareOptions">Opcje udostępniania</string>
+    <string name="saveToGoogleDrive">Zapisz w Google Drive</string>
+    <string name="saveAsTxt">Zapisz jako TXT</string>
+    <string name="saveAsPdf">Zapisz jako PDF</string>
+    <string name="saveAsHtml">Zapisz jako HTML</string>
+    <string name="shareViaApps">Udostępnij przez inne aplikacje</string>
+    <string name="errorSavingFile">Błąd podczas zapisywania pliku</string>
+    <string name="fileSavedSuccessfully">Plik zapisany pomyślnie</string>
+    <string name="googleDriveNotInstalled">Google Drive nie jest zainstalowany</string>
+    <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
+    <string name="copyNoteEdits">Edytuj kopię</string>
+    <string name="noteMoveTrashSnackbar">Notatka przeniesiona do kosza</string>
+    <!-- Wyczyść następną wersję -->
+    <string name="hiddeTag">Ukryj notatki</string>
+    <string name="visibleTag">Pokaż notatki</string>
+    <string name="renameTag">Zmień nazwę</string>
+
+    <string name="settings">Ustawienia</string>
+    <string name="aboutApps">Informacje o aplikacji</string>
+    <string name="trash">Kosz</string>
+    <string name="themes">Motyw</string>
+    <string name="accentColorDescription">Wybierz kolor akcentu z którego zostanie zbudowany motyw</string>
+    <string name="selectAccentColor">Wybierz kolor akcentu</string>
+    <string name="onDynamicColor">Włącz kolor dynamiczny</string>
+    <string name="onDynamicColorDescription">Dostosowuje kolory aplikacji do tapety (Android 12+)</string>
+    <string name="onScreenProtection">Włącz ochronę ekranu</string>
+    <string name="onScreenProtectionDescription">Zapobiega wykonywaniu zrzutów ekranu i nagrywaniu. Wchodzi w życie po ponownym uruchomieniu aplikacji</string>
+    <string name="themeMode">Tryb motywu</string>
+    <string name="selectThemeMode">Wybierz tryb motywu</string>
+    <string name="themeModeFollowSystem">Jak w systemie</string>
+    <string name="themeModeLight">Jasny</string>
+    <string name="themeModeDark">Ciemny</string>
+    <string name="importLocalBackup">Przywróć z Res. kopie</string>
+    <string name="exportLocalBackup">Utwórz kopię zapasową</string>
+
+    <!-- Data Export Section -->
+    <string name="dataExport">Eksport danych</string>
+    <string name="dataExportDescription">Możesz wyeksportować wszystkie swoje obecne notatki do przeglądania. Ta funkcja eksportuje tylko aktywne notatki, wykluczając notatki z kosza, bez uwzględniania tagów lub innych filtrów.</string>
+    <string name="exportAllNotes">Eksportuj wszystkie notatki</string>
+    <string name="restoreNotesTitle">Przywracanie danych</string>
+    <string name="restoreNotesMessage">Nowe notatki zostaną dodane przed istniejącymi, a duplikaty będą ignorowane!</string>
+    <string name="selectRestore">Wybierz opcję Przywróć. skopiuj</string>
+    <string name="nextRestore">Przywróć z chmury</string>
+    <string name="messageRestoreProcess"><b>Przywracanie danych</b> \nTo okno zamknie się automatycznie po zakończeniu.</string>
+
+
+    <!-- Błąd wyników tworzenia kopii zapasowej/przywracania -->
+    <string name="emptyDataToBackup">Brak danych do wykonania kopii zapasowej</string>
+    <string name="creteLocalCopyOkay">Kopia zapasowa została pomyślnie utworzona</string>
+    <string name="creteLocalCopyFail">Błąd, kopia zapasowa nie została zapisana</string>
+    <string name="restoreDataOkay">Przywracanie danych zakończone pomyślnie</string>
+    <string name="restoreDataFall">Błąd: Uszkodzona kopia zapasowa</string>
+    <string name="errorDriveSync">Błąd serwera lub niska jakość internetu</string>
+
+    <string name="sortNotes">Sortuj notatki</string>
+
+    <!-- Oferta produktowa -->
+    <string name="thanks_title">Drogi użytkowniku</string>
+    <string name="thanks_donate">Twórca projektu dziękuje za zakup. Będziemy dążyć do tego, aby stać się lepszymi i wygodniejszymi. \n <b>Z wyrazami szacunku, moje notatki!</b></string>
+
+    <!-- Support Activity -->
+    <string name="supportDeveloper">Wspieraj twórcę</string>
+    <string name="inAppPurchases">Zakupy w aplikacji</string>
+    <string name="donationMethods">Metody wsparcia</string>
+    <string name="kofiDescription">Postaw mi kawę na Ko-Fi</string>
+    <string name="ratingAppDescription">Oceń nas na 5 gwiazdek w Google Play</string>
+    <string name="contactDeveloper">Skontaktuj się z twórcą</string>
+    <string name="inAppPurchasesDescription">Wspieraj rozwój aplikacji poprzez zakupy w aplikacji</string>
+    <string name="viewDonationProducts">Zobacz opcje wsparcia</string>
+    <string name="purchaseBottomSheetDescription">Wybierz wygodny sposób wsparcia rozwoju aplikacji. Wszystkie środki idą na poprawę funkcjonalności i dodawanie nowych możliwości.</string>
+
+    <!-- Changelog Activity -->
+    <string name="changelog">Co nowego</string>
+    <string name="version_acknowledged">Rozumiem!</string>
+    <string name="whats_new_title">Nowe funkcje i ulepszenia</string>
+    <string name="whats_new_description">Odkryj najnowsze aktualizacje, nowe funkcje i ulepszenia, które sprawiają, że robienie notatek jest jeszcze lepsze. Nieustannie pracujemy nad ulepszaniem aplikacji na podstawie Twoich opinii!</string>
+    <string name="changelog_subtitle">Bądź na bieżąco ze wszystkimi zmianami i ulepszeniami w tej wersji</string>
+    <string name="leaveFeedback">Zostaw opinię</string>
+
+    <!-- Donation Products -->
+    <string name="donation_seed_title">Nasiono pomysłów</string>
+    <string name="donation_seed_description">Zasiej pierwsze nasiono przyszłych innowacji</string>
+    <string name="donation_spark_title">Iskra inspiracji</string>
+    <string name="donation_spark_description">Rozpal kreatywność i napędzaj rozwój</string>
+    <string name="donation_midnight_title">Północny notatnik</string>
+    <string name="donation_midnight_description">Wspieraj nocne sesje programowania</string>
+    <string name="donation_wave_title">Fala wsparcia</string>
+    <string name="donation_wave_description">Wyślij potężną falę zachęty</string>
+    <string name="donation_universe_title">Wszechświat inspiracji</string>
+    <string name="donation_universe_description">Odblokuj nieskończone możliwości na przyszłość</string>
+
+    <!-- Purchase Error Messages -->
+    <string name="purchase_loading">Ładowanie produktów…</string>
+    <string name="purchase_error_no_products">Brak dostępnych produktów do darowizny</string>
+
+    <!-- Developer Support -->
+    <string name="support_solo_developer_title">Wspieraj dewelopera</string>
+    <string name="support_solo_developer_description">Cześć! Jestem deweloperem pracującym nad MyNotes w wolnym czasie. Wszystkie funkcje zawsze będą darmowe, ale Twoje wsparcie pomaga mi poświęcić więcej czasu na ulepszanie tej aplikacji. Każdy wkład znaczy dla mnie cały świat! 💖</string>
+
+    <!-- Help Activity -->
+    <string name="help_title">Pomoc</string>
+    <string name="help_subtitle">Dowiedz się, jak maksymalnie wykorzystać funkcje MyNotes</string>
+    <string name="help_section_icon">Ikona sekcji</string>
+    <string name="help_feature_icon">Ikona funkcji</string>
+
+    <!-- Tags Help Section -->
+    <string name="help_tags_title">Tagi</string>
+    <string name="help_tags_func_title">Interakcja z tagami</string>
+    <string name="help_tags_func_description">W sekcji Tagi możesz tworzyć i edytować tagi. Możesz także zarządzać ich kolejnością — wystarczy przeciągnąć je, aby zmienić sortowanie. Pozwala to efektywnie organizować Twoje tagi.</string>
+    <string name="help_tags_edit_title">Edytowanie tagów</string>
+    <string name="help_tags_edit_description">Przytrzymaj tag, aby otworzyć menu kontekstowe edycji. Tutaj możesz usunąć tag, zmienić jego nazwę lub ukryć notatki z nim powiązane.</string>
+    <string name="help_tags_hide_title">Ukrywanie notatek</string>
+    <string name="help_tags_hide_description">Użyj funkcji ukrywania, aby tymczasowo usunąć oznaczone notatki z głównego widoku, zachowując dostęp do nich przez tag</string>
+    <string name="help_tags_limit_title">Limit tagów</string>
+    <string name="help_tags_limit_description">Możesz utworzyć do 25 tagów dla efektywnej organizacji swoich notatek</string>
+
+    <!-- Navigation Help Section -->
+    <string name="help_navigation_title">Nawigacja</string>
+    <string name="help_navigation_drawer_title">Menu główne</string>
+    <string name="help_navigation_drawer_description">Uzyskaj dostęp do menu głównego, dotykając ikony hamburgera w lewym górnym rogu.</string>
+    <string name="help_navigation_search_title">Wyszukiwanie</string>
+    <string name="help_navigation_search_description">Użyj paska wyszukiwania, aby szybko znaleźć swoje notatki według tytułu lub zawartości</string>
+    <string name="help_navigation_sort_title">Sortowanie</string>
+    <string name="help_navigation_sort_description">Sortuj swoje notatki według daty ostatniej modyfikacji lub nazwy w kolejności rosnącej lub malejącej</string>
+    <string name="help_navigation_format_title">Format wyświetlania</string>
+    <string name="help_navigation_format_description">Przełączaj między listą a siatką, aby wyświetlać swoje notatki w wygodnym dla siebie układzie</string>
+
+    <!-- Navigation Section - Additional -->
+    <string name="help_navigation_swipe_title">Gesty przesuwania</string>
+    <string name="help_navigation_swipe_description">Zarządzaj notatkami intuicyjnie! Przesuń w lewo, aby aktywować tryb wielokrotnego wyboru dla szybkich operacji masowych, lub w prawo, aby natychmiast usunąć notatkę i wysłać ją do kosza. Gesty są dostępne tylko w trybie jednokolumnowym.</string>
+
+    <!-- Other Section -->
+    <string name="help_other_title">Inne</string>
+    <string name="help_other_security_title">Ochrona ekranu</string>
+    <string name="help_other_security_description">Po włączeniu w ustawieniach, ta funkcja chroni twoje notatki przed nieautoryzowanym przeglądaniem: ukrywa zawartość aplikacji w przeglądzie ostatnich aplikacji, zapobiega zrzutom ekranu i blokuje nagrywanie ekranu. Ta funkcja bezpieczeństwa aktywuje się po ponownym uruchomieniu aplikacji.</string>
+    <string name="help_other_shortcuts_title">Skróty aplikacji</string>
+    <string name="help_other_shortcuts_description">Przytrzymaj ikonę aplikacji, aby szybko uzyskać dostęp do skrótów tworzenia nowej notatki lub wyszukiwania w twoich notatkach. Dostępne na Androidzie 7.1 i wyższym.</string>
+
+    <!-- Help - Notes Features Section -->
+    <string name="help_notes_title">Funkcje notatek</string>
+    <string name="help_notes_limit_title">Limit tekstu</string>
+    <string name="help_notes_limit_description">Każda notatka może zawierać do 20 000 znaków, zapewniając wystarczająco miejsca na szczegółową zawartość.</string>
+    <string name="help_notes_translate_title">Tłumaczenie</string>
+    <string name="help_notes_translate_description">Tłumacz swoje notatki bezpośrednio w aplikacji. Tłumacz Google musi być zainstalowany na twoim urządzeniu, aby korzystać z tej funkcji.</string>
+    <string name="help_notes_text_size_title">Rozmiar tekstu</string>
+    <string name="help_notes_text_size_description">Dostosuj rozmiar tekstu podczas edytowania notatek za pomocą okna dialogowego rozmiaru tekstu dostępnego bezpośrednio z ekranu edycji notatki.</string>
+    <string name="help_notes_copy_title">Edytuj kopię</string>
+    <string name="help_notes_copy_description">Utwórz edytowalną kopię dowolnej notatki, aby wprowadzić zmiany, zachowując oryginalną w nienaruszonym stanie.</string>
+
+    <string name="actual_version">Aktualne dla wersji %1$s</string>
+    <!-- Backup and Export Help -->
+    <string name="help_other_backup_export_title">Synchronizacja i eksport danych</string>
+    <string name="help_other_backup_export_description">W sekcji „Synchronizacja i kopie zapasowe” możesz eksportować wszystkie swoje notatki w różnych formatach (TXT, PDF, HTML) do podglądu i tworzenia kopii zapasowych.</string>
+
+    <!-- Share and Export Help -->
+    <string name="help_notes_share_title">Udostępnianie i eksport notatek</string>
+    <string name="help_notes_share_description">Udostępniaj jedną lub wiele notatek za pomocą innych aplikacji, zapisuj je na Dysku Google lub eksportuj jako pliki TXT, PDF czy HTML z formatowaniem.</string>
+    <string name="save_to_notes">Zapisz w Moich Notatkach</string>
+    <!-- App Shortcuts -->
+    <string name="shortcut_new_note_short">Nowa notatka</string>
+    <string name="shortcut_new_note_long">Utwórz nową notatkę</string>
+    <string name="shortcut_search_short">Szukaj</string>
+    <string name="shortcut_search_long">Szukaj w notatkach</string>
+    <string name="shortcut_disabled_message">Ta funkcja jest niedostępna</string>
+    <string name="saveStatus">Status zapisu</string>
+    <string name="saveStatusSaved">Zapisano</string>
+    <string name="saveStatusPending">Niezapisane zmiany</string>
+    <string name="saveStatusSaving">Zapisywanie…</string>
+    <string name="saveStatusError">Błąd zapisu</string>
+    <string name="help_notes_autosave_title">Autosave</string>
+    <string name="help_notes_autosave_description">Notatki są automatycznie zapisywane 2 sekundy po zakończeniu pisania. Na górnym pasku pojawia się wskaźnik: niebieska kropka — niezapisane zmiany, animowana ikona — zapisywanie w toku, zielony haczyk — zapisano pomyślnie. Nawet jeśli zamkniesz aplikację lub się zawiesi, ostatnie zmiany nie zostaną utracone.</string>
+
+
+    <string name="tags_management">Tagi</string>
+    <string name="create_tag">Naciśnij ten przycisk, aby utworzyć tag.</string>
+    <string name="tag_options">Opcje tagu</string>
+    <string name="createTag">Utwórz tag</string>
+    <string name="toastTagVisible">Notatki z tym tagiem są wyświetlane na liście ogólnej.</string>
+    <string name="toastTagHidde">Notatki z tym tagiem są ukryte na liście ogólnej.</string>
+    <string name="sort_tags_position">Własny</string>
+    <string name="sort_tags_creation_date">Według daty utworzenia</string>
+
+    <!-- Tab strings -->
+    <string name="backup_and_export">Kopia zapasowa i eksport</string>
+    <string name="import_data">Import danych</string>
+
+    <!-- Import Data Fragment -->
+    <string name="google_keep">Google Keep</string>
+    <string name="import_notes_from_google_keep">Importuj notatki z Google Keep</string>
+    <string name="google_keep_description">Wyeksportuj swoje notatki z Google Keep i zaimportuj je do tej aplikacji. Obsługiwany jest eksport przez Google Takeout.</string>
+    <string name="import_from_google_keep">Import z Google Keep</string>
+
+    <string name="other_apps">Inne aplikacje</string>
+    <string name="import_from_other_note_apps">Import z innych aplikacji do notatek</string>
+    <string name="other_apps_description">Import notatek z popularnych aplikacji do robienia notatek: OneNote, Evernote, Notion i innych.</string>
+    <string name="coming_soon">Wkrótce</string>
+
+    <string name="instructions">Instrukcje</string>
+    <string name="google_takeout_instructions">Jak wyeksportować z Google Keep</string>
+    <string name="google_takeout_description">Aby wyeksportować swoje notatki z Google Keep:\n\n1. Przejdź do Google Takeout:\nhttps://takeout.google.com\n\n2. Wybierz tylko "Keep" z listy\n\n3. Kliknij "Następny krok" i wybierz ustawienia eksportu\n\n4. Kliknij "Utwórz eksport" i poczekaj na link do pobrania\n\n5. Pobierz plik archiwum (.zip)\n\n6. Użyj przycisku "Importuj", aby wybrać pobrany plik .zip bez rozpakowywania\n\nUwaga: Zostanie zaimportowana tylko treść tekstowa. Obrazy, rysunki, dźwięki i inne pliki multimedialne nie są obecnie obsługiwane.</string>
+
+    <string name="google_keep_import_title">Importuj z Google Keep</string>
+    <string name="found_notes">Znalezione dane</string>
+    <string name="import_error">Błąd importu</string>
+    <string name="active_notes">Notatki</string>
+    <string name="trashed_notes">Kosz</string>
+    <string name="labels">Etykiety</string>
+    <string name="import_notes">Importuj dane</string>
+    <string name="empty_data_import">Brak nowych danych do importu</string>
+
+    <string name="aboutApps_subtitle">Opinie · Pomoc · Wersja</string>
+    <string name="backup">Kopia zapasowa</string>
+    <string name="device_storage">Pamięć urządzenia</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="save_backup">Zapisz kopię zapasową</string>
+    <string name="restore_backup">Przywróć kopię zapasową</string>
+    <string name="file_not_selected">Plik nie wybrano</string>
+    <string name="drive_selected_error">Błąd podczas pracy z Google Drive</string>
+    <string name="export_drive_error">Anulowano akcję lub wystąpił błąd.</string>
+    <string name="backup_descrpt">Możesz utworzyć kopię zapasową i zapisać ją lokalnie lub w Google Drive; zawiera ustawienia aplikacji, wszystkie notatki i tagi.</string>
+    <string name="your_data">Twoje dane</string>
+    <string name="interface_tab">Interfejs</string>
+    <string name="interaction_tab">Interakcja</string>
+    <string name="onExtendedEditor">Włącz rozszerzony edytor</string>
+    <string name="onExtendedEditorDescription">Rozszerzony edytor oferuje dodatkowe opcje formatowania: nagłówki, listy, cytaty, bloki kodu i inne narzędzia do tworzenia strukturalnych i atrakcyjnych wizualnie notatek.</string>
+    <string name="onExtendedEditorWarning">Jeśli przełączysz się na standardowy edytor i edytujesz notatkę utworzoną lub zmodyfikowaną w trybie rozszerzonym, część formatowania może zostać utracona.</string>
+    <string name="new_note">Nowa Notatka</string>
+    <string name="help_extended_editor_title">Rozszerzony Edytor</string>
+    <string name="help_extended_editor_descrpt">Uzyskaj większą kontrolę nad swoimi notatkami: nagłówki, listy, cytaty, bloki kodu i inne narzędzia, które będą dodawane z czasem. Można włączyć lub wyłączyć w ustawieniach.</string>
+    <string name="countMediaNote">Multimedialne: %1$d</string>
+    <string name="openWith">Otwórz za pomocą…</string>
+    <string name="saveDevice">Zapisz na urządzeniu</string>
+    <string name="savedDownloads">Zapisano w folderze Downloads</string>
+    <string name="savedFailed">Błąd zapisu</string>
+    <string name="deleteAttach">Usuń</string>
+    <string name="errorAttachFreeSize">Za mało wolnego miejsca (wymagane 500 MB)</string>
+    <string name="errorAttachLimitSize">Plik jest zbyt duży (maks. 20 MB)</string>
+    <string name="errorAttachCalculateSize">Nie można określić rozmiaru pliku</string>
+    <string name="attachment_file_unavailable">Plik jest niedostępny. Mógł zostać usunięty lub przeniesiony.\nMożesz usunąć to załącznik z notatki, aby usunąć nieprawidłowe odwołanie.</string>
+    <string name="dialog_delete_title">Usunąć plik?</string>
+    <string name="dialog_delete_message">Plik zostanie trwale usunięty.</string>
+    <string name="dialog_delete_confirm">Usuń</string>
+    <string name="dialog_delete_cancel">Anuluj</string>
+    <string name="deleteAttachmentsErrorExits">Nie można usunąć pliku. Prawdopodobnie już nie istnieje.</string>
+    <string name="deleteAttachmentsSuccess">Załączniki pomyślnie usunięte</string>
+    <string name="attachment_load_failed">Nie udało się wczytać pliku</string>
+    <string name="attachment_open_with">Otwórz za pomocą</string>
+    <string name="attachment_open_failed">Nie można otworzyć pliku</string>
+    <string name="attachment_save_failed">Nie można zapisać pliku</string>
+    <string name="onExtendedEditorAttachWarning">Jeśli notatka zawiera załączniki lub multimedia, traci kompatybilność z prostym edytorem — można ją edytować tylko w edytorze rozszerzonym.</string>
+    <string name="openImageError">Obraz jest niedostępny</string>
+    <string name="shareError">Błąd udostępniania obrazu</string>
+    <string name="mediaTab">Media</string>
+    <string name="img_opt_title">Włącz ulepszoną kompresję</string>
+    <string name="img_opt_summary">Lekka kompresja jest stosowana zawsze. Ta opcja zwiększa kompresję tylko dla nowych obrazów i nie zmienia już istniejących.</string>
+    <string name="media_usage_title">Pliki multimedialne aplikacji zajmują</string>
+    <string name="ui_text_scale_title">Rozmiar tekstu interfejsu</string>
+    <string name="ui_text_scale_description">Dostosuj rozmiar tekstu w interfejsie.</string>
+    <string name="font_size_auto">Auto</string>
+    <string name="font_size_xs">Bardzo mały</string>
+    <string name="font_size_s">Mały</string>
+    <string name="font_size_default">Domyślny</string>
+    <string name="font_size_l">Duży</string>
+    <string name="font_size_xl">Bardzo duży</string>
+    <string name="delete">Usuń</string>
+    <string name="file_wrong_format">Nieobsługiwany format. Wybierz poprawny plik kopii zapasowej.</string>
+    <string name="error_dialog_wrong_context">Błąd: nie można otworzyć tego menu tutaj</string>
+    <string name="export_warning_no_attachments">Uwaga: podczas eksportu zapisywana jest tylko treść tekstowa. Pliki, zdjęcia i inne załączniki są pomijane, aby dokument był lekki i stabilny.</string>
+    <string name="newBackupsDescrpt">Dodano obsługę nowych wersji kopii zapasowych z załącznikami i zachowano kompatybilność ze starszymi formatami.</string>
+    <string name="toolTipSimpleEditor">Prosty edytor</string>
+    <string name="toolTipExtendedEditor">Zaawansowany edytor</string>
+    <string name="duplicateTag">Duplikat</string>
+    <string name="drawerStatsNotes">Notatki</string>
+    <string name="drawerStatsLastMonth">Miesięcznie</string>
+    <string name="drawerStatsChart">Znaki</string>
+    <string name="titleTagPicker">Przegląd tagów</string>
+    <string name="helpTitleTagOverview">Przegląd tagów</string>
+    <string name="helpDescTagOverview">Aby szybko wyświetlić wszystkie tagi, przytrzymaj przycisk „Wszystkie notatki”. Pojawi się okno dialogowe z listą tagów.</string>
+    <string name="trash_info_title">Pomoc dotycząca kosza</string>
+    <string name="trash_info_message">• Aby przywrócić notatkę, dotknij ją — automatycznie włączysz tryb wielokrotnego wyboru.\n\n• Aby opróżnić kosz, naciśnij przycisk FAB. Wszystkie notatki zostaną trwale usunięte.\n\n• Kosz może działać jako archiwum — dane pozostają, dopóki nie opróżnisz go ręcznie.</string>
+    <string name="trash_info_ok">OK</string>
+
+</resources>

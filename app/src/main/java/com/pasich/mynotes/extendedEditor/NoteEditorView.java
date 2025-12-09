@@ -9,6 +9,8 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -190,9 +192,7 @@ public class NoteEditorView extends FrameLayout {
      * Loads a note into the editor.
      * If the editor is not ready yet, the note is stored temporarily.
      */
-
     public void load(Note mNote) {
-
         if (mNote == null) {
             pendingNote = null;
             return;
@@ -249,25 +249,76 @@ public class NoteEditorView extends FrameLayout {
     public void release() {
         try {
             if (webView != null) {
+
+                ViewParent parent = webView.getParent();
+                if (parent instanceof ViewGroup vg) {
+                    vg.removeView(webView);
+                }
+
                 webView.stopLoading();
                 webView.loadUrl("about:blank");
+
                 webView.clearHistory();
-                webView.clearCache(false);
+                webView.clearCache(true);
+                webView.removeAllViews();
                 webView.removeJavascriptInterface(EditorJSInterface.nameInterface);
                 webView.setWebChromeClient(null);
+                webView.setWebViewClient(null);
+
                 webView.destroy();
                 webView = null;
             }
-        } catch (Exception e) {
-            Log.e(TAG, "NoteEditorView cleanup error: " + e.getMessage());
+        } catch (Throwable t) {
+            Log.e(TAG, "Error while destroying WebView", t);
         }
 
         editorInterface = null;
 
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
-            handler = null;
         }
+    }
+
+
+    /**
+     * Soft refresh animation:
+     * - shows loader for 500ms
+     * - fades out and fades in WebView
+     * Does NOT reload HTML or reset scroll.
+     */
+    public void softRefresh() {
+        if (webView == null || loader == null) return;
+
+        // Show loader
+        loader.setAlpha(0f);
+        loader.setVisibility(View.VISIBLE);
+        loader.animate().alpha(1f).setDuration(150).start();
+
+        // Hide editor smoothly
+        webView.animate()
+                .alpha(0f)
+                .setDuration(150)
+                .withEndAction(() -> {
+
+                    handler.postDelayed(() -> {
+
+                        // Hide loader
+                        loader.animate()
+                                .alpha(0f)
+                                .setDuration(200)
+                                .withEndAction(() -> loader.setVisibility(View.GONE))
+                                .start();
+
+                        // Show editor again
+                        webView.animate()
+                                .alpha(1f)
+                                .setDuration(200)
+                                .start();
+
+                    }, 500); // loader visible ~0.5 sec
+
+                })
+                .start();
     }
 
     public void setOnFileChooserListener(OnFileChooserListener l) {

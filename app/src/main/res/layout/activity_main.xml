@@ -72,7 +72,11 @@
                         android:paddingStart="5dp"
                         android:paddingEnd="0dp"
                         android:paddingBottom="7dp"
-                        app:layout_scrollFlags="scroll|enterAlways" />
+                        android:visibility="gone"
+                        app:layout_scrollFlags="scroll|enterAlways"
+                        tools:visibility="visible"
+                        tools:listitem="@layout/item_tag"
+                        tools:itemCount="1"/>
 
                 </com.google.android.material.appbar.AppBarLayout>
 
@@ -88,13 +92,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:clipToPadding="false"
+                        android:layoutAnimation="@anim/layout_animation_fade_in"
                         android:overScrollMode="never"
                         android:paddingStart="5dp"
                         android:paddingEnd="5dp"
                         android:paddingBottom="80dp"
-                        android:layoutAnimation="@anim/layout_animation_fade_in"
                         android:visibility="@{emptyNotes ? View.GONE : View.VISIBLE,  default=visible}"
-                        tools:listitem="@layout/item_help_feature" />
+                       />
 
                     <include
                         android:id="@+id/includeEmpty"

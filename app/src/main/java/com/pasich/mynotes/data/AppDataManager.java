@@ -6,13 +6,12 @@ import android.net.Uri;
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.utils.backup.models.JsonBackup;
-import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.local.LocalBackup;
+import com.pasich.mynotes.utils.backup.models.JsonBackup;
+import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -263,6 +262,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public Single<Long> copyNote(Note original) {
+        return dbHelper.copyNote(original);
+    }
+
+    @Override
     public boolean writeBackupLocalFile(BackupCacheHelper serviceCache, Uri uriLocalFile) {
         return apiBackup.writeBackupLocalFile(serviceCache, uriLocalFile);
     }
@@ -272,4 +276,18 @@ public class AppDataManager implements DataManager {
         return apiBackup.readBackupLocalFile(uriLocalFile);
     }
 
+    @Override
+    public Flowable<Integer> getNotesCount() {
+        return dbHelper.getNotesCount();
+    }
+
+    @Override
+    public Flowable<Integer> getNotesCreatedLastMonth() {
+        return dbHelper.getNotesCreatedLastMonth();
+    }
+
+    @Override
+    public Flowable<Long> getTotalCharacters() {
+        return dbHelper.getTotalCharacters();
+    }
 }

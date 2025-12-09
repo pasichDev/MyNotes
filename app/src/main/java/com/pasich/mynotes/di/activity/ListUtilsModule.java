@@ -8,14 +8,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
-import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-import com.pasich.mynotes.databinding.ItemNoteBinding;
-import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
-import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilNote;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTag;
 
 import javax.inject.Named;
@@ -39,16 +34,10 @@ public class ListUtilsModule {
 
     @Provides
     @ActivityScoped
-    NoteAdapter<ItemNoteBinding> providerGenericAdapter(@Named("Note") DiffUtil.ItemCallback<Note> diff) {
-        return new NoteAdapter<>((DiffUtilNote) diff, R.layout.item_note, ItemNoteBinding::setNote);
+    StaggeredGridLayoutManager providesStaggeredGridLayoutManager(int spanCount) {
+        return new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
     }
 
-    @Named("Note")
-    @Provides
-    @ActivityScoped
-    DiffUtil.ItemCallback<Note> providesDiffUtilCallbackNote(DiffUtilNote diffUtil) {
-        return diffUtil;
-    }
 
     @Named("Tag")
     @Provides
@@ -57,11 +46,6 @@ public class ListUtilsModule {
         return diffUtil;
     }
 
-    @Provides
-    @ActivityScoped
-    StaggeredGridLayoutManager providesStaggeredGridLayoutManager(int spanCount) {
-        return new StaggeredGridLayoutManager(spanCount, LinearLayoutManager.VERTICAL);
-    }
 
     @Provides
     @ActivityScoped
@@ -81,6 +65,5 @@ public class ListUtilsModule {
     SpacesItemDecoration providerSpaceItemDecorationTags() {
         return new SpacesItemDecoration(8, 8);
     }
-
 
 }

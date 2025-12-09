@@ -6,92 +6,70 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Менеджер для управління системними мітками
+ * Manager for system-level tags.
+ * Contains helper methods to identify and create system tags.
  */
 public class SystemTagsManager {
 
-    // Константи для системних дій
-    public static final int SYSTEM_ACTION_ADD_TAG = 1;
-    public static final int SYSTEM_ACTION_ALL_NOTES = 2;
-    public static final int SYSTEM_ACTION_USER_TAG = 0;
+    // System tag types
+    public static final int SYSTEM_ACTION_ADD_TAG = 1;     // "Add tag" button
+    public static final int SYSTEM_ACTION_ALL_NOTES = 2;   // "All notes"
+    public static final int SYSTEM_ACTION_USER_TAG = 0;    // Regular user tag
 
 
     /**
-     * Отримати список системних міток з опціональним тегом оновлень
-     *
-     * @return Список системних міток
+     * Returns the built-in system tags.
      */
     public static List<Tag> getSystemTags() {
         List<Tag> systemTags = new ArrayList<>();
 
-        // Системна мітка "всі нотатки"
         Tag allNotesTag = new Tag();
         allNotesTag.setNameTag("allNotes");
-        allNotesTag.setVisibility(0);
         allNotesTag.setSystemAction(SYSTEM_ACTION_ALL_NOTES);
         allNotesTag.setSelected(true);
-        systemTags.add(allNotesTag);
 
+        systemTags.add(allNotesTag);
         return systemTags;
     }
 
     /**
-     * Перевірити, чи є мітка системною
-     *
-     * @param tag Мітка для перевірки
-     * @return true, якщо мітка системна
+     * Checks if a tag is system-defined.
      */
     public static boolean isSystemTag(Tag tag) {
-        return tag.getSystemAction() != SYSTEM_ACTION_USER_TAG;
+        return tag.getSystemAction() == SYSTEM_ACTION_ADD_TAG ||  tag.getSystemAction() == SYSTEM_ACTION_ALL_NOTES;
     }
 
     /**
-     * Перевірити, чи є мітка міткою для додавання нової мітки
-     *
-     * @param tag Мітка для перевірки
-     * @return true, якщо це мітка для додавання
+     * Checks if the tag represents the "Add tag" action.
      */
     public static boolean isAddTag(Tag tag) {
         return tag.getSystemAction() == SYSTEM_ACTION_ADD_TAG;
     }
 
     /**
-     * Перевірити, чи є мітка міткою "всі нотатки"
-     *
-     * @param tag Мітка для перевірки
-     * @return true, якщо це мітка "всі нотатки"
+     * Checks if the tag represents "All notes".
      */
     public static boolean isAllNotesTag(Tag tag) {
         return tag.getSystemAction() == SYSTEM_ACTION_ALL_NOTES;
     }
 
-
     /**
-     * Створити системну мітку для додавання нової мітки
-     *
-     * @return Системна мітка для додавання
+     * Creates the "Add tag" system entry.
      */
     public static Tag createAddTag() {
         Tag tag = new Tag();
-        tag.setNameTag("");
-        tag.setVisibility(0);
         tag.setSystemAction(SYSTEM_ACTION_ADD_TAG);
         return tag;
     }
 
     /**
-     * Створити системну мітку "всі нотатки"
-     *
-     * @return Системна мітка "всі нотатки"
+     * Creates the "All notes" system entry
      */
-    @Deprecated
     public static Tag createAllNotesTag() {
         Tag tag = new Tag();
         tag.setNameTag("allNotes");
-        tag.setVisibility(0);
         tag.setSystemAction(SYSTEM_ACTION_ALL_NOTES);
         tag.setSelected(true);
         return tag;
     }
-
 }

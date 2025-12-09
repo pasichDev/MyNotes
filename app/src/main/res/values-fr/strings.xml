@@ -14,7 +14,6 @@
     <string name="telegram">Ouvrir les contacts des développeurs</string>
     <string name="notSupportedShare">Ce contenu n\'est pas pris en charge.</string>
     <string name="notFoundPlayMarket">PlayMarket est manquant</string>
-    <string name="copyX">Copié</string>
     <string name="cd_format">Notes de mise en forme</string>
     <string name="search">Rechercher dans les notes </string>
     <string name="close">Fermer</string>
@@ -32,8 +31,6 @@
     <string name="createNewTag">Entrez un nom de balise</string>
     <string name="sort_Date_Increase">Date de la dernière modification: nouvelle par rapport au-dessus</string>
     <string name="sort_Date_Decrease">Date du dernier changement: ancien en haut</string>
-    <string name="sort_Title_Increase">Titre: AZ</string>
-    <string name="sort_Title_Decrease">Titre: de Z à A</string>
     <string name="sortHead">Trier par:</string>
     <string name="shareApp">Partager l\'application</string>
     <string name="privacyApp">Politique de confidentialité</string>
@@ -62,25 +59,13 @@
     <string name="copyNoteEdits">Modifier une copie d\'une note</string>
     <string name="noteMoveTrashSnackbar">Note déplacée vers la corbeille</string>
 
-    <string name="button_edit">Modifier</string>
-    <string name="button_copy">Copier</string>
-    <string name="button_phone">Appeler</string>
-    <string name="button_mail">Écrire</string>
-    <string name="button_url">Ouvrir le lien</string>
     <string name="hiddeTag">Masquer les notes</string>
     <string name="visibleTag">Afficher les notes</string>
     <string name="renameTag">Renommer</string>
-    <string name="settingsInterface">Paramètres d\'interface</string>
     <string name="settings">Paramètres</string>
     <string name="aboutApps">À propos de l\'application</string>
     <string name="trash">Corbeille</string>
     <string name="themes">Thème</string>
-    <string name="themeBlue">Bleu océan</string>
-    <string name="themeGreen">Vert émeraude</string>
-    <string name="themeSunset">Orange coucher de soleil</string>
-    <string name="themeYellow">Jaune doré</string>
-    <string name="themePurple">Violet profond</string>
-    <string name="themeCoralRed">Rouge corail</string>
     <string name="accentColorDescription">Choisissez la couleur d\'accent à partir de laquelle le thème sera construit</string>
     <string name="selectAccentColor">Sélectionner la couleur d\'accent</string>
     <string name="onDynamicColor">Activer la couleur dynamique</string>
@@ -309,8 +294,6 @@
     <string name="attachment_open_failed">Impossible d’ouvrir le fichier</string>
     <string name="attachment_save_failed">Impossible d’enregistrer le fichier</string>
     <string name="onExtendedEditorAttachWarning">Si une note contient des pièces jointes ou des médias, elle perd la compatibilité avec l’éditeur simple — elle ne peut être modifiée que dans l’éditeur avancé.</string>
-    <string name="showDetailsExtendedEditor">Plus de détails</string>
-    <string name="hiddenDetailsExtendedEditor">Masquer</string>
     <string name="openImageError">Image indisponible</string>
     <string name="shareError">Erreur lors du partage de l’image</string>
     <string name="mediaTab">Médias</string>
@@ -330,5 +313,17 @@
     <string name="error_dialog_wrong_context">Erreur : je ne peux pas ouvrir ce menu ici</string>
     <string name="export_warning_no_attachments">Veuillez noter : seul le texte est enregistré lors de l’exportation. Les fichiers, photos et autres pièces jointes sont ignorés afin d’assurer un document léger et stable.</string>
     <string name="newBackupsDescrpt">Ajout de la prise en charge des nouvelles versions de sauvegardes avec pièces jointes tout en préservant la compatibilité avec les anciens formats.</string>
+    <string name="toolTipSimpleEditor">Éditeur simple</string>
+    <string name="toolTipExtendedEditor">Éditeur avancé</string>
+    <string name="duplicateTag">Dupliquer</string>
+    <string name="drawerStatsNotes">Notes</string>
+    <string name="drawerStatsLastMonth">Par mois</string>
+    <string name="drawerStatsChart">Caractères</string>
+    <string name="titleTagPicker">Aperçu des tags</string>
+    <string name="helpTitleTagOverview">Aperçu des tags</string>
+    <string name="helpDescTagOverview">Pour parcourir rapidement tous les tags, maintenez le bouton « Toutes les notes » appuyé. Un dialogue apparaîtra avec tous les tags.</string>
+    <string name="trash_info_title">Aide de la corbeille</string>
+    <string name="trash_info_message">• Pour restaurer une note, appuyez dessus. Le mode de sélection multiple s’activera automatiquement.\n\n• Pour vider la corbeille, appuyez sur le bouton d’action (FAB). Toutes les notes seront supprimées définitivement.\n\n• Vous pouvez utiliser la corbeille comme archive — rien ne disparaît automatiquement.</string>
+    <string name="trash_info_ok">Compris</string>
 
 </resources>

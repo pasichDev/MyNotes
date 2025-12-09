@@ -8,6 +8,10 @@
         <import type="android.view.View" />
 
         <variable
+            name="activated"
+            type="boolean" />
+
+        <variable
             name="Note"
             type="com.pasich.mynotes.data.model.Note" />
     </data>
@@ -19,10 +23,13 @@
         android:orientation="vertical">
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/itemTop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="@{Note.title.isEmpty() &amp;&amp; Note.valuePreview.isEmpty() ? View.GONE : View.VISIBLE}"
-            app:cardBackgroundColor="@{Note.checked ? @color/item_bindig_note_surface_variant : @color/item_bindig_note_surface}"
+            app:bindNoteItemTop="@{Note}"
+            app:elevation="0dp"
+            android:activated="@{activated}"
+            app:cardBackgroundColorActivated="@{activated}"
             app:dynamicShapeTop="@{Note.tag.length() > 0 || Note.isAttachments()}"
             app:noteStrokeColor="@{Note}">
 
@@ -70,7 +77,6 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="0dp"
-                android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments()) ? View.VISIBLE : View.GONE}"
                 app:paddingVerticalDynamic="@{Note}">
 
                 <!-- TAG BLOCK -->

@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -32,7 +33,6 @@ import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
-import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import jakarta.inject.Inject;
@@ -62,14 +62,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     @Override
     protected Toolbar getToolbar() {
         return binding.toolbar;
-    }
-
-    @Override
-    protected Intent getCopyNoteIntent(long idNote) {
-        return new Intent(this, NoteExtendedEditorActivity.class)
-                .putExtra(NoteExtras.EXTRA_NEW_NOTE, false)
-                .putExtra(NoteExtras.EXTRA_ID_NOTE, idNote)
-                .putExtra(NoteExtras.EXTRA_TAG_NOTE, "");
     }
 
     @Override
@@ -261,7 +253,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         super.onDestroy();
         if (binding != null) {
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
-            binding.noteEditor.release();
+            ((ViewGroup) binding.noteEditor.getParent()).removeView(binding.noteEditor);
         }
 
     }
@@ -294,7 +286,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void changeTag(String nameTag, boolean change) {
         if (change) {
             notePresenter.getNote().setTag(nameTag);
-            notePresenter.setAssignedTagNote(nameTag);
         }
         if (!nameTag.isEmpty()) {
             String tagText = getString(R.string.tagHastag, nameTag);
@@ -304,13 +295,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
             binding.titleToolbarTagCollapsed.setVisibility(View.GONE);
         }
     }
-
-    @Override
-    public void openCopyNote(long idNote) {
-        super.openCopyNote(idNote);
-        finish();
-    }
-
 
     @Override
     public void onOpenFileChooser(Intent intent, int requestCode) {
@@ -323,4 +307,16 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         new Thread(() -> AttachmentCleaner.cleanup(this, note)).start();
     }
 
+    @Override
+    public void reloadExtendedEditor() {
+        binding.noteEditor.softRefresh();
+    }
+
+    @Override
+    public void onNoteCopied(long newNoteId) {
+        binding.duplicateTag.setText(
+                getString(R.string.tagHastag, getString(R.string.duplicateTag))
+        );
+        binding.duplicateTag.setVisibility(VISIBLE);
+    }
 }

@@ -1,2 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources />
+<resources>
+    <declare-styleable name="TwoSideSwitchView">
+        <attr name="leftIcon" format="reference" />
+        <attr name="rightIcon" format="reference" />
+
+        <attr name="leftActiveColor" format="color" />
+        <attr name="rightActiveColor" format="color" />
+        <attr name="inactiveColor" format="color" />
+
+        <attr name="modeEditor" format="enum">
+            <enum name="inactive" value="0"/>
+            <enum name="simple" value="1"/>
+            <enum name="extended" value="2"/>
+        </attr>
+    </declare-styleable>
+</resources>
