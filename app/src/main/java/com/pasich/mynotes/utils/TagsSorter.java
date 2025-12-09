@@ -2,6 +2,7 @@ package com.pasich.mynotes.utils;
 
 
 import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.utils.constants.settings.SortParam;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class TagsSorter {
             }
 
             if (o1.getSystemAction() == 0 && o2.getSystemAction() == 0) {
-                if ("TagsPositionSort".equals(sortParam)) {
+                if (SortParam.TagsPositionSort.equals(sortParam)) {
                     return Integer.compare(o1.getPosition(), o2.getPosition());
                 } else {
                     return Long.compare(o2.getId(), o1.getId());

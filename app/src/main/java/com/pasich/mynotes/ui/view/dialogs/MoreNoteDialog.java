@@ -35,7 +35,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import io.reactivex.Flowable;
 
 
 @AndroidEntryPoint
@@ -111,16 +110,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
     @Override
-    public void loadingTagsOfChips(Flowable<List<Tag>> tagsList) {
-        mPresenter.getCompositeDisposable().add(tagsList.subscribeOn(mPresenter.getSchedulerProvider().io()).observeOn(mPresenter.getSchedulerProvider().ui()).subscribe(this::createChipsTag));
-    }
-
-
-    @Override
     public void initInterfaces() {
         Activity activity = requireActivity();
 
-        // Якщо діалог відкрито НЕ з головної активності → очікуємо NoteActivity
+        // If the dialogue is NOT opened from the main activity → wait for NoteActivity
         if (activityNote != RootActivity.MainActivity) {
 
             if (activity instanceof MoreNoteNoteActivityView) {
@@ -130,7 +123,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             }
 
         } else {
-            // Інакше — очікуємо MainActivity
+            // Otherwise, we expect MainActivity
             if (activity instanceof MoreNoteMainActivityView) {
                 mainActivity = (MoreNoteMainActivityView) activity;
                 noteActivity = null;
@@ -138,7 +131,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             }
         }
 
-        // Якщо ми сюди дійшли — це помилковий контекст
+        // Otherwise, we expect MainActivity
         Toast.makeText(requireContext(), R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
         dismiss();
     }
@@ -222,7 +215,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         });
 
         binding.copyNote.setOnClickListener(v -> {
-            if(mNote.isAttachments()) return;
+            if (mNote.isAttachments()) return;
             if (activityNote != RootActivity.MainActivity) {
                 noteActivity.openCopyNote(mNote.getId());
             } else {
@@ -264,7 +257,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
 
-    private void createChipsTag(List<Tag> tags) {
+    @Override
+    public void createChipsTag(List<Tag> tags) {
         if (!tags.isEmpty()) {
             for (Tag tag : tags) {
 

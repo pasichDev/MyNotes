@@ -24,6 +24,7 @@
 - Resolved a large number of bugs affecting note rendering, list updates, tag behavior, and
   selection mode.
 - Fixed issues related to trash restore actions, animations, and state synchronization.
+- Fixed incorrect ordering of tags in MoreNotes Dialog (now uses unified TagsSorter logic).
 - Improved overall performance and stability to ensure a smoother and more reliable user experience.
 
 ## [2.4.41] - 01.12.2025

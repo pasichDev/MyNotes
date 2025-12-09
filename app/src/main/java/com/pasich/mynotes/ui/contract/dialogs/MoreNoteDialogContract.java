@@ -7,20 +7,17 @@ import com.pasich.mynotes.data.model.Tag;
 
 import java.util.List;
 
-import io.reactivex.Flowable;
-
 
 public interface MoreNoteDialogContract {
 
     interface view extends BaseView {
         void setSliderValue(int value);
 
-        void loadingTagsOfChips(Flowable<List<Tag>> tagsList);
-
         void initInterfaces();
 
         void callableCopyNote(long newNoteId);
 
+        void createChipsTag(List<Tag> tags);
     }
 
     interface presenter extends BasePresenter<view> {
@@ -33,5 +30,7 @@ public interface MoreNoteDialogContract {
         void editTagNote(String nameTag, int idNote);
 
         void copyNoteMainActivity(Note note);
+
+        void requestTagsOneShot();
     }
 }
