@@ -29,18 +29,49 @@ MyNotes/app/src/main/assets/editor/
 
 ## 📦 Output Files
 
-- **Production bundles:**
-    - `dist/editor-bundle.min.js`
-        - Editor.js core
-        - All integrated Editor.js tools
-        - Custom tools from `/src/tools`
-        - Editor init (`editor-init.js`)
-    - `dist/custom.js`
-        - Android runtime (`src/custom/runtime.js`)
-        - Localization logic (`src/custom/locales.js`)
-        - Glue layer for Android ↔ Editor.js
+After running the build process, the following files are generated and copied into the Android
+assets directory.
 
-These files are then copied into Android assets automatically.
+### **Bundled Production JS Files (`dist/`):**
+
+- **`editor-bundle.min.js`**  
+  Contains:
+    - Editor.js core
+    - All integrated Editor.js tools
+    - Custom tools from `/src/tools`
+
+- **`editor-init.min.js`**  
+  Contains:
+    - Initialization logic from `src/editor-init.js`
+    - Editor configuration & startup
+
+- **`runtime.min.js`**  
+  Contains:
+    - Android bridge (`src/custom/runtime.js`)
+    - Internal event handlers
+    - Communication JS ↔ Android
+
+### **Additional Files Included in the Build:**
+
+- **`attaches.min.js`** (copied directly from `/src/tools`)  
+  Customized Attaches Tool adapted for Android WebView.
+
+- **`locales.js`** (from `/src/custom/`)  
+  Localization handler for Editor.js UI.
+
+- **`editor.css`**  
+  Stylesheet for Editor UI (app theme, mobile UI tweaks).
+
+- **`editor.html`**  
+  Base HTML template loaded inside Android WebView.
+
+---
+
+All generated assets are automatically copied to:
+
+```
+MyNotes/app/src/main/assets/editor/
+```
 
 ## 🔨 Build Instructions
 
@@ -55,8 +86,8 @@ These files are then copied into Android assets automatically.
 
 4. Then they are copied to:
 
- ``` 
-MyNotes/app/src/main/assets/editor/js/
+ ```
+MyNotes/app/src/main/assets/editor/
 ```
 
 ## Libraries & Plugins Used
