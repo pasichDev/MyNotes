@@ -33,7 +33,6 @@ import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
-import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import jakarta.inject.Inject;
@@ -287,7 +286,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void changeTag(String nameTag, boolean change) {
         if (change) {
             notePresenter.getNote().setTag(nameTag);
-            notePresenter.setAssignedTagNote(nameTag);
         }
         if (!nameTag.isEmpty()) {
             String tagText = getString(R.string.tagHastag, nameTag);

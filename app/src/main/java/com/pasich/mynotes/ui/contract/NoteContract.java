@@ -51,10 +51,6 @@ public interface NoteContract {
 
         void setNote(Note mNote);
 
-        String getAssignedTagNote();
-
-        void setAssignedTagNote(String tag);
-
         boolean getNewNotesKey();
 
         void setNewNoteKey(boolean newNoteKey);

@@ -2,13 +2,10 @@ package com.pasich.mynotes.ui.view.activity.noteEditor;
 
 import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
-import static com.pasich.mynotes.utils.navigation.NoteExtras.EXTRA_ID_NOTE;
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.Editable;
 import android.text.Layout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -26,7 +23,6 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.utils.linkMovement.CustomLinkMovementMethod;
-import com.pasich.mynotes.utils.navigation.NoteExtras;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -395,7 +391,6 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     public void changeTag(String nameTag, boolean change) {
         if (change) {
             notePresenter.getNote().setTag(nameTag);
-            notePresenter.setAssignedTagNote(nameTag);
         }
         if (!nameTag.isEmpty()) {
             String tagText = getString(R.string.tagHastag, nameTag);

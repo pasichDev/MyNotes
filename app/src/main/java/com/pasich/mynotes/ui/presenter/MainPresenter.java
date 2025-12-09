@@ -236,24 +236,24 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void requestTagSelection() {
-            getCompositeDisposable().add(
-                    tagsStream
-                            .take(1)
-                            .map(tags -> {
-                                List<Tag> filtered = new ArrayList<>();
-                                for (Tag t : tags) {
-                                    if (!SystemTagsManager.isSystemTag(t)) {
-                                        filtered.add(t);
-                                    }
+        getCompositeDisposable().add(
+                tagsStream
+                        .take(1)
+                        .map(tags -> {
+                            List<Tag> filtered = new ArrayList<>();
+                            for (Tag t : tags) {
+                                if (!SystemTagsManager.isSystemTag(t)) {
+                                    filtered.add(t);
                                 }
-                                return filtered;
-                            })
-                            .observeOn(getSchedulerProvider().ui())
-                            .subscribe(
-                                    tags -> getView().allTagSelectDialog(tags),
-                                    err -> Log.e(TAG, "requestTagSelection()", err)
-                            )
-            );
+                            }
+                            return filtered;
+                        })
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                tags -> getView().allTagSelectDialog(tags),
+                                err -> Log.e(TAG, "requestTagSelection()", err)
+                        )
+        );
     }
 
 
@@ -265,17 +265,32 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     @Override
     public void newNotesClick() {
         if (!isViewAttached()) return;
+
+        String tag = "";
+        Tag current = selectedTag.getValue();
+
+        // If the non-system tag ALL_NOTES is selected → assign the tag
+        if (current != null
+                && current.getSystemAction() != SystemTagsManager.SYSTEM_ACTION_ALL_NOTES) {
+            tag = current.getNameTag();
+        }
+
+        Note newNote = new Note().create("", "", System.currentTimeMillis(), tag);
         getCompositeDisposable().add(
-                getDataManager().addNote(new Note().create("", "", System.currentTimeMillis(), ""), false)
+                getDataManager().addNote(newNote, false)
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
-                        .subscribe(id -> {
-                            lastUiEvent = UiEvent.NOTE_CREATED;
-                            new Handler(Looper.getMainLooper()).postDelayed(() -> getView().openNewNoteWithId(id), 80);
-                        }, throwable -> Log.e(TAG, "Failed to create note", throwable))
+                        .subscribe(
+                                id -> {
+                                    lastUiEvent = UiEvent.NOTE_CREATED;
+                                    new Handler(Looper.getMainLooper())
+                                            .postDelayed(() -> getView().openNewNoteWithId(id), 80);
+                                },
+                                throwable -> Log.e(TAG, "Failed to create note", throwable)
+                        )
         );
-
     }
+
 
     @Override
     public void deleteNotesArray(ArrayList<Note> notes) {

@@ -33,7 +33,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     private final Handler autoSaveHandler;
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
-    private String assignedTag = "";
+
     private long idKey;
     private boolean newNoteKey;
     private boolean extendedEditor = false;
@@ -63,14 +63,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
     public void setNote(Note mNote) {
         this.targetNote = mNote;
-    }
-
-    public String getAssignedTagNote() {
-        return assignedTag;
-    }
-
-    public void setAssignedTagNote(String tag) {
-        this.assignedTag = tag == null ? "" : tag;
     }
 
     public boolean getNewNotesKey() {
@@ -407,7 +399,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     @Override
     public void getLoadIntentData(Intent mIntent) {
         setIdKey(mIntent.getLongExtra(NoteExtras.EXTRA_ID_NOTE, 0));
-        setAssignedTagNote(mIntent.getStringExtra(NoteExtras.EXTRA_TAG_NOTE));
         setNewNoteKey(mIntent.getBooleanExtra(NoteExtras.EXTRA_NEW_NOTE, true));
     }
 

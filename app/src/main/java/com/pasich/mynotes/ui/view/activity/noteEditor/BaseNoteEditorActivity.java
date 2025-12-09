@@ -118,11 +118,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         // New note case
         if (notePresenter.getNewNotesKey()) {
-            // Optional tag
-            String tag = notePresenter.getAssignedTagNote();
-            if (tag != null && tag.length() >= 2) {
-                changeTag(tag, false);
-            }
 
             // Default title
             setNewNoteTitle();
