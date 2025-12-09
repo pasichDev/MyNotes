@@ -14,15 +14,15 @@ MyNotes/app/src/main/assets/editor/
 
 - ⚡ **Full Editor.js integration** optimized for mobile WebView
 - 🧩 **Custom tools**, including:
-    - `ImageToolClickable`
-    - Modified `attaches.min.js`
+  - `ImageToolClickable`
+  - Modified `attaches.min.js`
 - 🌍 Built-in **localization handler** (`locales.js`)
 - 🔌 **Android bridge** (`runtime.js`) that handles:
-    - Content sync
-    - Theme changes
-    - Callbacks
-    - File uploads
-    - Communication Android → JS & JS → Android
+  - Content sync
+  - Theme changes
+  - Callbacks
+  - File uploads
+  - Communication Android → JS & JS → Android
 - 🎨 Custom **editor UI styling** (`editor.css`)
 - 🛠️ Fully **offline** — no external CDN
 - 📦 Automatic **asset copying** via `copy-dist.js`
@@ -36,20 +36,20 @@ assets directory.
 
 - **`editor-bundle.min.js`**  
   Contains:
-    - Editor.js core
-    - All integrated Editor.js tools
-    - Custom tools from `/src/tools`
+  - Editor.js core
+  - All integrated Editor.js tools
+  - Custom tools from `/src/tools`
 
 - **`editor-init.min.js`**  
   Contains:
-    - Initialization logic from `src/editor-init.js`
-    - Editor configuration & startup
+  - Initialization logic from `src/editor-init.js`
+  - Editor configuration & startup
 
 - **`runtime.min.js`**  
   Contains:
-    - Android bridge (`src/custom/runtime.js`)
-    - Internal event handlers
-    - Communication JS ↔ Android
+  - Android bridge (`src/custom/runtime.js`)
+  - Internal event handlers
+  - Communication JS ↔ Android
 
 ### **Additional Files Included in the Build:**
 
