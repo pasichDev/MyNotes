@@ -18,10 +18,16 @@ public interface MoreNoteDialogContract {
         void callableCopyNote(long newNoteId);
 
         void createChipsTag(List<Tag> tags);
+
+        void close();
+
+        void onNoteLoaded(Note mNote);
     }
 
     interface presenter extends BasePresenter<view> {
-        void noteMoveToTrash(Note note);
+        void loadNote(int noteId);
+
+        void noteMoveToTrash();
 
         void editSizeText(int value);
 
@@ -29,8 +35,10 @@ public interface MoreNoteDialogContract {
 
         void editTagNote(String nameTag, int idNote);
 
-        void copyNoteMainActivity(Note note);
+        void copyNoteMainActivity();
 
         void requestTagsOneShot();
+
+        Note getNote();
     }
 }

@@ -450,7 +450,14 @@ public class MainActivity extends BaseActivity implements MainContract.view {
 
     @Override
     public void choiceNoteDialog(Note note, int position) {
-        new MoreNoteDialog(note, MoreNoteDialog.RootActivity.MainActivity, position).show(getSupportFragmentManager(), "ChoiceDialog");
+        MoreNoteDialog dialog = MoreNoteDialog.newInstance(
+                note.getId(),
+                MoreNoteDialog.RootActivity.MainActivity,
+                position
+        );
+
+        dialog.show(getSupportFragmentManager(), "ChoiceDialog");
+
     }
 
 

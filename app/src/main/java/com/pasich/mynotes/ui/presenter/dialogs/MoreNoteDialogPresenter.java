@@ -18,6 +18,7 @@ import io.reactivex.disposables.CompositeDisposable;
 
 public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContract.view> implements MoreNoteDialogContract.presenter {
     private static final String TAG = "MoreNoteDialogPresenter";
+    private Note mNote;
 
     @Inject
     public MoreNoteDialogPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
@@ -29,14 +30,43 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     public void viewIsReady() {
         getView().initInterfaces();
         requestTagsOneShot();
-        getView().initListeners();
         getView().setSliderValue(getDataManager().getSizeTextNoteActivity());
     }
 
 
     @Override
-    public void noteMoveToTrash(Note note) {
-        getCompositeDisposable().add(getDataManager().moveNoteToTrash(note.getId())
+    public Note getNote() {
+        return mNote;
+    }
+
+
+    @Override
+    public void loadNote(int noteId) {
+        if (noteId <= 0) {
+            if (isViewAttached()) getView().close();
+            return;
+        }
+
+        getCompositeDisposable().add(
+                getDataManager()
+                        .getNoteForId(noteId)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(note -> {
+                            if (note != null && isViewAttached()) {
+                                mNote = note;
+                                getView().onNoteLoaded(note);
+                            }
+                        }, error -> {
+                            Log.e(TAG, "loadNote failed", error);
+                            if (isViewAttached()) getView().close();
+                        })
+        );
+    }
+
+    @Override
+    public void noteMoveToTrash() {
+        getCompositeDisposable().add(getDataManager().moveNoteToTrash(mNote.getId())
                 .subscribeOn(getSchedulerProvider().io())
                 .observeOn(getSchedulerProvider().ui())
                 .subscribe(
@@ -74,9 +104,9 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     }
 
     @Override
-    public void copyNoteMainActivity(Note note) {
+    public void copyNoteMainActivity() {
         getCompositeDisposable().add(getDataManager()
-                .addNote(new Note().create(note.getTitle() + " (copy)", note.getValue() + " ", new Date().getTime(), note.getTag()), true)
+                .addNote(new Note().create(mNote.getTitle() + " (copy)", mNote.getValue() + " ", new Date().getTime(), mNote.getTag()), true)
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(
                         aLong -> getView().callableCopyNote(aLong),

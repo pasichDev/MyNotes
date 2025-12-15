@@ -40,13 +40,12 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDialogContract.view {
 
-    private final Note mNote;
-    private final RootActivity activityNote;
-
     @Inject
     public MoreNoteDialogPresenter mPresenter;
     @Inject
     public TextStyleTool textStylePreferences;
+    // private Note mNote;
+    private RootActivity rootActivity;
     private int positionItem;
     private DialogMoreNoteBinding binding;
     /**
@@ -55,27 +54,52 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     private MoreNoteNoteActivityView noteActivity;
     private MoreNoteMainActivityView mainActivity;
 
-    public MoreNoteDialog(Note note, RootActivity activityNote, int position) {
-        this.mNote = note;
-        this.activityNote = activityNote;
-        this.positionItem = position;
+    public MoreNoteDialog() {
+    }
+
+
+    public static MoreNoteDialog newInstance(int noteId, RootActivity root, int position) {
+        MoreNoteDialog dialog = new MoreNoteDialog();
+
+        Bundle args = new Bundle();
+        args.putInt("noteId", noteId);
+        args.putString("root", root.name());
+        args.putInt("position", position);
+
+        dialog.setArguments(args);
+        return dialog;
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Bundle args = getArguments();
+        if (args == null) {
+            dismiss();
+            return;
+        }
+
+        rootActivity = RootActivity.valueOf(args.getString("root"));
+        positionItem = args.getInt("position");
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        vibrateOpenDialog(activityNote == RootActivity.MainActivity);
+        vibrateOpenDialog(rootActivity == RootActivity.MainActivity);
         setState((BottomSheetDialog) requireDialog());
         binding = DialogMoreNoteBinding.inflate(getLayoutInflater(), container, false);
 
         mPresenter.attachView(this);
+
+        assert getArguments() != null;
+        mPresenter.loadNote(getArguments().getInt("noteId"));
         mPresenter.viewIsReady();
-        binding.setActivityNote(activityNote != RootActivity.MainActivity);
-        binding.setNote(mNote);
-        binding.setValuesText(mNote.getValue().length() > 1);
+        binding.setActivityNote(rootActivity != RootActivity.MainActivity);
+
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
-        setHideTextSize();
-        setChangeTypeEditor();
-        goneCopyNotesExtended();
+
         return binding.getRoot();
     }
 
@@ -84,27 +108,42 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         super.setState(dialog);
     }
 
+    @Override
+    public void close() {
+        dismiss();
+    }
+
+    @Override
+    public void onNoteLoaded(Note mNote) {
+        binding.setNote(mPresenter.getNote());
+        binding.setValuesText(!mPresenter.getNote().getValue().isEmpty());
+        setHideTextSize();
+        setChangeTypeEditor();
+        goneCopyNotesExtended();
+        initListeners();
+    }
+
     // Ховає зміну шрифту на новій версії редактора
     public void setHideTextSize() {
-        binding.settingsActivity.getRoot().setVisibility(activityNote == RootActivity.NoteActivity ? View.VISIBLE : View.GONE);
+        binding.settingsActivity.getRoot().setVisibility(rootActivity == RootActivity.NoteActivity ? View.VISIBLE : View.GONE);
     }
 
     public void setChangeTypeEditor() {
-        if (mNote.isAttachments()) {
+        if (mPresenter.getNote().isAttachments()) {
             binding.changeTypeEditor.setMode(TwoSideSwitchView.Mode.INACTIVE);
             binding.changeTypeEditor.setVisibility(GONE);
             return;
         }
-        binding.changeTypeEditor.setMode(activityNote == RootActivity.ExtendedActivity ? TwoSideSwitchView.Mode.EXTENDED : TwoSideSwitchView.Mode.SIMPLE);
+        binding.changeTypeEditor.setMode(rootActivity == RootActivity.ExtendedActivity ? TwoSideSwitchView.Mode.EXTENDED : TwoSideSwitchView.Mode.SIMPLE);
     }
 
     public void goneCopyNotesExtended() {
-        binding.copyNote.setVisibility(mNote.isAttachments() ? View.GONE : View.VISIBLE);
+        binding.copyNote.setVisibility(mPresenter.getNote().isAttachments() ? View.GONE : View.VISIBLE);
     }
 
     @Override
     public void setSliderValue(int value) {
-        if (activityNote == RootActivity.NoteActivity) {
+        if (rootActivity == RootActivity.NoteActivity) {
             binding.settingsActivity.textSize.setValue(value);
         }
     }
@@ -113,43 +152,44 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     public void initInterfaces() {
         Activity activity = requireActivity();
 
-        // If the dialogue is NOT opened from the main activity → wait for NoteActivity
-        if (activityNote != RootActivity.MainActivity) {
-
-            if (activity instanceof MoreNoteNoteActivityView) {
-                noteActivity = (MoreNoteNoteActivityView) activity;
-                mainActivity = null;
-                return;
-            }
-
-        } else {
-            // Otherwise, we expect MainActivity
-            if (activity instanceof MoreNoteMainActivityView) {
-                mainActivity = (MoreNoteMainActivityView) activity;
-                noteActivity = null;
-                return;
-            }
+        if (activity instanceof MoreNoteNoteActivityView) {
+            noteActivity = (MoreNoteNoteActivityView) activity;
+            mainActivity = null;
+            return;
         }
 
-        // Otherwise, we expect MainActivity
-        Toast.makeText(requireContext(), R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT).show();
+        if (activity instanceof MoreNoteMainActivityView) {
+            mainActivity = (MoreNoteMainActivityView) activity;
+            noteActivity = null;
+            return;
+        }
+
+        // якщо сюди дійшло — значить відкрили з лівого контексту
+        Toast.makeText(
+                requireContext(),
+                R.string.error_dialog_wrong_context,
+                Toast.LENGTH_SHORT
+        ).show();
+
         dismiss();
     }
 
 
     @Override
     public void callableCopyNote(long newNoteId) {
-        mainActivity.openCopyNote(Math.toIntExact(newNoteId));
+        if (mainActivity != null) {
+            mainActivity.openCopyNote(Math.toIntExact(newNoteId));
+        }
     }
 
 
     @Override
     public void initListeners() {
-        if (mNote == null) {
+        if (mPresenter.getNote() == null) {
             return;
         }
 
-        if (activityNote != RootActivity.MainActivity) {
+        if (rootActivity != RootActivity.MainActivity) {
             binding.noSave.setOnClickListener(v -> noteActivity.closeActivityNotSaved());
             binding.settingsActivity.textSize.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
                 @Override
@@ -171,20 +211,28 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                 noteActivity.changeTextStyle();
             });
 
-            binding.changeTypeEditor.setOnModeChangedListener(mode -> binding.changeTypeEditor.postDelayed(() -> {
+            binding.changeTypeEditor.setOnModeChangedListener(mode ->
+                    binding.changeTypeEditor.postDelayed(() -> {
+                        if (!isAdded() || noteActivity == null || mPresenter.getNote() == null)
+                            return;
+
                         switch (mode) {
-                            case SIMPLE, EXTENDED -> noteActivity.changeEditor(mNote.getId());
-                            case INACTIVE -> {
-                            }
+                            case SIMPLE:
+                            case EXTENDED:
+                                noteActivity.changeEditor(mPresenter.getNote().getId());
+                                break;
+                            case INACTIVE:
+                                break;
                         }
                         dismiss();
                     }, 300)
             );
 
+
         } else {
             binding.actionPanelActivate.setOnClickListener(view -> {
                 assert mainActivity != null;
-                mainActivity.actionStartNote(mNote, positionItem);
+                mainActivity.actionStartNote(mPresenter.getNote(), positionItem);
                 dismiss();
             });
         }
@@ -193,20 +241,20 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         binding.share.setVisibility(View.VISIBLE);
         binding.share.setOnClickListener(v -> {
             // Open share options dialog
-            ShareOptionsDialog shareDialog = new ShareOptionsDialog(mNote);
+            ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
             shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
             dismiss();
         });
 
         binding.translateNote.setVisibility(View.VISIBLE);
         binding.translateNote.setOnClickListener(v -> {
-            GoogleTranslateHelper.startTranslation(requireActivity(), mNote.getValue());
+            GoogleTranslateHelper.startTranslation(requireActivity(), mPresenter.getNote().getValue());
             dismiss();
         });
         binding.moveToTrash.setOnClickListener(v -> {
-            mPresenter.noteMoveToTrash(mNote);
-            if (activityNote == RootActivity.MainActivity) {
-                mainActivity.callbackDeleteNote(mNote);
+            mPresenter.noteMoveToTrash();
+            if (rootActivity == RootActivity.MainActivity) {
+                mainActivity.callbackDeleteNote(mPresenter.getNote());
                 dismiss();
             } else {
                 noteActivity.closeActivityNotSaved();
@@ -215,18 +263,18 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         });
 
         binding.copyNote.setOnClickListener(v -> {
-            if (mNote.isAttachments()) return;
-            if (activityNote != RootActivity.MainActivity) {
-                noteActivity.openCopyNote(mNote.getId());
+            if (mPresenter.getNote().isAttachments()) return;
+            if (rootActivity != RootActivity.MainActivity) {
+                noteActivity.openCopyNote(mPresenter.getNote().getId());
             } else {
-                mPresenter.copyNoteMainActivity(mNote);
+                mPresenter.copyNoteMainActivity();
             }
 
             dismiss();
         });
 
 
-        if (mNote.getValue() == null && mNote.getValue().isEmpty()) {
+        if (mPresenter.getNote().getValue().isEmpty()) {
             binding.translateNote.setVisibility(GONE);
             binding.share.setVisibility(GONE);
             binding.copyNote.setVisibility(GONE);
@@ -239,7 +287,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         super.onDismiss(dialog);
 
         mPresenter.detachView();
-        if (activityNote != RootActivity.MainActivity) {
+        if (rootActivity != RootActivity.MainActivity) {
             binding.noSave.setOnClickListener(null);
             binding.translateNote.setOnClickListener(null);
             binding.settingsActivity.textStyleItem.setOnClickListener(null);
@@ -264,7 +312,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
                 Chip newChip = (Chip) getLayoutInflater().inflate(R.layout.layout_chip_entry, binding.chipGroupSystem, false);
                 newChip.setText(getString(R.string.tagHastag, tag.getNameTag()));
-                if (mNote.getTag().equals(tag.getNameTag())) {
+                if (mPresenter.getNote().getTag().equals(tag.getNameTag())) {
                     newChip.setChecked(true);
                     binding.chipGroupSystem.addView(newChip, 0);
                 } else {
@@ -280,17 +328,19 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     }
 
+
     private void selectedTag(Tag tag, boolean checked) {
+        final int noteId = mPresenter.getNote().getId();
         if (checked) {
-            mPresenter.editTagNote(tag.getNameTag(), mNote.getId());
-            if (activityNote != RootActivity.MainActivity)
+            mPresenter.editTagNote(tag.getNameTag(), noteId);
+            if (rootActivity != RootActivity.MainActivity)
                 noteActivity.changeTag(tag.getNameTag(), true);
         } else {
-            mPresenter.removeTagNote(mNote.getId());
-            if (activityNote != RootActivity.MainActivity) noteActivity.changeTag("", true);
+            mPresenter.removeTagNote(noteId);
+            if (rootActivity != RootActivity.MainActivity) noteActivity.changeTag("", true);
         }
 
-        if (tag.getVisibility() == 1 && activityNote == RootActivity.MainActivity) {
+        if (tag.getVisibility() == 1 && rootActivity == RootActivity.MainActivity) {
             dismiss();
         }
     }
