@@ -329,5 +329,7 @@
     <string name="trash_info_title">Papierkorb-Hilfe</string>
     <string name="trash_info_message">• Um eine Notiz wiederherzustellen, tippen Sie darauf. Der Mehrfachauswahlmodus wird automatisch aktiviert.\n\n• Um den Papierkorb zu leeren, tippen Sie auf die Aktionstaste (FAB). Alle Notizen werden dauerhaft gelöscht.\n\n• Sie können den Papierkorb als Archiv verwenden — Inhalte bleiben erhalten, bis Sie ihn manuell leeren.</string>
     <string name="trash_info_ok">Verstanden</string>
+    <string name="copy_all">Alles kopieren</string>
+    <string name="copy_content">Inhalt kopieren</string>
 
 </resources>

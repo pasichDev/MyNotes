@@ -2,6 +2,9 @@
 
 ## [2.4.43] - XX.12.2025
 
+- Fixed bugs found in the previous version
+- Added a special dialogue box for copying notes in the advanced editor.
+
 ## [2.4.42] - 09.12.2025
 
 **New**

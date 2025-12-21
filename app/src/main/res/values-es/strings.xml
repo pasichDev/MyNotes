@@ -330,5 +330,7 @@
     <string name="trash_info_title">Ayuda de la papelera</string>
     <string name="trash_info_message">• Para restaurar una nota, tócalo. Entrarás automáticamente en el modo de selección múltiple.\n\n• Para vaciar la papelera, toca el botón de acción (FAB). Todas las notas se eliminarán permanentemente.\n\n• Puedes usar la papelera como archivo — los elementos permanecen hasta que los elimines manualmente.</string>
     <string name="trash_info_ok">Entendido</string>
+    <string name="copy_all">Copiar todo</string>
+    <string name="copy_content">Copiar contenido</string>
 
 </resources>

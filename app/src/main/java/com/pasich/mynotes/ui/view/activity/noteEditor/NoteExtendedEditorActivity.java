@@ -31,6 +31,7 @@ import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.models.SettingsEditorJsBridge;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
+import com.pasich.mynotes.extendedEditor.view.CopyTextDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
 
@@ -160,6 +161,13 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     @Override
     public void initListeners() {
         binding.noteEditor.setOnFileChooserListener(this);
+        binding.noteEditor.setOnContextDialogListener(() -> CopyTextDialog.show(
+                this,
+                null, // title
+                notePresenter.getNote().getValue() // plain text
+        ));
+
+
     }
 
     /**

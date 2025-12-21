@@ -371,5 +371,7 @@
     <string name="trash_info_title">Bin Help</string>
     <string name="trash_info_message">• To restore a note, tap it. You will automatically enter multi-selection mode and can restore several notes at once.\n\n• To empty the bin, tap the action button (FAB). All notes will be permanently deleted.\n\n• You can use the bin as an archive — items remain until you manually clear them.</string>
     <string name="trash_info_ok">Got it</string>
+    <string name="copy_all">Copy All</string>
+    <string name="copy_content">Copy content</string>
 
 </resources>

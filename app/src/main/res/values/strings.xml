@@ -362,6 +362,7 @@
     • You can use the trash as an archive — items do not disappear automatically and will remain there until you manually clear them.
     </string>
     <string name="trash_info_ok">Got it</string>
-
+    <string name="copy_all">Copy All</string>
+    <string name="copy_content">Copy content</string>
 </resources>
 

@@ -325,5 +325,7 @@
     <string name="trash_info_title">Aide de la corbeille</string>
     <string name="trash_info_message">• Pour restaurer une note, appuyez dessus. Le mode de sélection multiple s’activera automatiquement.\n\n• Pour vider la corbeille, appuyez sur le bouton d’action (FAB). Toutes les notes seront supprimées définitivement.\n\n• Vous pouvez utiliser la corbeille comme archive — rien ne disparaît automatiquement.</string>
     <string name="trash_info_ok">Compris</string>
+    <string name="copy_all">Tout copier</string>
+    <string name="copy_content">Copier le contenu</string>
 
 </resources>
