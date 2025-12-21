@@ -4,6 +4,7 @@
 
 - Fixed bugs found in the previous version
 - Added a special dialogue box for copying notes in the advanced editor.
+- **Advanced editor:** Added Spacer Block
 
 ## [2.4.42] - 09.12.2025
 

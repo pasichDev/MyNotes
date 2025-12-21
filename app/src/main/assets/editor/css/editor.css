@@ -259,3 +259,11 @@ body {
 .ce-popover {
   --max-height: 400px;
 }
+
+
+.ce-spacer {
+  width: 100%;
+  pointer-events: none;
+}
+
+.ce-spacer-m { height: 25px }
