@@ -224,5 +224,22 @@
 
     <style name="DialogTitle" parent="TextAppearance.Material3.TitleLarge" />
 
+    <style name="Widget.IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+
+        <item name="iconSize">20dp</item>
+        <item name="iconTint">?attr/colorOnSurface</item>
+
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:layout_marginEnd">10dp</item>
+
+        <item name="cornerRadius">10dp</item>
+        <item name="backgroundTint">?attr/colorSurfaceVariant</item>
+        <item name="rippleColor">?attr/colorOnSurfaceVariant</item>
+    </style>
 
 </resources>

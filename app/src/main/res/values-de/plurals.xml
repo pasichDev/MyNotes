@@ -4,4 +4,9 @@
         <item quantity="one">%d Notiz</item>
         <item quantity="other">%d Notizen</item>
     </plurals>
+    <plurals name="selected_count">
+        <item quantity="one">%d ausgewählt</item>
+        <item quantity="other">%d ausgewählt</item>
+    </plurals>
+
 </resources>

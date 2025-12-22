@@ -92,6 +92,17 @@ public class SelectionController {
             return;
         }
 
+        // update count ui
+        if (panel != null) {
+            int count = selectedIds.size();
+            panel.selectedCount.setText(
+                    panel.getRoot().getResources().getQuantityString(
+                            R.plurals.selected_count,
+                            count,
+                            count
+                    )
+            );
+        }
         notifyListener();
     }
 

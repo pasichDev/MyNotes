@@ -2,6 +2,15 @@
 <resources>
     <plurals name="notes_count">
         <item quantity="one">%d note</item>
+        <item quantity="many">%d notes</item>
         <item quantity="other">%d notes</item>
     </plurals>
+
+    <plurals name="selected_count">
+        <item quantity="one">%d sélectionné</item>
+        <item quantity="many">%d sélectionnés</item>
+        <item quantity="other">%d sélectionnés</item>
+    </plurals>
+
+
 </resources>

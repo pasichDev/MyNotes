@@ -6,4 +6,11 @@
         <item quantity="many">%d нотаток</item>
         <item quantity="other">%d нотаток</item>
     </plurals>
+    <plurals name="selected_count">
+        <item quantity="one">%d вибрано</item>
+        <item quantity="few">%d вибрано</item>
+        <item quantity="many">%d вибрано</item>
+        <item quantity="other">%d вибрано</item>
+    </plurals>
+
 </resources>

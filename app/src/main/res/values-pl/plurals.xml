@@ -6,4 +6,11 @@
         <item quantity="many">%d notatek</item>
         <item quantity="other">%d notatek</item>
     </plurals>
+    <plurals name="selected_count">
+        <item quantity="one">%d wybrano</item>
+        <item quantity="few">%d wybrano</item>
+        <item quantity="many">%d wybrano</item>
+        <item quantity="other">%d wybrano</item>
+    </plurals>
+
 </resources>
