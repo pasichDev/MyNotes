@@ -36,6 +36,8 @@ public interface MainContract {
         void renderDrawerStats(StatsData stats);
 
         void allTagSelectDialog(List<Tag> tagsList);
+
+        void multipleTagChangerDialog(List<Tag> tagsList);
     }
 
 
@@ -65,7 +67,9 @@ public interface MainContract {
 
         void updateSearchQuery(String query);
 
-        void requestTagSelection();
+        void requestTagSelection(boolean multiple);
+
+        void requestTagChangeMultipleNotes(String selectedTag, List<Integer> notesIds);
     }
 
 }

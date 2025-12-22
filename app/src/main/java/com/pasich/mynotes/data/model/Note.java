@@ -85,7 +85,7 @@ public class Note {
     }
 
     public String getTag() {
-        return this.tag;
+        return Objects.requireNonNullElse(this.tag, "");
     }
 
     public void setTag(String tag) {

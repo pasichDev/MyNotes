@@ -178,6 +178,11 @@ public class AppDataManager implements DataManager {
         return dbHelper.clearTrash();
     }
 
+    @Override
+    public Completable setTagForNotes(String tag, List<Integer> noteIds) {
+        return dbHelper.setTagForNotes(tag, noteIds);
+    }
+
 
     @Override
     public Completable renameTag(Tag mTag, String newName) {

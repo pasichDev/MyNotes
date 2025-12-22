@@ -330,5 +330,7 @@
     <string name="trash_info_ok">OK</string>
     <string name="copy_all">Kopiuj wszystko</string>
     <string name="copy_content">Kopiuj zawartość</string>
+    <string name="clear_tag">Brak tagu</string>
+    <string name="tag_apply_multiple_desc">Wybrany tag zostanie zastosowany do kilku notatek jednocześnie. Obecne tagi zostaną nadpisane.</string>
 
 </resources>

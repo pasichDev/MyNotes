@@ -222,7 +222,8 @@
         <item name="cornerSize">22dp</item>
     </style>
 
-    <style name="DialogTitle" parent="TextAppearance.Material3.TitleLarge" />
+    <style name="DialogTitle" parent="TextAppearance.Material3.TitleMedium" />
+
 
     <style name="Widget.IconButton" parent="Widget.Material3.Button.IconButton">
         <item name="android:layout_width">40dp</item>
@@ -240,6 +241,10 @@
         <item name="cornerRadius">10dp</item>
         <item name="backgroundTint">?attr/colorSurfaceVariant</item>
         <item name="rippleColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="IconButtonEnd" parent="Widget.IconButton">
+        <item name="android:layout_marginEnd">0dp</item>
     </style>
 
 </resources>

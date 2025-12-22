@@ -328,5 +328,7 @@
     <string name="trash_info_ok">Түсіндім</string>
     <string name="copy_all">Барлығын көшіру</string>
     <string name="copy_content">Мазмұнын көшіру</string>
+    <string name="clear_tag">Тег жоқ</string>
+    <string name="tag_apply_multiple_desc">Таңдалған тег бірнеше жазбаға бір уақытта қолданылады. Ағымдағы тегтер қайта жазылады.</string>
 
 </resources>

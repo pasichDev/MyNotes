@@ -329,5 +329,7 @@
     <string name="trash_info_ok">Зразумела</string>
     <string name="copy_all">Скапіяваць усё</string>
     <string name="copy_content">Капіраванне змесціва</string>
+    <string name="clear_tag">Без тэга</string>
+    <string name="tag_apply_multiple_desc"></string>
 
 </resources>

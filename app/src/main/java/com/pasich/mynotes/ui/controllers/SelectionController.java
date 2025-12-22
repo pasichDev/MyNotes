@@ -44,6 +44,9 @@ public class SelectionController {
         panel.actionRestore.setOnClickListener(v -> {
             if (listener != null) listener.onRestoreRequested();
         });
+        panel.actionTagChange.setOnClickListener(v -> {
+            if (listener != null) listener.onChangeTagRequested();
+        });
         panel.actionClose.setOnClickListener(v -> clearSelection());
 
     }
@@ -186,6 +189,12 @@ public class SelectionController {
         return selectedIds.contains(id);
     }
 
+
+    public HashSet<Integer> getSelectedIds() {
+        return selectedIds;
+    }
+
+
     public enum Mode {
         NORMAL,   // delete + share
         RESTORE   // restore only
@@ -210,6 +219,9 @@ public class SelectionController {
 
         }
 
+        default void onChangeTagRequested() {
+
+        }
     }
 
 }

@@ -331,5 +331,7 @@
     <string name="trash_info_ok">Verstanden</string>
     <string name="copy_all">Alles kopieren</string>
     <string name="copy_content">Inhalt kopieren</string>
+    <string name="clear_tag">Kein Tag</string>
+    <string name="tag_apply_multiple_desc">Der ausgewählte Tag wird gleichzeitig auf mehrere Notizen angewendet. Vorhandene Tags werden überschrieben.</string>
 
 </resources>

@@ -44,6 +44,9 @@ public interface NoteDao {
     @Delete
     void deleteNote(Note note);
 
+    @Query("UPDATE notes SET tag = :tag WHERE id IN (:noteIds)")
+    void setTagForNotes(String tag, List<Integer> noteIds);
+
     @Query("SELECT COUNT(tag) FROM notes WHERE tag = :nameTag AND isTrash = 0")
     int getCountNotesTag(String nameTag);
 

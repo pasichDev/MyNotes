@@ -334,5 +334,7 @@
     <string name="trash_info_ok">Понятно</string>
     <string name="copy_all">Копировать всё</string>
     <string name="copy_content">Копирование содержимого</string>
+    <string name="clear_tag">Без тега</string>
+    <string name="tag_apply_multiple_desc">Выбранный тег будет применён к нескольким заметкам одновременно. Текущие теги будут перезаписаны.</string>
 
 </resources>
