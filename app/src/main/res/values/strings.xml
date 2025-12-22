@@ -362,6 +362,12 @@
     • You can use the trash as an archive — items do not disappear automatically and will remain there until you manually clear them.
     </string>
     <string name="trash_info_ok">Got it</string>
+    <string name="copy_all">Copy All</string>
+    <string name="copy_content">Copy content</string>
+    <string name="apply">Apply</string>
+
+    <string name="clear_tag">No tag</string>
+    <string name="tag_apply_multiple_desc">The selected tag will be applied to several notes at once. Current tags will be overwritten.</string>
 
 </resources>
 

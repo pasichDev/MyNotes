@@ -43,6 +43,7 @@ import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.AllTagSelectDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
+import com.pasich.mynotes.ui.view.dialogs.main.SingleTagSelectDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTag;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTagOnClickListener;
@@ -245,6 +246,29 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         AllTagSelectDialog.show(this, tagsList, tag -> mainPresenter.onTagSelected(tag));
     }
 
+    @Override
+    public void multipleTagChangerDialog(List<Tag> tagsList) {
+        SingleTagSelectDialog.show(
+                this,
+                tagsList,
+                new SingleTagSelectDialog.Callback(){
+
+
+                    @Override
+                    public void onTagSelected(String tag) {
+                        List<Integer> ids = new ArrayList<>(selectionController.getSelectedIds());
+                        mainPresenter.requestTagChangeMultipleNotes(tag, ids);
+                        selectionController.clearSelection();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        selectionController.clearSelection();
+                    }
+                }
+        );
+    }
+
 
     @Override
     public void renderSearch(List<Note> filtered) {
@@ -287,7 +311,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
                 if (selectionController.isInSelectionMode()) return;
                 Tag tag = tagsAdapter.getCurrentList().get(position);
                 if (SystemTagsManager.isSystemTag(tag)) {
-                    mainPresenter.requestTagSelection();
+                    mainPresenter.requestTagSelection(false);
                     return;
                 }
 
@@ -323,6 +347,12 @@ public class MainActivity extends BaseActivity implements MainContract.view {
             }
 
             @Override
+            public void onChangeTagRequested() {
+                mainPresenter.requestTagSelection(true);
+
+            }
+
+            @Override
             public void onShareRequested() {
                 shareNotes();
             }
@@ -330,6 +360,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         });
 
     }
+
 
     private void shakeTagAt(int position) {
         assert mActivityBinding.listTags.getLayoutManager() != null;
@@ -450,7 +481,14 @@ public class MainActivity extends BaseActivity implements MainContract.view {
 
     @Override
     public void choiceNoteDialog(Note note, int position) {
-        new MoreNoteDialog(note, MoreNoteDialog.RootActivity.MainActivity, position).show(getSupportFragmentManager(), "ChoiceDialog");
+        MoreNoteDialog dialog = MoreNoteDialog.newInstance(
+                note.getId(),
+                MoreNoteDialog.RootActivity.MainActivity,
+                position
+        );
+
+        dialog.show(getSupportFragmentManager(), "ChoiceDialog");
+
     }
 
 

@@ -329,6 +329,10 @@
     <string name="trash_info_title">Довідка по кошику</string>
     <string name="trash_info_message">• Щоб відновити нотатку — натисніть на неї. Режим множинного вибору увімкнеться автоматично.\n\n• Щоб очистити кошик — натисніть кнопку FAB. Усі нотатки буде видалено безповоротно.\n\n• Кошик можна використовувати як архів — записи не зникають самостійно.</string>
     <string name="trash_info_ok">Зрозуміло</string>
+    <string name="copy_all">Скопіювати все</string>
+    <string name="copy_content">Копіювання вмісту</string>
+    <string name="clear_tag">Без тегу</string>
+    <string name="tag_apply_multiple_desc">Обраний тег буде застосовано до кількох нотаток одночасно. Поточні теги буде перезаписано.</string>
 
 
 </resources>

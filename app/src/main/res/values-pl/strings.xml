@@ -328,5 +328,9 @@
     <string name="trash_info_title">Pomoc dotycząca kosza</string>
     <string name="trash_info_message">• Aby przywrócić notatkę, dotknij ją — automatycznie włączysz tryb wielokrotnego wyboru.\n\n• Aby opróżnić kosz, naciśnij przycisk FAB. Wszystkie notatki zostaną trwale usunięte.\n\n• Kosz może działać jako archiwum — dane pozostają, dopóki nie opróżnisz go ręcznie.</string>
     <string name="trash_info_ok">OK</string>
+    <string name="copy_all">Kopiuj wszystko</string>
+    <string name="copy_content">Kopiuj zawartość</string>
+    <string name="clear_tag">Brak tagu</string>
+    <string name="tag_apply_multiple_desc">Wybrany tag zostanie zastosowany do kilku notatek jednocześnie. Obecne tagi zostaną nadpisane.</string>
 
 </resources>

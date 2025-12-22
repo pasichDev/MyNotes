@@ -235,7 +235,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     }
 
     @Override
-    public void requestTagSelection() {
+    public void requestTagSelection(boolean multiple) {
         getCompositeDisposable().add(
                 tagsStream
                         .take(1)
@@ -250,9 +250,30 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                         })
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
-                                tags -> getView().allTagSelectDialog(tags),
+                                tags -> {
+                                    if (getView() == null) return;
+
+                                    if (multiple) {
+                                        getView().multipleTagChangerDialog(tags);
+                                    } else {
+                                        getView().allTagSelectDialog(tags);
+                                    }
+                                },
                                 err -> Log.e(TAG, "requestTagSelection()", err)
                         )
+        );
+    }
+
+    @Override
+    public void requestTagChangeMultipleNotes(String selectedTag, List<Integer> notesIds) {
+        getCompositeDisposable().add(
+                getDataManager()
+                        .setTagForNotes(selectedTag, notesIds)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                () -> {
+                                }, throwable -> Log.e(TAG, "Error restoring notes", throwable))
         );
     }
 

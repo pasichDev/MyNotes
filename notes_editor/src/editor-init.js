@@ -8,6 +8,8 @@ import InlineCode from '@editorjs/inline-code'
 import ImageTool from '@editorjs/image'
 import ImageTunePlus from "editorjs-image-tune-plus";
 import ImageToolClickable from './tools/ImageToolClickable.js';
+import SpacerTool from './tools/spacer'
+
 window.EditorJS = EditorJS
 window.Header = Header
 window.List = List
@@ -18,6 +20,7 @@ window.InlineCode = InlineCode
 window.ImageTool = ImageTool
 window.ImageTunePlus = ImageTunePlus
 window.ImageToolClickable = ImageToolClickable
+window.SpacerTool = SpacerTool
 
 ;(function (global) {
   function initEditor (locale, i18n) {
@@ -27,12 +30,7 @@ window.ImageToolClickable = ImageToolClickable
     const titleDiv = document.getElementById('noteTitleInput')
     const AttachesTool = global.AttachesTool
 
-    class ParagraphCustom extends Paragraph {
-      onKeyDown (event) {
-        if (event.key === 'Enter') event.preventDefault()
-        else super.onKeyDown(event)
-      }
-    }
+
 
     const editor = new EditorJS({
       holder: 'editorjs',
@@ -42,12 +40,15 @@ window.ImageToolClickable = ImageToolClickable
       readOnly: false,
 
       tools: {
-        paragraph: { class: ParagraphCustom, inlineToolbar: true },
+        paragraph: { class: Paragraph, inlineToolbar: true },
         Headers: Header,
         list: List,
         delimiter: Delimiter,
         marker: Marker,
         inlineCode: InlineCode,
+          spacer: {
+              class: SpacerTool
+            },
         attaches: {
           class: AttachesTool,
           config: {

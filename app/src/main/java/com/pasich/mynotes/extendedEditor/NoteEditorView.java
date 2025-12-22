@@ -1,5 +1,6 @@
 package com.pasich.mynotes.extendedEditor;
 
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -41,11 +42,16 @@ public class NoteEditorView extends FrameLayout {
     private boolean editorIsReady = false;
     private boolean htmlLoaded = false;
     private OnFileChooserListener fileChooserListener;
+    private OnContextDialogListener onContextDialogListener;
     private ValueCallback<Uri[]> fileCallback;
 
     public NoteEditorView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context);
+    }
+
+    public void setOnContextDialogListener(OnContextDialogListener l) {
+        this.onContextDialogListener = l;
     }
 
     private void init(Context context) {
@@ -131,7 +137,18 @@ public class NoteEditorView extends FrameLayout {
 
         });
 
+        webView.setOnLongClickListener(v -> {
+            if (onContextDialogListener != null) {
+                onContextDialogListener.openContextCopy();
+            } else {
+                Log.w(TAG, "OnContextDialogListener is null");
+            }
+            return true;
+        });
+
+
     }
+
 
     public WebView getWebView() {
         return webView;
@@ -181,7 +198,6 @@ public class NoteEditorView extends FrameLayout {
         if (!editorIsReady) return;
         editorInterface.toggleReadMode();
     }
-
 
     public void deleteBlock(String blockId, String fileUrl) {
         if (!editorIsReady) return;
@@ -233,7 +249,6 @@ public class NoteEditorView extends FrameLayout {
         fileCallback = null;
     }
 
-
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -278,7 +293,6 @@ public class NoteEditorView extends FrameLayout {
             handler.removeCallbacksAndMessages(null);
         }
     }
-
 
     /**
      * Soft refresh animation:
@@ -325,6 +339,9 @@ public class NoteEditorView extends FrameLayout {
         this.fileChooserListener = l;
     }
 
+    public interface OnContextDialogListener {
+        void openContextCopy();
+    }
 
     public interface OnFileChooserListener {
         void onOpenFileChooser(Intent intent, int requestCode);

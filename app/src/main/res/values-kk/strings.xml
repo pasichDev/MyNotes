@@ -326,5 +326,9 @@
     <string name="trash_info_title">Қоқыс себеті туралы анықтама</string>
     <string name="trash_info_message">• Жазбаны қалпына келтіру үшін оны түртіңіз — көптік таңдау режимі автоматты түрде қосылады.\n\n• Қоқыс себетін тазарту үшін FAB түймесін басыңыз. Барлық жазбалар біржола өшіріледі.\n\n• Қоқыс себетін архив ретінде пайдалануға болады — деректер қолмен тазартпайынша жоғалмайды.</string>
     <string name="trash_info_ok">Түсіндім</string>
+    <string name="copy_all">Барлығын көшіру</string>
+    <string name="copy_content">Мазмұнын көшіру</string>
+    <string name="clear_tag">Тег жоқ</string>
+    <string name="tag_apply_multiple_desc">Таңдалған тег бірнеше жазбаға бір уақытта қолданылады. Ағымдағы тегтер қайта жазылады.</string>
 
 </resources>

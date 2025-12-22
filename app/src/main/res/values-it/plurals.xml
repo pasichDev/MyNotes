@@ -4,4 +4,9 @@
         <item quantity="one">%d nota</item>
         <item quantity="other">%d note</item>
     </plurals>
+    <plurals name="selected_count">
+        <item quantity="one">%d selezionato</item>
+        <item quantity="other">%d selezionati</item>
+    </plurals>
+
 </resources>

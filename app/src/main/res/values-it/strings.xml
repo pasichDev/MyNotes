@@ -327,5 +327,9 @@
     <string name="trash_info_title">Guida al cestino</string>
     <string name="trash_info_message">• Per ripristinare una nota, toccala. Entrerai automaticamente nella modalità di selezione multipla.\n\n• Per svuotare il cestino, tocca il pulsante di azione (FAB). Tutte le note verranno eliminate definitivamente.\n\n• Puoi usare il cestino come archivio: gli elementi restano finché non lo svuoti manualmente.</string>
     <string name="trash_info_ok">OK</string>
+    <string name="copy_all">Copia tutto</string>
+    <string name="copy_content">Copia contenuto</string>
+    <string name="clear_tag">Nessun tag</string>
+    <string name="tag_apply_multiple_desc">Il tag selezionato verrà applicato a più note contemporaneamente. I tag esistenti verranno sovrascritti.</string>
 
 </resources>
