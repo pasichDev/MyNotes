@@ -29,7 +29,6 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     @Override
     public void viewIsReady() {
         getView().initInterfaces();
-        requestTagsOneShot();
         getView().setSliderValue(getDataManager().getSizeTextNoteActivity());
     }
 

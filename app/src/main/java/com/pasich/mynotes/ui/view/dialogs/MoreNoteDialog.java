@@ -6,6 +6,7 @@ import static android.view.View.GONE;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -121,9 +122,11 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         setChangeTypeEditor();
         goneCopyNotesExtended();
         initListeners();
+
+        mPresenter.requestTagsOneShot();
     }
 
-    // Ховає зміну шрифту на новій версії редактора
+
     public void setHideTextSize() {
         binding.settingsActivity.getRoot().setVisibility(rootActivity == RootActivity.NoteActivity ? View.VISIBLE : View.GONE);
     }
@@ -164,7 +167,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             return;
         }
 
-        // якщо сюди дійшло — значить відкрили з лівого контексту
         Toast.makeText(
                 requireContext(),
                 R.string.error_dialog_wrong_context,
@@ -307,26 +309,34 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     @Override
     public void createChipsTag(List<Tag> tags) {
-        if (!tags.isEmpty()) {
-            for (Tag tag : tags) {
+        binding.chipGroupSystem.removeAllViews();
 
-                Chip newChip = (Chip) getLayoutInflater().inflate(R.layout.layout_chip_entry, binding.chipGroupSystem, false);
-                newChip.setText(getString(R.string.tagHastag, tag.getNameTag()));
-                if (mPresenter.getNote().getTag().equals(tag.getNameTag())) {
-                    newChip.setChecked(true);
-                    binding.chipGroupSystem.addView(newChip, 0);
-                } else {
-                    binding.chipGroupSystem.addView(newChip);
-                }
-
-                newChip.setOnCheckedChangeListener(((buttonView, isChecked) -> selectedTag(tag, isChecked)));
-            }
-        } else {
-            binding.scrollChips.setVisibility(GONE);
+        if (tags == null || tags.isEmpty()) {
+            binding.scrollChips.setVisibility(View.GONE);
+            return;
         }
 
+        binding.scrollChips.setVisibility(View.VISIBLE);
 
+        String noteTag = mPresenter.getNote().getTag(); // може бути ""
+
+        for (Tag tag : tags) {
+            Chip chip = (Chip) getLayoutInflater()
+                    .inflate(R.layout.layout_chip_entry, binding.chipGroupSystem, false);
+
+            chip.setText(getString(R.string.tagHastag, tag.getNameTag()));
+
+            boolean checked = TextUtils.equals(noteTag, tag.getNameTag());
+            chip.setChecked(checked);
+
+            chip.setOnCheckedChangeListener(
+                    (buttonView, isChecked) -> selectedTag(tag, isChecked)
+            );
+
+            binding.chipGroupSystem.addView(chip);
+        }
     }
+
 
 
     private void selectedTag(Tag tag, boolean checked) {
