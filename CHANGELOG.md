@@ -1,11 +1,12 @@
 # CHANGELOG
 
-## [2.4.43] - XX.12.2025
+## [2.4.43] - 22.12.2025
 
-- Fixed bugs found in the previous version
-- Added a special dialogue box for copying notes in the advanced editor.
-- **Advanced editor:** Added Spacer Block
-- Added the ability to set a tag for multiple notes
+- Fixed several issues reported in the previous version
+- Introduced a dedicated dialog for copying notes in the advanced editor
+- **Advanced editor:** Added a new Spacer block for better layout control
+- You can now apply a tag to multiple notes at once
+
 
 ## [2.4.42] - 09.12.2025
 
