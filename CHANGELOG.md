@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [2.4.44] - 28.01.2026
+
+- Fixed several issues reported in the previous version
+
+
 ## [2.4.43] - 22.12.2025
 
 - Fixed several issues reported in the previous version
