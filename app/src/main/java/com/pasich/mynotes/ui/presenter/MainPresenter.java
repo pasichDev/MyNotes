@@ -210,13 +210,24 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
         String q = query.toLowerCase().trim();
 
+        // Сортування: точні співпадіння заголовка зверху
+
         return notes.stream()
                 .filter(n ->
                         n.getTitle().toLowerCase().contains(q) ||
                                 n.getValue().toLowerCase().contains(q)
-                )
-                .collect(Collectors.toList());
+                ).sorted((n1, n2) -> {
+                    boolean n1Exact = n1.getTitle().equalsIgnoreCase(query);
+                    boolean n2Exact = n2.getTitle().equalsIgnoreCase(query);
+
+                    if (n1Exact && !n2Exact) return -1;
+                    if (!n1Exact && n2Exact) return 1;
+
+                    // Далі можна сортувати за датою (свіжіші зверху)
+                    return Long.compare(n2.getDate(), n1.getDate());
+                }).collect(Collectors.toList());
     }
+
 
     public void updateSearchQuery(String query) {
         searchQuery.onNext(query);
