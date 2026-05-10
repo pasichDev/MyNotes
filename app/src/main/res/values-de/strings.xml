@@ -336,6 +336,7 @@
 
     <!-- Reminders -->
     <string name="reminder_title">Erinnerung</string>
+    <string name="reminder_quick_pick">Schnellauswahl</string>
     <string name="reminder_today_evening">Heute Abend</string>
     <string name="reminder_tomorrow_morning">Morgen früh</string>
     <string name="reminder_next_week">Nächste Woche</string>

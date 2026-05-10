@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/reminderBut"
-        android:icon="@drawable/ic_bell_small"
+        android:icon="@drawable/ic_bell"
         android:title="@string/reminder_title"
         app:iconTint="?attr/colorOnBackground"
         app:showAsAction="ifRoom" />

@@ -58,6 +58,7 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
     private Note currentNote;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
+    private View selectedTimeCard;
     private TextView selectedTimeDisplay;
     private TextView repeatLabel;
     private ChipGroup repeatChips;
@@ -91,6 +92,7 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_reminder_picker, container, false);
 
+        selectedTimeCard    = view.findViewById(R.id.selectedTimeCard);
         selectedTimeDisplay = view.findViewById(R.id.selectedTimeDisplay);
         repeatLabel         = view.findViewById(R.id.repeatLabel);
         repeatChips         = view.findViewById(R.id.repeatChips);
@@ -109,7 +111,6 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
 
         view.findViewById(R.id.presetToday).setOnClickListener(v -> applyPreset(todayEvening()));
         view.findViewById(R.id.presetTomorrow).setOnClickListener(v -> applyPreset(tomorrowMorning()));
-        view.findViewById(R.id.presetNextWeek).setOnClickListener(v -> applyPreset(nextWeekMorning()));
         view.findViewById(R.id.btnChooseDate).setOnClickListener(v -> showDatePicker());
         btnSave.setOnClickListener(v -> checkPermissionsAndSave());
         view.findViewById(R.id.btnCancel).setOnClickListener(v -> dismiss());
@@ -227,17 +228,16 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         if (selectedTime == null) return;
         SimpleDateFormat fmt = new SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault());
         selectedTimeDisplay.setText(fmt.format(new Date(selectedTime)));
-        selectedTimeDisplay.setVisibility(View.VISIBLE);
+        selectedTimeCard.setVisibility(View.VISIBLE);
     }
 
     private void setRepeatChip(ReminderRepeat repeat) {
-        int chipId;
-        switch (repeat) {
-            case DAILY:   chipId = R.id.chipDaily; break;
-            case WEEKLY:  chipId = R.id.chipWeekly; break;
-            case MONTHLY: chipId = R.id.chipMonthly; break;
-            default:      chipId = R.id.chipNone; break;
-        }
+        int chipId = switch (repeat) {
+            case DAILY -> R.id.chipDaily;
+            case WEEKLY -> R.id.chipWeekly;
+            case MONTHLY -> R.id.chipMonthly;
+            default -> R.id.chipNone;
+        };
         repeatChips.check(chipId);
     }
 
@@ -296,6 +296,12 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                             tempNote.setReminderTime(time);
                             tempNote.setReminderRepeat(repeat);
                             ReminderManager.scheduleReminder(requireContext(), tempNote);
+
+                            Bundle result = new Bundle();
+                            result.putBoolean("hasReminder", true);
+                            result.putLong("reminderTime", time);
+                            getParentFragmentManager().setFragmentResult("reminderChanged", result);
+
                             dismiss();
                         }, e -> Log.e(TAG, "save failed", e))
         );
@@ -308,6 +314,11 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                         .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
                         .subscribe(() -> {
                             ReminderManager.cancelReminder(requireContext(), noteId);
+
+                            Bundle result = new Bundle();
+                            result.putBoolean("hasReminder", false);
+                            getParentFragmentManager().setFragmentResult("reminderChanged", result);
+
                             dismiss();
                         }, e -> Log.e(TAG, "delete failed", e))
         );

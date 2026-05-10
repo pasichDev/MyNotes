@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [2.5.44] - 10.05.2026
+## [2.5.45] - 10.05.2026
 
 **New**
 
@@ -9,10 +9,21 @@
   time comes, you'll receive a notification — tap it to open the note directly. Reminders support
   repeat intervals (daily, weekly, monthly) and a snooze option (10 minutes, 1 hour, or tomorrow
   morning). Reminders are restored automatically after a device reboot.
+- **Tasks:** A new dedicated screen for managing tasks and to-dos. Create tasks with titles and
+  optional descriptions, organize them into color-coded categories, reorder by dragging, and mark
+  them as complete. Completed tasks are grouped separately and can be cleared in bulk.
+- **Task reminders:** Set a date and time reminder on any active task — a notification arrives at
+  the chosen time and tapping it opens the task list directly. Only future times are selectable.
+  Reminders are restored automatically after a device reboot.
 
 **Fixes**
 
 - Fixed memory leaks that could occur during note editing and when navigating between screens.
+
+**Improvements**
+
+- Delete confirmation dialogs for tasks and categories now display a clear visual style
+  with an error-tinted icon and the item name.
 
 ## [2.4.44] - 28.01.2026
 

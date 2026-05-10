@@ -169,13 +169,30 @@
                     android:padding="@dimen/paddingItems">
 
                     <ImageView
+                        android:id="@+id/reminderMenuIcon"
                         style="@style/iconDialogList"
                         android:contentDescription="@string/reminder_menu_item"
                         android:src="@drawable/ic_bell_small" />
 
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/reminder_menu_item" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/itemTextBottomSheets"
+                            android:text="@string/reminder_menu_item" />
+
+                        <TextView
+                            android:id="@+id/reminderDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="@dimen/paddingItems"
+                            android:paddingBottom="2dp"
+                            android:textSize="12sp"
+                            android:visibility="gone" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <View

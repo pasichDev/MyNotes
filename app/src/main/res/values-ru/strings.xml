@@ -339,6 +339,7 @@
 
     <!-- Reminders -->
     <string name="reminder_title">Напоминание</string>
+    <string name="reminder_quick_pick">Быстрый выбор</string>
     <string name="reminder_today_evening">Сегодня вечером</string>
     <string name="reminder_tomorrow_morning">Завтра утром</string>
     <string name="reminder_next_week">На следующей неделе</string>

@@ -12,13 +12,41 @@
         android:paddingTop="20dp"
         android:paddingBottom="8dp">
 
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_bell_small"
+                android:tint="?attr/colorPrimary"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/reminder_title"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface" />
+
+        </LinearLayout>
+
+        <!-- Quick picks label -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/reminder_title"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:paddingBottom="16dp" />
+            android:text="@string/reminder_quick_pick"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginBottom="8dp" />
 
+        <!-- Presets: Today + Tomorrow -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,10 +58,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/reminder_today_evening"
-                android:textSize="11sp" />
+                app:cornerRadius="8dp"
+                android:text="@string/reminder_today_evening" />
 
-            <View android:layout_width="6dp" android:layout_height="0dp" />
+            <View android:layout_width="8dp" android:layout_height="0dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/presetTomorrow"
@@ -41,46 +69,80 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/reminder_tomorrow_morning"
-                android:textSize="11sp" />
+                app:cornerRadius="8dp"
+                android:text="@string/reminder_tomorrow_morning" />
 
-            <View android:layout_width="6dp" android:layout_height="0dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/presetNextWeek"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/reminder_next_week"
-                android:textSize="11sp" />
         </LinearLayout>
 
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="14dp"
+            android:background="?attr/colorOutlineVariant" />
+
+        <!-- Choose custom date -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnChooseDate"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/reminder_choose_date" />
-
-        <TextView
-            android:id="@+id/selectedTimeDisplay"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?attr/colorPrimary"
-            android:paddingVertical="8dp" />
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_event"
+            app:iconGravity="textStart"
+            app:iconSize="18dp"
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            android:text="@string/reminder_choose_date" />
 
+        <!-- Selected time display -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/selectedTimeCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="?attr/colorSecondaryContainer"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_bell_small"
+                    android:tint="?attr/colorOnSecondaryContainer"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:id="@+id/selectedTimeDisplay"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSecondaryContainer" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Repeat section -->
         <TextView
             android:id="@+id/repeatLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reminder_repeat_label"
             android:textAppearance="?attr/textAppearanceLabelLarge"
-            android:paddingTop="12dp"
-            android:paddingBottom="4dp"
+            android:textColor="?attr/colorOnSurface"
+            android:paddingTop="14dp"
+            android:paddingBottom="6dp"
             android:visibility="gone" />
 
         <com.google.android.material.chip.ChipGroup
@@ -118,39 +180,47 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reminder_repeat_monthly" />
+
         </com.google.android.material.chip.ChipGroup>
 
+        <!-- Delete reminder -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDeleteReminder"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
+            app:cornerRadius="8dp"
             android:text="@string/reminder_delete"
             android:textColor="?attr/colorError"
             android:visibility="gone" />
 
+        <!-- Bottom actions -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
             android:orientation="horizontal"
             android:layout_marginTop="12dp"
-            android:paddingBottom="8dp">
+            android:paddingBottom="4dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:cornerRadius="8dp"
                 android:text="@string/reminder_cancel" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                app:cornerRadius="8dp"
                 android:enabled="false"
                 android:text="@string/reminder_save" />
+
         </LinearLayout>
 
     </LinearLayout>

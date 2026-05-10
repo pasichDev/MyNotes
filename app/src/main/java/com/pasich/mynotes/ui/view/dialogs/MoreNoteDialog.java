@@ -5,12 +5,18 @@ import static android.view.View.GONE;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -122,9 +128,28 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         setHideTextSize();
         setChangeTypeEditor();
         goneCopyNotesExtended();
+        updateReminderMenuState(mPresenter.getNote());
         initListeners();
 
         mPresenter.requestTagsOneShot();
+    }
+
+    private void updateReminderMenuState(Note note) {
+        TypedValue tv = new TypedValue();
+        boolean hasReminder = note != null && note.hasReminder();
+        if (hasReminder) {
+            requireContext().getTheme().resolveAttribute(android.R.attr.colorPrimary, tv, true);
+            binding.reminderMenuIcon.setImageTintList(ColorStateList.valueOf(tv.data));
+            SimpleDateFormat fmt = new SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault());
+            binding.reminderDate.setText(fmt.format(new Date(note.getReminderTime())));
+            binding.reminderDate.setTextColor(tv.data);
+            binding.reminderDate.setVisibility(View.VISIBLE);
+        } else {
+            requireContext().getTheme().resolveAttribute(
+                    com.google.android.material.R.attr.colorOnSurface, tv, true);
+            binding.reminderMenuIcon.setImageTintList(ColorStateList.valueOf(tv.data));
+            binding.reminderDate.setVisibility(View.GONE);
+        }
     }
 
 
