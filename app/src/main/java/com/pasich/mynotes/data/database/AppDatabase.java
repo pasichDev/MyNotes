@@ -11,9 +11,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.pasich.mynotes.data.database.dao.NoteDao;
 import com.pasich.mynotes.data.database.dao.TagsDao;
+import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
+import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.data.model.Task;
+import com.pasich.mynotes.data.model.TaskCategory;
 import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.DatabaseConstants;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
@@ -21,7 +25,7 @@ import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import javax.inject.Singleton;
 
 @Database(version = DatabaseConstants.DB_VERSION,
-        entities = {Tag.class, Note.class},
+        entities = {Tag.class, Note.class, Task.class, TaskCategory.class},
         autoMigrations = {
                 @AutoMigration(from = 1, to = 2)
         })
@@ -95,6 +99,38 @@ public abstract class AppDatabase extends RoomDatabase {
             db.execSQL("ALTER TABLE notes ADD COLUMN reminderRepeat TEXT NOT NULL DEFAULT 'NONE'");
         }
     };
+
+    public static final Migration MIGRATION_9_10 = new Migration(9, 10) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE tasks ADD COLUMN description TEXT");
+        }
+    };
+
+    public static final Migration MIGRATION_10_11 = new Migration(10, 11) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE tasks ADD COLUMN reminderTime INTEGER DEFAULT NULL");
+        }
+    };
+
+    public static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `tasks` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`title` TEXT NOT NULL, " +
+                    "`isDone` INTEGER NOT NULL DEFAULT 0, " +
+                    "`categoryId` INTEGER NOT NULL DEFAULT 0, " +
+                    "`createdAt` INTEGER NOT NULL DEFAULT 0, " +
+                    "`position` INTEGER NOT NULL DEFAULT 0)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS `task_categories` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL, " +
+                    "`colorHex` TEXT NOT NULL DEFAULT '#6750A4', " +
+                    "`position` INTEGER NOT NULL DEFAULT 0)");
+        }
+    };
     private static Context appContext;
     /**
      * Remove old system tags
@@ -141,4 +177,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract NoteDao noteDao();
 
     public abstract Transactions transactionsNote();
+
+    public abstract TaskDao taskDao();
+
+    public abstract TaskCategoryDao taskCategoryDao();
 }

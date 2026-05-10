@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
+import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 
 import javax.inject.Inject;
 
@@ -28,6 +29,12 @@ public class BootReceiver extends BroadcastReceiver {
                 .subscribe(
                         notes -> ReminderManager.rescheduleAll(ctx, notes),
                         e -> Log.e(TAG, "rescheduleAll failed", e)
+                );
+
+        dataManager.getTasksWithReminders()
+                .subscribe(
+                        tasks -> TaskReminderManager.rescheduleAll(ctx, tasks),
+                        e -> Log.e(TAG, "rescheduleTasksAll failed", e)
                 );
     }
 }

@@ -5,10 +5,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="black">#000000</color>
 
-    <!-- Widget Colors -->
-    <color name="widget_surface">#FFFBFE</color>
-    <color name="widget_on_surface">#1C1B1F</color>
-
     <!-- Snackbar Colors-->
     <color name="successColorBackground">#068F52</color>
     <color name="successTextOnColor">#FFFFFF</color>

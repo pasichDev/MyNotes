@@ -140,21 +140,15 @@
             android:name=".ui.view.activity.SnoozeActivity"
             android:theme="@style/Theme.Translucent"
             android:exported="false" />
-
+        <activity
+            android:name=".ui.view.activity.TasksActivity"
+            android:exported="false" />
         <receiver
             android:name=".ui.receiver.ReminderReceiver"
             android:exported="false" />
-
         <receiver
-            android:name=".ui.widget.NoteWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_note_info" />
-        </receiver>
+            android:name=".ui.receiver.TaskReminderReceiver"
+            android:exported="false" />
 
         <service
             android:name=".ui.tile.NoteQuickTile"

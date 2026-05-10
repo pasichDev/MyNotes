@@ -23,6 +23,7 @@ import com.pasich.mynotes.ui.view.activity.AboutActivity;
 import com.pasich.mynotes.ui.view.activity.BackupActivity;
 import com.pasich.mynotes.ui.view.activity.SettingsActivity;
 import com.pasich.mynotes.ui.view.activity.SupportActivity;
+import com.pasich.mynotes.ui.view.activity.TasksActivity;
 import com.pasich.mynotes.ui.view.activity.TagsActivity;
 import com.pasich.mynotes.ui.view.activity.TrashActivity;
 
@@ -102,6 +103,10 @@ public class NavigationController {
 
     private void setupHeaderButtons() {
         View header = binding.navigationView.getHeaderView(0);
+
+        header.findViewById(R.id.nav_tasks).setOnClickListener(v ->
+                delay(() -> activity.startActivity(new Intent(activity, TasksActivity.class)))
+        );
 
         header.findViewById(R.id.nav_tags).setOnClickListener(v ->
                 delay(() -> activity.startActivity(new Intent(activity, TagsActivity.class)))
@@ -204,6 +209,7 @@ public class NavigationController {
 
         View header = binding.navigationView.getHeaderView(0);
         if (header != null) {
+            header.findViewById(R.id.nav_tasks).setOnClickListener(null);
             header.findViewById(R.id.nav_tags).setOnClickListener(null);
             header.findViewById(R.id.nav_trash).setOnClickListener(null);
             header.findViewById(R.id.nav_settings).setOnClickListener(null);

@@ -355,11 +355,25 @@
     <string name="reminder_menu_item">Promemoria</string>
     <string name="reminder_chip_tomorrow">Domani %1$s</string>
     <string name="reminder_past_time_error">Seleziona un orario futuro</string>
-    <string name="widget_new_note">Nuova nota</string>
-    <string name="widget_description">Crea rapidamente una nuova nota</string>
     <string name="tile_label">Nuova nota</string>
     <string name="search_filter_all">Tutte</string>
     <string name="search_hint_keep_typing">Continua a digitare…</string>
     <string name="search_empty_no_results">Nessuna nota trovata</string>
+
+    <!-- Tasks -->
+    <string name="tasks_title">Attività</string>
+    <string name="tasks_empty">Nessuna attività. Premi + per aggiungerne</string>
+    <string name="tasks_add">Nuova attività</string>
+    <string name="tasks_add_category">Aggiungi categoria</string>
+    <string name="tasks_completed_header">Completato (%1$d)</string>
+    <string name="tasks_add_hint">Titolo attività</string>
+    <string name="tasks_category_hint">Nome categoria</string>
+    <string name="tasks_delete_confirm">Eliminare il task?</string>
+    <string name="tasks_category_delete_confirm">Eliminare la categoria?</string>
+    <string name="tasks_edit">Modifica task</string>
+    <string name="tasks_description_hint">Descrizione del task</string>
+    <string name="tasks_reminder_set">Imposta promemoria</string>
+    <string name="tasks_reminder_clear">Rimuovi promemoria</string>
+    <string name="tasks_reminder_past">Seleziona un orario futuro</string>
 
 </resources>

@@ -354,11 +354,25 @@
     <string name="reminder_menu_item">Еске салу</string>
     <string name="reminder_chip_tomorrow">Ертең %1$s</string>
     <string name="reminder_past_time_error">Болашақ уақытты таңдаңыз</string>
-    <string name="widget_new_note">Жаңа жазба</string>
-    <string name="widget_description">Жаңа жазбаны жылдам жасау</string>
     <string name="tile_label">Жаңа жазба</string>
     <string name="search_filter_all">Барлығы</string>
     <string name="search_hint_keep_typing">Теруді жалғастырыңыз…</string>
     <string name="search_empty_no_results">Жазбалар табылмады</string>
+
+    <!-- Tasks -->
+    <string name="tasks_title">Тапсырмалар</string>
+    <string name="tasks_empty">Тапсырмалар жоқ. Қосу үшін + басыңыз</string>
+    <string name="tasks_add">Жаңа тапсырма</string>
+    <string name="tasks_add_category">Санат қосу</string>
+    <string name="tasks_completed_header">Орындалды (%1$d)</string>
+    <string name="tasks_add_hint">Тапсырма атауы</string>
+    <string name="tasks_category_hint">Санат атауы</string>
+    <string name="tasks_delete_confirm">Тапсырманы жою?</string>
+    <string name="tasks_category_delete_confirm">Санатты жою?</string>
+    <string name="tasks_edit">Тапсырманы өңдеу</string>
+    <string name="tasks_description_hint">Тапсырма сипаттамасы</string>
+    <string name="tasks_reminder_set">Еске салуды орнату</string>
+    <string name="tasks_reminder_clear">Еске салуды өшіру</string>
+    <string name="tasks_reminder_past">Болашақ уақытты таңдаңыз</string>
 
 </resources>
