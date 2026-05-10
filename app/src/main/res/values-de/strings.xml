@@ -57,6 +57,8 @@
     <string name="googleDriveNotInstalled">Google Drive ist nicht installiert</string>
     <string name="contentDescrChangeStyleText">Textstil ändern</string>
     <string name="copyNoteEdits">Bearbeite eine Kopie einer Notiz</string>
+    <string name="pinNote">Notiz anheften</string>
+    <string name="unpinNote">Notiz loslösen</string>
     <string name="noteMoveTrashSnackbar">Notiz in den Papierkorb verschoben</string>
     <string name="hiddeTag">Notizen ausblenden</string>
     <string name="visibleTag">Notizen anzeigen</string>

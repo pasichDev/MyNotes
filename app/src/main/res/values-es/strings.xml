@@ -60,6 +60,8 @@
     <string name="googleDriveNotInstalled">Google Drive no está instalado</string>
     <string name="contentDescrChangeStyleText">Cambiar estilo de texto</string>
     <string name="copyNoteEdits">Editar copia</string>
+    <string name="pinNote">Fijar nota</string>
+    <string name="unpinNote">Desfijar nota</string>
     <string name="noteMoveTrashSnackbar">Nota movida a la papelera</string>
 
     <string name="hiddeTag">Ocultar notas</string>

@@ -59,6 +59,8 @@
     <string name="googleDriveNotInstalled">Google Drive is not installed</string>
     <string name="contentDescrChangeStyleText">Change text style</string>
     <string name="copyNoteEdits">Edit copy</string>
+    <string name="pinNote">Pin note</string>
+    <string name="unpinNote">Unpin note</string>
     <string name="noteMoveTrashSnackbar">Note moved to bin</string>
 
     <!-- Non-translated -->
