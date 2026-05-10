@@ -59,4 +59,6 @@ public interface DbNotesHelper {
 
     Completable updateNoteReminder(int noteId, long reminderTime, String repeat);
 
+    Completable setPinNote(int noteId, boolean pinned);
+
 }

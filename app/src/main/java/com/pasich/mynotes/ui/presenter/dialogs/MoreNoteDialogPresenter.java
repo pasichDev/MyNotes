@@ -115,6 +115,18 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     }
 
     @Override
+    public void togglePinNote() {
+        if (mNote == null) return;
+        boolean newPin = !mNote.isPinned();
+        mNote.setPinned(newPin);
+        getCompositeDisposable().add(
+                getDataManager().setPinNote(mNote.getId(), newPin)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .subscribe(() -> {}, throwable -> Log.e(TAG, "togglePinNote failed", throwable))
+        );
+    }
+
+    @Override
     public void requestTagsOneShot() {
         getCompositeDisposable().add(
                 getDataManager()

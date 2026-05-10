@@ -334,6 +334,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public Completable setPinNote(int noteId, boolean pinned) {
+        return dbHelper.setPinNote(noteId, pinned);
+    }
+
+    @Override
     public Flowable<List<Task>> getActiveTasks() {
         return dbHelper.getActiveTasks();
     }

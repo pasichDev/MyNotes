@@ -177,13 +177,14 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         // Copy before sort
         List<Note> sorted = new ArrayList<>(filtered);
 
-        // Sort
+        // Sort — pinned always first, then by date
         boolean sortByNew = SortParam.DataSort.equals(sort);
-        sorted.sort((a, b) ->
-                sortByNew
-                        ? Long.compare(b.getDate(), a.getDate())   // newest first
-                        : Long.compare(a.getDate(), b.getDate())   // oldest first
-        );
+        sorted.sort((a, b) -> {
+            if (a.isPinned() != b.isPinned()) return a.isPinned() ? -1 : 1;
+            return sortByNew
+                    ? Long.compare(b.getDate(), a.getDate())
+                    : Long.compare(a.getDate(), b.getDate());
+        });
 
 
         return new MainViewState(tags, sorted, selectedTag, lastUiEvent);

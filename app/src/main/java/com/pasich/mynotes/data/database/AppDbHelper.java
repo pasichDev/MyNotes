@@ -263,6 +263,13 @@ public class AppDbHelper implements DbHelper {
         ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
+    @Override
+    public Completable setPinNote(int noteId, boolean pinned) {
+        return Completable.fromAction(() ->
+                appDatabase.noteDao().setPinNoteSync(noteId, pinned)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
     // ---- DbTasksHelper ----
 
     @Override

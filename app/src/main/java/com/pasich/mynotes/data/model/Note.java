@@ -47,6 +47,10 @@ public class Note {
     @androidx.room.ColumnInfo(name = "reminderTime")
     private Long reminderTime;
 
+    @SerializedName("l")
+    @androidx.room.ColumnInfo(name = "isPinned")
+    private boolean isPinned = false;
+
     @SerializedName("k")
     @androidx.annotation.NonNull
     @androidx.room.ColumnInfo(name = "reminderRepeat")
@@ -186,6 +190,14 @@ public class Note {
         return reminderTime != null && reminderTime > System.currentTimeMillis();
     }
 
+    public boolean isPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        isPinned = pinned;
+    }
+
 
     public void copyFrom(Note other) {
         if (other == null) return;
@@ -194,10 +206,10 @@ public class Note {
         this.date = other.date;
         this.tag = other.tag;
         this.valueJson = other.valueJson;
-        this.hasRichContent = other.hasRichContent;
         this.attachments = other.attachments;
         this.reminderTime = other.reminderTime;
         this.reminderRepeat = other.reminderRepeat;
+        this.isPinned = other.isPinned;
     }
 
     public Note duplicate() {

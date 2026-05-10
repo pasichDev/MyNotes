@@ -213,13 +213,14 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         }
 
         if (item.getItemId() == R.id.moreBut) {
-            MoreNoteDialog dialog = MoreNoteDialog.newInstance(
-                    notePresenter.getNote().getId(),
-                    isExtendedEditor() ? MoreNoteDialog.RootActivity.ExtendedActivity : MoreNoteDialog.RootActivity.NoteActivity,
-                    0
-            );
-
-            dialog.show(getSupportFragmentManager(), "MoreNote");
+            if (notePresenter.hasNote()) {
+                MoreNoteDialog dialog = MoreNoteDialog.newInstance(
+                        notePresenter.getNote().getId(),
+                        isExtendedEditor() ? MoreNoteDialog.RootActivity.ExtendedActivity : MoreNoteDialog.RootActivity.NoteActivity,
+                        0
+                );
+                dialog.show(getSupportFragmentManager(), "MoreNote");
+            }
         }
 
         return super.onOptionsItemSelected(item);

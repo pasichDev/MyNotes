@@ -277,6 +277,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
             protected void changeText(Editable s) {
                 if (!notePresenter.hasNote()) return;
                 String newValue = s.toString();
+                updateWordCount(newValue);
                 if (!newValue.equals(notePresenter.getNote().getValue())) {
                     notePresenter.simpleNoteChange(null, newValue, false);
                 }
@@ -372,9 +373,21 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         String tag = note.getTag();
         changeTag(tag != null ? tag : "", false);
 
+        updateWordCount(value);
+
         if (notePresenter.getNewNotesKey()) {
             activatedActivity();
         }
+    }
+
+    private void updateWordCount(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            binding.wordCountCenter.setVisibility(View.GONE);
+            return;
+        }
+        int count = text.trim().split("\\s+").length;
+        binding.wordCountCenter.setText(getString(R.string.wordCount, count));
+        binding.wordCountCenter.setVisibility(View.VISIBLE);
     }
 
     @Override

@@ -225,6 +225,31 @@
                     android:layout_height="1dp" />
 
                 <LinearLayout
+                    android:id="@+id/pinNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_middle"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        android:id="@+id/pinNoteIcon"
+                        style="@style/iconDialogList"
+                        android:contentDescription="@string/pinNote"
+                        android:src="@drawable/ic_pin" />
+
+                    <TextView
+                        android:id="@+id/pinNoteText"
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/pinNote" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp" />
+
+                <LinearLayout
                     android:id="@+id/moveToTrash"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

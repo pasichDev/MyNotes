@@ -29,6 +29,7 @@ public class NoteDiff extends DiffUtil.ItemCallback<Note> {
                 oldItem.getValue().equals(newItem.getValue()) &&
                 oldItem.getTag().equals(newItem.getTag()) &&
                 oldItem.getDate() == newItem.getDate() &&
+                oldItem.isPinned() == newItem.isPinned() &&
                 Objects.equals(oldItem.getReminderTime(), newItem.getReminderTime());
     }
 }

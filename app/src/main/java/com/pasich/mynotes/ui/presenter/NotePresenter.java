@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.SerialDisposable;
 import io.reactivex.subjects.PublishSubject;
 
 
@@ -31,6 +32,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
 
 
     private final PublishSubject<Boolean> autoSaveTrigger = PublishSubject.create();
+    private final SerialDisposable idleTimer = new SerialDisposable();
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
 
@@ -50,6 +52,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     @Override
     public void attachView(NoteContract.view v) {
         super.attachView(v);
+        getCompositeDisposable().add(idleTimer);
         getCompositeDisposable().add(
             autoSaveTrigger
                 .debounce(AutoSave.AUTO_SAVE_DELAY, TimeUnit.MILLISECONDS, getSchedulerProvider().computation())
@@ -134,7 +137,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
                     if (!isViewDead()) {
                         getView().runAttachmentsCleanup(targetNote);
                     }
-                    getCompositeDisposable().add(
+                    idleTimer.set(
                         io.reactivex.Observable.timer(3, TimeUnit.SECONDS, getSchedulerProvider().computation())
                             .observeOn(getSchedulerProvider().ui())
                             .subscribe(ignored -> updateSaveState(SaveState.IDLE))
@@ -144,7 +147,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
                 @Override
                 public void onError(Throwable error) {
                     updateSaveState(SaveState.ERROR);
-                    getCompositeDisposable().add(
+                    idleTimer.set(
                         io.reactivex.Observable.timer(5, TimeUnit.SECONDS, getSchedulerProvider().computation())
                             .observeOn(getSchedulerProvider().ui())
                             .subscribe(ignored -> updateSaveState(SaveState.PENDING))

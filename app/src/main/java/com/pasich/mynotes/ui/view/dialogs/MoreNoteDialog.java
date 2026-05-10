@@ -5,10 +5,8 @@ import static android.view.View.GONE;
 
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,25 +127,24 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         setChangeTypeEditor();
         goneCopyNotesExtended();
         updateReminderMenuState(mPresenter.getNote());
+        updatePinState(mPresenter.getNote());
         initListeners();
 
         mPresenter.requestTagsOneShot();
     }
 
+    private void updatePinState(Note note) {
+        if (note == null) return;
+        binding.pinNoteText.setText(note.isPinned() ? getString(R.string.unpinNote) : getString(R.string.pinNote));
+    }
+
     private void updateReminderMenuState(Note note) {
-        TypedValue tv = new TypedValue();
         boolean hasReminder = note != null && note.hasReminder();
         if (hasReminder) {
-            requireContext().getTheme().resolveAttribute(android.R.attr.colorPrimary, tv, true);
-            binding.reminderMenuIcon.setImageTintList(ColorStateList.valueOf(tv.data));
             SimpleDateFormat fmt = new SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault());
             binding.reminderDate.setText(fmt.format(new Date(note.getReminderTime())));
-            binding.reminderDate.setTextColor(tv.data);
             binding.reminderDate.setVisibility(View.VISIBLE);
         } else {
-            requireContext().getTheme().resolveAttribute(
-                    com.google.android.material.R.attr.colorOnSurface, tv, true);
-            binding.reminderMenuIcon.setImageTintList(ColorStateList.valueOf(tv.data));
             binding.reminderDate.setVisibility(View.GONE);
         }
     }
@@ -286,6 +283,11 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             dismiss();
         });
 
+        binding.pinNote.setOnClickListener(v -> {
+            mPresenter.togglePinNote();
+            dismiss();
+        });
+
         binding.moveToTrash.setOnClickListener(v -> {
             mPresenter.noteMoveToTrash();
             if (rootActivity == RootActivity.MainActivity) {
@@ -335,6 +337,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
 
         binding.setReminder.setOnClickListener(null);
+        binding.pinNote.setOnClickListener(null);
         binding.moveToTrash.setOnClickListener(null);
         binding.copyNote.setOnClickListener(null);
         binding.share.setOnClickListener(null);
