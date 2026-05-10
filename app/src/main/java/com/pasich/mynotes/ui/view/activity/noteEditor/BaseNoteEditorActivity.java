@@ -4,10 +4,12 @@ import static com.pasich.mynotes.utils.navigation.NoteExtras.EXTRA_ID_NOTE;
 import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +32,7 @@ import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
+import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.transition.CopyNoteAnimationUtil;
@@ -45,6 +48,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     // Menu for the save status indicator
     protected MenuItem saveStatusMenuItem;
+    private MenuItem reminderMenuItem;
     protected T binding;
     protected long idNote;
 
@@ -98,6 +102,13 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         onAfterPresenterReady();
 
+        getSupportFragmentManager().setFragmentResultListener("reminderChanged", this, (key, result) -> {
+            if (notePresenter == null || !notePresenter.hasNote()) return;
+            boolean hasReminder = result.getBoolean("hasReminder", false);
+            notePresenter.getNote().setReminderTime(hasReminder ? result.getLong("reminderTime") : null);
+            updateReminderIcon(notePresenter.getNote());
+        });
+
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -141,7 +152,27 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(getMenuResId(), menu);
         saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
+        reminderMenuItem = menu.findItem(R.id.reminderBut);
         return true;
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && notePresenter != null && notePresenter.hasNote()) {
+            updateReminderIcon(notePresenter.getNote());
+        }
+    }
+
+    protected void updateReminderIcon(Note note) {
+        if (reminderMenuItem == null || note == null) return;
+        boolean hasReminder = note.hasReminder();
+        TypedValue tv = new TypedValue();
+        getTheme().resolveAttribute(
+                hasReminder ? android.R.attr.colorPrimary
+                            : com.google.android.material.R.attr.colorOnBackground,
+                tv, true);
+        reminderMenuItem.setIconTintList(ColorStateList.valueOf(tv.data));
     }
 
     protected void settingsStatusBar(Window window) {
@@ -174,14 +205,22 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         }
 
-        if (item.getItemId() == R.id.moreBut) {
-            MoreNoteDialog dialog = MoreNoteDialog.newInstance(
-                    notePresenter.getNote().getId(),
-                    isExtendedEditor() ? MoreNoteDialog.RootActivity.ExtendedActivity : MoreNoteDialog.RootActivity.NoteActivity,
-                    0
-            );
+        if (item.getItemId() == R.id.reminderBut) {
+            if (notePresenter.hasNote()) {
+                ReminderPickerBottomSheet.newInstance(notePresenter.getNote().getId())
+                        .show(getSupportFragmentManager(), "ReminderPicker");
+            }
+        }
 
-            dialog.show(getSupportFragmentManager(), "MoreNote");
+        if (item.getItemId() == R.id.moreBut) {
+            if (notePresenter.hasNote()) {
+                MoreNoteDialog dialog = MoreNoteDialog.newInstance(
+                        notePresenter.getNote().getId(),
+                        isExtendedEditor() ? MoreNoteDialog.RootActivity.ExtendedActivity : MoreNoteDialog.RootActivity.NoteActivity,
+                        0
+                );
+                dialog.show(getSupportFragmentManager(), "MoreNote");
+            }
         }
 
         return super.onOptionsItemSelected(item);

@@ -5,6 +5,8 @@ import android.content.Context;
 
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.data.model.Task;
+import com.pasich.mynotes.data.model.TaskCategory;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 
@@ -238,5 +240,116 @@ public class AppDbHelper implements DbHelper {
     @Override
     public Flowable<Long> getTotalCharacters() {
         return appDatabase.noteDao().getTotalCharacters().map(v -> v == null ? 0 : v);
+    }
+
+    @Override
+    public Single<List<Note>> getNotesWithActiveReminders() {
+        return Single.fromCallable(() ->
+                appDatabase.noteDao().getNotesWithActiveRemindersSync(System.currentTimeMillis())
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    @Override
+    public Completable clearReminder(int noteId) {
+        return Completable.fromAction(() ->
+                appDatabase.noteDao().clearReminderSync(noteId)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    @Override
+    public Completable updateNoteReminder(int noteId, long reminderTime, String repeat) {
+        return Completable.fromAction(() ->
+                appDatabase.noteDao().updateReminderSync(noteId, reminderTime, repeat)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    @Override
+    public Completable setPinNote(int noteId, boolean pinned) {
+        return Completable.fromAction(() ->
+                appDatabase.noteDao().setPinNoteSync(noteId, pinned)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    // ---- DbTasksHelper ----
+
+    @Override
+    public Flowable<List<Task>> getActiveTasks() {
+        return appDatabase.taskDao().getActiveTasks();
+    }
+
+    @Override
+    public Flowable<List<Task>> getActiveTasksByCategory(int categoryId) {
+        return appDatabase.taskDao().getActiveTasksByCategory(categoryId);
+    }
+
+    @Override
+    public Flowable<List<Task>> getCompletedTasks() {
+        return appDatabase.taskDao().getCompletedTasks();
+    }
+
+    @Override
+    public Completable addTask(Task task) {
+        return Completable.fromAction(() -> appDatabase.taskDao().insertTask(task));
+    }
+
+    @Override
+    public Completable updateTask(Task task) {
+        return Completable.fromAction(() -> appDatabase.taskDao().updateTask(task));
+    }
+
+    @Override
+    public Completable deleteTask(Task task) {
+        return Completable.fromAction(() -> appDatabase.taskDao().deleteTask(task));
+    }
+
+    @Override
+    public Completable toggleTask(int taskId, boolean isDone) {
+        return Completable.fromAction(() -> appDatabase.taskDao().setTaskDone(taskId, isDone ? 1 : 0));
+    }
+
+    @Override
+    public Completable clearCompletedTasks() {
+        return Completable.fromAction(() -> appDatabase.taskDao().clearCompletedTasks());
+    }
+
+    @Override
+    public Flowable<List<TaskCategory>> getCategories() {
+        return appDatabase.taskCategoryDao().getCategories();
+    }
+
+    @Override
+    public Completable addCategory(TaskCategory category) {
+        return Completable.fromAction(() -> appDatabase.taskCategoryDao().insertCategory(category));
+    }
+
+    @Override
+    public Completable updateCategory(TaskCategory category) {
+        return Completable.fromAction(() -> appDatabase.taskCategoryDao().updateCategory(category));
+    }
+
+    @Override
+    public Completable deleteCategory(TaskCategory category) {
+        return Completable.fromAction(() -> appDatabase.taskCategoryDao().deleteCategory(category));
+    }
+
+    @Override
+    public Single<Integer> getTaskCountForCategory(int categoryId) {
+        return Single.fromCallable(() -> appDatabase.taskDao().getTaskCountForCategory(categoryId));
+    }
+
+    @Override
+    public Completable setTaskReminder(int taskId, long time) {
+        return Completable.fromAction(() -> appDatabase.taskDao().setTaskReminder(taskId, time));
+    }
+
+    @Override
+    public Completable clearTaskReminder(int taskId) {
+        return Completable.fromAction(() -> appDatabase.taskDao().clearTaskReminder(taskId));
+    }
+
+    @Override
+    public Single<List<Task>> getTasksWithReminders() {
+        return Single.fromCallable(() -> appDatabase.taskDao().getTasksWithRemindersSync())
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 }

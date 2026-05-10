@@ -42,6 +42,20 @@ public class Note {
     @SerializedName("i")
     private boolean isTrash = false;
 
+    @SerializedName("j")
+    @androidx.annotation.Nullable
+    @androidx.room.ColumnInfo(name = "reminderTime")
+    private Long reminderTime;
+
+    @SerializedName("l")
+    @androidx.room.ColumnInfo(name = "isPinned")
+    private boolean isPinned = false;
+
+    @SerializedName("k")
+    @androidx.annotation.NonNull
+    @androidx.room.ColumnInfo(name = "reminderRepeat")
+    private String reminderRepeat = "NONE";
+
     public Note create(String title, String value, long date, String tag) {
         this.title = title;
         this.tag = tag;
@@ -156,6 +170,34 @@ public class Note {
         this.attachments = attachments;
     }
 
+    public Long getReminderTime() {
+        return reminderTime;
+    }
+
+    public void setReminderTime(Long reminderTime) {
+        this.reminderTime = reminderTime;
+    }
+
+    public String getReminderRepeat() {
+        return reminderRepeat != null ? reminderRepeat : "NONE";
+    }
+
+    public void setReminderRepeat(String reminderRepeat) {
+        this.reminderRepeat = reminderRepeat != null ? reminderRepeat : "NONE";
+    }
+
+    public boolean hasReminder() {
+        return reminderTime != null && reminderTime > System.currentTimeMillis();
+    }
+
+    public boolean isPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        isPinned = pinned;
+    }
+
 
     public void copyFrom(Note other) {
         if (other == null) return;
@@ -164,8 +206,10 @@ public class Note {
         this.date = other.date;
         this.tag = other.tag;
         this.valueJson = other.valueJson;
-        this.hasRichContent = other.hasRichContent;
         this.attachments = other.attachments;
+        this.reminderTime = other.reminderTime;
+        this.reminderRepeat = other.reminderRepeat;
+        this.isPinned = other.isPinned;
     }
 
     public Note duplicate() {
@@ -178,6 +222,8 @@ public class Note {
         c.setTag(tag);
         c.setDate(System.currentTimeMillis());
         c.setTrash(false);
+        c.setReminderTime(null);
+        c.setReminderRepeat("NONE");
         return c;
     }
 

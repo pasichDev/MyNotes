@@ -337,4 +337,49 @@
     <string name="clear_tag">Без тега</string>
     <string name="tag_apply_multiple_desc">Выбранный тег будет применён к нескольким заметкам одновременно. Текущие теги будут перезаписаны.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Напоминание</string>
+    <string name="reminder_quick_pick">Быстрый выбор</string>
+    <string name="reminder_today_evening">Сегодня вечером</string>
+    <string name="reminder_tomorrow_morning">Завтра утром</string>
+    <string name="reminder_next_week">На следующей неделе</string>
+    <string name="reminder_choose_date">Выбрать дату…</string>
+    <string name="reminder_repeat_label">Повтор</string>
+    <string name="reminder_repeat_none">Никогда</string>
+    <string name="reminder_repeat_daily">Ежедневно</string>
+    <string name="reminder_repeat_weekly">Еженедельно</string>
+    <string name="reminder_repeat_monthly">Ежемесячно</string>
+    <string name="reminder_delete">Удалить напоминание</string>
+    <string name="reminder_save">Сохранить</string>
+    <string name="reminder_cancel">Отмена</string>
+    <string name="reminder_snooze_10min">10 минут</string>
+    <string name="reminder_snooze_1hour">1 час</string>
+    <string name="reminder_snooze_tomorrow">Завтра утром</string>
+    <string name="reminder_snooze_label">Отложить</string>
+    <string name="reminder_permission_denied">Нужно разрешение для напоминаний</string>
+    <string name="reminder_notification_channel">Напоминания</string>
+    <string name="reminder_menu_item">Напоминание</string>
+    <string name="reminder_chip_tomorrow">Завтра %1$s</string>
+    <string name="reminder_past_time_error">Выберите будущее время</string>
+    <string name="tile_label">Новая заметка</string>
+    <string name="search_filter_all">Все</string>
+    <string name="search_hint_keep_typing">Продолжайте вводить…</string>
+    <string name="search_empty_no_results">Заметки не найдены</string>
+
+    <!-- Tasks -->
+    <string name="tasks_title">Задачи</string>
+    <string name="tasks_empty">Нет задач. Нажмите + чтобы добавить</string>
+    <string name="tasks_add">Новая задача</string>
+    <string name="tasks_add_category">Добавить категорию</string>
+    <string name="tasks_completed_header">Выполнено (%1$d)</string>
+    <string name="tasks_add_hint">Название задачи</string>
+    <string name="tasks_category_hint">Название категории</string>
+    <string name="tasks_delete_confirm">Удалить задачу?</string>
+    <string name="tasks_category_delete_confirm">Удалить категорию?</string>
+    <string name="tasks_edit">Редактировать задачу</string>
+    <string name="tasks_description_hint">Описание задачи</string>
+    <string name="tasks_reminder_set">Установить напоминание</string>
+    <string name="tasks_reminder_clear">Удалить напоминание</string>
+    <string name="tasks_reminder_past">Выберите будущее время</string>
+
 </resources>

@@ -252,6 +252,10 @@ public class NoteEditorView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        if (fileCallback != null) {
+            fileCallback.onReceiveValue(null);
+            fileCallback = null;
+        }
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }

@@ -332,4 +332,49 @@
     <string name="clear_tag">Nessun tag</string>
     <string name="tag_apply_multiple_desc">Il tag selezionato verrà applicato a più note contemporaneamente. I tag esistenti verranno sovrascritti.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Promemoria</string>
+    <string name="reminder_quick_pick">Selezione rapida</string>
+    <string name="reminder_today_evening">Stasera</string>
+    <string name="reminder_tomorrow_morning">Domani mattina</string>
+    <string name="reminder_next_week">La prossima settimana</string>
+    <string name="reminder_choose_date">Scegli data…</string>
+    <string name="reminder_repeat_label">Ripetizione</string>
+    <string name="reminder_repeat_none">Mai</string>
+    <string name="reminder_repeat_daily">Quotidiano</string>
+    <string name="reminder_repeat_weekly">Settimanale</string>
+    <string name="reminder_repeat_monthly">Mensile</string>
+    <string name="reminder_delete">Elimina promemoria</string>
+    <string name="reminder_save">Salva</string>
+    <string name="reminder_cancel">Annulla</string>
+    <string name="reminder_snooze_10min">10 minuti</string>
+    <string name="reminder_snooze_1hour">1 ora</string>
+    <string name="reminder_snooze_tomorrow">Domani mattina</string>
+    <string name="reminder_snooze_label">Posponi</string>
+    <string name="reminder_permission_denied">Autorizzazione richiesta per i promemoria</string>
+    <string name="reminder_notification_channel">Promemoria</string>
+    <string name="reminder_menu_item">Promemoria</string>
+    <string name="reminder_chip_tomorrow">Domani %1$s</string>
+    <string name="reminder_past_time_error">Seleziona un orario futuro</string>
+    <string name="tile_label">Nuova nota</string>
+    <string name="search_filter_all">Tutte</string>
+    <string name="search_hint_keep_typing">Continua a digitare…</string>
+    <string name="search_empty_no_results">Nessuna nota trovata</string>
+
+    <!-- Tasks -->
+    <string name="tasks_title">Attività</string>
+    <string name="tasks_empty">Nessuna attività. Premi + per aggiungerne</string>
+    <string name="tasks_add">Nuova attività</string>
+    <string name="tasks_add_category">Aggiungi categoria</string>
+    <string name="tasks_completed_header">Completato (%1$d)</string>
+    <string name="tasks_add_hint">Titolo attività</string>
+    <string name="tasks_category_hint">Nome categoria</string>
+    <string name="tasks_delete_confirm">Eliminare il task?</string>
+    <string name="tasks_category_delete_confirm">Eliminare la categoria?</string>
+    <string name="tasks_edit">Modifica task</string>
+    <string name="tasks_description_hint">Descrizione del task</string>
+    <string name="tasks_reminder_set">Imposta promemoria</string>
+    <string name="tasks_reminder_clear">Rimuovi promemoria</string>
+    <string name="tasks_reminder_past">Seleziona un orario futuro</string>
+
 </resources>

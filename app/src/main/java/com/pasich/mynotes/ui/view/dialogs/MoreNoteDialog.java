@@ -12,6 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -30,6 +34,7 @@ import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
 import com.pasich.mynotes.ui.view.widgets.TwoSideSwitchView;
 import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
+import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
 
 import java.util.List;
 
@@ -121,9 +126,27 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         setHideTextSize();
         setChangeTypeEditor();
         goneCopyNotesExtended();
+        updateReminderMenuState(mPresenter.getNote());
+        updatePinState(mPresenter.getNote());
         initListeners();
 
         mPresenter.requestTagsOneShot();
+    }
+
+    private void updatePinState(Note note) {
+        if (note == null) return;
+        binding.pinNoteText.setText(note.isPinned() ? getString(R.string.unpinNote) : getString(R.string.pinNote));
+    }
+
+    private void updateReminderMenuState(Note note) {
+        boolean hasReminder = note != null && note.hasReminder();
+        if (hasReminder) {
+            SimpleDateFormat fmt = new SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault());
+            binding.reminderDate.setText(fmt.format(new Date(note.getReminderTime())));
+            binding.reminderDate.setVisibility(View.VISIBLE);
+        } else {
+            binding.reminderDate.setVisibility(View.GONE);
+        }
     }
 
 
@@ -253,6 +276,18 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             GoogleTranslateHelper.startTranslation(requireActivity(), mPresenter.getNote().getValue());
             dismiss();
         });
+        binding.setReminder.setOnClickListener(v -> {
+            if (mPresenter.getNote() == null) return;
+            ReminderPickerBottomSheet.newInstance(mPresenter.getNote().getId())
+                    .show(getParentFragmentManager(), "ReminderPicker");
+            dismiss();
+        });
+
+        binding.pinNote.setOnClickListener(v -> {
+            mPresenter.togglePinNote();
+            dismiss();
+        });
+
         binding.moveToTrash.setOnClickListener(v -> {
             mPresenter.noteMoveToTrash();
             if (rootActivity == RootActivity.MainActivity) {
@@ -301,6 +336,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
 
+        binding.setReminder.setOnClickListener(null);
+        binding.pinNote.setOnClickListener(null);
         binding.moveToTrash.setOnClickListener(null);
         binding.copyNote.setOnClickListener(null);
         binding.share.setOnClickListener(null);

@@ -10,6 +10,13 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/reminderBut"
+        android:icon="@drawable/ic_bell"
+        android:title="@string/reminder_title"
+        app:iconTint="?attr/colorOnBackground"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/moreBut"
         android:icon="@drawable/ic_more"
         android:title="@string/more"

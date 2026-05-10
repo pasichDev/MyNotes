@@ -335,4 +335,50 @@
     <string name="tag_apply_multiple_desc">Обраний тег буде застосовано до кількох нотаток одночасно. Поточні теги буде перезаписано.</string>
 
 
+
+    <!-- Reminders -->
+    <string name="reminder_title">Нагадування</string>
+    <string name="reminder_quick_pick">Швидкий вибір</string>
+    <string name="reminder_today_evening">Сьогодні ввечері</string>
+    <string name="reminder_tomorrow_morning">Завтра вранці</string>
+    <string name="reminder_next_week">Наступного тижня</string>
+    <string name="reminder_choose_date">Вибрати дату…</string>
+    <string name="reminder_repeat_label">Повторення</string>
+    <string name="reminder_repeat_none">Ніколи</string>
+    <string name="reminder_repeat_daily">Щодня</string>
+    <string name="reminder_repeat_weekly">Щотижня</string>
+    <string name="reminder_repeat_monthly">Щомісяця</string>
+    <string name="reminder_delete">Видалити нагадування</string>
+    <string name="reminder_save">Зберегти</string>
+    <string name="reminder_cancel">Скасувати</string>
+    <string name="reminder_snooze_10min">10 хвилин</string>
+    <string name="reminder_snooze_1hour">1 година</string>
+    <string name="reminder_snooze_tomorrow">Завтра вранці</string>
+    <string name="reminder_snooze_label">Відкласти</string>
+    <string name="reminder_permission_denied">Дозвіл потрібен для нагадувань</string>
+    <string name="reminder_notification_channel">Нагадування</string>
+    <string name="reminder_menu_item">Нагадування</string>
+    <string name="reminder_chip_tomorrow">Завтра %1$s</string>
+    <string name="reminder_past_time_error">Оберіть майбутній час</string>
+    <string name="tile_label">Нова нотатка</string>
+    <string name="search_filter_all">Усі</string>
+    <string name="search_hint_keep_typing">Продовжуйте вводити…</string>
+    <string name="search_empty_no_results">Нотаток не знайдено</string>
+
+    <!-- Tasks -->
+    <string name="tasks_title">Завдання</string>
+    <string name="tasks_empty">Немає завдань. Натисніть + щоб додати</string>
+    <string name="tasks_add">Нове завдання</string>
+    <string name="tasks_add_category">Додати категорію</string>
+    <string name="tasks_completed_header">Виконано (%1$d)</string>
+    <string name="tasks_add_hint">Назва завдання</string>
+    <string name="tasks_category_hint">Назва категорії</string>
+    <string name="tasks_delete_confirm">Видалити завдання?</string>
+    <string name="tasks_category_delete_confirm">Видалити категорію?</string>
+    <string name="tasks_edit">Редагувати завдання</string>
+    <string name="tasks_description_hint">Опис завдання</string>
+    <string name="tasks_reminder_set">Встановити нагадування</string>
+    <string name="tasks_reminder_clear">Видалити нагадування</string>
+    <string name="tasks_reminder_past">Оберіть майбутній час</string>
+
 </resources>

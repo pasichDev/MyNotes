@@ -160,6 +160,46 @@
                     android:layout_height="1dp" />
 
                 <LinearLayout
+                    android:id="@+id/setReminder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_middle"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        android:id="@+id/reminderMenuIcon"
+                        style="@style/iconDialogList"
+                        android:contentDescription="@string/reminder_menu_item"
+                        android:src="@drawable/ic_bell_small" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/itemTextBottomSheets"
+                            android:text="@string/reminder_menu_item" />
+
+                        <TextView
+                            android:id="@+id/reminderDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="@dimen/paddingItems"
+                            android:paddingBottom="2dp"
+                            android:textSize="12sp"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp" />
+
+                <LinearLayout
                     android:id="@+id/copyNote"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -179,6 +219,31 @@
                         android:text="@string/copyNoteEdits" />
                 </LinearLayout>
 
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp" />
+
+                <LinearLayout
+                    android:id="@+id/pinNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_middle"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        android:id="@+id/pinNoteIcon"
+                        style="@style/iconDialogList"
+                        android:contentDescription="@string/pinNote"
+                        android:src="@drawable/ic_pin" />
+
+                    <TextView
+                        android:id="@+id/pinNoteText"
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/pinNote" />
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"

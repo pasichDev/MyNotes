@@ -334,4 +334,49 @@
     <string name="clear_tag">Kein Tag</string>
     <string name="tag_apply_multiple_desc">Der ausgewählte Tag wird gleichzeitig auf mehrere Notizen angewendet. Vorhandene Tags werden überschrieben.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Erinnerung</string>
+    <string name="reminder_quick_pick">Schnellauswahl</string>
+    <string name="reminder_today_evening">Heute Abend</string>
+    <string name="reminder_tomorrow_morning">Morgen früh</string>
+    <string name="reminder_next_week">Nächste Woche</string>
+    <string name="reminder_choose_date">Datum wählen…</string>
+    <string name="reminder_repeat_label">Wiederholen</string>
+    <string name="reminder_repeat_none">Nie</string>
+    <string name="reminder_repeat_daily">Täglich</string>
+    <string name="reminder_repeat_weekly">Wöchentlich</string>
+    <string name="reminder_repeat_monthly">Monatlich</string>
+    <string name="reminder_delete">Erinnerung löschen</string>
+    <string name="reminder_save">Speichern</string>
+    <string name="reminder_cancel">Abbrechen</string>
+    <string name="reminder_snooze_10min">10 Minuten</string>
+    <string name="reminder_snooze_1hour">1 Stunde</string>
+    <string name="reminder_snooze_tomorrow">Morgen früh</string>
+    <string name="reminder_snooze_label">Schlummern</string>
+    <string name="reminder_permission_denied">Berechtigung für Erinnerungen erforderlich</string>
+    <string name="reminder_notification_channel">Erinnerungen</string>
+    <string name="reminder_menu_item">Erinnerung</string>
+    <string name="reminder_chip_tomorrow">Morgen %1$s</string>
+    <string name="reminder_past_time_error">Bitte wähle einen zukünftigen Zeitpunkt</string>
+    <string name="tile_label">Neue Notiz</string>
+    <string name="search_filter_all">Alle</string>
+    <string name="search_hint_keep_typing">Weiter tippen…</string>
+    <string name="search_empty_no_results">Keine Notizen gefunden</string>
+
+    <!-- Tasks -->
+    <string name="tasks_title">Aufgaben</string>
+    <string name="tasks_empty">Keine Aufgaben. Tippe +, um eine hinzuzufügen</string>
+    <string name="tasks_add">Neue Aufgabe</string>
+    <string name="tasks_add_category">Kategorie hinzufügen</string>
+    <string name="tasks_completed_header">Erledigt (%1$d)</string>
+    <string name="tasks_add_hint">Aufgabenname</string>
+    <string name="tasks_category_hint">Kategoriename</string>
+    <string name="tasks_delete_confirm">Aufgabe löschen?</string>
+    <string name="tasks_category_delete_confirm">Kategorie löschen?</string>
+    <string name="tasks_edit">Aufgabe bearbeiten</string>
+    <string name="tasks_description_hint">Aufgabenbeschreibung</string>
+    <string name="tasks_reminder_set">Erinnerung setzen</string>
+    <string name="tasks_reminder_clear">Erinnerung löschen</string>
+    <string name="tasks_reminder_past">Bitte eine zukünftige Zeit wählen</string>
+
 </resources>

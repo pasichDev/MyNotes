@@ -39,6 +39,8 @@ public interface MoreNoteDialogContract {
 
         void requestTagsOneShot();
 
+        void togglePinNote();
+
         Note getNote();
     }
 }

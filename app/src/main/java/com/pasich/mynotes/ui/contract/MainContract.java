@@ -67,6 +67,8 @@ public interface MainContract {
 
         void updateSearchQuery(String query);
 
+        void updateSearchTagFilter(String tagName);
+
         void requestTagSelection(boolean multiple);
 
         void requestTagChangeMultipleNotes(String selectedTag, List<Integer> notesIds);

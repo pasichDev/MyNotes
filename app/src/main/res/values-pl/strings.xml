@@ -333,4 +333,49 @@
     <string name="clear_tag">Brak tagu</string>
     <string name="tag_apply_multiple_desc">Wybrany tag zostanie zastosowany do kilku notatek jednocześnie. Obecne tagi zostaną nadpisane.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Przypomnienie</string>
+    <string name="reminder_quick_pick">Szybki wybór</string>
+    <string name="reminder_today_evening">Dziś wieczorem</string>
+    <string name="reminder_tomorrow_morning">Jutro rano</string>
+    <string name="reminder_next_week">W przyszłym tygodniu</string>
+    <string name="reminder_choose_date">Wybierz datę…</string>
+    <string name="reminder_repeat_label">Powtarzanie</string>
+    <string name="reminder_repeat_none">Nigdy</string>
+    <string name="reminder_repeat_daily">Codziennie</string>
+    <string name="reminder_repeat_weekly">Co tydzień</string>
+    <string name="reminder_repeat_monthly">Co miesiąc</string>
+    <string name="reminder_delete">Usuń przypomnienie</string>
+    <string name="reminder_save">Zapisz</string>
+    <string name="reminder_cancel">Anuluj</string>
+    <string name="reminder_snooze_10min">10 minut</string>
+    <string name="reminder_snooze_1hour">1 godzina</string>
+    <string name="reminder_snooze_tomorrow">Jutro rano</string>
+    <string name="reminder_snooze_label">Drzemka</string>
+    <string name="reminder_permission_denied">Wymagane uprawnienie do przypomnień</string>
+    <string name="reminder_notification_channel">Przypomnienia</string>
+    <string name="reminder_menu_item">Przypomnienie</string>
+    <string name="reminder_chip_tomorrow">Jutro %1$s</string>
+    <string name="reminder_past_time_error">Wybierz przyszłą datę i godzinę</string>
+    <string name="tile_label">Nowa notatka</string>
+    <string name="search_filter_all">Wszystkie</string>
+    <string name="search_hint_keep_typing">Pisz dalej…</string>
+    <string name="search_empty_no_results">Nie znaleziono notatek</string>
+
+    <!-- Tasks -->
+    <string name="tasks_title">Zadania</string>
+    <string name="tasks_empty">Brak zadań. Naciśnij +, aby dodać</string>
+    <string name="tasks_add">Nowe zadanie</string>
+    <string name="tasks_add_category">Dodaj kategorię</string>
+    <string name="tasks_completed_header">Ukończone (%1$d)</string>
+    <string name="tasks_add_hint">Tytuł zadania</string>
+    <string name="tasks_category_hint">Nazwa kategorii</string>
+    <string name="tasks_delete_confirm">Usunąć zadanie?</string>
+    <string name="tasks_category_delete_confirm">Usunąć kategorię?</string>
+    <string name="tasks_edit">Edytuj zadanie</string>
+    <string name="tasks_description_hint">Opis zadania</string>
+    <string name="tasks_reminder_set">Ustaw przypomnienie</string>
+    <string name="tasks_reminder_clear">Usuń przypomnienie</string>
+    <string name="tasks_reminder_past">Wybierz przyszły czas</string>
+
 </resources>

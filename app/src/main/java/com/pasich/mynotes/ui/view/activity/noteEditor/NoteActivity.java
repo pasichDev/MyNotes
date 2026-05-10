@@ -30,6 +30,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
 
+    private TextWatcher titleWatcher;
+    private TextWatcher valueWatcher;
+
     // Tracks last known cursor position
     private int lastCursorPosition = -1;
 
@@ -254,7 +257,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
     @Override
     public void initListeners() {
-        binding.notesTitle.addTextChangedListener(new TextWatcher() {
+        titleWatcher = new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
                 if (!notePresenter.hasNote()) return;
@@ -265,20 +268,22 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                 String title = s.toString().trim();
                 binding.titleToolbarCollapsed.setText(!title.isEmpty() ? title : getString(R.string.noteTitle));
                 notePresenter.simpleNoteChange(title, null, false);
-
             }
-        });
+        };
+        binding.notesTitle.addTextChangedListener(titleWatcher);
 
-        binding.valueNote.addTextChangedListener(new TextWatcher() {
+        valueWatcher = new TextWatcher() {
             @Override
             protected void changeText(Editable s) {
                 if (!notePresenter.hasNote()) return;
                 String newValue = s.toString();
+                updateWordCount(newValue);
                 if (!newValue.equals(notePresenter.getNote().getValue())) {
                     notePresenter.simpleNoteChange(null, newValue, false);
                 }
             }
-        });
+        };
+        binding.valueNote.addTextChangedListener(valueWatcher);
 
         // Add a click handler for the input field - only for cursor movement processing
         binding.valueNote.setOnClickListener(v -> {
@@ -319,7 +324,8 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     public void onDestroy() {
         super.onDestroy();
         if (binding != null) {
-            binding.notesTitle.addTextChangedListener(null);
+            binding.notesTitle.removeTextChangedListener(titleWatcher);
+            binding.valueNote.removeTextChangedListener(valueWatcher);
             binding.titleToolbarTagCenter.setOnClickListener(null);
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
             binding.valueNote.setOnFocusChangeListener(null);
@@ -367,9 +373,21 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         String tag = note.getTag();
         changeTag(tag != null ? tag : "", false);
 
+        updateWordCount(value);
+
         if (notePresenter.getNewNotesKey()) {
             activatedActivity();
         }
+    }
+
+    private void updateWordCount(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            binding.wordCountCenter.setVisibility(View.GONE);
+            return;
+        }
+        int count = text.trim().split("\\s+").length;
+        binding.wordCountCenter.setText(getString(R.string.wordCount, count));
+        binding.wordCountCenter.setVisibility(View.VISIBLE);
     }
 
     @Override

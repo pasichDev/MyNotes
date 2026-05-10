@@ -5,6 +5,8 @@ import androidx.recyclerview.widget.DiffUtil;
 
 import com.pasich.mynotes.data.model.Note;
 
+import java.util.Objects;
+
 import dagger.hilt.android.scopes.ActivityScoped;
 
 @ActivityScoped
@@ -26,6 +28,8 @@ public class NoteDiff extends DiffUtil.ItemCallback<Note> {
                 oldItem.getTitle().equals(newItem.getTitle()) &&
                 oldItem.getValue().equals(newItem.getValue()) &&
                 oldItem.getTag().equals(newItem.getTag()) &&
-                oldItem.getDate() == newItem.getDate();
+                oldItem.getDate() == newItem.getDate() &&
+                oldItem.isPinned() == newItem.isPinned() &&
+                Objects.equals(oldItem.getReminderTime(), newItem.getReminderTime());
     }
 }

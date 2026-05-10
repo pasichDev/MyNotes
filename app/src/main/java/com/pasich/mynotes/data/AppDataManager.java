@@ -1,12 +1,16 @@
 package com.pasich.mynotes.data;
 
 
+import android.content.Context;
 import android.net.Uri;
 
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.data.model.Task;
+import com.pasich.mynotes.data.model.TaskCategory;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.local.LocalBackup;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
@@ -18,6 +22,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -27,12 +33,17 @@ import io.reactivex.Single;
 public class AppDataManager implements DataManager {
 
 
+    private final Context context;
     private final DbHelper dbHelper;
     private final AppPreferencesHelper preferencesHelper;
     private final LocalBackup apiBackup;
 
     @Inject
-    AppDataManager(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, LocalBackup apiBackup) {
+    AppDataManager(@ApplicationContext Context context,
+                   AppPreferencesHelper preferencesHelper,
+                   DbHelper dbHelper,
+                   LocalBackup apiBackup) {
+        this.context = context;
         this.dbHelper = dbHelper;
         this.preferencesHelper = preferencesHelper;
         this.apiBackup = apiBackup;
@@ -175,7 +186,14 @@ public class AppDataManager implements DataManager {
 
     @Override
     public Completable clearTrash() {
-        return dbHelper.clearTrash();
+        return dbHelper.getNotesInTrash()
+            .firstOrError()
+            .flatMapCompletable(notes -> {
+                for (Note note : notes) {
+                    AttachmentCleaner.deleteAttachmentFolderByNoteId(context, note.getId());
+                }
+                return dbHelper.clearTrash();
+            });
     }
 
     @Override
@@ -248,7 +266,11 @@ public class AppDataManager implements DataManager {
 
     @Override
     public Completable deleteNote(ArrayList<Note> notes) {
-        return dbHelper.deleteNote(notes);
+        return Completable.fromAction(() -> {
+            for (Note note : notes) {
+                AttachmentCleaner.deleteAttachmentFolderByNoteId(context, note.getId());
+            }
+        }).andThen(dbHelper.deleteNote(notes));
     }
 
     @Override
@@ -294,5 +316,105 @@ public class AppDataManager implements DataManager {
     @Override
     public Flowable<Long> getTotalCharacters() {
         return dbHelper.getTotalCharacters();
+    }
+
+    @Override
+    public Single<List<Note>> getNotesWithActiveReminders() {
+        return dbHelper.getNotesWithActiveReminders();
+    }
+
+    @Override
+    public Completable clearReminder(int noteId) {
+        return dbHelper.clearReminder(noteId);
+    }
+
+    @Override
+    public Completable updateNoteReminder(int noteId, long reminderTime, String repeat) {
+        return dbHelper.updateNoteReminder(noteId, reminderTime, repeat);
+    }
+
+    @Override
+    public Completable setPinNote(int noteId, boolean pinned) {
+        return dbHelper.setPinNote(noteId, pinned);
+    }
+
+    @Override
+    public Flowable<List<Task>> getActiveTasks() {
+        return dbHelper.getActiveTasks();
+    }
+
+    @Override
+    public Flowable<List<Task>> getActiveTasksByCategory(int categoryId) {
+        return dbHelper.getActiveTasksByCategory(categoryId);
+    }
+
+    @Override
+    public Flowable<List<Task>> getCompletedTasks() {
+        return dbHelper.getCompletedTasks();
+    }
+
+    @Override
+    public Completable addTask(Task task) {
+        return dbHelper.addTask(task);
+    }
+
+    @Override
+    public Completable updateTask(Task task) {
+        return dbHelper.updateTask(task);
+    }
+
+    @Override
+    public Completable deleteTask(Task task) {
+        return dbHelper.deleteTask(task);
+    }
+
+    @Override
+    public Completable toggleTask(int taskId, boolean isDone) {
+        return dbHelper.toggleTask(taskId, isDone);
+    }
+
+    @Override
+    public Completable clearCompletedTasks() {
+        return dbHelper.clearCompletedTasks();
+    }
+
+    @Override
+    public Flowable<List<TaskCategory>> getCategories() {
+        return dbHelper.getCategories();
+    }
+
+    @Override
+    public Completable addCategory(TaskCategory category) {
+        return dbHelper.addCategory(category);
+    }
+
+    @Override
+    public Completable updateCategory(TaskCategory category) {
+        return dbHelper.updateCategory(category);
+    }
+
+    @Override
+    public Completable deleteCategory(TaskCategory category) {
+        return dbHelper.deleteCategory(category);
+    }
+
+    @Override
+    public Single<Integer> getTaskCountForCategory(int categoryId) {
+        return dbHelper.getTaskCountForCategory(categoryId);
+    }
+
+    @Override
+    public Completable setTaskReminder(int taskId, long time) {
+        return dbHelper.setTaskReminder(taskId, time);
+    }
+
+    @Override
+    public Completable clearTaskReminder(int taskId) {
+        return dbHelper.clearTaskReminder(taskId);
+    }
+
+    @Override
+    public Single<List<Task>> getTasksWithReminders() {
+        return dbHelper.getTasksWithReminders();
     }
 }

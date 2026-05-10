@@ -120,6 +120,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     });
     private MainRenderListsController mainRenderListsController;
     private Tag currentSelectedTag = null;
+    private List<Tag> currentTags = new ArrayList<>();
 
     private SelectionController selectionController;
 
@@ -147,6 +148,13 @@ public class MainActivity extends BaseActivity implements MainContract.view {
             @Override
             public void onSearchOpen() {
                 mActivityBinding.listNotes.setNestedScrollingEnabled(false);
+                List<Tag> userTags = new ArrayList<>();
+                for (Tag t : currentTags) {
+                    if (!SystemTagsManager.isSystemTag(t)) {
+                        userTags.add(t);
+                    }
+                }
+                searchController.setAvailableTags(userTags);
             }
 
             @Override
@@ -157,6 +165,11 @@ public class MainActivity extends BaseActivity implements MainContract.view {
             @Override
             public void onSearchQuery(String query) {
                 mainPresenter.updateSearchQuery(query);
+            }
+
+            @Override
+            public void onTagFilterChanged(String tagName) {
+                mainPresenter.updateSearchTagFilter(tagName);
             }
         });
         appUpdateController = new AppUpdateController(this, updateChecker, changelogLauncher);
@@ -177,6 +190,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
             return;
         }
         currentSelectedTag = state.selectedTag();
+        currentTags = state.tags();
         // render notes list
         renderNotes(state.notes(), state.selectedTag(), state.uiEvent());
         // render tags list
@@ -273,6 +287,18 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     @Override
     public void renderSearch(List<Note> filtered) {
         searchNotesAdapter.submitList(filtered);
+
+        String q = mActivityBinding.searchView.getEditText().getText().toString().trim();
+        boolean shortQuery = q.length() < 2;
+        boolean hasResults = !filtered.isEmpty();
+
+        mActivityBinding.resultsSearchList.setVisibility(hasResults ? View.VISIBLE : View.GONE);
+        mActivityBinding.searchEmptyState.setVisibility(hasResults ? View.GONE : View.VISIBLE);
+        if (!hasResults) {
+            mActivityBinding.searchEmptyText.setText(
+                    shortQuery ? R.string.search_hint_keep_typing : R.string.search_empty_no_results
+            );
+        }
     }
 
     @Override

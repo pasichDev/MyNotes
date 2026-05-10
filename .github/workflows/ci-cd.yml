@@ -1,18 +1,18 @@
-name: CI/CD — build and publish release
+name: Release — build & publish
 
 on:
-  pull_request:
-    branches: [ main ]
+  push:
+    branches: [master]
 
 jobs:
-  build-and-release:
-    name: Build APK & AAB and publish Release
+  release:
+    name: Build signed APK/AAB & publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -27,73 +27,67 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            .gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
 
-      - name: Install Android SDK command-line tools and platforms
+      - name: Accept SDK licenses & install platform
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y --no-install-recommends wget unzip
-          mkdir -p $HOME/Android/Sdk/cmdline-tools
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O /tmp/cmdline-tools.zip
-          unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
-          mkdir -p $HOME/Android/Sdk/cmdline-tools/latest
-          mv /tmp/cmdline-tools/cmdline-tools/* $HOME/Android/Sdk/cmdline-tools/latest/
-          export ANDROID_HOME=$HOME/Android/Sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "platforms;android-35" "build-tools;35.0.0"
-        shell: bash
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            --channel=3 \
+            "platforms;android-37" \
+            "build-tools;35.0.0" \
+            > /dev/null 2>&1 || true
 
-      - name: Ensure gradlew is executable
+      - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Extract versionName from Gradle
-        id: get_version
+      - name: Extract version
+        id: version
         run: |
-          VERSION=$(grep -Po "versionName\s+'\\K[^']+" app/build.gradle | head -n1 || true)
-          if [ -z "$VERSION" ]; then echo "Failed to extract versionName"; exit 1; fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          CODE=$(grep -oP '(?<=def appVersionCode = )\d+' app/build.gradle | head -n1)
+          echo "code=$CODE" >> $GITHUB_OUTPUT
+          echo "name=2.5.$CODE" >> $GITHUB_OUTPUT
 
-      - name: Build release APK and AAB
-        id: build_release
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.jks
+
+      - name: Build signed release APK & AAB
+        env:
+          KEYSTORE_PATH: /tmp/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease bundleRelease --no-daemon
+
+      - name: Collect artifacts
         run: |
-          ./gradlew clean assembleRelease bundleRelease --no-daemon
-          mkdir -p release_artifacts
-          APK_PATH=$(ls app/build/outputs/apk/release/*.apk 2>/dev/null | head -n1 || true)
-          AAB_PATH=$(ls app/build/outputs/bundle/release/*.aab 2>/dev/null | head -n1 || true)
-          VERSION=${{ steps.get_version.outputs.version }}
-          if [ -n "$APK_PATH" ]; then cp "$APK_PATH" "release_artifacts/MyNote${VERSION}.apk"; fi
-          if [ -n "$AAB_PATH" ]; then cp "$AAB_PATH" "release_artifacts/MyNote${VERSION}.aab"; fi
-          # expose outputs for later steps
-          echo "apk_path=$( [ -f release_artifacts/MyNote${VERSION}.apk ] && echo release_artifacts/MyNote${VERSION}.apk || echo )" >> $GITHUB_OUTPUT
-          echo "aab_path=$( [ -f release_artifacts/MyNote${VERSION}.aab ] && echo release_artifacts/MyNote${VERSION}.aab || echo )" >> $GITHUB_OUTPUT
-        shell: bash
+          mkdir -p artifacts
+          cp app/build/outputs/apk/release/*.apk \
+             "artifacts/MyNotes-v${{ steps.version.outputs.name }}.apk"
+          cp app/build/outputs/bundle/release/*.aab \
+             "artifacts/MyNotes-v${{ steps.version.outputs.name }}.aab"
 
-      - name: Create or update GitHub Release
-        id: create_release
+      - name: Generate release notes from commits
+        id: notes
+        run: |
+          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV" ]; then
+            NOTES=$(git log "$PREV"..HEAD --pretty=format:"- %s" --no-merges)
+          else
+            NOTES=$(git log --pretty=format:"- %s" --no-merges | head -30)
+          fi
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          tag: v${{ steps.get_version.outputs.version }}
-          name: MyNote${{ steps.get_version.outputs.version }}
+          tag: v${{ steps.version.outputs.name }}
+          name: "MyNotes v${{ steps.version.outputs.name }}"
+          body: ${{ steps.notes.outputs.notes }}
+          artifacts: "artifacts/*"
+          artifactErrorsFailBuild: true
+          makeLatest: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload APK to Release
-        if: steps.build_release.outputs.apk_path != ''
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.build_release.outputs.apk_path }}
-          asset_name: MyNote${{ steps.get_version.outputs.version }}.apk
-          asset_content_type: application/vnd.android.package-archive
-
-      - name: Upload AAB to Release
-        if: steps.build_release.outputs.aab_path != ''
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.build_release.outputs.aab_path }}
-          asset_name: MyNote${{ steps.get_version.outputs.version }}.aab
-          asset_content_type: application/octet-stream
