@@ -55,6 +55,8 @@ android {
         versionCode appVersionCode
         versionName appVersionName
 
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
@@ -90,6 +92,24 @@ android {
     lint {
         abortOnError false
     }
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+        }
+    }
+}
+
+// Fix for Windows PATH with embedded quotes breaking java.library.path in test JVM
+// The Gradle worker JVM command is built by DefaultWorkerProcessBuilder which reads
+// java.library.path from the daemon JVM. We sanitize it by replacing the system property.
+def rawLibPath = System.getProperty("java.library.path") ?: ""
+def cleanLibPath = rawLibPath.split(File.pathSeparator).findAll { !it.contains('"') }.join(File.pathSeparator)
+System.setProperty("java.library.path", cleanLibPath)
+
+tasks.withType(Test).configureEach {
+    def jniDebug = "${project.projectDir}/src/testDebug/jniLibs"
+    def jniTest  = "${project.projectDir}/src/test/jniLibs"
+    jvmArgs "-Djava.library.path=${jniDebug}${File.pathSeparator}${jniTest}"
 }
 
 // Only execute in the release build
@@ -140,6 +160,19 @@ dependencies {
     implementation"io.noties.markwon:core:$markwon_version"
     implementation"io.noties.markwon:ext-strikethrough:$markwon_version"
     implementation"io.noties.markwon:linkify:$markwon_version"
-    
+
+    // Unit tests
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'com.google.truth:truth:1.4.2'
+
+    // Room testing (integration tests)
+    testImplementation "androidx.room:room-testing:$roomVersion"
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+    androidTestImplementation 'org.mockito:mockito-android:5.11.0'
+    androidTestImplementation 'com.google.truth:truth:1.4.2'
 
 }

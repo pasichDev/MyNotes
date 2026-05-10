@@ -1,12 +1,14 @@
 package com.pasich.mynotes.data;
 
 
+import android.content.Context;
 import android.net.Uri;
 
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.preferences.AppPreferencesHelper;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.local.LocalBackup;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
@@ -18,6 +20,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -27,12 +31,17 @@ import io.reactivex.Single;
 public class AppDataManager implements DataManager {
 
 
+    private final Context context;
     private final DbHelper dbHelper;
     private final AppPreferencesHelper preferencesHelper;
     private final LocalBackup apiBackup;
 
     @Inject
-    AppDataManager(AppPreferencesHelper preferencesHelper, DbHelper dbHelper, LocalBackup apiBackup) {
+    AppDataManager(@ApplicationContext Context context,
+                   AppPreferencesHelper preferencesHelper,
+                   DbHelper dbHelper,
+                   LocalBackup apiBackup) {
+        this.context = context;
         this.dbHelper = dbHelper;
         this.preferencesHelper = preferencesHelper;
         this.apiBackup = apiBackup;
@@ -175,7 +184,14 @@ public class AppDataManager implements DataManager {
 
     @Override
     public Completable clearTrash() {
-        return dbHelper.clearTrash();
+        return dbHelper.getNotesInTrash()
+            .firstOrError()
+            .flatMapCompletable(notes -> {
+                for (Note note : notes) {
+                    AttachmentCleaner.deleteAttachmentFolderByNoteId(context, note.getId());
+                }
+                return dbHelper.clearTrash();
+            });
     }
 
     @Override
@@ -248,7 +264,11 @@ public class AppDataManager implements DataManager {
 
     @Override
     public Completable deleteNote(ArrayList<Note> notes) {
-        return dbHelper.deleteNote(notes);
+        return Completable.fromAction(() -> {
+            for (Note note : notes) {
+                AttachmentCleaner.deleteAttachmentFolderByNoteId(context, note.getId());
+            }
+        }).andThen(dbHelper.deleteNote(notes));
     }
 
     @Override

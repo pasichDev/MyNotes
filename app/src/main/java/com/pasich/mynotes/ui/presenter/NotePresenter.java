@@ -3,8 +3,6 @@ package com.pasich.mynotes.ui.presenter;
 
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.pasich.mynotes.base.presenter.BasePresenter;
@@ -19,10 +17,12 @@ import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.subjects.PublishSubject;
 
 
 public class NotePresenter extends BasePresenter<NoteContract.view> implements NoteContract.presenter {
@@ -30,14 +30,13 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     private static final String TAG = "NotePresenter";
 
 
-    private final Handler autoSaveHandler;
+    private final PublishSubject<Boolean> autoSaveTrigger = PublishSubject.create();
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
 
     private long idKey;
     private boolean newNoteKey;
     private boolean extendedEditor = false;
-    private Runnable autoSaveRunnable;
     private boolean isSavingInProgress = false;
     private boolean pendingClose = false;
     // Note downloaded from the database
@@ -46,7 +45,20 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
     @Inject
     public NotePresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
-        autoSaveHandler = new Handler(Looper.getMainLooper());
+    }
+
+    @Override
+    public void attachView(NoteContract.view v) {
+        super.attachView(v);
+        getCompositeDisposable().add(
+            autoSaveTrigger
+                .debounce(AutoSave.AUTO_SAVE_DELAY, TimeUnit.MILLISECONDS, getSchedulerProvider().computation())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(
+                    ignored -> performAutoSave(),
+                    error -> android.util.Log.e(TAG, "autoSave stream error", error)
+                )
+        );
     }
 
     public long getIdKey() {
@@ -109,37 +121,37 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
             updateSaveState(SaveState.IDLE);
             return;
         }
-
-        // Cancel the previously scheduled backup operation
-        if (autoSaveRunnable != null) {
-            autoSaveHandler.removeCallbacks(autoSaveRunnable);
-        }
-
         updateSaveState(SaveState.PENDING);
+        autoSaveTrigger.onNext(true);
+    }
 
-        autoSaveRunnable = () -> {
-            if (targetNote != null && !isViewDead()) {
-                saveNote(targetNote, new NoteContract.AutoSaveCallback() {
-                    @Override
-                    public void onSuccess() {
-                        updateSaveState(SaveState.SAVED);
-                        if (!isViewDead()) {
-                            getView().runAttachmentsCleanup(targetNote);
-                        }
-
-                        autoSaveHandler.postDelayed(() -> updateSaveState(SaveState.IDLE), 3000);
+    private void performAutoSave() {
+        if (targetNote != null && !isViewDead()) {
+            saveNote(targetNote, new NoteContract.AutoSaveCallback() {
+                @Override
+                public void onSuccess() {
+                    updateSaveState(SaveState.SAVED);
+                    if (!isViewDead()) {
+                        getView().runAttachmentsCleanup(targetNote);
                     }
+                    getCompositeDisposable().add(
+                        io.reactivex.Observable.timer(3, TimeUnit.SECONDS, getSchedulerProvider().computation())
+                            .observeOn(getSchedulerProvider().ui())
+                            .subscribe(ignored -> updateSaveState(SaveState.IDLE))
+                    );
+                }
 
-                    @Override
-                    public void onError(Throwable error) {
-                        updateSaveState(SaveState.ERROR);
-                        autoSaveHandler.postDelayed(() -> updateSaveState(SaveState.PENDING), 5000);
-                    }
-                });
-            }
-        };
-
-        autoSaveHandler.postDelayed(autoSaveRunnable, AutoSave.AUTO_SAVE_DELAY);
+                @Override
+                public void onError(Throwable error) {
+                    updateSaveState(SaveState.ERROR);
+                    getCompositeDisposable().add(
+                        io.reactivex.Observable.timer(5, TimeUnit.SECONDS, getSchedulerProvider().computation())
+                            .observeOn(getSchedulerProvider().ui())
+                            .subscribe(ignored -> updateSaveState(SaveState.PENDING))
+                    );
+                }
+            });
+        }
     }
 
 
@@ -439,10 +451,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view> implements N
      * Clean up Handler and callbacks when destroying Activity
      */
     public void cleanupHandlers() {
-        if (autoSaveHandler != null && autoSaveRunnable != null) {
-            autoSaveHandler.removeCallbacks(autoSaveRunnable);
-            autoSaveRunnable = null;
-        }
+        // Handler removed; CompositeDisposable.dispose() in detachView() handles cleanup
         pendingClose = false;
         isSavingInProgress = false;
     }

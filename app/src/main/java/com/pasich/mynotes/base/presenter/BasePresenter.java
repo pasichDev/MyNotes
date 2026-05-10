@@ -5,6 +5,7 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
 
 public abstract class BasePresenter<T extends BaseView> implements com.pasich.mynotes.base.view.BasePresenter<T> {
 
@@ -52,6 +53,16 @@ public abstract class BasePresenter<T extends BaseView> implements com.pasich.my
 
     protected boolean isViewAttached() {
         return view != null;
+    }
+
+    protected void runOnView(Consumer<T> action) {
+        if (isViewAttached()) {
+            try {
+                action.accept(getView());
+            } catch (Exception e) {
+                // Consumer.accept() declares checked exception
+            }
+        }
     }
 
 }
