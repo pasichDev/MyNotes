@@ -66,12 +66,25 @@ android {
         buildConfigField "String", "GIT_COMMIT_HASH", "\"${gitCommitHashProvider.get()}\""
     }
 
+    signingConfigs {
+        release {
+            def ksPath = System.getenv("KEYSTORE_PATH")
+            if (ksPath) {
+                storeFile     file(ksPath)
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias      System.getenv("KEY_ALIAS")
+                keyPassword   System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             debuggable false
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig System.getenv("KEYSTORE_PATH") ? signingConfigs.release : null
         }
         debug {
             debuggable true

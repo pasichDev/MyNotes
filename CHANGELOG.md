@@ -22,6 +22,9 @@
 
 **Improvements**
 
+- **Pin notes:** You can now pin any note to keep it at the top of the list. Tap the note options
+  menu and select "Pin note" — pinned notes always appear first, regardless of the current sort
+  order. A small pin icon is displayed on pinned note cards. Tap "Unpin note" to remove the pin.
 - Delete confirmation dialogs for tasks and categories now display a clear visual style
   with an error-tinted icon and the item name.
 
