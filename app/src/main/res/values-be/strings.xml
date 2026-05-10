@@ -355,5 +355,11 @@
     <string name="reminder_menu_item">Нагадванне</string>
     <string name="reminder_chip_tomorrow">Заўтра %1$s</string>
     <string name="reminder_past_time_error">Абярыце будучы час</string>
+    <string name="widget_new_note">Новая нататка</string>
+    <string name="widget_description">Хутка стварыць новую нататку</string>
+    <string name="tile_label">Новая нататка</string>
+    <string name="search_filter_all">Усе</string>
+    <string name="search_hint_keep_typing">Працягвайце ўводзіць…</string>
+    <string name="search_empty_no_results">Нататак не знойдзена</string>
 
 </resources>

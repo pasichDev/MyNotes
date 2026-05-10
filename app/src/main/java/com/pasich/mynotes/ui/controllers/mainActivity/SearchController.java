@@ -1,19 +1,26 @@
 package com.pasich.mynotes.ui.controllers.mainActivity;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.chip.Chip;
 import com.google.android.material.search.SearchView;
+import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.simplifications.TextWatcher;
+import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
+
+import java.util.List;
 
 public class SearchController {
 
@@ -109,9 +116,51 @@ public class SearchController {
         }
     }
 
+    public void setAvailableTags(List<Tag> tags) {
+        binding.searchTagChips.removeAllViews();
+        if (tags == null || tags.isEmpty()) {
+            binding.searchTagsScroll.setVisibility(View.GONE);
+            return;
+        }
+
+        Context ctx = binding.getRoot().getContext();
+
+        Chip allChip = new Chip(ctx);
+        allChip.setText(ctx.getString(R.string.search_filter_all));
+        allChip.setCheckable(true);
+        allChip.setChecked(true);
+        allChip.setTag(null);
+        binding.searchTagChips.addView(allChip);
+
+        for (Tag tag : tags) {
+            Chip chip = new Chip(ctx);
+            chip.setText(tag.getNameTag());
+            chip.setCheckable(true);
+            chip.setTag(tag.getNameTag());
+            binding.searchTagChips.addView(chip);
+        }
+
+        binding.searchTagChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) return;
+            View checked = group.findViewById(checkedIds.get(0));
+            if (checked != null) {
+                Object tag = checked.getTag();
+                listener.onTagFilterChanged(tag instanceof String ? (String) tag : null);
+            }
+        });
+
+        binding.searchTagsScroll.setVisibility(View.VISIBLE);
+    }
+
     public void clearSearch() {
         binding.searchView.getEditText().setText("");
         listener.onSearchQuery("");
+        // Reset chip selection to "All"
+        if (binding.searchTagChips.getChildCount() > 0) {
+            View first = binding.searchTagChips.getChildAt(0);
+            if (first instanceof Chip) ((Chip) first).setChecked(true);
+        }
+        listener.onTagFilterChanged(null);
     }
 
     public void destroy() {
@@ -126,5 +175,7 @@ public class SearchController {
         void onSearchClose();
 
         void onSearchQuery(String query);
+
+        void onTagFilterChanged(String tagName);
     }
 }

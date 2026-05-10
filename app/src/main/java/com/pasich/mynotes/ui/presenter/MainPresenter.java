@@ -44,6 +44,8 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
     private final BehaviorSubject<String> searchQuery =
             BehaviorSubject.createDefault("");
+    private final BehaviorSubject<String> searchTagFilter =
+            BehaviorSubject.createDefault("");
 
     private UiEvent lastUiEvent = UiEvent.NONE;
     private Note backupDeleteNote;
@@ -192,6 +194,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                 Observable.combineLatest(
                                 notesStream,
                                 searchQuery,
+                                searchTagFilter,
                                 this::filterNotes
                         )
                         .debounce(150, TimeUnit.MILLISECONDS)
@@ -204,18 +207,18 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         );
     }
 
-    private List<Note> filterNotes(List<Note> notes, String query) {
+    private List<Note> filterNotes(List<Note> notes, String query, String tagFilter) {
         if (query == null || query.trim().length() < 2)
             return Collections.emptyList();
 
         String q = query.toLowerCase().trim();
-
-        // Сортування: точні співпадіння заголовка зверху
+        boolean hasTagFilter = tagFilter != null && !tagFilter.isEmpty();
 
         return notes.stream()
                 .filter(n ->
-                        n.getTitle().toLowerCase().contains(q) ||
-                                n.getValue().toLowerCase().contains(q)
+                        (n.getTitle().toLowerCase().contains(q) ||
+                                n.getValue().toLowerCase().contains(q))
+                        && (!hasTagFilter || tagFilter.equals(n.getTag()))
                 ).sorted((n1, n2) -> {
                     boolean n1Exact = n1.getTitle().equalsIgnoreCase(query);
                     boolean n2Exact = n2.getTitle().equalsIgnoreCase(query);
@@ -223,7 +226,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                     if (n1Exact && !n2Exact) return -1;
                     if (!n1Exact && n2Exact) return 1;
 
-                    // Далі можна сортувати за датою (свіжіші зверху)
                     return Long.compare(n2.getDate(), n1.getDate());
                 }).collect(Collectors.toList());
     }
@@ -231,6 +233,11 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     public void updateSearchQuery(String query) {
         searchQuery.onNext(query);
+    }
+
+    @Override
+    public void updateSearchTagFilter(String tagName) {
+        searchTagFilter.onNext(tagName != null ? tagName : "");
     }
 
     @Override

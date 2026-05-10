@@ -401,5 +401,11 @@
     <string name="reminder_menu_item">Reminder</string>
     <string name="reminder_chip_tomorrow">Tomorrow %1$s</string>
     <string name="reminder_past_time_error">Please select a future time</string>
+    <string name="widget_new_note">New note</string>
+    <string name="widget_description">Quickly create a new note</string>
+    <string name="tile_label">New note</string>
+    <string name="search_filter_all">All</string>
+    <string name="search_hint_keep_typing">Keep typing…</string>
+    <string name="search_empty_no_results">No notes found</string>
 
 </resources>

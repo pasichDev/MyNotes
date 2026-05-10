@@ -357,5 +357,11 @@
     <string name="reminder_menu_item">Erinnerung</string>
     <string name="reminder_chip_tomorrow">Morgen %1$s</string>
     <string name="reminder_past_time_error">Bitte wähle einen zukünftigen Zeitpunkt</string>
+    <string name="widget_new_note">Neue Notiz</string>
+    <string name="widget_description">Schnell eine neue Notiz erstellen</string>
+    <string name="tile_label">Neue Notiz</string>
+    <string name="search_filter_all">Alle</string>
+    <string name="search_hint_keep_typing">Weiter tippen…</string>
+    <string name="search_empty_no_results">Keine Notizen gefunden</string>
 
 </resources>

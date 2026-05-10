@@ -353,5 +353,11 @@
     <string name="reminder_menu_item">Rappel</string>
     <string name="reminder_chip_tomorrow">Demain %1$s</string>
     <string name="reminder_past_time_error">Veuillez sélectionner une heure future</string>
+    <string name="widget_new_note">Nouvelle note</string>
+    <string name="widget_description">Créer rapidement une nouvelle note</string>
+    <string name="tile_label">Nouvelle note</string>
+    <string name="search_filter_all">Tout</string>
+    <string name="search_hint_keep_typing">Continuez à taper…</string>
+    <string name="search_empty_no_results">Aucune note trouvée</string>
 
 </resources>

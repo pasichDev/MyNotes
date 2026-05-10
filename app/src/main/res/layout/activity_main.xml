@@ -140,16 +140,77 @@
                 android:hint="@string/searchNotesFromTitle"
                 app:autoShowKeyboard="true">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/resultsSearchList"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="?android:colorBackground"
-                    android:clipToPadding="false"
-                    android:paddingStart="10dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="10dp"
-                    android:paddingBottom="15dp" />
+                    android:orientation="vertical">
+
+                    <HorizontalScrollView
+                        android:id="@+id/searchTagsScroll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="10dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="4dp"
+                        android:scrollbars="none"
+                        android:visibility="gone">
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/searchTagChips"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:selectionRequired="true"
+                            app:singleSelection="true" />
+
+                    </HorizontalScrollView>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/resultsSearchList"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:clipToPadding="false"
+                            android:paddingStart="10dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="10dp"
+                            android:paddingBottom="15dp"
+                            android:visibility="gone" />
+
+                        <LinearLayout
+                            android:id="@+id/searchEmptyState"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="32dp">
+
+                            <ImageView
+                                android:layout_width="52dp"
+                                android:layout_height="52dp"
+                                android:alpha="0.35"
+                                android:src="@drawable/ic_search"
+                                android:contentDescription="@null" />
+
+                            <TextView
+                                android:id="@+id/searchEmptyText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:gravity="center"
+                                android:text="@string/search_hint_keep_typing"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        </LinearLayout>
+
+                    </FrameLayout>
+
+                </LinearLayout>
 
             </com.google.android.material.search.SearchView>
 
