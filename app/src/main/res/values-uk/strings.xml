@@ -57,6 +57,8 @@
     <string name="googleDriveNotInstalled">Google Drive не встановлено</string>
     <string name="contentDescrChangeStyleText">Змінити стиль тексту</string>
     <string name="copyNoteEdits">Редагувати копію нотатки</string>
+    <string name="pinNote">Закріпити нотатку</string>
+    <string name="unpinNote">Відкріпити нотатку</string>
     <string name="noteMoveTrashSnackbar">Нотатку переміщена в кошик</string>
 
     <string name="hiddeTag">Приховати нотатки</string>

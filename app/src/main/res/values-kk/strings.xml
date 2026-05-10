@@ -57,6 +57,8 @@
     <string name="googleDriveNotInstalled">Google Drive орнатылмаған</string>
     <string name="contentDescrChangeStyleText">Мәтін мәнерін өзгерту</string>
     <string name="copyNoteEdits">Көшірмені өңдеу</string>
+    <string name="pinNote">Ескертпені бекіту</string>
+    <string name="unpinNote">Ескертпені босату</string>
     <string name="noteMoveTrashSnackbar">Ескертпе себетке жіберілді</string>
     <!-- Келесі нұсқаны тазалау -->
     <string name="hiddeTag">Ескертпелерді жасыру</string>

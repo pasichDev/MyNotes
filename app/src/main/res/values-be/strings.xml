@@ -58,6 +58,8 @@
     <string name="googleDriveNotInstalled">Google Drive не ўстаноўлены</string>
     <string name="contentDescrChangeStyleText">Змяніць стыль тэксту</string>
     <string name="copyNoteEdits">Рэдагаваць копію</string>
+    <string name="pinNote">Замацаваць нататку</string>
+    <string name="unpinNote">Адмацаваць нататку</string>
     <string name="noteMoveTrashSnackbar">Нататку перамешчана ў кошык</string>
     <string name="hiddeTag">Схаваць нататкі</string>
     <string name="visibleTag">Адлюстроўваць нататкі</string>

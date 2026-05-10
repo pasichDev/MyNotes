@@ -58,6 +58,8 @@
     <string name="googleDriveNotInstalled">Google Drive nie jest zainstalowany</string>
     <string name="contentDescrChangeStyleText">Zmień styl tekstu</string>
     <string name="copyNoteEdits">Edytuj kopię</string>
+    <string name="pinNote">Przypnij notatkę</string>
+    <string name="unpinNote">Odepnij notatkę</string>
     <string name="noteMoveTrashSnackbar">Notatka przeniesiona do kosza</string>
     <!-- Wyczyść następną wersję -->
     <string name="hiddeTag">Ukryj notatki</string>

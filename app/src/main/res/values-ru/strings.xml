@@ -63,6 +63,8 @@
     <string name="googleDriveNotInstalled">Google Drive не установлен</string>
     <string name="contentDescrChangeStyleText">Изменить стиль текста</string>
     <string name="copyNoteEdits">Редактировать копию</string>
+    <string name="pinNote">Закрепить заметку</string>
+    <string name="unpinNote">Открепить заметку</string>
     <string name="noteMoveTrashSnackbar">Заметку перемещено в корзину</string>
 
     <string name="hiddeTag">Скрыть заметки</string>
