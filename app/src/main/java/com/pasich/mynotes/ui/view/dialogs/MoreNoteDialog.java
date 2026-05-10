@@ -30,6 +30,7 @@ import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
 import com.pasich.mynotes.ui.view.widgets.TwoSideSwitchView;
 import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
+import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
 
 import java.util.List;
 
@@ -253,6 +254,13 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             GoogleTranslateHelper.startTranslation(requireActivity(), mPresenter.getNote().getValue());
             dismiss();
         });
+        binding.setReminder.setOnClickListener(v -> {
+            if (mPresenter.getNote() == null) return;
+            ReminderPickerBottomSheet.newInstance(mPresenter.getNote().getId())
+                    .show(getParentFragmentManager(), "ReminderPicker");
+            dismiss();
+        });
+
         binding.moveToTrash.setOnClickListener(v -> {
             mPresenter.noteMoveToTrash();
             if (rootActivity == RootActivity.MainActivity) {
@@ -301,6 +309,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
 
+        binding.setReminder.setOnClickListener(null);
         binding.moveToTrash.setOnClickListener(null);
         binding.copyNote.setOnClickListener(null);
         binding.share.setOnClickListener(null);

@@ -337,4 +337,28 @@
     <string name="clear_tag">Без тега</string>
     <string name="tag_apply_multiple_desc">Выбранный тег будет применён к нескольким заметкам одновременно. Текущие теги будут перезаписаны.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Напоминание</string>
+    <string name="reminder_today_evening">Сегодня вечером</string>
+    <string name="reminder_tomorrow_morning">Завтра утром</string>
+    <string name="reminder_next_week">На следующей неделе</string>
+    <string name="reminder_choose_date">Выбрать дату…</string>
+    <string name="reminder_repeat_label">Повтор</string>
+    <string name="reminder_repeat_none">Никогда</string>
+    <string name="reminder_repeat_daily">Ежедневно</string>
+    <string name="reminder_repeat_weekly">Еженедельно</string>
+    <string name="reminder_repeat_monthly">Ежемесячно</string>
+    <string name="reminder_delete">Удалить напоминание</string>
+    <string name="reminder_save">Сохранить</string>
+    <string name="reminder_cancel">Отмена</string>
+    <string name="reminder_snooze_10min">10 минут</string>
+    <string name="reminder_snooze_1hour">1 час</string>
+    <string name="reminder_snooze_tomorrow">Завтра утром</string>
+    <string name="reminder_snooze_label">Отложить</string>
+    <string name="reminder_permission_denied">Нужно разрешение для напоминаний</string>
+    <string name="reminder_notification_channel">Напоминания</string>
+    <string name="reminder_menu_item">Напоминание</string>
+    <string name="reminder_chip_tomorrow">Завтра %1$s</string>
+    <string name="reminder_past_time_error">Выберите будущее время</string>
+
 </resources>

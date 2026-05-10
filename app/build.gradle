@@ -10,7 +10,7 @@ apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
 def appVersionCode = 44
-def appVersionName = "2.4.${appVersionCode}"
+def appVersionName = "2.5.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
     commandLine 'git', 'rev-parse', '--short', 'HEAD'
@@ -24,7 +24,7 @@ preBuild.dependsOn(copyChangelog)
 
 
 android {
-    compileSdkVersion 36
+    compileSdkVersion 37
     buildFeatures {
         viewBinding = true
         dataBinding = true

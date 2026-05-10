@@ -53,4 +53,10 @@ public interface DbNotesHelper {
 
     Completable setTagForNotes(String tag, List<Integer> noteIds);
 
+    Single<List<Note>> getNotesWithActiveReminders();
+
+    Completable clearReminder(int noteId);
+
+    Completable updateNoteReminder(int noteId, long reminderTime, String repeat);
+
 }

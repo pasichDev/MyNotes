@@ -6,6 +6,11 @@ import android.widget.TextView;
 
 import androidx.databinding.BindingAdapter;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.shape.ShapeAppearanceModel;
 import com.pasich.mynotes.R;
@@ -76,7 +81,7 @@ public class NoteBindingAdapters {
     public static void setNoteBottomPadding(View view, Note note) {
         if (note == null) return;
 
-        boolean hasExtras = !note.getTag().isEmpty() || note.isAttachments();
+        boolean hasExtras = !note.getTag().isEmpty() || note.isAttachments() || note.hasReminder();
 
         int padding = view.getContext().getResources().getDimensionPixelSize(
                 hasExtras ? R.dimen.marginItemsNoteChip : R.dimen.marginItemsNote
@@ -127,6 +132,50 @@ public class NoteBindingAdapters {
                 view.getPaddingRight(),
                 paddingValue
         );
+    }
+
+    @BindingAdapter("reminderText")
+    public static void setReminderText(TextView textView, Note note) {
+        if (note == null || !note.hasReminder()) {
+            textView.setVisibility(View.GONE);
+            return;
+        }
+
+        Context ctx = textView.getContext();
+        Calendar now = Calendar.getInstance();
+        Calendar rem = Calendar.getInstance();
+        rem.setTimeInMillis(note.getReminderTime());
+
+        boolean isToday = now.get(Calendar.DATE) == rem.get(Calendar.DATE)
+                && now.get(Calendar.MONTH) == rem.get(Calendar.MONTH)
+                && now.get(Calendar.YEAR) == rem.get(Calendar.YEAR);
+
+        Calendar tomorrowCal = Calendar.getInstance();
+        tomorrowCal.add(Calendar.DATE, 1);
+        boolean isTomorrow = tomorrowCal.get(Calendar.DATE) == rem.get(Calendar.DATE)
+                && tomorrowCal.get(Calendar.MONTH) == rem.get(Calendar.MONTH)
+                && tomorrowCal.get(Calendar.YEAR) == rem.get(Calendar.YEAR);
+
+        Calendar weekEnd = Calendar.getInstance();
+        weekEnd.add(Calendar.DATE, 7);
+
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        String text;
+
+        if (isToday) {
+            text = timeFormat.format(rem.getTime());
+        } else if (isTomorrow) {
+            text = ctx.getString(R.string.reminder_chip_tomorrow, timeFormat.format(rem.getTime()));
+        } else if (rem.before(weekEnd)) {
+            SimpleDateFormat dayFmt = new SimpleDateFormat("EEE HH:mm", Locale.getDefault());
+            text = dayFmt.format(rem.getTime());
+        } else {
+            SimpleDateFormat dateFmt = new SimpleDateFormat("d MMM", Locale.getDefault());
+            text = dateFmt.format(rem.getTime());
+        }
+
+        textView.setText(text);
+        textView.setVisibility(View.VISIBLE);
     }
 
     @BindingAdapter("bindNoteItemTop")

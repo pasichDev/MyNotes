@@ -331,4 +331,28 @@
     <string name="clear_tag">Тег жоқ</string>
     <string name="tag_apply_multiple_desc">Таңдалған тег бірнеше жазбаға бір уақытта қолданылады. Ағымдағы тегтер қайта жазылады.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Еске салу</string>
+    <string name="reminder_today_evening">Бүгін кешке</string>
+    <string name="reminder_tomorrow_morning">Ертең таңертең</string>
+    <string name="reminder_next_week">Келесі аптада</string>
+    <string name="reminder_choose_date">Күн таңдау…</string>
+    <string name="reminder_repeat_label">Қайталау</string>
+    <string name="reminder_repeat_none">Ешқашан</string>
+    <string name="reminder_repeat_daily">Күн сайын</string>
+    <string name="reminder_repeat_weekly">Апта сайын</string>
+    <string name="reminder_repeat_monthly">Ай сайын</string>
+    <string name="reminder_delete">Еске салуды жою</string>
+    <string name="reminder_save">Сақтау</string>
+    <string name="reminder_cancel">Бас тарту</string>
+    <string name="reminder_snooze_10min">10 минут</string>
+    <string name="reminder_snooze_1hour">1 сағат</string>
+    <string name="reminder_snooze_tomorrow">Ертең таңертең</string>
+    <string name="reminder_snooze_label">Кейінге қалдыру</string>
+    <string name="reminder_permission_denied">Еске салулар үшін рұқсат қажет</string>
+    <string name="reminder_notification_channel">Еске салулар</string>
+    <string name="reminder_menu_item">Еске салу</string>
+    <string name="reminder_chip_tomorrow">Ертең %1$s</string>
+    <string name="reminder_past_time_error">Болашақ уақытты таңдаңыз</string>
+
 </resources>

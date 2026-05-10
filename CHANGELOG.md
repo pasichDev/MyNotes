@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [2.5.44] - 10.05.2026
+
+**New**
+
+- **Reminders:** You can now set a date and time reminder on any note. Tap the bell icon in the
+  note editor toolbar or open the note options menu to set, edit, or delete a reminder. When the
+  time comes, you'll receive a notification — tap it to open the note directly. Reminders support
+  repeat intervals (daily, weekly, monthly) and a snooze option (10 minutes, 1 hour, or tomorrow
+  morning). Reminders are restored automatically after a device reboot.
+
+**Fixes**
+
+- Fixed memory leaks that could occur during note editing and when navigating between screens.
+
 ## [2.4.44] - 28.01.2026
 
 - Fixed several issues reported in the previous version

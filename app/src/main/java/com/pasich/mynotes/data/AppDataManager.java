@@ -315,4 +315,19 @@ public class AppDataManager implements DataManager {
     public Flowable<Long> getTotalCharacters() {
         return dbHelper.getTotalCharacters();
     }
+
+    @Override
+    public Single<List<Note>> getNotesWithActiveReminders() {
+        return dbHelper.getNotesWithActiveReminders();
+    }
+
+    @Override
+    public Completable clearReminder(int noteId) {
+        return dbHelper.clearReminder(noteId);
+    }
+
+    @Override
+    public Completable updateNoteReminder(int noteId, long reminderTime, String repeat) {
+        return dbHelper.updateNoteReminder(noteId, reminderTime, repeat);
+    }
 }

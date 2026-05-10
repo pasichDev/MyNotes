@@ -334,4 +334,28 @@
     <string name="clear_tag">Kein Tag</string>
     <string name="tag_apply_multiple_desc">Der ausgewählte Tag wird gleichzeitig auf mehrere Notizen angewendet. Vorhandene Tags werden überschrieben.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Erinnerung</string>
+    <string name="reminder_today_evening">Heute Abend</string>
+    <string name="reminder_tomorrow_morning">Morgen früh</string>
+    <string name="reminder_next_week">Nächste Woche</string>
+    <string name="reminder_choose_date">Datum wählen…</string>
+    <string name="reminder_repeat_label">Wiederholen</string>
+    <string name="reminder_repeat_none">Nie</string>
+    <string name="reminder_repeat_daily">Täglich</string>
+    <string name="reminder_repeat_weekly">Wöchentlich</string>
+    <string name="reminder_repeat_monthly">Monatlich</string>
+    <string name="reminder_delete">Erinnerung löschen</string>
+    <string name="reminder_save">Speichern</string>
+    <string name="reminder_cancel">Abbrechen</string>
+    <string name="reminder_snooze_10min">10 Minuten</string>
+    <string name="reminder_snooze_1hour">1 Stunde</string>
+    <string name="reminder_snooze_tomorrow">Morgen früh</string>
+    <string name="reminder_snooze_label">Schlummern</string>
+    <string name="reminder_permission_denied">Berechtigung für Erinnerungen erforderlich</string>
+    <string name="reminder_notification_channel">Erinnerungen</string>
+    <string name="reminder_menu_item">Erinnerung</string>
+    <string name="reminder_chip_tomorrow">Morgen %1$s</string>
+    <string name="reminder_past_time_error">Bitte wähle einen zukünftigen Zeitpunkt</string>
+
 </resources>

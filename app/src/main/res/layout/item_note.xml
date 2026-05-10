@@ -30,7 +30,7 @@
             app:elevation="0dp"
             android:activated="@{activated}"
             app:cardBackgroundColorActivated="@{activated}"
-            app:dynamicShapeTop="@{Note.tag.length() > 0 || Note.isAttachments()}"
+            app:dynamicShapeTop="@{Note.tag.length() > 0 || Note.isAttachments() || Note.hasReminder()}"
             app:noteStrokeColor="@{Note}">
 
             <LinearLayout
@@ -58,7 +58,7 @@
                 <Space
                     android:layout_width="match_parent"
                     android:layout_height="10dp"
-                    android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments())  ? View.VISIBLE : View.GONE}" />
+                    android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments() || Note.hasReminder())  ? View.VISIBLE : View.GONE}" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -67,7 +67,7 @@
             style="@style/ItemNoteCardBottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments()) ? View.VISIBLE : View.GONE}"
+            android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments() || Note.hasReminder()) ? View.VISIBLE : View.GONE}"
             app:dynamicShapeBottom="@{Note.title.isEmpty() &amp;&amp; Note.valuePreview.isEmpty()}"
             app:noteStrokeColor="@{Note}">
 
@@ -110,6 +110,27 @@
                     android:textStyle="bold"
                     app:noteMediaCount="@{Note}"
                     tools:text="3 files" />
+
+                <Space
+                    android:id="@+id/reminderSpacer"
+                    android:layout_width="6dp"
+                    android:layout_height="0dp"
+                    android:visibility="@{Note.hasReminder() ? View.VISIBLE : View.GONE}" />
+
+                <TextView
+                    android:id="@+id/reminderNote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/ptsans_regular"
+                    android:paddingHorizontal="6dp"
+                    android:textColor="?attr/colorOnSecondaryContainer"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:drawablePadding="3dp"
+                    android:drawableStart="@drawable/ic_bell_small"
+                    app:reminderText="@{Note}"
+                    android:visibility="@{Note.hasReminder() ? View.VISIBLE : View.GONE}"
+                    tools:text="18:00" />
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>

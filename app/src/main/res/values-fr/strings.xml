@@ -330,4 +330,28 @@
     <string name="clear_tag">Aucun tag</string>
     <string name="tag_apply_multiple_desc">Le tag sélectionné sera appliqué à plusieurs notes en même temps. Les tags existants seront remplacés.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Rappel</string>
+    <string name="reminder_today_evening">Ce soir</string>
+    <string name="reminder_tomorrow_morning">Demain matin</string>
+    <string name="reminder_next_week">La semaine prochaine</string>
+    <string name="reminder_choose_date">Choisir une date…</string>
+    <string name="reminder_repeat_label">Répétition</string>
+    <string name="reminder_repeat_none">Jamais</string>
+    <string name="reminder_repeat_daily">Quotidien</string>
+    <string name="reminder_repeat_weekly">Hebdomadaire</string>
+    <string name="reminder_repeat_monthly">Mensuel</string>
+    <string name="reminder_delete">Supprimer le rappel</string>
+    <string name="reminder_save">Enregistrer</string>
+    <string name="reminder_cancel">Annuler</string>
+    <string name="reminder_snooze_10min">10 minutes</string>
+    <string name="reminder_snooze_1hour">1 heure</string>
+    <string name="reminder_snooze_tomorrow">Demain matin</string>
+    <string name="reminder_snooze_label">Reporter</string>
+    <string name="reminder_permission_denied">Permission requise pour les rappels</string>
+    <string name="reminder_notification_channel">Rappels</string>
+    <string name="reminder_menu_item">Rappel</string>
+    <string name="reminder_chip_tomorrow">Demain %1$s</string>
+    <string name="reminder_past_time_error">Veuillez sélectionner une heure future</string>
+
 </resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reminder_title"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:paddingBottom="12dp" />
+
+    <LinearLayout
+        android:id="@+id/snooze10min"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_item_start"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+        <ImageView
+            style="@style/iconDialogList"
+            android:src="@drawable/ic_bell_small"
+            android:contentDescription="@null" />
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/reminder_snooze_10min" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" />
+
+    <LinearLayout
+        android:id="@+id/snooze1hour"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_item_middle"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+        <ImageView
+            style="@style/iconDialogList"
+            android:src="@drawable/ic_bell_small"
+            android:contentDescription="@null" />
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/reminder_snooze_1hour" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" />
+
+    <LinearLayout
+        android:id="@+id/snoozeTomorrow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_item_end"
+        android:orientation="horizontal"
+        android:padding="@dimen/paddingItems">
+        <ImageView
+            style="@style/iconDialogList"
+            android:src="@drawable/ic_bell_small"
+            android:contentDescription="@null" />
+        <TextView
+            style="@style/itemTextBottomSheets"
+            android:text="@string/reminder_snooze_tomorrow" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="16dp" />
+
+</LinearLayout>

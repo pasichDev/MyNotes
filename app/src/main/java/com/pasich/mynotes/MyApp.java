@@ -1,9 +1,15 @@
 package com.pasich.mynotes;
 
 import android.app.Application;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 
+import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
+import com.pasich.mynotes.ui.receiver.ReminderReceiver;
 
 import java.util.concurrent.Executors;
 
@@ -28,6 +34,17 @@ public class MyApp extends Application {
         super.onCreate();
 
         CACHE = themePreferencesCache;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    ReminderReceiver.CHANNEL_ID,
+                    getString(R.string.reminder_notification_channel),
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) nm.createNotificationChannel(channel);
+        }
+
         Executors.newSingleThreadExecutor().execute(() -> {
             themePreferencesCache.initialize();
             GLOBAL_FONT_SCALE = themePreferencesCache.getUiFontScale();

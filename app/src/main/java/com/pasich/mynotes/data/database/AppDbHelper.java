@@ -239,4 +239,25 @@ public class AppDbHelper implements DbHelper {
     public Flowable<Long> getTotalCharacters() {
         return appDatabase.noteDao().getTotalCharacters().map(v -> v == null ? 0 : v);
     }
+
+    @Override
+    public Single<List<Note>> getNotesWithActiveReminders() {
+        return Single.fromCallable(() ->
+                appDatabase.noteDao().getNotesWithActiveRemindersSync(System.currentTimeMillis())
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    @Override
+    public Completable clearReminder(int noteId) {
+        return Completable.fromAction(() ->
+                appDatabase.noteDao().clearReminderSync(noteId)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    @Override
+    public Completable updateNoteReminder(int noteId, long reminderTime, String repeat) {
+        return Completable.fromAction(() ->
+                appDatabase.noteDao().updateReminderSync(noteId, reminderTime, repeat)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
 }

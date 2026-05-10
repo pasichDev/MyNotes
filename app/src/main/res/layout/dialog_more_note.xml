@@ -160,6 +160,29 @@
                     android:layout_height="1dp" />
 
                 <LinearLayout
+                    android:id="@+id/setReminder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_middle"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconDialogList"
+                        android:contentDescription="@string/reminder_menu_item"
+                        android:src="@drawable/ic_bell_small" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/reminder_menu_item" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp" />
+
+                <LinearLayout
                     android:id="@+id/copyNote"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

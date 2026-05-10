@@ -369,5 +369,29 @@
     <string name="clear_tag">No tag</string>
     <string name="tag_apply_multiple_desc">The selected tag will be applied to several notes at once. Current tags will be overwritten.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Reminder</string>
+    <string name="reminder_today_evening">Tonight</string>
+    <string name="reminder_tomorrow_morning">Tomorrow</string>
+    <string name="reminder_next_week">Next week</string>
+    <string name="reminder_choose_date">Choose date…</string>
+    <string name="reminder_repeat_label">Repeat</string>
+    <string name="reminder_repeat_none">Never</string>
+    <string name="reminder_repeat_daily">Daily</string>
+    <string name="reminder_repeat_weekly">Weekly</string>
+    <string name="reminder_repeat_monthly">Monthly</string>
+    <string name="reminder_delete">Delete reminder</string>
+    <string name="reminder_save">Save</string>
+    <string name="reminder_cancel">Cancel</string>
+    <string name="reminder_snooze_10min">10 minutes</string>
+    <string name="reminder_snooze_1hour">1 hour</string>
+    <string name="reminder_snooze_tomorrow">Tomorrow morning</string>
+    <string name="reminder_snooze_label">Snooze</string>
+    <string name="reminder_permission_denied">Permission required for reminders</string>
+    <string name="reminder_notification_channel">Reminders</string>
+    <string name="reminder_menu_item">Reminder</string>
+    <string name="reminder_chip_tomorrow">Tomorrow %1$s</string>
+    <string name="reminder_past_time_error">Please select a future time</string>
+
 </resources>
 

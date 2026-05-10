@@ -335,4 +335,28 @@
     <string name="clear_tag">Sin etiqueta</string>
     <string name="tag_apply_multiple_desc">La etiqueta seleccionada se aplicará a varias notas al mismo tiempo. Las etiquetas actuales se sobrescribirán.</string>
 
+    <!-- Reminders -->
+    <string name="reminder_title">Recordatorio</string>
+    <string name="reminder_today_evening">Esta tarde</string>
+    <string name="reminder_tomorrow_morning">Mañana por la mañana</string>
+    <string name="reminder_next_week">La próxima semana</string>
+    <string name="reminder_choose_date">Elegir fecha…</string>
+    <string name="reminder_repeat_label">Repetir</string>
+    <string name="reminder_repeat_none">Nunca</string>
+    <string name="reminder_repeat_daily">Diariamente</string>
+    <string name="reminder_repeat_weekly">Semanalmente</string>
+    <string name="reminder_repeat_monthly">Mensualmente</string>
+    <string name="reminder_delete">Eliminar recordatorio</string>
+    <string name="reminder_save">Guardar</string>
+    <string name="reminder_cancel">Cancelar</string>
+    <string name="reminder_snooze_10min">10 minutos</string>
+    <string name="reminder_snooze_1hour">1 hora</string>
+    <string name="reminder_snooze_tomorrow">Mañana por la mañana</string>
+    <string name="reminder_snooze_label">Posponer</string>
+    <string name="reminder_permission_denied">Permiso requerido para recordatorios</string>
+    <string name="reminder_notification_channel">Recordatorios</string>
+    <string name="reminder_menu_item">Recordatorio</string>
+    <string name="reminder_chip_tomorrow">Mañana %1$s</string>
+    <string name="reminder_past_time_error">Por favor, selecciona una hora futura</string>
+
 </resources>

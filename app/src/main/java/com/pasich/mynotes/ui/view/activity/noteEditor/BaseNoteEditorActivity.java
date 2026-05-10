@@ -30,6 +30,7 @@ import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
+import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.transition.CopyNoteAnimationUtil;
@@ -172,6 +173,13 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         if (item.getItemId() == android.R.id.home) {
             notePresenter.closeActivity();
 
+        }
+
+        if (item.getItemId() == R.id.reminderBut) {
+            if (notePresenter.hasNote()) {
+                ReminderPickerBottomSheet.newInstance(notePresenter.getNote().getId())
+                        .show(getSupportFragmentManager(), "ReminderPicker");
+            }
         }
 
         if (item.getItemId() == R.id.moreBut) {

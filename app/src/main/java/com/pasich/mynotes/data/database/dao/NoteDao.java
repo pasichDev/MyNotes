@@ -85,5 +85,13 @@ public interface NoteDao {
     @Query("SELECT SUM(LENGTH(value)) FROM notes WHERE isTrash = 0")
     Flowable<Long> getTotalCharacters();
 
+    @Query("SELECT * FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
+    List<Note> getNotesWithActiveRemindersSync(long now);
+
+    @Query("UPDATE notes SET reminderTime = NULL, reminderRepeat = 'NONE' WHERE id = :noteId")
+    void clearReminderSync(int noteId);
+
+    @Query("UPDATE notes SET reminderTime = :time, reminderRepeat = :repeat WHERE id = :noteId")
+    void updateReminderSync(int noteId, long time, String repeat);
 
 }

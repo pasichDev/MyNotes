@@ -87,6 +87,14 @@ public abstract class AppDatabase extends RoomDatabase {
             db.execSQL("DROP TABLE IF EXISTS trash");
         }
     };
+
+    public static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE notes ADD COLUMN reminderTime INTEGER DEFAULT NULL");
+            db.execSQL("ALTER TABLE notes ADD COLUMN reminderRepeat TEXT NOT NULL DEFAULT 'NONE'");
+        }
+    };
     private static Context appContext;
     /**
      * Remove old system tags
