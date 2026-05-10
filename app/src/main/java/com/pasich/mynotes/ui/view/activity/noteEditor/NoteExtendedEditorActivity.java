@@ -261,9 +261,11 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         super.onDestroy();
         if (binding != null) {
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
-            ((ViewGroup) binding.noteEditor.getParent()).removeView(binding.noteEditor);
+            binding.noteEditor.release();
+            if (binding.noteEditor.getParent() instanceof ViewGroup) {
+                ((ViewGroup) binding.noteEditor.getParent()).removeView(binding.noteEditor);
+            }
         }
-
     }
 
     @Override
@@ -312,7 +314,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
 
     @Override
     public void runAttachmentsCleanup(Note note) {
-        new Thread(() -> AttachmentCleaner.cleanup(this, note)).start();
+        new Thread(() -> AttachmentCleaner.cleanup(getApplicationContext(), note)).start();
     }
 
     @Override

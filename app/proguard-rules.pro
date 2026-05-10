@@ -80,7 +80,6 @@
 
 # Keep line numbers and source file for debugging
 -keepattributes SourceFile,LineNumberTable
--dontobfuscate
 
 # Keep all debug and logging related code
 -assumenosideeffects class android.util.Log {

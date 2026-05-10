@@ -315,8 +315,9 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
                         .subscribe(
                                 id -> {
                                     lastUiEvent = UiEvent.NOTE_CREATED;
-                                    new Handler(Looper.getMainLooper())
-                                            .postDelayed(() -> getView().openNewNoteWithId(id), 80);
+                                    uiHandler.postDelayed(() -> {
+                                        if (isViewAttached()) getView().openNewNoteWithId(id);
+                                    }, 80);
                                 },
                                 throwable -> Log.e(TAG, "Failed to create note", throwable)
                         )
@@ -412,6 +413,7 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void detachView() {
+        uiHandler.removeCallbacksAndMessages(null);
         super.detachView();
         backupDeleteNote = null;
     }
