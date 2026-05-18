@@ -6,6 +6,7 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
@@ -60,6 +61,15 @@ public class MainRenderListsController {
 
     public void scrollUpNoteList() {
         binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
+    }
+
+    public void scrollToTopInstant() {
+        binding.listNotes.post(
+                () -> {
+                    StaggeredGridLayoutManager lm =
+                            (StaggeredGridLayoutManager) binding.listNotes.getLayoutManager();
+                    if (lm != null) lm.scrollToPositionWithOffset(0, 0);
+                });
     }
 
     /** Smoothly shows the notes list using fade + scale animation. */

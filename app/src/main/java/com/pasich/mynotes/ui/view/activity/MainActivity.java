@@ -3,7 +3,6 @@ package com.pasich.mynotes.ui.view.activity;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE_THEME_UPDATE;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -203,27 +202,37 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         tagsAdapter.submitList(tags);
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private void renderNotes(List<Note> notes, Tag currentSelectedTag, UiEvent event) {
         switch (event) {
             case SORT_CHANGED, TAG_CHANGED ->
                     mNoteAdapter.submitList(
                             new ArrayList<>(notes),
                             () -> {
+                                RecyclerView.ItemAnimator animator =
+                                        mActivityBinding.listNotes.getItemAnimator();
+                                if (animator != null) animator.endAnimations();
                                 mainRenderListsController.showStateNoteList(
                                         currentSelectedTag, notes.size());
-                                mNoteAdapter.notifyDataSetChanged();
+                                gridLayoutManager.invalidateSpanAssignments();
                                 mainRenderListsController.animateNoteListChange();
                             });
             default -> {
                 boolean shouldScrollUp = event == UiEvent.NOTE_CREATED;
+                List<Note> currentList = mNoteAdapter.getCurrentList();
+                int previousTopId = currentList.isEmpty() ? -1 : currentList.get(0).getId();
                 mNoteAdapter.submitList(
-                        notes,
+                        new ArrayList<>(notes),
                         () -> {
+                            RecyclerView.ItemAnimator animator =
+                                    mActivityBinding.listNotes.getItemAnimator();
+                            if (animator != null) animator.endAnimations();
                             mainRenderListsController.showStateNoteList(
                                     currentSelectedTag, notes.size());
+                            gridLayoutManager.invalidateSpanAssignments();
                             if (shouldScrollUp) {
                                 mainRenderListsController.scrollUpNoteList();
+                            } else if (!notes.isEmpty() && notes.get(0).getId() != previousTopId) {
+                                mainRenderListsController.scrollToTopInstant();
                             }
                         });
             }

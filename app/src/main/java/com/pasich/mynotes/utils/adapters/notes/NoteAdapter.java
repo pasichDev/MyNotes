@@ -23,16 +23,10 @@ public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
     @Inject
     public NoteAdapter() {
         super(new NoteDiff());
-        setHasStableIds(true);
     }
 
     public void setSelectionController(SelectionController controller) {
         this.selectionController = controller;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return getItem(position).getId();
     }
 
     @NonNull
