@@ -23,6 +23,7 @@ import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.utils.linkMovement.CustomLinkMovementMethod;
 import dagger.hilt.android.AndroidEntryPoint;
 
+/** Activity for creating and editing a single note. */
 @AndroidEntryPoint
 public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 

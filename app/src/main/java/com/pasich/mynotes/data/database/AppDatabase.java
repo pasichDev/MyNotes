@@ -21,6 +21,7 @@ import com.pasich.mynotes.utils.constants.DatabaseConstants;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import javax.inject.Singleton;
 
+/** Room database definition with all migrations. */
 @Database(
         version = DatabaseConstants.DB_VERSION,
         entities = {Tag.class, Note.class, Task.class, TaskCategory.class},

@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
+/** Room entity representing a single note. */
 @Entity(tableName = "notes")
 public class Note {
 
@@ -57,6 +58,7 @@ public class Note {
     @androidx.room.ColumnInfo(name = "reminderIntervalMinutes")
     private int reminderIntervalMinutes = 0;
 
+    /** Initializes note fields and returns this instance. */
     public Note create(String title, String value, long date, String tag) {
         this.title = title;
         this.tag = tag;
@@ -116,6 +118,7 @@ public class Note {
         this.value = value;
     }
 
+    /** Returns up to 400 characters of the note body. */
     public String getValuePreview() {
         if (value == null) {
             return ""; // or return some default value if you prefer
@@ -151,6 +154,7 @@ public class Note {
         return attachments;
     }
 
+    /** Returns true if the note has at least one valid attachment. */
     public boolean isAttachments() {
         String mAttachments = attachments;
         if (mAttachments == null) return false;
@@ -186,6 +190,7 @@ public class Note {
         this.reminderRepeat = reminderRepeat != null ? reminderRepeat : "NONE";
     }
 
+    /** Returns true if the note has a future reminder set. */
     public boolean hasReminder() {
         return reminderTime != null && reminderTime > System.currentTimeMillis();
     }
@@ -206,6 +211,7 @@ public class Note {
         this.reminderIntervalMinutes = reminderIntervalMinutes;
     }
 
+    /** Copies all mutable fields from another note into this one. */
     public void copyFrom(Note other) {
         if (other == null) return;
         this.title = other.title;
@@ -220,6 +226,7 @@ public class Note {
         this.reminderIntervalMinutes = other.reminderIntervalMinutes;
     }
 
+    /** Creates a new note copy without id, pinning, or reminder. */
     public Note duplicate() {
         Note c = new Note();
         c.setId(0);

@@ -1,5 +1,6 @@
 package com.pasich.mynotes.data.model;
 
+/** Holds search-match character indices within a note. */
 public class IndexFilter {
 
     private int indexTitle, indexValue;

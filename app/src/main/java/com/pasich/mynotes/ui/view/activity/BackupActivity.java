@@ -42,6 +42,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 import java.util.Objects;
 import javax.inject.Inject;
 
+/** Activity for creating and restoring app data backups. */
 @AndroidEntryPoint
 public class BackupActivity extends BaseActivity implements BackupContract.view {
 

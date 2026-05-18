@@ -7,6 +7,7 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import com.google.gson.annotations.SerializedName;
 
+/** Room entity representing a note tag. */
 @Entity(tableName = "tags")
 public class Tag {
 
@@ -84,6 +85,7 @@ public class Tag {
         this.visibility = arg0;
     }
 
+    /** Sets visibility and returns this tag for chaining. */
     public Tag setVisibilityReturn(int arg0) {
         this.visibility = arg0;
         return this;
@@ -97,6 +99,7 @@ public class Tag {
         this.position = position;
     }
 
+    /** Returns a shallow copy of this tag including transient fields. */
     public Tag copy() {
         Tag t = new Tag();
 

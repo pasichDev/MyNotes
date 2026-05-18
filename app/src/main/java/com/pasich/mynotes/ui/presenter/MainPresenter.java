@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 
+/** Presenter backing the main notes list screen. */
 @ActivityScoped
 public class MainPresenter extends BasePresenter<MainContract.view>
         implements MainContract.presenter {
@@ -143,7 +144,6 @@ public class MainPresenter extends BasePresenter<MainContract.view>
     private MainViewState buildState(
             List<Tag> tags, List<Note> notes, Tag selectedTag, String sort) {
 
-        // Build hidden tags set
         Set<String> hidden = new HashSet<>();
         for (Tag t : tags) {
             if (t.getVisibility() == 1) {
@@ -151,7 +151,6 @@ public class MainPresenter extends BasePresenter<MainContract.view>
             }
         }
 
-        // Filter hidden
         List<Note> visible = new ArrayList<>(notes.size());
         if (hidden.isEmpty()) {
             visible.addAll(notes);
@@ -163,13 +162,11 @@ public class MainPresenter extends BasePresenter<MainContract.view>
             }
         }
 
-        // Determine if we show ALL notes
         boolean isAllNotes =
                 selectedTag == null
                         || selectedTag.getSystemAction()
                                 == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES;
 
-        // Filter by selected tag
         List<Note> filtered;
         if (isAllNotes) {
             filtered = visible;
@@ -183,10 +180,9 @@ public class MainPresenter extends BasePresenter<MainContract.view>
             }
         }
 
-        // Copy before sort
         List<Note> sorted = new ArrayList<>(filtered);
 
-        // Sort — pinned always first, then by date
+        // pinned always first, then by date
         boolean sortByNew = SortParam.DataSort.equals(sort);
         sorted.sort(
                 (a, b) -> {
@@ -413,9 +409,7 @@ public class MainPresenter extends BasePresenter<MainContract.view>
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(
-                                        () -> {
-                                            /* ок */
-                                        },
+                                        () -> {},
                                         throwable -> Log.e(TAG, "Error deleting tag", throwable)));
     }
 

@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 
+/** WebViewClient that intercepts editorjs:// requests to serve local attachment files. */
 public class EditorAttachmentsWebViewClient extends WebViewClient {
 
     private static final String TAG = "EditorAttachmentsClient";
@@ -47,7 +48,6 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
 
             int noteId = Integer.parseInt(noteStr.replace("note_", ""));
 
-            // Формуємо правильний EditorAttachment URL
             String internalUrl =
                     new Uri.Builder()
                             .scheme(EDITORJS_SCHEME)

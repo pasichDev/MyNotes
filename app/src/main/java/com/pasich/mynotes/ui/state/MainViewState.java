@@ -5,6 +5,7 @@ import com.pasich.mynotes.data.model.Tag;
 import java.util.List;
 import java.util.Objects;
 
+/** Immutable snapshot of the main screen UI state. */
 public record MainViewState(List<Tag> tags, List<Note> notes, Tag selectedTag, UiEvent uiEvent) {
     public static MainViewState empty() {
         return new MainViewState(List.of(), List.of(), null, UiEvent.NONE);

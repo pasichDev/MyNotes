@@ -16,6 +16,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import java.util.List;
 import javax.inject.Inject;
 
+/** Presenter backing the tasks (to-do) screen. */
 @ActivityScoped
 public class TasksPresenter extends BasePresenter<TasksContract.view>
         implements TasksContract.presenter {

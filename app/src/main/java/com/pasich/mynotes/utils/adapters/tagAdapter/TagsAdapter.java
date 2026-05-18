@@ -13,6 +13,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/** RecyclerView adapter for displaying and selecting note tags. */
 public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
 
     private OnItemClickListenerTag clickListener;

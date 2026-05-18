@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
+/** Presenter backing the note editor screen. */
 public class NotePresenter extends BasePresenter<NoteContract.view>
         implements NoteContract.presenter {
 

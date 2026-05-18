@@ -25,6 +25,7 @@ import com.pasich.mynotes.ui.view.activity.TagsActivity;
 import com.pasich.mynotes.ui.view.activity.TasksActivity;
 import com.pasich.mynotes.ui.view.activity.TrashActivity;
 
+/** Manages the navigation drawer and app-level navigation actions. */
 public class NavigationController {
 
     private final AppCompatActivity activity;
@@ -50,6 +51,7 @@ public class NavigationController {
         this.backHandler = backHandler;
     }
 
+    /** Sets up the drawer, navigation menu, header buttons, and back-press handling. */
     public void init() {
         drawerLayout = binding.drawerLayout;
         headerBinding = NavHeaderMainBinding.bind(binding.navigationView.getHeaderView(0));
@@ -191,6 +193,7 @@ public class NavigationController {
         }
     }
 
+    /** Shows or hides the new-version badge in the navigation header. */
     public void updateNewVersionIndicator(boolean visible) {
         View header = binding.navigationView.getHeaderView(0);
         if (header == null) return;
@@ -244,6 +247,7 @@ public class NavigationController {
         }
     }
 
+    /** Removes all click listeners and window-inset callbacks to prevent leaks. */
     public void destroy() {
         binding.navigationView.setNavigationItemSelectedListener(null);
 
@@ -271,6 +275,7 @@ public class NavigationController {
         drawerLayout = null;
     }
 
+    /** Accumulates swipe-close distance for back-gesture detection. */
     public void addSwipeClose(int delta) {
         this.swipeClose += delta;
     }

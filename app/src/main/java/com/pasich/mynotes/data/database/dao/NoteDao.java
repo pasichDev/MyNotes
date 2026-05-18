@@ -10,6 +10,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import java.util.List;
 
+/** DAO for note CRUD and reminder operations. */
 @Dao
 public interface NoteDao {
 

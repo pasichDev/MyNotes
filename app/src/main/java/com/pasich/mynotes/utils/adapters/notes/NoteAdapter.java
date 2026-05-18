@@ -14,6 +14,7 @@ import dagger.hilt.android.scopes.ActivityScoped;
 import java.util.List;
 import javax.inject.Inject;
 
+/** RecyclerView adapter for displaying note cards with selection support. */
 @ActivityScoped
 public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
 
@@ -25,6 +26,7 @@ public class NoteAdapter extends ListAdapter<Note, NoteAdapter.NoteHolder> {
         super(new NoteDiff());
     }
 
+    /** Attaches a SelectionController to enable per-item selection state rendering. */
     public void setSelectionController(SelectionController controller) {
         this.selectionController = controller;
     }

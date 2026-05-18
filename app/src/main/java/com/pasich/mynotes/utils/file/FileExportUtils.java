@@ -68,7 +68,6 @@ public class FileExportUtils {
     /** Open Google Drive intent to save file */
     public static void saveToGoogleDrive(Context context, String noteTitle, String noteContent) {
         try {
-            // Check if Google Drive is installed
             if (!isAppInstalled(context)) {
                 Toast.makeText(
                                 context,
@@ -78,7 +77,6 @@ public class FileExportUtils {
                 return;
             }
 
-            // Create intent to share with Google Drive
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setType("text/plain");
             intent.putExtra(Intent.EXTRA_TEXT, noteContent);
@@ -93,11 +91,11 @@ public class FileExportUtils {
         }
     }
 
+    /** Writes backup JSON to cache and delivers its URI via {@code callback}. */
     public static void saveBackupToGoogleDrive(
             Context context, String jsonContent, DriveProcess callback) {
         String fileName = generateBackupFileName();
         try {
-            // Перевірка, чи є Google Drive
             if (!isAppInstalled(context)) {
                 Toast.makeText(
                                 context,
@@ -107,7 +105,6 @@ public class FileExportUtils {
                 return;
             }
 
-            // Очимстка тимчасових файлів у кеші
             File dir = context.getCacheDir();
             for (File f : Objects.requireNonNull(dir.listFiles())) {
                 if (f.getName().startsWith("MyNotes_Backup_") && f.getName().endsWith(".json")) {
@@ -115,14 +112,12 @@ public class FileExportUtils {
                 }
             }
 
-            // Створюємо тимчасовий файл у кеші
             File file = new File(context.getCacheDir(), fileName + ".json");
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(jsonContent.getBytes(StandardCharsets.UTF_8));
                 fos.flush();
             }
 
-            // Робимо Uri через FileProvider
             Uri fileUri =
                     FileProvider.getUriForFile(
                             context,
@@ -190,7 +185,6 @@ public class FileExportUtils {
     public static void savePdfToUri(
             Context context, Uri uri, String noteTitle, String noteContent) {
         try {
-            // Create PDF document
             PdfDocument pdfDocument = new PdfDocument();
             PdfDocument.PageInfo pageInfo =
                     new PdfDocument.PageInfo.Builder(595, 842, 1).create(); // A4 size
@@ -206,7 +200,6 @@ public class FileExportUtils {
             int lineHeight = 20;
             int maxWidth = 500;
 
-            // Title
             String title =
                     (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
 
@@ -215,7 +208,6 @@ public class FileExportUtils {
             canvas.drawText(title, 50, y, paint);
             y += 30; // Extra space after title
 
-            // Content
             paint.setTextSize(12);
             paint.setFakeBoldText(false);
 
@@ -266,7 +258,6 @@ public class FileExportUtils {
 
             pdfDocument.finishPage(page);
 
-            // Save PDF to selected URI
             OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
             Log.d(TAG, "PDF OutputStream opened: " + (outputStream != null));
 
@@ -379,6 +370,7 @@ public class FileExportUtils {
         }
     }
 
+    /** Generates a timestamped backup file name with .json extension. */
     public static String generateBackupFileName() {
         // Поточна дата
         Date now = new Date();

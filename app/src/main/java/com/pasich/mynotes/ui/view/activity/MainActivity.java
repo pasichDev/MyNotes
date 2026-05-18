@@ -63,10 +63,10 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/** Main screen showing the notes list and tag navigation. */
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view {
 
-    // Update theme listener
     private final ActivityResultLauncher<Intent> themeUpdateListener =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
@@ -127,7 +127,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
 
-        // set selection
         selectionController = new SelectionController(mNoteAdapter, mActivityBinding.getRoot());
         mNoteAdapter.setSelectionController(selectionController);
         selectionController.setPanelMode(SelectionController.Mode.NORMAL);

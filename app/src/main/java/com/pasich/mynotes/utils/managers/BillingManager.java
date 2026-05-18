@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/** Manages in-app billing for donation products via Google Play Billing. */
 public class BillingManager implements PurchasesUpdatedListener, BillingClientStateListener {
 
     private static final String TAG = "BillingManager";
@@ -210,6 +211,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         };
     }
 
+    /** Initiates the purchase flow for the given product, consuming any stale purchase first. */
     public void launchBillingFlow(Activity activity, String productId) {
         if (!isServiceConnected) {
             listener.onBillingError("Billing service not connected");
@@ -399,12 +401,14 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                 });
     }
 
+    /** Ends the billing client connection; call from Activity/Fragment onDestroy. */
     public void destroy() {
         if (billingClient != null && billingClient.isReady()) {
             billingClient.endConnection();
         }
     }
 
+    /** Maps a billing response code to a human-readable error description. */
     public static String getBillingErrorMessage(int responseCode) {
         return switch (responseCode) {
             case BillingClient.BillingResponseCode.BILLING_UNAVAILABLE ->
@@ -458,6 +462,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         }
     }
 
+    /** Queries existing in-app purchases and delivers them to the listener. */
     public void queryPurchases() {
         if (!isServiceConnected) {
             Log.w(TAG, "Billing service not connected, can't query purchases");

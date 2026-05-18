@@ -6,6 +6,7 @@ import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/** Cache for notification channel and sound preferences. */
 @Singleton
 public class NotificationPreferencesCache {
 
@@ -86,6 +87,7 @@ public class NotificationPreferencesCache {
         return channelVersion;
     }
 
+    /** Increments the channel version, persists it, and updates the channel ID. */
     public synchronized int incrementAndPersistVersion() {
         ensureInitialized();
         channelVersion++;

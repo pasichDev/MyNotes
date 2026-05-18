@@ -13,6 +13,7 @@ import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import java.util.List;
 
+/** Controls note list and empty-state rendering with animations. */
 public class MainRenderListsController {
 
     private final ActivityMainBinding binding;
@@ -23,6 +24,7 @@ public class MainRenderListsController {
         this.res = binding.getRoot().getResources();
     }
 
+    /** Briefly fades and rescales the list to signal a dataset change. */
     public void animateNoteListChange() {
         binding.listNotes
                 .animate()
@@ -59,10 +61,12 @@ public class MainRenderListsController {
         animateShowList(binding.listNotes);
     }
 
+    /** Smoothly scrolls the notes list to the top. */
     public void scrollUpNoteList() {
         binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
     }
 
+    /** Instantly jumps the staggered-grid list to position zero. */
     public void scrollToTopInstant() {
         binding.listNotes.post(
                 () -> {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+/** Manages multi-select mode and the action panel for notes. */
 public class SelectionController {
 
     private final HashSet<Integer> selectedIds = new HashSet<>();
@@ -55,6 +56,7 @@ public class SelectionController {
         return selectionMode;
     }
 
+    /** Configures which action buttons are visible based on the given mode. */
     public void setPanelMode(Mode mode) {
         switch (mode) {
             case NORMAL:
@@ -71,6 +73,7 @@ public class SelectionController {
         }
     }
 
+    /** Enters selection mode with the given note as the first selected item. */
     public void startSelection(Note note) {
         selectionMode = true;
         toggle(note);
@@ -78,6 +81,7 @@ public class SelectionController {
         notifyListener();
     }
 
+    /** Adds or removes a note from the selection set and updates its visual state. */
     public void toggle(Note note) {
         int id = note.getId();
 
@@ -89,13 +93,11 @@ public class SelectionController {
 
         updateNoteVisualState(id);
 
-        // If there are no more selections after toggling, exit the mode
         if (selectedIds.isEmpty()) {
             clearSelection();
             return;
         }
 
-        // update count ui
         if (panel != null) {
             int count = selectedIds.size();
             panel.selectedCount.setText(
@@ -106,6 +108,7 @@ public class SelectionController {
         notifyListener();
     }
 
+    /** Deselects all notes, hides the action panel, and exits selection mode. */
     public void clearSelection() {
         if (!selectionMode) return;
 
@@ -121,6 +124,7 @@ public class SelectionController {
         notifyListener();
     }
 
+    /** Returns the full Note objects whose IDs are currently selected. */
     public List<Note> getSelectedNotes() {
         List<Note> result = new ArrayList<>();
         List<Note> data = adapter.getCurrentList();
@@ -153,6 +157,7 @@ public class SelectionController {
         if (listener != null) listener.onSelectionCountChanged(selectedIds.size());
     }
 
+    /** Removes all listeners and hides the panel to avoid memory leaks. */
     public void cleanup() {
         panel.actionClose.setOnClickListener(null);
         panel.actionDelete.setOnClickListener(null);

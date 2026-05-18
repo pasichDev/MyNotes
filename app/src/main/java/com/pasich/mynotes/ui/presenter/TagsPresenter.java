@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 
+/** Presenter backing the tag management screen. */
 @ActivityScoped
 public class TagsPresenter extends BasePresenter<TagsContract.view>
         implements TagsContract.presenter {
@@ -55,7 +56,6 @@ public class TagsPresenter extends BasePresenter<TagsContract.view>
                                 .subscribe(
                                         tagList -> {
                                             if (isViewAttached()) {
-                                                // Створюємо спеціальний тег для кнопки "Додати"
                                                 tagList.add(0, SystemTagsManager.createAddTag());
                                                 cachedTags =
                                                         new ArrayList<>(
@@ -74,7 +74,6 @@ public class TagsPresenter extends BasePresenter<TagsContract.view>
                                         }));
     }
 
-    // Сортуємо локальний кеш згідно з налаштуваннями
     public void displayTags(boolean isSort) {
         if (!isViewAttached() || cachedTags.isEmpty()) return;
         if (isSort) {

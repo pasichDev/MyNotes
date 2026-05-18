@@ -69,7 +69,6 @@ public class ShareActivity extends AppCompatActivity {
                 return;
             }
 
-            // 3) Стандартний share intent
             if (ShareProcessor.isShareIntent(intent)) {
                 String text = ShareProcessor.extractSharedText(intent);
                 createNoteAndOpen(text);

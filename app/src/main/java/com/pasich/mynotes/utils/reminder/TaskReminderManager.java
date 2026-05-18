@@ -9,6 +9,7 @@ import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.ui.receiver.TaskReminderReceiver;
 import java.util.List;
 
+/** Schedules and cancels exact AlarmManager reminders for tasks. */
 public class TaskReminderManager {
 
     public static final String EXTRA_TASK_ID = "taskId";
@@ -18,6 +19,7 @@ public class TaskReminderManager {
     // Offset to avoid collision with note reminder PendingIntent request codes
     private static final int REQUEST_CODE_OFFSET = 100000;
 
+    /** Schedules an exact alarm for the given task's reminder time. */
     public static void scheduleReminder(Context ctx, Task task) {
         if (task.getReminderTime() == null) return;
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
@@ -27,6 +29,7 @@ public class TaskReminderManager {
                 AlarmManager.RTC_WAKEUP, task.getReminderTime(), buildPendingIntent(ctx, task));
     }
 
+    /** Cancels a previously scheduled alarm for the given task ID. */
     public static void cancelReminder(Context ctx, int taskId) {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
@@ -41,6 +44,7 @@ public class TaskReminderManager {
         pi.cancel();
     }
 
+    /** Re-schedules alarms for all supplied tasks (e.g. after reboot). */
     public static void rescheduleAll(Context ctx, List<Task> tasks) {
         for (Task t : tasks) scheduleReminder(ctx, t);
     }

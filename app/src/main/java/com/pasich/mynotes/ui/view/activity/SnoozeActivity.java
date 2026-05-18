@@ -12,6 +12,7 @@ import com.pasich.mynotes.utils.reminder.ReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.util.Calendar;
 
+/** Activity for choosing a snooze duration for a reminder. */
 @AndroidEntryPoint
 public class SnoozeActivity extends AppCompatActivity {
 

@@ -19,16 +19,13 @@ public class HtmlTemplateGenerator {
             Context context, String noteTitle, String noteContent, List<Note> notes) {
         StringBuilder html = new StringBuilder();
 
-        // Get current date
         SimpleDateFormat dateFormat =
                 new SimpleDateFormat("dd MMMM yyyy", getCurrentLocale(context));
         String currentDate = dateFormat.format(new Date());
 
-        // Get localized strings
         String notesTitle = getLocalizedNotesTitle(context);
         String exportFromText = getLocalizedExportFromText(context);
 
-        // HTML template start
         html.append("<!DOCTYPE html>\n")
                 .append("<html lang=\"")
                 .append(getCurrentLanguageCode(context))
@@ -56,18 +53,14 @@ public class HtmlTemplateGenerator {
                 .append("</div>\n")
                 .append("    </div>\n\n");
 
-        // Add notes content
         if (notes != null && !notes.isEmpty()) {
-            // Multiple notes
             for (Note note : notes) {
                 addNoteToHtml(html, note.getTitle(), note.getValue());
             }
         } else {
-            // Single note
             addNoteToHtml(html, noteTitle, noteContent);
         }
 
-        // HTML template end
         html.append("</body>\n").append("</html>");
 
         return html.toString();

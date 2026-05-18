@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
+/** Presenter backing the backup and restore screen. */
 @ActivityScoped
 public class BackupPresenter extends BasePresenter<BackupContract.view>
         implements BackupContract.presenter {
@@ -110,8 +111,6 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
                                             }
                                         },
                                         throwable -> Log.e("RxError", "Error: ", throwable)));
-
-        /*  */
     }
 
     /** Save local backup (3/3) - write appData to public file */

@@ -12,6 +12,7 @@ import com.pasich.mynotes.databinding.ItemResultBinding;
 import dagger.hilt.android.scopes.ActivityScoped;
 import javax.inject.Inject;
 
+/** RecyclerView adapter for displaying note search results. */
 @ActivityScoped
 public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.ViewHolder> {
 

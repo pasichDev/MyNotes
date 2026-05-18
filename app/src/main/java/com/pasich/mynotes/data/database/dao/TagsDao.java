@@ -11,6 +11,7 @@ import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import io.reactivex.Flowable;
 import java.util.List;
 
+/** DAO for tag CRUD operations. */
 @Dao
 public interface TagsDao {
     @Query("SELECT * FROM tags")

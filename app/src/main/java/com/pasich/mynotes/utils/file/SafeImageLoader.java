@@ -36,7 +36,6 @@ public class SafeImageLoader {
      */
     public static Bitmap load(Context ctx, Uri uri, int targetW, int targetH) throws Exception {
 
-        // read only bounds (dimensions)
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
 
@@ -47,19 +46,16 @@ public class SafeImageLoader {
         int srcW = bounds.outWidth;
         int srcH = bounds.outHeight;
 
-        // calculate scaling (inSampleSize)
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inJustDecodeBounds = false;
         opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
         opts.inSampleSize = calculateInSampleSize(srcW, srcH, targetW, targetH);
 
-        // decoding a real photo
         Bitmap bitmap;
         try (InputStream is = ctx.getContentResolver().openInputStream(uri)) {
             bitmap = BitmapFactory.decodeStream(is, null, opts);
         }
 
-        // EXIF correction (rotation)
         try (InputStream is = ctx.getContentResolver().openInputStream(uri)) {
             assert is != null;
             ExifInterface exif = new ExifInterface(is);

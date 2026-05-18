@@ -22,9 +22,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 
+/** Bottom-sheet dialog offering open, download, and delete actions for an attachment. */
 public class AttachmentActionsDialog {
     private static final String TAG = "AttachmentActionsDialog";
 
+    /** Shows the actions bottom sheet for the given attachment. */
     @SuppressLint("UseCompatLoadingForDrawables")
     public static void show(
             Context ctx, EditorAttachment attachment, OnAttachmentDeleteListener deleteListener) {

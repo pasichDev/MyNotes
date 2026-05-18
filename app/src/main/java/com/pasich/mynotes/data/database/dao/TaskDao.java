@@ -9,6 +9,7 @@ import com.pasich.mynotes.data.model.Task;
 import io.reactivex.Flowable;
 import java.util.List;
 
+/** DAO for task CRUD and reminder operations. */
 @Dao
 public interface TaskDao {
 

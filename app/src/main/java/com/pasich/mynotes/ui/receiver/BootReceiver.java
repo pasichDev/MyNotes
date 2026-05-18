@@ -11,6 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.Single;
 import javax.inject.Inject;
 
+/** BroadcastReceiver that reschedules all reminders after device reboot. */
 @AndroidEntryPoint
 public class BootReceiver extends BroadcastReceiver {
 

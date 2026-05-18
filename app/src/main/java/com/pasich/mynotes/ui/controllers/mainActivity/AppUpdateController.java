@@ -14,6 +14,7 @@ import com.pasich.mynotes.ui.view.activity.ChangelogActivity;
 import com.pasich.mynotes.ui.view.dialogs.UpdateChangelogDialog;
 import com.pasich.mynotes.utils.UpdateChecker;
 
+/** Handles in-app update checks and changelog display. */
 public class AppUpdateController {
 
     private static final int REQUEST_UPDATE = 100;
@@ -41,6 +42,7 @@ public class AppUpdateController {
         checkForUpdate();
     }
 
+    /** Resumes an in-progress immediate update flow if one was started. */
     public void handleOnResume() {
         updateManager
                 .getAppUpdateInfo()
@@ -76,7 +78,7 @@ public class AppUpdateController {
         }
     }
 
-    /** Лише показ changelog-діалогу */
+    /** Shows the changelog dialog if a new app version was detected. */
     public void showChangelogIfNeeded() {
         if (updateChecker.hasNewVersion()) {
             UpdateChangelogDialog.newInstance()
@@ -86,12 +88,12 @@ public class AppUpdateController {
         }
     }
 
-    /** Потрібно NavigationController */
+    /** Returns whether a newer app version is available. */
     public boolean hasNewVersion() {
         return updateChecker.hasNewVersion();
     }
 
-    /** Потрібно NavigationController */
+    /** Launches the changelog screen via the registered activity launcher. */
     public void openChangelog() {
         changelogLauncher.launch(new Intent(activity, ChangelogActivity.class));
     }

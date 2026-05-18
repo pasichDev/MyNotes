@@ -24,6 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 import java.util.List;
 import javax.inject.Inject;
 
+/** Activity for managing task lists and categories. */
 @AndroidEntryPoint
 public class TasksActivity extends BaseActivity implements TasksContract.view {
 

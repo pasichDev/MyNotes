@@ -19,6 +19,7 @@ import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import java.util.List;
 
+/** Manages the search view, debounced input, and tag-filter chips. */
 public class SearchController {
 
     private static final String TAG = "SearchController";
@@ -110,6 +111,7 @@ public class SearchController {
         }
     }
 
+    /** Populates the tag-filter chip group; hides the scroll if no tags exist. */
     public void setAvailableTags(List<Tag> tags) {
         binding.searchTagChips.removeAllViews();
         if (tags == null || tags.isEmpty()) {
@@ -147,6 +149,7 @@ public class SearchController {
         binding.searchTagsScroll.setVisibility(View.VISIBLE);
     }
 
+    /** Clears the search text, resets the tag chip to "All", and notifies the listener. */
     public void clearSearch() {
         binding.searchView.getEditText().setText("");
         listener.onSearchQuery("");
@@ -158,6 +161,7 @@ public class SearchController {
         listener.onTagFilterChanged(null);
     }
 
+    /** Cancels any pending debounce callback to prevent post-destroy callbacks. */
     public void destroy() {
         if (searchRunnable != null) handler.removeCallbacks(searchRunnable);
         searchRunnable = null;

@@ -6,6 +6,7 @@ import com.pasich.mynotes.data.model.Note;
 import dagger.hilt.android.scopes.ActivityScoped;
 import java.util.Objects;
 
+/** DiffUtil callback for comparing Note items in a RecyclerView list. */
 @ActivityScoped
 public class NoteDiff extends DiffUtil.ItemCallback<Note> {
 

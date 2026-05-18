@@ -12,7 +12,6 @@ public class AppPreferencesCache {
 
     private static final String TAG = "AppPreferencesCache";
     private final SafePreferences prefs;
-    // Cached values
     private volatile String lastKnownVersion;
     private volatile String sortPref;
     private volatile String tagsSortPref;
@@ -70,8 +69,6 @@ public class AppPreferencesCache {
         imageOptEnable = PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE;
         initialized = true;
     }
-
-    // ===================== GETTERS =====================
 
     public String getLastKnownVersion() {
         ensureInitialized();
@@ -142,8 +139,6 @@ public class AppPreferencesCache {
             Log.e(TAG, "Failed to save format preference", e);
         }
     }
-
-    // ===================== HELPERS =====================
 
     private void ensureInitialized() {
         if (!initialized) {

@@ -6,6 +6,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+/** Room entity representing a single task item. */
 @Entity(tableName = "tasks")
 public class Task {
 

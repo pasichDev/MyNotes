@@ -7,6 +7,7 @@ import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/** Singleton implementation of PreferenceHelper backed by caches. */
 @Singleton
 public class AppPreferencesHelper implements PreferenceHelper {
 
@@ -55,6 +56,7 @@ public class AppPreferencesHelper implements PreferenceHelper {
         themeCache.setSizeTextNoteActivity(value);
     }
 
+    /** Returns a snapshot of all current app preferences. */
     @Override
     public PreferencesBackup getListPreferences() {
         return new PreferencesBackup(
@@ -86,6 +88,7 @@ public class AppPreferencesHelper implements PreferenceHelper {
                         PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE));
     }
 
+    /** Persists all fields from a backup and refreshes the caches. */
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
 

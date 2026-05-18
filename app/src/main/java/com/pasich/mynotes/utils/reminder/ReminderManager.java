@@ -11,6 +11,7 @@ import com.pasich.mynotes.ui.receiver.ReminderReceiver;
 import java.util.Calendar;
 import java.util.List;
 
+/** Schedules and cancels exact AlarmManager reminders for notes. */
 public class ReminderManager {
 
     public static final String EXTRA_NOTE_ID = "noteId";
@@ -19,6 +20,7 @@ public class ReminderManager {
     public static final String EXTRA_NOTE_REPEAT = "noteRepeat";
     public static final String EXTRA_NOTE_INTERVAL_MINUTES = "intervalMinutes";
 
+    /** Schedules an exact alarm for the given note's reminder time. */
     public static void scheduleReminder(Context ctx, Note note) {
         if (note.getReminderTime() == null) return;
 
@@ -33,6 +35,7 @@ public class ReminderManager {
                 AlarmManager.RTC_WAKEUP, note.getReminderTime(), buildPendingIntent(ctx, note));
     }
 
+    /** Cancels a previously scheduled alarm for the given note ID. */
     public static void cancelReminder(Context ctx, int noteId) {
         AlarmManager alarmManager = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager == null) return;
@@ -47,12 +50,14 @@ public class ReminderManager {
         pi.cancel();
     }
 
+    /** Re-schedules alarms for all supplied notes (e.g. after reboot). */
     public static void rescheduleAll(Context ctx, List<Note> notes) {
         for (Note note : notes) {
             scheduleReminder(ctx, note);
         }
     }
 
+    /** Computes the next trigger time by advancing {@code from} by one repeat unit. */
     public static long computeNextTime(long from, ReminderRepeat repeat) {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(from);
@@ -72,6 +77,7 @@ public class ReminderManager {
         return cal.getTimeInMillis();
     }
 
+    /** Returns whether the app has permission to schedule exact alarms. */
     public static boolean canScheduleExact(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);

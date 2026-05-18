@@ -68,7 +68,6 @@ public class ImageOptimizer {
 
             OutFormat outFormat;
 
-            // PNG
             if (inputFormat == OutFormat.PNG) {
                 if (bitmap.hasAlpha()) {
                     outFormat = OutFormat.PNG;

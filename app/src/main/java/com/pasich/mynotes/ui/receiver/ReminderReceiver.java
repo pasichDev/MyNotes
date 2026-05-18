@@ -22,6 +22,7 @@ import com.pasich.mynotes.utils.reminder.ReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
 import javax.inject.Inject;
 
+/** BroadcastReceiver that fires reminder notifications and reschedules repeating alarms. */
 @AndroidEntryPoint
 public class ReminderReceiver extends BroadcastReceiver {
 

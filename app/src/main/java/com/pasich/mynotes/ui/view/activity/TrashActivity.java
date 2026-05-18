@@ -23,6 +23,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/** Activity for viewing and restoring trashed notes. */
 @AndroidEntryPoint
 public class TrashActivity extends BaseActivity implements TrashContract.view {
 

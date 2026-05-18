@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
+/** Presenter backing the trash screen. */
 public class TrashPresenter extends BasePresenter<TrashContract.view>
         implements TrashContract.presenter {
     private static final String TAG = "TrashPresenter";
