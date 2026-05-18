@@ -1,12 +1,17 @@
 name: Release — build & publish
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches: [master]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
 
 jobs:
   release:
     name: Build signed APK/AAB & publish
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: write
