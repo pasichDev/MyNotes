@@ -11,6 +11,11 @@
   alert again every 5, 10, 15, 30, or 60 minutes until the reminder is cleared. Works for
   both note and task reminders.
 
+**Improvements**
+
+- **Help:** Updated the in-app guide — added dedicated sections for Tasks and Reminders with
+  step-by-step descriptions of all key features.
+
 ## [2.5.45] - 10.05.2026
 
 **New**
