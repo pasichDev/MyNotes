@@ -7,14 +7,12 @@ No accounts, no cloud, no ads — just your content stored safely on your device
 
 ![GitHub release](https://img.shields.io/github/v/release/pasichDev/MyNotes?style=flat-square&label=release)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)
-![Build](https://img.shields.io/github/actions/workflow/status/pasichDev/MyNotes/ci.yml?branch=master&style=flat-square&label=build)
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)
 ![API](https://img.shields.io/badge/API-26%2B-brightgreen?style=flat-square)
 ![GitHub stars](https://img.shields.io/github/stars/pasichDev/MyNotes?style=flat-square)
 ![GitHub issues](https://img.shields.io/github/issues/pasichDev/MyNotes?style=flat-square)
 ![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)
 
----
 
 [![My Notes on Product Hunt](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1027550&theme=light&width=200)](https://www.producthunt.com/products/my-notes-4?utm_source=badge-featured&utm_medium=badge&utm_source=badge-my-notes-204c8f1f-1e34-423b-9817-bb05b82b69e2)
 &nbsp;&nbsp;
