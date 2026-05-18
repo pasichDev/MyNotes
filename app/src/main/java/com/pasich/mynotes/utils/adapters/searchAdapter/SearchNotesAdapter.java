@@ -3,35 +3,31 @@ package com.pasich.mynotes.utils.adapters.searchAdapter;
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ItemResultBinding;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.scopes.ActivityScoped;
-
+import javax.inject.Inject;
 
 @ActivityScoped
 public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.ViewHolder> {
 
-    private static final DiffUtil.ItemCallback<Note> DIFF_CALLBACK = new DiffUtil.ItemCallback<>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
-            return oldItem.getId() == newItem.getId();
-        }
+    private static final DiffUtil.ItemCallback<Note> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
+                    return oldItem.getId() == newItem.getId();
+                }
 
-        @SuppressLint("DiffUtilEquals")
-        @Override
-        public boolean areContentsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
-            return oldItem.equals(newItem);
-        }
-    };
+                @SuppressLint("DiffUtilEquals")
+                @Override
+                public boolean areContentsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
+                    return oldItem.equals(newItem);
+                }
+            };
 
     private SetItemClickListener onItemClickListener;
 
@@ -47,9 +43,8 @@ public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.Vie
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemResultBinding binding = ItemResultBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false
-        );
+        ItemResultBinding binding =
+                ItemResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(binding, onItemClickListener);
     }
 
@@ -74,9 +69,7 @@ public class SearchNotesAdapter extends ListAdapter<Note, SearchNotesAdapter.Vie
             binding.executePendingBindings();
 
             if (clickListener != null) {
-                itemView.setOnClickListener(v ->
-                        clickListener.onClick(note, binding.itemNote)
-                );
+                itemView.setOnClickListener(v -> clickListener.onClick(note, binding.itemNote));
             }
         }
     }

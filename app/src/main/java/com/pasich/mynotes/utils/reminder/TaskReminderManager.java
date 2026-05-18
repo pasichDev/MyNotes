@@ -5,10 +5,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.ui.receiver.TaskReminderReceiver;
-
 import java.util.List;
 
 public class TaskReminderManager {
@@ -25,16 +23,20 @@ public class TaskReminderManager {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) return;
-        am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, task.getReminderTime(),
-                buildPendingIntent(ctx, task));
+        am.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP, task.getReminderTime(), buildPendingIntent(ctx, task));
     }
 
     public static void cancelReminder(Context ctx, int taskId) {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         Intent intent = new Intent(ctx, TaskReminderReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(ctx, taskId + REQUEST_CODE_OFFSET, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent pi =
+                PendingIntent.getBroadcast(
+                        ctx,
+                        taskId + REQUEST_CODE_OFFSET,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         am.cancel(pi);
         pi.cancel();
     }
@@ -48,7 +50,10 @@ public class TaskReminderManager {
         intent.putExtra(EXTRA_TASK_ID, task.getId());
         intent.putExtra(EXTRA_TASK_TITLE, task.getTitle());
         intent.putExtra(EXTRA_TASK_INTERVAL_MINUTES, task.getReminderIntervalMinutes());
-        return PendingIntent.getBroadcast(ctx, task.getId() + REQUEST_CODE_OFFSET, intent,
+        return PendingIntent.getBroadcast(
+                ctx,
+                task.getId() + REQUEST_CODE_OFFSET,
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 }

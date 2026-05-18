@@ -6,13 +6,10 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
-
 import com.pasich.mynotes.data.model.Note;
-
-import java.util.List;
-
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import java.util.List;
 
 @Dao
 public interface NoteDao {
@@ -59,7 +56,6 @@ public interface NoteDao {
     @Query("UPDATE NOTES SET tag=:tag WHERE id=:noteID")
     void setTagNote(String tag, int noteID);
 
-
     @Query("UPDATE notes SET isTrash = 1 WHERE id IN (:ids)")
     void moveNotesToTrash(List<Integer> ids);
 
@@ -85,7 +81,8 @@ public interface NoteDao {
     @Query("SELECT SUM(LENGTH(value)) FROM notes WHERE isTrash = 0")
     Flowable<Long> getTotalCharacters();
 
-    @Query("SELECT * FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
+    @Query(
+            "SELECT * FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
     List<Note> getNotesWithActiveRemindersSync(long now);
 
     @Query("UPDATE notes SET reminderTime = NULL, reminderRepeat = 'NONE' WHERE id = :noteId")
@@ -94,10 +91,10 @@ public interface NoteDao {
     @Query("UPDATE notes SET reminderTime = :time, reminderRepeat = :repeat WHERE id = :noteId")
     void updateReminderSync(int noteId, long time, String repeat);
 
-    @Query("UPDATE notes SET reminderTime = :time, reminderRepeat = :repeat, reminderIntervalMinutes = :intervalMinutes WHERE id = :noteId")
+    @Query(
+            "UPDATE notes SET reminderTime = :time, reminderRepeat = :repeat, reminderIntervalMinutes = :intervalMinutes WHERE id = :noteId")
     void updateReminderFullSync(int noteId, long time, String repeat, int intervalMinutes);
 
     @Query("UPDATE notes SET isPinned = :pinned WHERE id = :noteId")
     void setPinNoteSync(int noteId, boolean pinned);
-
 }

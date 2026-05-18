@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
@@ -23,7 +22,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
-
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -36,15 +34,13 @@ import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.transition.CopyNoteAnimationUtil;
-
 import java.util.Objects;
-
 import javax.inject.Inject;
 
-public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends BaseActivity implements NoteContract.view {
+public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends BaseActivity
+        implements NoteContract.view {
 
-    @Inject
-    protected NoteContract.presenter notePresenter;
+    @Inject protected NoteContract.presenter notePresenter;
 
     // Menu for the save status indicator
     protected MenuItem saveStatusMenuItem;
@@ -53,16 +49,19 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     protected long idNote;
 
     protected abstract @MenuRes int getMenuResId();
+
     // Returns toolbar menu layout
 
     protected abstract Toolbar getToolbar();
+
     // Returns toolbar instance
 
-
     protected abstract T inflateBinding(LayoutInflater inflater);
+
     // Inflate and return view binding
 
     protected abstract void bindingSetPresenter(T binding);
+
     // Bind presenter to layout (if required)
 
     protected void onAfterPresenterReady() {
@@ -70,15 +69,16 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     }
 
     protected abstract void applyEdgeToEdgeInsets(View rootView);
+
     // Apply window insets (IME/system bars)
 
     protected abstract void onNewNoteInit(Note note);
+
     // Load a new/empty note into the editor
 
-
     protected abstract void setNewNoteTitle();
-    // Set title for a new note
 
+    // Set title for a new note
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -102,19 +102,28 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         onAfterPresenterReady();
 
-        getSupportFragmentManager().setFragmentResultListener("reminderChanged", this, (key, result) -> {
-            if (notePresenter == null || !notePresenter.hasNote()) return;
-            boolean hasReminder = result.getBoolean("hasReminder", false);
-            notePresenter.getNote().setReminderTime(hasReminder ? result.getLong("reminderTime") : null);
-            updateReminderIcon(notePresenter.getNote());
-        });
+        getSupportFragmentManager()
+                .setFragmentResultListener(
+                        "reminderChanged",
+                        this,
+                        (key, result) -> {
+                            if (notePresenter == null || !notePresenter.hasNote()) return;
+                            boolean hasReminder = result.getBoolean("hasReminder", false);
+                            notePresenter
+                                    .getNote()
+                                    .setReminderTime(
+                                            hasReminder ? result.getLong("reminderTime") : null);
+                            updateReminderIcon(notePresenter.getNote());
+                        });
 
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                notePresenter.closeActivity();
-            }
-        });
+        getOnBackPressedDispatcher()
+                .addCallback(
+                        new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                notePresenter.closeActivity();
+                            }
+                        });
     }
 
     @Override
@@ -139,14 +148,12 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         }
     }
 
-
     private void setupSharedTransition(View layout, long id) {
         layout.setTransitionName(String.valueOf(id));
         setEnterSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
         getWindow().setSharedElementEnterTransition(buildContainerTransform(layout));
         getWindow().setSharedElementReturnTransition(buildContainerTransform(layout));
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -168,10 +175,13 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         if (reminderMenuItem == null || note == null) return;
         boolean hasReminder = note.hasReminder();
         TypedValue tv = new TypedValue();
-        getTheme().resolveAttribute(
-                hasReminder ? android.R.attr.colorPrimary
-                            : com.google.android.material.R.attr.colorOnBackground,
-                tv, true);
+        getTheme()
+                .resolveAttribute(
+                        hasReminder
+                                ? android.R.attr.colorPrimary
+                                : com.google.android.material.R.attr.colorOnBackground,
+                        tv,
+                        true);
         reminderMenuItem.setIconTintList(ColorStateList.valueOf(tv.data));
     }
 
@@ -180,9 +190,12 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         WindowCompat.setDecorFitsSystemWindows(window, false);
 
         // Control the color of status bar icons depending on night mode
-        final int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
-        insetsController.setAppearanceLightStatusBars(currentNightMode == Configuration.UI_MODE_NIGHT_NO);
+        final int currentNightMode =
+                getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        WindowInsetsControllerCompat insetsController =
+                new WindowInsetsControllerCompat(window, window.getDecorView());
+        insetsController.setAppearanceLightStatusBars(
+                currentNightMode == Configuration.UI_MODE_NIGHT_NO);
 
         // Transparent status bar
         window.setStatusBarColor(Color.TRANSPARENT);
@@ -202,7 +215,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             notePresenter.closeActivity();
-
         }
 
         if (item.getItemId() == R.id.reminderBut) {
@@ -214,11 +226,13 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         if (item.getItemId() == R.id.moreBut) {
             if (notePresenter.hasNote()) {
-                MoreNoteDialog dialog = MoreNoteDialog.newInstance(
-                        notePresenter.getNote().getId(),
-                        isExtendedEditor() ? MoreNoteDialog.RootActivity.ExtendedActivity : MoreNoteDialog.RootActivity.NoteActivity,
-                        0
-                );
+                MoreNoteDialog dialog =
+                        MoreNoteDialog.newInstance(
+                                notePresenter.getNote().getId(),
+                                isExtendedEditor()
+                                        ? MoreNoteDialog.RootActivity.ExtendedActivity
+                                        : MoreNoteDialog.RootActivity.NoteActivity,
+                                0);
                 dialog.show(getSupportFragmentManager(), "MoreNote");
             }
         }
@@ -226,13 +240,11 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         return super.onOptionsItemSelected(item);
     }
 
-
     /**
-     * Determines whether the current note editor screen is using
-     * the Extended Editor layout (ActivityNoteExtendedEditorBinding).
-     * <p>
-     * This method is defensive:
-     * - safely handles null binding
+     * Determines whether the current note editor screen is using the Extended Editor layout
+     * (ActivityNoteExtendedEditorBinding).
+     *
+     * <p>This method is defensive: - safely handles null binding
      *
      * @return true if this Activity is using the Extended Editor, false otherwise.
      */
@@ -287,7 +299,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
             ((NotePresenter) notePresenter).cleanupHandlers();
             notePresenter.detachView();
         }
-
     }
 
     @Override
@@ -302,7 +313,10 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Override
     public void changeEditor(long idNote) {
-        Intent intent = new Intent(this, isExtendedEditor() ? NoteActivity.class : NoteExtendedEditorActivity.class);
+        Intent intent =
+                new Intent(
+                        this,
+                        isExtendedEditor() ? NoteActivity.class : NoteExtendedEditorActivity.class);
         intent.putExtra(NoteExtras.EXTRA_NEW_NOTE, false);
         intent.putExtra(EXTRA_ID_NOTE, idNote);
 
@@ -339,5 +353,4 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public void initParam() {
         // Not implemented extended
     }
-
 }

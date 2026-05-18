@@ -11,16 +11,13 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
-
 import androidx.core.content.FileProvider;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.BottomSheetAttachmentBinding;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
@@ -30,10 +27,7 @@ public class AttachmentActionsDialog {
 
     @SuppressLint("UseCompatLoadingForDrawables")
     public static void show(
-            Context ctx,
-            EditorAttachment attachment,
-            OnAttachmentDeleteListener deleteListener
-    ) {
+            Context ctx, EditorAttachment attachment, OnAttachmentDeleteListener deleteListener) {
         BottomSheetDialog dialog = new BottomSheetDialog(ctx);
         BottomSheetAttachmentBinding binding =
                 BottomSheetAttachmentBinding.inflate(dialog.getLayoutInflater());
@@ -55,89 +49,97 @@ public class AttachmentActionsDialog {
             binding.deleteAttach.setBackground(ctx.getDrawable(R.drawable.bg_item_full));
         } else {
             // File exists → show everything
-            binding.openAction.setOnClickListener(v -> {
-                dialog.dismiss();
-                openWith(ctx, attachment);
-            });
+            binding.openAction.setOnClickListener(
+                    v -> {
+                        dialog.dismiss();
+                        openWith(ctx, attachment);
+                    });
 
-            binding.downloadAction.setOnClickListener(v -> {
-                dialog.dismiss();
-                saveToDownloads(ctx, attachment);
-            });
+            binding.downloadAction.setOnClickListener(
+                    v -> {
+                        dialog.dismiss();
+                        saveToDownloads(ctx, attachment);
+                    });
         }
 
         // DELETE — always visible
-        binding.deleteAttach.setOnClickListener(v -> {
-            dialog.dismiss();
+        binding.deleteAttach.setOnClickListener(
+                v -> {
+                    dialog.dismiss();
 
-            if (exists) {
-                // Showing confirmation
-                showConfirmDelete(ctx, attachment, deleteListener);
-            } else {
-                // File does not exist — simply delete without dialog
-                deleteListener.onDeleteAttachment(attachment, true);
-            }
-        });
+                    if (exists) {
+                        // Showing confirmation
+                        showConfirmDelete(ctx, attachment, deleteListener);
+                    } else {
+                        // File does not exist — simply delete without dialog
+                        deleteListener.onDeleteAttachment(attachment, true);
+                    }
+                });
 
         dialog.setContentView(binding.getRoot());
         dialog.show();
     }
 
-
-    private static void showConfirmDelete(Context ctx,
-                                          EditorAttachment att,
-                                          OnAttachmentDeleteListener listener) {
+    private static void showConfirmDelete(
+            Context ctx, EditorAttachment att, OnAttachmentDeleteListener listener) {
 
         new MaterialAlertDialogBuilder(
-                ctx,
-                com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog
-        )
+                        ctx,
+                        com.google.android.material.R.style
+                                .ThemeOverlay_Material3_MaterialAlertDialog)
                 .setTitle(R.string.dialog_delete_title)
                 .setMessage(R.string.dialog_delete_message)
-                .setPositiveButton(R.string.dialog_delete_confirm, (dialog, which) -> {
-                    listener.onDeleteAttachment(att, false);
-                    dialog.dismiss();
-                })
-                .setNegativeButton(R.string.dialog_delete_cancel, (dialog, which) -> dialog.dismiss())
+                .setPositiveButton(
+                        R.string.dialog_delete_confirm,
+                        (dialog, which) -> {
+                            listener.onDeleteAttachment(att, false);
+                            dialog.dismiss();
+                        })
+                .setNegativeButton(
+                        R.string.dialog_delete_cancel, (dialog, which) -> dialog.dismiss())
                 .show();
     }
-
 
     private static void openWith(Context ctx, EditorAttachment att) {
         try {
             File mFile = AttachmentStorage.read(ctx, att);
             if (mFile == null) {
-                Toast.makeText(ctx, ctx.getString(R.string.attachment_load_failed), Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                                ctx,
+                                ctx.getString(R.string.attachment_load_failed),
+                                Toast.LENGTH_SHORT)
+                        .show();
                 return;
             }
 
             String mime = getMime(att.extension);
             if (mime == null) mime = "*/*";
 
-            var uri = FileProvider.getUriForFile(
-                    ctx,
-                    ctx.getPackageName() + ".provider",
-                    mFile
-            );
+            var uri = FileProvider.getUriForFile(ctx, ctx.getPackageName() + ".provider", mFile);
 
             var intent = new Intent(android.content.Intent.ACTION_VIEW);
             intent.setDataAndType(uri, mime);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            ctx.startActivity(Intent.createChooser(intent, ctx.getString(R.string.attachment_open_with)));
+            ctx.startActivity(
+                    Intent.createChooser(intent, ctx.getString(R.string.attachment_open_with)));
 
         } catch (Exception e) {
             Log.e(TAG, "openWith() aattachments failded", e);
-            Toast.makeText(ctx, ctx.getString(R.string.attachment_open_failed), Toast.LENGTH_SHORT).show();
+            Toast.makeText(ctx, ctx.getString(R.string.attachment_open_failed), Toast.LENGTH_SHORT)
+                    .show();
         }
     }
-
 
     private static void saveToDownloads(Context ctx, EditorAttachment att) {
         try {
             File file = AttachmentStorage.read(ctx, att);
             if (file == null) {
-                Toast.makeText(ctx, ctx.getString(R.string.attachment_save_failed), Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                                ctx,
+                                ctx.getString(R.string.attachment_save_failed),
+                                Toast.LENGTH_SHORT)
+                        .show();
                 return;
             }
 
@@ -170,7 +172,7 @@ public class AttachmentActionsDialog {
             }
 
             try (OutputStream out = resolver.openOutputStream(item);
-                 FileInputStream in = new FileInputStream(file)) {
+                    FileInputStream in = new FileInputStream(file)) {
 
                 byte[] buffer = new byte[8192];
                 int len;
@@ -193,9 +195,7 @@ public class AttachmentActionsDialog {
         }
     }
 
-
     private static String getMime(String ext) {
-        return MimeTypeMap.getSingleton()
-                .getMimeTypeFromExtension(ext.toLowerCase());
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase());
     }
 }

@@ -3,7 +3,6 @@ package com.pasich.mynotes.utils.recycler;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.utils.adapters.TagsManagementAdapter;
 
 public class TagDragCallback extends ItemTouchHelper.Callback {
@@ -16,7 +15,8 @@ public class TagDragCallback extends ItemTouchHelper.Callback {
     }
 
     @Override
-    public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+    public int getMovementFlags(
+            @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
         int position = viewHolder.getAbsoluteAdapterPosition();
 
         // Disable drag for first element (Add button)
@@ -31,7 +31,10 @@ public class TagDragCallback extends ItemTouchHelper.Callback {
     }
 
     @Override
-    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+    public boolean onMove(
+            @NonNull RecyclerView recyclerView,
+            @NonNull RecyclerView.ViewHolder viewHolder,
+            @NonNull RecyclerView.ViewHolder target) {
         int fromPosition = viewHolder.getAbsoluteAdapterPosition();
         int toPosition = target.getAbsoluteAdapterPosition();
 
@@ -46,9 +49,9 @@ public class TagDragCallback extends ItemTouchHelper.Callback {
         return true;
     }
 
-
     @Override
-    public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+    public void clearView(
+            @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
         // If we were dragging, save changes to database
         if (isDragging) {

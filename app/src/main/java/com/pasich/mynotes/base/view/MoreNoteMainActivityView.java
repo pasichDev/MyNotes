@@ -1,6 +1,5 @@
 package com.pasich.mynotes.base.view;
 
-
 import com.pasich.mynotes.data.model.Note;
 
 public interface MoreNoteMainActivityView {
@@ -10,5 +9,4 @@ public interface MoreNoteMainActivityView {
     void openCopyNote(long idNote);
 
     void callbackDeleteNote(Note mNote);
-
 }

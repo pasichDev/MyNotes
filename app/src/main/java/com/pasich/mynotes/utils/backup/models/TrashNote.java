@@ -1,18 +1,15 @@
 package com.pasich.mynotes.utils.backup.models;
 
-
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
 
 /**
  * Legacy TrashNote model.
  *
- * <p>This class is kept only for backward compatibility with
- * old backup files created before the introduction of "isTrash"
- * field inside the Note model.</p>
+ * <p>This class is kept only for backward compatibility with old backup files created before the
+ * introduction of "isTrash" field inside the Note model.
  *
- * <p>Once support for old backups is no longer needed,
- * this class can be safely removed.</p>
+ * <p>Once support for old backups is no longer needed, this class can be safely removed.
  */
 @Deprecated
 public class TrashNote {
@@ -38,7 +35,6 @@ public class TrashNote {
         this.Checked = false;
         return this;
     }
-
 
     public int getId() {
         return this.id;
@@ -77,8 +73,8 @@ public class TrashNote {
     }
 
     /**
-     * Converts this legacy TrashNote into a modern Note object
-     * using the new unified "isTrash" flag.
+     * Converts this legacy TrashNote into a modern Note object using the new unified "isTrash"
+     * flag.
      */
     public Note toNote() {
         Note note = new Note();
@@ -97,5 +93,4 @@ public class TrashNote {
 
         return note;
     }
-
 }

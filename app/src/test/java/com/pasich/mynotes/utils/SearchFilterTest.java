@@ -3,14 +3,11 @@ package com.pasich.mynotes.utils;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.pasich.mynotes.data.model.Note;
-
-import org.junit.Test;
-
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.Test;
 
 public class SearchFilterTest {
 
@@ -22,8 +19,10 @@ public class SearchFilterTest {
         if (query == null || query.trim().isEmpty()) return notes;
         String q = query.toLowerCase().trim();
         return notes.stream()
-                .filter(n -> n.getTitle().toLowerCase().contains(q)
-                        || n.getValue().toLowerCase().contains(q))
+                .filter(
+                        n ->
+                                n.getTitle().toLowerCase().contains(q)
+                                        || n.getValue().toLowerCase().contains(q))
                 .collect(Collectors.toList());
     }
 
@@ -35,25 +34,30 @@ public class SearchFilterTest {
 
     @Test
     public void exactTitleMatch_returnsNote() {
-        List<Note> notes = Arrays.asList(makeNote("Shopping List", "milk"), makeNote("Work", "tasks"));
+        List<Note> notes =
+                Arrays.asList(makeNote("Shopping List", "milk"), makeNote("Work", "tasks"));
         assertThat(filter(notes, "Shopping List")).hasSize(1);
     }
 
     @Test
     public void partialTitleMatch_returnsNote() {
-        List<Note> notes = Arrays.asList(makeNote("My Shopping", "items"), makeNote("Work", "tasks"));
+        List<Note> notes =
+                Arrays.asList(makeNote("My Shopping", "items"), makeNote("Work", "tasks"));
         assertThat(filter(notes, "Shop")).hasSize(1);
     }
 
     @Test
     public void caseInsensitiveSearch_works() {
-        List<Note> notes = Arrays.asList(makeNote("UPPERCASE", "content"), makeNote("Other", "stuff"));
+        List<Note> notes =
+                Arrays.asList(makeNote("UPPERCASE", "content"), makeNote("Other", "stuff"));
         assertThat(filter(notes, "uppercase")).hasSize(1);
     }
 
     @Test
     public void contentSearch_matchesValue() {
-        List<Note> notes = Arrays.asList(makeNote("Title", "buy groceries"), makeNote("Title2", "meeting notes"));
+        List<Note> notes =
+                Arrays.asList(
+                        makeNote("Title", "buy groceries"), makeNote("Title2", "meeting notes"));
         assertThat(filter(notes, "groceries")).hasSize(1);
     }
 

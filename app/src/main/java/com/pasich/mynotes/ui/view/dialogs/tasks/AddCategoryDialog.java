@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
 
@@ -29,10 +28,12 @@ public class AddCategoryDialog {
         new MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.tasks_add_category))
                 .setView(view)
-                .setPositiveButton(android.R.string.ok, (d, w) -> {
-                    String name = input.getText().toString().trim();
-                    if (!name.isEmpty()) callback.onAdd(name, selectedColor[0]);
-                })
+                .setPositiveButton(
+                        android.R.string.ok,
+                        (d, w) -> {
+                            String name = input.getText().toString().trim();
+                            if (!name.isEmpty()) callback.onAdd(name, selectedColor[0]);
+                        })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
 

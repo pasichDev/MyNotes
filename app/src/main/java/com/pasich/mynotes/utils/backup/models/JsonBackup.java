@@ -1,10 +1,8 @@
 package com.pasich.mynotes.utils.backup.models;
 
-
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,5 +109,4 @@ public class JsonBackup {
         // Обидва пусті
         return new ArrayList<>();
     }
-
 }

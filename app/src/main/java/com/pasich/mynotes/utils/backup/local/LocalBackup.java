@@ -4,11 +4,10 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-
 import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.ScramblerBackupHelper;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
-
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,11 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @Singleton
 public class LocalBackup implements LocalBackupHelper {
@@ -41,7 +37,8 @@ public class LocalBackup implements LocalBackupHelper {
 
             File zip = ZipBackupHelper.writeZipBackup(mContext, serviceCache.getJsonBackup());
 
-            try (ParcelFileDescriptor desc = mContext.getContentResolver().openFileDescriptor(uriLocalFile, "w")) {
+            try (ParcelFileDescriptor desc =
+                    mContext.getContentResolver().openFileDescriptor(uriLocalFile, "w")) {
                 assert desc != null;
                 try (FileOutputStream fos = new FileOutputStream(desc.getFileDescriptor())) {
 
@@ -55,7 +52,6 @@ public class LocalBackup implements LocalBackupHelper {
             return false;
         }
     }
-
 
     @Override
     public JsonBackup readBackupLocalFile(Uri uriLocalFile) {
@@ -76,7 +72,7 @@ public class LocalBackup implements LocalBackupHelper {
 
     private byte[] readBytes(Uri uri) throws IOException {
         try (InputStream is = mContext.getContentResolver().openInputStream(uri);
-             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
 
             if (is == null) return new byte[0];
 
@@ -90,10 +86,7 @@ public class LocalBackup implements LocalBackupHelper {
         }
     }
 
-
     private boolean checkServiceCache(BackupCacheHelper serviceCache) {
         return serviceCache != null && serviceCache.getJsonBackup() != null;
     }
-
-
 }

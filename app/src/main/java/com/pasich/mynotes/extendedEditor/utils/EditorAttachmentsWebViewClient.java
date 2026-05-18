@@ -10,10 +10,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
@@ -42,8 +40,7 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
 
         try {
             List<String> segments = uri.getPathSegments();
-            if (segments.size() < 2)
-                return super.shouldInterceptRequest(view, request);
+            if (segments.size() < 2) return super.shouldInterceptRequest(view, request);
 
             String noteStr = segments.get(0); // note_146
             String fileName = segments.get(1); // abc.jpg
@@ -51,13 +48,14 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
             int noteId = Integer.parseInt(noteStr.replace("note_", ""));
 
             // Формуємо правильний EditorAttachment URL
-            String internalUrl = new Uri.Builder()
-                    .scheme(EDITORJS_SCHEME)
-                    .authority("attachments")
-                    .appendPath("note_" + noteId)
-                    .appendPath(fileName)
-                    .build()
-                    .toString();
+            String internalUrl =
+                    new Uri.Builder()
+                            .scheme(EDITORJS_SCHEME)
+                            .authority("attachments")
+                            .appendPath("note_" + noteId)
+                            .appendPath(fileName)
+                            .build()
+                            .toString();
 
             EditorAttachment att = new EditorAttachment(internalUrl);
 
@@ -68,11 +66,7 @@ public class EditorAttachmentsWebViewClient extends WebViewClient {
 
             String mime = getMimeFromName(fileName);
 
-            return new WebResourceResponse(
-                    mime,
-                    null,
-                    new FileInputStream(file)
-            );
+            return new WebResourceResponse(mime, null, new FileInputStream(file));
 
         } catch (Exception e) {
             Log.e(TAG, "intercept error " + e.getMessage());

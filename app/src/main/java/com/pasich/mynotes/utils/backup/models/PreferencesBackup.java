@@ -3,15 +3,13 @@ package com.pasich.mynotes.utils.backup.models;
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 
-
 /**
  * Backup model for user preferences.
  *
- * <p>This class stores all app + theme preferences required
- * to fully restore user configuration after importing a backup.</p>
+ * <p>This class stores all app + theme preferences required to fully restore user configuration
+ * after importing a backup.
  *
- * <p>Backward-compatible: new fields are optional and have
- * safe default values for old backups.</p>
+ * <p>Backward-compatible: new fields are optional and have safe default values for old backups.
  */
 public class PreferencesBackup {
 
@@ -44,7 +42,6 @@ public class PreferencesBackup {
     @SerializedName("k")
     private final boolean imageOptimizationEnabled;
 
-
     @SerializedName("m")
     private final boolean screenProtection;
 
@@ -53,7 +50,6 @@ public class PreferencesBackup {
 
     @SerializedName("o")
     private final float uiFontScale;
-
 
     public PreferencesBackup(
             int formatCount,
@@ -66,8 +62,7 @@ public class PreferencesBackup {
             boolean imageOptEnabled,
             boolean screenProtection,
             boolean extendedEditor,
-            float uiFontScale
-    ) {
+            float uiFontScale) {
         this.formatCount = formatCount;
         this.typeFaceNoteActivity = typeFace;
         this.sortParam = sortParam;
@@ -82,7 +77,6 @@ public class PreferencesBackup {
 
         this.isCreated = true;
     }
-
 
     // ================= DEFAULT CONSTRUCTOR (IMPORT OLD BACKUP) =================
 
@@ -102,7 +96,6 @@ public class PreferencesBackup {
 
         this.isCreated = false;
     }
-
 
     // ================= GETTERS =================
 
@@ -137,7 +130,6 @@ public class PreferencesBackup {
     public int getThemeMode() {
         return themeMode;
     }
-
 
     public boolean isImageOptimizationEnabled() {
         return imageOptimizationEnabled;

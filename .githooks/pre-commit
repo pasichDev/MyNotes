@@ -1,0 +1,14 @@
+#!/bin/sh
+# Pre-commit: fast format check only (~15s).
+# Fix violations: ./gradlew :app:spotlessApply
+
+echo "[pre-commit] Checking code format..."
+./gradlew :app:spotlessCheck -q
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "  Format violations found."
+    echo "  Run: ./gradlew :app:spotlessApply"
+    echo ""
+    exit 1
+fi
+echo "[pre-commit] Format OK"

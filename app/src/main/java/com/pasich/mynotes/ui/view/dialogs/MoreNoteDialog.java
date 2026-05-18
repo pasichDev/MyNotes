@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.view.dialogs;
 
-
 import static android.view.View.GONE;
 
 import android.app.Activity;
@@ -11,14 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.slider.Slider;
@@ -34,35 +27,29 @@ import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
 import com.pasich.mynotes.ui.view.widgets.TwoSideSwitchView;
 import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
-import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
-
-import java.util.List;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDialogContract.view {
 
-    @Inject
-    public MoreNoteDialogPresenter mPresenter;
-    @Inject
-    public TextStyleTool textStylePreferences;
+    @Inject public MoreNoteDialogPresenter mPresenter;
+    @Inject public TextStyleTool textStylePreferences;
     // private Note mNote;
     private RootActivity rootActivity;
     private int positionItem;
     private DialogMoreNoteBinding binding;
-    /**
-     * Interfaces
-     */
+
+    /** Interfaces */
     private MoreNoteNoteActivityView noteActivity;
+
     private MoreNoteMainActivityView mainActivity;
 
-    public MoreNoteDialog() {
-    }
-
+    public MoreNoteDialog() {}
 
     public static MoreNoteDialog newInstance(int noteId, RootActivity root, int position) {
         MoreNoteDialog dialog = new MoreNoteDialog();
@@ -75,7 +62,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         dialog.setArguments(args);
         return dialog;
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,7 +78,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         vibrateOpenDialog(rootActivity == RootActivity.MainActivity);
         setState((BottomSheetDialog) requireDialog());
         binding = DialogMoreNoteBinding.inflate(getLayoutInflater(), container, false);
@@ -135,7 +124,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     private void updatePinState(Note note) {
         if (note == null) return;
-        binding.pinNoteText.setText(note.isPinned() ? getString(R.string.unpinNote) : getString(R.string.pinNote));
+        binding.pinNoteText.setText(
+                note.isPinned() ? getString(R.string.unpinNote) : getString(R.string.pinNote));
     }
 
     private void updateReminderMenuState(Note note) {
@@ -149,9 +139,11 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
     }
 
-
     public void setHideTextSize() {
-        binding.settingsActivity.getRoot().setVisibility(rootActivity == RootActivity.NoteActivity ? View.VISIBLE : View.GONE);
+        binding.settingsActivity
+                .getRoot()
+                .setVisibility(
+                        rootActivity == RootActivity.NoteActivity ? View.VISIBLE : View.GONE);
     }
 
     public void setChangeTypeEditor() {
@@ -160,11 +152,15 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             binding.changeTypeEditor.setVisibility(GONE);
             return;
         }
-        binding.changeTypeEditor.setMode(rootActivity == RootActivity.ExtendedActivity ? TwoSideSwitchView.Mode.EXTENDED : TwoSideSwitchView.Mode.SIMPLE);
+        binding.changeTypeEditor.setMode(
+                rootActivity == RootActivity.ExtendedActivity
+                        ? TwoSideSwitchView.Mode.EXTENDED
+                        : TwoSideSwitchView.Mode.SIMPLE);
     }
 
     public void goneCopyNotesExtended() {
-        binding.copyNote.setVisibility(mPresenter.getNote().isAttachments() ? View.GONE : View.VISIBLE);
+        binding.copyNote.setVisibility(
+                mPresenter.getNote().isAttachments() ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -190,15 +186,11 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             return;
         }
 
-        Toast.makeText(
-                requireContext(),
-                R.string.error_dialog_wrong_context,
-                Toast.LENGTH_SHORT
-        ).show();
+        Toast.makeText(requireContext(), R.string.error_dialog_wrong_context, Toast.LENGTH_SHORT)
+                .show();
 
         dismiss();
     }
-
 
     @Override
     public void callableCopyNote(long newNoteId) {
@@ -206,7 +198,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             mainActivity.openCopyNote(Math.toIntExact(newNoteId));
         }
     }
-
 
     @Override
     public void initListeners() {
@@ -216,100 +207,110 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
         if (rootActivity != RootActivity.MainActivity) {
             binding.noSave.setOnClickListener(v -> noteActivity.closeActivityNotSaved());
-            binding.settingsActivity.textSize.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
-                @Override
-                public void onStartTrackingTouch(@NonNull Slider slider) {
-                }
+            binding.settingsActivity.textSize.addOnSliderTouchListener(
+                    new Slider.OnSliderTouchListener() {
+                        @Override
+                        public void onStartTrackingTouch(@NonNull Slider slider) {}
 
-                @Override
-                public void onStopTrackingTouch(@NonNull Slider slider) {
-                    mPresenter.editSizeText(Math.round(slider.getValue()));
-                }
-            });
-
-            binding.settingsActivity.textSize.addOnChangeListener((slider, value, fromUser) -> {
-                if (fromUser) noteActivity.changeTextSizeOnline(Math.round(value));
-            });
-
-            binding.settingsActivity.textStyleItem.setOnClickListener(v -> {
-                textStylePreferences.changeArgument();
-                noteActivity.changeTextStyle();
-            });
-
-            binding.changeTypeEditor.setOnModeChangedListener(mode ->
-                    binding.changeTypeEditor.postDelayed(() -> {
-                        if (!isAdded() || noteActivity == null || mPresenter.getNote() == null)
-                            return;
-
-                        switch (mode) {
-                            case SIMPLE:
-                            case EXTENDED:
-                                noteActivity.changeEditor(mPresenter.getNote().getId());
-                                break;
-                            case INACTIVE:
-                                break;
+                        @Override
+                        public void onStopTrackingTouch(@NonNull Slider slider) {
+                            mPresenter.editSizeText(Math.round(slider.getValue()));
                         }
-                        dismiss();
-                    }, 300)
-            );
+                    });
 
+            binding.settingsActivity.textSize.addOnChangeListener(
+                    (slider, value, fromUser) -> {
+                        if (fromUser) noteActivity.changeTextSizeOnline(Math.round(value));
+                    });
+
+            binding.settingsActivity.textStyleItem.setOnClickListener(
+                    v -> {
+                        textStylePreferences.changeArgument();
+                        noteActivity.changeTextStyle();
+                    });
+
+            binding.changeTypeEditor.setOnModeChangedListener(
+                    mode ->
+                            binding.changeTypeEditor.postDelayed(
+                                    () -> {
+                                        if (!isAdded()
+                                                || noteActivity == null
+                                                || mPresenter.getNote() == null) return;
+
+                                        switch (mode) {
+                                            case SIMPLE:
+                                            case EXTENDED:
+                                                noteActivity.changeEditor(
+                                                        mPresenter.getNote().getId());
+                                                break;
+                                            case INACTIVE:
+                                                break;
+                                        }
+                                        dismiss();
+                                    },
+                                    300));
 
         } else {
-            binding.actionPanelActivate.setOnClickListener(view -> {
-                assert mainActivity != null;
-                mainActivity.actionStartNote(mPresenter.getNote(), positionItem);
-                dismiss();
-            });
+            binding.actionPanelActivate.setOnClickListener(
+                    view -> {
+                        assert mainActivity != null;
+                        mainActivity.actionStartNote(mPresenter.getNote(), positionItem);
+                        dismiss();
+                    });
         }
 
-
         binding.share.setVisibility(View.VISIBLE);
-        binding.share.setOnClickListener(v -> {
-            // Open share options dialog
-            ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
-            shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
-            dismiss();
-        });
+        binding.share.setOnClickListener(
+                v -> {
+                    // Open share options dialog
+                    ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
+                    shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+                    dismiss();
+                });
 
         binding.translateNote.setVisibility(View.VISIBLE);
-        binding.translateNote.setOnClickListener(v -> {
-            GoogleTranslateHelper.startTranslation(requireActivity(), mPresenter.getNote().getValue());
-            dismiss();
-        });
-        binding.setReminder.setOnClickListener(v -> {
-            if (mPresenter.getNote() == null) return;
-            ReminderPickerBottomSheet.newInstance(mPresenter.getNote().getId())
-                    .show(getParentFragmentManager(), "ReminderPicker");
-            dismiss();
-        });
+        binding.translateNote.setOnClickListener(
+                v -> {
+                    GoogleTranslateHelper.startTranslation(
+                            requireActivity(), mPresenter.getNote().getValue());
+                    dismiss();
+                });
+        binding.setReminder.setOnClickListener(
+                v -> {
+                    if (mPresenter.getNote() == null) return;
+                    ReminderPickerBottomSheet.newInstance(mPresenter.getNote().getId())
+                            .show(getParentFragmentManager(), "ReminderPicker");
+                    dismiss();
+                });
 
-        binding.pinNote.setOnClickListener(v -> {
-            mPresenter.togglePinNote();
-            dismiss();
-        });
+        binding.pinNote.setOnClickListener(
+                v -> {
+                    mPresenter.togglePinNote();
+                    dismiss();
+                });
 
-        binding.moveToTrash.setOnClickListener(v -> {
-            mPresenter.noteMoveToTrash();
-            if (rootActivity == RootActivity.MainActivity) {
-                mainActivity.callbackDeleteNote(mPresenter.getNote());
-                dismiss();
-            } else {
-                noteActivity.closeActivityNotSaved();
-            }
+        binding.moveToTrash.setOnClickListener(
+                v -> {
+                    mPresenter.noteMoveToTrash();
+                    if (rootActivity == RootActivity.MainActivity) {
+                        mainActivity.callbackDeleteNote(mPresenter.getNote());
+                        dismiss();
+                    } else {
+                        noteActivity.closeActivityNotSaved();
+                    }
+                });
 
-        });
+        binding.copyNote.setOnClickListener(
+                v -> {
+                    if (mPresenter.getNote().isAttachments()) return;
+                    if (rootActivity != RootActivity.MainActivity) {
+                        noteActivity.openCopyNote(mPresenter.getNote().getId());
+                    } else {
+                        mPresenter.copyNoteMainActivity();
+                    }
 
-        binding.copyNote.setOnClickListener(v -> {
-            if (mPresenter.getNote().isAttachments()) return;
-            if (rootActivity != RootActivity.MainActivity) {
-                noteActivity.openCopyNote(mPresenter.getNote().getId());
-            } else {
-                mPresenter.copyNoteMainActivity();
-            }
-
-            dismiss();
-        });
-
+                    dismiss();
+                });
 
         if (mPresenter.getNote().getValue().isEmpty()) {
             binding.translateNote.setVisibility(GONE);
@@ -317,7 +318,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             binding.copyNote.setVisibility(GONE);
         }
     }
-
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
@@ -335,14 +335,12 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             positionItem = 0;
         }
 
-
         binding.setReminder.setOnClickListener(null);
         binding.pinNote.setOnClickListener(null);
         binding.moveToTrash.setOnClickListener(null);
         binding.copyNote.setOnClickListener(null);
         binding.share.setOnClickListener(null);
     }
-
 
     @Override
     public void createChipsTag(List<Tag> tags) {
@@ -358,23 +356,24 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         String noteTag = mPresenter.getNote().getTag(); // може бути ""
 
         for (Tag tag : tags) {
-            Chip chip = (Chip) getLayoutInflater()
-                    .inflate(R.layout.layout_chip_entry, binding.chipGroupSystem, false);
+            Chip chip =
+                    (Chip)
+                            getLayoutInflater()
+                                    .inflate(
+                                            R.layout.layout_chip_entry,
+                                            binding.chipGroupSystem,
+                                            false);
 
             chip.setText(getString(R.string.tagHastag, tag.getNameTag()));
 
             boolean checked = TextUtils.equals(noteTag, tag.getNameTag());
             chip.setChecked(checked);
 
-            chip.setOnCheckedChangeListener(
-                    (buttonView, isChecked) -> selectedTag(tag, isChecked)
-            );
+            chip.setOnCheckedChangeListener((buttonView, isChecked) -> selectedTag(tag, isChecked));
 
             binding.chipGroupSystem.addView(chip);
         }
     }
-
-
 
     private void selectedTag(Tag tag, boolean checked) {
         final int noteId = mPresenter.getNote().getId();
@@ -393,6 +392,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
     public enum RootActivity {
-        MainActivity, NoteActivity, ExtendedActivity
+        MainActivity,
+        NoteActivity,
+        ExtendedActivity
     }
 }

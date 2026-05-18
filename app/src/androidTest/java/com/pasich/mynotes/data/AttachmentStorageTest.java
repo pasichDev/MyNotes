@@ -3,18 +3,14 @@ package com.pasich.mynotes.data;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-
 import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
-
+import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
 
 @RunWith(AndroidJUnit4.class)
 public class AttachmentStorageTest {
@@ -54,7 +50,8 @@ public class AttachmentStorageTest {
         orphan.createNewFile();
 
         com.pasich.mynotes.data.model.Note emptyNote =
-                new com.pasich.mynotes.data.model.Note().create("", "", System.currentTimeMillis(), "");
+                new com.pasich.mynotes.data.model.Note()
+                        .create("", "", System.currentTimeMillis(), "");
         emptyNote.setId(66666);
 
         AttachmentCleaner.cleanup(context, emptyNote);

@@ -1,7 +1,6 @@
 package com.pasich.mynotes.ui.contract;
 
 import android.content.Intent;
-
 import com.pasich.mynotes.base.view.ActionBar;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
@@ -70,7 +69,6 @@ public interface NoteContract {
         boolean hasNote();
 
         void copyNoteRequest();
-
     }
 
     interface AutoSaveCallback {

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.widget.Toast;
-
 import com.pasich.mynotes.R;
 
 public class GoogleTranslateHelper {
@@ -28,7 +27,6 @@ public class GoogleTranslateHelper {
         } catch (ActivityNotFoundException e) {
             // If Google Translate not installed
             Toast.makeText(activity, R.string.notInstaledAppTranslate, Toast.LENGTH_SHORT).show();
-
         }
     }
 }

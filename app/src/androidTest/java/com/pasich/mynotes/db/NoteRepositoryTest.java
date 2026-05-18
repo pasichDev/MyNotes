@@ -5,19 +5,16 @@ import static com.google.common.truth.Truth.assertThat;
 import androidx.room.Room;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
 import com.pasich.mynotes.data.model.Note;
-
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class NoteRepositoryTest {
@@ -27,10 +24,12 @@ public class NoteRepositoryTest {
 
     @Before
     public void setUp() {
-        db = Room.inMemoryDatabaseBuilder(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                AppDatabase.class
-        ).allowMainThreadQueries().build();
+        db =
+                Room.inMemoryDatabaseBuilder(
+                                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                                AppDatabase.class)
+                        .allowMainThreadQueries()
+                        .build();
         noteDao = db.noteDao();
     }
 

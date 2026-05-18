@@ -2,16 +2,13 @@ package com.pasich.mynotes.data.model;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
-
 import java.util.Objects;
 
 @Entity(tableName = "notes")
 public class Note {
-
 
     @PrimaryKey(autoGenerate = true)
     @SerializedName("a")
@@ -33,7 +30,7 @@ public class Note {
     private String valueJson;
 
     @SerializedName("g")
-    private boolean hasRichContent;  // no use
+    private boolean hasRichContent; // no use
 
     @SerializedName("h")
     private String attachments; // JSON attachments
@@ -121,11 +118,10 @@ public class Note {
 
     public String getValuePreview() {
         if (value == null) {
-            return "";  // or return some default value if you prefer
+            return ""; // or return some default value if you prefer
         }
         return value.length() > 400 ? value.substring(0, 400) : value;
     }
-
 
     public long getDate() {
         return this.date;
@@ -202,7 +198,6 @@ public class Note {
         isPinned = pinned;
     }
 
-
     public int getReminderIntervalMinutes() {
         return reminderIntervalMinutes;
     }
@@ -239,5 +234,4 @@ public class Note {
         c.setReminderRepeat("NONE");
         return c;
     }
-
 }

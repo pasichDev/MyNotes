@@ -1,16 +1,12 @@
 package com.pasich.mynotes.ui.contract;
 
-
 import android.net.Uri;
-
 import androidx.annotation.StringRes;
-
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
 import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
-
 import dagger.hilt.android.scopes.ActivityScoped;
 
 public interface BackupContract {
@@ -44,9 +40,7 @@ public interface BackupContract {
         void processSelectedFileOtherApp(Uri fileUri);
 
         void onRestoreSuccessFlag();
-
     }
-
 
     @ActivityScoped
     interface presenter extends BasePresenter<view> {
@@ -66,7 +60,5 @@ public interface BackupContract {
         void importFromZipOtherApp(Uri fileUri);
 
         void startProcessSelectedFileOtherApp(Uri fileUri);
-
-
     }
 }

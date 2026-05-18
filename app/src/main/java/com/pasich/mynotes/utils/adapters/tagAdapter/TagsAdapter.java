@@ -2,18 +2,14 @@ package com.pasich.mynotes.utils.adapters.tagAdapter;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagBinding;
 import com.pasich.mynotes.utils.recycler.payloads.TagPayloads;
-
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -39,28 +35,27 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemTagBinding binding = ItemTagBinding.inflate(
-                LayoutInflater.from(parent.getContext()),
-                parent,
-                false
-        );
+        ItemTagBinding binding =
+                ItemTagBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
 
         ViewHolder holder = new ViewHolder(binding);
 
-        holder.itemView.setOnClickListener(v -> {
-            int pos = holder.getBindingAdapterPosition();
-            if (pos != RecyclerView.NO_POSITION && clickListener != null) {
-                clickListener.onClick(pos);
-            }
-        });
+        holder.itemView.setOnClickListener(
+                v -> {
+                    int pos = holder.getBindingAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION && clickListener != null) {
+                        clickListener.onClick(pos);
+                    }
+                });
 
-        holder.itemView.setOnLongClickListener(v -> {
-            int pos = holder.getBindingAdapterPosition();
-            if (pos != RecyclerView.NO_POSITION && clickListener != null) {
-                clickListener.onLongClick(pos, holder.itemView);
-            }
-            return true;
-        });
+        holder.itemView.setOnLongClickListener(
+                v -> {
+                    int pos = holder.getBindingAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION && clickListener != null) {
+                        clickListener.onLongClick(pos, holder.itemView);
+                    }
+                    return true;
+                });
 
         return holder;
     }
@@ -72,9 +67,8 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder,
-                                 int position,
-                                 @NonNull List<Object> payloads) {
+    public void onBindViewHolder(
+            @NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
 
         if (!payloads.isEmpty()) {
             Tag tag = getItem(position);

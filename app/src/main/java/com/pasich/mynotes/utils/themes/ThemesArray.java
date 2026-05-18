@@ -3,7 +3,6 @@ package com.pasich.mynotes.utils.themes;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Theme;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-
 import java.util.ArrayList;
 
 public class ThemesArray {

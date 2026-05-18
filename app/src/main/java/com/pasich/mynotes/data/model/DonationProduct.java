@@ -8,7 +8,8 @@ public class DonationProduct {
     private String iconResource;
     private boolean isPurchased;
 
-    public DonationProduct(String id, String title, String description, String price, String iconResource) {
+    public DonationProduct(
+            String id, String title, String description, String price, String iconResource) {
         this.id = id;
         this.title = title;
         this.description = description;

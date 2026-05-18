@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -19,7 +18,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
@@ -60,64 +58,61 @@ import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
-
+import dagger.hilt.android.AndroidEntryPoint;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity implements MainContract.view {
 
     // Update theme listener
-    final private ActivityResultLauncher<Intent> themeUpdateListener = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        Intent data = result.getData();
-        if (result.getResultCode() == RESULT_CODE_THEME_UPDATE) {
-            assert data != null;
-            if (data.hasExtra(EXTRA_UPDATE_THEME_STYLE)) {
-                this.redrawActivity();
-            }
-        }
-    });
+    private final ActivityResultLauncher<Intent> themeUpdateListener =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        Intent data = result.getData();
+                        if (result.getResultCode() == RESULT_CODE_THEME_UPDATE) {
+                            assert data != null;
+                            if (data.hasExtra(EXTRA_UPDATE_THEME_STYLE)) {
+                                this.redrawActivity();
+                            }
+                        }
+                    });
     public ActivityMainBinding mActivityBinding;
-    @Inject
-    public MainContract.presenter mainPresenter;
-    @Inject
-    public FormatListTool formatList;
-    @Inject
-    public TagsAdapter tagsAdapter;
-    @Inject
-    public StaggeredGridLayoutManager gridLayoutManager;
+    @Inject public MainContract.presenter mainPresenter;
+    @Inject public FormatListTool formatList;
+    @Inject public TagsAdapter tagsAdapter;
+    @Inject public StaggeredGridLayoutManager gridLayoutManager;
 
-    @Inject
-    public NoteAdapter mNoteAdapter;
+    @Inject public NoteAdapter mNoteAdapter;
+
     @Named("TagsItemSpaceDecoration")
     @Inject
     public SpacesItemDecoration itemDecorationTags;
+
     @Named("NotesItemSpaceDecoration")
     @Inject
     public SpacesItemDecoration itemDecorationNotes;
-    @Inject
-    public LinearLayoutManager mLinearLayoutManager;
-    @Inject
-    SearchNotesAdapter searchNotesAdapter;
-    @Inject
-    UpdateChecker updateChecker;
-    @Inject
-    ThemePreferencesCache themePreferencesCache;
+
+    @Inject public LinearLayoutManager mLinearLayoutManager;
+    @Inject SearchNotesAdapter searchNotesAdapter;
+    @Inject UpdateChecker updateChecker;
+    @Inject ThemePreferencesCache themePreferencesCache;
     private SearchController searchController;
     private AppUpdateController appUpdateController;
     private NavigationController navigationController;
-    private final ActivityResultLauncher<Intent> changelogLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        if (result.getResultCode() == Activity.RESULT_OK) {
-            boolean hasNewVersion = updateChecker.hasNewVersion();
-            if (navigationController != null)
-                navigationController.updateNewVersionIndicator(hasNewVersion);
-        }
-    });
+    private final ActivityResultLauncher<Intent> changelogLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            boolean hasNewVersion = updateChecker.hasNewVersion();
+                            if (navigationController != null)
+                                navigationController.updateNewVersionIndicator(hasNewVersion);
+                        }
+                    });
     private MainRenderListsController mainRenderListsController;
     private Tag currentSelectedTag = null;
     private List<Tag> currentTags = new ArrayList<>();
@@ -138,50 +133,56 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         mNoteAdapter.setSelectionController(selectionController);
         selectionController.setPanelMode(SelectionController.Mode.NORMAL);
 
-
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
         mActivityBinding.setPresenter((MainPresenter) mainPresenter);
 
+        searchController =
+                new SearchController(
+                        mActivityBinding,
+                        searchNotesAdapter,
+                        new SearchController.Listener() {
+                            @Override
+                            public void onSearchOpen() {
+                                mActivityBinding.listNotes.setNestedScrollingEnabled(false);
+                                List<Tag> userTags = new ArrayList<>();
+                                for (Tag t : currentTags) {
+                                    if (!SystemTagsManager.isSystemTag(t)) {
+                                        userTags.add(t);
+                                    }
+                                }
+                                searchController.setAvailableTags(userTags);
+                            }
 
-        searchController = new SearchController(mActivityBinding, searchNotesAdapter, new SearchController.Listener() {
-            @Override
-            public void onSearchOpen() {
-                mActivityBinding.listNotes.setNestedScrollingEnabled(false);
-                List<Tag> userTags = new ArrayList<>();
-                for (Tag t : currentTags) {
-                    if (!SystemTagsManager.isSystemTag(t)) {
-                        userTags.add(t);
-                    }
-                }
-                searchController.setAvailableTags(userTags);
-            }
+                            @Override
+                            public void onSearchClose() {
+                                mActivityBinding.listNotes.setNestedScrollingEnabled(true);
+                            }
 
-            @Override
-            public void onSearchClose() {
-                mActivityBinding.listNotes.setNestedScrollingEnabled(true);
-            }
+                            @Override
+                            public void onSearchQuery(String query) {
+                                mainPresenter.updateSearchQuery(query);
+                            }
 
-            @Override
-            public void onSearchQuery(String query) {
-                mainPresenter.updateSearchQuery(query);
-            }
-
-            @Override
-            public void onTagFilterChanged(String tagName) {
-                mainPresenter.updateSearchTagFilter(tagName);
-            }
-        });
+                            @Override
+                            public void onTagFilterChanged(String tagName) {
+                                mainPresenter.updateSearchTagFilter(tagName);
+                            }
+                        });
         appUpdateController = new AppUpdateController(this, updateChecker, changelogLauncher);
         appUpdateController.showChangelogIfNeeded();
 
-        navigationController = new NavigationController(this, mActivityBinding, themeUpdateListener, appUpdateController, this::finishActivity);
+        navigationController =
+                new NavigationController(
+                        this,
+                        mActivityBinding,
+                        themeUpdateListener,
+                        appUpdateController,
+                        this::finishActivity);
         navigationController.init();
         navigationController.handleShortcuts(getIntent());
 
         mainRenderListsController = new MainRenderListsController(mActivityBinding);
-
-
     }
 
     @Override
@@ -197,7 +198,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         renderTags(state.tags());
     }
 
-
     private void renderTags(List<Tag> tags) {
         mainRenderListsController.renderListTags(tags);
         tagsAdapter.submitList(tags);
@@ -207,19 +207,25 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     private void renderNotes(List<Note> notes, Tag currentSelectedTag, UiEvent event) {
         switch (event) {
             case SORT_CHANGED, TAG_CHANGED ->
-                    mNoteAdapter.submitList(new ArrayList<>(notes), () -> {
-                        mainRenderListsController.showStateNoteList(currentSelectedTag, notes.size());
-                        mNoteAdapter.notifyDataSetChanged();
-                        mainRenderListsController.animateNoteListChange();
-                    });
+                    mNoteAdapter.submitList(
+                            new ArrayList<>(notes),
+                            () -> {
+                                mainRenderListsController.showStateNoteList(
+                                        currentSelectedTag, notes.size());
+                                mNoteAdapter.notifyDataSetChanged();
+                                mainRenderListsController.animateNoteListChange();
+                            });
             default -> {
                 boolean shouldScrollUp = event == UiEvent.NOTE_CREATED;
-                mNoteAdapter.submitList(notes, () -> {
-                    mainRenderListsController.showStateNoteList(currentSelectedTag, notes.size());
-                    if (shouldScrollUp) {
-                        mainRenderListsController.scrollUpNoteList();
-                    }
-                });
+                mNoteAdapter.submitList(
+                        notes,
+                        () -> {
+                            mainRenderListsController.showStateNoteList(
+                                    currentSelectedTag, notes.size());
+                            if (shouldScrollUp) {
+                                mainRenderListsController.scrollUpNoteList();
+                            }
+                        });
             }
         }
 
@@ -229,12 +235,19 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     @Override
     public void renderDrawerStats(StatsData stats) {
 
-        navigationController.getHeaderBinding().drawerStatsNotesNow.setText(String.valueOf(stats.notesNow()));
-        navigationController.getHeaderBinding().drawerStatsNotesMonth.setText(String.valueOf(stats.notesMonth()));
-        navigationController.getHeaderBinding().drawerStatsChars.setText(String.valueOf(stats.chars()));
-
+        navigationController
+                .getHeaderBinding()
+                .drawerStatsNotesNow
+                .setText(String.valueOf(stats.notesNow()));
+        navigationController
+                .getHeaderBinding()
+                .drawerStatsNotesMonth
+                .setText(String.valueOf(stats.notesMonth()));
+        navigationController
+                .getHeaderBinding()
+                .drawerStatsChars
+                .setText(String.valueOf(stats.chars()));
     }
-
 
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
@@ -242,7 +255,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         setIntent(intent);
         navigationController.handleShortcuts(intent);
     }
-
 
     @Override
     protected void onResume() {
@@ -265,8 +277,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         SingleTagSelectDialog.show(
                 this,
                 tagsList,
-                new SingleTagSelectDialog.Callback(){
-
+                new SingleTagSelectDialog.Callback() {
 
                     @Override
                     public void onTagSelected(String tag) {
@@ -279,10 +290,8 @@ public class MainActivity extends BaseActivity implements MainContract.view {
                     public void onCancel() {
                         selectionController.clearSelection();
                     }
-                }
-        );
+                });
     }
-
 
     @Override
     public void renderSearch(List<Note> filtered) {
@@ -296,8 +305,9 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         mActivityBinding.searchEmptyState.setVisibility(hasResults ? View.GONE : View.VISIBLE);
         if (!hasResults) {
             mActivityBinding.searchEmptyText.setText(
-                    shortQuery ? R.string.search_hint_keep_typing : R.string.search_empty_no_results
-            );
+                    shortQuery
+                            ? R.string.search_hint_keep_typing
+                            : R.string.search_empty_no_results);
         }
     }
 
@@ -305,88 +315,88 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     public void initListeners() {
         mActivityBinding.actionSearch.setOnClickListener(v -> mActivityBinding.searchView.show());
         searchNotesAdapter.setItemClickListener(this::openNoteEdit);
-        mActivityBinding.actionSearch.setOnMenuItemClickListener(menuItem -> {
-            int idItem = menuItem.getItemId();
-            if (idItem == R.id.sort) {
-                if (!selectionController.isInSelectionMode()) showSortDialog();
-            } else if (idItem == R.id.format) {
-                if (!selectionController.isInSelectionMode()) {
-                    formatList.formatNote(menuItem);
-                    gridLayoutManager.setSpanCount(mainPresenter.getDataManager().getFormatCount());
-                }
-            }
-
-            return true;
-        });
-
-        tagsAdapter.setOnItemClickListener(new OnItemClickListenerTag() {
-            @Override
-            public void onClick(int position) {
-                if (!selectionController.isInSelectionMode()) {
-                    Tag clickedTag = tagsAdapter.getCurrentList().get(position);
-                    if (clickedTag.getSelected()) {
-                        shakeTagAt(position);
-                        return;
+        mActivityBinding.actionSearch.setOnMenuItemClickListener(
+                menuItem -> {
+                    int idItem = menuItem.getItemId();
+                    if (idItem == R.id.sort) {
+                        if (!selectionController.isInSelectionMode()) showSortDialog();
+                    } else if (idItem == R.id.format) {
+                        if (!selectionController.isInSelectionMode()) {
+                            formatList.formatNote(menuItem);
+                            gridLayoutManager.setSpanCount(
+                                    mainPresenter.getDataManager().getFormatCount());
+                        }
                     }
-                    mainPresenter.onTagSelected(clickedTag);
-                }
-            }
 
-            @Override
-            public void onLongClick(int position, View mView) {
-                if (selectionController.isInSelectionMode()) return;
-                Tag tag = tagsAdapter.getCurrentList().get(position);
-                if (SystemTagsManager.isSystemTag(tag)) {
-                    mainPresenter.requestTagSelection(false);
-                    return;
-                }
+                    return true;
+                });
 
-                choiceTagDialog(tag, mView);
-            }
+        tagsAdapter.setOnItemClickListener(
+                new OnItemClickListenerTag() {
+                    @Override
+                    public void onClick(int position) {
+                        if (!selectionController.isInSelectionMode()) {
+                            Tag clickedTag = tagsAdapter.getCurrentList().get(position);
+                            if (clickedTag.getSelected()) {
+                                shakeTagAt(position);
+                                return;
+                            }
+                            mainPresenter.onTagSelected(clickedTag);
+                        }
+                    }
 
-        });
+                    @Override
+                    public void onLongClick(int position, View mView) {
+                        if (selectionController.isInSelectionMode()) return;
+                        Tag tag = tagsAdapter.getCurrentList().get(position);
+                        if (SystemTagsManager.isSystemTag(tag)) {
+                            mainPresenter.requestTagSelection(false);
+                            return;
+                        }
 
-        mNoteAdapter.setOnItemClickListener(new OnItemClickListener<>() {
-            @Override
-            public void onClick(int position, Note model) {
-                if (!selectionController.isInSelectionMode()) {
-                    openNoteEdit(model, gridLayoutManager.findViewByPosition(position));
-                } else selectionController.toggle(model);
+                        choiceTagDialog(tag, mView);
+                    }
+                });
 
-            }
+        mNoteAdapter.setOnItemClickListener(
+                new OnItemClickListener<>() {
+                    @Override
+                    public void onClick(int position, Note model) {
+                        if (!selectionController.isInSelectionMode()) {
+                            openNoteEdit(model, gridLayoutManager.findViewByPosition(position));
+                        } else selectionController.toggle(model);
+                    }
 
-            @Override
-            public void onLongClick(int position, Note model) {
-                if (!selectionController.isInSelectionMode()) choiceNoteDialog(model, position);
-            }
+                    @Override
+                    public void onLongClick(int position, Note model) {
+                        if (!selectionController.isInSelectionMode())
+                            choiceNoteDialog(model, position);
+                    }
+                });
+        selectionController.setListener(
+                new SelectionController.Listener() {
+                    @Override
+                    public void onSelectionModeChanged(boolean active) {
+                        mActivityBinding.newNotesButton.setVisibility(
+                                active ? View.GONE : View.VISIBLE);
+                    }
 
-        });
-        selectionController.setListener(new SelectionController.Listener() {
-            @Override
-            public void onSelectionModeChanged(boolean active) {
-                mActivityBinding.newNotesButton.setVisibility(active ? View.GONE : View.VISIBLE);
-            }
+                    @Override
+                    public void onDeleteRequested() {
+                        deleteNotes();
+                    }
 
-            @Override
-            public void onDeleteRequested() {
-                deleteNotes();
-            }
+                    @Override
+                    public void onChangeTagRequested() {
+                        mainPresenter.requestTagSelection(true);
+                    }
 
-            @Override
-            public void onChangeTagRequested() {
-                mainPresenter.requestTagSelection(true);
-
-            }
-
-            @Override
-            public void onShareRequested() {
-                shareNotes();
-            }
-
-        });
-
+                    @Override
+                    public void onShareRequested() {
+                        shareNotes();
+                    }
+                });
     }
-
 
     private void shakeTagAt(int position) {
         assert mActivityBinding.listTags.getLayoutManager() != null;
@@ -399,18 +409,17 @@ public class MainActivity extends BaseActivity implements MainContract.view {
 
     void showSortDialog() {
         SortDialog dialog = SortDialog.newInstance(false);
-        dialog.setListener(new SortDialog.SortListener() {
-            @Override
-            public void onSortSelected(String sortParam) {
-                mainPresenter.onSortChanged(sortParam);
-            }
+        dialog.setListener(
+                new SortDialog.SortListener() {
+                    @Override
+                    public void onSortSelected(String sortParam) {
+                        mainPresenter.onSortChanged(sortParam);
+                    }
 
-            @Override
-            public void onTagsSortSelected(String tagsSortParam) {
-            }
-        });
+                    @Override
+                    public void onTagsSortSelected(String tagsSortParam) {}
+                });
         dialog.show(getSupportFragmentManager(), "SortDialog");
-
     }
 
     @Override
@@ -423,32 +432,45 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
         mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
 
-        new ItemTouchHelper(new SwipeToListNotesCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean isItemViewSwipeEnabled() {
-                return !selectionController.isInSelectionMode() && mainPresenter.getDataManager().getFormatCount() == 1;
-            }
+        new ItemTouchHelper(
+                        new SwipeToListNotesCallback(
+                                0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                            @Override
+                            public boolean isItemViewSwipeEnabled() {
+                                return !selectionController.isInSelectionMode()
+                                        && mainPresenter.getDataManager().getFormatCount() == 1;
+                            }
 
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getBindingAdapterPosition();
+                            @Override
+                            public void onSwiped(
+                                    @NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                                int position = viewHolder.getBindingAdapterPosition();
 
-                if (direction == ItemTouchHelper.LEFT) {
-                    selectItemAction(mNoteAdapter.getCurrentList().get(position));
-                    mNoteAdapter.notifyItemChanged(position);
-                } else {
-                    Note sNote = mNoteAdapter.getCurrentList().get(position);
-                    mainPresenter.setBackupDeleteNote(sNote);
-                    mainPresenter.noteMoveToTrash(sNote);
-                    snackBarRestoreNote();
-                }
-            }
-        }).attachToRecyclerView(mActivityBinding.listNotes);
+                                if (direction == ItemTouchHelper.LEFT) {
+                                    selectItemAction(mNoteAdapter.getCurrentList().get(position));
+                                    mNoteAdapter.notifyItemChanged(position);
+                                } else {
+                                    Note sNote = mNoteAdapter.getCurrentList().get(position);
+                                    mainPresenter.setBackupDeleteNote(sNote);
+                                    mainPresenter.noteMoveToTrash(sNote);
+                                    snackBarRestoreNote();
+                                }
+                            }
+                        })
+                .attachToRecyclerView(mActivityBinding.listNotes);
     }
 
     public void snackBarRestoreNote() {
-        Snackbar snackbar = Snackbar.make(mActivityBinding.drawerLayout, getString(R.string.noteMoveTrashSnackbar), Snackbar.LENGTH_LONG);
-        snackbar.setAction(getString(R.string.restore), view -> mainPresenter.restoreNoteLastMoveToTrash(mainPresenter.getBackupDeleteNote()));
+        Snackbar snackbar =
+                Snackbar.make(
+                        mActivityBinding.drawerLayout,
+                        getString(R.string.noteMoveTrashSnackbar),
+                        Snackbar.LENGTH_LONG);
+        snackbar.setAction(
+                getString(R.string.restore),
+                view ->
+                        mainPresenter.restoreNoteLastMoveToTrash(
+                                mainPresenter.getBackupDeleteNote()));
         snackbar.setAnchorView(mActivityBinding.newNotesButton);
         snackbar.show();
     }
@@ -460,9 +482,8 @@ public class MainActivity extends BaseActivity implements MainContract.view {
 
     @Override
     public void openCopyNote(long idNote) {
-        new NoteNavigator(this, themePreferencesCache).openNote(idNote, false, "", null, String.valueOf(idNote), false);
-
-
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(idNote, false, "", null, String.valueOf(idNote), false);
     }
 
     @Override
@@ -472,51 +493,61 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     }
 
     public void openNoteEdit(Note note, View view) {
-        new NoteNavigator(this, themePreferencesCache).openNote(note, false, "", view, String.valueOf(note.getId()));
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(note, false, "", view, String.valueOf(note.getId()));
     }
-
 
     @Override
     public void openNewNoteWithId(long id) {
         Tag tagSelected = currentSelectedTag;
-        String tagName = tagSelected == null ? "" : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
+        String tagName =
+                tagSelected == null
+                        ? ""
+                        : tagSelected.getSystemAction() == 2 ? "" : tagSelected.getNameTag();
 
-        new NoteNavigator(this, themePreferencesCache).openNote(id, true, tagName, mActivityBinding.newNotesButton, NameTransition.fabTransaction, false);
+        new NoteNavigator(this, themePreferencesCache)
+                .openNote(
+                        id,
+                        true,
+                        tagName,
+                        mActivityBinding.newNotesButton,
+                        NameTransition.fabTransaction,
+                        false);
     }
 
     @Override
     public void choiceTagDialog(Tag tag, View mView) {
-        new PopupWindowsTag(getLayoutInflater(), mView, tag, new PopupWindowsTagOnClickListener() {
-            @Override
-            public void deleteTag() {
-                mainPresenter.requestDeleteTag(tag);
-            }
+        new PopupWindowsTag(
+                getLayoutInflater(),
+                mView,
+                tag,
+                new PopupWindowsTagOnClickListener() {
+                    @Override
+                    public void deleteTag() {
+                        mainPresenter.requestDeleteTag(tag);
+                    }
 
-            @Override
-            public void renameTag() {
-                new NameTagDialog(tag).show(getSupportFragmentManager(), "RenameTag");
-            }
+                    @Override
+                    public void renameTag() {
+                        new NameTagDialog(tag).show(getSupportFragmentManager(), "RenameTag");
+                    }
 
-            @Override
-            public void visibleEditTag() {
-                mainPresenter.editVisibleTag(tag.setVisibilityReturn(tag.getVisibility() == 1 ? 0 : 1));
-            }
-        });
-
+                    @Override
+                    public void visibleEditTag() {
+                        mainPresenter.editVisibleTag(
+                                tag.setVisibilityReturn(tag.getVisibility() == 1 ? 0 : 1));
+                    }
+                });
     }
 
     @Override
     public void choiceNoteDialog(Note note, int position) {
-        MoreNoteDialog dialog = MoreNoteDialog.newInstance(
-                note.getId(),
-                MoreNoteDialog.RootActivity.MainActivity,
-                position
-        );
+        MoreNoteDialog dialog =
+                MoreNoteDialog.newInstance(
+                        note.getId(), MoreNoteDialog.RootActivity.MainActivity, position);
 
         dialog.show(getSupportFragmentManager(), "ChoiceDialog");
-
     }
-
 
     private boolean finishActivity() {
         if (mActivityBinding.searchView.isShowing()) {
@@ -531,15 +562,17 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         navigationController.addSwipeClose(1);
         if (navigationController.getSwipeClose() < 2) {
             if (!isDestroyed() && mActivityBinding != null) {
-                onInfoSnack(R.string.exitWhat, mActivityBinding.drawerLayout, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+                onInfoSnack(
+                        R.string.exitWhat,
+                        mActivityBinding.drawerLayout,
+                        SnackBarInfo.Info,
+                        Snackbar.LENGTH_LONG);
             }
             return false;
         }
 
         finish();
         return true;
-
-
     }
 
     public void deleteNotes() {
@@ -556,7 +589,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         selectionController.clearSelection();
     }
 
-
     public void shareNotes() {
         List<Note> selected = selectionController.getSelectedNotes();
 
@@ -568,7 +600,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         selectionController.clearSelection();
     }
 
-
     public void selectItemAction(Note note) {
         if (!selectionController.isInSelectionMode()) {
             selectionController.startSelection(note);
@@ -576,7 +607,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
             selectionController.toggle(note);
         }
     }
-
 
     @Override
     protected void onDestroy() {
@@ -617,11 +647,9 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         searchNotesAdapter = null;
     }
 
-
     @Override
     public void redrawActivity() {
         super.redrawActivity();
         recreate();
     }
-
 }

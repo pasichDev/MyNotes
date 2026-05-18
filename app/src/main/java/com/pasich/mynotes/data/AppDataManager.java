@@ -1,9 +1,7 @@
 package com.pasich.mynotes.data;
 
-
 import android.content.Context;
 import android.net.Uri;
-
 import com.pasich.mynotes.data.database.DbHelper;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -15,23 +13,18 @@ import com.pasich.mynotes.utils.backup.BackupCacheHelper;
 import com.pasich.mynotes.utils.backup.local.LocalBackup;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
 import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import dagger.hilt.android.qualifiers.ApplicationContext;
-
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 public class AppDataManager implements DataManager {
-
 
     private final Context context;
     private final DbHelper dbHelper;
@@ -39,21 +32,18 @@ public class AppDataManager implements DataManager {
     private final LocalBackup apiBackup;
 
     @Inject
-    AppDataManager(@ApplicationContext Context context,
-                   AppPreferencesHelper preferencesHelper,
-                   DbHelper dbHelper,
-                   LocalBackup apiBackup) {
+    AppDataManager(
+            @ApplicationContext Context context,
+            AppPreferencesHelper preferencesHelper,
+            DbHelper dbHelper,
+            LocalBackup apiBackup) {
         this.context = context;
         this.dbHelper = dbHelper;
         this.preferencesHelper = preferencesHelper;
         this.apiBackup = apiBackup;
     }
 
-
-    /**
-     * PreferencesBackup
-     */
-
+    /** PreferencesBackup */
     @Override
     public int getFormatCount() {
         return preferencesHelper.getFormatCount();
@@ -109,11 +99,7 @@ public class AppDataManager implements DataManager {
         return preferencesHelper.getTypeFaceNoteActivity();
     }
 
-
-    /**
-     * Tags
-     */
-
+    /** Tags */
     @Override
     public Flowable<List<Tag>> getTags() {
         return dbHelper.getTags();
@@ -187,20 +173,21 @@ public class AppDataManager implements DataManager {
     @Override
     public Completable clearTrash() {
         return dbHelper.getNotesInTrash()
-            .firstOrError()
-            .flatMapCompletable(notes -> {
-                for (Note note : notes) {
-                    AttachmentCleaner.deleteAttachmentFolderByNoteId(context, note.getId());
-                }
-                return dbHelper.clearTrash();
-            });
+                .firstOrError()
+                .flatMapCompletable(
+                        notes -> {
+                            for (Note note : notes) {
+                                AttachmentCleaner.deleteAttachmentFolderByNoteId(
+                                        context, note.getId());
+                            }
+                            return dbHelper.clearTrash();
+                        });
     }
 
     @Override
     public Completable setTagForNotes(String tag, List<Integer> noteIds) {
         return dbHelper.setTagForNotes(tag, noteIds);
     }
-
 
     @Override
     public Completable renameTag(Tag mTag, String newName) {
@@ -212,15 +199,12 @@ public class AppDataManager implements DataManager {
         return dbHelper.restoreNotesAndFixTags(ids);
     }
 
-
     @Override
     public Single<Integer> getCountData() {
         return dbHelper.getCountData();
     }
 
-    /**
-     * Notes
-     */
+    /** Notes */
     @Override
     public Flowable<List<Note>> getNotes() {
         return dbHelper.getNotes();
@@ -235,7 +219,6 @@ public class AppDataManager implements DataManager {
     public Completable addNotes(List<Note> notes) {
         return dbHelper.addNotes(notes);
     }
-
 
     @Override
     public Observable<List<Note>> getNotesForTag(String nameTag) {
@@ -252,12 +235,10 @@ public class AppDataManager implements DataManager {
         return dbHelper.getNoteForId(idNote);
     }
 
-
     @Override
     public Single<Long> addNote(Note note, boolean copyNote) {
         return dbHelper.addNote(note, copyNote);
     }
-
 
     @Override
     public Completable deleteNote(Note note) {
@@ -266,11 +247,14 @@ public class AppDataManager implements DataManager {
 
     @Override
     public Completable deleteNote(ArrayList<Note> notes) {
-        return Completable.fromAction(() -> {
-            for (Note note : notes) {
-                AttachmentCleaner.deleteAttachmentFolderByNoteId(context, note.getId());
-            }
-        }).andThen(dbHelper.deleteNote(notes));
+        return Completable.fromAction(
+                        () -> {
+                            for (Note note : notes) {
+                                AttachmentCleaner.deleteAttachmentFolderByNoteId(
+                                        context, note.getId());
+                            }
+                        })
+                .andThen(dbHelper.deleteNote(notes));
     }
 
     @Override
@@ -334,7 +318,8 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public Completable updateNoteReminderFull(int noteId, long reminderTime, String repeat, int intervalMinutes) {
+    public Completable updateNoteReminderFull(
+            int noteId, long reminderTime, String repeat, int intervalMinutes) {
         return dbHelper.updateNoteReminderFull(noteId, reminderTime, repeat, intervalMinutes);
     }
 

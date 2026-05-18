@@ -1,6 +1,5 @@
 package com.pasich.mynotes.di.activity;
 
-
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.contract.NoteContract;
@@ -15,7 +14,6 @@ import com.pasich.mynotes.ui.presenter.TasksPresenter;
 import com.pasich.mynotes.ui.presenter.TrashPresenter;
 import com.pasich.mynotes.utils.rx.AppSchedulerProvider;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
-
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
@@ -26,7 +24,6 @@ import io.reactivex.disposables.CompositeDisposable;
 @Module
 @InstallIn(ActivityComponent.class)
 public class ActivityModule {
-
 
     @Provides
     CompositeDisposable provideCompositeDisposable() {
@@ -73,5 +70,4 @@ public class ActivityModule {
     TasksContract.presenter providesTasksPresenter(TasksPresenter presenter) {
         return presenter;
     }
-
 }

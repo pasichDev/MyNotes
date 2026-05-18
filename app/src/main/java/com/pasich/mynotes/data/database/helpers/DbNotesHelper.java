@@ -1,14 +1,12 @@
 package com.pasich.mynotes.data.database.helpers;
 
 import com.pasich.mynotes.data.model.Note;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import java.util.ArrayList;
+import java.util.List;
 
 public interface DbNotesHelper {
     Single<Integer> getCountData();
@@ -50,7 +48,6 @@ public interface DbNotesHelper {
 
     Completable clearTrash();
 
-
     Completable setTagForNotes(String tag, List<Integer> noteIds);
 
     Single<List<Note>> getNotesWithActiveReminders();
@@ -59,8 +56,8 @@ public interface DbNotesHelper {
 
     Completable updateNoteReminder(int noteId, long reminderTime, String repeat);
 
-    Completable updateNoteReminderFull(int noteId, long reminderTime, String repeat, int intervalMinutes);
+    Completable updateNoteReminderFull(
+            int noteId, long reminderTime, String repeat, int intervalMinutes);
 
     Completable setPinNote(int noteId, boolean pinned);
-
 }

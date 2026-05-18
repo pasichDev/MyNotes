@@ -3,19 +3,21 @@ package com.pasich.mynotes.base.presenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
-
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 
-public abstract class BasePresenter<T extends BaseView> implements com.pasich.mynotes.base.view.BasePresenter<T> {
+public abstract class BasePresenter<T extends BaseView>
+        implements com.pasich.mynotes.base.view.BasePresenter<T> {
 
     private final SchedulerProvider schedulerProvider;
     private final CompositeDisposable compositeDisposable;
     private final DataManager dataManager;
     private T view;
 
-
-    public BasePresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
+    public BasePresenter(
+            SchedulerProvider schedulerProvider,
+            CompositeDisposable compositeDisposable,
+            DataManager dataManager) {
         this.schedulerProvider = schedulerProvider;
         this.compositeDisposable = compositeDisposable;
         this.dataManager = dataManager;
@@ -64,5 +66,4 @@ public abstract class BasePresenter<T extends BaseView> implements com.pasich.my
             }
         }
     }
-
 }

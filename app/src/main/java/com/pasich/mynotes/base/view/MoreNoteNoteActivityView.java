@@ -13,5 +13,6 @@ public interface MoreNoteNoteActivityView {
     void changeTag(String nameTag, boolean change);
 
     void openCopyNote(long idNote);
+
     void changeEditor(long idNote);
 }

@@ -5,34 +5,27 @@ import android.text.Spanned;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-
 import com.google.android.material.transition.platform.MaterialFade;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityChangelogBinding;
 import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.changelog.ChangelogManager;
-
+import dagger.hilt.android.AndroidEntryPoint;
+import io.noties.markwon.Markwon;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import javax.inject.Inject;
-
-import dagger.hilt.android.AndroidEntryPoint;
-import io.noties.markwon.Markwon;
 
 @AndroidEntryPoint
 public class ChangelogActivity extends BaseActivity {
 
     public ActivityChangelogBinding binding;
-    @Inject
-    Markwon markwon;
-    @Inject
-    ChangelogManager changelogManager;
-    @Inject
-    UpdateChecker updateChecker;
+    @Inject Markwon markwon;
+    @Inject ChangelogManager changelogManager;
+    @Inject UpdateChecker updateChecker;
     private ExecutorService executor;
 
     @Override
@@ -47,16 +40,15 @@ public class ChangelogActivity extends BaseActivity {
         initActivity();
         initListeners();
         loadLocalChangelog();
-
     }
 
     @Override
     public void initListeners() {
-        binding.acknowledgeButton.setOnClickListener(v -> {
-            changelogManager.markChangelogRead();
-            finish();
-        });
-
+        binding.acknowledgeButton.setOnClickListener(
+                v -> {
+                    changelogManager.markChangelogRead();
+                    finish();
+                });
     }
 
     private void initActivity() {
@@ -71,13 +63,11 @@ public class ChangelogActivity extends BaseActivity {
         binding.acknowledgeButton.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
-
     private void loadLocalChangelog() {
         String content = changelogManager.readRawChangelog();
 
         showContent(content);
     }
-
 
     private void showContent(String content) {
         binding.scrollView.setVisibility(View.VISIBLE);
@@ -87,18 +77,18 @@ public class ChangelogActivity extends BaseActivity {
 
         updateAcknowledgeButtonVisibility();
 
-        executor.execute(() -> {
-            Spanned markdown = markwon.toMarkdown(content);
+        executor.execute(
+                () -> {
+                    Spanned markdown = markwon.toMarkdown(content);
 
-            runOnUiThread(() -> {
-                if (!isFinishing()) {
-                    markwon.setParsedMarkdown(binding.changelogText, markdown);
-                }
-            });
-        });
-
+                    runOnUiThread(
+                            () -> {
+                                if (!isFinishing()) {
+                                    markwon.setParsedMarkdown(binding.changelogText, markdown);
+                                }
+                            });
+                });
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -107,7 +97,6 @@ public class ChangelogActivity extends BaseActivity {
         }
         return true;
     }
-
 
     @Override
     protected void onDestroy() {

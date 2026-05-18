@@ -1,13 +1,10 @@
 package com.pasich.mynotes.data.database.helpers;
 
 import com.pasich.mynotes.data.model.Tag;
-
+import io.reactivex.Completable;
 import java.util.List;
 
-import io.reactivex.Completable;
-
 public interface DbTransactionsHelper {
-
 
     Completable clearTagInNotes(Tag tag);
 

@@ -1,7 +1,6 @@
 package com.pasich.mynotes.ui.view.dialogs;
 
 import android.content.Context;
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
 

@@ -2,8 +2,8 @@ package com.pasich.mynotes.utils.databinding;
 
 import android.annotation.SuppressLint;
 import android.widget.TextView;
-
 import androidx.databinding.BindingAdapter;
+
 public class AttachmentsBindingAdapter {
     @SuppressLint("DefaultLocale")
     @BindingAdapter("formatFileSize")

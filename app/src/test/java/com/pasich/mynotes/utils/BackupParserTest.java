@@ -6,11 +6,9 @@ import com.google.gson.Gson;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
-
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
+import org.junit.Test;
 
 public class BackupParserTest {
 

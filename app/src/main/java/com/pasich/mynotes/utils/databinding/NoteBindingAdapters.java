@@ -3,29 +3,26 @@ package com.pasich.mynotes.utils.databinding;
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
-
 import androidx.databinding.BindingAdapter;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.shape.ShapeAppearanceModel;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import com.pasich.mynotes.utils.FormattedDataUtil;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class NoteBindingAdapters {
     @BindingAdapter("cardBackgroundColorActivated")
     public static void setCardBackgroundColorActivated(MaterialCardView view, boolean activated) {
         Context ctx = view.getContext();
 
-        int color = activated
-                ? ctx.getColor(R.color.item_bindig_note_surface_variant)
-                : ctx.getColor(R.color.item_bindig_note_surface);
+        int color =
+                activated
+                        ? ctx.getColor(R.color.item_bindig_note_surface_variant)
+                        : ctx.getColor(R.color.item_bindig_note_surface);
 
         view.setCardBackgroundColor(color);
     }
@@ -34,8 +31,10 @@ public class NoteBindingAdapters {
     public static void setDataNote(TextView textView, Note note) {
         if (note != null && note.getDate() > 0) {
             textView.setText(
-                    textView.getContext().getString(R.string.lastDateEditNote, FormattedDataUtil.lastDayEditNote(note.getDate()))
-            );
+                    textView.getContext()
+                            .getString(
+                                    R.string.lastDateEditNote,
+                                    FormattedDataUtil.lastDayEditNote(note.getDate())));
             textView.setVisibility(View.VISIBLE);
         } else {
             textView.setText("");
@@ -47,16 +46,13 @@ public class NoteBindingAdapters {
     public static void setNoteMediaCount(TextView textView, Note note) {
         int countMedia = ParsedNote.parseAttachmentsJson(note.getAttachments()).size();
         if (countMedia > 0) {
-            textView.setText(
-                    textView.getContext().getString(R.string.countMediaNote, countMedia)
-            );
+            textView.setText(textView.getContext().getString(R.string.countMediaNote, countMedia));
             textView.setVisibility(View.VISIBLE);
         } else {
             textView.setText("");
             textView.setVisibility(View.GONE);
         }
     }
-
 
     @BindingAdapter("noteStrokeColor")
     public static void setNoteStrokeColor(MaterialCardView card, Note note) {
@@ -73,7 +69,6 @@ public class NoteBindingAdapters {
             color = ctx.getColor(R.color.item_bindig_note_surface_variant);
         }
 
-
         card.setStrokeColor(color);
     }
 
@@ -83,35 +78,34 @@ public class NoteBindingAdapters {
 
         boolean hasExtras = !note.getTag().isEmpty() || note.isAttachments() || note.hasReminder();
 
-        int padding = view.getContext().getResources().getDimensionPixelSize(
-                hasExtras ? R.dimen.marginItemsNoteChip : R.dimen.marginItemsNote
-        );
+        int padding =
+                view.getContext()
+                        .getResources()
+                        .getDimensionPixelSize(
+                                hasExtras ? R.dimen.marginItemsNoteChip : R.dimen.marginItemsNote);
 
         view.setPadding(
-                view.getPaddingLeft(),
-                view.getPaddingTop(),
-                view.getPaddingRight(),
-                padding
-        );
+                view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(), padding);
     }
 
     @BindingAdapter("dynamicShapeTop")
     public static void setDynamicShapeTop(MaterialCardView card, boolean needTop) {
-        int style = needTop
-                ? R.style.ShapeAppearance_SettingsCard_Top
-                : R.style.ShapeAppearance_SettingsCard_Base;
+        int style =
+                needTop
+                        ? R.style.ShapeAppearance_SettingsCard_Top
+                        : R.style.ShapeAppearance_SettingsCard_Base;
         card.setShapeAppearanceModel(
-                ShapeAppearanceModel.builder(card.getContext(), style, 0).build()
-        );
+                ShapeAppearanceModel.builder(card.getContext(), style, 0).build());
     }
 
     @BindingAdapter("dynamicShapeBottom")
     public static void setDynamicShapeBottom(MaterialCardView card, boolean needBottom) {
-        int style = needBottom
-                ? R.style.ShapeAppearance_SettingsCard_Base : R.style.ShapeAppearance_SettingsCard_Bottom;
+        int style =
+                needBottom
+                        ? R.style.ShapeAppearance_SettingsCard_Base
+                        : R.style.ShapeAppearance_SettingsCard_Bottom;
         card.setShapeAppearanceModel(
-                ShapeAppearanceModel.builder(card.getContext(), style, 0).build()
-        );
+                ShapeAppearanceModel.builder(card.getContext(), style, 0).build());
     }
 
     @BindingAdapter("paddingVerticalDynamic")
@@ -121,17 +115,16 @@ public class NoteBindingAdapters {
         int paddingValue;
 
         if (note.getTitle().isEmpty() && note.getValuePreview().isEmpty()) {
-            paddingValue = view.getContext().getResources().getDimensionPixelSize(R.dimen.marginItemsNote);
+            paddingValue =
+                    view.getContext().getResources().getDimensionPixelSize(R.dimen.marginItemsNote);
         } else {
-            paddingValue = view.getContext().getResources().getDimensionPixelSize(R.dimen.marginItemsNoteBottomCard);
+            paddingValue =
+                    view.getContext()
+                            .getResources()
+                            .getDimensionPixelSize(R.dimen.marginItemsNoteBottomCard);
         }
 
-        view.setPadding(
-                view.getPaddingLeft(),
-                paddingValue,
-                view.getPaddingRight(),
-                paddingValue
-        );
+        view.setPadding(view.getPaddingLeft(), paddingValue, view.getPaddingRight(), paddingValue);
     }
 
     @BindingAdapter("reminderText")
@@ -146,15 +139,17 @@ public class NoteBindingAdapters {
         Calendar rem = Calendar.getInstance();
         rem.setTimeInMillis(note.getReminderTime());
 
-        boolean isToday = now.get(Calendar.DATE) == rem.get(Calendar.DATE)
-                && now.get(Calendar.MONTH) == rem.get(Calendar.MONTH)
-                && now.get(Calendar.YEAR) == rem.get(Calendar.YEAR);
+        boolean isToday =
+                now.get(Calendar.DATE) == rem.get(Calendar.DATE)
+                        && now.get(Calendar.MONTH) == rem.get(Calendar.MONTH)
+                        && now.get(Calendar.YEAR) == rem.get(Calendar.YEAR);
 
         Calendar tomorrowCal = Calendar.getInstance();
         tomorrowCal.add(Calendar.DATE, 1);
-        boolean isTomorrow = tomorrowCal.get(Calendar.DATE) == rem.get(Calendar.DATE)
-                && tomorrowCal.get(Calendar.MONTH) == rem.get(Calendar.MONTH)
-                && tomorrowCal.get(Calendar.YEAR) == rem.get(Calendar.YEAR);
+        boolean isTomorrow =
+                tomorrowCal.get(Calendar.DATE) == rem.get(Calendar.DATE)
+                        && tomorrowCal.get(Calendar.MONTH) == rem.get(Calendar.MONTH)
+                        && tomorrowCal.get(Calendar.YEAR) == rem.get(Calendar.YEAR);
 
         Calendar weekEnd = Calendar.getInstance();
         weekEnd.add(Calendar.DATE, 7);
@@ -196,5 +191,4 @@ public class NoteBindingAdapters {
             tv.setVisibility(View.VISIBLE);
         }
     }
-
 }

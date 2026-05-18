@@ -2,7 +2,6 @@ package com.pasich.mynotes.utils.backup.models.googleKeep;
 
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,19 +11,27 @@ public class GoogleKeepImportResult {
     private final List<GoogleKeepLabel> labels;
     private final String error;
 
-    private GoogleKeepImportResult(List<GoogleKeepNote> notes, List<GoogleKeepNote> trashedNotes, List<GoogleKeepLabel> labels, String error) {
+    private GoogleKeepImportResult(
+            List<GoogleKeepNote> notes,
+            List<GoogleKeepNote> trashedNotes,
+            List<GoogleKeepLabel> labels,
+            String error) {
         this.notes = notes;
         this.trashedNotes = trashedNotes;
         this.labels = labels;
         this.error = error;
     }
 
-    public static GoogleKeepImportResult success(List<GoogleKeepNote> notes, List<GoogleKeepNote> trashedNotes, List<GoogleKeepLabel> labels) {
+    public static GoogleKeepImportResult success(
+            List<GoogleKeepNote> notes,
+            List<GoogleKeepNote> trashedNotes,
+            List<GoogleKeepLabel> labels) {
         return new GoogleKeepImportResult(notes, trashedNotes, labels, null);
     }
 
     public static GoogleKeepImportResult error(String error) {
-        return new GoogleKeepImportResult(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), error);
+        return new GoogleKeepImportResult(
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), error);
     }
 
     public List<GoogleKeepNote> getNotes() {

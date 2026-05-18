@@ -222,6 +222,28 @@
     <string name="help_notes_autosave_title">Автозбереження</string>
     <string name="help_notes_autosave_description">Нотатки автоматично зберігаються через 2 секунди після завершення вводу. У верхній панелі відображається індикатор: синя крапка — незбережені зміни, анімована іконка — процес збереження, зелена галочка — успішно збережено. Навіть якщо ви закриєте додаток або він аварійно завершиться, останні зміни не буде втрачено.</string>
 
+    <!-- Tasks Help Section -->
+    <string name="help_tasks_title">Завдання</string>
+    <string name="help_tasks_create_title">Створення завдань</string>
+    <string name="help_tasks_create_description">Відкрийте Завдання з головного меню. Натисніть «+», щоб додати нове завдання. Можна вказати назву, опис і призначити категорію.</string>
+    <string name="help_tasks_categories_title">Категорії</string>
+    <string name="help_tasks_categories_description">Організовуйте завдання за власними категоріями. Натисніть «Додати категорію», щоб створити нову. Завдання категорії групуються разом для зручного керування.</string>
+    <string name="help_tasks_complete_title">Виконання завдань</string>
+    <string name="help_tasks_complete_description">Натисніть на прапорець біля завдання, щоб позначити його як виконане. Виконані завдання групуються внизу списку. Натисніть ще раз, щоб скасувати позначення.</string>
+    <string name="help_tasks_reminder_title">Нагадування для завдань</string>
+    <string name="help_tasks_reminder_description">Встановіть нагадування для будь-якого завдання через іконку дзвіночка. Ви отримаєте сповіщення у вказаний час. Натисніть на сповіщення, щоб відкрити завдання.</string>
+
+    <!-- Reminders Help Section -->
+    <string name="help_reminders_title">Нагадування</string>
+    <string name="help_reminders_notes_title">Нагадування для нотаток</string>
+    <string name="help_reminders_notes_description">Відкрийте будь-яку нотатку та натисніть іконку дзвіночка, щоб встановити нагадування. Виберіть час за допомогою швидких варіантів або вручну. Сповіщення з\'явиться у вказаний час.</string>
+    <string name="help_reminders_repeat_title">Параметри повторення</string>
+    <string name="help_reminders_repeat_description">При встановленні нагадування для нотатки увімкніть перемикач «Повторення», щоб вибрати цикл: щодня, щотижня або щомісяця. Нагадування автоматично переноситься після кожного спрацювання.</string>
+    <string name="help_reminders_interval_title">Інтервальні сповіщення</string>
+    <string name="help_reminders_interval_description">Для повторюваних нагадувань можна увімкнути інтервальне повторення кожні 5, 10, 15, 30 або 60 хвилин. Сповіщення повторюватиметься через вибраний інтервал до наступного запланованого часу.</string>
+    <string name="help_reminders_sound_title">Звук і гучність сповіщень</string>
+    <string name="help_reminders_sound_description">Налаштуйте мелодію та гучність нагадувань у Налаштуваннях → Медіа. Зміни застосовуються до всіх майбутніх сповіщень.</string>
+
     <string name="tags_management">Теги</string>
     <string name="create_tag">Натисніть цю кнопку, щоб створити тег.</string>
     <string name="tag_options">Налаштування тегу</string>

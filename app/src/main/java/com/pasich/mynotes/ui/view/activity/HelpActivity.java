@@ -1,32 +1,29 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import android.os.Bundle;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.HelpSection;
 import com.pasich.mynotes.databinding.ActivityHelpBinding;
 import com.pasich.mynotes.utils.adapters.HelpSectionAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
-
+import dagger.hilt.android.AndroidEntryPoint;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class HelpActivity extends BaseActivity {
 
-    private final String actualVersionHelp = "2.4.42";
+    private final String actualVersionHelp = "2.6.46";
+
     @Inject
     @Named("NotesItemSpaceDecoration")
     public SpacesItemDecoration itemDecoration;
+
     private ActivityHelpBinding binding;
 
     @Override
@@ -40,12 +37,14 @@ public class HelpActivity extends BaseActivity {
         setupRecyclerView();
         loadHelpContent();
 
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                finish();
-            }
-        });
+        getOnBackPressedDispatcher()
+                .addCallback(
+                        new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                finish();
+                            }
+                        });
     }
 
     private void setupToolbar() {
@@ -55,13 +54,13 @@ public class HelpActivity extends BaseActivity {
     }
 
     private void setupRecyclerView() {
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         binding.recyclerView.setLayoutManager(layoutManager);
 
         binding.recyclerView.addItemDecoration(itemDecoration);
 
         binding.recyclerView.setNestedScrollingEnabled(false);
-
     }
 
     private void loadHelpContent() {
@@ -74,234 +73,322 @@ public class HelpActivity extends BaseActivity {
         List<HelpSection> sections = new ArrayList<>();
 
         // Заголовок довідки
-        sections.add(new HelpSection(
-                HelpSection.TYPE_HEADER,
-                getString(R.string.help_title),
-                getString(R.string.help_subtitle),
-                null, actualVersionHelp
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_HEADER,
+                        getString(R.string.help_title),
+                        getString(R.string.help_subtitle),
+                        null,
+                        actualVersionHelp));
 
         // Розділ навігації (перший)
-        sections.add(new HelpSection(
-                HelpSection.TYPE_SECTION_TITLE,
-                getString(R.string.help_navigation_title),
-                null,
-                R.drawable.ic_navigation_help,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_SECTION_TITLE,
+                        getString(R.string.help_navigation_title),
+                        null,
+                        R.drawable.ic_navigation_help,
+                        null));
 
         // Головне меню
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_navigation_drawer_title),
-                getString(R.string.help_navigation_drawer_description),
-                R.drawable.ic_menu,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_navigation_drawer_title),
+                        getString(R.string.help_navigation_drawer_description),
+                        R.drawable.ic_menu,
+                        null));
 
         // Пошук
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_navigation_search_title),
-                getString(R.string.help_navigation_search_description),
-                R.drawable.ic_search,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_navigation_search_title),
+                        getString(R.string.help_navigation_search_description),
+                        R.drawable.ic_search,
+                        null));
 
         // Сортування
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_navigation_sort_title),
-                getString(R.string.help_navigation_sort_description),
-                R.drawable.ic_sort,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_navigation_sort_title),
+                        getString(R.string.help_navigation_sort_description),
+                        R.drawable.ic_sort,
+                        null));
 
         // Форматування
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_navigation_format_title),
-                getString(R.string.help_navigation_format_description),
-                R.drawable.ic_edit_format_tiles,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_navigation_format_title),
+                        getString(R.string.help_navigation_format_description),
+                        R.drawable.ic_edit_format_tiles,
+                        null));
 
         // Жести свайп
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_navigation_swipe_title),
-                getString(R.string.help_navigation_swipe_description),
-                R.drawable.ic_gesture,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_navigation_swipe_title),
+                        getString(R.string.help_navigation_swipe_description),
+                        R.drawable.ic_gesture,
+                        null));
 
         // Розділ про теги (другий)
-        sections.add(new HelpSection(
-                HelpSection.TYPE_SECTION_TITLE,
-                getString(R.string.help_tags_title),
-                null,
-                R.drawable.ic_tag_help,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_SECTION_TITLE,
+                        getString(R.string.help_tags_title),
+                        null,
+                        R.drawable.ic_tag_help,
+                        null));
 
         // Створення тегів
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_tags_func_title),
-                getString(R.string.help_tags_func_description),
-                R.drawable.ic_tag,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tags_func_title),
+                        getString(R.string.help_tags_func_description),
+                        R.drawable.ic_tag,
+                        null));
 
         // Редагування тегів
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_tags_edit_title),
-                getString(R.string.help_tags_edit_description),
-                R.drawable.ic_edit,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tags_edit_title),
+                        getString(R.string.help_tags_edit_description),
+                        R.drawable.ic_edit,
+                        null));
 
         // Приховування нотаток
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_tags_hide_title),
-                getString(R.string.help_tags_hide_description),
-                R.drawable.ic_visibility_off,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tags_hide_title),
+                        getString(R.string.help_tags_hide_description),
+                        R.drawable.ic_visibility_off,
+                        null));
 
         // Обмеження тегів
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_tags_limit_title),
-                getString(R.string.help_tags_limit_description),
-                R.drawable.ic_info,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tags_limit_title),
+                        getString(R.string.help_tags_limit_description),
+                        R.drawable.ic_info,
+                        null));
 
         // Огляд тегів
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.helpTitleTagOverview),
-                getString(R.string.helpDescTagOverview),
-                R.drawable.ic_overview,
-                null
-        ));
-
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.helpTitleTagOverview),
+                        getString(R.string.helpDescTagOverview),
+                        R.drawable.ic_overview,
+                        null));
 
         // Розділ "Функції нотаток"
-        sections.add(new HelpSection(
-                HelpSection.TYPE_SECTION_TITLE,
-                getString(R.string.help_notes_title),
-                null,
-                R.drawable.ic_notebook,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_SECTION_TITLE,
+                        getString(R.string.help_notes_title),
+                        null,
+                        R.drawable.ic_notebook,
+                        null));
 
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_extended_editor_title),
-                getString(R.string.help_extended_editor_descrpt),
-                R.drawable.ic_write,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_extended_editor_title),
+                        getString(R.string.help_extended_editor_descrpt),
+                        R.drawable.ic_write,
+                        null));
 
         // Автозбереження
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_notes_autosave_title),
-                getString(R.string.help_notes_autosave_description),
-                R.drawable.ic_save_success,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_notes_autosave_title),
+                        getString(R.string.help_notes_autosave_description),
+                        R.drawable.ic_save_success,
+                        null));
 
         // Обмеження тексту
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_notes_limit_title),
-                getString(R.string.help_notes_limit_description),
-                R.drawable.ic_text_fields,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_notes_limit_title),
+                        getString(R.string.help_notes_limit_description),
+                        R.drawable.ic_text_fields,
+                        null));
 
         // Переклад
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_notes_translate_title),
-                getString(R.string.help_notes_translate_description),
-                R.drawable.ic_translate,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_notes_translate_title),
+                        getString(R.string.help_notes_translate_description),
+                        R.drawable.ic_translate,
+                        null));
 
         // Розмір тексту
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_notes_text_size_title),
-                getString(R.string.help_notes_text_size_description),
-                R.drawable.ic_text_size,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_notes_text_size_title),
+                        getString(R.string.help_notes_text_size_description),
+                        R.drawable.ic_text_size,
+                        null));
 
         // Редагувати копію
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_notes_copy_title),
-                getString(R.string.help_notes_copy_description),
-                R.drawable.ic_copy,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_notes_copy_title),
+                        getString(R.string.help_notes_copy_description),
+                        R.drawable.ic_copy,
+                        null));
 
         // Поділитися та експорт
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_notes_share_title),
-                getString(R.string.help_notes_share_description),
-                R.drawable.ic_share_app,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_notes_share_title),
+                        getString(R.string.help_notes_share_description),
+                        R.drawable.ic_share_app,
+                        null));
+
+        // Розділ завдань
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_SECTION_TITLE,
+                        getString(R.string.help_tasks_title),
+                        null,
+                        R.drawable.ic_tasks,
+                        null));
+
+        // Створення завдань
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tasks_create_title),
+                        getString(R.string.help_tasks_create_description),
+                        R.drawable.ic_add,
+                        null));
+
+        // Категорії
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tasks_categories_title),
+                        getString(R.string.help_tasks_categories_description),
+                        R.drawable.ic_add_category,
+                        null));
+
+        // Виконання завдань
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tasks_complete_title),
+                        getString(R.string.help_tasks_complete_description),
+                        R.drawable.ic_check_circle,
+                        null));
+
+        // Нагадування для завдань
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_tasks_reminder_title),
+                        getString(R.string.help_tasks_reminder_description),
+                        R.drawable.ic_bell,
+                        null));
+
+        // Розділ нагадувань
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_SECTION_TITLE,
+                        getString(R.string.help_reminders_title),
+                        null,
+                        R.drawable.ic_bell,
+                        null));
+
+        // Нагадування для нотаток
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_reminders_notes_title),
+                        getString(R.string.help_reminders_notes_description),
+                        R.drawable.ic_bell,
+                        null));
+
+        // Параметри повторення
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_reminders_repeat_title),
+                        getString(R.string.help_reminders_repeat_description),
+                        R.drawable.ic_info,
+                        null));
+
+        // Інтервальні сповіщення
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_reminders_interval_title),
+                        getString(R.string.help_reminders_interval_description),
+                        R.drawable.ic_bell_small,
+                        null));
+
+        // Звук і гучність сповіщень
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_reminders_sound_title),
+                        getString(R.string.help_reminders_sound_description),
+                        R.drawable.ic_info,
+                        null));
 
         // Розділ "Інше"
-        sections.add(new HelpSection(
-                HelpSection.TYPE_SECTION_TITLE,
-                getString(R.string.help_other_title),
-                null,
-                R.drawable.ic_other,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_SECTION_TITLE,
+                        getString(R.string.help_other_title),
+                        null,
+                        R.drawable.ic_other,
+                        null));
 
         // Захист екрану
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_other_security_title),
-                getString(R.string.help_other_security_description),
-                R.drawable.ic_security,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_other_security_title),
+                        getString(R.string.help_other_security_description),
+                        R.drawable.ic_security,
+                        null));
 
         // App Shortcuts
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_other_shortcuts_title),
-                getString(R.string.help_other_shortcuts_description),
-                R.drawable.ic_button_help,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_other_shortcuts_title),
+                        getString(R.string.help_other_shortcuts_description),
+                        R.drawable.ic_button_help,
+                        null));
 
         // Синхронізація та експорт даних
-        sections.add(new HelpSection(
-                HelpSection.TYPE_FEATURE,
-                getString(R.string.help_other_backup_export_title),
-                getString(R.string.help_other_backup_export_description),
-                R.drawable.ic_export,
-                null
-        ));
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_other_backup_export_title),
+                        getString(R.string.help_other_backup_export_description),
+                        R.drawable.ic_export,
+                        null));
 
         return sections;
     }
 
     @Override
-    public void initListeners() {
-    }
-
+    public void initListeners() {}
 }

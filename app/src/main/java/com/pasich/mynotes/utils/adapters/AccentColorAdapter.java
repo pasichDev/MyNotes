@@ -5,14 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Theme;
-
 import java.util.ArrayList;
 
 public class AccentColorAdapter extends RecyclerView.Adapter<AccentColorAdapter.VH> {
@@ -27,8 +24,8 @@ public class AccentColorAdapter extends RecyclerView.Adapter<AccentColorAdapter.
         void onSelect(Theme theme);
     }
 
-    public AccentColorAdapter(Context ctx, ArrayList<Theme> themes, int[] colors,
-                              int selectedId, Listener listener) {
+    public AccentColorAdapter(
+            Context ctx, ArrayList<Theme> themes, int[] colors, int selectedId, Listener listener) {
         this.ctx = ctx;
         this.themes = themes;
         this.colors = colors;
@@ -39,8 +36,7 @@ public class AccentColorAdapter extends RecyclerView.Adapter<AccentColorAdapter.
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new VH(LayoutInflater.from(ctx)
-                .inflate(R.layout.item_accent_circle, parent, false));
+        return new VH(LayoutInflater.from(ctx).inflate(R.layout.item_accent_circle, parent, false));
     }
 
     @Override
@@ -53,11 +49,12 @@ public class AccentColorAdapter extends RecyclerView.Adapter<AccentColorAdapter.
 
         h.checkmark.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
-        h.itemView.setOnClickListener(v -> {
-            selectedId = themes.get(position).getId();
-            listener.onSelect(themes.get(position));
-            notifyDataSetChanged();
-        });
+        h.itemView.setOnClickListener(
+                v -> {
+                    selectedId = themes.get(position).getId();
+                    listener.onSelect(themes.get(position));
+                    notifyDataSetChanged();
+                });
     }
 
     @Override

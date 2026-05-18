@@ -5,10 +5,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.ui.receiver.ReminderReceiver;
-
 import java.util.List;
 
 public class ReminderManager {
@@ -30,20 +28,19 @@ public class ReminderManager {
         }
 
         alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                note.getReminderTime(),
-                buildPendingIntent(ctx, note)
-        );
+                AlarmManager.RTC_WAKEUP, note.getReminderTime(), buildPendingIntent(ctx, note));
     }
 
     public static void cancelReminder(Context ctx, int noteId) {
         AlarmManager alarmManager = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager == null) return;
         Intent intent = new Intent(ctx, ReminderReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(
-                ctx, noteId, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+        PendingIntent pi =
+                PendingIntent.getBroadcast(
+                        ctx,
+                        noteId,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         alarmManager.cancel(pi);
         pi.cancel();
     }
@@ -70,8 +67,9 @@ public class ReminderManager {
         intent.putExtra(EXTRA_NOTE_REPEAT, note.getReminderRepeat());
         intent.putExtra(EXTRA_NOTE_INTERVAL_MINUTES, note.getReminderIntervalMinutes());
         return PendingIntent.getBroadcast(
-                ctx, note.getId(), intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                ctx,
+                note.getId(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 }

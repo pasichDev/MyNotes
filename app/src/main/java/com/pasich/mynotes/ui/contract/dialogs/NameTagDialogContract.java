@@ -6,9 +6,7 @@ import com.pasich.mynotes.data.model.Tag;
 
 public interface NameTagDialogContract {
 
-    interface view extends BaseView {
-
-    }
+    interface view extends BaseView {}
 
     interface presenter extends BasePresenter<view> {
 

@@ -2,9 +2,7 @@ package com.pasich.mynotes.utils.databinding;
 
 import android.view.View;
 import android.widget.TextView;
-
 import androidx.databinding.BindingAdapter;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;

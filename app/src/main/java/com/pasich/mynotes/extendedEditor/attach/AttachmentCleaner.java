@@ -4,13 +4,11 @@ import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.ATTACHM
 
 import android.content.Context;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.pasich.mynotes.BuildConfig;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
-
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -20,15 +18,13 @@ import java.util.Set;
 
 /**
  * Utility class responsible for maintaining consistency of attachment files.
- * <p>
- * This cleaner keeps the filesystem in sync with the note's attachments JSON:
- * - Parses the note's attachment metadata.
- * - Resolves actual file paths inside internal storage.
- * - Deletes orphaned files that are no longer referenced by the JSON.
- * <p>
- * Called after successful autosave or manual save of a note.
+ *
+ * <p>This cleaner keeps the filesystem in sync with the note's attachments JSON: - Parses the
+ * note's attachment metadata. - Resolves actual file paths inside internal storage. - Deletes
+ * orphaned files that are no longer referenced by the JSON.
+ *
+ * <p>Called after successful autosave or manual save of a note.
  */
-
 public class AttachmentCleaner {
 
     private static final String TAG = "AttachmentCleaner";
@@ -48,19 +44,16 @@ public class AttachmentCleaner {
 
     /**
      * Performs a cleanup of attachment files for a given note.
-     * <p>
-     * Logic:
-     * 1) Parses note.attachments JSON into EditorAttachment models.
-     * 2) Collects expected filenames referenced by the JSON.
-     * 3) Locates the actual attachment directory: /files/attachments/note_<id>.
-     * 4) Deletes all files that are not referenced (orphans).
-     * <p>
-     * Notes:
-     * - Runs silently in production; detailed logs appear only in debug builds.
-     * - If the attachment folder does not exist, the method exits safely.
-     * - Never creates new directories — cleanup must not modify the FS structure.
      *
-     * @param ctx  Application context.
+     * <p>Logic: 1) Parses note.attachments JSON into EditorAttachment models. 2) Collects expected
+     * filenames referenced by the JSON. 3) Locates the actual attachment directory:
+     * /files/attachments/note_<id>. 4) Deletes all files that are not referenced (orphans).
+     *
+     * <p>Notes: - Runs silently in production; detailed logs appear only in debug builds. - If the
+     * attachment folder does not exist, the method exits safely. - Never creates new directories —
+     * cleanup must not modify the FS structure.
+     *
+     * @param ctx Application context.
      * @param note Source note containing attachments metadata.
      */
     public static void cleanup(Context ctx, Note note) {
@@ -71,8 +64,7 @@ public class AttachmentCleaner {
             d("Cleanup start");
 
             String json = note.getAttachments();
-            Type type = new TypeToken<List<EditorAttachment>>() {
-            }.getType();
+            Type type = new TypeToken<List<EditorAttachment>>() {}.getType();
             List<EditorAttachment> list = gson.fromJson(json, type);
             if (list == null) list = new ArrayList<>();
 
@@ -96,7 +88,8 @@ public class AttachmentCleaner {
             }
 
             // folder
-            File folder = new File(new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR), "note_" + noteId);
+            File folder =
+                    new File(new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR), "note_" + noteId);
             if (!folder.exists() || !folder.isDirectory()) {
                 d("No folder → nothing to clean");
                 return;
@@ -153,5 +146,4 @@ public class AttachmentCleaner {
 
         return file.delete();
     }
-
 }

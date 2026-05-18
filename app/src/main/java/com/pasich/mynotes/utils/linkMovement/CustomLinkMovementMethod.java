@@ -50,7 +50,5 @@ public class CustomLinkMovementMethod extends LinkMovementMethod {
         Selection.removeSelection(buffer);
 
         return true;
-
     }
-
 }

@@ -1,7 +1,6 @@
 package com.pasich.mynotes.ui.contract;
 
 import android.view.View;
-
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.base.view.MoreNoteMainActivityView;
@@ -9,11 +8,9 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.state.MainViewState;
 import com.pasich.mynotes.ui.state.StatsData;
-
+import dagger.hilt.android.scopes.ActivityScoped;
 import java.util.ArrayList;
 import java.util.List;
-
-import dagger.hilt.android.scopes.ActivityScoped;
 
 public interface MainContract {
 
@@ -39,7 +36,6 @@ public interface MainContract {
 
         void multipleTagChangerDialog(List<Tag> tagsList);
     }
-
 
     @ActivityScoped
     interface presenter extends BasePresenter<view> {
@@ -73,5 +69,4 @@ public interface MainContract {
 
         void requestTagChangeMultipleNotes(String selectedTag, List<Integer> notesIds);
     }
-
 }

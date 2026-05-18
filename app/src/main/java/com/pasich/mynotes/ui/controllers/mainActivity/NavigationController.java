@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
@@ -15,7 +14,6 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.databinding.NavHeaderMainBinding;
@@ -23,8 +21,8 @@ import com.pasich.mynotes.ui.view.activity.AboutActivity;
 import com.pasich.mynotes.ui.view.activity.BackupActivity;
 import com.pasich.mynotes.ui.view.activity.SettingsActivity;
 import com.pasich.mynotes.ui.view.activity.SupportActivity;
-import com.pasich.mynotes.ui.view.activity.TasksActivity;
 import com.pasich.mynotes.ui.view.activity.TagsActivity;
+import com.pasich.mynotes.ui.view.activity.TasksActivity;
 import com.pasich.mynotes.ui.view.activity.TrashActivity;
 
 public class NavigationController {
@@ -37,14 +35,14 @@ public class NavigationController {
     private DrawerLayout drawerLayout;
     private NavHeaderMainBinding headerBinding;
 
-
     private int swipeClose = 0;
 
-    public NavigationController(AppCompatActivity activity,
-                                ActivityMainBinding binding,
-                                ActivityResultLauncher<Intent> themeActivityLauncher,
-                                AppUpdateController appUpdateController,
-                                BackHandler backHandler) {
+    public NavigationController(
+            AppCompatActivity activity,
+            ActivityMainBinding binding,
+            ActivityResultLauncher<Intent> themeActivityLauncher,
+            AppUpdateController appUpdateController,
+            BackHandler backHandler) {
         this.activity = activity;
         this.binding = binding;
         this.themeActivityLauncher = themeActivityLauncher;
@@ -67,29 +65,32 @@ public class NavigationController {
         return headerBinding;
     }
 
-
-    /**
-     * Edge-to-Edge for Drawer/Root
-     */
+    /** Edge-to-Edge for Drawer/Root */
     private void setupEdgeToEdge() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
-            ViewCompat.setOnApplyWindowInsetsListener(binding.activityMain, (mainView, mainInsets) -> {
-                Insets systemBars = mainInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-                mainView.setPadding(0, systemBars.top, 0, systemBars.bottom);
-                return WindowInsetsCompat.CONSUMED;
-            });
-            return insets;
-        });
+        ViewCompat.setOnApplyWindowInsetsListener(
+                binding.getRoot(),
+                (v, insets) -> {
+                    ViewCompat.setOnApplyWindowInsetsListener(
+                            binding.activityMain,
+                            (mainView, mainInsets) -> {
+                                Insets systemBars =
+                                        mainInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                                mainView.setPadding(0, systemBars.top, 0, systemBars.bottom);
+                                return WindowInsetsCompat.CONSUMED;
+                            });
+                    return insets;
+                });
     }
 
     private void setupDrawerButton() {
-        binding.actionSearch.setNavigationOnClickListener(v -> {
-            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                drawerLayout.closeDrawer(GravityCompat.START);
-            } else {
-                drawerLayout.openDrawer(GravityCompat.START);
-            }
-        });
+        binding.actionSearch.setNavigationOnClickListener(
+                v -> {
+                    if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                    } else {
+                        drawerLayout.openDrawer(GravityCompat.START);
+                    }
+                });
     }
 
     private void setupNavigationMenu() {
@@ -104,37 +105,77 @@ public class NavigationController {
     private void setupHeaderButtons() {
         View header = binding.navigationView.getHeaderView(0);
 
-        header.findViewById(R.id.nav_tasks).setOnClickListener(v ->
-                delay(() -> activity.startActivity(new Intent(activity, TasksActivity.class)))
-        );
+        header.findViewById(R.id.nav_tasks)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                activity.startActivity(
+                                                        new Intent(
+                                                                activity, TasksActivity.class))));
 
-        header.findViewById(R.id.nav_tags).setOnClickListener(v ->
-                delay(() -> activity.startActivity(new Intent(activity, TagsActivity.class)))
-        );
+        header.findViewById(R.id.nav_tags)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                activity.startActivity(
+                                                        new Intent(activity, TagsActivity.class))));
 
-        header.findViewById(R.id.nav_trash).setOnClickListener(v ->
-                delay(() -> activity.startActivity(new Intent(activity, TrashActivity.class)))
-        );
+        header.findViewById(R.id.nav_trash)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                activity.startActivity(
+                                                        new Intent(
+                                                                activity, TrashActivity.class))));
 
-        header.findViewById(R.id.nav_settings).setOnClickListener(v ->
-                delay(() -> themeActivityLauncher.launch(new Intent(activity, SettingsActivity.class)))
-        );
+        header.findViewById(R.id.nav_settings)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                themeActivityLauncher.launch(
+                                                        new Intent(
+                                                                activity,
+                                                                SettingsActivity.class))));
 
-        header.findViewById(R.id.nav_backups).setOnClickListener(v ->
-                delay(() -> themeActivityLauncher.launch(new Intent(activity, BackupActivity.class)))
-        );
+        header.findViewById(R.id.nav_backups)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                themeActivityLauncher.launch(
+                                                        new Intent(
+                                                                activity, BackupActivity.class))));
 
-        header.findViewById(R.id.nav_about).setOnClickListener(v ->
-                delay(() -> activity.startActivity(new Intent(activity, AboutActivity.class)))
-        );
+        header.findViewById(R.id.nav_about)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                activity.startActivity(
+                                                        new Intent(
+                                                                activity, AboutActivity.class))));
 
-        header.findViewById(R.id.nav_support).setOnClickListener(v ->
-                delay(() -> activity.startActivity(new Intent(activity, SupportActivity.class)))
-        );
+        header.findViewById(R.id.nav_support)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                activity.startActivity(
+                                                        new Intent(
+                                                                activity, SupportActivity.class))));
 
-        header.findViewById(R.id.drawerStatsCard).setOnClickListener(v ->
-                delay(() -> activity.startActivity(new Intent(activity, SupportActivity.class)))
-        );
+        header.findViewById(R.id.drawerStatsCard)
+                .setOnClickListener(
+                        v ->
+                                delay(
+                                        () ->
+                                                activity.startActivity(
+                                                        new Intent(
+                                                                activity, SupportActivity.class))));
 
         bindHeaderNewVersion(header);
     }
@@ -146,9 +187,7 @@ public class NavigationController {
         newVersionView.setVisibility(hasNew ? View.VISIBLE : View.GONE);
 
         if (hasNew) {
-            newVersionView.setOnClickListener(v ->
-                    appUpdateController.openChangelog()
-            );
+            newVersionView.setOnClickListener(v -> appUpdateController.openChangelog());
         }
     }
 
@@ -173,31 +212,32 @@ public class NavigationController {
     }
 
     private void handleBackPressed() {
-        activity.getOnBackPressedDispatcher().addCallback(activity, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // Спочатку — drawer
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                    return;
-                }
+        activity.getOnBackPressedDispatcher()
+                .addCallback(
+                        activity,
+                        new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                // Спочатку — drawer
+                                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                                    drawerLayout.closeDrawer(GravityCompat.START);
+                                    return;
+                                }
 
-                // Далі — делегуємо в Activity (finishActivity)
-                if (backHandler != null) {
-                    boolean shouldFinish = backHandler.onRootBack();
-                    if (shouldFinish) {
-                        activity.finish();
-                    }
-                } else {
-                    activity.finish();
-                }
-            }
-        });
+                                // Далі — делегуємо в Activity (finishActivity)
+                                if (backHandler != null) {
+                                    boolean shouldFinish = backHandler.onRootBack();
+                                    if (shouldFinish) {
+                                        activity.finish();
+                                    }
+                                } else {
+                                    activity.finish();
+                                }
+                            }
+                        });
     }
 
-    /**
-     * Processing App Shortcuts (open_search)
-     */
+    /** Processing App Shortcuts (open_search) */
     public void handleShortcuts(Intent intent) {
         if (intent != null && intent.getBooleanExtra("open_search", false)) {
             new Handler(Looper.getMainLooper()).postDelayed(binding.searchView::show, 100);
@@ -224,7 +264,6 @@ public class NavigationController {
             }
         }
 
-
         binding.actionSearch.setNavigationOnClickListener(null);
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), null);
         ViewCompat.setOnApplyWindowInsetsListener(binding.activityMain, null);
@@ -241,10 +280,10 @@ public class NavigationController {
     }
 
     /**
-     * true – if the activity needs to be closed, false – if only back has been processed (like closing the panel/snack)
+     * true – if the activity needs to be closed, false – if only back has been processed (like
+     * closing the panel/snack)
      */
     public interface BackHandler {
         boolean onRootBack();
     }
-
 }

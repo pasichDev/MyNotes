@@ -2,15 +2,11 @@ package com.pasich.mynotes.ui.view.activity;
 
 import android.os.Bundle;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.pasich.mynotes.ui.view.dialogs.TaskReminderPickerBottomSheet;
-
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.pasich.mynotes.R;
@@ -20,21 +16,18 @@ import com.pasich.mynotes.data.model.TaskCategory;
 import com.pasich.mynotes.databinding.ActivityTasksBinding;
 import com.pasich.mynotes.databinding.DialogDeleteConfirmBinding;
 import com.pasich.mynotes.ui.contract.TasksContract;
+import com.pasich.mynotes.ui.view.dialogs.TaskReminderPickerBottomSheet;
 import com.pasich.mynotes.ui.view.dialogs.tasks.AddCategoryDialog;
 import com.pasich.mynotes.ui.view.dialogs.tasks.AddTaskDialog;
 import com.pasich.mynotes.utils.adapters.tasks.TasksAdapter;
-
-import java.util.List;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
+import java.util.List;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class TasksActivity extends BaseActivity implements TasksContract.view {
 
-    @Inject
-    public TasksContract.presenter tasksPresenter;
+    @Inject public TasksContract.presenter tasksPresenter;
 
     private ActivityTasksBinding binding;
     private TasksAdapter tasksAdapter;
@@ -49,14 +42,19 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
         binding = ActivityTasksBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        tasksAdapter = new TasksAdapter(
-                task -> tasksPresenter.toggleTask(task),
-                task -> showDeleteTaskDialog(task),
-                task -> showEditDialog(task),
-                () -> AddTaskDialog.show(this, selectedCategoryId,
-                        (title, desc, catId) -> tasksPresenter.addTask(title, desc, catId)),
-                holder -> itemTouchHelper.startDrag(holder),
-                task -> showReminderPicker(task));
+        tasksAdapter =
+                new TasksAdapter(
+                        task -> tasksPresenter.toggleTask(task),
+                        task -> showDeleteTaskDialog(task),
+                        task -> showEditDialog(task),
+                        () ->
+                                AddTaskDialog.show(
+                                        this,
+                                        selectedCategoryId,
+                                        (title, desc, catId) ->
+                                                tasksPresenter.addTask(title, desc, catId)),
+                        holder -> itemTouchHelper.startDrag(holder),
+                        task -> showReminderPicker(task));
 
         binding.tasksList.setLayoutManager(new LinearLayoutManager(this));
         binding.tasksList.setAdapter(tasksAdapter);
@@ -67,9 +65,12 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
         tasksPresenter.attachView(this);
         tasksPresenter.viewIsReady();
 
-        getSupportFragmentManager().setFragmentResultListener(
-                "taskReminderChanged", this,
-                (requestKey, result) -> tasksPresenter.onCategorySelected(selectedCategoryId));
+        getSupportFragmentManager()
+                .setFragmentResultListener(
+                        "taskReminderChanged",
+                        this,
+                        (requestKey, result) ->
+                                tasksPresenter.onCategorySelected(selectedCategoryId));
     }
 
     private ItemTouchHelper.SimpleCallback buildTouchCallback() {
@@ -78,28 +79,29 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
                 ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
             @Override
-            public boolean isLongPressDragEnabled() { return false; }
+            public boolean isLongPressDragEnabled() {
+                return false;
+            }
 
             @Override
-            public int getDragDirs(@NonNull RecyclerView rv,
-                                   @NonNull RecyclerView.ViewHolder vh) {
+            public int getDragDirs(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder vh) {
                 if (!tasksAdapter.isActiveTask(vh.getAdapterPosition())) return 0;
                 return super.getDragDirs(rv, vh);
             }
 
             @Override
-            public int getSwipeDirs(@NonNull RecyclerView rv,
-                                    @NonNull RecyclerView.ViewHolder vh) {
+            public int getSwipeDirs(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder vh) {
                 if (!tasksAdapter.isActiveTask(vh.getAdapterPosition())) return 0;
                 return super.getSwipeDirs(rv, vh);
             }
 
             @Override
-            public boolean onMove(@NonNull RecyclerView rv,
-                                  @NonNull RecyclerView.ViewHolder from,
-                                  @NonNull RecyclerView.ViewHolder to) {
-                boolean moved = tasksAdapter.moveItem(
-                        from.getAdapterPosition(), to.getAdapterPosition());
+            public boolean onMove(
+                    @NonNull RecyclerView rv,
+                    @NonNull RecyclerView.ViewHolder from,
+                    @NonNull RecyclerView.ViewHolder to) {
+                boolean moved =
+                        tasksAdapter.moveItem(from.getAdapterPosition(), to.getAdapterPosition());
                 if (moved) dragMoved = true;
                 return moved;
             }
@@ -120,8 +122,7 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
             }
 
             @Override
-            public void clearView(@NonNull RecyclerView rv,
-                                  @NonNull RecyclerView.ViewHolder vh) {
+            public void clearView(@NonNull RecyclerView rv, @NonNull RecyclerView.ViewHolder vh) {
                 super.clearView(rv, vh);
                 if (dragMoved) {
                     dragMoved = false;
@@ -139,8 +140,8 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
                 null);
     }
 
-    private void showDeleteDialog(@StringRes int titleRes, String name,
-                                  Runnable onDelete, Runnable onCancel) {
+    private void showDeleteDialog(
+            @StringRes int titleRes, String name, Runnable onDelete, Runnable onCancel) {
         DialogDeleteConfirmBinding dialogBinding =
                 DialogDeleteConfirmBinding.inflate(getLayoutInflater());
         dialogBinding.deleteConfirmTitle.setText(titleRes);
@@ -148,25 +149,30 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
 
         new MaterialAlertDialogBuilder(this)
                 .setView(dialogBinding.getRoot())
-                .setPositiveButton(R.string.delete, (d, w) -> {
-                    if (onDelete != null) onDelete.run();
-                })
-                .setNegativeButton(R.string.cancel, (d, w) -> {
-                    if (onCancel != null) onCancel.run();
-                })
-                .setOnCancelListener(d -> {
-                    if (onCancel != null) onCancel.run();
-                })
+                .setPositiveButton(
+                        R.string.delete,
+                        (d, w) -> {
+                            if (onDelete != null) onDelete.run();
+                        })
+                .setNegativeButton(
+                        R.string.cancel,
+                        (d, w) -> {
+                            if (onCancel != null) onCancel.run();
+                        })
+                .setOnCancelListener(
+                        d -> {
+                            if (onCancel != null) onCancel.run();
+                        })
                 .show();
     }
 
     private void showReminderPicker(Task task) {
         TaskReminderPickerBottomSheet.newInstance(
-                task.getId(),
-                task.getTitle(),
-                task.getReminderTime(),
-                task.getReminderIntervalMinutes()
-        ).show(getSupportFragmentManager(), "taskReminderPicker");
+                        task.getId(),
+                        task.getTitle(),
+                        task.getReminderTime(),
+                        task.getReminderIntervalMinutes())
+                .show(getSupportFragmentManager(), "taskReminderPicker");
     }
 
     private void showEditDialog(Task task) {
@@ -180,12 +186,14 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.tasks_edit)
                 .setView(view)
-                .setPositiveButton(android.R.string.ok, (d, w) -> {
-                    String text = input.getText().toString().trim();
-                    String desc = descInput.getText().toString().trim();
-                    if (!text.isEmpty())
-                        tasksPresenter.editTask(task, text, desc.isEmpty() ? null : desc);
-                })
+                .setPositiveButton(
+                        android.R.string.ok,
+                        (d, w) -> {
+                            String text = input.getText().toString().trim();
+                            String desc = descInput.getText().toString().trim();
+                            if (!text.isEmpty())
+                                tasksPresenter.editTask(task, text, desc.isEmpty() ? null : desc);
+                        })
                 .setNegativeButton(R.string.cancel, null)
                 .show();
         input.requestFocus();
@@ -194,14 +202,16 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
     @Override
     public void initListeners() {
         binding.tasksToolbar.setNavigationOnClickListener(v -> finish());
-        binding.tasksToolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.tasks_add_category) {
-                AddCategoryDialog.show(this, (name, colorHex) ->
-                        tasksPresenter.addCategory(name, colorHex));
-                return true;
-            }
-            return false;
-        });
+        binding.tasksToolbar.setOnMenuItemClickListener(
+                item -> {
+                    if (item.getItemId() == R.id.tasks_add_category) {
+                        AddCategoryDialog.show(
+                                this,
+                                (name, colorHex) -> tasksPresenter.addCategory(name, colorHex));
+                        return true;
+                    }
+                    return false;
+                });
     }
 
     @Override
@@ -225,10 +235,11 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
         allChip.setText(getString(R.string.search_filter_all));
         allChip.setCheckable(true);
         allChip.setChecked(selectedCategoryId == 0);
-        allChip.setOnClickListener(v -> {
-            selectedCategoryId = 0;
-            tasksPresenter.onCategorySelected(0);
-        });
+        allChip.setOnClickListener(
+                v -> {
+                    selectedCategoryId = 0;
+                    tasksPresenter.onCategorySelected(0);
+                });
         binding.tasksCategoryChips.addView(allChip);
 
         for (TaskCategory cat : categories) {
@@ -236,18 +247,20 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
             chip.setText(cat.getName());
             chip.setCheckable(true);
             chip.setChecked(selectedCategoryId == cat.getId());
-            chip.setOnLongClickListener(v -> {
-                showDeleteDialog(
-                        R.string.tasks_category_delete_confirm,
-                        cat.getName(),
-                        () -> tasksPresenter.deleteCategory(cat),
-                        null);
-                return true;
-            });
-            chip.setOnClickListener(v -> {
-                selectedCategoryId = cat.getId();
-                tasksPresenter.onCategorySelected(cat.getId());
-            });
+            chip.setOnLongClickListener(
+                    v -> {
+                        showDeleteDialog(
+                                R.string.tasks_category_delete_confirm,
+                                cat.getName(),
+                                () -> tasksPresenter.deleteCategory(cat),
+                                null);
+                        return true;
+                    });
+            chip.setOnClickListener(
+                    v -> {
+                        selectedCategoryId = cat.getId();
+                        tasksPresenter.onCategorySelected(cat.getId());
+                    });
             binding.tasksCategoryChips.addView(chip);
         }
     }

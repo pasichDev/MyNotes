@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.view.View;
-
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -19,28 +18,22 @@ public abstract class BaseDialogBottomSheets extends BottomSheetDialogFragment i
     }
 
     @Override
-    public void selectTheme() {
-
-    }
+    public void selectTheme() {}
 
     @Override
     public void vibrateOpenDialog(boolean vibrate) {
         if (vibrate) {
-            Vibrator vibrator = (Vibrator) requireActivity().getSystemService(Context.VIBRATOR_SERVICE);
+            Vibrator vibrator =
+                    (Vibrator) requireActivity().getSystemService(Context.VIBRATOR_SERVICE);
 
             if (vibrator != null && vibrator.hasVibrator()) {
-                VibrationEffect effect = VibrationEffect.createOneShot(
-                        50,
-                        VibrationEffect.DEFAULT_AMPLITUDE
-                );
+                VibrationEffect effect =
+                        VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE);
                 vibrator.vibrate(effect);
             }
         }
     }
 
-
     @Override
-    public void onInfoSnack(int resID, View view, int typeInfo, int time) {
-
-    }
+    public void onInfoSnack(int resID, View view, int typeInfo, int time) {}
 }

@@ -5,12 +5,10 @@ public class IndexFilter {
     private int indexTitle, indexValue;
     private long idNote;
 
-
     public IndexFilter(long idNote, int indexTitle, int indexValue) {
         this.idNote = idNote;
         this.indexTitle = indexTitle;
         this.indexValue = indexValue;
-
     }
 
     public long getIdNote() {

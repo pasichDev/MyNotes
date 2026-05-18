@@ -4,16 +4,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ItemTagManagementBinding;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +43,6 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
         this.moveListener = listener;
     }
 
-
     public void moveItemUI(int fromPosition, int toPosition) {
         if (fromPosition == 0 || toPosition == 0) return;
 
@@ -70,7 +66,8 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
     @Override
     public TagViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        ItemTagManagementBinding binding = ItemTagManagementBinding.inflate(inflater, parent, false);
+        ItemTagManagementBinding binding =
+                ItemTagManagementBinding.inflate(inflater, parent, false);
         return new TagViewHolder(binding);
     }
 
@@ -92,27 +89,32 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
             binding.executePendingBindings();
 
             // Set click listeners
-            binding.getRoot().setOnClickListener(v -> {
-                if (clickListener != null) {
-                    clickListener.onTagClick(tag, position);
-                }
-            });
+            binding.getRoot()
+                    .setOnClickListener(
+                            v -> {
+                                if (clickListener != null) {
+                                    clickListener.onTagClick(tag, position);
+                                }
+                            });
 
-            binding.getRoot().setOnLongClickListener(v -> {
-                if (clickListener != null && !SystemTagsManager.isAddTag(tag)) {
-                    clickListener.onTagLongClick(tag, v);
-                    return true;
-                }
-                return false;
-            });
+            binding.getRoot()
+                    .setOnLongClickListener(
+                            v -> {
+                                if (clickListener != null && !SystemTagsManager.isAddTag(tag)) {
+                                    clickListener.onTagLongClick(tag, v);
+                                    return true;
+                                }
+                                return false;
+                            });
 
             // Options button listener (only for regular tags)
             if (!SystemTagsManager.isAddTag(tag)) {
-                binding.optionsButton.setOnClickListener(v -> {
-                    if (clickListener != null) {
-                        clickListener.onOptionsClick(tag, v);
-                    }
-                });
+                binding.optionsButton.setOnClickListener(
+                        v -> {
+                            if (clickListener != null) {
+                                clickListener.onOptionsClick(tag, v);
+                            }
+                        });
             }
         }
     }
@@ -125,9 +127,10 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
 
         @Override
         public boolean areContentsTheSame(@NonNull Tag oldItem, @NonNull Tag newItem) {
-            return oldItem.getNameTag().equals(newItem.getNameTag()) &&
-                    oldItem.getVisibility() == newItem.getVisibility() &&
-                    oldItem.getSystemAction() == newItem.getSystemAction() && oldItem.getPosition() == newItem.getPosition();
+            return oldItem.getNameTag().equals(newItem.getNameTag())
+                    && oldItem.getVisibility() == newItem.getVisibility()
+                    && oldItem.getSystemAction() == newItem.getSystemAction()
+                    && oldItem.getPosition() == newItem.getPosition();
         }
     }
 }

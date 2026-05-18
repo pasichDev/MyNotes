@@ -1,10 +1,8 @@
 package com.pasich.mynotes.cache;
 
 import android.util.Log;
-
 import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -30,14 +28,17 @@ public class NotificationPreferencesCache {
             return;
         }
         try {
-            soundUri = prefs.getString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_SOUND_URI, null);
-            channelId = prefs.getString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_ID,
-                    PreferencesConfig.ARGUMENT_DEFAULT_NOTIFICATION_CHANNEL_ID);
-            channelVersion = prefs.getInt(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_VERSION,
-                    PreferencesConfig.ARGUMENT_DEFAULT_NOTIFICATION_CHANNEL_VERSION);
+            soundUri =
+                    prefs.getString(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_SOUND_URI, null);
+            channelId =
+                    prefs.getString(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_ID,
+                            PreferencesConfig.ARGUMENT_DEFAULT_NOTIFICATION_CHANNEL_ID);
+            channelVersion =
+                    prefs.getInt(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_VERSION,
+                            PreferencesConfig.ARGUMENT_DEFAULT_NOTIFICATION_CHANNEL_VERSION);
             initialized = true;
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize cache", e);
@@ -88,7 +89,8 @@ public class NotificationPreferencesCache {
     public synchronized int incrementAndPersistVersion() {
         ensureInitialized();
         channelVersion++;
-        prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_VERSION, channelVersion);
+        prefs.putInt(
+                PreferencesConfig.ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_VERSION, channelVersion);
         setChannelId("reminders_v" + channelVersion);
         return channelVersion;
     }

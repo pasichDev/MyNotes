@@ -1,25 +1,19 @@
 package com.pasich.mynotes.cache;
 
 import android.util.Log;
-
 import androidx.appcompat.app.AppCompatDelegate;
-
 import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.themes.ThemesArray;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * Optimized cache for theme preferences to reduce SharedPreferences I/O operations.
- * Uses asynchronous PowerPreference methods to avoid UI blocking.
- * Performance improvements:
- * - Single initialization load from SharedPreferences
- * - Memory-based getters for fast access
- * - Asynchronous put operations to prevent UI blocking
- * - Thread-safe operations with synchronized methods
- * - Comprehensive error handling with user feedback
+ * Optimized cache for theme preferences to reduce SharedPreferences I/O operations. Uses
+ * asynchronous PowerPreference methods to avoid UI blocking. Performance improvements: - Single
+ * initialization load from SharedPreferences - Memory-based getters for fast access - Asynchronous
+ * put operations to prevent UI blocking - Thread-safe operations with synchronized methods -
+ * Comprehensive error handling with user feedback
  */
 @Singleton
 public class ThemePreferencesCache {
@@ -43,8 +37,8 @@ public class ThemePreferencesCache {
     }
 
     /**
-     * Initialize cache by loading values from SharedPreferences.
-     * Should be called once in Application.onCreate()
+     * Initialize cache by loading values from SharedPreferences. Should be called once in
+     * Application.onCreate()
      */
     public synchronized void initialize() {
         if (initialized) {
@@ -54,21 +48,45 @@ public class ThemePreferencesCache {
 
         try {
             // Load all values from SharedPreferences in one batch
-            themeMode = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+            themeMode =
+                    prefs.getInt(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                            PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
 
-            themeId = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
+            themeId =
+                    prefs.getInt(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
+                            PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE);
 
-            dynamicColor = prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
+            dynamicColor =
+                    prefs.getBoolean(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+                            PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE);
 
-            screenProtection = prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION, PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
+            screenProtection =
+                    prefs.getBoolean(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
+                            PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE);
 
-            extendedEditor = prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR, PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE);
+            extendedEditor =
+                    prefs.getBoolean(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR,
+                            PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE);
 
-            typeFaceNoteActivity = prefs.getString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE);
+            typeFaceNoteActivity =
+                    prefs.getString(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE,
+                            PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE);
 
-            sizeTextNoteActivity = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE);
+            sizeTextNoteActivity =
+                    prefs.getInt(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE,
+                            PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE);
 
-            uiFontScale = prefs.getFloat(PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE);
+            uiFontScale =
+                    prefs.getFloat(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING,
+                            PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE);
             initialized = true;
 
         } catch (Exception e) {
@@ -77,9 +95,7 @@ public class ThemePreferencesCache {
         }
     }
 
-    /**
-     * Set default values if initialization fails
-     */
+    /** Set default values if initialization fails */
     private void setDefaults() {
         themeMode = PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE;
         themeId = PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE;
@@ -93,17 +109,13 @@ public class ThemePreferencesCache {
         Log.d(TAG, "Set default values after initialization failure");
     }
 
-    /**
-     * Get cached theme mode (0=System, 1=Light, 2=Dark)
-     */
+    /** Get cached theme mode (0=System, 1=Light, 2=Dark) */
     public int getThemeMode() {
         ensureInitialized();
         return themeMode;
     }
 
-    /**
-     * Set theme mode with asynchronous persistence
-     */
+    /** Set theme mode with asynchronous persistence */
     public synchronized void setThemeMode(int themeMode) {
         try {
             this.themeMode = themeMode;
@@ -114,17 +126,13 @@ public class ThemePreferencesCache {
         }
     }
 
-    /**
-     * Get cached theme ID
-     */
+    /** Get cached theme ID */
     public int getThemeId() {
         ensureInitialized();
         return themeId;
     }
 
-    /**
-     * Set theme ID with asynchronous persistence
-     */
+    /** Set theme ID with asynchronous persistence */
     public synchronized void setThemeId(int themeId) {
         try {
             this.themeId = themeId;
@@ -135,25 +143,19 @@ public class ThemePreferencesCache {
         }
     }
 
-    /**
-     * Get cached dynamic color setting
-     */
+    /** Get cached dynamic color setting */
     public boolean isDynamicColorEnabled() {
         ensureInitialized();
         return dynamicColor;
     }
 
-    /**
-     * Get cached screen protection setting
-     */
+    /** Get cached screen protection setting */
     public boolean isScreenProtectionEnabled() {
         ensureInitialized();
         return screenProtection;
     }
 
-    /**
-     * Get cached extended editor setting
-     */
+    /** Get cached extended editor setting */
     public boolean isExtendedEditorEnabled() {
         ensureInitialized();
         return extendedEditor;
@@ -201,10 +203,7 @@ public class ThemePreferencesCache {
         }
     }
 
-
-    /**
-     * Set dynamic color with asynchronous persistence
-     */
+    /** Set dynamic color with asynchronous persistence */
     public synchronized void setDynamicColor(boolean enabled) {
         try {
             this.dynamicColor = enabled;
@@ -214,9 +213,7 @@ public class ThemePreferencesCache {
         }
     }
 
-    /**
-     * Set screen protection with asynchronous persistence
-     */
+    /** Set screen protection with asynchronous persistence */
     public synchronized void setScreenProtection(boolean enabled) {
         try {
             this.screenProtection = enabled;
@@ -226,9 +223,7 @@ public class ThemePreferencesCache {
         }
     }
 
-    /**
-     * Set extended editor with asynchronous persistence
-     */
+    /** Set extended editor with asynchronous persistence */
     public synchronized void setExtendedEditor(boolean enabled) {
         try {
             this.extendedEditor = enabled;
@@ -238,17 +233,19 @@ public class ThemePreferencesCache {
         }
     }
 
-
     // Helper methods
 
     /**
-     * Apply current theme mode to AppCompatDelegate
-     * Safe method with fallback for early calls before DI initialization
+     * Apply current theme mode to AppCompatDelegate Safe method with fallback for early calls
+     * before DI initialization
      */
     public void applyCurrentThemeMode() {
         if (!initialized) {
             try {
-                int fallbackThemeMode = prefs.getInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
+                int fallbackThemeMode =
+                        prefs.getInt(
+                                PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
+                                PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE);
                 applyThemeModeInternal(fallbackThemeMode);
                 Log.d(TAG, "Applied fallback theme mode: " + fallbackThemeMode);
             } catch (Exception e) {
@@ -261,9 +258,7 @@ public class ThemePreferencesCache {
         applyThemeModeInternal(themeMode);
     }
 
-    /**
-     * Internal method to apply theme mode
-     */
+    /** Internal method to apply theme mode */
     private void applyThemeModeInternal(int themeModeValue) {
         switch (themeModeValue) {
             case 0: // Follow System
@@ -281,32 +276,24 @@ public class ThemePreferencesCache {
         }
     }
 
-    /**
-     * Get current theme style resource ID
-     */
+    /** Get current theme style resource ID */
     public int getCurrentThemeStyle() {
         ensureInitialized();
         return new ThemesArray().getThemeStyle(themeId);
     }
 
-    /**
-     * Clear cache and reload from SharedPreferences
-     */
+    /** Clear cache and reload from SharedPreferences */
     public synchronized void refresh() {
         initialized = false;
         initialize();
         Log.d(TAG, "Cache refreshed");
     }
 
-    /**
-     * Check if cache is initialized, initialize if needed
-     */
+    /** Check if cache is initialized, initialize if needed */
     private void ensureInitialized() {
         if (!initialized) {
             Log.w(TAG, "Cache not initialized, initializing now");
             initialize();
         }
     }
-
-
 }

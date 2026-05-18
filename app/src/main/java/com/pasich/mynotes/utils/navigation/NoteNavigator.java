@@ -1,13 +1,10 @@
 package com.pasich.mynotes.utils.navigation;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityOptionsCompat;
-
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
@@ -20,16 +17,8 @@ public record NoteNavigator(Activity activity, ThemePreferencesCache prefs) {
             boolean isNew,
             String tag,
             View transitionView,
-            String transitionName
-    ) {
-        openNote(
-                note.id,
-                isNew,
-                tag,
-                transitionView,
-                transitionName,
-                note.isAttachments()
-        );
+            String transitionName) {
+        openNote(note.id, isNew, tag, transitionView, transitionName, note.isAttachments());
     }
 
     public void openNote(
@@ -38,15 +27,14 @@ public record NoteNavigator(Activity activity, ThemePreferencesCache prefs) {
             String tag,
             View transitionView,
             String transitionName,
-            boolean isAttachesNote
-    ) {
+            boolean isAttachesNote) {
 
-        Intent intent = new Intent(
-                activity,
-                prefs.isExtendedEditorEnabled() || isAttachesNote
-                        ? NoteExtendedEditorActivity.class
-                        : NoteActivity.class
-        );
+        Intent intent =
+                new Intent(
+                        activity,
+                        prefs.isExtendedEditorEnabled() || isAttachesNote
+                                ? NoteExtendedEditorActivity.class
+                                : NoteActivity.class);
 
         intent.putExtra(NoteExtras.EXTRA_NEW_NOTE, isNew);
         intent.putExtra(NoteExtras.EXTRA_ID_NOTE, noteId);
@@ -55,15 +43,10 @@ public record NoteNavigator(Activity activity, ThemePreferencesCache prefs) {
         if (transitionView != null) {
             ActivityOptionsCompat options =
                     ActivityOptionsCompat.makeSceneTransitionAnimation(
-                            activity,
-                            transitionView,
-                            transitionName
-                    );
+                            activity, transitionView, transitionName);
             activity.startActivity(intent, options.toBundle());
         } else {
             activity.startActivity(intent);
         }
-
     }
-
 }

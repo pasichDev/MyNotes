@@ -6,12 +6,9 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
-
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-
 import java.util.List;
-
 
 @Dao
 public abstract class Transactions {
@@ -67,11 +64,9 @@ public abstract class Transactions {
         deleteTag(tag);
     }
 
-
     @Transaction
     public void restoreNotesAndFixTags(List<Integer> ids) {
         clearInvalidTags();
         restoreNotesInternal(ids);
     }
 }
-

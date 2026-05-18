@@ -4,10 +4,8 @@ import com.pasich.mynotes.base.view.ActionBar;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.model.Note;
-
 import java.util.ArrayList;
 import java.util.List;
-
 
 public interface TrashContract {
 
