@@ -31,17 +31,28 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     @Inject NotificationPreferencesCache notificationPreferencesCache;
 
+    public static final String ACTION_DISMISS = "com.pasich.mynotes.ACTION_DISMISS_REMINDER";
+
     @Override
     public void onReceive(Context ctx, Intent intent) {
         int noteId = intent.getIntExtra(ReminderManager.EXTRA_NOTE_ID, -1);
+        if (noteId == -1) return;
+
+        if (ACTION_DISMISS.equals(intent.getAction())) {
+            ReminderManager.cancelReminder(ctx, noteId);
+            dataManager
+                    .clearReminder(noteId)
+                    .subscribe(() -> {}, e -> Log.e(TAG, "dismiss clearReminder failed", e));
+            NotificationManagerCompat.from(ctx).cancel(noteId);
+            return;
+        }
+
         String title = intent.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
         String preview = intent.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
         String repeatStr = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
         int intervalMinutes = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
 
-        if (noteId == -1) return;
-
-        showNotification(ctx, noteId, title, preview);
+        showNotification(ctx, noteId, title, preview, intervalMinutes);
 
         if (intervalMinutes > 0) {
             long nextTime = System.currentTimeMillis() + intervalMinutes * 60_000L;
@@ -103,7 +114,8 @@ public class ReminderReceiver extends BroadcastReceiver {
         return cal.getTimeInMillis();
     }
 
-    private void showNotification(Context ctx, int noteId, String title, String preview) {
+    private void showNotification(
+            Context ctx, int noteId, String title, String preview, int intervalMinutes) {
         Intent noteIntent = new Intent(ctx, NoteActivity.class);
         noteIntent.putExtra(NoteExtras.EXTRA_NEW_NOTE, false);
         noteIntent.putExtra(NoteExtras.EXTRA_ID_NOTE, (long) noteId);
@@ -135,6 +147,16 @@ public class ReminderReceiver extends BroadcastReceiver {
                         ? preview.substring(0, 100)
                         : (preview != null ? preview : "");
 
+        Intent dismissIntent = new Intent(ctx, ReminderReceiver.class);
+        dismissIntent.setAction(ACTION_DISMISS);
+        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
+        PendingIntent dismissPi =
+                PendingIntent.getBroadcast(
+                        ctx,
+                        noteId + 30000,
+                        dismissIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(ctx, notificationPreferencesCache.getChannelId())
                         .setSmallIcon(R.drawable.ic_bell_small)
@@ -144,6 +166,10 @@ public class ReminderReceiver extends BroadcastReceiver {
                         .setAutoCancel(true)
                         .setContentIntent(openPi)
                         .addAction(0, ctx.getString(R.string.reminder_snooze_label), snoozePi);
+
+        if (intervalMinutes > 0) {
+            builder.addAction(0, ctx.getString(R.string.reminder_dismiss_label), dismissPi);
+        }
 
         NotificationManagerCompat nm = NotificationManagerCompat.from(ctx);
         try {

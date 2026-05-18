@@ -85,7 +85,8 @@ public interface NoteDao {
             "SELECT * FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
     List<Note> getNotesWithActiveRemindersSync(long now);
 
-    @Query("UPDATE notes SET reminderTime = NULL, reminderRepeat = 'NONE' WHERE id = :noteId")
+    @Query(
+            "UPDATE notes SET reminderTime = NULL, reminderRepeat = 'NONE', reminderIntervalMinutes = 0 WHERE id = :noteId")
     void clearReminderSync(int noteId);
 
     @Query("UPDATE notes SET reminderTime = :time, reminderRepeat = :repeat WHERE id = :noteId")

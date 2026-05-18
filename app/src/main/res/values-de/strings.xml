@@ -355,6 +355,7 @@
     <string name="reminder_snooze_1hour">1 Stunde</string>
     <string name="reminder_snooze_tomorrow">Morgen früh</string>
     <string name="reminder_snooze_label">Schlummern</string>
+    <string name="reminder_dismiss_label">Schließen</string>
     <string name="reminder_permission_denied">Berechtigung für Erinnerungen erforderlich</string>
     <string name="reminder_notification_channel">Erinnerungen</string>
     <string name="reminder_menu_item">Erinnerung</string>
@@ -392,5 +393,10 @@
     <string name="reminder_interval_15min">15 Min.</string>
     <string name="reminder_interval_30min">30 Min.</string>
     <string name="reminder_interval_60min">60 Min.</string>
+
+    <plurals name="wordCount">
+        <item quantity="one">%d Wort</item>
+        <item quantity="other">%d Wörter</item>
+    </plurals>
 
 </resources>

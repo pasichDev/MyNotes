@@ -394,7 +394,8 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
             return;
         }
         int count = text.trim().split("\\s+").length;
-        binding.wordCountCenter.setText(getString(R.string.wordCount, count));
+        binding.wordCountCenter.setText(
+                getResources().getQuantityString(R.plurals.wordCount, count, count));
         binding.wordCountCenter.setVisibility(View.VISIBLE);
     }
 

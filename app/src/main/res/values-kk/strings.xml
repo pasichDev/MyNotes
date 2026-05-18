@@ -352,6 +352,7 @@
     <string name="reminder_snooze_1hour">1 сағат</string>
     <string name="reminder_snooze_tomorrow">Ертең таңертең</string>
     <string name="reminder_snooze_label">Кейінге қалдыру</string>
+    <string name="reminder_dismiss_label">Жабу</string>
     <string name="reminder_permission_denied">Еске салулар үшін рұқсат қажет</string>
     <string name="reminder_notification_channel">Еске салулар</string>
     <string name="reminder_menu_item">Еске салу</string>
@@ -389,5 +390,9 @@
     <string name="reminder_interval_15min">15 мин</string>
     <string name="reminder_interval_30min">30 мин</string>
     <string name="reminder_interval_60min">60 мин</string>
+
+    <plurals name="wordCount">
+        <item quantity="other">%d сөз</item>
+    </plurals>
 
 </resources>

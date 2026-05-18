@@ -60,7 +60,10 @@
     <string name="copyNoteEdits">Edit copy</string>
     <string name="pinNote">Pin note</string>
     <string name="unpinNote">Unpin note</string>
-    <string name="wordCount">%d words</string>
+    <plurals name="wordCount">
+        <item quantity="one">%d word</item>
+        <item quantity="other">%d words</item>
+    </plurals>
     <string name="noteMoveTrashSnackbar">Note moved to trash</string>
 
 
@@ -413,6 +416,7 @@
     <string name="reminder_snooze_1hour">1 hour</string>
     <string name="reminder_snooze_tomorrow">Tomorrow morning</string>
     <string name="reminder_snooze_label">Snooze</string>
+    <string name="reminder_dismiss_label">Dismiss</string>
     <string name="reminder_permission_denied">Permission required for reminders</string>
     <string name="reminder_notification_channel">Reminders</string>
     <string name="reminder_menu_item">Reminder</string>

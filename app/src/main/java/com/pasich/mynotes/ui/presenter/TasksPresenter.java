@@ -110,10 +110,14 @@ public class TasksPresenter extends BasePresenter<TasksContract.view>
 
     @Override
     public void toggleTask(Task task) {
+        boolean markingDone = !task.isDone();
+        if (markingDone && task.getReminderTime() != null) {
+            clearTaskReminder(task);
+        }
         getCompositeDisposable()
                 .add(
                         getDataManager()
-                                .toggleTask(task.getId(), !task.isDone())
+                                .toggleTask(task.getId(), markingDone)
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(() -> {}, err -> Log.e(TAG, "toggleTask", err)));

@@ -353,6 +353,7 @@
     <string name="reminder_snooze_1hour">1 гадзіна</string>
     <string name="reminder_snooze_tomorrow">Заўтра раніцай</string>
     <string name="reminder_snooze_label">Адкласці</string>
+    <string name="reminder_dismiss_label">Закрыць</string>
     <string name="reminder_permission_denied">Патрабуецца дазвол для нагадванняў</string>
     <string name="reminder_notification_channel">Нагадванні</string>
     <string name="reminder_menu_item">Нагадванне</string>
@@ -390,5 +391,12 @@
     <string name="reminder_interval_15min">15 хв</string>
     <string name="reminder_interval_30min">30 хв</string>
     <string name="reminder_interval_60min">60 хв</string>
+
+    <plurals name="wordCount">
+        <item quantity="one">%d слова</item>
+        <item quantity="few">%d словы</item>
+        <item quantity="many">%d слоў</item>
+        <item quantity="other">%d слова</item>
+    </plurals>
 
 </resources>
