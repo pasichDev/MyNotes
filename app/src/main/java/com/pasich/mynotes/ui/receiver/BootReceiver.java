@@ -8,6 +8,7 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.Single;
 import javax.inject.Inject;
 
 @AndroidEntryPoint
@@ -21,16 +22,21 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context ctx, Intent intent) {
         if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) return;
 
-        dataManager
-                .getNotesWithActiveReminders()
-                .subscribe(
-                        notes -> ReminderManager.rescheduleAll(ctx, notes),
-                        e -> Log.e(TAG, "rescheduleAll failed", e));
+        final PendingResult pendingResult = goAsync();
 
-        dataManager
-                .getTasksWithReminders()
+        Single.zip(
+                        dataManager.getNotesWithActiveReminders(),
+                        dataManager.getTasksWithReminders(),
+                        (notes, tasks) -> {
+                            ReminderManager.rescheduleAll(ctx, notes);
+                            TaskReminderManager.rescheduleAll(ctx, tasks);
+                            return true;
+                        })
                 .subscribe(
-                        tasks -> TaskReminderManager.rescheduleAll(ctx, tasks),
-                        e -> Log.e(TAG, "rescheduleTasksAll failed", e));
+                        result -> pendingResult.finish(),
+                        e -> {
+                            Log.e(TAG, "reschedule failed", e);
+                            pendingResult.finish();
+                        });
     }
 }

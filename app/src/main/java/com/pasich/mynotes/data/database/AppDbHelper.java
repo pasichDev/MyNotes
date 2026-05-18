@@ -373,7 +373,8 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable clearTaskReminder(int taskId) {
-        return Completable.fromAction(() -> appDatabase.taskDao().clearTaskReminder(taskId));
+        return Completable.fromAction(() -> appDatabase.taskDao().clearTaskReminder(taskId))
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
     @Override
