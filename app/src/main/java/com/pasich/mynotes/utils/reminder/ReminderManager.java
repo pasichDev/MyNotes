@@ -17,6 +17,7 @@ public class ReminderManager {
     public static final String EXTRA_NOTE_TITLE = "noteTitle";
     public static final String EXTRA_NOTE_PREVIEW = "notePreview";
     public static final String EXTRA_NOTE_REPEAT = "noteRepeat";
+    public static final String EXTRA_NOTE_INTERVAL_MINUTES = "intervalMinutes";
 
     public static void scheduleReminder(Context ctx, Note note) {
         if (note.getReminderTime() == null) return;
@@ -67,6 +68,7 @@ public class ReminderManager {
         intent.putExtra(EXTRA_NOTE_TITLE, note.getTitle());
         intent.putExtra(EXTRA_NOTE_PREVIEW, note.getValuePreview());
         intent.putExtra(EXTRA_NOTE_REPEAT, note.getReminderRepeat());
+        intent.putExtra(EXTRA_NOTE_INTERVAL_MINUTES, note.getReminderIntervalMinutes());
         return PendingIntent.getBroadcast(
                 ctx, note.getId(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE

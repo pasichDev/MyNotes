@@ -15,6 +15,7 @@ public class TaskReminderManager {
 
     public static final String EXTRA_TASK_ID = "taskId";
     public static final String EXTRA_TASK_TITLE = "taskTitle";
+    public static final String EXTRA_TASK_INTERVAL_MINUTES = "intervalMinutes";
 
     // Offset to avoid collision with note reminder PendingIntent request codes
     private static final int REQUEST_CODE_OFFSET = 100000;
@@ -46,6 +47,7 @@ public class TaskReminderManager {
         Intent intent = new Intent(ctx, TaskReminderReceiver.class);
         intent.putExtra(EXTRA_TASK_ID, task.getId());
         intent.putExtra(EXTRA_TASK_TITLE, task.getTitle());
+        intent.putExtra(EXTRA_TASK_INTERVAL_MINUTES, task.getReminderIntervalMinutes());
         return PendingIntent.getBroadcast(ctx, task.getId() + REQUEST_CODE_OFFSET, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }

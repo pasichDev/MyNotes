@@ -51,6 +51,9 @@ public interface TaskDao {
     @Query("UPDATE tasks SET reminderTime = :time WHERE id = :taskId")
     void setTaskReminder(int taskId, long time);
 
+    @Query("UPDATE tasks SET reminderTime = :time, reminderIntervalMinutes = :intervalMinutes WHERE id = :taskId")
+    void setTaskReminderFullSync(int taskId, long time, int intervalMinutes);
+
     @Query("UPDATE tasks SET reminderTime = NULL WHERE id = :taskId")
     void clearTaskReminder(int taskId);
 

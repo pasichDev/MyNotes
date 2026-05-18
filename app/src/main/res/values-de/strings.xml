@@ -381,4 +381,16 @@
     <string name="tasks_reminder_clear">Erinnerung löschen</string>
     <string name="tasks_reminder_past">Bitte eine zukünftige Zeit wählen</string>
 
+    <!-- Notification settings -->
+    <string name="settings_notifications_section_title">Erinnerungsbenachrichtigungen</string>
+    <string name="settings_notification_sound">Melodie</string>
+    <string name="settings_notification_volume">Lautstärke</string>
+    <!-- Reminder interval -->
+    <string name="reminder_interval_label">Benachrichtigung wiederholen</string>
+    <string name="reminder_interval_5min">5 Min.</string>
+    <string name="reminder_interval_10min">10 Min.</string>
+    <string name="reminder_interval_15min">15 Min.</string>
+    <string name="reminder_interval_30min">30 Min.</string>
+    <string name="reminder_interval_60min">60 Min.</string>
+
 </resources>

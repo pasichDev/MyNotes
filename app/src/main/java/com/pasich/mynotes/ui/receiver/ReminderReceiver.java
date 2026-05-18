@@ -11,6 +11,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
 
 import com.pasich.mynotes.R;
+import com.pasich.mynotes.cache.NotificationPreferencesCache;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.ReminderRepeat;
@@ -29,11 +30,13 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class ReminderReceiver extends BroadcastReceiver {
 
-    public static final String CHANNEL_ID = "reminders";
     private static final String TAG = "ReminderReceiver";
 
     @Inject
     DataManager dataManager;
+
+    @Inject
+    NotificationPreferencesCache notificationPreferencesCache;
 
     @Override
     public void onReceive(Context ctx, Intent intent) {
@@ -41,10 +44,27 @@ public class ReminderReceiver extends BroadcastReceiver {
         String title = intent.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
         String preview = intent.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
         String repeatStr = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
+        int intervalMinutes = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
 
         if (noteId == -1) return;
 
         showNotification(ctx, noteId, title, preview);
+
+        if (intervalMinutes > 0) {
+            long nextTime = System.currentTimeMillis() + intervalMinutes * 60_000L;
+            dataManager.updateNoteReminderFull(noteId, nextTime,
+                            repeatStr != null ? repeatStr : "NONE", intervalMinutes)
+                    .subscribe(() -> {}, e -> Log.e(TAG, "updateReminderFull failed", e));
+            Note tempNote = new Note();
+            tempNote.setId(noteId);
+            tempNote.setTitle(title != null ? title : "");
+            tempNote.setValue(preview != null ? preview : "");
+            tempNote.setReminderTime(nextTime);
+            tempNote.setReminderRepeat(repeatStr != null ? repeatStr : "NONE");
+            tempNote.setReminderIntervalMinutes(intervalMinutes);
+            ReminderManager.scheduleReminder(ctx, tempNote);
+            return;
+        }
 
         ReminderRepeat repeat = ReminderRepeat.from(repeatStr);
         if (repeat == ReminderRepeat.NONE) {
@@ -52,15 +72,15 @@ public class ReminderReceiver extends BroadcastReceiver {
                     .subscribe(() -> {}, e -> Log.e(TAG, "clearReminder failed", e));
         } else {
             long nextTime = computeNextTime(System.currentTimeMillis(), repeat);
-            dataManager.updateNoteReminder(noteId, nextTime, repeat.name())
+            dataManager.updateNoteReminderFull(noteId, nextTime, repeat.name(), 0)
                     .subscribe(() -> {}, e -> Log.e(TAG, "updateReminder failed", e));
-
             Note tempNote = new Note();
             tempNote.setId(noteId);
             tempNote.setTitle(title != null ? title : "");
             tempNote.setValue(preview != null ? preview : "");
             tempNote.setReminderTime(nextTime);
             tempNote.setReminderRepeat(repeat.name());
+            tempNote.setReminderIntervalMinutes(0);
             ReminderManager.scheduleReminder(ctx, tempNote);
         }
     }
@@ -94,15 +114,14 @@ public class ReminderReceiver extends BroadcastReceiver {
         snoozeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent snoozePi = PendingIntent.getActivity(
                 ctx, noteId + 10000, snoozeIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        String notifTitle = (title != null && !title.isEmpty())
-                ? title : ctx.getString(R.string.app_name);
+        String notifTitle = (title != null && !title.isEmpty()) ? title : ctx.getString(R.string.app_name);
         String notifText = (preview != null && preview.length() > 100)
                 ? preview.substring(0, 100) : (preview != null ? preview : "");
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(
+                ctx, notificationPreferencesCache.getChannelId())
                 .setSmallIcon(R.drawable.ic_bell_small)
                 .setContentTitle(notifTitle)
                 .setContentText(notifText)

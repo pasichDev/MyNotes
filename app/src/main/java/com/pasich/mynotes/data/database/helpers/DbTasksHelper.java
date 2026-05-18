@@ -24,6 +24,7 @@ public interface DbTasksHelper {
     Completable deleteCategory(TaskCategory category);
     Single<Integer> getTaskCountForCategory(int categoryId);
     Completable setTaskReminder(int taskId, long time);
+    Completable setTaskReminderFull(int taskId, long time, int intervalMinutes);
     Completable clearTaskReminder(int taskId);
     Single<List<Task>> getTasksWithReminders();
 }

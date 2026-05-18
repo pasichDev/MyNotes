@@ -9,16 +9,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.widget.Toast;
-
-import com.google.android.material.datepicker.CalendarConstraints;
-import com.google.android.material.datepicker.DateValidatorPointForward;
-import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.timepicker.MaterialTimePicker;
-import com.google.android.material.timepicker.TimeFormat;
-
-import java.text.DateFormat;
-import java.util.Calendar;
+import com.pasich.mynotes.ui.view.dialogs.TaskReminderPickerBottomSheet;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -75,6 +66,10 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
 
         tasksPresenter.attachView(this);
         tasksPresenter.viewIsReady();
+
+        getSupportFragmentManager().setFragmentResultListener(
+                "taskReminderChanged", this,
+                (requestKey, result) -> tasksPresenter.onCategorySelected(selectedCategoryId));
     }
 
     private ItemTouchHelper.SimpleCallback buildTouchCallback() {
@@ -166,54 +161,12 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
     }
 
     private void showReminderPicker(Task task) {
-        if (task.getReminderTime() != null) {
-            String formatted = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-                    .format(task.getReminderTime());
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.tasks_reminder_set)
-                    .setMessage(formatted)
-                    .setPositiveButton(R.string.tasks_reminder_clear,
-                            (d, w) -> tasksPresenter.clearTaskReminder(task))
-                    .setNegativeButton(R.string.cancel, null)
-                    .show();
-            return;
-        }
-
-        CalendarConstraints constraints = new CalendarConstraints.Builder()
-                .setValidator(DateValidatorPointForward.from(MaterialDatePicker.todayInUtcMilliseconds()))
-                .build();
-
-        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText(R.string.tasks_reminder_set)
-                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                .setCalendarConstraints(constraints)
-                .build();
-
-        datePicker.addOnPositiveButtonClickListener(dateMs -> {
-            Calendar now = Calendar.getInstance();
-            MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
-                    .setTitleText(R.string.tasks_reminder_set)
-                    .setTimeFormat(TimeFormat.CLOCK_24H)
-                    .setHour(now.get(Calendar.HOUR_OF_DAY))
-                    .setMinute(now.get(Calendar.MINUTE))
-                    .build();
-            timePicker.addOnPositiveButtonClickListener(v -> {
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(dateMs);
-                cal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
-                cal.set(Calendar.MINUTE, timePicker.getMinute());
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                if (cal.getTimeInMillis() <= System.currentTimeMillis()) {
-                    Toast.makeText(this, R.string.tasks_reminder_past, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                tasksPresenter.setTaskReminder(task, cal.getTimeInMillis());
-            });
-            timePicker.show(getSupportFragmentManager(), "task_time_picker");
-        });
-
-        datePicker.show(getSupportFragmentManager(), "task_date_picker");
+        TaskReminderPickerBottomSheet.newInstance(
+                task.getId(),
+                task.getTitle(),
+                task.getReminderTime(),
+                task.getReminderIntervalMinutes()
+        ).show(getSupportFragmentManager(), "taskReminderPicker");
     }
 
     private void showEditDialog(Task task) {

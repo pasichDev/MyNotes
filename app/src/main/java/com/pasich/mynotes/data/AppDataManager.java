@@ -334,6 +334,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public Completable updateNoteReminderFull(int noteId, long reminderTime, String repeat, int intervalMinutes) {
+        return dbHelper.updateNoteReminderFull(noteId, reminderTime, repeat, intervalMinutes);
+    }
+
+    @Override
     public Completable setPinNote(int noteId, boolean pinned) {
         return dbHelper.setPinNote(noteId, pinned);
     }
@@ -406,6 +411,11 @@ public class AppDataManager implements DataManager {
     @Override
     public Completable setTaskReminder(int taskId, long time) {
         return dbHelper.setTaskReminder(taskId, time);
+    }
+
+    @Override
+    public Completable setTaskReminderFull(int taskId, long time, int intervalMinutes) {
+        return dbHelper.setTaskReminderFull(taskId, time, intervalMinutes);
     }
 
     @Override

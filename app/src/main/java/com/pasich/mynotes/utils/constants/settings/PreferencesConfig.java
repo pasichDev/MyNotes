@@ -44,4 +44,10 @@ public class PreferencesConfig {
     //font scaling app
     public static final String ARGUMENT_PREFERENCE_UI_SCALING = "uiFontScale";
     public static final float ARGUMENT_DEFAULT_UI_SCALING_VALUE = 0.0f;
+    //Notification sound / channel
+    public static final String ARGUMENT_PREFERENCE_NOTIFICATION_SOUND_URI = "notification_sound_uri";
+    public static final String ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_ID = "notification_channel_id";
+    public static final String ARGUMENT_PREFERENCE_NOTIFICATION_CHANNEL_VERSION = "notification_channel_version";
+    public static final String ARGUMENT_DEFAULT_NOTIFICATION_CHANNEL_ID = "reminders_v1";
+    public static final int ARGUMENT_DEFAULT_NOTIFICATION_CHANNEL_VERSION = 1;
 }

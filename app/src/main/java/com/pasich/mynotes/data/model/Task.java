@@ -23,6 +23,8 @@ public class Task {
     @ColumnInfo(defaultValue = "0")
     private int position;
     private Long reminderTime;
+    @ColumnInfo(defaultValue = "0")
+    private int reminderIntervalMinutes = 0;
 
     public Task() {}
 
@@ -51,4 +53,8 @@ public class Task {
     public void setPosition(int position) { this.position = position; }
     public Long getReminderTime() { return reminderTime; }
     public void setReminderTime(Long reminderTime) { this.reminderTime = reminderTime; }
+    public int getReminderIntervalMinutes() { return reminderIntervalMinutes; }
+    public void setReminderIntervalMinutes(int reminderIntervalMinutes) {
+        this.reminderIntervalMinutes = reminderIntervalMinutes;
+    }
 }

@@ -94,6 +94,9 @@ public interface NoteDao {
     @Query("UPDATE notes SET reminderTime = :time, reminderRepeat = :repeat WHERE id = :noteId")
     void updateReminderSync(int noteId, long time, String repeat);
 
+    @Query("UPDATE notes SET reminderTime = :time, reminderRepeat = :repeat, reminderIntervalMinutes = :intervalMinutes WHERE id = :noteId")
+    void updateReminderFullSync(int noteId, long time, String repeat, int intervalMinutes);
+
     @Query("UPDATE notes SET isPinned = :pinned WHERE id = :noteId")
     void setPinNoteSync(int noteId, boolean pinned);
 

@@ -384,4 +384,16 @@
     <string name="tasks_reminder_clear">Удалить напоминание</string>
     <string name="tasks_reminder_past">Выберите будущее время</string>
 
+    <!-- Notification settings -->
+    <string name="settings_notifications_section_title">Уведомления напоминаний</string>
+    <string name="settings_notification_sound">Мелодия</string>
+    <string name="settings_notification_volume">Громкость</string>
+    <!-- Reminder interval -->
+    <string name="reminder_interval_label">Повторять уведомление</string>
+    <string name="reminder_interval_5min">5 мин</string>
+    <string name="reminder_interval_10min">10 мин</string>
+    <string name="reminder_interval_15min">15 мин</string>
+    <string name="reminder_interval_30min">30 мин</string>
+    <string name="reminder_interval_60min">60 мин</string>
+
 </resources>

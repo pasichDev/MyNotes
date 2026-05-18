@@ -56,6 +56,10 @@ public class Note {
     @androidx.room.ColumnInfo(name = "reminderRepeat")
     private String reminderRepeat = "NONE";
 
+    @SerializedName("m")
+    @androidx.room.ColumnInfo(name = "reminderIntervalMinutes")
+    private int reminderIntervalMinutes = 0;
+
     public Note create(String title, String value, long date, String tag) {
         this.title = title;
         this.tag = tag;
@@ -199,6 +203,14 @@ public class Note {
     }
 
 
+    public int getReminderIntervalMinutes() {
+        return reminderIntervalMinutes;
+    }
+
+    public void setReminderIntervalMinutes(int reminderIntervalMinutes) {
+        this.reminderIntervalMinutes = reminderIntervalMinutes;
+    }
+
     public void copyFrom(Note other) {
         if (other == null) return;
         this.title = other.title;
@@ -210,6 +222,7 @@ public class Note {
         this.reminderTime = other.reminderTime;
         this.reminderRepeat = other.reminderRepeat;
         this.isPinned = other.isPinned;
+        this.reminderIntervalMinutes = other.reminderIntervalMinutes;
     }
 
     public Note duplicate() {

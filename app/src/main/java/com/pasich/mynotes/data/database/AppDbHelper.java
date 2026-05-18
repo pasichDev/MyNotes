@@ -264,6 +264,13 @@ public class AppDbHelper implements DbHelper {
     }
 
     @Override
+    public Completable updateNoteReminderFull(int noteId, long reminderTime, String repeat, int intervalMinutes) {
+        return Completable.fromAction(() ->
+                appDatabase.noteDao().updateReminderFullSync(noteId, reminderTime, repeat, intervalMinutes)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    @Override
     public Completable setPinNote(int noteId, boolean pinned) {
         return Completable.fromAction(() ->
                 appDatabase.noteDao().setPinNoteSync(noteId, pinned)
@@ -340,6 +347,13 @@ public class AppDbHelper implements DbHelper {
     @Override
     public Completable setTaskReminder(int taskId, long time) {
         return Completable.fromAction(() -> appDatabase.taskDao().setTaskReminder(taskId, time));
+    }
+
+    @Override
+    public Completable setTaskReminderFull(int taskId, long time, int intervalMinutes) {
+        return Completable.fromAction(() ->
+                appDatabase.taskDao().setTaskReminderFullSync(taskId, time, intervalMinutes)
+        ).subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
     @Override

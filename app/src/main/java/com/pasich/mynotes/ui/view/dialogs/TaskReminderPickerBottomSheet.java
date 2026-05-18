@@ -25,13 +25,14 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.DataManager;
-import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.ReminderRepeat;
+import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
+import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -44,41 +45,46 @@ import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.disposables.CompositeDisposable;
 
 @AndroidEntryPoint
-public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
+public class TaskReminderPickerBottomSheet extends BottomSheetDialogFragment {
 
-    private static final String TAG = "ReminderPicker";
-    private static final String ARG_NOTE_ID = "noteId";
+    private static final String TAG = "TaskReminderPicker";
+    private static final String ARG_TASK_ID = "taskId";
+    private static final String ARG_TASK_TITLE = "taskTitle";
+    private static final String ARG_REMINDER_TIME = "reminderTime";
+    private static final String ARG_INTERVAL_MINUTES = "intervalMinutes";
 
     @Inject
     DataManager dataManager;
 
-    private int noteId;
+    private int taskId;
+    private String taskTitle;
     private Long selectedTime = null;
-    private ReminderRepeat selectedRepeat = ReminderRepeat.NONE;
-    private Note currentNote;
+    private int selectedIntervalMinutes = 0;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private View selectedTimeCard;
     private TextView selectedTimeDisplay;
-    private TextView repeatLabel;
-    private ChipGroup repeatChips;
     private MaterialButton btnSave;
     private MaterialButton btnDeleteReminder;
-    private int selectedIntervalMinutes = 0;
-    private View intervalDivider;
-    private com.google.android.material.materialswitch.MaterialSwitch switchRepeatInterval;
+    private MaterialSwitch switchRepeatInterval;
     private ChipGroup intervalChips;
+    private View intervalDivider;
 
     private final ActivityResultLauncher<String> notifPermLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
                 if (granted) saveReminder();
-                else showPermissionDenied();
+                else Toast.makeText(requireContext(),
+                        R.string.reminder_permission_denied, Toast.LENGTH_SHORT).show();
             });
 
-    public static ReminderPickerBottomSheet newInstance(int noteId) {
-        ReminderPickerBottomSheet f = new ReminderPickerBottomSheet();
+    public static TaskReminderPickerBottomSheet newInstance(int taskId, String taskTitle,
+            Long currentReminderTime, int currentIntervalMinutes) {
+        TaskReminderPickerBottomSheet f = new TaskReminderPickerBottomSheet();
         Bundle args = new Bundle();
-        args.putInt(ARG_NOTE_ID, noteId);
+        args.putInt(ARG_TASK_ID, taskId);
+        args.putString(ARG_TASK_TITLE, taskTitle != null ? taskTitle : "");
+        if (currentReminderTime != null) args.putLong(ARG_REMINDER_TIME, currentReminderTime);
+        args.putInt(ARG_INTERVAL_MINUTES, currentIntervalMinutes);
         f.setArguments(args);
         return f;
     }
@@ -86,7 +92,12 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        noteId = requireArguments().getInt(ARG_NOTE_ID, -1);
+        Bundle args = requireArguments();
+        taskId = args.getInt(ARG_TASK_ID, -1);
+        taskTitle = args.getString(ARG_TASK_TITLE, "");
+        if (args.containsKey(ARG_REMINDER_TIME)) {
+            selectedTime = args.getLong(ARG_REMINDER_TIME);
+        }
     }
 
     @Nullable
@@ -96,16 +107,19 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_reminder_picker, container, false);
 
-        selectedTimeCard    = view.findViewById(R.id.selectedTimeCard);
-        selectedTimeDisplay = view.findViewById(R.id.selectedTimeDisplay);
-        repeatLabel         = view.findViewById(R.id.repeatLabel);
-        repeatChips         = view.findViewById(R.id.repeatChips);
-        btnSave             = view.findViewById(R.id.btnSave);
-        btnDeleteReminder   = view.findViewById(R.id.btnDeleteReminder);
-        intervalDivider      = view.findViewById(R.id.intervalDivider);
+        selectedTimeCard     = view.findViewById(R.id.selectedTimeCard);
+        selectedTimeDisplay  = view.findViewById(R.id.selectedTimeDisplay);
+        btnSave              = view.findViewById(R.id.btnSave);
+        btnDeleteReminder    = view.findViewById(R.id.btnDeleteReminder);
         switchRepeatInterval = view.findViewById(R.id.switchRepeatInterval);
         intervalChips        = view.findViewById(R.id.intervalChips);
+        intervalDivider      = view.findViewById(R.id.intervalDivider);
 
+        // Hide repeat section — tasks don't use DAILY/WEEKLY/MONTHLY
+        view.findViewById(R.id.repeatLabel).setVisibility(View.GONE);
+        view.findViewById(R.id.repeatChips).setVisibility(View.GONE);
+
+        // Wire interval switch
         switchRepeatInterval.setOnCheckedChangeListener((btn, checked) -> {
             intervalChips.setVisibility(checked ? View.VISIBLE : View.GONE);
             if (!checked) {
@@ -122,15 +136,20 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
             }
         });
 
-        disposables.add(
-                dataManager.getNoteForId(noteId)
-                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(note -> {
-                            currentNote = note;
-                            prefillExistingReminder(note);
-                        }, e -> Log.e(TAG, "load note failed", e))
-        );
+        // Pre-fill existing reminder
+        if (selectedTime != null && selectedTime > System.currentTimeMillis()) {
+            updateTimeDisplay();
+            showIntervalSection();
+            int existingInterval = requireArguments().getInt(ARG_INTERVAL_MINUTES, 0);
+            if (existingInterval > 0) {
+                selectedIntervalMinutes = existingInterval;
+                switchRepeatInterval.setChecked(true);
+                intervalChips.setVisibility(View.VISIBLE);
+                setIntervalChip(existingInterval);
+            }
+            btnDeleteReminder.setVisibility(View.VISIBLE);
+            btnSave.setEnabled(true);
+        }
 
         view.findViewById(R.id.presetToday).setOnClickListener(v -> applyPreset(todayEvening()));
         view.findViewById(R.id.presetTomorrow).setOnClickListener(v -> applyPreset(tomorrowMorning()));
@@ -140,25 +159,6 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         btnDeleteReminder.setOnClickListener(v -> deleteReminder());
 
         return view;
-    }
-
-    private void prefillExistingReminder(Note note) {
-        if (note.hasReminder()) {
-            selectedTime = note.getReminderTime();
-            selectedRepeat = ReminderRepeat.from(note.getReminderRepeat());
-            updateTimeDisplay();
-            showRepeatSection();
-            setRepeatChip(selectedRepeat);
-            btnDeleteReminder.setVisibility(View.VISIBLE);
-            btnSave.setEnabled(true);
-            int existingInterval = note.getReminderIntervalMinutes();
-            if (existingInterval > 0) {
-                selectedIntervalMinutes = existingInterval;
-                switchRepeatInterval.setChecked(true);
-                intervalChips.setVisibility(View.VISIBLE);
-                setIntervalChip(existingInterval);
-            }
-        }
     }
 
     private long todayEvening() {
@@ -183,21 +183,10 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         return cal.getTimeInMillis();
     }
 
-    private long nextWeekMorning() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.WEEK_OF_YEAR, 1);
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        cal.set(Calendar.HOUR_OF_DAY, 9);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTimeInMillis();
-    }
-
     private void applyPreset(long time) {
         selectedTime = time;
         updateTimeDisplay();
-        showRepeatSection();
+        showIntervalSection();
         btnSave.setEnabled(true);
     }
 
@@ -205,31 +194,25 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         CalendarConstraints constraints = new CalendarConstraints.Builder()
                 .setValidator(DateValidatorPointForward.now())
                 .build();
-
-        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder
-                .datePicker()
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText(getString(R.string.reminder_choose_date))
                 .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                 .setCalendarConstraints(constraints)
                 .build();
-
         datePicker.addOnPositiveButtonClickListener(dateMs -> {
             Calendar dateCal = Calendar.getInstance();
             dateCal.setTimeInMillis(dateMs);
-
             Calendar now = Calendar.getInstance();
             int defaultHour = (dateCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)
                     && dateCal.get(Calendar.YEAR) == now.get(Calendar.YEAR))
                     ? now.get(Calendar.HOUR_OF_DAY) : 9;
             int defaultMinute = (defaultHour == now.get(Calendar.HOUR_OF_DAY))
                     ? now.get(Calendar.MINUTE) + 1 : 0;
-
             MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
                     .setTimeFormat(TimeFormat.CLOCK_24H)
                     .setHour(defaultHour)
                     .setMinute(defaultMinute)
                     .build();
-
             timePicker.addOnPositiveButtonClickListener(v -> {
                 dateCal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
                 dateCal.set(Calendar.MINUTE, timePicker.getMinute());
@@ -242,16 +225,12 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                 }
                 applyPreset(dateCal.getTimeInMillis());
             });
-
             timePicker.show(getChildFragmentManager(), "timePicker");
         });
-
         datePicker.show(getChildFragmentManager(), "datePicker");
     }
 
-    private void showRepeatSection() {
-        repeatLabel.setVisibility(View.VISIBLE);
-        repeatChips.setVisibility(View.VISIBLE);
+    private void showIntervalSection() {
         intervalDivider.setVisibility(View.VISIBLE);
         switchRepeatInterval.setVisibility(View.VISIBLE);
     }
@@ -261,24 +240,6 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         SimpleDateFormat fmt = new SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault());
         selectedTimeDisplay.setText(fmt.format(new Date(selectedTime)));
         selectedTimeCard.setVisibility(View.VISIBLE);
-    }
-
-    private void setRepeatChip(ReminderRepeat repeat) {
-        int chipId = switch (repeat) {
-            case DAILY -> R.id.chipDaily;
-            case WEEKLY -> R.id.chipWeekly;
-            case MONTHLY -> R.id.chipMonthly;
-            default -> R.id.chipNone;
-        };
-        repeatChips.check(chipId);
-    }
-
-    private ReminderRepeat getSelectedRepeat() {
-        int checkedId = repeatChips.getCheckedChipId();
-        if (checkedId == R.id.chipDaily)   return ReminderRepeat.DAILY;
-        if (checkedId == R.id.chipWeekly)  return ReminderRepeat.WEEKLY;
-        if (checkedId == R.id.chipMonthly) return ReminderRepeat.MONTHLY;
-        return ReminderRepeat.NONE;
     }
 
     private int intervalMinutesFromChipId(int chipId) {
@@ -302,19 +263,15 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
 
     private void checkPermissionsAndSave() {
         if (selectedTime == null || selectedTime <= System.currentTimeMillis()) {
-            Toast.makeText(requireContext(),
-                    R.string.reminder_past_time_error, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.reminder_past_time_error, Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (!ReminderManager.canScheduleExact(requireContext())) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                startActivity(intent);
+                startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM));
             }
             return;
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(requireContext(),
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -322,38 +279,29 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                 return;
             }
         }
-
         saveReminder();
     }
 
     private void saveReminder() {
         if (selectedTime == null) return;
-
-        selectedRepeat = getSelectedRepeat();
         final long time = selectedTime;
-        final String repeat = selectedRepeat.name();
+        final int interval = selectedIntervalMinutes;
 
         disposables.add(
-                dataManager.updateNoteReminderFull(noteId, time, repeat, selectedIntervalMinutes)
+                dataManager.setTaskReminderFull(taskId, time, interval)
                         .subscribeOn(io.reactivex.schedulers.Schedulers.io())
                         .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
                         .subscribe(() -> {
-                            Note tempNote = new Note();
-                            tempNote.setId(noteId);
-                            if (currentNote != null) {
-                                tempNote.setTitle(currentNote.getTitle());
-                                tempNote.setValue(currentNote.getValue());
-                            }
-                            tempNote.setReminderTime(time);
-                            tempNote.setReminderRepeat(repeat);
-                            tempNote.setReminderIntervalMinutes(selectedIntervalMinutes);
-                            ReminderManager.scheduleReminder(requireContext(), tempNote);
+                            Task tempTask = new Task();
+                            tempTask.setId(taskId);
+                            tempTask.setTitle(taskTitle);
+                            tempTask.setReminderTime(time);
+                            tempTask.setReminderIntervalMinutes(interval);
+                            TaskReminderManager.scheduleReminder(requireContext(), tempTask);
 
                             Bundle result = new Bundle();
-                            result.putBoolean("hasReminder", true);
-                            result.putLong("reminderTime", time);
-                            getParentFragmentManager().setFragmentResult("reminderChanged", result);
-
+                            result.putBoolean("saved", true);
+                            getParentFragmentManager().setFragmentResult("taskReminderChanged", result);
                             dismiss();
                         }, e -> Log.e(TAG, "save failed", e))
         );
@@ -361,24 +309,17 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
 
     private void deleteReminder() {
         disposables.add(
-                dataManager.clearReminder(noteId)
+                dataManager.clearTaskReminder(taskId)
                         .subscribeOn(io.reactivex.schedulers.Schedulers.io())
                         .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
                         .subscribe(() -> {
-                            ReminderManager.cancelReminder(requireContext(), noteId);
-
+                            TaskReminderManager.cancelReminder(requireContext(), taskId);
                             Bundle result = new Bundle();
-                            result.putBoolean("hasReminder", false);
-                            getParentFragmentManager().setFragmentResult("reminderChanged", result);
-
+                            result.putBoolean("saved", false);
+                            getParentFragmentManager().setFragmentResult("taskReminderChanged", result);
                             dismiss();
                         }, e -> Log.e(TAG, "delete failed", e))
         );
-    }
-
-    private void showPermissionDenied() {
-        Toast.makeText(requireContext(),
-                R.string.reminder_permission_denied, Toast.LENGTH_SHORT).show();
     }
 
     @Override

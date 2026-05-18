@@ -425,4 +425,16 @@
     <string name="tasks_reminder_clear">Clear reminder</string>
     <string name="tasks_reminder_past">Please select a future time</string>
 
+    <!-- Notification settings -->
+    <string name="settings_notifications_section_title">Notification reminders</string>
+    <string name="settings_notification_sound">Melody</string>
+    <string name="settings_notification_volume">Volume</string>
+    <!-- Reminder interval -->
+    <string name="reminder_interval_label">Repeat notification</string>
+    <string name="reminder_interval_5min">5 min</string>
+    <string name="reminder_interval_10min">10 min</string>
+    <string name="reminder_interval_15min">15 min</string>
+    <string name="reminder_interval_30min">30 min</string>
+    <string name="reminder_interval_60min">60 min</string>
+
 </resources>

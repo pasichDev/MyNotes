@@ -380,4 +380,16 @@
     <string name="tasks_reminder_clear">Usuń przypomnienie</string>
     <string name="tasks_reminder_past">Wybierz przyszły czas</string>
 
+    <!-- Notification settings -->
+    <string name="settings_notifications_section_title">Powiadomienia przypomnień</string>
+    <string name="settings_notification_sound">Melodia</string>
+    <string name="settings_notification_volume">Głośność</string>
+    <!-- Reminder interval -->
+    <string name="reminder_interval_label">Powtarzaj powiadomienie</string>
+    <string name="reminder_interval_5min">5 min</string>
+    <string name="reminder_interval_10min">10 min</string>
+    <string name="reminder_interval_15min">15 min</string>
+    <string name="reminder_interval_30min">30 min</string>
+    <string name="reminder_interval_60min">60 min</string>
+
 </resources>
