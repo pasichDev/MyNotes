@@ -85,6 +85,7 @@ public class NoteEditorView extends FrameLayout {
      */
 
     private void loadEditorHtml() {
+        if (webView == null) return;
         webView.loadUrl(
                 "file:///android_asset/editor/editor.html?locale=" + Locale.getDefault().getLanguage()
         );
@@ -159,7 +160,11 @@ public class NoteEditorView extends FrameLayout {
             editorIsReady = true;
             applyTheme();
             if (pendingNote != null) {
-                editorInterface.loadNoteToEditor(pendingNote);
+                if (editorInterface != null) {
+                    editorInterface.loadNoteToEditor(pendingNote);
+                } else {
+                    Log.w(TAG, "onEditorReady: editorInterface is null, dropping pending note");
+                }
                 pendingNote = null;
             }
             handler.postDelayed(this::showEditor, 120);
@@ -185,6 +190,7 @@ public class NoteEditorView extends FrameLayout {
     }
 
     void showEditor() {
+        if (webView == null || loader == null) return;
         loader.animate().alpha(0f).setDuration(300).withEndAction(() -> loader.setVisibility(View.GONE)).start();
         webView.setAlpha(0f);
         webView.setVisibility(View.VISIBLE);
