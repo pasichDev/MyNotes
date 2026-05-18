@@ -18,6 +18,8 @@ public class SnoozeActivity extends AppCompatActivity {
     private int noteId;
     private String noteTitle;
     private String notePreview;
+    private String noteRepeat;
+    private int noteIntervalMinutes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +29,8 @@ public class SnoozeActivity extends AppCompatActivity {
         noteId = intent.getIntExtra(ReminderManager.EXTRA_NOTE_ID, -1);
         noteTitle = intent.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
         notePreview = intent.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
+        noteRepeat = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
+        noteIntervalMinutes = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
 
         if (noteId == -1) {
             finish();
@@ -85,7 +89,8 @@ public class SnoozeActivity extends AppCompatActivity {
         tempNote.setTitle(noteTitle != null ? noteTitle : "");
         tempNote.setValue(notePreview != null ? notePreview : "");
         tempNote.setReminderTime(time);
-        tempNote.setReminderRepeat(ReminderRepeat.NONE.name());
+        tempNote.setReminderRepeat(noteRepeat != null ? noteRepeat : ReminderRepeat.NONE.name());
+        tempNote.setReminderIntervalMinutes(noteIntervalMinutes);
         ReminderManager.scheduleReminder(this, tempNote);
     }
 }

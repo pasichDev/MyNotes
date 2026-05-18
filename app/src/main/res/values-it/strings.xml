@@ -397,4 +397,8 @@
         <item quantity="other">%d parole</item>
     </plurals>
 
+    <string name="editor_switch_label">Editor</string>
+    <string name="mode_simple">Semplice</string>
+    <string name="mode_extended">Esteso</string>
+
 </resources>

@@ -5,7 +5,6 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
 import com.pasich.mynotes.data.model.Note;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -35,8 +34,16 @@ public interface NoteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void addNotes(List<Note> notes);
 
-    @Update
-    void updateNote(Note note);
+    @Query(
+            "UPDATE notes SET title = :title, value = :value, valueJson = :valueJson, date = :date, tag = :tag, attachments = :attachments WHERE id = :id")
+    void updateNoteContent(
+            int id,
+            String title,
+            String value,
+            String valueJson,
+            long date,
+            String tag,
+            String attachments);
 
     @Delete
     void deleteNote(Note note);

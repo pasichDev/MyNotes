@@ -404,4 +404,8 @@
         <item quantity="other">%d слова</item>
     </plurals>
 
+    <string name="editor_switch_label">Редактор</string>
+    <string name="mode_simple">Простой</string>
+    <string name="mode_extended">Расширенный</string>
+
 </resources>

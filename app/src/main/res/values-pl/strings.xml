@@ -400,4 +400,8 @@
         <item quantity="other">%d słowa</item>
     </plurals>
 
+    <string name="editor_switch_label">Edytor</string>
+    <string name="mode_simple">Prosty</string>
+    <string name="mode_extended">Rozszerzony</string>
+
 </resources>

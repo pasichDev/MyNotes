@@ -399,4 +399,8 @@
         <item quantity="other">%d Wörter</item>
     </plurals>
 
+    <string name="editor_switch_label">Editor</string>
+    <string name="mode_simple">Einfach</string>
+    <string name="mode_extended">Erweitert</string>
+
 </resources>

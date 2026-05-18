@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.data.model.ReminderRepeat;
 import com.pasich.mynotes.ui.receiver.ReminderReceiver;
+import java.util.Calendar;
 import java.util.List;
 
 public class ReminderManager {
@@ -49,6 +51,25 @@ public class ReminderManager {
         for (Note note : notes) {
             scheduleReminder(ctx, note);
         }
+    }
+
+    public static long computeNextTime(long from, ReminderRepeat repeat) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(from);
+        switch (repeat) {
+            case DAILY:
+                cal.add(Calendar.DAY_OF_YEAR, 1);
+                break;
+            case WEEKLY:
+                cal.add(Calendar.WEEK_OF_YEAR, 1);
+                break;
+            case MONTHLY:
+                cal.add(Calendar.MONTH, 1);
+                break;
+            default:
+                break;
+        }
+        return cal.getTimeInMillis();
     }
 
     public static boolean canScheduleExact(Context ctx) {

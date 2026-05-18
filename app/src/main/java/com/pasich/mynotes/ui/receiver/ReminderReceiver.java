@@ -14,12 +14,12 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.ReminderRepeat;
 import com.pasich.mynotes.ui.view.activity.MainActivity;
+import com.pasich.mynotes.ui.view.activity.ReminderTapActivity;
 import com.pasich.mynotes.ui.view.activity.SnoozeActivity;
 import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
-import java.util.Calendar;
 import javax.inject.Inject;
 
 @AndroidEntryPoint
@@ -39,11 +39,11 @@ public class ReminderReceiver extends BroadcastReceiver {
         if (noteId == -1) return;
 
         if (ACTION_DISMISS.equals(intent.getAction())) {
-            ReminderManager.cancelReminder(ctx, noteId);
-            dataManager
-                    .clearReminder(noteId)
-                    .subscribe(() -> {}, e -> Log.e(TAG, "dismiss clearReminder failed", e));
-            NotificationManagerCompat.from(ctx).cancel(noteId);
+            String dRepeat = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
+            int dInterval = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
+            String dTitle = intent.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
+            String dPreview = intent.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
+            cancelIntervalReminder(ctx, noteId, dRepeat, dInterval, dTitle, dPreview);
             return;
         }
 
@@ -52,10 +52,20 @@ public class ReminderReceiver extends BroadcastReceiver {
         String repeatStr = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
         int intervalMinutes = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
 
-        showNotification(ctx, noteId, title, preview, intervalMinutes);
+        Log.d(
+                TAG,
+                "onReceive: noteId="
+                        + noteId
+                        + " repeatStr="
+                        + repeatStr
+                        + " intervalMinutes="
+                        + intervalMinutes);
+
+        showNotification(ctx, noteId, title, preview, repeatStr, intervalMinutes);
 
         if (intervalMinutes > 0) {
             long nextTime = System.currentTimeMillis() + intervalMinutes * 60_000L;
+            Log.d(TAG, "onReceive: INTERVAL path → nextTime=" + new java.util.Date(nextTime));
             dataManager
                     .updateNoteReminderFull(
                             noteId,
@@ -76,11 +86,18 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         ReminderRepeat repeat = ReminderRepeat.from(repeatStr);
         if (repeat == ReminderRepeat.NONE) {
+            Log.d(TAG, "onReceive: ONE-TIME path → clearing reminder for noteId=" + noteId);
             dataManager
                     .clearReminder(noteId)
                     .subscribe(() -> {}, e -> Log.e(TAG, "clearReminder failed", e));
         } else {
-            long nextTime = computeNextTime(System.currentTimeMillis(), repeat);
+            long nextTime = ReminderManager.computeNextTime(System.currentTimeMillis(), repeat);
+            Log.d(
+                    TAG,
+                    "onReceive: REPEAT("
+                            + repeat
+                            + ") path → scheduling next at "
+                            + new java.util.Date(nextTime));
             dataManager
                     .updateNoteReminderFull(noteId, nextTime, repeat.name(), 0)
                     .subscribe(() -> {}, e -> Log.e(TAG, "updateReminder failed", e));
@@ -95,27 +112,44 @@ public class ReminderReceiver extends BroadcastReceiver {
         }
     }
 
-    private long computeNextTime(long from, ReminderRepeat repeat) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(from);
-        switch (repeat) {
-            case DAILY:
-                cal.add(Calendar.DAY_OF_YEAR, 1);
-                break;
-            case WEEKLY:
-                cal.add(Calendar.WEEK_OF_YEAR, 1);
-                break;
-            case MONTHLY:
-                cal.add(Calendar.MONTH, 1);
-                break;
-            default:
-                break;
+    private void cancelIntervalReminder(
+            Context ctx,
+            int noteId,
+            String repeatStr,
+            int intervalMinutes,
+            String title,
+            String preview) {
+        ReminderManager.cancelReminder(ctx, noteId);
+        NotificationManagerCompat.from(ctx).cancel(noteId);
+
+        ReminderRepeat repeat = ReminderRepeat.from(repeatStr);
+        if (repeat != ReminderRepeat.NONE) {
+            long nextTime = ReminderManager.computeNextTime(System.currentTimeMillis(), repeat);
+            dataManager
+                    .updateNoteReminderFull(noteId, nextTime, repeat.name(), intervalMinutes)
+                    .subscribe(() -> {}, e -> Log.e(TAG, "updateReminderFull failed", e));
+            Note tempNote = new Note();
+            tempNote.setId(noteId);
+            tempNote.setTitle(title != null ? title : "");
+            tempNote.setValue(preview != null ? preview : "");
+            tempNote.setReminderTime(nextTime);
+            tempNote.setReminderRepeat(repeat.name());
+            tempNote.setReminderIntervalMinutes(intervalMinutes);
+            ReminderManager.scheduleReminder(ctx, tempNote);
+        } else {
+            dataManager
+                    .clearReminder(noteId)
+                    .subscribe(() -> {}, e -> Log.e(TAG, "clearReminder failed", e));
         }
-        return cal.getTimeInMillis();
     }
 
     private void showNotification(
-            Context ctx, int noteId, String title, String preview, int intervalMinutes) {
+            Context ctx,
+            int noteId,
+            String title,
+            String preview,
+            String repeatStr,
+            int intervalMinutes) {
         Intent noteIntent = new Intent(ctx, NoteActivity.class);
         noteIntent.putExtra(NoteExtras.EXTRA_NEW_NOTE, false);
         noteIntent.putExtra(NoteExtras.EXTRA_ID_NOTE, (long) noteId);
@@ -128,16 +162,45 @@ public class ReminderReceiver extends BroadcastReceiver {
                                 noteId,
                                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        Intent tapIntent = new Intent(ctx, ReminderTapActivity.class);
+        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
+        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_TITLE, title);
+        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_PREVIEW, preview);
+        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_REPEAT, repeatStr);
+        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, intervalMinutes);
+        PendingIntent tapPi =
+                PendingIntent.getActivity(
+                        ctx,
+                        noteId + 20000,
+                        tapIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         Intent snoozeIntent = new Intent(ctx, SnoozeActivity.class);
         snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
         snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_TITLE, title);
         snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_PREVIEW, preview);
+        snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_REPEAT, repeatStr);
+        snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, intervalMinutes);
         snoozeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent snoozePi =
                 PendingIntent.getActivity(
                         ctx,
                         noteId + 10000,
                         snoozeIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Intent dismissIntent = new Intent(ctx, ReminderReceiver.class);
+        dismissIntent.setAction(ACTION_DISMISS);
+        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
+        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_TITLE, title);
+        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_PREVIEW, preview);
+        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_REPEAT, repeatStr);
+        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, intervalMinutes);
+        PendingIntent dismissPi =
+                PendingIntent.getBroadcast(
+                        ctx,
+                        noteId + 30000,
+                        dismissIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         String notifTitle =
@@ -147,15 +210,10 @@ public class ReminderReceiver extends BroadcastReceiver {
                         ? preview.substring(0, 100)
                         : (preview != null ? preview : "");
 
-        Intent dismissIntent = new Intent(ctx, ReminderReceiver.class);
-        dismissIntent.setAction(ACTION_DISMISS);
-        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
-        PendingIntent dismissPi =
-                PendingIntent.getBroadcast(
-                        ctx,
-                        noteId + 30000,
-                        dismissIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        // For interval reminders, tapping opens the note and stops the current interval cycle
+        // (scheduling next daily/weekly/monthly occurrence if repeatStr != NONE).
+        // For one-time / periodic reminders, tapping just opens the note.
+        PendingIntent contentPi = (intervalMinutes > 0) ? tapPi : openPi;
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(ctx, notificationPreferencesCache.getChannelId())
@@ -164,7 +222,7 @@ public class ReminderReceiver extends BroadcastReceiver {
                         .setContentText(notifText)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setAutoCancel(true)
-                        .setContentIntent(openPi)
+                        .setContentIntent(contentPi)
                         .addAction(0, ctx.getString(R.string.reminder_snooze_label), snoozePi);
 
         if (intervalMinutes > 0) {

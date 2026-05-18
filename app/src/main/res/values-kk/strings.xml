@@ -395,4 +395,8 @@
         <item quantity="other">%d сөз</item>
     </plurals>
 
+    <string name="editor_switch_label">Редактор</string>
+    <string name="mode_simple">Қарапайым</string>
+    <string name="mode_extended">Кеңейтілген</string>
+
 </resources>

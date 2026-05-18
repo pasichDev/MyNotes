@@ -399,4 +399,8 @@
         <item quantity="other">%d слова</item>
     </plurals>
 
+    <string name="editor_switch_label">Рэдактар</string>
+    <string name="mode_simple">Просты</string>
+    <string name="mode_extended">Пашыраны</string>
+
 </resources>

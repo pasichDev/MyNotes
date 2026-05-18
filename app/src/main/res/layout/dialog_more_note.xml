@@ -19,7 +19,6 @@
             name="note"
             type="com.pasich.mynotes.data.model.Note" />
 
-
     </data>
 
     <FrameLayout
@@ -32,287 +31,401 @@
             android:orientation="vertical"
             tools:ignore="UselessParent">
 
-            <include
-                android:id="@+id/settingsActivity"
-                layout="@layout/view_set_note_activity"
-                android:visibility="gone" />
+            <!-- ===== EDITOR-ONLY SECTION ===== -->
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:visibility="@{activityNote ? View.VISIBLE : View.GONE}" />
 
+            <!-- Quick actions row: Share / Copy / Translate / Pin -->
             <LinearLayout
-                android:id="@+id/groupLayouts"
+                android:id="@+id/quickActionsRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp" />
-
-                <include
-                    android:id="@+id/notePreview"
-                    layout="@layout/item_more_note"
-                    android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}"
-                    app:Note="@{note}" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}" />
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_full"
+                android:orientation="horizontal"
+                android:visibility="@{activityNote ? View.VISIBLE : View.GONE}">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginHorizontal="20dp"
-                    android:gravity="start"
+                    android:id="@+id/quickShare"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
                     android:orientation="vertical"
-                    android:visibility="@{activityNote ?  View.VISIBLE  : View.GONE , default = gone}">
-
-                    <com.pasich.mynotes.ui.view.widgets.TwoSideSwitchView
-                        android:id="@+id/changeTypeEditor"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:inactiveColor="?attr/colorOutline"
-                        app:leftActiveColor="?attr/colorOnPrimaryContainer"
-                        app:leftIcon="@drawable/ic_edit"
-                        app:modeEditor="inactive"
-                        app:rightActiveColor="?attr/colorOnPrimaryContainer"
-                        app:rightIcon="@drawable/ic_extended" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="5dp" />
-                </LinearLayout>
-
-
-                <LinearLayout
-                    android:id="@+id/action_panel_activate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_full"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="@{activityNote ?  View.GONE  : View.VISIBLE , default = gone}">
+                    android:padding="12dp">
 
                     <ImageView
-                        style="@style/iconDialogList"
-                        android:contentDescription="@string/selectAll"
-                        android:src="@drawable/ic_check_box" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/selectAll" />
-                </LinearLayout>
-
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp" />
-
-                <LinearLayout
-                    android:id="@+id/share"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_start"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="@{valuesText ?  View.VISIBLE :View.GONE , default = gone}">
-
-                    <ImageView
-                        style="@style/iconDialogList"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@string/share"
-                        android:src="@drawable/ic_share_app" />
+                        android:src="@drawable/ic_share_app"
+                        app:tint="?android:colorPrimary" />
 
                     <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/share" />
-
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/share"
+                        android:textSize="11sp" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
-
                 <LinearLayout
-                    android:id="@+id/translateNote"
-                    android:layout_width="match_parent"
+                    android:id="@+id/quickCopy"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_middle"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="@{valuesText  &amp;&amp; activityNote ?  View.VISIBLE :View.GONE , default = gone}">
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
 
                     <ImageView
-                        style="@style/iconDialogList"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:contentDescription="@string/copyNoteEdits"
+                        android:src="@drawable/ic_copy"
+                        app:tint="?android:colorPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/copyNoteEdits"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/quickTranslate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp"
+                    android:visibility="@{valuesText ? View.VISIBLE : View.GONE}">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@string/translateNote"
-                        android:src="@drawable/ic_translate" />
+                        android:src="@drawable/ic_translate"
+                        app:tint="?android:colorPrimary" />
 
                     <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/translateNote" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
-
-                <LinearLayout
-                    android:id="@+id/setReminder"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_middle"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems">
-
-                    <ImageView
-                        android:id="@+id/reminderMenuIcon"
-                        style="@style/iconDialogList"
-                        android:contentDescription="@string/reminder_menu_item"
-                        android:src="@drawable/ic_bell_small" />
-
-                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:orientation="vertical">
-
-                        <TextView
-                            style="@style/itemTextBottomSheets"
-                            android:text="@string/reminder_menu_item" />
-
-                        <TextView
-                            android:id="@+id/reminderDate"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingHorizontal="@dimen/paddingItems"
-                            android:paddingBottom="2dp"
-                            android:textSize="12sp"
-                            android:visibility="gone" />
-                    </LinearLayout>
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/translateNote"
+                        android:textSize="11sp" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
-
                 <LinearLayout
-                    android:id="@+id/copyNote"
-                    android:layout_width="match_parent"
+                    android:id="@+id/quickPin"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_middle"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="@{valuesText ? View.VISIBLE : View.GONE, default = gone}">
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
 
                     <ImageView
-                        style="@style/iconDialogList"
-                        android:contentDescription="@string/trashNotes"
-                        android:src="@drawable/ic_copy" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/copyNoteEdits" />
-                </LinearLayout>
-
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
-
-                <LinearLayout
-                    android:id="@+id/pinNote"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_middle"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems">
-
-                    <ImageView
-                        android:id="@+id/pinNoteIcon"
-                        style="@style/iconDialogList"
+                        android:id="@+id/quickPinIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@string/pinNote"
-                        android:src="@drawable/ic_pin" />
+                        android:src="@drawable/ic_pin"
+                        app:tint="?android:colorPrimary" />
 
                     <TextView
-                        android:id="@+id/pinNoteText"
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/pinNote" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp" />
-
-                <LinearLayout
-                    android:id="@+id/moveToTrash"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_end"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems">
-
-                    <ImageView
-                        style="@style/iconDialogList"
-                        android:contentDescription="@string/trashNotes"
-                        android:src="@drawable/ic_trash_notes" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/trashNotes" />
-                </LinearLayout>
-
-                <View
-                    android:id="@+id/spacerLast"
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp" />
-
-                <LinearLayout
-                    android:id="@+id/noSave"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:background="@drawable/bg_item_full"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/paddingItems"
-                    android:visibility="@{View.GONE}">
-
-                    <ImageView
-                        style="@style/iconDialogList"
-                        android:contentDescription="@string/noSave"
-                        android:src="@drawable/ic_close" />
-
-                    <TextView
-                        style="@style/itemTextBottomSheets"
-                        android:text="@string/noSave" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp" />
-
-                <HorizontalScrollView
-                    android:id="@+id/scrollChips"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="17dp"
-                    android:paddingVertical="5dp"
-                    android:scrollbars="none">
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupSystem"
+                        android:id="@+id/quickPinLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:singleSelection="true" />
-                </HorizontalScrollView>
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/pinNote"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:visibility="@{activityNote ? View.VISIBLE : View.GONE}" />
+
+            <!-- Editor type switch row -->
+            <LinearLayout
+                android:id="@+id/editorSwitchRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_full"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems"
+                android:visibility="@{activityNote ? View.VISIBLE : View.GONE}">
+
+                <ImageView
+                    style="@style/iconDialogList"
+                    android:contentDescription="@string/editor_switch_label"
+                    android:src="@drawable/ic_extended" />
+
+                <TextView
+                    style="@style/itemTextBottomSheets"
+                    android:layout_weight="1"
+                    android:text="@string/editor_switch_label" />
+
+                <TextView
+                    android:id="@+id/editorTypeLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:alpha="0.6"
+                    android:paddingEnd="4dp"
+                    android:textSize="13sp"
+                    tools:text="Simple" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:alpha="0.5"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_arrow_forward"
+                    app:tint="?android:colorPrimary" />
 
             </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:visibility="@{activityNote ? View.VISIBLE : View.GONE}" />
+
+            <!-- Text size / style settings (NoteActivity only, shown by Java) -->
+            <LinearLayout
+                android:id="@+id/settingsActivityWrapper"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_full"
+                android:visibility="gone">
+
+                <include
+                    android:id="@+id/settingsActivity"
+                    layout="@layout/view_set_note_activity" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:visibility="@{activityNote ? View.VISIBLE : View.GONE}" />
+
+            <!-- ===== MAIN ACTIVITY SECTION ===== -->
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}" />
+
+            <include
+                android:id="@+id/notePreview"
+                layout="@layout/item_more_note"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}"
+                app:Note="@{note}" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}" />
+
+            <LinearLayout
+                android:id="@+id/action_panel_activate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_full"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}">
+
+                <ImageView
+                    style="@style/iconDialogList"
+                    android:contentDescription="@string/selectAll"
+                    android:src="@drawable/ic_check_box" />
+
+                <TextView
+                    style="@style/itemTextBottomSheets"
+                    android:text="@string/selectAll" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}" />
+
+            <LinearLayout
+                android:id="@+id/share"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_start"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}">
+
+                <ImageView
+                    style="@style/iconDialogList"
+                    android:contentDescription="@string/share"
+                    android:src="@drawable/ic_share_app" />
+
+                <TextView
+                    style="@style/itemTextBottomSheets"
+                    android:text="@string/share" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}" />
+
+            <LinearLayout
+                android:id="@+id/copyNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_middle"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}">
+
+                <ImageView
+                    style="@style/iconDialogList"
+                    android:contentDescription="@string/copyNoteEdits"
+                    android:src="@drawable/ic_copy" />
+
+                <TextView
+                    style="@style/itemTextBottomSheets"
+                    android:text="@string/copyNoteEdits" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}" />
+
+            <LinearLayout
+                android:id="@+id/pinNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_middle"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}">
+
+                <ImageView
+                    android:id="@+id/pinNoteIcon"
+                    style="@style/iconDialogList"
+                    android:contentDescription="@string/pinNote"
+                    android:src="@drawable/ic_pin" />
+
+                <TextView
+                    android:id="@+id/pinNoteText"
+                    style="@style/itemTextBottomSheets"
+                    android:text="@string/pinNote" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="@{activityNote ? View.GONE : View.VISIBLE}" />
+
+            <!-- ===== COMMON SECTION ===== -->
+
+            <!-- Reminder: bg_item_end in main list, bg_item_full in editor (set in Java) -->
+            <LinearLayout
+                android:id="@+id/setReminder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_end"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems">
+
+                <ImageView
+                    android:id="@+id/reminderMenuIcon"
+                    style="@style/iconDialogList"
+                    android:contentDescription="@string/reminder_menu_item"
+                    android:src="@drawable/ic_bell_small" />
+
+                <TextView
+                    style="@style/itemTextBottomSheets"
+                    android:layout_weight="1"
+                    android:text="@string/reminder_menu_item" />
+
+                <TextView
+                    android:id="@+id/reminderSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:alpha="0.6"
+                    android:paddingEnd="4dp"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:text="12 Jan · 17:00" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <LinearLayout
+                android:id="@+id/moveToTrash"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_full"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems">
+
+                <ImageView
+                    style="@style/iconDialogList"
+                    android:contentDescription="@string/trashNotes"
+                    android:src="@drawable/ic_trash_notes"
+                    app:tint="?attr/colorError" />
+
+                <TextView
+                    style="@style/itemTextBottomSheets"
+                    android:text="@string/trashNotes"
+                    android:textColor="?attr/colorError" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp" />
+
+            <HorizontalScrollView
+                android:id="@+id/scrollChips"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="17dp"
+                android:paddingVertical="5dp"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupSystem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true" />
+            </HorizontalScrollView>
+
         </LinearLayout>
     </FrameLayout>
 </layout>

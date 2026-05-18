@@ -24,7 +24,6 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.DialogMoreNoteBinding;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
-import com.pasich.mynotes.ui.view.widgets.TwoSideSwitchView;
 import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -39,7 +38,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     @Inject public MoreNoteDialogPresenter mPresenter;
     @Inject public TextStyleTool textStylePreferences;
-    // private Note mNote;
     private RootActivity rootActivity;
     private int positionItem;
     private DialogMoreNoteBinding binding;
@@ -95,6 +93,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
 
+        if (rootActivity != RootActivity.MainActivity) {
+            binding.setReminder.setBackgroundResource(R.drawable.bg_item_full);
+        }
+
         return binding.getRoot();
     }
 
@@ -124,43 +126,51 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
     private void updatePinState(Note note) {
         if (note == null) return;
-        binding.pinNoteText.setText(
-                note.isPinned() ? getString(R.string.unpinNote) : getString(R.string.pinNote));
+        boolean pinned = note.isPinned();
+        String pinLabel = pinned ? getString(R.string.unpinNote) : getString(R.string.pinNote);
+        if (rootActivity == RootActivity.MainActivity) {
+            binding.pinNoteText.setText(pinLabel);
+        } else {
+            binding.quickPinLabel.setText(pinLabel);
+        }
     }
 
     private void updateReminderMenuState(Note note) {
         boolean hasReminder = note != null && note.hasReminder();
         if (hasReminder) {
-            SimpleDateFormat fmt = new SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault());
-            binding.reminderDate.setText(fmt.format(new Date(note.getReminderTime())));
-            binding.reminderDate.setVisibility(View.VISIBLE);
+            SimpleDateFormat fmt = new SimpleDateFormat("d MMM · HH:mm", Locale.getDefault());
+            binding.reminderSubtitle.setText(fmt.format(new Date(note.getReminderTime())));
+            binding.reminderSubtitle.setVisibility(View.VISIBLE);
         } else {
-            binding.reminderDate.setVisibility(View.GONE);
+            binding.reminderSubtitle.setVisibility(View.GONE);
         }
     }
 
     public void setHideTextSize() {
-        binding.settingsActivity
-                .getRoot()
-                .setVisibility(
-                        rootActivity == RootActivity.NoteActivity ? View.VISIBLE : View.GONE);
+        boolean showSettings = rootActivity == RootActivity.NoteActivity;
+        binding.settingsActivityWrapper.setVisibility(showSettings ? View.VISIBLE : View.GONE);
     }
 
     public void setChangeTypeEditor() {
+        if (rootActivity == RootActivity.MainActivity) return;
         if (mPresenter.getNote().isAttachments()) {
-            binding.changeTypeEditor.setMode(TwoSideSwitchView.Mode.INACTIVE);
-            binding.changeTypeEditor.setVisibility(GONE);
+            binding.editorSwitchRow.setVisibility(GONE);
             return;
         }
-        binding.changeTypeEditor.setMode(
+        String modeLabel =
                 rootActivity == RootActivity.ExtendedActivity
-                        ? TwoSideSwitchView.Mode.EXTENDED
-                        : TwoSideSwitchView.Mode.SIMPLE);
+                        ? getString(R.string.mode_extended)
+                        : getString(R.string.mode_simple);
+        binding.editorTypeLabel.setText(modeLabel);
     }
 
     public void goneCopyNotesExtended() {
-        binding.copyNote.setVisibility(
-                mPresenter.getNote().isAttachments() ? View.GONE : View.VISIBLE);
+        boolean hasAttachments = mPresenter.getNote().isAttachments();
+        if (rootActivity == RootActivity.MainActivity) {
+            binding.copyNote.setVisibility(hasAttachments ? GONE : View.VISIBLE);
+        } else {
+            binding.quickCopy.setVisibility(hasAttachments ? GONE : View.VISIBLE);
+        }
     }
 
     @Override
@@ -206,7 +216,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
         if (rootActivity != RootActivity.MainActivity) {
-            binding.noSave.setOnClickListener(v -> noteActivity.closeActivityNotSaved());
             binding.settingsActivity.textSize.addOnSliderTouchListener(
                     new Slider.OnSliderTouchListener() {
                         @Override
@@ -229,26 +238,46 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                         noteActivity.changeTextStyle();
                     });
 
-            binding.changeTypeEditor.setOnModeChangedListener(
-                    mode ->
-                            binding.changeTypeEditor.postDelayed(
-                                    () -> {
-                                        if (!isAdded()
-                                                || noteActivity == null
-                                                || mPresenter.getNote() == null) return;
+            binding.editorSwitchRow.setOnClickListener(
+                    v -> {
+                        if (!isAdded() || noteActivity == null || mPresenter.getNote() == null)
+                            return;
+                        noteActivity.changeEditor(mPresenter.getNote().getId());
+                        dismiss();
+                    });
 
-                                        switch (mode) {
-                                            case SIMPLE:
-                                            case EXTENDED:
-                                                noteActivity.changeEditor(
-                                                        mPresenter.getNote().getId());
-                                                break;
-                                            case INACTIVE:
-                                                break;
-                                        }
-                                        dismiss();
-                                    },
-                                    300));
+            binding.quickShare.setOnClickListener(
+                    v -> {
+                        ShareOptionsDialog shareDialog =
+                                new ShareOptionsDialog(mPresenter.getNote());
+                        shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+                        dismiss();
+                    });
+
+            binding.quickCopy.setOnClickListener(
+                    v -> {
+                        if (mPresenter.getNote().isAttachments()) return;
+                        noteActivity.openCopyNote(mPresenter.getNote().getId());
+                        dismiss();
+                    });
+
+            binding.quickTranslate.setOnClickListener(
+                    v -> {
+                        GoogleTranslateHelper.startTranslation(
+                                requireActivity(), mPresenter.getNote().getValue());
+                        dismiss();
+                    });
+
+            binding.quickPin.setOnClickListener(
+                    v -> {
+                        mPresenter.togglePinNote();
+                        dismiss();
+                    });
+
+            if (mPresenter.getNote().getValue().isEmpty()) {
+                binding.quickShare.setVisibility(GONE);
+                binding.quickCopy.setVisibility(GONE);
+            }
 
         } else {
             binding.actionPanelActivate.setOnClickListener(
@@ -257,35 +286,39 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                         mainActivity.actionStartNote(mPresenter.getNote(), positionItem);
                         dismiss();
                     });
+
+            binding.share.setOnClickListener(
+                    v -> {
+                        ShareOptionsDialog shareDialog =
+                                new ShareOptionsDialog(mPresenter.getNote());
+                        shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+                        dismiss();
+                    });
+
+            binding.copyNote.setOnClickListener(
+                    v -> {
+                        if (mPresenter.getNote().isAttachments()) return;
+                        mPresenter.copyNoteMainActivity();
+                        dismiss();
+                    });
+
+            binding.pinNote.setOnClickListener(
+                    v -> {
+                        mPresenter.togglePinNote();
+                        dismiss();
+                    });
+
+            if (mPresenter.getNote().getValue().isEmpty()) {
+                binding.share.setVisibility(GONE);
+                binding.copyNote.setVisibility(GONE);
+            }
         }
 
-        binding.share.setVisibility(View.VISIBLE);
-        binding.share.setOnClickListener(
-                v -> {
-                    // Open share options dialog
-                    ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
-                    shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
-                    dismiss();
-                });
-
-        binding.translateNote.setVisibility(View.VISIBLE);
-        binding.translateNote.setOnClickListener(
-                v -> {
-                    GoogleTranslateHelper.startTranslation(
-                            requireActivity(), mPresenter.getNote().getValue());
-                    dismiss();
-                });
         binding.setReminder.setOnClickListener(
                 v -> {
                     if (mPresenter.getNote() == null) return;
                     ReminderPickerBottomSheet.newInstance(mPresenter.getNote().getId())
                             .show(getParentFragmentManager(), "ReminderPicker");
-                    dismiss();
-                });
-
-        binding.pinNote.setOnClickListener(
-                v -> {
-                    mPresenter.togglePinNote();
                     dismiss();
                 });
 
@@ -299,24 +332,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                         noteActivity.closeActivityNotSaved();
                     }
                 });
-
-        binding.copyNote.setOnClickListener(
-                v -> {
-                    if (mPresenter.getNote().isAttachments()) return;
-                    if (rootActivity != RootActivity.MainActivity) {
-                        noteActivity.openCopyNote(mPresenter.getNote().getId());
-                    } else {
-                        mPresenter.copyNoteMainActivity();
-                    }
-
-                    dismiss();
-                });
-
-        if (mPresenter.getNote().getValue().isEmpty()) {
-            binding.translateNote.setVisibility(GONE);
-            binding.share.setVisibility(GONE);
-            binding.copyNote.setVisibility(GONE);
-        }
     }
 
     @Override
@@ -325,21 +340,24 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
         mPresenter.detachView();
         if (rootActivity != RootActivity.MainActivity) {
-            binding.noSave.setOnClickListener(null);
-            binding.translateNote.setOnClickListener(null);
+            binding.editorSwitchRow.setOnClickListener(null);
+            binding.quickShare.setOnClickListener(null);
+            binding.quickCopy.setOnClickListener(null);
+            binding.quickTranslate.setOnClickListener(null);
+            binding.quickPin.setOnClickListener(null);
             binding.settingsActivity.textStyleItem.setOnClickListener(null);
             noteActivity = null;
         } else {
             mainActivity = null;
             binding.actionPanelActivate.setOnClickListener(null);
+            binding.share.setOnClickListener(null);
+            binding.copyNote.setOnClickListener(null);
+            binding.pinNote.setOnClickListener(null);
             positionItem = 0;
         }
 
         binding.setReminder.setOnClickListener(null);
-        binding.pinNote.setOnClickListener(null);
         binding.moveToTrash.setOnClickListener(null);
-        binding.copyNote.setOnClickListener(null);
-        binding.share.setOnClickListener(null);
     }
 
     @Override
@@ -353,7 +371,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
         binding.scrollChips.setVisibility(View.VISIBLE);
 
-        String noteTag = mPresenter.getNote().getTag(); // може бути ""
+        String noteTag = mPresenter.getNote().getTag();
 
         for (Tag tag : tags) {
             Chip chip =

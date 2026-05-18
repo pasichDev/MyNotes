@@ -455,5 +455,10 @@
     <string name="reminder_interval_30min">30 min</string>
     <string name="reminder_interval_60min">60 min</string>
 
+    <!-- Editor switch row in MoreNoteDialog -->
+    <string name="editor_switch_label">Editor</string>
+    <string name="mode_simple">Simple</string>
+    <string name="mode_extended">Extended</string>
+
 </resources>
 

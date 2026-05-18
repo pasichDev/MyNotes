@@ -214,7 +214,18 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable updateNote(Note note) {
-        return Completable.fromAction(() -> appDatabase.noteDao().updateNote(note));
+        return Completable.fromAction(
+                () ->
+                        appDatabase
+                                .noteDao()
+                                .updateNoteContent(
+                                        note.getId(),
+                                        note.getTitle(),
+                                        note.getValue(),
+                                        note.getValueJson(),
+                                        note.getDate(),
+                                        note.getTag(),
+                                        note.getAttachments()));
     }
 
     @Override
@@ -256,6 +267,9 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable clearReminder(int noteId) {
+        RuntimeException caller =
+                new RuntimeException("clearReminder(noteId=" + noteId + ") CALLER");
+        android.util.Log.w("ReminderDebug", "clearReminder called for noteId=" + noteId, caller);
         return Completable.fromAction(() -> appDatabase.noteDao().clearReminderSync(noteId))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
