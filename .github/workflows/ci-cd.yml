@@ -93,22 +93,22 @@ jobs:
           makeLatest: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Play Store release notes
-        run: |
-          mkdir -p distribution/whatsnew
-          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          RANGE=${PREV:+"$PREV..HEAD"}
-          git log ${RANGE} --no-merges --format='• %s' \
-            | head -20 \
-            | head -c 490 \
-            > distribution/whatsnew/whatsnew-en-US
+      # - name: Generate Play Store release notes
+      #   run: |
+      #     mkdir -p distribution/whatsnew
+      #     PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+      #     RANGE=${PREV:+"$PREV..HEAD"}
+      #     git log ${RANGE} --no-merges --format='• %s' \
+      #       | head -20 \
+      #       | head -c 490 \
+      #       > distribution/whatsnew/whatsnew-en-US
 
-      - name: Publish to Google Play (Open Testing)
-        uses: r0adkll/upload-google-play@v3
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.pasich.mynotes
-          releaseFiles: artifacts/MyNotes-v${{ steps.version.outputs.name }}.aab
-          track: beta
-          status: completed
-          whatsNewDirectory: distribution/whatsnew
+      # - name: Publish to Google Play (Open Testing)
+      #   uses: r0adkll/upload-google-play@v3
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      #     packageName: com.pasich.mynotes
+      #     releaseFiles: artifacts/MyNotes-v${{ steps.version.outputs.name }}.aab
+      #     track: beta
+      #     status: completed
+      #     whatsNewDirectory: distribution/whatsnew
