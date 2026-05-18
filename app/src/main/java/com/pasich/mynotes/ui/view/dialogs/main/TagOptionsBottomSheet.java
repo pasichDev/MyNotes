@@ -4,10 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.dialog.BaseDialogBottomSheets;
@@ -29,7 +27,10 @@ public class TagOptionsBottomSheet extends BaseDialogBottomSheets {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = BottomSheetTagOptionsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -48,29 +49,34 @@ public class TagOptionsBottomSheet extends BaseDialogBottomSheets {
         binding.tagTitle.setText(tag.getNameTag());
 
         // Отображаем количество заметок
-        binding.tagNotesCount.setText(getResources().getQuantityString(
-                R.plurals.notes_count, notesCount, notesCount));
+        binding.tagNotesCount.setText(
+                getResources().getQuantityString(R.plurals.notes_count, notesCount, notesCount));
 
         // Настраиваем видимость тега
-        binding.imageTagVisible.setImageResource(tag.getVisibility() == 1 ? R.drawable.ic_show : R.drawable.ic_hide);
-        binding.textVisibilityTag.setText(tag.getVisibility() == 1 ? R.string.visibleTag : R.string.hiddeTag);
+        binding.imageTagVisible.setImageResource(
+                tag.getVisibility() == 1 ? R.drawable.ic_show : R.drawable.ic_hide);
+        binding.textVisibilityTag.setText(
+                tag.getVisibility() == 1 ? R.string.visibleTag : R.string.hiddeTag);
     }
 
     private void setupListeners() {
-        binding.deleteTag.setOnClickListener(v -> {
-            listener.onDeleteTagClick(tag);
-            dismiss();
-        });
-        
-        binding.renameTag.setOnClickListener(v -> {
-            listener.onRenameTagClick(tag);
-            dismiss();
-        });
-        
-        binding.visibleTag.setOnClickListener(v -> {
-            listener.onToggleVisibilityClick(tag);
-            dismiss();
-        });
+        binding.deleteTag.setOnClickListener(
+                v -> {
+                    listener.onDeleteTagClick(tag);
+                    dismiss();
+                });
+
+        binding.renameTag.setOnClickListener(
+                v -> {
+                    listener.onRenameTagClick(tag);
+                    dismiss();
+                });
+
+        binding.visibleTag.setOnClickListener(
+                v -> {
+                    listener.onToggleVisibilityClick(tag);
+                    dismiss();
+                });
     }
 
     @Override
@@ -80,13 +86,13 @@ public class TagOptionsBottomSheet extends BaseDialogBottomSheets {
     }
 
     @Override
-    public void initListeners() {
-
-    }
+    public void initListeners() {}
 
     public interface TagOptionsListener {
         void onDeleteTagClick(Tag tag);
+
         void onRenameTagClick(Tag tag);
+
         void onToggleVisibilityClick(Tag tag);
     }
 }

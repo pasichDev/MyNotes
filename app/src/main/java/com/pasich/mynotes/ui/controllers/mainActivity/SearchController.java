@@ -7,10 +7,8 @@ import android.text.Editable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.google.android.material.chip.Chip;
 import com.google.android.material.search.SearchView;
 import com.pasich.mynotes.R;
@@ -19,9 +17,9 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.utils.adapters.searchAdapter.SearchNotesAdapter;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
-
 import java.util.List;
 
+/** Manages the search view, debounced input, and tag-filter chips. */
 public class SearchController {
 
     private static final String TAG = "SearchController";
@@ -32,9 +30,8 @@ public class SearchController {
     private final Listener listener;
     private Runnable searchRunnable;
 
-    public SearchController(ActivityMainBinding binding,
-                            SearchNotesAdapter searchAdapter,
-                            Listener listener) {
+    public SearchController(
+            ActivityMainBinding binding, SearchNotesAdapter searchAdapter, Listener listener) {
         this.binding = binding;
         this.searchAdapter = searchAdapter;
         this.listener = listener;
@@ -50,8 +47,7 @@ public class SearchController {
 
     private void setupSearchList() {
         binding.resultsSearchList.setLayoutManager(
-                new LinearLayoutManager(binding.getRoot().getContext())
-        );
+                new LinearLayoutManager(binding.getRoot().getContext()));
 
         binding.resultsSearchList.addItemDecoration(new SpacesItemDecoration(15, 10));
         binding.resultsSearchList.setAdapter(searchAdapter);
@@ -59,40 +55,39 @@ public class SearchController {
     }
 
     private void setupSearchBehavior() {
-        binding.searchView.addTransitionListener((searchView, oldState, newState) -> {
+        binding.searchView.addTransitionListener(
+                (searchView, oldState, newState) -> {
+                    if (newState == SearchView.TransitionState.SHOWING) {
+                        listener.onSearchOpen();
+                        ensureFullScreen();
+                    }
 
-            if (newState == SearchView.TransitionState.SHOWING) {
-                listener.onSearchOpen();
-                ensureFullScreen();
-            }
+                    if (newState == SearchView.TransitionState.HIDDEN) {
+                        listener.onSearchClose();
+                        clearSearch();
+                    }
+                });
 
-            if (newState == SearchView.TransitionState.HIDDEN) {
-                listener.onSearchClose();
-                clearSearch();
-            }
-        });
-
-        binding.actionSearch.setOnClickListener(v ->
-                binding.searchView.show()
-        );
+        binding.actionSearch.setOnClickListener(v -> binding.searchView.show());
     }
 
     private void setupSearchInput() {
-        binding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
-            @Override
-            protected void changeText(Editable s) {
+        binding.searchView
+                .getEditText()
+                .addTextChangedListener(
+                        new TextWatcher() {
+                            @Override
+                            protected void changeText(Editable s) {
 
-                if (searchRunnable != null)
-                    handler.removeCallbacks(searchRunnable);
+                                if (searchRunnable != null) handler.removeCallbacks(searchRunnable);
 
-                String query = s.toString();
+                                String query = s.toString();
 
-                searchRunnable = () ->
-                        listener.onSearchQuery(query);
+                                searchRunnable = () -> listener.onSearchQuery(query);
 
-                handler.postDelayed(searchRunnable, DEBOUNCE_DELAY);
-            }
-        });
+                                handler.postDelayed(searchRunnable, DEBOUNCE_DELAY);
+                            }
+                        });
     }
 
     private void ensureFullScreen() {
@@ -116,6 +111,7 @@ public class SearchController {
         }
     }
 
+    /** Populates the tag-filter chip group; hides the scroll if no tags exist. */
     public void setAvailableTags(List<Tag> tags) {
         binding.searchTagChips.removeAllViews();
         if (tags == null || tags.isEmpty()) {
@@ -140,18 +136,20 @@ public class SearchController {
             binding.searchTagChips.addView(chip);
         }
 
-        binding.searchTagChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.isEmpty()) return;
-            View checked = group.findViewById(checkedIds.get(0));
-            if (checked != null) {
-                Object tag = checked.getTag();
-                listener.onTagFilterChanged(tag instanceof String ? (String) tag : null);
-            }
-        });
+        binding.searchTagChips.setOnCheckedStateChangeListener(
+                (group, checkedIds) -> {
+                    if (checkedIds.isEmpty()) return;
+                    View checked = group.findViewById(checkedIds.get(0));
+                    if (checked != null) {
+                        Object tag = checked.getTag();
+                        listener.onTagFilterChanged(tag instanceof String ? (String) tag : null);
+                    }
+                });
 
         binding.searchTagsScroll.setVisibility(View.VISIBLE);
     }
 
+    /** Clears the search text, resets the tag chip to "All", and notifies the listener. */
     public void clearSearch() {
         binding.searchView.getEditText().setText("");
         listener.onSearchQuery("");
@@ -163,9 +161,9 @@ public class SearchController {
         listener.onTagFilterChanged(null);
     }
 
+    /** Cancels any pending debounce callback to prevent post-destroy callbacks. */
     public void destroy() {
-        if (searchRunnable != null)
-            handler.removeCallbacks(searchRunnable);
+        if (searchRunnable != null) handler.removeCallbacks(searchRunnable);
         searchRunnable = null;
     }
 

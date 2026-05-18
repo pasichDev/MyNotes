@@ -11,14 +11,11 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,12 +32,29 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static final String SENTINEL_HEADER = "HEADER";
     private static final String SENTINEL_ADD = "ADD";
 
-    public interface OnToggleListener { void onToggle(Task task); }
-    public interface OnDeleteListener { void onDelete(Task task); }
-    public interface OnEditListener   { void onEdit(Task task); }
-    public interface OnAddListener    { void onAdd(); }
-    public interface OnStartDragListener { void onStartDrag(RecyclerView.ViewHolder holder); }
-    public interface OnReminderListener { void onReminder(Task task); }
+    public interface OnToggleListener {
+        void onToggle(Task task);
+    }
+
+    public interface OnDeleteListener {
+        void onDelete(Task task);
+    }
+
+    public interface OnEditListener {
+        void onEdit(Task task);
+    }
+
+    public interface OnAddListener {
+        void onAdd();
+    }
+
+    public interface OnStartDragListener {
+        void onStartDrag(RecyclerView.ViewHolder holder);
+    }
+
+    public interface OnReminderListener {
+        void onReminder(Task task);
+    }
 
     private List<Task> activeTasks = new ArrayList<>();
     private List<Task> completedTasks = new ArrayList<>();
@@ -56,9 +70,13 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private List<Object> displayList = new ArrayList<>();
 
-    public TasksAdapter(OnToggleListener toggle, OnDeleteListener delete,
-                        OnEditListener edit, OnAddListener add,
-                        OnStartDragListener drag, OnReminderListener reminder) {
+    public TasksAdapter(
+            OnToggleListener toggle,
+            OnDeleteListener delete,
+            OnEditListener edit,
+            OnAddListener add,
+            OnStartDragListener drag,
+            OnReminderListener reminder) {
         this.toggleListener = toggle;
         this.deleteListener = delete;
         this.editListener = edit;
@@ -124,13 +142,15 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public int getItemViewType(int position) {
         Object item = displayList.get(position);
         if (SENTINEL_HEADER.equals(item)) return TYPE_HEADER;
-        if (SENTINEL_ADD.equals(item))    return TYPE_ADD_FOOTER;
+        if (SENTINEL_ADD.equals(item)) return TYPE_ADD_FOOTER;
         Task t = (Task) item;
         return t.isDone() ? TYPE_COMPLETED : TYPE_ACTIVE;
     }
 
     @Override
-    public int getItemCount() { return displayList.size(); }
+    public int getItemCount() {
+        return displayList.size();
+    }
 
     @NonNull
     @Override
@@ -148,15 +168,20 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof HeaderHolder) {
-            ((HeaderHolder) holder).bind(completedTasks.size(), completedExpanded, () -> {
-                completedExpanded = !completedExpanded;
-                rebuildDisplayList();
-            });
+            ((HeaderHolder) holder)
+                    .bind(
+                            completedTasks.size(),
+                            completedExpanded,
+                            () -> {
+                                completedExpanded = !completedExpanded;
+                                rebuildDisplayList();
+                            });
         } else if (holder instanceof AddFooterHolder) {
             ((AddFooterHolder) holder).bind(addListener);
         } else {
             Task task = (Task) displayList.get(position);
-            ((TaskHolder) holder).bind(task, toggleListener, editListener, dragListener, reminderListener);
+            ((TaskHolder) holder)
+                    .bind(task, toggleListener, editListener, dragListener, reminderListener);
         }
     }
 
@@ -179,8 +204,12 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
 
         @SuppressLint("ClickableViewAccessibility")
-        void bind(Task task, OnToggleListener toggle, OnEditListener edit,
-                  OnStartDragListener drag, OnReminderListener reminder) {
+        void bind(
+                Task task,
+                OnToggleListener toggle,
+                OnEditListener edit,
+                OnStartDragListener drag,
+                OnReminderListener reminder) {
             checkBox.setOnCheckedChangeListener(null);
             checkBox.setChecked(task.isDone());
             title.setText(task.getTitle());
@@ -212,8 +241,8 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 description.setVisibility(View.GONE);
             }
 
-            TaskCategory cat = task.getCategoryId() != 0
-                    ? categoryMap.get(task.getCategoryId()) : null;
+            TaskCategory cat =
+                    task.getCategoryId() != 0 ? categoryMap.get(task.getCategoryId()) : null;
             if (cat != null) {
                 categoryLabel.setText(cat.getName());
                 categoryLabel.setVisibility(View.VISIBLE);
@@ -224,7 +253,8 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     bg.setCornerRadius(8f);
                     bg.setColor(color);
                     categoryLabel.setBackground(bg);
-                } catch (IllegalArgumentException ignored) {}
+                } catch (IllegalArgumentException ignored) {
+                }
                 if (done) categoryLabel.setAlpha(0.45f);
                 else categoryLabel.setAlpha(1f);
             } else {
@@ -233,22 +263,27 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             checkBox.setOnCheckedChangeListener((btn, checked) -> toggle.onToggle(task));
 
-            itemView.setOnLongClickListener(v -> {
-                edit.onEdit(task);
-                return true;
-            });
+            itemView.setOnLongClickListener(
+                    v -> {
+                        edit.onEdit(task);
+                        return true;
+                    });
 
-            dragHandle.setOnTouchListener((v, e) -> {
-                if (e.getAction() == MotionEvent.ACTION_DOWN) {
-                    drag.onStartDrag(this);
-                }
-                return false;
-            });
+            dragHandle.setOnTouchListener(
+                    (v, e) -> {
+                        if (e.getAction() == MotionEvent.ACTION_DOWN) {
+                            drag.onStartDrag(this);
+                        }
+                        return false;
+                    });
         }
     }
 
     static class AddFooterHolder extends RecyclerView.ViewHolder {
-        AddFooterHolder(View v) { super(v); }
+        AddFooterHolder(View v) {
+            super(v);
+        }
+
         void bind(OnAddListener listener) {
             itemView.setOnClickListener(v -> listener.onAdd());
         }

@@ -9,26 +9,21 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.ui.contract.TrashContract;
 import com.pasich.mynotes.ui.presenter.TrashPresenter;
-
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.disposables.CompositeDisposable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.disposables.CompositeDisposable;
-
 public class TrashPresenterTest extends BasePresenterTest {
 
-    @Mock
-    DataManager mockDataManager;
+    @Mock DataManager mockDataManager;
 
-    @Mock
-    TrashContract.view mockView;
+    @Mock TrashContract.view mockView;
 
     private TrashPresenter presenter;
 
@@ -37,14 +32,11 @@ public class TrashPresenterTest extends BasePresenterTest {
         initMocks(this);
 
         // Default stub for loadingTrash() called inside viewIsReady()
-        when(mockDataManager.getNotesInTrash())
-                .thenReturn(Flowable.just(Collections.emptyList()));
+        when(mockDataManager.getNotesInTrash()).thenReturn(Flowable.just(Collections.emptyList()));
 
-        presenter = new TrashPresenter(
-                testSchedulerProvider(),
-                new CompositeDisposable(),
-                mockDataManager
-        );
+        presenter =
+                new TrashPresenter(
+                        testSchedulerProvider(), new CompositeDisposable(), mockDataManager);
         presenter.attachView(mockView);
     }
 
@@ -76,8 +68,7 @@ public class TrashPresenterTest extends BasePresenterTest {
 
     @Test
     public void restoreNotesArray_callsRestoreNotesAndFixTags() {
-        when(mockDataManager.restoreNotesAndFixTags(any()))
-                .thenReturn(Completable.complete());
+        when(mockDataManager.restoreNotesAndFixTags(any())).thenReturn(Completable.complete());
 
         Note note = new Note();
         note.setId(1);

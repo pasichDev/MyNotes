@@ -1,10 +1,8 @@
 package com.pasich.mynotes.utils.shareProcessors;
 
-
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,24 +26,27 @@ public class ShareProcessor {
     }
 
     public static void readFileAsync(ContentResolver resolver, Uri uri, FileReadCallback callback) {
-        new Thread(() -> {
-            try {
-                StringBuilder sb = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(resolver.openInputStream(uri)))
-                ) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line).append("\n");
+        new Thread(
+                        () -> {
+                            try {
+                                StringBuilder sb = new StringBuilder();
+                                try (BufferedReader reader =
+                                        new BufferedReader(
+                                                new InputStreamReader(
+                                                        resolver.openInputStream(uri)))) {
+                                    String line;
+                                    while ((line = reader.readLine()) != null) {
+                                        sb.append(line).append("\n");
 
-                        if (sb.length() > MAX_SHARE_SIZE) break;
-                    }
-                }
-                callback.onSuccess(sb.toString());
-            } catch (IOException e) {
-                callback.onError(e);
-            }
-        }).start();
+                                        if (sb.length() > MAX_SHARE_SIZE) break;
+                                    }
+                                }
+                                callback.onSuccess(sb.toString());
+                            } catch (IOException e) {
+                                callback.onError(e);
+                            }
+                        })
+                .start();
     }
 
     public static boolean isTooLarge(String text) {

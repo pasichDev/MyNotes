@@ -1,8 +1,6 @@
 package com.pasich.mynotes.data.preferences;
 
-
 import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
-
 
 public interface PreferenceHelper {
 
@@ -27,5 +25,4 @@ public interface PreferenceHelper {
     String getLastKnownVersion();
 
     void setLastKnownVersion(String version);
-
 }

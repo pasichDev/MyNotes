@@ -6,20 +6,16 @@ import com.pasich.mynotes.base.BasePresenterTest;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
-
+import io.reactivex.disposables.CompositeDisposable;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import io.reactivex.disposables.CompositeDisposable;
-
 public class BackupPresenterTest extends BasePresenterTest {
 
-    @Mock
-    DataManager mockDataManager;
+    @Mock DataManager mockDataManager;
 
-    @Mock
-    BackupContract.view mockView;
+    @Mock BackupContract.view mockView;
 
     private BackupPresenter presenter;
 
@@ -27,11 +23,9 @@ public class BackupPresenterTest extends BasePresenterTest {
     public void setUp() {
         initMocks(this);
 
-        presenter = new BackupPresenter(
-                testSchedulerProvider(),
-                new CompositeDisposable(),
-                mockDataManager
-        );
+        presenter =
+                new BackupPresenter(
+                        testSchedulerProvider(), new CompositeDisposable(), mockDataManager);
         presenter.attachView(mockView);
     }
 

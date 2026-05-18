@@ -11,15 +11,12 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
-
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-
-import java.util.Date;
-
-import io.reactivex.Completable;
-import io.reactivex.disposables.CompositeDisposable;
 
 public class NotePresenterAutoSaveTest extends BasePresenterTest {
 
@@ -32,7 +29,9 @@ public class NotePresenterAutoSaveTest extends BasePresenterTest {
     public void setUp() {
         initMocks(this);
         when(mockDataManager.updateNote(any())).thenReturn(Completable.complete());
-        presenter = new NotePresenter(testSchedulerProvider(), new CompositeDisposable(), mockDataManager);
+        presenter =
+                new NotePresenter(
+                        testSchedulerProvider(), new CompositeDisposable(), mockDataManager);
         presenter.attachView(mockView);
 
         testNote = new Note().create("Test Title", "Test content", new Date().getTime(), "");

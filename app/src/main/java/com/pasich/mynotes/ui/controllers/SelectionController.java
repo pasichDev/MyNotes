@@ -1,18 +1,16 @@
 package com.pasich.mynotes.ui.controllers;
 
-
 import android.view.View;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActionPanelBinding;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.payloads.NotePayloads;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+/** Manages multi-select mode and the action panel for notes. */
 public class SelectionController {
 
     private final HashSet<Integer> selectedIds = new HashSet<>();
@@ -35,26 +33,30 @@ public class SelectionController {
 
     private void initActions() {
         panel.actionClose.setOnClickListener(v -> clearSelection());
-        panel.actionDelete.setOnClickListener(v -> {
-            if (listener != null) listener.onDeleteRequested();
-        });
-        panel.actionShare.setOnClickListener(v -> {
-            if (listener != null) listener.onShareRequested();
-        });
-        panel.actionRestore.setOnClickListener(v -> {
-            if (listener != null) listener.onRestoreRequested();
-        });
-        panel.actionTagChange.setOnClickListener(v -> {
-            if (listener != null) listener.onChangeTagRequested();
-        });
+        panel.actionDelete.setOnClickListener(
+                v -> {
+                    if (listener != null) listener.onDeleteRequested();
+                });
+        panel.actionShare.setOnClickListener(
+                v -> {
+                    if (listener != null) listener.onShareRequested();
+                });
+        panel.actionRestore.setOnClickListener(
+                v -> {
+                    if (listener != null) listener.onRestoreRequested();
+                });
+        panel.actionTagChange.setOnClickListener(
+                v -> {
+                    if (listener != null) listener.onChangeTagRequested();
+                });
         panel.actionClose.setOnClickListener(v -> clearSelection());
-
     }
 
     public boolean isInSelectionMode() {
         return selectionMode;
     }
 
+    /** Configures which action buttons are visible based on the given mode. */
     public void setPanelMode(Mode mode) {
         switch (mode) {
             case NORMAL:
@@ -71,6 +73,7 @@ public class SelectionController {
         }
     }
 
+    /** Enters selection mode with the given note as the first selected item. */
     public void startSelection(Note note) {
         selectionMode = true;
         toggle(note);
@@ -78,6 +81,7 @@ public class SelectionController {
         notifyListener();
     }
 
+    /** Adds or removes a note from the selection set and updates its visual state. */
     public void toggle(Note note) {
         int id = note.getId();
 
@@ -89,27 +93,22 @@ public class SelectionController {
 
         updateNoteVisualState(id);
 
-        // If there are no more selections after toggling, exit the mode
         if (selectedIds.isEmpty()) {
             clearSelection();
             return;
         }
 
-        // update count ui
         if (panel != null) {
             int count = selectedIds.size();
             panel.selectedCount.setText(
-                    panel.getRoot().getResources().getQuantityString(
-                            R.plurals.selected_count,
-                            count,
-                            count
-                    )
-            );
+                    panel.getRoot()
+                            .getResources()
+                            .getQuantityString(R.plurals.selected_count, count, count));
         }
         notifyListener();
     }
 
-
+    /** Deselects all notes, hides the action panel, and exits selection mode. */
     public void clearSelection() {
         if (!selectionMode) return;
 
@@ -125,6 +124,7 @@ public class SelectionController {
         notifyListener();
     }
 
+    /** Returns the full Note objects whose IDs are currently selected. */
     public List<Note> getSelectedNotes() {
         List<Note> result = new ArrayList<>();
         List<Note> data = adapter.getCurrentList();
@@ -148,17 +148,16 @@ public class SelectionController {
         }
     }
 
-
     private void showPanel(boolean show) {
         panel.getRoot().setVisibility(show ? View.VISIBLE : View.GONE);
         if (listener != null) listener.onSelectionModeChanged(show);
     }
 
     private void notifyListener() {
-        if (listener != null)
-            listener.onSelectionCountChanged(selectedIds.size());
+        if (listener != null) listener.onSelectionCountChanged(selectedIds.size());
     }
 
+    /** Removes all listeners and hides the panel to avoid memory leaks. */
     public void cleanup() {
         panel.actionClose.setOnClickListener(null);
         panel.actionDelete.setOnClickListener(null);
@@ -189,39 +188,26 @@ public class SelectionController {
         return selectedIds.contains(id);
     }
 
-
     public HashSet<Integer> getSelectedIds() {
         return selectedIds;
     }
 
-
     public enum Mode {
-        NORMAL,   // delete + share
-        RESTORE   // restore only
+        NORMAL, // delete + share
+        RESTORE // restore only
     }
 
     public interface Listener {
-        default void onSelectionCountChanged(int ignoredCount) {
-
-        }
+        default void onSelectionCountChanged(int ignoredCount) {}
 
         void onSelectionModeChanged(boolean active);
 
-        default void onDeleteRequested() {
+        default void onDeleteRequested() {}
 
-        }
+        default void onShareRequested() {}
 
-        default void onShareRequested() {
+        default void onRestoreRequested() {}
 
-        }
-
-        default void onRestoreRequested() {
-
-        }
-
-        default void onChangeTagRequested() {
-
-        }
+        default void onChangeTagRequested() {}
     }
-
 }

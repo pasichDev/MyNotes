@@ -3,13 +3,12 @@ package com.pasich.mynotes.utils.backup.otherApp;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepLabel;
 import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepNote;
-
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,11 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @Singleton
 public class GoogleKeepImportService {
@@ -44,7 +40,8 @@ public class GoogleKeepImportService {
         List<GoogleKeepNote> trashedNotes = new ArrayList<>();
         List<GoogleKeepLabel> labels = new ArrayList<>();
 
-        try (InputStream inputStream = context.getContentResolver().openInputStream(zipUri); ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+        try (InputStream inputStream = context.getContentResolver().openInputStream(zipUri);
+                ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
 
             ZipEntry entry;
             boolean foundKeepFolder = false;
@@ -65,7 +62,8 @@ public class GoogleKeepImportService {
             }
 
             if (!foundKeepFolder) {
-                return GoogleKeepImportResult.error("The archive does not match the Google Takeout/Keep export format");
+                return GoogleKeepImportResult.error(
+                        "The archive does not match the Google Takeout/Keep export format");
             }
 
             if (notes.isEmpty() && trashedNotes.isEmpty()) {
@@ -76,11 +74,17 @@ public class GoogleKeepImportService {
 
         } catch (IOException e) {
             Log.e(TAG, "Error while processing the ZIP archive", e);
-            return GoogleKeepImportResult.error("Error while processing the ZIP archive: " + e.getMessage());
+            return GoogleKeepImportResult.error(
+                    "Error while processing the ZIP archive: " + e.getMessage());
         }
     }
 
-    private void processJsonEntry(ZipInputStream zipInputStream, List<GoogleKeepNote> notes, List<GoogleKeepNote> trashedNotes, List<GoogleKeepLabel> labels) throws IOException {
+    private void processJsonEntry(
+            ZipInputStream zipInputStream,
+            List<GoogleKeepNote> notes,
+            List<GoogleKeepNote> trashedNotes,
+            List<GoogleKeepLabel> labels)
+            throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(zipInputStream));
         StringBuilder jsonContent = new StringBuilder();
         String line;

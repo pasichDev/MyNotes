@@ -4,7 +4,6 @@ import com.pasich.mynotes.ui.contract.dialogs.DeleteTagDialogContract;
 import com.pasich.mynotes.ui.contract.dialogs.NameTagDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.DeleteTagDialogPresenter;
 import com.pasich.mynotes.ui.presenter.dialogs.NameTagDialogPresenter;
-
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
@@ -15,18 +14,17 @@ import dagger.hilt.android.scopes.FragmentScoped;
 @InstallIn(FragmentComponent.class)
 public class FragmentModule {
 
-
     @Provides
     @FragmentScoped
-    NameTagDialogContract.presenter providerNewTagDialogPresenter(NameTagDialogPresenter presenter) {
-        return presenter;
-
-    }
-
-    @Provides
-    @FragmentScoped
-    DeleteTagDialogContract.presenter providerDeleteTagDialogPresenter(DeleteTagDialogPresenter presenter) {
+    NameTagDialogContract.presenter providerNewTagDialogPresenter(
+            NameTagDialogPresenter presenter) {
         return presenter;
     }
 
+    @Provides
+    @FragmentScoped
+    DeleteTagDialogContract.presenter providerDeleteTagDialogPresenter(
+            DeleteTagDialogPresenter presenter) {
+        return presenter;
+    }
 }

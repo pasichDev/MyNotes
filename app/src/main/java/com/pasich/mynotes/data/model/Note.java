@@ -2,16 +2,14 @@ package com.pasich.mynotes.data.model;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.annotations.SerializedName;
-
 import java.util.Objects;
 
+/** Room entity representing a single note. */
 @Entity(tableName = "notes")
 public class Note {
-
 
     @PrimaryKey(autoGenerate = true)
     @SerializedName("a")
@@ -33,7 +31,7 @@ public class Note {
     private String valueJson;
 
     @SerializedName("g")
-    private boolean hasRichContent;  // no use
+    private boolean hasRichContent; // no use
 
     @SerializedName("h")
     private String attachments; // JSON attachments
@@ -56,6 +54,11 @@ public class Note {
     @androidx.room.ColumnInfo(name = "reminderRepeat")
     private String reminderRepeat = "NONE";
 
+    @SerializedName("m")
+    @androidx.room.ColumnInfo(name = "reminderIntervalMinutes")
+    private int reminderIntervalMinutes = 0;
+
+    /** Initializes note fields and returns this instance. */
     public Note create(String title, String value, long date, String tag) {
         this.title = title;
         this.tag = tag;
@@ -115,13 +118,13 @@ public class Note {
         this.value = value;
     }
 
+    /** Returns up to 400 characters of the note body. */
     public String getValuePreview() {
         if (value == null) {
-            return "";  // or return some default value if you prefer
+            return ""; // or return some default value if you prefer
         }
         return value.length() > 400 ? value.substring(0, 400) : value;
     }
-
 
     public long getDate() {
         return this.date;
@@ -151,6 +154,7 @@ public class Note {
         return attachments;
     }
 
+    /** Returns true if the note has at least one valid attachment. */
     public boolean isAttachments() {
         String mAttachments = attachments;
         if (mAttachments == null) return false;
@@ -186,6 +190,7 @@ public class Note {
         this.reminderRepeat = reminderRepeat != null ? reminderRepeat : "NONE";
     }
 
+    /** Returns true if the note has a future reminder set. */
     public boolean hasReminder() {
         return reminderTime != null && reminderTime > System.currentTimeMillis();
     }
@@ -198,7 +203,15 @@ public class Note {
         isPinned = pinned;
     }
 
+    public int getReminderIntervalMinutes() {
+        return reminderIntervalMinutes;
+    }
 
+    public void setReminderIntervalMinutes(int reminderIntervalMinutes) {
+        this.reminderIntervalMinutes = reminderIntervalMinutes;
+    }
+
+    /** Copies all mutable fields from another note into this one. */
     public void copyFrom(Note other) {
         if (other == null) return;
         this.title = other.title;
@@ -210,8 +223,10 @@ public class Note {
         this.reminderTime = other.reminderTime;
         this.reminderRepeat = other.reminderRepeat;
         this.isPinned = other.isPinned;
+        this.reminderIntervalMinutes = other.reminderIntervalMinutes;
     }
 
+    /** Creates a new note copy without id, pinning, or reminder. */
     public Note duplicate() {
         Note c = new Note();
         c.setId(0);
@@ -226,5 +241,4 @@ public class Note {
         c.setReminderRepeat("NONE");
         return c;
     }
-
 }

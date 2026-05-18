@@ -4,14 +4,11 @@ import androidx.room.testing.MigrationTestHelper;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-
 import com.pasich.mynotes.data.database.AppDatabase;
-
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
 
 @RunWith(AndroidJUnit4.class)
 public class MigrationTest {
@@ -19,10 +16,9 @@ public class MigrationTest {
     private static final String TEST_DB = "migration-test";
 
     @Rule
-    public final MigrationTestHelper helper = new MigrationTestHelper(
-            InstrumentationRegistry.getInstrumentation(),
-            AppDatabase.class
-    );
+    public final MigrationTestHelper helper =
+            new MigrationTestHelper(
+                    InstrumentationRegistry.getInstrumentation(), AppDatabase.class);
 
     @Test
     public void migrate2to3_succeeds() throws IOException {
@@ -63,7 +59,10 @@ public class MigrationTest {
     public void migrateAllStepsChained_succeeds() throws IOException {
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 2);
         db.close();
-        helper.runMigrationsAndValidate(TEST_DB, 7, true,
+        helper.runMigrationsAndValidate(
+                TEST_DB,
+                7,
+                true,
                 AppDatabase.MIGRATION_2_3,
                 AppDatabase.MIGRATION_3_4,
                 AppDatabase.MIGRATION_4_5,

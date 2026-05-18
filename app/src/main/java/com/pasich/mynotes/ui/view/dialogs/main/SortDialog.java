@@ -6,10 +6,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.color.MaterialColors;
 import com.pasich.mynotes.R;
@@ -17,16 +15,13 @@ import com.pasich.mynotes.base.dialog.BaseDialogBottomSheets;
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.databinding.DialogChooseSortBinding;
 import com.pasich.mynotes.utils.constants.settings.SortParam;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class SortDialog extends BaseDialogBottomSheets {
 
-    @Inject
-    AppPreferencesCache cache;
+    @Inject AppPreferencesCache cache;
     private boolean isTagsSort;
     private SortListener listener;
     private DialogChooseSortBinding binding;
@@ -34,8 +29,7 @@ public class SortDialog extends BaseDialogBottomSheets {
     private String tagsSortParam;
 
     @Inject
-    public SortDialog() {
-    }
+    public SortDialog() {}
 
     public static SortDialog newInstance(boolean isTagsSort) {
         SortDialog dialog = new SortDialog();
@@ -51,7 +45,10 @@ public class SortDialog extends BaseDialogBottomSheets {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = DialogChooseSortBinding.inflate(inflater, container, false);
         isTagsSort = getArguments() != null && getArguments().getBoolean("isTagsSort", false);
 
@@ -105,8 +102,16 @@ public class SortDialog extends BaseDialogBottomSheets {
     }
 
     private void selectedAutoItem(String param) {
-        int colorBackground = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorSurfaceVariant, Color.GRAY);
-        int colorText = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.BLACK);
+        int colorBackground =
+                MaterialColors.getColor(
+                        requireContext(),
+                        com.google.android.material.R.attr.colorSurfaceVariant,
+                        Color.GRAY);
+        int colorText =
+                MaterialColors.getColor(
+                        requireContext(),
+                        com.google.android.material.R.attr.colorPrimaryFixed,
+                        Color.BLACK);
 
         binding.DataSortCheck.setVisibility(View.GONE);
         binding.DataReserveCheck.setVisibility(View.GONE);
@@ -126,8 +131,16 @@ public class SortDialog extends BaseDialogBottomSheets {
     }
 
     private void selectedAutoItemTags(String param) {
-        int colorBackground = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorSurfaceVariant, Color.GRAY);
-        int colorText = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorPrimaryFixed, Color.BLACK);
+        int colorBackground =
+                MaterialColors.getColor(
+                        requireContext(),
+                        com.google.android.material.R.attr.colorSurfaceVariant,
+                        Color.GRAY);
+        int colorText =
+                MaterialColors.getColor(
+                        requireContext(),
+                        com.google.android.material.R.attr.colorPrimaryFixed,
+                        Color.BLACK);
 
         binding.TagsPositionSortCheck.setVisibility(View.GONE);
         binding.TagsCreationDateSortCheck.setVisibility(View.GONE);
@@ -149,8 +162,10 @@ public class SortDialog extends BaseDialogBottomSheets {
     @Override
     public void initListeners() {
         if (isTagsSort) {
-            binding.TagsPositionSort.setOnClickListener(v -> selectedTagsSort(SortParam.TagsPositionSort));
-            binding.TagsCreationDateSort.setOnClickListener(v -> selectedTagsSort(SortParam.TagsCreationDateSort));
+            binding.TagsPositionSort.setOnClickListener(
+                    v -> selectedTagsSort(SortParam.TagsPositionSort));
+            binding.TagsCreationDateSort.setOnClickListener(
+                    v -> selectedTagsSort(SortParam.TagsCreationDateSort));
         } else {
             binding.DataSort.setOnClickListener(v -> selectedSort(SortParam.DataSort));
             binding.DataReserve.setOnClickListener(v -> selectedSort(SortParam.DataReserve));
@@ -185,5 +200,4 @@ public class SortDialog extends BaseDialogBottomSheets {
 
         void onTagsSortSelected(String tagsSortParam);
     }
-
 }

@@ -1,9 +1,7 @@
 package com.pasich.mynotes.extendedEditor.models;
 
 import android.util.Log;
-
 import com.google.gson.Gson;
-
 import org.json.JSONObject;
 
 public class EditorAttachment {
@@ -44,8 +42,6 @@ public class EditorAttachment {
                 fileObj.optString("url", ""),
                 fileObj.optString("name", ""),
                 fileObj.optString("extension", ""),
-                fileObj.optLong("size", 0)
-        );
+                fileObj.optLong("size", 0));
     }
-
 }

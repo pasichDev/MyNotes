@@ -5,49 +5,54 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.DonationProduct;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class DonationProductAdapter extends RecyclerView.Adapter<DonationProductAdapter.ViewHolder> {
+public class DonationProductAdapter
+        extends RecyclerView.Adapter<DonationProductAdapter.ViewHolder> {
 
     private final OnProductClickListener listener;
     private List<DonationProduct> products = new ArrayList<>();
+
     public DonationProductAdapter(OnProductClickListener listener) {
         this.listener = listener;
     }
 
     public void setProducts(List<DonationProduct> newProducts) {
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
-            @Override
-            public int getOldListSize() {
-                return products.size();
-            }
+        DiffUtil.DiffResult diffResult =
+                DiffUtil.calculateDiff(
+                        new DiffUtil.Callback() {
+                            @Override
+                            public int getOldListSize() {
+                                return products.size();
+                            }
 
-            @Override
-            public int getNewListSize() {
-                return newProducts.size();
-            }
+                            @Override
+                            public int getNewListSize() {
+                                return newProducts.size();
+                            }
 
-            @Override
-            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                return products.get(oldItemPosition).getId().equals(newProducts.get(newItemPosition).getId());
-            }
+                            @Override
+                            public boolean areItemsTheSame(
+                                    int oldItemPosition, int newItemPosition) {
+                                return products.get(oldItemPosition)
+                                        .getId()
+                                        .equals(newProducts.get(newItemPosition).getId());
+                            }
 
-            @Override
-            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                DonationProduct oldProduct = products.get(oldItemPosition);
-                DonationProduct newProduct = newProducts.get(newItemPosition);
-                return oldProduct.equals(newProduct);
-            }
-        });
+                            @Override
+                            public boolean areContentsTheSame(
+                                    int oldItemPosition, int newItemPosition) {
+                                DonationProduct oldProduct = products.get(oldItemPosition);
+                                DonationProduct newProduct = newProducts.get(newItemPosition);
+                                return oldProduct.equals(newProduct);
+                            }
+                        });
 
         this.products = new ArrayList<>(newProducts);
         diffResult.dispatchUpdatesTo(this);
@@ -60,8 +65,9 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_donation_product, parent, false);
+        View view =
+                LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_donation_product, parent, false);
         return new ViewHolder(view);
     }
 
@@ -112,11 +118,12 @@ public class DonationProductAdapter extends RecyclerView.Adapter<DonationProduct
             } else {
                 // Normal state
                 itemView.setAlpha(1.0f);
-                itemView.setOnClickListener(v -> {
-                    if (listener != null) {
-                        listener.onProductClick(product);
-                    }
-                });
+                itemView.setOnClickListener(
+                        v -> {
+                            if (listener != null) {
+                                listener.onProductClick(product);
+                            }
+                        });
             }
         }
 

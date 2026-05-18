@@ -1,16 +1,13 @@
 package com.pasich.mynotes.utils.backup.local;
 
-
 import static com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.ATTACHMENTS_BASE_DIR;
 import static com.pasich.mynotes.utils.constants.Backup.FILE_NAME_BACKUP;
 import static com.pasich.mynotes.utils.constants.Backup.FILE_NAME_BACKUP_MNBKN;
 
 import android.content.Context;
 import android.net.Uri;
-
 import com.google.gson.Gson;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,25 +18,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-/**
- * New ZIP-based backup format.
- * Structure:
- * My_Notes_Backup.json
- * attachments/note_<id>/file.ext
- */
+/** New ZIP-based backup format. Structure: My_Notes_Backup.json attachments/note_<id>/file.ext */
 public class ZipBackupHelper {
 
-
-    /**
-     * Detect ZIP by magic header "PK"
-     */
+    /** Detect ZIP by magic header "PK" */
     public static boolean isZip(byte[] data) {
         return data.length > 2 && data[0] == 0x50 && data[1] == 0x4B;
     }
 
-    /**
-     * Create ZIP backup
-     */
+    /** Create ZIP backup */
     public static File writeZipBackup(Context ctx, JsonBackup backup) throws Exception {
 
         File zipFile = new File(ctx.getCacheDir(), FILE_NAME_BACKUP_MNBKN);
@@ -66,7 +53,12 @@ public class ZipBackupHelper {
                     if (files == null) continue;
 
                     for (File attachment : files) {
-                        String entryName = ATTACHMENTS_BASE_DIR + "/" + noteDir.getName() + "/" + attachment.getName();
+                        String entryName =
+                                ATTACHMENTS_BASE_DIR
+                                        + "/"
+                                        + noteDir.getName()
+                                        + "/"
+                                        + attachment.getName();
 
                         zos.putNextEntry(new ZipEntry(entryName));
                         zos.write(Files.readAllBytes(attachment.toPath()));
@@ -80,15 +72,13 @@ public class ZipBackupHelper {
         return zipFile;
     }
 
-    /**
-     * Parse ZIP backup
-     */
+    /** Parse ZIP backup */
     public static JsonBackup readZipBackup(Context ctx, Uri uri) throws Exception {
 
         JsonBackup backup = null;
 
         try (InputStream is = ctx.getContentResolver().openInputStream(uri);
-             ZipInputStream zis = new ZipInputStream(is)) {
+                ZipInputStream zis = new ZipInputStream(is)) {
 
             ZipEntry entry;
 
@@ -108,7 +98,6 @@ public class ZipBackupHelper {
                     String json = buffer.toString("UTF-8");
                     backup = new Gson().fromJson(json, JsonBackup.class);
                 }
-
 
                 // ================== attachments/... ==================
                 else if (entry.getName().startsWith(ATTACHMENTS_BASE_DIR)) {
@@ -134,6 +123,4 @@ public class ZipBackupHelper {
 
         return backup != null ? backup : new JsonBackup().error();
     }
-
-
 }

@@ -5,12 +5,9 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
-
 import com.pasich.mynotes.data.model.TaskCategory;
-
-import java.util.List;
-
 import io.reactivex.Flowable;
+import java.util.List;
 
 @Dao
 public interface TaskCategoryDao {

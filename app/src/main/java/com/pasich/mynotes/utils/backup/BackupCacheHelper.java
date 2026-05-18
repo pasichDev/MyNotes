@@ -1,8 +1,6 @@
 package com.pasich.mynotes.utils.backup;
 
-
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
-
 import javax.inject.Inject;
 
 public class BackupCacheHelper {
@@ -10,8 +8,7 @@ public class BackupCacheHelper {
     private JsonBackup jsonBackup;
 
     @Inject
-    public BackupCacheHelper() {
-    }
+    public BackupCacheHelper() {}
 
     public JsonBackup getJsonBackup() {
         return jsonBackup;

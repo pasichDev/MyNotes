@@ -3,7 +3,6 @@ package com.pasich.mynotes.ui.presenter;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
@@ -16,7 +15,11 @@ import com.pasich.mynotes.utils.TagsSorter;
 import com.pasich.mynotes.utils.constants.settings.SortParam;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
-
+import dagger.hilt.android.scopes.ActivityScoped;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.subjects.BehaviorSubject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,17 +27,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.inject.Inject;
 
-import dagger.hilt.android.scopes.ActivityScoped;
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.subjects.BehaviorSubject;
-
+/** Presenter backing the main notes list screen. */
 @ActivityScoped
-public class MainPresenter extends BasePresenter<MainContract.view> implements MainContract.presenter {
+public class MainPresenter extends BasePresenter<MainContract.view>
+        implements MainContract.presenter {
 
     private static final String TAG = "MainPresenter";
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -42,19 +40,19 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             BehaviorSubject.createDefault(SystemTagsManager.createAllNotesTag());
     private final BehaviorSubject<String> sortParam = BehaviorSubject.create();
     private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
-    private final BehaviorSubject<String> searchQuery =
-            BehaviorSubject.createDefault("");
-    private final BehaviorSubject<String> searchTagFilter =
-            BehaviorSubject.createDefault("");
+    private final BehaviorSubject<String> searchQuery = BehaviorSubject.createDefault("");
+    private final BehaviorSubject<String> searchTagFilter = BehaviorSubject.createDefault("");
 
     private UiEvent lastUiEvent = UiEvent.NONE;
     private Note backupDeleteNote;
     private Observable<List<Tag>> tagsStream;
     private Observable<List<Note>> notesStream;
 
-
     @Inject
-    public MainPresenter(SchedulerProvider schedulerProvider, CompositeDisposable compositeDisposable, DataManager dataManager) {
+    public MainPresenter(
+            SchedulerProvider schedulerProvider,
+            CompositeDisposable compositeDisposable,
+            DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
     }
 
@@ -71,73 +69,81 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
     }
 
     void startStatsStream() {
-        getCompositeDisposable().add(
-                Flowable.combineLatest(
-                                getDataManager().getNotesCount(),
-                                getDataManager().getNotesCreatedLastMonth(),
-                                getDataManager().getTotalCharacters(),
-                                StatsData::new
-                        )
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                stats -> getView().renderDrawerStats(stats),
-                                error -> Log.e(TAG, "drawer stats stream error", error)
-                        )
-        );
+        getCompositeDisposable()
+                .add(
+                        Flowable.combineLatest(
+                                        getDataManager().getNotesCount(),
+                                        getDataManager().getNotesCreatedLastMonth(),
+                                        getDataManager().getTotalCharacters(),
+                                        StatsData::new)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        stats -> getView().renderDrawerStats(stats),
+                                        error -> Log.e(TAG, "drawer stats stream error", error)));
     }
 
-
     void starListsRenderStream() {
-        getCompositeDisposable().add(viewState.hide()
-                .subscribeOn(getSchedulerProvider().io())
-                .observeOn(getSchedulerProvider().ui())
-                .subscribe(
-                        state -> getView().render(state),
-                        throwable -> Log.e(TAG, "observeState", throwable)
-                )
-        );
+        getCompositeDisposable()
+                .add(
+                        viewState
+                                .hide()
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        state -> getView().render(state),
+                                        throwable -> Log.e(TAG, "observeState", throwable)));
     }
 
     private void initStreams() {
-        tagsStream = Observable.combineLatest(
-                getDataManager().getTags()
-                        .toObservable()
-                        .map(tagList -> TagsSorter.sortTags(tagList, getDataManager().getSortParamTags())),
-                selectedTag,
-                (tags, selected) ->
-                        tags.stream()
-                                .map(t -> {
-                                    Tag copy = t.copy();
-                                    copy.setSelected(selected != null && selected.getId() == t.getId());
-                                    return copy;
-                                })
-                                .collect(Collectors.toList())
-        );
+        tagsStream =
+                Observable.combineLatest(
+                        getDataManager()
+                                .getTags()
+                                .toObservable()
+                                .map(
+                                        tagList ->
+                                                TagsSorter.sortTags(
+                                                        tagList,
+                                                        getDataManager().getSortParamTags())),
+                        selectedTag,
+                        (tags, selected) ->
+                                tags.stream()
+                                        .map(
+                                                t -> {
+                                                    Tag copy = t.copy();
+                                                    copy.setSelected(
+                                                            selected != null
+                                                                    && selected.getId()
+                                                                            == t.getId());
+                                                    return copy;
+                                                })
+                                        .collect(Collectors.toList()));
 
-        notesStream = getDataManager().getNotes()
-                .toObservable();
+        notesStream = getDataManager().getNotes().toObservable();
     }
 
     private void startStateCombiner() {
-        getCompositeDisposable().add(
-                Observable.combineLatest(tagsStream, notesStream, selectedTag, sortParam, this::buildState)
-                        .debounce(5, TimeUnit.MILLISECONDS)
-                        .distinctUntilChanged()
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(state -> getView().render(state), throwable -> Log.e(TAG, "combineLatest", throwable))
-        );
+        getCompositeDisposable()
+                .add(
+                        Observable.combineLatest(
+                                        tagsStream,
+                                        notesStream,
+                                        selectedTag,
+                                        sortParam,
+                                        this::buildState)
+                                .debounce(5, TimeUnit.MILLISECONDS)
+                                .distinctUntilChanged()
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        state -> getView().render(state),
+                                        throwable -> Log.e(TAG, "combineLatest", throwable)));
     }
 
     private MainViewState buildState(
-            List<Tag> tags,
-            List<Note> notes,
-            Tag selectedTag,
-            String sort
-    ) {
+            List<Tag> tags, List<Note> notes, Tag selectedTag, String sort) {
 
-        // Build hidden tags set
         Set<String> hidden = new HashSet<>();
         for (Tag t : tags) {
             if (t.getVisibility() == 1) {
@@ -145,7 +151,6 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             }
         }
 
-        // Filter hidden
         List<Note> visible = new ArrayList<>(notes.size());
         if (hidden.isEmpty()) {
             visible.addAll(notes);
@@ -157,10 +162,11 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             }
         }
 
-        // Determine if we show ALL notes
-        boolean isAllNotes = selectedTag == null || selectedTag.getSystemAction() == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES;
+        boolean isAllNotes =
+                selectedTag == null
+                        || selectedTag.getSystemAction()
+                                == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES;
 
-        // Filter by selected tag
         List<Note> filtered;
         if (isAllNotes) {
             filtered = visible;
@@ -174,63 +180,61 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
             }
         }
 
-        // Copy before sort
         List<Note> sorted = new ArrayList<>(filtered);
 
-        // Sort — pinned always first, then by date
+        // pinned always first, then by date
         boolean sortByNew = SortParam.DataSort.equals(sort);
-        sorted.sort((a, b) -> {
-            if (a.isPinned() != b.isPinned()) return a.isPinned() ? -1 : 1;
-            return sortByNew
-                    ? Long.compare(b.getDate(), a.getDate())
-                    : Long.compare(a.getDate(), b.getDate());
-        });
-
+        sorted.sort(
+                (a, b) -> {
+                    if (a.isPinned() != b.isPinned()) return a.isPinned() ? -1 : 1;
+                    return sortByNew
+                            ? Long.compare(b.getDate(), a.getDate())
+                            : Long.compare(a.getDate(), b.getDate());
+                });
 
         return new MainViewState(tags, sorted, selectedTag, lastUiEvent);
     }
 
     private void startSearchStream() {
-        getCompositeDisposable().add(
-                Observable.combineLatest(
-                                notesStream,
-                                searchQuery,
-                                searchTagFilter,
-                                this::filterNotes
-                        )
-                        .debounce(150, TimeUnit.MILLISECONDS)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                filtered -> getView().renderSearch(filtered),
-                                throwable -> Log.e(TAG, "search error", throwable)
-                        )
-        );
+        getCompositeDisposable()
+                .add(
+                        Observable.combineLatest(
+                                        notesStream,
+                                        searchQuery,
+                                        searchTagFilter,
+                                        this::filterNotes)
+                                .debounce(150, TimeUnit.MILLISECONDS)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        filtered -> getView().renderSearch(filtered),
+                                        throwable -> Log.e(TAG, "search error", throwable)));
     }
 
     private List<Note> filterNotes(List<Note> notes, String query, String tagFilter) {
-        if (query == null || query.trim().length() < 2)
-            return Collections.emptyList();
+        if (query == null || query.trim().length() < 2) return Collections.emptyList();
 
         String q = query.toLowerCase().trim();
         boolean hasTagFilter = tagFilter != null && !tagFilter.isEmpty();
 
         return notes.stream()
-                .filter(n ->
-                        (n.getTitle().toLowerCase().contains(q) ||
-                                n.getValue().toLowerCase().contains(q))
-                        && (!hasTagFilter || tagFilter.equals(n.getTag()))
-                ).sorted((n1, n2) -> {
-                    boolean n1Exact = n1.getTitle().equalsIgnoreCase(query);
-                    boolean n2Exact = n2.getTitle().equalsIgnoreCase(query);
+                .filter(
+                        n ->
+                                (n.getTitle().toLowerCase().contains(q)
+                                                || n.getValue().toLowerCase().contains(q))
+                                        && (!hasTagFilter || tagFilter.equals(n.getTag())))
+                .sorted(
+                        (n1, n2) -> {
+                            boolean n1Exact = n1.getTitle().equalsIgnoreCase(query);
+                            boolean n2Exact = n2.getTitle().equalsIgnoreCase(query);
 
-                    if (n1Exact && !n2Exact) return -1;
-                    if (!n1Exact && n2Exact) return 1;
+                            if (n1Exact && !n2Exact) return -1;
+                            if (!n1Exact && n2Exact) return 1;
 
-                    return Long.compare(n2.getDate(), n1.getDate());
-                }).collect(Collectors.toList());
+                            return Long.compare(n2.getDate(), n1.getDate());
+                        })
+                .collect(Collectors.toList());
     }
-
 
     public void updateSearchQuery(String query) {
         searchQuery.onNext(query);
@@ -255,47 +259,47 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
 
     @Override
     public void requestTagSelection(boolean multiple) {
-        getCompositeDisposable().add(
-                tagsStream
-                        .take(1)
-                        .map(tags -> {
-                            List<Tag> filtered = new ArrayList<>();
-                            for (Tag t : tags) {
-                                if (!SystemTagsManager.isSystemTag(t)) {
-                                    filtered.add(t);
-                                }
-                            }
-                            return filtered;
-                        })
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                tags -> {
-                                    if (getView() == null) return;
+        getCompositeDisposable()
+                .add(
+                        tagsStream
+                                .take(1)
+                                .map(
+                                        tags -> {
+                                            List<Tag> filtered = new ArrayList<>();
+                                            for (Tag t : tags) {
+                                                if (!SystemTagsManager.isSystemTag(t)) {
+                                                    filtered.add(t);
+                                                }
+                                            }
+                                            return filtered;
+                                        })
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        tags -> {
+                                            if (getView() == null) return;
 
-                                    if (multiple) {
-                                        getView().multipleTagChangerDialog(tags);
-                                    } else {
-                                        getView().allTagSelectDialog(tags);
-                                    }
-                                },
-                                err -> Log.e(TAG, "requestTagSelection()", err)
-                        )
-        );
+                                            if (multiple) {
+                                                getView().multipleTagChangerDialog(tags);
+                                            } else {
+                                                getView().allTagSelectDialog(tags);
+                                            }
+                                        },
+                                        err -> Log.e(TAG, "requestTagSelection()", err)));
     }
 
     @Override
     public void requestTagChangeMultipleNotes(String selectedTag, List<Integer> notesIds) {
-        getCompositeDisposable().add(
-                getDataManager()
-                        .setTagForNotes(selectedTag, notesIds)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                () -> {
-                                }, throwable -> Log.e(TAG, "Error restoring notes", throwable))
-        );
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .setTagForNotes(selectedTag, notesIds)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        () -> {},
+                                        throwable ->
+                                                Log.e(TAG, "Error restoring notes", throwable)));
     }
-
 
     @Override
     public void clearUiEvent() {
@@ -316,83 +320,97 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         }
 
         Note newNote = new Note().create("", "", System.currentTimeMillis(), tag);
-        getCompositeDisposable().add(
-                getDataManager().addNote(newNote, false)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                id -> {
-                                    lastUiEvent = UiEvent.NOTE_CREATED;
-                                    uiHandler.postDelayed(() -> {
-                                        if (isViewAttached()) getView().openNewNoteWithId(id);
-                                    }, 80);
-                                },
-                                throwable -> Log.e(TAG, "Failed to create note", throwable)
-                        )
-        );
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .addNote(newNote, false)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        id -> {
+                                            lastUiEvent = UiEvent.NOTE_CREATED;
+                                            uiHandler.postDelayed(
+                                                    () -> {
+                                                        if (isViewAttached())
+                                                            getView().openNewNoteWithId(id);
+                                                    },
+                                                    80);
+                                        },
+                                        throwable ->
+                                                Log.e(TAG, "Failed to create note", throwable)));
     }
-
 
     @Override
     public void deleteNotesArray(ArrayList<Note> notes) {
         List<Integer> ids = new ArrayList<>();
         for (Note note : notes) ids.add(note.getId());
-        getCompositeDisposable().add(
-                getDataManager()
-                        .moveNotesToTrash(ids)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                () -> {
-                                }, throwable -> Log.e(TAG, "Error restoring notes", throwable))
-        );
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .moveNotesToTrash(ids)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        () -> {},
+                                        throwable ->
+                                                Log.e(TAG, "Error restoring notes", throwable)));
     }
-
 
     @Override
     public void noteMoveToTrash(Note note) {
-        getCompositeDisposable().add(getDataManager().moveNoteToTrash(note.getId()).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui())
-                .subscribe(() -> {
-                        }, // onComplete
-                        throwable -> Log.e(TAG, "Error deleting note", throwable)));
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .moveNoteToTrash(note.getId())
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        () -> {}, // onComplete
+                                        throwable -> Log.e(TAG, "Error deleting note", throwable)));
     }
 
     @Override
     public void restoreNoteLastMoveToTrash(Note nNote) {
-        getCompositeDisposable().add(getDataManager()
-                .transferNoteOutTrash(nNote.getId())
-                .subscribeOn(getSchedulerProvider().io())
-                .observeOn(getSchedulerProvider().ui())
-                .subscribe(() -> {
-                        }, // onComplete
-                        throwable -> Log.e(TAG, "Error restoring note", throwable)));
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .transferNoteOutTrash(nNote.getId())
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        () -> {}, // onComplete
+                                        throwable ->
+                                                Log.e(TAG, "Error restoring note", throwable)));
     }
 
     private void performDelete(Tag tag) {
-        getCompositeDisposable().add(
-                getDataManager().getCountNotesTag(tag.getNameTag())
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(count -> {
-                            if (count == 0) {
-                                deleteTagFromDb(tag);
-                            } else {
-                                getView().startDeleteTagDialog(tag);
-                            }
-                        }, throwable -> Log.e(TAG, "count error", throwable))
-        );
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .getCountNotesTag(tag.getNameTag())
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        count -> {
+                                            if (count == 0) {
+                                                deleteTagFromDb(tag);
+                                            } else {
+                                                getView().startDeleteTagDialog(tag);
+                                            }
+                                        },
+                                        throwable -> Log.e(TAG, "count error", throwable)));
     }
 
     private void deleteTagFromDb(Tag tag) {
-        getCompositeDisposable().add(
-                getDataManager().deleteTag(tag)
-                        .subscribeOn(getSchedulerProvider().io())
-                        .observeOn(getSchedulerProvider().ui())
-                        .subscribe(
-                                () -> { /* ок */ },
-                                throwable -> Log.e(TAG, "Error deleting tag", throwable)
-                        )
-        );
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .deleteTag(tag)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        () -> {},
+                                        throwable -> Log.e(TAG, "Error deleting tag", throwable)));
     }
 
     @Override
@@ -403,12 +421,17 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         uiHandler.postDelayed(() -> performDelete(tag), 300);
     }
 
-
     @Override
     public void editVisibleTag(Tag tag) {
-        getCompositeDisposable().add(getDataManager().updateTag(tag).subscribeOn(getSchedulerProvider().io()).observeOn(getSchedulerProvider().ui()).subscribe(() -> {
-                }, // onComplete
-                throwable -> Log.e(TAG, "Error updating tag", throwable)));
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .updateTag(tag)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        () -> {}, // onComplete
+                                        throwable -> Log.e(TAG, "Error updating tag", throwable)));
     }
 
     public Note getBackupDeleteNote() {
@@ -425,5 +448,4 @@ public class MainPresenter extends BasePresenter<MainContract.view> implements M
         super.detachView();
         backupDeleteNote = null;
     }
-
 }

@@ -1,12 +1,11 @@
 package com.pasich.mynotes.base;
 
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-
 import io.reactivex.android.plugins.RxAndroidPlugins;
 import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 public class RxImmediateSchedulerRule implements TestRule {
 
@@ -18,8 +17,10 @@ public class RxImmediateSchedulerRule implements TestRule {
                 RxJavaPlugins.setIoSchedulerHandler(scheduler -> Schedulers.trampoline());
                 RxJavaPlugins.setComputationSchedulerHandler(scheduler -> Schedulers.trampoline());
                 RxJavaPlugins.setNewThreadSchedulerHandler(scheduler -> Schedulers.trampoline());
-                RxAndroidPlugins.setInitMainThreadSchedulerHandler(scheduler -> Schedulers.trampoline());
-                RxAndroidPlugins.setMainThreadSchedulerHandler(scheduler -> Schedulers.trampoline());
+                RxAndroidPlugins.setInitMainThreadSchedulerHandler(
+                        scheduler -> Schedulers.trampoline());
+                RxAndroidPlugins.setMainThreadSchedulerHandler(
+                        scheduler -> Schedulers.trampoline());
                 try {
                     base.evaluate();
                 } finally {

@@ -2,13 +2,10 @@ package com.pasich.mynotes.utils.recycler;
 
 import android.graphics.Rect;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.scopes.ActivityScoped;
+import javax.inject.Inject;
 
 @ActivityScoped
 public class SpacesItemDecoration extends RecyclerView.ItemDecoration {

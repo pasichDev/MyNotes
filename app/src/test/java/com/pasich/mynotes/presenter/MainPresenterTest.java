@@ -7,29 +7,21 @@ import static org.mockito.Mockito.when;
 import com.pasich.mynotes.base.BasePresenterTest;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.presenter.MainPresenter;
-
+import io.reactivex.Flowable;
+import io.reactivex.disposables.CompositeDisposable;
+import java.util.Collections;
+import java.util.List;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import io.reactivex.Flowable;
-import io.reactivex.disposables.CompositeDisposable;
-
 public class MainPresenterTest extends BasePresenterTest {
 
-    @Mock
-    DataManager mockDataManager;
+    @Mock DataManager mockDataManager;
 
-    @Mock
-    MainContract.view mockView;
+    @Mock MainContract.view mockView;
 
     private MainPresenter presenter;
 
@@ -46,11 +38,9 @@ public class MainPresenterTest extends BasePresenterTest {
         when(mockDataManager.getNotesCreatedLastMonth()).thenReturn(Flowable.just(0));
         when(mockDataManager.getTotalCharacters()).thenReturn(Flowable.just(0L));
 
-        presenter = new MainPresenter(
-                testSchedulerProvider(),
-                new CompositeDisposable(),
-                mockDataManager
-        );
+        presenter =
+                new MainPresenter(
+                        testSchedulerProvider(), new CompositeDisposable(), mockDataManager);
     }
 
     @Test
@@ -78,11 +68,9 @@ public class MainPresenterTest extends BasePresenterTest {
         when(mockDataManager.getNotes()).thenReturn(Flowable.just(notes));
 
         // Re-create presenter with the updated mock
-        presenter = new MainPresenter(
-                testSchedulerProvider(),
-                new CompositeDisposable(),
-                mockDataManager
-        );
+        presenter =
+                new MainPresenter(
+                        testSchedulerProvider(), new CompositeDisposable(), mockDataManager);
 
         presenter.attachView(mockView);
         presenter.viewIsReady();

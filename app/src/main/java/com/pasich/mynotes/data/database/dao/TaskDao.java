@@ -5,20 +5,19 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
-
 import com.pasich.mynotes.data.model.Task;
-
+import io.reactivex.Flowable;
 import java.util.List;
 
-import io.reactivex.Flowable;
-
+/** DAO for task CRUD and reminder operations. */
 @Dao
 public interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY position ASC, createdAt ASC")
     Flowable<List<Task>> getActiveTasks();
 
-    @Query("SELECT * FROM tasks WHERE categoryId = :categoryId AND isDone = 0 ORDER BY position ASC, createdAt ASC")
+    @Query(
+            "SELECT * FROM tasks WHERE categoryId = :categoryId AND isDone = 0 ORDER BY position ASC, createdAt ASC")
     Flowable<List<Task>> getActiveTasksByCategory(int categoryId);
 
     @Query("SELECT * FROM tasks WHERE isDone = 1 ORDER BY createdAt DESC")
@@ -51,7 +50,11 @@ public interface TaskDao {
     @Query("UPDATE tasks SET reminderTime = :time WHERE id = :taskId")
     void setTaskReminder(int taskId, long time);
 
-    @Query("UPDATE tasks SET reminderTime = NULL WHERE id = :taskId")
+    @Query(
+            "UPDATE tasks SET reminderTime = :time, reminderIntervalMinutes = :intervalMinutes WHERE id = :taskId")
+    void setTaskReminderFullSync(int taskId, long time, int intervalMinutes);
+
+    @Query("UPDATE tasks SET reminderTime = NULL, reminderIntervalMinutes = 0 WHERE id = :taskId")
     void clearTaskReminder(int taskId);
 
     @Query("SELECT * FROM tasks WHERE reminderTime IS NOT NULL AND isDone = 0")

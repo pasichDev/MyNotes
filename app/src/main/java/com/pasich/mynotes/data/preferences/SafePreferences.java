@@ -3,26 +3,18 @@ package com.pasich.mynotes.data.preferences;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-
 public class SafePreferences {
 
     public static final String SHARED_PREFERENCE_FILE = "com.pasich.mynotes_preferences";
     private final SharedPreferences prefs;
 
     public SafePreferences(Context ctx) {
-        this.prefs = ctx.getSharedPreferences(
-                SHARED_PREFERENCE_FILE,
-                Context.MODE_PRIVATE
-        );
+        this.prefs = ctx.getSharedPreferences(SHARED_PREFERENCE_FILE, Context.MODE_PRIVATE);
     }
 
     public static SharedPreferences raw(Context ctx) {
-        return ctx.getSharedPreferences(
-                SHARED_PREFERENCE_FILE,
-                Context.MODE_PRIVATE
-        );
+        return ctx.getSharedPreferences(SHARED_PREFERENCE_FILE, Context.MODE_PRIVATE);
     }
-
 
     public int getInt(String key, int def) {
         return prefs.getInt(key, def);

@@ -11,11 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.dialog.BaseDialogBottomSheets;
@@ -23,29 +21,22 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.DialogNameTagBinding;
 import com.pasich.mynotes.ui.contract.dialogs.NameTagDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.NameTagDialogPresenter;
-
-import java.util.Objects;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
+import java.util.Objects;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDialogContract.view {
 
-
     private final Tag mTag;
-    @Inject
-    public NameTagDialogPresenter mPresenter;
+    @Inject public NameTagDialogPresenter mPresenter;
     private DialogNameTagBinding binding;
     private boolean errorText = true;
     private int newTagPosition = -1;
 
-
     public NameTagDialog(int newPosition) {
         this.mTag = null;
         this.newTagPosition = newPosition;
-
     }
 
     public NameTagDialog(Tag tag) {
@@ -54,17 +45,21 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = DialogNameTagBinding.inflate(getLayoutInflater());
 
         mPresenter.attachView(this);
         mPresenter.viewIsReady();
 
-
         if (getTag() != null && getTag().equals("RenameTag") && mTag != null) {
             binding.nameTag.setText(mTag.getNameTag());
-            binding.outlinedTextField.setEndIconDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_rename));
-            binding.nameTag.setSelection(Objects.requireNonNull(binding.nameTag.getText()).length());
+            binding.outlinedTextField.setEndIconDrawable(
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.ic_rename));
+            binding.nameTag.setSelection(
+                    Objects.requireNonNull(binding.nameTag.getText()).length());
         }
         binding.outlinedTextField.requestFocus();
 
@@ -85,37 +80,32 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
     public void initListeners() {
         binding.outlinedTextField.setEndIconOnClickListener(v -> saveTag());
 
+        binding.nameTag.setOnEditorActionListener(
+                (v, actionId, event) -> {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        saveTag();
+                        return true;
+                    } else return false;
+                });
+        binding.nameTag.addTextChangedListener(
+                new TextWatcher() {
 
-        binding.nameTag.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                saveTag();
-                return true;
-            } else return false;
-        });
-        binding.nameTag.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s, int start, int count, int after) {}
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                validateText(s.toString().trim().length());
-            }
-        });
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        validateText(s.toString().trim().length());
+                    }
+                });
     }
 
     @Override
-    public void onInfoSnack(int resID, View view, int typeInfo, int time) {
-
-    }
-
+    public void onInfoSnack(int resID, View view, int typeInfo, int time) {}
 
     private void validateText(int length) {
         if (length >= MAX_NAME_TAG + 1) {
@@ -129,13 +119,17 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
         else if (length < (MAX_NAME_TAG + 1) - 1) errorText = false;
     }
 
-
     private void saveTag() {
         if (!errorText) {
             if (getTag() != null && getTag().equals("RenameTag") && mTag != null) {
-                mPresenter.editNameTag(Objects.requireNonNull(binding.nameTag.getText()).toString(), mTag);
+                mPresenter.editNameTag(
+                        Objects.requireNonNull(binding.nameTag.getText()).toString(), mTag);
             } else {
-                Tag newTag = new Tag().create(Objects.requireNonNull(binding.nameTag.getText()).toString());
+                Tag newTag =
+                        new Tag()
+                                .create(
+                                        Objects.requireNonNull(binding.nameTag.getText())
+                                                .toString());
                 newTag.setPosition(newTagPosition);
                 mPresenter.saveTag(newTag);
             }
@@ -143,14 +137,13 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
         }
     }
 
-
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         mPresenter.detachView();
         binding.nameTag.addTextChangedListener(null);
-        requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        requireActivity()
+                .getWindow()
+                .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
-
-
 }

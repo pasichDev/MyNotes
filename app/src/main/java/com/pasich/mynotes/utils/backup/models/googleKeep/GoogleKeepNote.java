@@ -2,7 +2,6 @@ package com.pasich.mynotes.utils.backup.models.googleKeep;
 
 import com.google.gson.annotations.SerializedName;
 import com.pasich.mynotes.data.model.Note;
-
 import java.util.List;
 
 public class GoogleKeepNote {
@@ -42,9 +41,7 @@ public class GoogleKeepNote {
         return labels;
     }
 
-    /**
-     * Отримати перший label (або null, якщо їх нема)
-     */
+    /** Отримати перший label (або null, якщо їх нема) */
     public GoogleKeepLabel getFirstLabel() {
         if (labels != null && !labels.isEmpty()) {
             return labels.get(0);
@@ -52,9 +49,7 @@ public class GoogleKeepNote {
         return new GoogleKeepLabel("");
     }
 
-    /**
-     * Конвертує нотатку з Google Keep у формат застосунку
-     */
+    /** Конвертує нотатку з Google Keep у формат застосунку */
     public Note toAppNotes() {
         Note note = new Note();
         long timestamp = userEditedTimestampUsec / 1000;
@@ -68,4 +63,3 @@ public class GoogleKeepNote {
         return note.create(title, textContent, timestamp, getFirstLabel().getName());
     }
 }
-

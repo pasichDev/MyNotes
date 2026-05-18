@@ -5,6 +5,4 @@ public class SortParam {
     public static final String DataReserve = "DataReserve";
     public static final String TagsPositionSort = "TagsPositionSort";
     public static final String TagsCreationDateSort = "TagsCreationDateSort";
-
-
 }

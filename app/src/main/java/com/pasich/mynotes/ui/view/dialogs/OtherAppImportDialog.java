@@ -4,20 +4,17 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.databinding.DialogOtherAppImportBinding;
+import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 
 public class OtherAppImportDialog extends BottomSheetDialogFragment {
     private DialogOtherAppImportBinding binding;
     private ImportCallback callback;
 
-    public OtherAppImportDialog() {
-    }
+    public OtherAppImportDialog() {}
 
     public interface ImportCallback {
         void onImportConfirmed(GoogleKeepImportResult result);
@@ -32,7 +29,8 @@ public class OtherAppImportDialog extends BottomSheetDialogFragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = DialogOtherAppImportBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -63,17 +61,18 @@ public class OtherAppImportDialog extends BottomSheetDialogFragment {
                 binding.errorText.setVisibility(View.GONE);
                 binding.resultContainer.setVisibility(View.VISIBLE);
                 binding.importButton.setVisibility(View.VISIBLE);
-                
+
                 binding.notesCount.setText(String.valueOf(result.getTotalNotesCount()));
                 binding.trashedNotesCount.setText(String.valueOf(result.getTrashedNotes().size()));
                 binding.tagsCount.setText(String.valueOf(result.getLabels().size()));
 
-                binding.importButton.setOnClickListener(v -> {
-                    if (callback != null) {
-                        callback.onImportConfirmed(result);
-                    }
-                    dismiss();
-                });
+                binding.importButton.setOnClickListener(
+                        v -> {
+                            if (callback != null) {
+                                callback.onImportConfirmed(result);
+                            }
+                            dismiss();
+                        });
             }
 
             binding.cancel.setOnClickListener(v -> dismiss());

@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.view.dialogs;
 
-
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
@@ -8,10 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.dialog.BaseDialogBottomSheets;
@@ -30,13 +27,17 @@ public class BackupOptionsDialog extends BaseDialogBottomSheets {
         this.isRestore = isRestore;
     }
 
-    public static BackupOptionsDialog newInstance(BackupOptionsCallback callback, boolean isRestore) {
+    public static BackupOptionsDialog newInstance(
+            BackupOptionsCallback callback, boolean isRestore) {
         return new BackupOptionsDialog(callback, isRestore);
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         vibrateOpenDialog(true);
         setState((BottomSheetDialog) requireDialog());
         binding = DialogBackupOptionsBinding.inflate(inflater, container, false);
@@ -49,23 +50,24 @@ public class BackupOptionsDialog extends BaseDialogBottomSheets {
             binding.backupOptions.setText(R.string.save_backup);
         }
 
-        binding.googleDrive.setVisibility(FileExportUtils.isAppInstalled(getContext()) ? VISIBLE : GONE);
+        binding.googleDrive.setVisibility(
+                FileExportUtils.isAppInstalled(getContext()) ? VISIBLE : GONE);
 
         return binding.getRoot();
     }
 
     @Override
     public void initListeners() {
-        binding.googleDrive.setOnClickListener(v -> {
-            if (callback != null) callback.onGoogleDrive();
-            dismiss();
-        });
+        binding.googleDrive.setOnClickListener(
+                v -> {
+                    if (callback != null) callback.onGoogleDrive();
+                    dismiss();
+                });
 
-        binding.deviceStorage.setOnClickListener(v -> {
-            if (callback != null) callback.onDeviceStorage();
-            dismiss();
-        });
-
-
+        binding.deviceStorage.setOnClickListener(
+                v -> {
+                    if (callback != null) callback.onDeviceStorage();
+                    dismiss();
+                });
     }
 }

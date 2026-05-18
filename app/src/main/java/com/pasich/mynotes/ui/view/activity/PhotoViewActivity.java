@@ -8,25 +8,22 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityImageViewerBinding;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.utils.file.SafeImageLoader;
-
 import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Fullscreen viewer for image attachments stored in internal storage.
- * Accepts the same URL string as stored in Editor.js/attachments JSON
+ * Fullscreen viewer for image attachments stored in internal storage. Accepts the same URL string
+ * as stored in Editor.js/attachments JSON
  */
 public class PhotoViewActivity extends BaseActivity {
 
@@ -35,7 +32,6 @@ public class PhotoViewActivity extends BaseActivity {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private ActivityImageViewerBinding binding;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,12 +55,14 @@ public class PhotoViewActivity extends BaseActivity {
 
         loadImage(file);
 
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                finish();
-            }
-        });
+        getOnBackPressedDispatcher()
+                .addCallback(
+                        new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                finish();
+                            }
+                        });
     }
 
     @Override
@@ -89,14 +87,9 @@ public class PhotoViewActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
     private void shareImage(File file) {
         try {
-            Uri uri = FileProvider.getUriForFile(
-                    this,
-                    getPackageName() + ".provider",
-                    file
-            );
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".provider", file);
 
             Intent share = new Intent(Intent.ACTION_SEND);
             share.setType("image/*");
@@ -111,27 +104,23 @@ public class PhotoViewActivity extends BaseActivity {
     }
 
     private void loadImage(File file) {
-        executor.execute(() -> {
-            try {
-                Bitmap bmp = SafeImageLoader.load(
-                        this,
-                        file,
-                        1080, 1920
-                );
+        executor.execute(
+                () -> {
+                    try {
+                        Bitmap bmp = SafeImageLoader.load(this, file, 1080, 1920);
 
-                if (bmp == null) {
-                    runOnUiThread(this::errorViewImage
-                    );
-                    return;
-                }
+                        if (bmp == null) {
+                            runOnUiThread(this::errorViewImage);
+                            return;
+                        }
 
-                runOnUiThread(() -> binding.photoView.setImageBitmap(bmp));
+                        runOnUiThread(() -> binding.photoView.setImageBitmap(bmp));
 
-            } catch (Exception ex) {
-                Log.e(TAG, "Error loading bitmap", ex);
-                runOnUiThread(this::errorViewImage);
-            }
-        });
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error loading bitmap", ex);
+                        runOnUiThread(this::errorViewImage);
+                    }
+                });
     }
 
     private void errorViewImage() {
@@ -145,6 +134,5 @@ public class PhotoViewActivity extends BaseActivity {
     }
 
     @Override
-    public void initListeners() {
-    }
+    public void initListeners() {}
 }

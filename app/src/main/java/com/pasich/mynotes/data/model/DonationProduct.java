@@ -1,5 +1,6 @@
 package com.pasich.mynotes.data.model;
 
+/** Model representing an in-app donation product. */
 public class DonationProduct {
     private String id;
     private String title;
@@ -8,7 +9,8 @@ public class DonationProduct {
     private String iconResource;
     private boolean isPurchased;
 
-    public DonationProduct(String id, String title, String description, String price, String iconResource) {
+    public DonationProduct(
+            String id, String title, String description, String price, String iconResource) {
         this.id = id;
         this.title = title;
         this.description = description;

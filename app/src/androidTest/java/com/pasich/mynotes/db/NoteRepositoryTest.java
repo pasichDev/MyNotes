@@ -5,19 +5,16 @@ import static com.google.common.truth.Truth.assertThat;
 import androidx.room.Room;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
 import com.pasich.mynotes.data.model.Note;
-
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class NoteRepositoryTest {
@@ -27,10 +24,12 @@ public class NoteRepositoryTest {
 
     @Before
     public void setUp() {
-        db = Room.inMemoryDatabaseBuilder(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                AppDatabase.class
-        ).allowMainThreadQueries().build();
+        db =
+                Room.inMemoryDatabaseBuilder(
+                                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                                AppDatabase.class)
+                        .allowMainThreadQueries()
+                        .build();
         noteDao = db.noteDao();
     }
 
@@ -74,7 +73,14 @@ public class NoteRepositoryTest {
         long id = noteDao.addNote(note);
         note.setId((int) id);
         note.setTitle("New");
-        noteDao.updateNote(note);
+        noteDao.updateNoteContent(
+                note.getId(),
+                note.getTitle(),
+                note.getValue(),
+                note.getValueJson(),
+                note.getDate(),
+                note.getTag(),
+                note.getAttachments());
         Note updated = noteDao.getNoteForId(id).blockingGet();
         assertThat(updated.getTitle()).isEqualTo("New");
     }
@@ -134,5 +140,68 @@ public class NoteRepositoryTest {
         noteDao.addNote(makeNote("Three", "3"));
         List<Note> all = noteDao.getNotesAll().blockingFirst();
         assertThat(all).hasSize(3);
+    }
+
+    @Test
+    public void updateNoteContent_doesNotOverwriteReminderFields() {
+        Note note = makeNote("Title", "content");
+        int id = (int) noteDao.addNote(note);
+        note.setId(id);
+
+        // Set reminder fields directly
+        long reminderTime = System.currentTimeMillis() + 3_600_000L;
+        noteDao.updateReminderFullSync(id, reminderTime, "DAILY", 0);
+
+        // Now update content only — reminder fields must survive
+        noteDao.updateNoteContent(id, "New Title", "new value", "", note.getDate(), "", null);
+
+        Note result = noteDao.getNoteForId(id).blockingGet();
+        assertThat(result.getTitle()).isEqualTo("New Title");
+        assertThat(result.getReminderTime()).isEqualTo(reminderTime);
+        assertThat(result.getReminderRepeat()).isEqualTo("DAILY");
+        assertThat(result.getReminderIntervalMinutes()).isEqualTo(0);
+    }
+
+    @Test
+    public void clearReminderSync_nullifiesReminderFields() {
+        Note note = makeNote("Reminder note", "body");
+        int id = (int) noteDao.addNote(note);
+        noteDao.updateReminderFullSync(id, System.currentTimeMillis() + 3_600_000L, "DAILY", 0);
+
+        noteDao.clearReminderSync(id);
+
+        Note result = noteDao.getNoteForId(id).blockingGet();
+        assertThat(result.getReminderTime()).isNull();
+        assertThat(result.getReminderRepeat()).isEqualTo("NONE");
+        assertThat(result.getReminderIntervalMinutes()).isEqualTo(0);
+    }
+
+    @Test
+    public void updateReminderFullSync_setsAllReminderFields() {
+        Note note = makeNote("Interval note", "body");
+        int id = (int) noteDao.addNote(note);
+        long time = System.currentTimeMillis() + 600_000L;
+
+        noteDao.updateReminderFullSync(id, time, "NONE", 10);
+
+        Note result = noteDao.getNoteForId(id).blockingGet();
+        assertThat(result.getReminderTime()).isEqualTo(time);
+        assertThat(result.getReminderRepeat()).isEqualTo("NONE");
+        assertThat(result.getReminderIntervalMinutes()).isEqualTo(10);
+    }
+
+    @Test
+    public void getNotesWithActiveReminders_excludesPastReminders() {
+        Note future = makeNote("Future", "");
+        Note past = makeNote("Past", "");
+        int futureId = (int) noteDao.addNote(future);
+        int pastId = (int) noteDao.addNote(past);
+        long now = System.currentTimeMillis();
+        noteDao.updateReminderFullSync(futureId, now + 3_600_000L, "NONE", 0);
+        noteDao.updateReminderFullSync(pastId, now - 3_600_000L, "DAILY", 0);
+
+        List<Note> active = noteDao.getNotesWithActiveRemindersSync(now);
+        assertThat(active).hasSize(1);
+        assertThat(active.get(0).getTitle()).isEqualTo("Future");
     }
 }

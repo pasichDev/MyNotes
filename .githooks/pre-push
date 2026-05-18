@@ -1,0 +1,19 @@
+#!/bin/sh
+# Pre-push: Android Lint check (runs before git push).
+# Skip: SKIP_LINT=1 git push
+
+if [ "$SKIP_LINT" = "1" ]; then
+    echo "[pre-push] Lint skipped (SKIP_LINT=1)"
+    exit 0
+fi
+
+echo "[pre-push] Running Android Lint..."
+./gradlew :app:lintDebug -q
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "  Lint errors found. Check: app/build/reports/lint-results-debug.html"
+    echo "  To skip: SKIP_LINT=1 git push"
+    echo ""
+    exit 1
+fi
+echo "[pre-push] Lint OK"

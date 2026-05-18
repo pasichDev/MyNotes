@@ -1,6 +1,5 @@
 package com.pasich.mynotes.extendedEditor;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -18,16 +17,13 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
-
 import androidx.core.view.ViewCompat;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.utils.EditorAttachmentsWebViewClient;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
-
 import java.util.Locale;
 
 public class NoteEditorView extends FrameLayout {
@@ -66,10 +62,9 @@ public class NoteEditorView extends FrameLayout {
     }
 
     /**
-     * Loads the editor HTML once the view is attached to window.
-     * This ensures WebView is fully initialized before loading local assets.
+     * Loads the editor HTML once the view is attached to window. This ensures WebView is fully
+     * initialized before loading local assets.
      */
-
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -80,21 +75,18 @@ public class NoteEditorView extends FrameLayout {
         }
     }
 
-    /**
-     * Loads the Editor.js HTML page from the app assets with the current locale.
-     */
-
+    /** Loads the Editor.js HTML page from the app assets with the current locale. */
     private void loadEditorHtml() {
+        if (webView == null) return;
         webView.loadUrl(
-                "file:///android_asset/editor/editor.html?locale=" + Locale.getDefault().getLanguage()
-        );
+                "file:///android_asset/editor/editor.html?locale="
+                        + Locale.getDefault().getLanguage());
     }
 
     /**
-     * Configures WebView, JS bridge, security settings and file chooser.
-     * Called once during initialization.
+     * Configures WebView, JS bridge, security settings and file chooser. Called once during
+     * initialization.
      */
-
     @SuppressLint("SetJavaScriptEnabled")
     private void setupWebView() {
         WebSettings webSettings = webView.getSettings();
@@ -113,57 +105,63 @@ public class NoteEditorView extends FrameLayout {
         webView.setVerticalScrollBarEnabled(false);
         webView.setHorizontalScrollBarEnabled(false);
         webView.setWebViewClient(new EditorAttachmentsWebViewClient(getContext()));
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onShowFileChooser(WebView webView,
-                                             ValueCallback<Uri[]> filePathCallback,
-                                             FileChooserParams fileChooserParams) {
-                fileCallback = filePathCallback;
-                Intent intent;
-                try {
-                    intent = fileChooserParams.createIntent();
-                } catch (Exception e) {
-                    fileCallback = null;
-                    return false;
-                }
+        webView.setWebChromeClient(
+                new WebChromeClient() {
+                    @Override
+                    public boolean onShowFileChooser(
+                            WebView webView,
+                            ValueCallback<Uri[]> filePathCallback,
+                            FileChooserParams fileChooserParams) {
+                        fileCallback = filePathCallback;
+                        Intent intent;
+                        try {
+                            intent = fileChooserParams.createIntent();
+                        } catch (Exception e) {
+                            fileCallback = null;
+                            return false;
+                        }
 
-                if (fileChooserListener != null) {
-                    fileChooserListener.onOpenFileChooser(intent, FILE_CHOOSER_REQUEST);
+                        if (fileChooserListener != null) {
+                            fileChooserListener.onOpenFileChooser(intent, FILE_CHOOSER_REQUEST);
+                            return true;
+                        }
+
+                        return false;
+                    }
+                });
+
+        webView.setOnLongClickListener(
+                v -> {
+                    if (onContextDialogListener != null) {
+                        onContextDialogListener.openContextCopy();
+                    } else {
+                        Log.w(TAG, "OnContextDialogListener is null");
+                    }
                     return true;
-                }
-
-                return false;
-            }
-
-        });
-
-        webView.setOnLongClickListener(v -> {
-            if (onContextDialogListener != null) {
-                onContextDialogListener.openContextCopy();
-            } else {
-                Log.w(TAG, "OnContextDialogListener is null");
-            }
-            return true;
-        });
-
-
+                });
     }
-
 
     public WebView getWebView() {
         return webView;
     }
 
     public void onEditorReadyFromBridge() {
-        handler.post(() -> {
-            editorIsReady = true;
-            applyTheme();
-            if (pendingNote != null) {
-                editorInterface.loadNoteToEditor(pendingNote);
-                pendingNote = null;
-            }
-            handler.postDelayed(this::showEditor, 120);
-        });
+        handler.post(
+                () -> {
+                    editorIsReady = true;
+                    applyTheme();
+                    if (pendingNote != null) {
+                        if (editorInterface != null) {
+                            editorInterface.loadNoteToEditor(pendingNote);
+                        } else {
+                            Log.w(
+                                    TAG,
+                                    "onEditorReady: editorInterface is null, dropping pending note");
+                        }
+                        pendingNote = null;
+                    }
+                    handler.postDelayed(this::showEditor, 120);
+                });
     }
 
     public void setEditorInterface(EditorJSInterface editorInterface) {
@@ -173,27 +171,26 @@ public class NoteEditorView extends FrameLayout {
         }
     }
 
-    /**
-     * Applies Android theme colors to the editor via JS bridge.
-     */
+    /** Applies Android theme colors to the editor via JS bridge. */
     public void applyTheme() {
         if (editorInterface != null) {
-            editorInterface.setThemeColors(
-                    new SettingsEditorColors().getThemeColors(getContext())
-            );
+            editorInterface.setThemeColors(new SettingsEditorColors().getThemeColors(getContext()));
         }
     }
 
     void showEditor() {
-        loader.animate().alpha(0f).setDuration(300).withEndAction(() -> loader.setVisibility(View.GONE)).start();
+        if (webView == null || loader == null) return;
+        loader.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction(() -> loader.setVisibility(View.GONE))
+                .start();
         webView.setAlpha(0f);
         webView.setVisibility(View.VISIBLE);
         webView.animate().alpha(1f).setDuration(400).setStartDelay(100).start();
     }
 
-    /**
-     * Toggles read-only mode inside Editor.js (title and blocks become non-editable).
-     */
+    /** Toggles read-only mode inside Editor.js (title and blocks become non-editable). */
     public void actionRead() {
         if (!editorIsReady) return;
         editorInterface.toggleReadMode();
@@ -205,8 +202,7 @@ public class NoteEditorView extends FrameLayout {
     }
 
     /**
-     * Loads a note into the editor.
-     * If the editor is not ready yet, the note is stored temporarily.
+     * Loads a note into the editor. If the editor is not ready yet, the note is stored temporarily.
      */
     public void load(Note mNote) {
         if (mNote == null) {
@@ -222,8 +218,8 @@ public class NoteEditorView extends FrameLayout {
     }
 
     /**
-     * Handles result from WebView file chooser, including validation
-     * (size limit, free space), before passing the file to JS.
+     * Handles result from WebView file chooser, including validation (size limit, free space),
+     * before passing the file to JS.
      */
     public void onFileChooserResult(int resultCode, Intent data) {
         if (fileCallback == null) return;
@@ -262,8 +258,8 @@ public class NoteEditorView extends FrameLayout {
     }
 
     /**
-     * Fully and safely destroys the WebView instance to prevent memory leaks.
-     * Must be called from Activity/Fragment onDestroy().
+     * Fully and safely destroys the WebView instance to prevent memory leaks. Must be called from
+     * Activity/Fragment onDestroy().
      */
     public void release() {
         try {
@@ -299,10 +295,8 @@ public class NoteEditorView extends FrameLayout {
     }
 
     /**
-     * Soft refresh animation:
-     * - shows loader for 500ms
-     * - fades out and fades in WebView
-     * Does NOT reload HTML or reset scroll.
+     * Soft refresh animation: - shows loader for 500ms - fades out and fades in WebView Does NOT
+     * reload HTML or reset scroll.
      */
     public void softRefresh() {
         if (webView == null || loader == null) return;
@@ -316,26 +310,24 @@ public class NoteEditorView extends FrameLayout {
         webView.animate()
                 .alpha(0f)
                 .setDuration(150)
-                .withEndAction(() -> {
+                .withEndAction(
+                        () -> {
+                            handler.postDelayed(
+                                    () -> {
 
-                    handler.postDelayed(() -> {
+                                        // Hide loader
+                                        loader.animate()
+                                                .alpha(0f)
+                                                .setDuration(200)
+                                                .withEndAction(
+                                                        () -> loader.setVisibility(View.GONE))
+                                                .start();
 
-                        // Hide loader
-                        loader.animate()
-                                .alpha(0f)
-                                .setDuration(200)
-                                .withEndAction(() -> loader.setVisibility(View.GONE))
-                                .start();
-
-                        // Show editor again
-                        webView.animate()
-                                .alpha(1f)
-                                .setDuration(200)
-                                .start();
-
-                    }, 500); // loader visible ~0.5 sec
-
-                })
+                                        // Show editor again
+                                        webView.animate().alpha(1f).setDuration(200).start();
+                                    },
+                                    500); // loader visible ~0.5 sec
+                        })
                 .start();
     }
 
@@ -351,4 +343,3 @@ public class NoteEditorView extends FrameLayout {
         void onOpenFileChooser(Intent intent, int requestCode);
     }
 }
-

@@ -1,4 +1,5 @@
 package com.pasich.mynotes.utils.navigation;
+
 public final class NoteExtras {
 
     private NoteExtras() {} // no instances

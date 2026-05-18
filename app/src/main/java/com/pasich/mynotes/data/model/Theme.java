@@ -24,7 +24,6 @@ public class Theme {
         return check;
     }
 
-
     public Theme setCheckReturn(boolean check) {
         this.check = check;
         return this;

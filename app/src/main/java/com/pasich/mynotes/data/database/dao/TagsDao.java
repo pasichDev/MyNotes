@@ -6,14 +6,12 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
-
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
-
+import io.reactivex.Flowable;
 import java.util.List;
 
-import io.reactivex.Flowable;
-
+/** DAO for tag CRUD operations. */
 @Dao
 public interface TagsDao {
     @Query("SELECT * FROM tags")
@@ -31,7 +29,9 @@ public interface TagsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void addTag(Tag tag);
 
-    @Query("SELECT COUNT(name) FROM tags WHERE systemAction = " + SystemTagsManager.SYSTEM_ACTION_USER_TAG)
+    @Query(
+            "SELECT COUNT(name) FROM tags WHERE systemAction = "
+                    + SystemTagsManager.SYSTEM_ACTION_USER_TAG)
     int getCountAllTag();
 
     @Update
@@ -39,6 +39,4 @@ public interface TagsDao {
 
     @Delete
     void deleteTag(Tag tag);
-
-
 }

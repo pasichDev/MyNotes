@@ -9,24 +9,19 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.contract.TagsContract;
 import com.pasich.mynotes.ui.presenter.TagsPresenter;
-
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.disposables.CompositeDisposable;
+import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.util.ArrayList;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.disposables.CompositeDisposable;
-
 public class TagsPresenterTest extends BasePresenterTest {
 
-    @Mock
-    DataManager mockDataManager;
+    @Mock DataManager mockDataManager;
 
-    @Mock
-    TagsContract.view mockView;
+    @Mock TagsContract.view mockView;
 
     private TagsPresenter presenter;
 
@@ -36,16 +31,12 @@ public class TagsPresenterTest extends BasePresenterTest {
 
         // Stub methods called during loadTags() — use a mutable list because
         // TagsPresenter calls tagList.add(0, createAddTag()) on the returned list
-        when(mockDataManager.getTagsUser())
-                .thenReturn(Flowable.just(new ArrayList<>()));
-        when(mockDataManager.getSortParamTags())
-                .thenReturn("TagsCreationDateSort");
+        when(mockDataManager.getTagsUser()).thenReturn(Flowable.just(new ArrayList<>()));
+        when(mockDataManager.getSortParamTags()).thenReturn("TagsCreationDateSort");
 
-        presenter = new TagsPresenter(
-                testSchedulerProvider(),
-                new CompositeDisposable(),
-                mockDataManager
-        );
+        presenter =
+                new TagsPresenter(
+                        testSchedulerProvider(), new CompositeDisposable(), mockDataManager);
         presenter.attachView(mockView);
     }
 

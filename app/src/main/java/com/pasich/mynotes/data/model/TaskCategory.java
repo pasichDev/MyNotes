@@ -11,11 +11,13 @@ public class TaskCategory {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
-    @NonNull
-    private String name = "";
+
+    @NonNull private String name = "";
+
     @NonNull
     @ColumnInfo(defaultValue = "#6750A4")
     private String colorHex = "#6750A4";
+
     @ColumnInfo(defaultValue = "0")
     private int position;
 
@@ -28,12 +30,35 @@ public class TaskCategory {
         this.position = 0;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getColorHex() { return colorHex; }
-    public void setColorHex(String colorHex) { this.colorHex = colorHex; }
-    public int getPosition() { return position; }
-    public void setPosition(int position) { this.position = position; }
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getColorHex() {
+        return colorHex;
+    }
+
+    public void setColorHex(String colorHex) {
+        this.colorHex = colorHex;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
 }

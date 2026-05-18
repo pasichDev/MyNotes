@@ -1,22 +1,17 @@
 package com.pasich.mynotes.cache;
 
 import android.util.Log;
-
 import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * Optimized cache for general app preferences (not theme-related).
- */
+/** Optimized cache for general app preferences (not theme-related). */
 @Singleton
 public class AppPreferencesCache {
 
     private static final String TAG = "AppPreferencesCache";
     private final SafePreferences prefs;
-    // Cached values
     private volatile String lastKnownVersion;
     private volatile String sortPref;
     private volatile String tagsSortPref;
@@ -30,36 +25,33 @@ public class AppPreferencesCache {
         this.prefs = prefs;
     }
 
-    /**
-     * Initialize cache by loading values from SharedPreferences.
-     */
+    /** Initialize cache by loading values from SharedPreferences. */
     public synchronized void initialize() {
         if (initialized) return;
 
         try {
-            lastKnownVersion = prefs.getString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "0"
-            );
+            lastKnownVersion =
+                    prefs.getString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, "0");
 
-            sortPref = prefs.getString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
-                    PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF
-            );
+            sortPref =
+                    prefs.getString(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
+                            PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF);
 
-            tagsSortPref = prefs.getString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT,
-                    PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF
-            );
+            tagsSortPref =
+                    prefs.getString(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT,
+                            PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF);
 
-            formatPref = prefs.getInt(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
-                    PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE
-            );
+            formatPref =
+                    prefs.getInt(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
+                            PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE);
 
-            imageOptEnable = prefs.getBoolean(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
-                    PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE
-            );
+            imageOptEnable =
+                    prefs.getBoolean(
+                            PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                            PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE);
 
             initialized = true;
 
@@ -78,8 +70,6 @@ public class AppPreferencesCache {
         initialized = true;
     }
 
-    // ===================== GETTERS =====================
-
     public String getLastKnownVersion() {
         ensureInitialized();
         return lastKnownVersion;
@@ -88,10 +78,7 @@ public class AppPreferencesCache {
     public synchronized void setLastKnownVersion(String version) {
         try {
             lastKnownVersion = version;
-            prefs.putString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION,
-                    version
-            );
+            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION, version);
         } catch (Exception e) {
             Log.e(TAG, "Failed to save version", e);
         }
@@ -105,10 +92,7 @@ public class AppPreferencesCache {
     public synchronized void setSortPref(String sort) {
         try {
             sortPref = sort;
-            prefs.putString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
-                    sort
-            );
+            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_SORT, sort);
         } catch (Exception e) {
             Log.e(TAG, "Failed to save sort preference", e);
         }
@@ -122,10 +106,7 @@ public class AppPreferencesCache {
     public synchronized void setImageOpt(boolean mImageOpt) {
         try {
             imageOptEnable = mImageOpt;
-            prefs.putBoolean(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
-                    mImageOpt
-            );
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT, mImageOpt);
         } catch (Exception e) {
             Log.e(TAG, "Failed to image_opt preference", e);
         }
@@ -139,10 +120,7 @@ public class AppPreferencesCache {
     public synchronized void setTagsSortPref(String tagsSort) {
         try {
             tagsSortPref = tagsSort;
-            prefs.putString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT,
-                    tagsSort
-            );
+            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_TAGS_SORT, tagsSort);
         } catch (Exception e) {
             Log.e(TAG, "Failed to save tags sort preference", e);
         }
@@ -156,16 +134,11 @@ public class AppPreferencesCache {
     public synchronized void setFormatPref(int format) {
         try {
             formatPref = format;
-            prefs.putInt(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
-                    format
-            );
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, format);
         } catch (Exception e) {
             Log.e(TAG, "Failed to save format preference", e);
         }
     }
-
-    // ===================== HELPERS =====================
 
     private void ensureInitialized() {
         if (!initialized) {
@@ -173,7 +146,6 @@ public class AppPreferencesCache {
             initialize();
         }
     }
-
 
     public synchronized void refresh() {
         initialized = false;

@@ -4,9 +4,7 @@ import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
-
 import java.util.List;
-
 
 public interface MoreNoteDialogContract {
 

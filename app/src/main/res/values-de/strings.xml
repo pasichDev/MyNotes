@@ -355,6 +355,7 @@
     <string name="reminder_snooze_1hour">1 Stunde</string>
     <string name="reminder_snooze_tomorrow">Morgen früh</string>
     <string name="reminder_snooze_label">Schlummern</string>
+    <string name="reminder_dismiss_label">Schließen</string>
     <string name="reminder_permission_denied">Berechtigung für Erinnerungen erforderlich</string>
     <string name="reminder_notification_channel">Erinnerungen</string>
     <string name="reminder_menu_item">Erinnerung</string>
@@ -380,5 +381,26 @@
     <string name="tasks_reminder_set">Erinnerung setzen</string>
     <string name="tasks_reminder_clear">Erinnerung löschen</string>
     <string name="tasks_reminder_past">Bitte eine zukünftige Zeit wählen</string>
+
+    <!-- Notification settings -->
+    <string name="settings_notifications_section_title">Erinnerungsbenachrichtigungen</string>
+    <string name="settings_notification_sound">Melodie</string>
+    <string name="settings_notification_volume">Lautstärke</string>
+    <!-- Reminder interval -->
+    <string name="reminder_interval_label">Benachrichtigung wiederholen</string>
+    <string name="reminder_interval_5min">5 Min.</string>
+    <string name="reminder_interval_10min">10 Min.</string>
+    <string name="reminder_interval_15min">15 Min.</string>
+    <string name="reminder_interval_30min">30 Min.</string>
+    <string name="reminder_interval_60min">60 Min.</string>
+
+    <plurals name="wordCount">
+        <item quantity="one">%d Wort</item>
+        <item quantity="other">%d Wörter</item>
+    </plurals>
+
+    <string name="editor_switch_label">Editor</string>
+    <string name="mode_simple">Einfach</string>
+    <string name="mode_extended">Erweitert</string>
 
 </resources>

@@ -141,6 +141,10 @@
             android:theme="@style/Theme.Translucent"
             android:exported="false" />
         <activity
+            android:name=".ui.view.activity.ReminderTapActivity"
+            android:theme="@style/Theme.Translucent"
+            android:exported="false" />
+        <activity
             android:name=".ui.view.activity.TasksActivity"
             android:exported="false" />
         <receiver

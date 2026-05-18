@@ -7,10 +7,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.base.view.TagsSortView;
@@ -25,20 +23,16 @@ import com.pasich.mynotes.ui.view.dialogs.main.TagOptionsBottomSheet;
 import com.pasich.mynotes.utils.adapters.TagsManagementAdapter;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.recycler.TagDragCallback;
-
-import java.util.List;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
+import java.util.List;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class TagsActivity extends BaseActivity implements TagsContract.view, TagsSortView {
 
     private ActivityTagsBinding binding;
 
-    @Inject
-    public TagsPresenter presenter;
+    @Inject public TagsPresenter presenter;
 
     private TagsManagementAdapter adapter;
 
@@ -68,8 +62,7 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
     }
 
     @Override
-    public void initListeners() {
-    }
+    public void initListeners() {}
 
     @Override
     public void setupRecyclerView() {
@@ -84,23 +77,23 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new TagDragCallback(adapter));
         itemTouchHelper.attachToRecyclerView(binding.tagsRecyclerView);
 
-        adapter.setOnTagClickListener(new TagsManagementAdapter.OnTagClickListener() {
-            @Override
-            public void onTagClick(Tag tag, int position) {
-                if (SystemTagsManager.isAddTag(tag)) {
-                    presenter.onAddTagClick();
-                }
-            }
+        adapter.setOnTagClickListener(
+                new TagsManagementAdapter.OnTagClickListener() {
+                    @Override
+                    public void onTagClick(Tag tag, int position) {
+                        if (SystemTagsManager.isAddTag(tag)) {
+                            presenter.onAddTagClick();
+                        }
+                    }
 
-            @Override
-            public void onTagLongClick(Tag tag, View anchorView) {
-            }
+                    @Override
+                    public void onTagLongClick(Tag tag, View anchorView) {}
 
-            @Override
-            public void onOptionsClick(Tag tag, View anchorView) {
-                presenter.onTagLongClick(tag, anchorView);
-            }
-        });
+                    @Override
+                    public void onOptionsClick(Tag tag, View anchorView) {
+                        presenter.onTagLongClick(tag, anchorView);
+                    }
+                });
     }
 
     @Override
@@ -125,25 +118,31 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
 
     @Override
     public void showTagOptionsDialog(Tag tag, View anchorView) {
-        presenter.getTagNotesCount(tag, count -> {
-            TagOptionsBottomSheet bottomSheet = new TagOptionsBottomSheet(tag, count, new TagOptionsBottomSheet.TagOptionsListener() {
-                @Override
-                public void onDeleteTagClick(Tag tag) {
-                    showDeleteTagDialog(tag);
-                }
+        presenter.getTagNotesCount(
+                tag,
+                count -> {
+                    TagOptionsBottomSheet bottomSheet =
+                            new TagOptionsBottomSheet(
+                                    tag,
+                                    count,
+                                    new TagOptionsBottomSheet.TagOptionsListener() {
+                                        @Override
+                                        public void onDeleteTagClick(Tag tag) {
+                                            showDeleteTagDialog(tag);
+                                        }
 
-                @Override
-                public void onRenameTagClick(Tag tag) {
-                    showEditTagDialog(tag);
-                }
+                                        @Override
+                                        public void onRenameTagClick(Tag tag) {
+                                            showEditTagDialog(tag);
+                                        }
 
-                @Override
-                public void onToggleVisibilityClick(Tag tag) {
-                    presenter.toggleTagVisibility(tag);
-                }
-            });
-            bottomSheet.show(getSupportFragmentManager(), "TagOptionsBottomSheet");
-        });
+                                        @Override
+                                        public void onToggleVisibilityClick(Tag tag) {
+                                            presenter.toggleTagVisibility(tag);
+                                        }
+                                    });
+                    bottomSheet.show(getSupportFragmentManager(), "TagOptionsBottomSheet");
+                });
     }
 
     @Override
@@ -159,9 +158,9 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
     @SuppressLint("StringFormatMatches")
     @Override
     public void showToastCheckCountTags() {
-        Toast.makeText(this, getString(R.string.countTagsError, MAX_TAG_COUNT), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.countTagsError, MAX_TAG_COUNT), Toast.LENGTH_LONG)
+                .show();
     }
-
 
     @Override
     protected void onDestroy() {
@@ -179,19 +178,16 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
     @Override
     public void showSortDialog() {
         SortDialog dialog = SortDialog.newInstance(true);
-        dialog.setListener(new SortDialog.SortListener() {
-            @Override
-            public void onSortSelected(String sortParam) {
-            }
+        dialog.setListener(
+                new SortDialog.SortListener() {
+                    @Override
+                    public void onSortSelected(String sortParam) {}
 
-            @Override
-            public void onTagsSortSelected(String tagsSortParam) {
-                sortTags(tagsSortParam);
-            }
-        });
+                    @Override
+                    public void onTagsSortSelected(String tagsSortParam) {
+                        sortTags(tagsSortParam);
+                    }
+                });
         dialog.show(getSupportFragmentManager(), "SortDialog");
-
-
     }
-
 }

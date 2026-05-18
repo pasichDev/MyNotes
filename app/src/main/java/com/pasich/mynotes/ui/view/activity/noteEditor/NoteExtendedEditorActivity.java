@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -20,7 +19,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.Note;
@@ -34,25 +32,23 @@ import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.extendedEditor.view.CopyTextDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
-
 import dagger.hilt.android.AndroidEntryPoint;
 import jakarta.inject.Inject;
 
 @AndroidEntryPoint
-public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityNoteExtendedEditorBinding> implements NoteEditorView.OnFileChooserListener {
-    private final ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (binding != null) {
-                    binding.noteEditor.onFileChooserResult(
-                            result.getResultCode(),
-                            result.getData()
-                    );
-                }
-            }
-    );
-    @Inject
-    AppPreferencesCache appPreferencesCache;
+public class NoteExtendedEditorActivity
+        extends BaseNoteEditorActivity<ActivityNoteExtendedEditorBinding>
+        implements NoteEditorView.OnFileChooserListener {
+    private final ActivityResultLauncher<Intent> fileChooserLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (binding != null) {
+                            binding.noteEditor.onFileChooserResult(
+                                    result.getResultCode(), result.getData());
+                        }
+                    });
+    @Inject AppPreferencesCache appPreferencesCache;
     private boolean isReadMode = false;
 
     @Override
@@ -79,55 +75,54 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     protected void onAfterPresenterReady() {
         notePresenter.setExtendedEditor(true);
 
-        EditorJSInterface bridge = new EditorJSInterface(
-                new EditorJSInterface.EditorListener() {
+        EditorJSInterface bridge =
+                new EditorJSInterface(
+                        new EditorJSInterface.EditorListener() {
 
-                    @Override
-                    public void onEditorReady() {
-                        binding.noteEditor.onEditorReadyFromBridge();
-                    }
+                            @Override
+                            public void onEditorReady() {
+                                binding.noteEditor.onEditorReadyFromBridge();
+                            }
 
-                    @Override
-                    public void onContentChanged(String json) {
-                        runOnUiThread(() -> processTextChange(json));
-                    }
+                            @Override
+                            public void onContentChanged(String json) {
+                                runOnUiThread(() -> processTextChange(json));
+                            }
 
-                    @Override
-                    public void onTitleChanged(String title) {
-                        runOnUiThread(() -> processTitleChange(title));
+                            @Override
+                            public void onTitleChanged(String title) {
+                                runOnUiThread(() -> processTitleChange(title));
+                            }
 
-                    }
+                            @Override
+                            public void openPhoto(String blockId) {
+                                handleImageOpen(blockId);
+                            }
 
-                    @Override
-                    public void openPhoto(String blockId) {
-                        handleImageOpen(blockId);
-                    }
+                            @Override
+                            public void openFile(EditorAttachment att) {
+                                runOnUiThread(
+                                        () ->
+                                                AttachmentActionsDialog.show(
+                                                        NoteExtendedEditorActivity.this,
+                                                        att,
+                                                        (at, ls) ->
+                                                                handleAttachmentDelete(at, ls)));
+                            }
 
-                    @Override
-                    public void openFile(EditorAttachment att) {
-                        runOnUiThread(() -> AttachmentActionsDialog.show(
-                                NoteExtendedEditorActivity.this,
-                                att,
-                                (at, ls) -> handleAttachmentDelete(at, ls)
-                        ));
+                            @Override
+                            public int getNoteId() {
+                                return notePresenter.getNote().getId();
+                            }
 
-
-                    }
-
-                    @Override
-                    public int getNoteId() {
-                        return notePresenter.getNote().getId();
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        Log.e("ExtendedEditor", "NoteEditorView error:" + error);
-                    }
-                },
-                binding.noteEditor.getWebView(),
-                this,
-                new SettingsEditorJsBridge(appPreferencesCache.getImageOpt())
-        );
+                            @Override
+                            public void onError(String error) {
+                                Log.e("ExtendedEditor", "NoteEditorView error:" + error);
+                            }
+                        },
+                        binding.noteEditor.getWebView(),
+                        this,
+                        new SettingsEditorJsBridge(appPreferencesCache.getImageOpt()));
 
         binding.noteEditor.setEditorInterface(bridge);
     }
@@ -142,32 +137,32 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
     }
 
-    /**
-     * Configures indents taking into account the keyboard for NoteActivity
-     */
+    /** Configures indents taking into account the keyboard for NoteActivity */
     @Override
     protected void applyEdgeToEdgeInsets(View rootView) {
-        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-            // Get indents for system bars
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+        ViewCompat.setOnApplyWindowInsetsListener(
+                rootView,
+                (v, insets) -> {
+                    // Get indents for system bars
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-            // Set padding at the top for system bars only for the root view
-            v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), 0);
+                    // Set padding at the top for system bars only for the root view
+                    v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), 0);
 
-            return insets;
-        });
+                    return insets;
+                });
     }
 
     @Override
     public void initListeners() {
         binding.noteEditor.setOnFileChooserListener(this);
-        binding.noteEditor.setOnContextDialogListener(() -> CopyTextDialog.show(
-                this,
-                null, // title
-                notePresenter.getNote().getValue() // plain text
-        ));
-
-
+        binding.noteEditor.setOnContextDialogListener(
+                () ->
+                        CopyTextDialog.show(
+                                this,
+                                null, // title
+                                notePresenter.getNote().getValue() // plain text
+                                ));
     }
 
     /**
@@ -181,7 +176,11 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
             // Try to find the matching EditorAttachment for this block
             EditorAttachment image = findAttachmentByBlockId(notePresenter.getNote(), blockId);
 
-            if (image == null || image.url == null || image.url.isEmpty() || blockId == null || blockId.trim().isEmpty()) {
+            if (image == null
+                    || image.url == null
+                    || image.url.isEmpty()
+                    || blockId == null
+                    || blockId.trim().isEmpty()) {
                 Toast.makeText(this, getString(R.string.openImageError), Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -199,15 +198,13 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         }
     }
 
-
     /**
-     * Handles attachment deletion flow:
-     * 1. Locates the block ID inside Editor.js JSON.
-     * 2. Passes the deletion request to the editor.
-     * 3. Sends either the real file URL or null (if file is already missing).
+     * Handles attachment deletion flow: 1. Locates the block ID inside Editor.js JSON. 2. Passes
+     * the deletion request to the editor. 3. Sends either the real file URL or null (if file is
+     * already missing).
      *
      * @param attach The attachment metadata.
-     * @param lost   True if file does not exist on disk.
+     * @param lost True if file does not exist on disk.
      */
     private void handleAttachmentDelete(EditorAttachment attach, boolean lost) {
 
@@ -224,17 +221,12 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         binding.noteEditor.deleteBlock(blockId, urlOrNull);
     }
 
-
-    /**
-     * Process title changes with enhanced features
-     */
+    /** Process title changes with enhanced features */
     private void processTitleChange(String title) {
         notePresenter.extendedNoteChange(title, null);
     }
 
-    /**
-     * Process text changes with enhanced features
-     */
+    /** Process text changes with enhanced features */
     private void processTextChange(String jsonData) {
         notePresenter.extendedNoteChange(null, jsonData);
     }
@@ -243,7 +235,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     public void activatedActivity() {
         binding.setActivateEdit(true);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -276,10 +267,10 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         }
 
         changeTag(note.getTag() != null ? note.getTag() : "", false);
-        binding.titleToolbarDataCollapsed.setText(getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate())));
+        binding.titleToolbarDataCollapsed.setText(
+                getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate())));
         binding.noteEditor.load(note);
     }
-
 
     @Override
     public void closeNoteActivity() {
@@ -290,7 +281,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         binding.getRoot().clearFocus();
         supportFinishAfterTransition();
     }
-
 
     @Override
     public void changeTag(String nameTag, boolean change) {
@@ -311,7 +301,6 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
         fileChooserLauncher.launch(intent);
     }
 
-
     @Override
     public void runAttachmentsCleanup(Note note) {
         new Thread(() -> AttachmentCleaner.cleanup(getApplicationContext(), note)).start();
@@ -325,8 +314,7 @@ public class NoteExtendedEditorActivity extends BaseNoteEditorActivity<ActivityN
     @Override
     public void onNoteCopied(long newNoteId) {
         binding.duplicateTag.setText(
-                getString(R.string.tagHastag, getString(R.string.duplicateTag))
-        );
+                getString(R.string.tagHastag, getString(R.string.duplicateTag)));
         binding.duplicateTag.setVisibility(VISIBLE);
     }
 }

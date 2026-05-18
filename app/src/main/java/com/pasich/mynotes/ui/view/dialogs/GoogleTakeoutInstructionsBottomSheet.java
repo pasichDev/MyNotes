@@ -4,10 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.pasich.mynotes.databinding.BottomSheetGoogleTakeoutInstructionsBinding;
 
@@ -15,12 +13,14 @@ public class GoogleTakeoutInstructionsBottomSheet extends BottomSheetDialogFragm
 
     private BottomSheetGoogleTakeoutInstructionsBinding binding;
 
-    public GoogleTakeoutInstructionsBottomSheet() {
-    }
+    public GoogleTakeoutInstructionsBottomSheet() {}
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = BottomSheetGoogleTakeoutInstructionsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }

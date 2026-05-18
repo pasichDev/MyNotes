@@ -11,36 +11,30 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.pasich.mynotes.BuildConfig;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityAboutBinding;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
-
+import dagger.hilt.android.AndroidEntryPoint;
 import java.util.Objects;
-
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class AboutActivity extends BaseActivity {
 
     protected ActivityAboutBinding binding;
 
-    @Inject
-    public LinearLayoutManager mLinearLayoutManager;
+    @Inject public LinearLayoutManager mLinearLayoutManager;
+
     @Named("NotesItemSpaceDecoration")
     @Inject
     public SpacesItemDecoration itemDecorationNotes;
-    @Inject
-    boolean isPlayMarketInstall;
 
+    @Inject boolean isPlayMarketInstall;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,25 +45,22 @@ public class AboutActivity extends BaseActivity {
         setupEdgeToEdgeInsets(binding.getRoot());
         binding.setActivity(this);
         initActivity();
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                setEnabled(finishActivity());
-            }
-        });
+        getOnBackPressedDispatcher()
+                .addCallback(
+                        new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                setEnabled(finishActivity());
+                            }
+                        });
     }
-
 
     private void startLoadingProducts() {
         initListeners();
     }
 
-
-
     @Override
-    public void initListeners() {
-
-    }
+    public void initListeners() {}
 
     @SuppressLint("SetTextI18n")
     private void initActivity() {
@@ -98,6 +89,7 @@ public class AboutActivity extends BaseActivity {
     public void githubRepo() {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(LINK_GITHUB_REPO)));
     }
+
     public void openChangelog() {
         startActivity(new Intent(this, ChangelogActivity.class));
     }
@@ -124,7 +116,6 @@ public class AboutActivity extends BaseActivity {
 
         return true;
     }
-
 
     private boolean finishActivity() {
         supportFinishAfterTransition();

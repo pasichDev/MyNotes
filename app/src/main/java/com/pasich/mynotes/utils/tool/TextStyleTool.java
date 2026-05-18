@@ -3,13 +3,10 @@ package com.pasich.mynotes.utils.tool;
 import static com.pasich.mynotes.utils.constants.settings.PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE;
 
 import android.widget.ImageButton;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.scopes.FragmentScoped;
+import javax.inject.Inject;
 
 @FragmentScoped
 public class TextStyleTool {
@@ -33,29 +30,27 @@ public class TextStyleTool {
         return cache.getTypeFaceNoteActivity();
     }
 
-
     public void changeArgument() {
         if (mButton != null) {
             switch (getArgPreference()) {
                 case ARGUMENT_DEFAULT_TEXT_STYLE -> {
-                    //selected italic
+                    // selected italic
                     mButton.setImageResource(getLoadSrcDrawable("italic"));
                     cache.setTypeFaceNoteActivity("italic");
                 }
                 case "italic" -> {
-                    //selected bold
+                    // selected bold
                     mButton.setImageResource(getLoadSrcDrawable("bold"));
                     cache.setTypeFaceNoteActivity("bold");
                 }
                 case "bold" -> {
-                    //selected normal
+                    // selected normal
                     mButton.setImageResource(getLoadSrcDrawable("normal"));
                     cache.setTypeFaceNoteActivity("normal");
                 }
             }
         }
     }
-
 
     private int getLoadSrcDrawable(String param) {
         int NORMAL_ICON = R.drawable.ic_style_normal;
@@ -66,6 +61,5 @@ public class TextStyleTool {
             case "bold" -> BOLD_ICON;
             default -> NORMAL_ICON;
         };
-
     }
 }

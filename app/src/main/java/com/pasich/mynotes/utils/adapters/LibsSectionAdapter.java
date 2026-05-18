@@ -5,14 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.lib.LibItem;
 import com.pasich.mynotes.data.model.lib.LibSection;
-
 import java.util.List;
 
 public class LibsSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -57,12 +54,14 @@ public class LibsSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int type) {
 
         if (type == TYPE_HEADER) {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_lib_header, parent, false);
+            View v =
+                    LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_lib_header, parent, false);
             return new HeaderHolder(v);
         } else {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_lib, parent, false);
+            View v =
+                    LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_lib, parent, false);
             return new ItemHolder(v);
         }
     }

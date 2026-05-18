@@ -1,20 +1,15 @@
 package com.pasich.mynotes.ui.view.activity;
 
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.data.model.lib.LibItem;
 import com.pasich.mynotes.data.model.lib.LibSection;
 import com.pasich.mynotes.databinding.ActivityLibsBinding;
 import com.pasich.mynotes.utils.adapters.LibsSectionAdapter;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import dagger.hilt.android.AndroidEntryPoint;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -24,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import dagger.hilt.android.AndroidEntryPoint;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 @AndroidEntryPoint
 public class LibsActivity extends BaseActivity {
@@ -58,11 +53,7 @@ public class LibsActivity extends BaseActivity {
         return true;
     }
 
-
-    /**
-     * Reads the generated libs.json file from raw/
-     * and converts it into a LibItem list.
-     */
+    /** Reads the generated libs.json file from raw/ and converts it into a LibItem list. */
     private List<LibItem> loadLibsJson() {
         try {
             InputStream is = getResources().openRawResource(R.raw.libs);
@@ -74,11 +65,11 @@ public class LibsActivity extends BaseActivity {
 
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject o = arr.getJSONObject(i);
-                list.add(new LibItem(
-                        o.getString("id"),
-                        o.optString("version", ""),
-                        o.getString("source")
-                ));
+                list.add(
+                        new LibItem(
+                                o.getString("id"),
+                                o.optString("version", ""),
+                                o.getString("source")));
             }
 
             return list;
@@ -89,9 +80,8 @@ public class LibsActivity extends BaseActivity {
     }
 
     /**
-     * Builds sections for the UI.
-     * Groups dependencies by source (gradle, js, js-dev),
-     * sorts each section by library name.
+     * Builds sections for the UI. Groups dependencies by source (gradle, js, js-dev), sorts each
+     * section by library name.
      */
     private List<LibSection> buildSections(List<LibItem> libs) {
 
@@ -113,8 +103,7 @@ public class LibsActivity extends BaseActivity {
         if (map.containsKey("gradle"))
             sections.add(new LibSection("Gradle Dependencies", map.get("gradle")));
 
-        if (map.containsKey("js"))
-            sections.add(new LibSection("JS Dependencies", map.get("js")));
+        if (map.containsKey("js")) sections.add(new LibSection("JS Dependencies", map.get("js")));
 
         if (map.containsKey("js-dev"))
             sections.add(new LibSection("JS Dev Dependencies", map.get("js-dev")));

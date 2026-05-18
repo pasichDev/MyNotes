@@ -1,14 +1,11 @@
 package com.pasich.mynotes.utils.shareProcessors;
 
-
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
-
-import javax.inject.Inject;
-
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import javax.inject.Inject;
 
 public class SharedNoteCreator {
 
@@ -21,13 +18,17 @@ public class SharedNoteCreator {
     }
 
     public void create(String text, Callback callback) {
-        disposables.add(dataManager.addNote(new Note().create("", text, System.currentTimeMillis(), ""), false).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(callback::onCreated, callback::onError));
+        disposables.add(
+                dataManager
+                        .addNote(new Note().create("", text, System.currentTimeMillis(), ""), false)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(callback::onCreated, callback::onError));
     }
 
     public void clear() {
         disposables.clear();
     }
-
 
     public interface Callback {
         void onCreated(long id);

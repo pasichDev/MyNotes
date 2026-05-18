@@ -3,16 +3,13 @@ package com.pasich.mynotes.utils.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.HelpSection;
 import com.pasich.mynotes.databinding.ItemHelpFeatureBinding;
 import com.pasich.mynotes.databinding.ItemHelpHeaderBinding;
 import com.pasich.mynotes.databinding.ItemHelpSectionTitleBinding;
-
 import java.util.List;
 
 public class HelpSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -34,15 +31,13 @@ public class HelpSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
         return switch (viewType) {
-            case HelpSection.TYPE_HEADER -> new HeaderViewHolder(
-                    ItemHelpHeaderBinding.inflate(inflater, parent, false)
-            );
-            case HelpSection.TYPE_SECTION_TITLE -> new SectionTitleViewHolder(
-                    ItemHelpSectionTitleBinding.inflate(inflater, parent, false)
-            );
-            default -> new FeatureViewHolder(
-                    ItemHelpFeatureBinding.inflate(inflater, parent, false)
-            );
+            case HelpSection.TYPE_HEADER ->
+                    new HeaderViewHolder(ItemHelpHeaderBinding.inflate(inflater, parent, false));
+            case HelpSection.TYPE_SECTION_TITLE ->
+                    new SectionTitleViewHolder(
+                            ItemHelpSectionTitleBinding.inflate(inflater, parent, false));
+            default ->
+                    new FeatureViewHolder(ItemHelpFeatureBinding.inflate(inflater, parent, false));
         };
     }
 
@@ -77,10 +72,9 @@ public class HelpSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         void bind(HelpSection section) {
-            binding.versionActual.setText(itemView.getContext().getString(
-                    R.string.actual_version,
-                    section.additionalInfo()
-            ));
+            binding.versionActual.setText(
+                    itemView.getContext()
+                            .getString(R.string.actual_version, section.additionalInfo()));
             if (section.description() != null) {
                 binding.subtitleText.setText(section.description());
                 binding.subtitleText.setVisibility(View.VISIBLE);

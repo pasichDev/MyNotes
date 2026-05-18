@@ -5,18 +5,15 @@ import static com.google.common.truth.Truth.assertThat;
 import androidx.room.Room;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
-
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class TagsRepositoryTest {
@@ -26,10 +23,12 @@ public class TagsRepositoryTest {
 
     @Before
     public void setUp() {
-        db = Room.inMemoryDatabaseBuilder(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                AppDatabase.class
-        ).allowMainThreadQueries().build();
+        db =
+                Room.inMemoryDatabaseBuilder(
+                                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                                AppDatabase.class)
+                        .allowMainThreadQueries()
+                        .build();
         tagsDao = db.tagsDao();
     }
 
@@ -54,7 +53,11 @@ public class TagsRepositoryTest {
     public void deleteTag_removesFromList() {
         tagsDao.addTag(makeUserTag("Temp"));
         List<Tag> before = tagsDao.getTags().blockingFirst();
-        Tag inserted = before.stream().filter(t -> "Temp".equals(t.getNameTag())).findFirst().orElseThrow(RuntimeException::new);
+        Tag inserted =
+                before.stream()
+                        .filter(t -> "Temp".equals(t.getNameTag()))
+                        .findFirst()
+                        .orElseThrow(RuntimeException::new);
         tagsDao.deleteTag(inserted);
         List<Tag> after = tagsDao.getTags().blockingFirst();
         boolean stillExists = after.stream().anyMatch(t -> "Temp".equals(t.getNameTag()));
@@ -65,7 +68,11 @@ public class TagsRepositoryTest {
     public void updateTag_changesName() {
         tagsDao.addTag(makeUserTag("OldName"));
         List<Tag> list = tagsDao.getTags().blockingFirst();
-        Tag tag = list.stream().filter(t -> "OldName".equals(t.getNameTag())).findFirst().orElseThrow(RuntimeException::new);
+        Tag tag =
+                list.stream()
+                        .filter(t -> "OldName".equals(t.getNameTag()))
+                        .findFirst()
+                        .orElseThrow(RuntimeException::new);
         tag.setNameTag("NewName");
         tagsDao.updateTag(tag);
         List<Tag> updated = tagsDao.getTags().blockingFirst();

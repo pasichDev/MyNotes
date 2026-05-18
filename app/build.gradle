@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'com.google.dagger.hilt.android'
+    id 'com.diffplug.spotless'
 }
 
 apply plugin: 'com.android.application'
@@ -9,8 +10,8 @@ apply from: "$projectDir/gradle/libs-task.gradle"
 apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
-def appVersionCode = 45
-def appVersionName = "2.5.${appVersionCode}"
+def appVersionCode = 46
+def appVersionName = "2.6.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
     commandLine 'git', 'rev-parse', '--short', 'HEAD'
@@ -188,4 +189,14 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-android:5.23.0'
     androidTestImplementation 'com.google.truth:truth:1.4.5'
 
+}
+
+spotless {
+    java {
+        target 'src/**/*.java'
+        googleJavaFormat('1.22.0').aosp()   // 4-space indent (AOSP style)
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

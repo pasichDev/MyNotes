@@ -8,30 +8,28 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.databinding.FragmentInteractionSettingsBinding;
 import com.pasich.mynotes.ui.controllers.mainActivity.RedrawThemeController;
-
-import javax.inject.Inject;
-
 import dagger.hilt.android.AndroidEntryPoint;
+import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class InteractionSettingsFragment extends Fragment {
 
-    @Inject
-    ThemePreferencesCache themePreferencesCache;
+    @Inject ThemePreferencesCache themePreferencesCache;
 
     private FragmentInteractionSettingsBinding binding;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentInteractionSettingsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -50,12 +48,15 @@ public class InteractionSettingsFragment extends Fragment {
     }
 
     private void initListeners() {
-        binding.screenProtection.setOnCheckedChangeListener((buttonView, isChecked) ->
-                themePreferencesCache.setScreenProtection(isChecked));
+        binding.screenProtection.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> themePreferencesCache.setScreenProtection(isChecked));
 
-        binding.extendedEditor.setOnCheckedChangeListener((buttonView, isChecked) ->
-                themePreferencesCache.setExtendedEditor(isChecked));
-        binding.feedbackNewEditor.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK_EDITOR))));
+        binding.extendedEditor.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> themePreferencesCache.setExtendedEditor(isChecked));
+        binding.feedbackNewEditor.setOnClickListener(
+                v ->
+                        startActivity(
+                                new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK_EDITOR))));
         binding.detailsExtended.setOnClickListener(v -> toggleDetails());
     }
 
@@ -70,21 +71,18 @@ public class InteractionSettingsFragment extends Fragment {
                 null,
                 binding.screenProtectionDescription,
                 binding.screenProtection,
-                requireContext()
-        );
+                requireContext());
         RedrawThemeController.styleCardBlock(
                 binding.extendedEditorCard,
                 null,
                 binding.extendedEditorDescription,
                 binding.extendedEditor,
-                requireContext()
-        );
+                requireContext());
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-
     }
 }

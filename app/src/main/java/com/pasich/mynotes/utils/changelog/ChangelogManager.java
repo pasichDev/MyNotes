@@ -2,19 +2,15 @@ package com.pasich.mynotes.utils.changelog;
 
 import android.content.Context;
 import android.util.Log;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.utils.UpdateChecker;
-
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @Singleton
 public class ChangelogManager {
@@ -28,12 +24,10 @@ public class ChangelogManager {
         this.updateChecker = updateChecker;
     }
 
-    /**
-     * Read the entire changelog.md from raw
-     */
+    /** Read the entire changelog.md from raw */
     public String readRawChangelog() {
         try (InputStream inputStream = context.getResources().openRawResource(R.raw.changelog);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 
             StringBuilder content = new StringBuilder();
             String line;
@@ -62,9 +56,7 @@ public class ChangelogManager {
         }
     }
 
-    /**
-     * Extracts changelog only for the current version
-     */
+    /** Extracts changelog only for the current version */
     public String getChangelogForCurrentVersion() {
         String version = updateChecker.getCurrentAppVersion();
         String fullText = readRawChangelog();
@@ -85,10 +77,7 @@ public class ChangelogManager {
         return fullText.substring(start, nextHeader).trim();
     }
 
-
-    /**
-     * Mark changelog as read via UpdateChecker
-     */
+    /** Mark changelog as read via UpdateChecker */
     public void markChangelogRead() {
         updateChecker.markVersionAsRead();
     }

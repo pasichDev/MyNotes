@@ -10,11 +10,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
-
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -27,19 +25,16 @@ import com.pasich.mynotes.ui.view.fragment.settings.InteractionSettingsFragment;
 import com.pasich.mynotes.ui.view.fragment.settings.InterfaceSettingsFragment;
 import com.pasich.mynotes.ui.view.fragment.settings.MediaSettingsFragment;
 import com.pasich.mynotes.utils.adapters.SettingsPagerAdapter;
-
+import dagger.hilt.android.AndroidEntryPoint;
 import java.util.Objects;
-
 import javax.inject.Inject;
 
-import dagger.hilt.android.AndroidEntryPoint;
-
 @AndroidEntryPoint
-public class SettingsActivity extends BaseActivity implements InterfaceSettingsFragment.ThemeChangeListener {
+public class SettingsActivity extends BaseActivity
+        implements InterfaceSettingsFragment.ThemeChangeListener {
 
     public ActivitySettingsBinding activitySettingsBinding;
-    @Inject
-    ThemePreferencesCache themePreferencesCache;
+    @Inject ThemePreferencesCache themePreferencesCache;
     private int themeIdStartActivity;
     private boolean themeDynamicStartActivity;
     private int themeModeStartActivity;
@@ -65,13 +60,14 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         int startIndex = getIntent().getIntExtra("startFragmentIndex", 0);
         initViewPager(startIndex);
 
-        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                setEnabled(finishActivity());
-            }
-        });
-
+        getOnBackPressedDispatcher()
+                .addCallback(
+                        new OnBackPressedCallback(true) {
+                            @Override
+                            public void handleOnBackPressed() {
+                                setEnabled(finishActivity());
+                            }
+                        });
     }
 
     private void initViewPager(int startIndex) {
@@ -81,38 +77,42 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
         // Add margins between tabs
-        tabLayout.post(() -> {
-            ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
-            int margin = (int) (12 * getResources().getDisplayMetrics().density);
+        tabLayout.post(
+                () -> {
+                    ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
+                    int margin = (int) (12 * getResources().getDisplayMetrics().density);
 
-            for (int i = 0; i < tabStrip.getChildCount(); i++) {
-                View tabView = tabStrip.getChildAt(i);
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
-                params.setMargins(margin, 0, margin, 0);
-                tabView.setLayoutParams(params);
+                    for (int i = 0; i < tabStrip.getChildCount(); i++) {
+                        View tabView = tabStrip.getChildAt(i);
+                        ViewGroup.MarginLayoutParams params =
+                                (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
+                        params.setMargins(margin, 0, margin, 0);
+                        tabView.setLayoutParams(params);
 
-                tabView.requestLayout();
-            }
-        });
+                        tabView.requestLayout();
+                    }
+                });
 
         pagerAdapter = new SettingsPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
-        new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> {
-                    switch (position) {
-                        case 0:
-                            tab.setText(getString(R.string.interface_tab));
-                            break;
-                        case 1:
-                            tab.setText(getString(R.string.interaction_tab));
-                            break;
-                        case 2:
-                            tab.setText(getString(R.string.mediaTab));
-                            break;
-                    }
-                }
-        ).attach();
+        new TabLayoutMediator(
+                        tabLayout,
+                        viewPager,
+                        (tab, position) -> {
+                            switch (position) {
+                                case 0:
+                                    tab.setText(getString(R.string.interface_tab));
+                                    break;
+                                case 1:
+                                    tab.setText(getString(R.string.interaction_tab));
+                                    break;
+                                case 2:
+                                    tab.setText(getString(R.string.mediaTab));
+                                    break;
+                            }
+                        })
+                .attach();
 
         if (startIndex == 1) {
             activitySettingsBinding.viewPager.setCurrentItem(startIndex, true);
@@ -164,8 +164,9 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
 
         // If anything changed — send one flag
         if (hasChanges) {
-            setResult(RESULT_CODE_THEME_UPDATE, new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, true));
-
+            setResult(
+                    RESULT_CODE_THEME_UPDATE,
+                    new Intent().putExtra(EXTRA_UPDATE_THEME_STYLE, true));
         }
 
         supportFinishAfterTransition();
@@ -187,13 +188,13 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
         fontScaleWasChanged = value;
     }
 
-
     public void redrawSettingsActivity(int themeStyle) {
         super.redrawActivity();
         setTheme(themeStyle);
 
         // Background
-        activitySettingsBinding.activitySettings.setBackgroundColor(MaterialColors.getColor(this, android.R.attr.colorBackground, Color.GRAY));
+        activitySettingsBinding.activitySettings.setBackgroundColor(
+                MaterialColors.getColor(this, android.R.attr.colorBackground, Color.GRAY));
 
         // Apply theme colors to tabs
         applyTabColors();
@@ -220,5 +221,4 @@ public class SettingsActivity extends BaseActivity implements InterfaceSettingsF
             }
         }
     }
-
 }

@@ -4,10 +4,10 @@ import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/** Singleton implementation of PreferenceHelper backed by caches. */
 @Singleton
 public class AppPreferencesHelper implements PreferenceHelper {
 
@@ -17,14 +17,14 @@ public class AppPreferencesHelper implements PreferenceHelper {
     private final SafePreferences prefs;
 
     @Inject
-    AppPreferencesHelper(AppPreferencesCache appCache, ThemePreferencesCache themeCache, SafePreferences prefs) {
+    AppPreferencesHelper(
+            AppPreferencesCache appCache, ThemePreferencesCache themeCache, SafePreferences prefs) {
         this.prefs = prefs;
         this.appCache = appCache;
         this.themeCache = themeCache;
         this.appCache.initialize();
         this.themeCache.initialize();
     }
-
 
     @Override
     public int getFormatCount() {
@@ -51,12 +51,12 @@ public class AppPreferencesHelper implements PreferenceHelper {
         appCache.setTagsSortPref(paramTags);
     }
 
-
     @Override
     public void editSizeTextNoteActivity(int value) {
         themeCache.setSizeTextNoteActivity(value);
     }
 
+    /** Returns a snapshot of all current app preferences. */
     @Override
     public PreferencesBackup getListPreferences() {
         return new PreferencesBackup(
@@ -65,97 +65,77 @@ public class AppPreferencesHelper implements PreferenceHelper {
                 getTypeFaceNoteActivity(),
                 getSortParam(),
                 getSizeTextNoteActivity(),
-
                 prefs.getInt(
                         PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
-                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE
-                ),
-
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_VALUE),
                 prefs.getBoolean(
                         PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
-                        PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE
-                ),
-
+                        PreferencesConfig.ARGUMENT_DEFAULT_DYNAMIC_COLOR_VALUE),
                 prefs.getInt(
                         PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
-                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE
-                ),
-
+                        PreferencesConfig.ARGUMENT_DEFAULT_THEME_MODE_VALUE),
                 prefs.getBoolean(
                         PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
-                        PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE
-                ),
+                        PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE),
                 prefs.getBoolean(
                         PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
-                        PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE
-                ),
-
+                        PreferencesConfig.ARGUMENT_DEFAULT_SCREEN_PROTECTION_VALUE),
                 prefs.getBoolean(
                         PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR,
-                        PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE
-                ),
-
+                        PreferencesConfig.ARGUMENT_DEFAULT_EXTENDED_EDITOR_VALUE),
                 prefs.getFloat(
                         PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING,
-                        PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE
-                )
-        );
+                        PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE));
     }
 
-
+    /** Persists all fields from a backup and refreshes the caches. */
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
 
         if (preferences.isCreated()) {
 
             // OLD FIELDS
-            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT,
-                    preferences.getFormatCount());
+            prefs.putInt(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, preferences.getFormatCount());
 
-            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE,
+            prefs.putString(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE,
                     preferences.getTypeFaceNoteActivity());
 
-            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
-                    preferences.getSortParam());
+            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_SORT, preferences.getSortParam());
 
-            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE,
-                    preferences.getSizeTextNote());
+            prefs.putInt(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, preferences.getSizeTextNote());
 
-            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME,
-                    preferences.getThemeValue());
+            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, preferences.getThemeValue());
 
-            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
+            prefs.putBoolean(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
                     preferences.isDynamicTheme());
 
-            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE,
-                    preferences.getThemeMode());
+            prefs.putInt(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
 
             prefs.putBoolean(
                     PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
-                    preferences.isImageOptimizationEnabled()
-            );
+                    preferences.isImageOptimizationEnabled());
 
             prefs.putBoolean(
                     PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
-                    preferences.isScreenProtection()
-            );
+                    preferences.isScreenProtection());
 
             prefs.putBoolean(
                     PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR,
-                    preferences.isExtendedEditor()
-            );
+                    preferences.isExtendedEditor());
 
             prefs.putFloat(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING,
-                    preferences.getUiFontScale()
-            );
+                    PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, preferences.getUiFontScale());
 
             // Refresh caches
             appCache.refresh();
             themeCache.refresh();
         }
     }
-
 
     @Override
     public String getTypeFaceNoteActivity() {
@@ -171,6 +151,4 @@ public class AppPreferencesHelper implements PreferenceHelper {
     public void setLastKnownVersion(String version) {
         appCache.setLastKnownVersion(version);
     }
-
-
 }

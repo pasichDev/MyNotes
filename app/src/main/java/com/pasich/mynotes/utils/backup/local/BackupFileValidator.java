@@ -5,28 +5,26 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.util.Log;
-
 import com.pasich.mynotes.R;
 
 /**
- * Small helper class for validating selected backup files.
- * Ensures that the file exists and has a supported extension.
+ * Small helper class for validating selected backup files. Ensures that the file exists and has a
+ * supported extension.
  */
 public class BackupFileValidator {
 
     private static final String TAG = "BackupFileValidator";
 
     private static final String EXT_JSON = ".json";
-    private static final String EXT_ZIP  = ".zip";
+    private static final String EXT_ZIP = ".zip";
     private static final String EXT_MNBK = ".mnbkn";
 
     /**
      * Validate backup file based on its filename and extension.
-     * <p>
-     * - If user cancels selection → return silently (no errors shown).
-     * - If filename cannot be determined → callback.onInvalid(...)
-     * - If extension unsupported → callback.onInvalid(...)
-     * - If valid → callback.onValid(filename)
+     *
+     * <p>- If user cancels selection → return silently (no errors shown). - If filename cannot be
+     * determined → callback.onInvalid(...) - If extension unsupported → callback.onInvalid(...) -
+     * If valid → callback.onValid(filename)
      */
     public static void isValidBackupFile(Context ctx, Uri uri, BackupValidatorCallback callback) {
 
@@ -42,9 +40,7 @@ public class BackupFileValidator {
         String lower = name.toLowerCase();
 
         boolean ok =
-                lower.endsWith(EXT_JSON) ||
-                        lower.endsWith(EXT_ZIP)  ||
-                        lower.endsWith(EXT_MNBK);
+                lower.endsWith(EXT_JSON) || lower.endsWith(EXT_ZIP) || lower.endsWith(EXT_MNBK);
 
         if (!ok) {
             callback.onInvalid(ctx.getString(R.string.file_wrong_format));
@@ -81,11 +77,10 @@ public class BackupFileValidator {
         return null;
     }
 
-    /**
-     * Result callback for validation.
-     */
+    /** Result callback for validation. */
     public interface BackupValidatorCallback {
         void onValid(String fileName);
+
         void onInvalid(String errorMessage);
     }
 }

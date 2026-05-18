@@ -15,6 +15,7 @@ public class GoogleKeepLabel {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -32,4 +33,3 @@ public class GoogleKeepLabel {
         return name != null ? name.hashCode() : 0;
     }
 }
-

@@ -8,11 +8,9 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
-
 import com.pasich.mynotes.R;
 
 public class TwoSideSwitchView extends LinearLayout {
@@ -20,17 +18,13 @@ public class TwoSideSwitchView extends LinearLayout {
     private ImageView leftIcon;
     private ImageView rightIcon;
     private SwitchCompat switchView;
-    @ColorInt
-    private int leftActiveColor;
-    @ColorInt
-    private int rightActiveColor;
-    @ColorInt
-    private int inactiveColor;
+    @ColorInt private int leftActiveColor;
+    @ColorInt private int rightActiveColor;
+    @ColorInt private int inactiveColor;
     private int currentThumbColor;
     private Mode currentMode = Mode.INACTIVE;
     private OnModeChangedListener modeChangedListener;
     private boolean suppressCallback = false;
-
 
     public TwoSideSwitchView(Context context) {
         super(context);
@@ -82,8 +76,10 @@ public class TwoSideSwitchView extends LinearLayout {
                 rightIcon.setImageDrawable(a.getDrawable(R.styleable.TwoSideSwitchView_rightIcon));
             }
 
-            leftActiveColor = a.getColor(R.styleable.TwoSideSwitchView_leftActiveColor, leftActiveColor);
-            rightActiveColor = a.getColor(R.styleable.TwoSideSwitchView_rightActiveColor, rightActiveColor);
+            leftActiveColor =
+                    a.getColor(R.styleable.TwoSideSwitchView_leftActiveColor, leftActiveColor);
+            rightActiveColor =
+                    a.getColor(R.styleable.TwoSideSwitchView_rightActiveColor, rightActiveColor);
             inactiveColor = a.getColor(R.styleable.TwoSideSwitchView_inactiveColor, inactiveColor);
 
             int modeValue = a.getInt(R.styleable.TwoSideSwitchView_modeEditor, 0);
@@ -125,28 +121,31 @@ public class TwoSideSwitchView extends LinearLayout {
         post(() -> applyCurrentState(true));
 
         // ---------- LISTENERS ----------
-        switchView.setOnCheckedChangeListener((btn, checked) -> {
-            if (currentMode == Mode.INACTIVE) return;
-            currentMode = checked ? Mode.EXTENDED : Mode.SIMPLE;
-            applyCurrentState(false);
-            notifyModeChanged();
-        });
+        switchView.setOnCheckedChangeListener(
+                (btn, checked) -> {
+                    if (currentMode == Mode.INACTIVE) return;
+                    currentMode = checked ? Mode.EXTENDED : Mode.SIMPLE;
+                    applyCurrentState(false);
+                    notifyModeChanged();
+                });
 
-        leftIcon.setOnClickListener(v -> {
-            if (currentMode == Mode.INACTIVE) return;
-            currentMode = Mode.SIMPLE;
-            switchView.setChecked(false);
-            applyCurrentState(false);
-            notifyModeChanged();
-        });
+        leftIcon.setOnClickListener(
+                v -> {
+                    if (currentMode == Mode.INACTIVE) return;
+                    currentMode = Mode.SIMPLE;
+                    switchView.setChecked(false);
+                    applyCurrentState(false);
+                    notifyModeChanged();
+                });
 
-        rightIcon.setOnClickListener(v -> {
-            if (currentMode == Mode.INACTIVE) return;
-            currentMode = Mode.EXTENDED;
-            switchView.setChecked(true);
-            applyCurrentState(false);
-            notifyModeChanged();
-        });
+        rightIcon.setOnClickListener(
+                v -> {
+                    if (currentMode == Mode.INACTIVE) return;
+                    currentMode = Mode.EXTENDED;
+                    switchView.setChecked(true);
+                    applyCurrentState(false);
+                    notifyModeChanged();
+                });
         applyInteractionState();
     }
 
@@ -164,7 +163,6 @@ public class TwoSideSwitchView extends LinearLayout {
 
     private void applyCurrentState(boolean instant) {
         switch (currentMode) {
-
             case EXTENDED:
                 animateIconTint(leftIcon, getIconTint(leftIcon), inactiveColor, instant);
                 animateIconTint(rightIcon, getIconTint(rightIcon), rightActiveColor, instant);
@@ -189,16 +187,16 @@ public class TwoSideSwitchView extends LinearLayout {
         }
     }
 
-    private void animateIconTint(ImageView v, @ColorInt int from, @ColorInt int to, boolean instant) {
+    private void animateIconTint(
+            ImageView v, @ColorInt int from, @ColorInt int to, boolean instant) {
         if (instant) {
             v.setImageTintList(ColorStateList.valueOf(to));
             return;
         }
         ValueAnimator animator = ValueAnimator.ofArgb(from, to);
         animator.setDuration(200);
-        animator.addUpdateListener(a ->
-                v.setImageTintList(ColorStateList.valueOf((int) a.getAnimatedValue()))
-        );
+        animator.addUpdateListener(
+                a -> v.setImageTintList(ColorStateList.valueOf((int) a.getAnimatedValue())));
         animator.start();
     }
 
@@ -214,9 +212,8 @@ public class TwoSideSwitchView extends LinearLayout {
         }
         ValueAnimator animator = ValueAnimator.ofArgb(from, to);
         animator.setDuration(200);
-        animator.addUpdateListener(a ->
-                switchView.getThumbDrawable().setTint((int) a.getAnimatedValue())
-        );
+        animator.addUpdateListener(
+                a -> switchView.getThumbDrawable().setTint((int) a.getAnimatedValue()));
         animator.start();
     }
 

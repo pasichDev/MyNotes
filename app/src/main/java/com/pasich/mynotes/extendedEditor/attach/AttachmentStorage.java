@@ -6,18 +6,16 @@ import android.net.Uri;
 import android.os.StatFs;
 import android.provider.OpenableColumns;
 import android.util.Log;
-
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.utils.file.ImageOptimizer;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 
 /**
- * Utility class for managing note attachments stored in the app's internal storage.
- * Handles validation, saving, resolving, reading, and deleting attachment files.
+ * Utility class for managing note attachments stored in the app's internal storage. Handles
+ * validation, saving, resolving, reading, and deleting attachment files.
  */
 public class AttachmentStorage {
 
@@ -28,11 +26,8 @@ public class AttachmentStorage {
 
     /**
      * Validates whether a file can be attached to a note.
-     * <p>
-     * Performs:
-     * - File size calculation
-     * - Maximum size check
-     * - Free internal storage space check
+     *
+     * <p>Performs: - File size calculation - Maximum size check - Free internal storage space check
      *
      * @param ctx application context
      * @param uri Uri of the selected file
@@ -42,7 +37,8 @@ public class AttachmentStorage {
         long size = getFileSize(ctx, uri);
 
         if (size < 0) {
-            return AttachmentValidationResult.error(ctx.getString(R.string.errorAttachCalculateSize));
+            return AttachmentValidationResult.error(
+                    ctx.getString(R.string.errorAttachCalculateSize));
         }
 
         if (size > MAX_FILE_SIZE) {
@@ -77,7 +73,7 @@ public class AttachmentStorage {
     /**
      * Checks if internal storage has the required amount of free space.
      *
-     * @param ctx           application context
+     * @param ctx application context
      * @param requiredBytes minimum required bytes
      * @return true if available space ≥ requiredBytes, false otherwise
      */
@@ -103,10 +99,9 @@ public class AttachmentStorage {
     }
 
     /**
-     * Returns (and creates if necessary) the directory for a specific note:
-     * /attachments/note_<id>
+     * Returns (and creates if necessary) the directory for a specific note: /attachments/note_<id>
      *
-     * @param ctx    application context
+     * @param ctx application context
      * @param noteId ID of the note
      */
     public static File noteFolder(Context ctx, int noteId) {
@@ -117,17 +112,21 @@ public class AttachmentStorage {
 
     /**
      * Saves a file into the note-specific folder.
-     * <p>
-     * Automatically generates unique filename using:
-     * timestamp + hash(originalName) + extension
      *
-     * @param ctx          app context
-     * @param noteId       target note id
+     * <p>Automatically generates unique filename using: timestamp + hash(originalName) + extension
+     *
+     * @param ctx app context
+     * @param noteId target note id
      * @param originalName original filename (used for extension extraction)
-     * @param raw          file raw bytes
+     * @param raw file raw bytes
      * @return saved File object or null on failure
      */
-    public static File save(Context ctx, int noteId, String originalName, byte[] raw, boolean isExtraOptimizeEnabled) {
+    public static File save(
+            Context ctx,
+            int noteId,
+            String originalName,
+            byte[] raw,
+            boolean isExtraOptimizeEnabled) {
         try {
             File folder = noteFolder(ctx, noteId);
 
@@ -135,9 +134,9 @@ public class AttachmentStorage {
             ImageOptimizer.OutFormat detectedFormat = ImageOptimizer.detectFormat(raw);
 
             boolean isImage =
-                    detectedFormat == ImageOptimizer.OutFormat.JPEG ||
-                            detectedFormat == ImageOptimizer.OutFormat.PNG ||
-                            detectedFormat == ImageOptimizer.OutFormat.WEBP;
+                    detectedFormat == ImageOptimizer.OutFormat.JPEG
+                            || detectedFormat == ImageOptimizer.OutFormat.PNG
+                            || detectedFormat == ImageOptimizer.OutFormat.WEBP;
 
             // If it's an image, let's optimize it
             if (isImage) {
@@ -150,7 +149,8 @@ public class AttachmentStorage {
             int dot = originalName.lastIndexOf('.');
             if (dot != -1) ext = originalName.substring(dot);
 
-            String finalName = System.currentTimeMillis() + "_" + Math.abs(originalName.hashCode()) + ext;
+            String finalName =
+                    System.currentTimeMillis() + "_" + Math.abs(originalName.hashCode()) + ext;
 
             File out = new File(folder, finalName);
 
@@ -165,7 +165,6 @@ public class AttachmentStorage {
             return null;
         }
     }
-
 
     /**
      * Reads an attachment file by resolving its stored internal path.
@@ -184,8 +183,8 @@ public class AttachmentStorage {
 
     /**
      * Resolves EditorAttachment.url → real File path inside internal storage.
-     * <p>
-     * Expected URL format: file://attachments/note_<id>/filename.ext
+     *
+     * <p>Expected URL format: file://attachments/note_<id>/filename.ext
      *
      * @param ctx app context
      * @param att attachment model
@@ -254,13 +253,11 @@ public class AttachmentStorage {
         return total;
     }
 
-
     /**
      * Represents validation result for attachment checks.
-     * <p>
-     * Contains:
-     * - ok: validation success flag
-     * - error: user-readable error message (when ok == false)
+     *
+     * <p>Contains: - ok: validation success flag - error: user-readable error message (when ok ==
+     * false)
      */
     public static class AttachmentValidationResult {
 

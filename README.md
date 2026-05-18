@@ -48,6 +48,27 @@ No tracking, no analytics, no cloud — full privacy by design.
 If you find bugs, issues, or have ideas to improve the app,  
 please open a new [Issue](https://github.com/pasichDev/My-Notes/issues) in the project repository.
 
+## Development
+
+**Code style:** [Spotless](https://github.com/diffplug/spotless) + Google Java Format (AOSP, 4-space indent).
+
+```bash
+# Check formatting
+./gradlew :app:spotlessCheck
+
+# Auto-fix formatting
+./gradlew :app:spotlessApply
+```
+
+**Git hooks** — install once after cloning:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+- **pre-commit** — runs `spotlessCheck` (~15s). Fails fast on format violations.
+- **pre-push** — runs `lintDebug` (~2–3 min). Skip with `SKIP_LINT=1 git push`.
+
 ## License
 
 This project is licensed under the terms of the [Apache License 2.0](./LICENSE).

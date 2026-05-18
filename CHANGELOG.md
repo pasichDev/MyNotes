@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [2.6.46] - 18.05.2026
+
+**New**
+
+- **Notification sound:** Changed default notification sound; choose a custom melody in
+  Settings → Media.
+- **Notification volume:** Adjust notification volume directly from the app in Settings → Media.
+- **Reminder repeat:** When setting a reminder, toggle "Repeat notification" to receive the
+  alert again every 5, 10, 15, 30, or 60 minutes until the reminder is cleared. Works for
+  both note and task reminders.
+
+**Improvements**
+
+- **Help:** Updated the in-app guide — added dedicated sections for Tasks and Reminders with
+  step-by-step descriptions of all key features.
+
 ## [2.5.45] - 10.05.2026
 
 **New**

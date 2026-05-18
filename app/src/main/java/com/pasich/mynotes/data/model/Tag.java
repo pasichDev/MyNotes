@@ -5,9 +5,9 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-
 import com.google.gson.annotations.SerializedName;
 
+/** Room entity representing a note tag. */
 @Entity(tableName = "tags")
 public class Tag {
 
@@ -24,23 +24,17 @@ public class Tag {
     @SerializedName("c")
     private int visibility = 0;
 
-    /**
-     * SystemAction - System tag type (1) - add tag (2) - all notes (0) -
-     * user tag
-     */
+    /** SystemAction - System tag type (1) - add tag (2) - all notes (0) - user tag */
     @ColumnInfo(name = "systemAction")
     @SerializedName("d")
     private int systemAction = 0;
 
-    /**
-     * Position - tag position for custom sorting
-     */
+    /** Position - tag position for custom sorting */
     @ColumnInfo(name = "position")
     @SerializedName("e")
     private int position = 0;
 
-    @Ignore
-    private boolean selected = false;
+    @Ignore private boolean selected = false;
 
     public Tag create(String nameTag, int systemAction) {
         this.nameTag = nameTag;
@@ -91,6 +85,7 @@ public class Tag {
         this.visibility = arg0;
     }
 
+    /** Sets visibility and returns this tag for chaining. */
     public Tag setVisibilityReturn(int arg0) {
         this.visibility = arg0;
         return this;
@@ -104,6 +99,7 @@ public class Tag {
         this.position = position;
     }
 
+    /** Returns a shallow copy of this tag including transient fields. */
     public Tag copy() {
         Tag t = new Tag();
 
@@ -118,5 +114,4 @@ public class Tag {
 
         return t;
     }
-
 }

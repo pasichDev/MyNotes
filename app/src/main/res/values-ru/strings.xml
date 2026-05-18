@@ -358,6 +358,7 @@
     <string name="reminder_snooze_1hour">1 час</string>
     <string name="reminder_snooze_tomorrow">Завтра утром</string>
     <string name="reminder_snooze_label">Отложить</string>
+    <string name="reminder_dismiss_label">Закрыть</string>
     <string name="reminder_permission_denied">Нужно разрешение для напоминаний</string>
     <string name="reminder_notification_channel">Напоминания</string>
     <string name="reminder_menu_item">Напоминание</string>
@@ -383,5 +384,28 @@
     <string name="tasks_reminder_set">Установить напоминание</string>
     <string name="tasks_reminder_clear">Удалить напоминание</string>
     <string name="tasks_reminder_past">Выберите будущее время</string>
+
+    <!-- Notification settings -->
+    <string name="settings_notifications_section_title">Уведомления напоминаний</string>
+    <string name="settings_notification_sound">Мелодия</string>
+    <string name="settings_notification_volume">Громкость</string>
+    <!-- Reminder interval -->
+    <string name="reminder_interval_label">Повторять уведомление</string>
+    <string name="reminder_interval_5min">5 мин</string>
+    <string name="reminder_interval_10min">10 мин</string>
+    <string name="reminder_interval_15min">15 мин</string>
+    <string name="reminder_interval_30min">30 мин</string>
+    <string name="reminder_interval_60min">60 мин</string>
+
+    <plurals name="wordCount">
+        <item quantity="one">%d слово</item>
+        <item quantity="few">%d слова</item>
+        <item quantity="many">%d слов</item>
+        <item quantity="other">%d слова</item>
+    </plurals>
+
+    <string name="editor_switch_label">Редактор</string>
+    <string name="mode_simple">Простой</string>
+    <string name="mode_extended">Расширенный</string>
 
 </resources>
