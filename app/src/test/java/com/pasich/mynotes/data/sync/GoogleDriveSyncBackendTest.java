@@ -348,12 +348,8 @@ public class GoogleDriveSyncBackendTest {
             if (fileId != null && existing == null) {
                 return Response.json(404, "{}");
             }
-            if (existing != null) {
-                String ifMatch = request.headers.get("if-match");
-                if (ifMatch != null && !ifMatch.equals(existing.eTag())) {
-                    return Response.json(412, "{\"error\":\"precondition\"}");
-                }
-            }
+            // No If-Match enforcement: Drive v3 does not honour the header on files, so the
+            // concurrency guarantee has to come from the client comparing the version it read.
 
             MultipartPayload payload = readMultipart(request);
             DriveFile file =
@@ -475,6 +471,8 @@ public class GoogleDriveSyncBackendTest {
             JsonObject response = new JsonObject();
             response.addProperty("id", file.id);
             response.addProperty("name", file.name);
+            // Drive v3 reports the change counter as a string-encoded long.
+            response.addProperty("version", String.valueOf(file.version));
             JsonObject appProperties = new JsonObject();
             for (Map.Entry<String, String> entry : file.appProperties.entrySet()) {
                 appProperties.addProperty(entry.getKey(), entry.getValue());
@@ -569,9 +567,9 @@ public class GoogleDriveSyncBackendTest {
             headers.append("Content-Length: ").append(response.body.length).append("\r\n");
             headers.append("Connection: close\r\n");
             headers.append("Content-Type: ").append(response.contentType).append("\r\n");
-            if (response.eTag != null) {
-                headers.append("ETag: ").append(response.eTag).append("\r\n");
-            }
+            // Deliberately no ETag header. Drive API v3 dropped the ETags that v2 sent; a fake
+            // that returns one lets code depending on the header pass its tests and fail against
+            // the real API, which is exactly what happened before.
             headers.append("\r\n");
             output.write(headers.toString().getBytes(StandardCharsets.ISO_8859_1));
             output.write(response.body);

@@ -99,15 +99,11 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         if (current == null) {
             lastReadBundle = uploadFile(folderId, BUNDLE_NAME, MIME_ZIP, bundle, null, null, true);
         } else {
+            // No If-Match: the token is Drive's "version" counter, not an entity-tag, and RFC
+            // 7232 requires a quoted entity-tag or "*". verifyConcurrentState above already
+            // rejected a bundle that changed since it was read, which is the actual guarantee.
             lastReadBundle =
-                    uploadFile(
-                            folderId,
-                            BUNDLE_NAME,
-                            MIME_ZIP,
-                            bundle,
-                            current.id,
-                            current.eTag,
-                            true);
+                    uploadFile(folderId, BUNDLE_NAME, MIME_ZIP, bundle, current.id, null, true);
         }
         hasReadSnapshot = true;
     }
@@ -311,20 +307,24 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private RemoteFileRef fetchFileRef(@NonNull String id, @NonNull String fallbackName)
             throws IOException {
         HttpURLConnection connection =
-                open("GET", apiBase + "/files/" + id + "?fields=id,name,appProperties");
+                open("GET", apiBase + "/files/" + id + "?fields=id,name,version,appProperties");
         JsonObject response = readJsonResponse(connection);
         String name =
                 response.has("name") && !response.get("name").isJsonNull()
                         ? response.get("name").getAsString()
                         : fallbackName;
-        String eTag = connection.getHeaderField("ETag");
-        if (eTag == null || eTag.trim().isEmpty()) {
-            eTag = connection.getHeaderField("etag");
+        // Drive API v3 dropped the ETags that v2 sent, so no response carries that header and
+        // reading one always failed. The Files resource exposes "version" instead: a counter the
+        // server bumps on every change to the file, which is the token the read-compare-write
+        // check in verifyConcurrentState needs.
+        String version =
+                response.has("version") && !response.get("version").isJsonNull()
+                        ? response.get("version").getAsString()
+                        : null;
+        if (version == null || version.trim().isEmpty()) {
+            throw new IOException("Drive file metadata response is missing a version");
         }
-        if (eTag == null || eTag.trim().isEmpty()) {
-            throw new IOException("Drive file metadata response is missing an ETag");
-        }
-        return new RemoteFileRef(id, name, eTag);
+        return new RemoteFileRef(id, name, version);
     }
 
     @NonNull
