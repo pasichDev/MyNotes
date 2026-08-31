@@ -32,6 +32,7 @@ public class HelpActivity extends BaseActivity {
         selectTheme();
         binding = ActivityHelpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        setupEdgeToEdgeInsets(binding.getRoot());
 
         setupToolbar();
         setupRecyclerView();
