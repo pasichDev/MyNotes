@@ -24,15 +24,24 @@ public final class FirebaseGoogleAuth {
         void onError(@NonNull Exception error);
     }
 
-    private final FirebaseAuth firebaseAuth;
+    @Nullable private final FirebaseAuth firebaseAuth;
 
     @Inject
-    public FirebaseGoogleAuth(@NonNull FirebaseAuth firebaseAuth) {
+    public FirebaseGoogleAuth(@Nullable FirebaseAuth firebaseAuth) {
         this.firebaseAuth = firebaseAuth;
+    }
+
+    /** False when the app was built without a Firebase configuration. */
+    public boolean isAvailable() {
+        return firebaseAuth != null;
     }
 
     /** Starts a Firebase sign-in using the short-lived ID token from Credential Manager. */
     public void signIn(@NonNull GoogleCredential googleCredential, @NonNull Callback callback) {
+        if (firebaseAuth == null) {
+            callback.onError(new IllegalStateException("Firebase is not configured in this build"));
+            return;
+        }
         try {
             AuthCredential firebaseCredential =
                     GoogleAuthProvider.getCredential(googleCredential.getIdToken(), null);
@@ -64,7 +73,7 @@ public final class FirebaseGoogleAuth {
     /** Returns the active Firebase user, or {@code null} when the app is signed out. */
     @Nullable
     public FirebaseUser getCurrentUser() {
-        return firebaseAuth.getCurrentUser();
+        return firebaseAuth == null ? null : firebaseAuth.getCurrentUser();
     }
 
     public boolean isSignedIn() {
@@ -73,6 +82,8 @@ public final class FirebaseGoogleAuth {
 
     /** Ends the Firebase session. Also clear Credential Manager state with GoogleCredentialAuth. */
     public void signOut() {
-        firebaseAuth.signOut();
+        if (firebaseAuth != null) {
+            firebaseAuth.signOut();
+        }
     }
 }

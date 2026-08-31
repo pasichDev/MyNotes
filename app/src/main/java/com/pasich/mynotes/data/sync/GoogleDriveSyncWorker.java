@@ -10,6 +10,7 @@ import com.google.android.gms.auth.api.identity.AuthorizationResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import dagger.hilt.android.EntryPointAccessors;
@@ -26,7 +27,13 @@ public final class GoogleDriveSyncWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        // A build without google-services.json has no default FirebaseApp; there is nothing to
+        // sync rather than a crash.
+        FirebaseApp app = FirebaseApp.initializeApp(getApplicationContext());
+        if (app == null) {
+            return Result.success();
+        }
+        FirebaseUser user = FirebaseAuth.getInstance(app).getCurrentUser();
         if (user == null || user.getEmail() == null) return Result.success();
         try {
             AuthorizationRequest request =
