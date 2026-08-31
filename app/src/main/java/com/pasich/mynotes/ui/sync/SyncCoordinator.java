@@ -2,6 +2,7 @@ package com.pasich.mynotes.ui.sync;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.firebase.auth.FirebaseUser;
@@ -19,9 +20,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 /** Coordinates connect/disconnect/manual-sync flows so BackupActivity stays presentation-only. */
 public final class SyncCoordinator {
+
+    private static final String TAG = "SyncCoordinator";
+
     public interface Callback<T> {
         void onSuccess(@NonNull T value);
 
@@ -219,7 +224,8 @@ public final class SyncCoordinator {
                 new GoogleDriveAuthorization.Callback() {
                     @Override
                     public void onAuthorized(@NonNull String accessToken) {
-                        workerExecutor.execute(
+                        runOnWorker(
+                                callback,
                                 () -> {
                                     try {
                                         preferenceHelper.setSyncEnabled(true);
@@ -250,7 +256,8 @@ public final class SyncCoordinator {
             long conflictId,
             @NonNull SyncResolution resolution,
             @NonNull Callback<List<SyncConflictEntity>> callback) {
-        workerExecutor.execute(
+        runOnWorker(
+                callback,
                 () -> {
                     try {
                         conflictStore.resolveConflict(conflictId, resolution);
@@ -261,12 +268,38 @@ public final class SyncCoordinator {
                 });
     }
 
+    /**
+     * Submits background work without letting a gone screen crash the app.
+     *
+     * <p>The executor belongs to the activity that built this coordinator, so a callback arriving
+     * after that activity finished used to hit a terminated pool and throw {@link
+     * RejectedExecutionException} from whatever thread delivered it. Checking {@code isShutdown()}
+     * first cannot close the race; catching the rejection can.
+     */
+    private void runOnWorker(@NonNull Callback<?> callback, @NonNull Runnable task) {
+        try {
+            workerExecutor.execute(task);
+        } catch (RejectedExecutionException rejected) {
+            Log.w(TAG, "Sync work could not be scheduled; the screen is gone", rejected);
+            deliverError(callback, rejected);
+        }
+    }
+
     private <T> void deliverSuccess(@NonNull Callback<T> callback, @NonNull T value) {
-        mainExecutor.execute(() -> callback.onSuccess(value));
+        postToMain(() -> callback.onSuccess(value));
     }
 
     private void deliverError(@NonNull Callback<?> callback, @NonNull Exception error) {
-        mainExecutor.execute(() -> callback.onError(error));
+        postToMain(() -> callback.onError(error));
+    }
+
+    /** Delivery to a destroyed screen is a no-op rather than a crash. */
+    private void postToMain(@NonNull Runnable task) {
+        try {
+            mainExecutor.execute(task);
+        } catch (RejectedExecutionException rejected) {
+            Log.w(TAG, "Sync result could not be delivered; the screen is gone", rejected);
+        }
     }
 
     private void ensureRolloutBucket() {
