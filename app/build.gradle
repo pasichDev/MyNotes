@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'com.google.dagger.hilt.android'
     id 'com.diffplug.spotless'
+    id 'com.google.gms.google-services'
 }
 
 apply plugin: 'com.android.application'
@@ -141,6 +142,8 @@ ext {
     roomVersion = '2.8.4'
 }
 dependencies {
+    implementation platform('com.google.firebase:firebase-bom:34.18.0')
+    implementation 'com.google.firebase:firebase-auth'
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
