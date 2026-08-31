@@ -88,7 +88,8 @@ public class MigrationTest {
         SupportSQLiteDatabase migrated =
                 helper.runMigrationsAndValidate(TEST_DB, 15, true, AppDatabase.MIGRATION_14_15);
         try (android.database.Cursor cursor =
-                migrated.query("SELECT COUNT(*) FROM sync_metadata WHERE recordType = 'category'")) {
+                migrated.query(
+                        "SELECT COUNT(*) FROM sync_metadata WHERE recordType = 'category'")) {
             assertThat(cursor.moveToFirst()).isTrue();
             assertThat(cursor.getInt(0)).isEqualTo(0);
         } finally {
