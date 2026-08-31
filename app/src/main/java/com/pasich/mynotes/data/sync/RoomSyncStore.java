@@ -46,6 +46,7 @@ public final class RoomSyncStore implements SyncStore {
     private static final String PREFERENCES_HASH = "preferences_hash";
     private final AppDatabase database;
     private final SharedPreferences preferences;
+    private volatile boolean seeded;
     private final PreferenceHelper preferenceHelper;
     private final Context context;
     private final Gson gson = new Gson();
@@ -59,6 +60,19 @@ public final class RoomSyncStore implements SyncStore {
         this.context = context.getApplicationContext();
         this.preferences =
                 context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    /**
+     * Creates the singleton preferences metadata row.
+     *
+     * <p>This used to run from the constructor, which meant every caller hit Room on whatever
+     * thread it happened to construct the store on; on the main thread Room throws. Seeding is now
+     * deferred to the operations that already run in the background.
+     */
+    private void ensureSeeded() {
+        if (seeded) {
+            return;
+        }
         database.syncMetadataDao()
                 .insertIfAbsent(
                         new SyncMetadataEntity(
@@ -67,11 +81,13 @@ public final class RoomSyncStore implements SyncStore {
                                 "00000000-0000-4000-8000-000000000000",
                                 0L,
                                 null));
+        seeded = true;
     }
 
     @NonNull
     @Override
     public SyncSnapshot readSnapshot() throws IOException {
+        ensureSeeded();
         List<SyncRecord> records = new ArrayList<>();
         for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
             if (metadata.deletedAt != null) {
@@ -629,6 +645,7 @@ public final class RoomSyncStore implements SyncStore {
     @NonNull
     @Override
     public SyncState readState() throws IOException {
+        ensureSeeded();
         SyncStateEntity entity = database.syncStateDao().get();
         if (entity == null) {
             SyncState legacy = readLegacyState();
@@ -644,7 +661,12 @@ public final class RoomSyncStore implements SyncStore {
             if (backend == null || backend.trim().isEmpty()) return SyncState.idle();
             if (status == SyncState.Status.SYNCING) {
                 if (entity.attemptStartedAt == null) return SyncState.idle();
-                return SyncState.syncing(backend, Instant.ofEpochMilli(entity.attemptStartedAt));
+                return SyncState.syncing(
+                        backend,
+                        Instant.ofEpochMilli(entity.attemptStartedAt),
+                        entity.lastSuccessfulSyncAt == null
+                                ? null
+                                : Instant.ofEpochMilli(entity.lastSuccessfulSyncAt));
             }
             if (status == SyncState.Status.SUCCESS) {
                 if (entity.lastSuccessfulSyncAt == null) return SyncState.idle();
@@ -691,7 +713,12 @@ public final class RoomSyncStore implements SyncStore {
             }
             if ("SYNCING".equals(status) && value.has("attemptStartedAt")) {
                 return SyncState.syncing(
-                        backend, Instant.parse(value.get("attemptStartedAt").getAsString()));
+                        backend,
+                        Instant.parse(value.get("attemptStartedAt").getAsString()),
+                        value.has("lastSuccessfulSyncAt")
+                                        && !value.get("lastSuccessfulSyncAt").isJsonNull()
+                                ? Instant.parse(value.get("lastSuccessfulSyncAt").getAsString())
+                                : null);
             }
             return SyncState.idle();
         } catch (RuntimeException error) {
