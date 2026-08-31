@@ -263,6 +263,15 @@
     <string name="backup">Kopia zapasowa</string>
     <string name="device_storage">Pamięć urządzenia</string>
     <string name="google_drive">Google Drive</string>
+    <string name="google_sign_in">Zaloguj się przez Google</string>
+    <string name="google_sign_out">Wyloguj (%1$s)</string>
+    <string name="google_sign_out_action">Wyloguj</string>
+    <string name="google_sign_in_failed">Logowanie przez Google nie powiodło się</string>
+    <string name="sync_now">Synchronizuj</string>
+    <string name="sync_started">Synchronizowanie…</string>
+    <string name="sync_success">Zsynchronizowano pomyślnie</string>
+    <string name="sync_success_conflicts">Zsynchronizowano z %1$d konfliktami</string>
+    <string name="sync_failed">Synchronizacja nie powiodła się: %1$s</string>
     <string name="save_backup">Zapisz kopię zapasową</string>
     <string name="restore_backup">Przywróć kopię zapasową</string>
     <string name="file_not_selected">Plik nie wybrano</string>

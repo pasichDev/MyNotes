@@ -262,6 +262,15 @@
     <string name="backup">Рэзервовая копія</string>
     <string name="device_storage">Памяць прылады</string>
     <string name="google_drive">Google Дыск</string>
+    <string name="google_sign_in">Увайсці праз Google</string>
+    <string name="google_sign_out">Выйсці (%1$s)</string>
+    <string name="google_sign_out_action">Выйсці</string>
+    <string name="google_sign_in_failed">Не ўдалося ўвайсці праз Google</string>
+    <string name="sync_now">Сінхранізаваць</string>
+    <string name="sync_started">Сінхранізацыя…</string>
+    <string name="sync_success">Сінхранізацыя завершана</string>
+    <string name="sync_success_conflicts">Сінхранізацыя завершана, канфліктаў: %1$d</string>
+    <string name="sync_failed">Памылка сінхранізацыі: %1$s</string>
     <string name="save_backup">Захаваць рэзервовую копію</string>
     <string name="restore_backup">Адноўліваць рэзервовую копію</string>
     <string name="file_not_selected">Файл не абраны</string>

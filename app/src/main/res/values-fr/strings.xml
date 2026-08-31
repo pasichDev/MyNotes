@@ -260,6 +260,15 @@
     <string name="backup">Sauvegarde</string>
     <string name="device_storage">Stockage de l’appareil</string>
     <string name="google_drive">Google Drive</string>
+    <string name="google_sign_in">Se connecter avec Google</string>
+    <string name="google_sign_out">Se déconnecter (%1$s)</string>
+    <string name="google_sign_out_action">Se déconnecter</string>
+    <string name="google_sign_in_failed">Échec de la connexion Google</string>
+    <string name="sync_now">Synchroniser</string>
+    <string name="sync_started">Synchronisation…</string>
+    <string name="sync_success">Synchronisation réussie</string>
+    <string name="sync_success_conflicts">Synchronisé avec %1$d conflits</string>
+    <string name="sync_failed">Échec de la synchronisation : %1$s</string>
     <string name="save_backup">Enregistrer la sauvegarde</string>
     <string name="restore_backup">Restaurer la sauvegarde</string>
     <string name="file_not_selected">Fichier non sélectionné</string>

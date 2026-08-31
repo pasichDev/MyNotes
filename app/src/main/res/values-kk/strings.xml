@@ -261,6 +261,15 @@
     <string name="backup">Сақтық көшірме</string>
     <string name="device_storage">Құрылғы жады</string>
     <string name="google_drive">Google Диск</string>
+    <string name="google_sign_in">Google арқылы кіру</string>
+    <string name="google_sign_out">Шығу (%1$s)</string>
+    <string name="google_sign_out_action">Шығу</string>
+    <string name="google_sign_in_failed">Google арқылы кіру сәтсіз аяқталды</string>
+    <string name="sync_now">Синхрондау</string>
+    <string name="sync_started">Синхрондалуда…</string>
+    <string name="sync_success">Синхрондау сәтті аяқталды</string>
+    <string name="sync_success_conflicts">%1$d қайшылықпен синхрондалды</string>
+    <string name="sync_failed">Синхрондау сәтсіз аяқталды: %1$s</string>
     <string name="save_backup">Сақтық көшірмесін сақтау</string>
     <string name="restore_backup">Сақтық көшірмесін қалпына келтіру</string>
     <string name="file_not_selected">Файл таңдалмады</string>

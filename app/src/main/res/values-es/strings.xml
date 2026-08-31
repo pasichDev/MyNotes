@@ -265,6 +265,15 @@
     <string name="backup">Copia de seguridad</string>
     <string name="device_storage">Almacenamiento del dispositivo</string>
     <string name="google_drive">Google Drive</string>
+    <string name="google_sign_in">Iniciar sesión con Google</string>
+    <string name="google_sign_out">Cerrar sesión (%1$s)</string>
+    <string name="google_sign_out_action">Cerrar sesión</string>
+    <string name="google_sign_in_failed">No se pudo iniciar sesión con Google</string>
+    <string name="sync_now">Sincronizar</string>
+    <string name="sync_started">Sincronizando…</string>
+    <string name="sync_success">Sincronización completada</string>
+    <string name="sync_success_conflicts">Sincronizado con %1$d conflictos</string>
+    <string name="sync_failed">Error de sincronización: %1$s</string>
     <string name="save_backup">Guardar copia de seguridad</string>
     <string name="restore_backup">Restaurar copia de seguridad</string>
     <string name="file_not_selected">Archivo no seleccionado</string>

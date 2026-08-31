@@ -262,6 +262,15 @@
     <string name="backup">Sicherung</string>
     <string name="device_storage">Gerätespeicher</string>
     <string name="google_drive">Google Drive</string>
+    <string name="google_sign_in">Mit Google anmelden</string>
+    <string name="google_sign_out">Abmelden (%1$s)</string>
+    <string name="google_sign_out_action">Abmelden</string>
+    <string name="google_sign_in_failed">Google-Anmeldung fehlgeschlagen</string>
+    <string name="sync_now">Synchronisieren</string>
+    <string name="sync_started">Synchronisierung…</string>
+    <string name="sync_success">Erfolgreich synchronisiert</string>
+    <string name="sync_success_conflicts">Mit %1$d Konflikten synchronisiert</string>
+    <string name="sync_failed">Synchronisierung fehlgeschlagen: %1$s</string>
     <string name="save_backup">Sicherung speichern</string>
     <string name="restore_backup">Sicherung wiederherstellen</string>
     <string name="file_not_selected">Datei nicht ausgewählt</string>
