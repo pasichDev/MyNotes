@@ -6,6 +6,7 @@ import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.utils.TagsSorter;
+import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 import io.reactivex.disposables.CompositeDisposable;
 import java.util.Date;
@@ -27,7 +28,8 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
     @Override
     public void viewIsReady() {
         getView().initInterfaces();
-        getView().setSliderValue(getDataManager().getSizeTextNoteActivity());
+        int textSize = getDataManager().getSizeTextNoteActivity();
+        getView().setSliderValue(PreferencesConfig.normalizeNoteTextSize(textSize));
     }
 
     @Override

@@ -10,6 +10,14 @@ public class PreferencesConfig {
     // TextSize
     public static final String ARGUMENT_PREFERENCE_TEXT_SIZE = "textSize";
     public static final int ARGUMENT_DEFAULT_TEXT_SIZE = 16;
+    public static final int NOTE_TEXT_SIZE_MIN = 10;
+    public static final int NOTE_TEXT_SIZE_MAX = 32;
+
+    /** Keeps the persisted note text size compatible with the editor Slider range. */
+    public static int normalizeNoteTextSize(int size) {
+        return Math.max(NOTE_TEXT_SIZE_MIN, Math.min(size, NOTE_TEXT_SIZE_MAX));
+    }
+
     // SortPrefix
     public static final String ARGUMENT_PREFERENCE_SORT = "sortPref";
     public static final String ARGUMENT_DEFAULT_SORT_PREF = SortParam.DataSort;

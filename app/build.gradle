@@ -138,14 +138,14 @@ gradle.taskGraph.whenReady { graph ->
 
 ext {
     markwon_version = '4.6.2'
-    roomVersion = '2.8.1'
+    roomVersion = '2.8.4'
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'com.google.android.material:material:1.13.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'com.google.android.material:material:1.14.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel:2.10.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.11.0"
     implementation 'androidx.core:core-splashscreen:1.2.0'
     implementation 'androidx.activity:activity:1.13.0'
 
@@ -166,7 +166,7 @@ dependencies {
     implementation 'com.android.billingclient:billing:8.3.0'
 
     //Other lib (Gson/PhotoView)
-    implementation 'com.google.code.gson:gson:2.13.2'
+    implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'androidx.exifinterface:exifinterface:1.4.2'
 

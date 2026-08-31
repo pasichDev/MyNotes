@@ -6,7 +6,6 @@ import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerT
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
@@ -196,9 +195,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
                 new WindowInsetsControllerCompat(window, window.getDecorView());
         insetsController.setAppearanceLightStatusBars(
                 currentNightMode == Configuration.UI_MODE_NIGHT_NO);
-
-        // Transparent status bar
-        window.setStatusBarColor(Color.TRANSPARENT);
     }
 
     @Override

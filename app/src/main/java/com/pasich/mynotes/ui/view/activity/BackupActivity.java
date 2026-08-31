@@ -8,6 +8,7 @@ import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,6 +39,7 @@ import com.pasich.mynotes.utils.backup.models.googleKeep.GoogleKeepImportResult;
 import com.pasich.mynotes.utils.constants.CloudErrors;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.file.DriveProcess;
+import com.pasich.mynotes.utils.file.FileExportUtils;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -258,7 +260,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                                                 intent.setPackage(GOOGLE_DRIVE_PACKAGE);
                                                 intent.addFlags(
                                                         Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                launcherExportDrive.launch(intent);
+                                                launchGoogleDriveIntent(
+                                                        launcherExportDrive,
+                                                        intent,
+                                                        R.string.export_drive_error);
                                             }
 
                                             @Override
@@ -311,7 +316,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                                         });
                                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                                 intent.setPackage(GOOGLE_DRIVE_PACKAGE);
-                                launcherImportDrive.launch(intent);
+                                launchGoogleDriveIntent(
+                                        launcherImportDrive, intent, R.string.drive_selected_error);
                             }
 
                             @Override
@@ -338,6 +344,21 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     @Override
     public void showErrorsText(int errorCode, int string) {
         onInfoSnack(string, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+    }
+
+    private void launchGoogleDriveIntent(
+            ActivityResultLauncher<Intent> launcher, Intent intent, int errorMessage) {
+        if (!FileExportUtils.canHandleIntent(getPackageManager(), intent)) {
+            onInfoSnack(errorMessage, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+            return;
+        }
+
+        try {
+            launcher.launch(intent);
+        } catch (ActivityNotFoundException error) {
+            Log.w("BACKUP_ACTIVITY", "Google Drive cannot handle backup intent", error);
+            onInfoSnack(errorMessage, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+        }
     }
 
     @Override
