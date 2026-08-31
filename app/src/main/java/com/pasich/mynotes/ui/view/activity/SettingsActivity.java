@@ -8,8 +8,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
@@ -74,24 +72,9 @@ public class SettingsActivity extends BaseActivity
         ViewPager2 viewPager = activitySettingsBinding.viewPager;
 
         tabLayout = activitySettingsBinding.tabLayout;
-        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-
-        // Add margins between tabs
-        tabLayout.post(
-                () -> {
-                    ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
-                    int margin = (int) (12 * getResources().getDisplayMetrics().density);
-
-                    for (int i = 0; i < tabStrip.getChildCount(); i++) {
-                        View tabView = tabStrip.getChildAt(i);
-                        ViewGroup.MarginLayoutParams params =
-                                (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
-                        params.setMargins(margin, 0, margin, 0);
-                        tabView.setLayoutParams(params);
-
-                        tabView.requestLayout();
-                    }
-                });
+        // Keep all settings tabs visible at once; the XML also declares fixed/fill behavior.
+        tabLayout.setTabMode(TabLayout.MODE_FIXED);
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         pagerAdapter = new SettingsPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
