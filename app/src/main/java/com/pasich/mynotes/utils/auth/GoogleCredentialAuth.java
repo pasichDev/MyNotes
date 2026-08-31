@@ -112,8 +112,8 @@ public final class GoogleCredentialAuth {
             GoogleIdTokenCredential googleCredential =
                     GoogleIdTokenCredential.createFrom(customCredential.getData());
             return new GoogleCredential(
-                    googleCredential.getId(),
-                    googleCredential.getId(),
+                    googleCredential.getUniqueId(),
+                    googleCredential.getEmail(),
                     googleCredential.getDisplayName(),
                     googleCredential.getIdToken());
         } catch (RuntimeException error) {
