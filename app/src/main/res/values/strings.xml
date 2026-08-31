@@ -229,9 +229,9 @@
     <!-- Tasks Help Section -->
     <string name="help_tasks_title">Tasks</string>
     <string name="help_tasks_create_title">Creating Tasks</string>
-    <string name="help_tasks_create_description">Open Tasks from the main menu. Tap the "+" button to add a new task. You can set a title, description, and assign it to a category.</string>
+    <string name="help_tasks_create_description">Open Tasks from the main menu. Tap the \"+\" button to add a new task. You can set a title, description, and assign it to a category.</string>
     <string name="help_tasks_categories_title">Categories</string>
-    <string name="help_tasks_categories_description">Organize tasks into custom categories. Tap "Add category" to create one. Tasks within a category are grouped together for easy management.</string>
+    <string name="help_tasks_categories_description">Organize tasks into custom categories. Tap \"Add category\" to create one. Tasks within a category are grouped together for easy management.</string>
     <string name="help_tasks_complete_title">Completing Tasks</string>
     <string name="help_tasks_complete_description">Tap the checkbox next to a task to mark it as done. Completed tasks are grouped at the bottom of the list. Tap again to unmark.</string>
     <string name="help_tasks_reminder_title">Task Reminders</string>
@@ -490,4 +490,10 @@
     <string name="mode_simple">Simple</string>
     <string name="mode_extended">Extended</string>
 
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Account</string>
+    <string name="sync_signed_out_title">Not signed in</string>
+    <string name="sync_signed_out_description">Sync and Google Drive backup become available after you sign in.</string>
 </resources>

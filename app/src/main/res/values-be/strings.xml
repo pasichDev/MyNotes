@@ -433,4 +433,31 @@
     <string name="sync_first_sync_message">Падчас першай сінхранізацыі будзе аб’яднана запісаў: %1$d. Можа быць загружана каля %2$s. Лакальныя даныя застануцца даступнымі.</string>
     <string name="sync_first_sync_cancel">Не цяпер</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Ужыць</string>
+    <string name="help_tasks_title">Заданні</string>
+    <string name="help_tasks_create_title">Стварэнне заданняў</string>
+    <string name="help_tasks_create_description">Адкрыйце «Заданні» з галоўнага меню. Націсніце кнопку \"+\", каб дадаць новае заданне. Можна задаць назву, апісанне і прызначыць катэгорыю.</string>
+    <string name="help_tasks_categories_title">Катэгорыі</string>
+    <string name="help_tasks_categories_description">Размяркоўвайце заданні па ўласных катэгорыях. Націсніце «Дадаць катэгорыю», каб стварыць яе. Заданні адной катэгорыі згрупаваны разам — так імі прасцей кіраваць.</string>
+    <string name="help_tasks_complete_title">Завяршэнне заданняў</string>
+    <string name="help_tasks_complete_description">Націсніце сцяжок побач з заданнем, каб адзначыць яго выкананым. Выкананыя заданні збіраюцца ўнізе спіса. Націсніце яшчэ раз, каб зняць адзнаку.</string>
+    <string name="help_tasks_reminder_title">Нагадванні пра заданні</string>
+    <string name="help_tasks_reminder_description">Задайце нагадванне для любога задання, націснуўшы значок званочка. У прызначаны час прыйдзе апавяшчэнне. Націсніце на яго, каб адразу адкрыць заданне.</string>
+    <string name="help_reminders_title">Нагадванні</string>
+    <string name="help_reminders_notes_title">Нагадванні пра нататкі</string>
+    <string name="help_reminders_notes_description">Адкрыйце любую нататку і націсніце значок званочка, каб задаць нагадванне. Выберыце час хуткім варыянтам або праз выбар даты і часу. У прызначаны час з’явіцца апавяшчэнне.</string>
+    <string name="help_reminders_repeat_title">Паўтарэнне</string>
+    <string name="help_reminders_repeat_description">Пры наладзе нагадвання для нататкі ўключыце пераключальнік «Паўтор», каб выбраць цыкл: штодня, штотыдня або штомесяц. Пасля кожнага апавяшчэння нагадванне пераносіцца аўтаматычна.</string>
+    <string name="help_reminders_interval_title">Інтэрвальныя апавяшчэнні</string>
+    <string name="help_reminders_interval_description">Для паўтаральных нагадванняў можна ўключыць паўторнае апавяшчэнне кожныя 5, 10, 15, 30 або 60 хвілін. Апавяшчэнне будзе паўтарацца з выбраным інтэрвалам да наступнага спрацоўвання.</string>
+    <string name="help_reminders_sound_title">Гук і гучнасць апавяшчэнняў</string>
+    <string name="help_reminders_sound_description">Наладзьце мелодыю і гучнасць нагадванняў у «Налады → Медыя». Змены дзейнічаюць для ўсіх будучых апавяшчэнняў.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Уліковы запіс</string>
+    <string name="sync_signed_out_title">Вы не ўвайшлі</string>
+    <string name="sync_signed_out_description">Сінхранізацыя і копія на Google Дыску даступныя пасля ўваходу.</string>
 </resources>

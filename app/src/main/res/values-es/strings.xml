@@ -434,4 +434,31 @@
     <string name="sync_first_sync_message">La primera sincronización combinará %1$d registros y puede subir unos %2$s. Tus datos locales seguirán disponibles.</string>
     <string name="sync_first_sync_cancel">Ahora no</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Aplicar</string>
+    <string name="help_tasks_title">Tareas</string>
+    <string name="help_tasks_create_title">Crear tareas</string>
+    <string name="help_tasks_create_description">Abre «Tareas» desde el menú principal. Toca el botón \"+\" para añadir una tarea. Puedes indicar un título, una descripción y asignarla a una categoría.</string>
+    <string name="help_tasks_categories_title">Categorías</string>
+    <string name="help_tasks_categories_description">Organiza las tareas en tus propias categorías. Toca «Añadir categoría» para crear una. Las tareas de una misma categoría se agrupan, lo que facilita su gestión.</string>
+    <string name="help_tasks_complete_title">Completar tareas</string>
+    <string name="help_tasks_complete_description">Toca la casilla junto a una tarea para marcarla como completada. Las tareas completadas se agrupan al final de la lista. Tócala de nuevo para desmarcarla.</string>
+    <string name="help_tasks_reminder_title">Recordatorios de tareas</string>
+    <string name="help_tasks_reminder_description">Configura un recordatorio para cualquier tarea tocando el icono de la campana. Recibirás una notificación a la hora prevista. Tócala para abrir la tarea directamente.</string>
+    <string name="help_reminders_title">Recordatorios</string>
+    <string name="help_reminders_notes_title">Recordatorios de notas</string>
+    <string name="help_reminders_notes_description">Abre cualquier nota y toca el icono de la campana para configurar un recordatorio. Elige la hora con las opciones rápidas o con el selector de fecha y hora. A la hora prevista aparecerá una notificación.</string>
+    <string name="help_reminders_repeat_title">Opciones de repetición</string>
+    <string name="help_reminders_repeat_description">Al configurar un recordatorio de nota, activa el interruptor «Repetir» para elegir el ciclo: diario, semanal o mensual. El recordatorio se reprograma automáticamente tras cada notificación.</string>
+    <string name="help_reminders_interval_title">Notificaciones por intervalo</string>
+    <string name="help_reminders_interval_description">Para los recordatorios repetidos puedes activar una nueva notificación cada 5, 10, 15, 30 o 60 minutos. La notificación se repetirá en el intervalo elegido hasta la siguiente vez programada.</string>
+    <string name="help_reminders_sound_title">Sonido y volumen de las notificaciones</string>
+    <string name="help_reminders_sound_description">Personaliza la melodía y el volumen de los recordatorios en «Configuración → Medios». Los cambios se aplican a todas las notificaciones futuras.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Cuenta</string>
+    <string name="sync_signed_out_title">No has iniciado sesión</string>
+    <string name="sync_signed_out_description">La sincronización y la copia en Google Drive están disponibles tras iniciar sesión.</string>
 </resources>

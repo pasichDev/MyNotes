@@ -3,6 +3,7 @@ package com.pasich.mynotes.utils.auth;
 import android.content.Context;
 import android.os.CancellationSignal;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.credentials.ClearCredentialStateRequest;
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
@@ -40,7 +41,7 @@ public final class GoogleCredentialAuth {
         }
         credentialManager = CredentialManager.create(context.getApplicationContext());
         this.serverClientId = serverClientId;
-        executor = context.getMainExecutor();
+        executor = ContextCompat.getMainExecutor(context);
     }
 
     /** Starts the explicit Sign in with Google flow. */

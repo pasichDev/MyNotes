@@ -24,7 +24,7 @@
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_bell_small"
-                android:tint="?attr/colorPrimary"
+                app:tint="?attr/colorPrimary"
                 android:contentDescription="@null" />
 
             <TextView
@@ -117,7 +117,7 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:src="@drawable/ic_bell_small"
-                    android:tint="?attr/colorOnSecondaryContainer"
+                    app:tint="?attr/colorOnSecondaryContainer"
                     android:contentDescription="@null" />
 
                 <TextView

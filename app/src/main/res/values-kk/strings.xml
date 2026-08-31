@@ -401,6 +401,7 @@
     <string name="reminder_interval_60min">60 мин</string>
 
     <plurals name="wordCount">
+        <item quantity="one">%d сөз</item>
         <item quantity="other">%d сөз</item>
     </plurals>
 
@@ -429,4 +430,31 @@
     <string name="sync_first_sync_message">Алғашқы синхрондау %1$d жазбаны біріктіреді және шамамен %2$s жүктеуі мүмкін. Жергілікті деректер қолжетімді болып қалады.</string>
     <string name="sync_first_sync_cancel">Қазір емес</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Қолдану</string>
+    <string name="help_tasks_title">Тапсырмалар</string>
+    <string name="help_tasks_create_title">Тапсырма құру</string>
+    <string name="help_tasks_create_description">Негізгі мәзірден «Тапсырмалар» бөлімін ашыңыз. Жаңа тапсырма қосу үшін \"+\" түймесін басыңыз. Атауын, сипаттамасын көрсетіп, санатқа тағайындай аласыз.</string>
+    <string name="help_tasks_categories_title">Санаттар</string>
+    <string name="help_tasks_categories_description">Тапсырмаларды өз санаттарыңызға бөліңіз. Санат жасау үшін «Санат қосу» түймесін басыңыз. Бір санаттағы тапсырмалар бірге топталады — оларды басқару оңай.</string>
+    <string name="help_tasks_complete_title">Тапсырманы аяқтау</string>
+    <string name="help_tasks_complete_description">Тапсырманы орындалды деп белгілеу үшін жанындағы құсбелгіні басыңыз. Орындалған тапсырмалар тізімнің төменгі жағына жиналады. Белгіні алу үшін қайта басыңыз.</string>
+    <string name="help_tasks_reminder_title">Тапсырма еске салғыштары</string>
+    <string name="help_tasks_reminder_description">Қоңырау белгішесін басып, кез келген тапсырмаға еске салғыш қойыңыз. Белгіленген уақытта хабарландыру келеді. Тапсырманы бірден ашу үшін хабарландыруды басыңыз.</string>
+    <string name="help_reminders_title">Еске салғыштар</string>
+    <string name="help_reminders_notes_title">Жазба еске салғыштары</string>
+    <string name="help_reminders_notes_description">Кез келген жазбаны ашып, еске салғыш қою үшін қоңырау белгішесін басыңыз. Уақытты жылдам нұсқалар арқылы немесе күн мен уақытты таңдау терезесінен көрсетіңіз. Белгіленген уақытта хабарландыру шығады.</string>
+    <string name="help_reminders_repeat_title">Қайталау параметрлері</string>
+    <string name="help_reminders_repeat_description">Жазбаға еске салғыш қойғанда қайталау циклін таңдау үшін «Қайталау» қосқышын қосыңыз: күн сайын, апта сайын немесе ай сайын. Әр хабарландырудан кейін еске салғыш автоматты түрде қайта жоспарланады.</string>
+    <string name="help_reminders_interval_title">Аралық хабарландырулар</string>
+    <string name="help_reminders_interval_description">Қайталанатын еске салғыштар үшін әр 5, 10, 15, 30 немесе 60 минут сайын қайта хабарлауды қосуға болады. Хабарландыру келесі жоспарланған уақытқа дейін таңдалған аралықпен қайталанады.</string>
+    <string name="help_reminders_sound_title">Хабарландыру дыбысы мен қаттылығы</string>
+    <string name="help_reminders_sound_description">Еске салғыш әуені мен дыбыс қаттылығын «Параметрлер → Медиа» бөлімінде реттеңіз. Өзгерістер барлық болашақ хабарландыруларға қолданылады.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Есептік жазба</string>
+    <string name="sync_signed_out_title">Сіз кірмегенсіз</string>
+    <string name="sync_signed_out_description">Синхрондау және Google Дискідегі көшірме кіргеннен кейін қолжетімді.</string>
 </resources>

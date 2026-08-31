@@ -434,4 +434,31 @@
     <string name="sync_first_sync_message">Pierwsza synchronizacja połączy %1$d wpisów i może wysłać około %2$s. Lokalne dane pozostaną dostępne.</string>
     <string name="sync_first_sync_cancel">Nie teraz</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Zastosuj</string>
+    <string name="help_tasks_title">Zadania</string>
+    <string name="help_tasks_create_title">Tworzenie zadań</string>
+    <string name="help_tasks_create_description">Otwórz „Zadania” z menu głównego. Naciśnij przycisk \"+\", aby dodać nowe zadanie. Możesz podać tytuł, opis i przypisać kategorię.</string>
+    <string name="help_tasks_categories_title">Kategorie</string>
+    <string name="help_tasks_categories_description">Porządkuj zadania we własnych kategoriach. Naciśnij „Dodaj kategorię”, aby ją utworzyć. Zadania z jednej kategorii są grupowane razem, co ułatwia zarządzanie.</string>
+    <string name="help_tasks_complete_title">Kończenie zadań</string>
+    <string name="help_tasks_complete_description">Naciśnij pole wyboru obok zadania, aby oznaczyć je jako wykonane. Wykonane zadania są zbierane na dole listy. Naciśnij ponownie, aby usunąć oznaczenie.</string>
+    <string name="help_tasks_reminder_title">Przypomnienia o zadaniach</string>
+    <string name="help_tasks_reminder_description">Ustaw przypomnienie dla dowolnego zadania, naciskając ikonę dzwonka. O wyznaczonej porze otrzymasz powiadomienie. Naciśnij je, aby od razu otworzyć zadanie.</string>
+    <string name="help_reminders_title">Przypomnienia</string>
+    <string name="help_reminders_notes_title">Przypomnienia o notatkach</string>
+    <string name="help_reminders_notes_description">Otwórz dowolną notatkę i naciśnij ikonę dzwonka, aby ustawić przypomnienie. Wybierz godzinę za pomocą opcji szybkiego wyboru albo selektora daty i godziny. O wyznaczonej porze pojawi się powiadomienie.</string>
+    <string name="help_reminders_repeat_title">Opcje powtarzania</string>
+    <string name="help_reminders_repeat_description">Podczas ustawiania przypomnienia do notatki włącz przełącznik „Powtarzaj”, aby wybrać cykl: codziennie, co tydzień lub co miesiąc. Po każdym powiadomieniu przypomnienie jest planowane ponownie automatycznie.</string>
+    <string name="help_reminders_interval_title">Powiadomienia interwałowe</string>
+    <string name="help_reminders_interval_description">Dla powtarzających się przypomnień możesz włączyć ponowne powiadamianie co 5, 10, 15, 30 lub 60 minut. Powiadomienie będzie powtarzane w wybranym odstępie aż do następnego terminu.</string>
+    <string name="help_reminders_sound_title">Dźwięk i głośność powiadomień</string>
+    <string name="help_reminders_sound_description">Dostosuj melodię i głośność przypomnień w „Ustawienia → Media”. Zmiany dotyczą wszystkich przyszłych powiadomień.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Konto</string>
+    <string name="sync_signed_out_title">Nie zalogowano</string>
+    <string name="sync_signed_out_description">Synchronizacja i kopia na Dysku Google są dostępne po zalogowaniu.</string>
 </resources>

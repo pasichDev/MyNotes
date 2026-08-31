@@ -459,4 +459,13 @@
     <string name="sync_conflict_drive_label">Версія з Google Drive</string>
     <string name="sync_conflict_deleted">Видалено</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Застосувати</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Акаунт</string>
+    <string name="sync_signed_out_title">Ви не увійшли</string>
+    <string name="sync_signed_out_description">Синхронізація та копія на Google Диску доступні після входу.</string>
 </resources>

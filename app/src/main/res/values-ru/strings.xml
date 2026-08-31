@@ -438,4 +438,31 @@
     <string name="sync_first_sync_message">При первой синхронизации будут объединены записи: %1$d. Возможно, будет загружено около %2$s. Локальные данные останутся доступны.</string>
     <string name="sync_first_sync_cancel">Не сейчас</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Применить</string>
+    <string name="help_tasks_title">Задачи</string>
+    <string name="help_tasks_create_title">Создание задач</string>
+    <string name="help_tasks_create_description">Откройте «Задачи» из главного меню. Нажмите кнопку \"+\", чтобы добавить новую задачу. Можно указать название, описание и назначить категорию.</string>
+    <string name="help_tasks_categories_title">Категории</string>
+    <string name="help_tasks_categories_description">Распределяйте задачи по своим категориям. Нажмите «Добавить категорию», чтобы создать её. Задачи одной категории группируются вместе — так ими проще управлять.</string>
+    <string name="help_tasks_complete_title">Завершение задач</string>
+    <string name="help_tasks_complete_description">Нажмите флажок рядом с задачей, чтобы отметить её выполненной. Выполненные задачи собираются внизу списка. Нажмите ещё раз, чтобы снять отметку.</string>
+    <string name="help_tasks_reminder_title">Напоминания о задачах</string>
+    <string name="help_tasks_reminder_description">Задайте напоминание для любой задачи, нажав значок колокольчика. В указанное время придёт уведомление. Нажмите на него, чтобы сразу открыть задачу.</string>
+    <string name="help_reminders_title">Напоминания</string>
+    <string name="help_reminders_notes_title">Напоминания о заметках</string>
+    <string name="help_reminders_notes_description">Откройте любую заметку и нажмите значок колокольчика, чтобы задать напоминание. Выберите время быстрым вариантом или через выбор даты и времени. В назначенное время появится уведомление.</string>
+    <string name="help_reminders_repeat_title">Повторение</string>
+    <string name="help_reminders_repeat_description">При настройке напоминания для заметки включите переключатель «Повтор», чтобы выбрать цикл: ежедневно, еженедельно или ежемесячно. После каждого уведомления напоминание переносится автоматически.</string>
+    <string name="help_reminders_interval_title">Интервальные уведомления</string>
+    <string name="help_reminders_interval_description">Для повторяющихся напоминаний можно включить повторное уведомление каждые 5, 10, 15, 30 или 60 минут. Уведомление будет повторяться с выбранным интервалом до следующего срабатывания.</string>
+    <string name="help_reminders_sound_title">Звук и громкость уведомлений</string>
+    <string name="help_reminders_sound_description">Настройте мелодию и громкость напоминаний в «Настройки → Медиа». Изменения применяются ко всем будущим уведомлениям.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Аккаунт</string>
+    <string name="sync_signed_out_title">Вы не вошли</string>
+    <string name="sync_signed_out_description">Синхронизация и копия на Google Диске доступны после входа.</string>
 </resources>

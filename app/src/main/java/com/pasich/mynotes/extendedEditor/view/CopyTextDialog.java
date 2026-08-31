@@ -29,9 +29,13 @@ public final class CopyTextDialog {
                                 20,
                                 context.getResources().getDisplayMetrics());
 
+        // The four-inset setView overload is restricted to the AndroidX group; padding the
+        // scrolling view itself produces the same spacing through public API.
+        scrollView.setPadding(0, verticalInset, 0, verticalInset);
+
         new MaterialAlertDialogBuilder(context)
                 .setTitle(title != null ? title : context.getString(R.string.copy_content))
-                .setView(scrollView, 0, verticalInset, 0, verticalInset)
+                .setView(scrollView)
                 .setPositiveButton(
                         R.string.copy_all,
                         (d, w) -> {

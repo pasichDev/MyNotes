@@ -477,4 +477,34 @@
     <string name="sync_first_sync_message">This first sync will merge %1$d records and may upload about %2$s. Your local data stays available while the merge completes.</string>
     <string name="sync_first_sync_cancel">Not now</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="help_section_icon">Section icon</string>
+    <string name="help_feature_icon">Feature icon</string>
+    <string name="help_other_title">Other</string>
+    <string name="apply">Apply</string>
+    <string name="help_tasks_title">Tasks</string>
+    <string name="help_tasks_create_title">Creating Tasks</string>
+    <string name="help_tasks_create_description">Open Tasks from the main menu. Tap the \"+\" button to add a new task. You can set a title, description, and assign it to a category.</string>
+    <string name="help_tasks_categories_title">Categories</string>
+    <string name="help_tasks_categories_description">Organise tasks into custom categories. Tap \"Add category\" to create one. Tasks within a category are grouped together for easy management.</string>
+    <string name="help_tasks_complete_title">Completing Tasks</string>
+    <string name="help_tasks_complete_description">Tap the checkbox next to a task to mark it as done. Completed tasks are grouped at the bottom of the list. Tap again to unmark.</string>
+    <string name="help_tasks_reminder_title">Task Reminders</string>
+    <string name="help_tasks_reminder_description">Set a reminder for any task by tapping the bell icon. You will receive a notification at the scheduled time. Tap the notification to open the task directly.</string>
+    <string name="help_reminders_title">Reminders</string>
+    <string name="help_reminders_notes_title">Note Reminders</string>
+    <string name="help_reminders_notes_description">Open any note and tap the bell icon to set a reminder. Pick a time using quick options or the date and time picker. A notification will appear at the scheduled time.</string>
+    <string name="help_reminders_repeat_title">Repeat Options</string>
+    <string name="help_reminders_repeat_description">When setting a note reminder, enable the Repeat toggle to choose a repeat cycle: Daily, Weekly, or Monthly. The reminder reschedules automatically after each notification.</string>
+    <string name="help_reminders_interval_title">Interval Notifications</string>
+    <string name="help_reminders_interval_description">For repeating reminders, you can enable interval re-notifications every 5, 10, 15, 30, or 60 minutes. The notification will repeat at the chosen interval until the next scheduled occurrence.</string>
+    <string name="help_reminders_sound_title">Notification Sound and Volume</string>
+    <string name="help_reminders_sound_description">Customise the reminder melody and volume in Settings → Media. Changes apply to all future reminder notifications.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Account</string>
+    <string name="sync_signed_out_title">Not signed in</string>
+    <string name="sync_signed_out_description">Sync and Google Drive backup become available after you sign in.</string>
 </resources>

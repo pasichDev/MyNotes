@@ -433,4 +433,31 @@
     <string name="sync_first_sync_message">Beim ersten Sync werden %1$d Einträge zusammengeführt und möglicherweise etwa %2$s hochgeladen. Deine lokalen Daten bleiben verfügbar.</string>
     <string name="sync_first_sync_cancel">Nicht jetzt</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Übernehmen</string>
+    <string name="help_tasks_title">Aufgaben</string>
+    <string name="help_tasks_create_title">Aufgaben erstellen</string>
+    <string name="help_tasks_create_description">Öffnen Sie „Aufgaben“ über das Hauptmenü. Tippen Sie auf die Schaltfläche \"+\", um eine neue Aufgabe hinzuzufügen. Sie können Titel und Beschreibung festlegen und eine Kategorie zuweisen.</string>
+    <string name="help_tasks_categories_title">Kategorien</string>
+    <string name="help_tasks_categories_description">Ordnen Sie Aufgaben eigenen Kategorien zu. Tippen Sie auf „Kategorie hinzufügen“, um eine anzulegen. Aufgaben einer Kategorie werden zusammen gruppiert und lassen sich so leichter verwalten.</string>
+    <string name="help_tasks_complete_title">Aufgaben abschließen</string>
+    <string name="help_tasks_complete_description">Tippen Sie auf das Kontrollkästchen neben einer Aufgabe, um sie als erledigt zu markieren. Erledigte Aufgaben werden am Ende der Liste gesammelt. Tippen Sie erneut, um die Markierung aufzuheben.</string>
+    <string name="help_tasks_reminder_title">Aufgabenerinnerungen</string>
+    <string name="help_tasks_reminder_description">Legen Sie für jede Aufgabe eine Erinnerung fest, indem Sie auf das Glockensymbol tippen. Zur geplanten Zeit erhalten Sie eine Benachrichtigung. Tippen Sie darauf, um die Aufgabe direkt zu öffnen.</string>
+    <string name="help_reminders_title">Erinnerungen</string>
+    <string name="help_reminders_notes_title">Notiz-Erinnerungen</string>
+    <string name="help_reminders_notes_description">Öffnen Sie eine Notiz und tippen Sie auf das Glockensymbol, um eine Erinnerung festzulegen. Wählen Sie eine Zeit über die Schnellauswahl oder die Datums- und Zeitauswahl. Zur geplanten Zeit erscheint eine Benachrichtigung.</string>
+    <string name="help_reminders_repeat_title">Wiederholungsoptionen</string>
+    <string name="help_reminders_repeat_description">Aktivieren Sie beim Festlegen einer Notiz-Erinnerung den Schalter „Wiederholen“, um einen Zyklus zu wählen: täglich, wöchentlich oder monatlich. Nach jeder Benachrichtigung wird die Erinnerung automatisch neu geplant.</string>
+    <string name="help_reminders_interval_title">Intervall-Benachrichtigungen</string>
+    <string name="help_reminders_interval_description">Für wiederkehrende Erinnerungen können Sie erneute Benachrichtigungen alle 5, 10, 15, 30 oder 60 Minuten aktivieren. Die Benachrichtigung wiederholt sich im gewählten Intervall bis zum nächsten geplanten Termin.</string>
+    <string name="help_reminders_sound_title">Benachrichtigungston und Lautstärke</string>
+    <string name="help_reminders_sound_description">Passen Sie Melodie und Lautstärke der Erinnerungen unter „Einstellungen → Medien“ an. Die Änderungen gelten für alle zukünftigen Benachrichtigungen.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Konto</string>
+    <string name="sync_signed_out_title">Nicht angemeldet</string>
+    <string name="sync_signed_out_description">Synchronisierung und Google-Drive-Backup sind nach der Anmeldung verfügbar.</string>
 </resources>

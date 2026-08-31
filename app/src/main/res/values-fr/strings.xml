@@ -429,4 +429,31 @@
     <string name="sync_first_sync_message">Cette première synchronisation fusionnera %1$d éléments et pourra envoyer environ %2$s. Vos données locales restent disponibles.</string>
     <string name="sync_first_sync_cancel">Pas maintenant</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Appliquer</string>
+    <string name="help_tasks_title">Tâches</string>
+    <string name="help_tasks_create_title">Créer des tâches</string>
+    <string name="help_tasks_create_description">Ouvrez « Tâches » depuis le menu principal. Appuyez sur le bouton \"+\" pour ajouter une tâche. Vous pouvez définir un titre, une description et l’affecter à une catégorie.</string>
+    <string name="help_tasks_categories_title">Catégories</string>
+    <string name="help_tasks_categories_description">Classez les tâches dans vos propres catégories. Appuyez sur « Ajouter une catégorie » pour en créer une. Les tâches d’une même catégorie sont regroupées, ce qui simplifie leur gestion.</string>
+    <string name="help_tasks_complete_title">Terminer des tâches</string>
+    <string name="help_tasks_complete_description">Appuyez sur la case à cocher en regard d’une tâche pour la marquer comme terminée. Les tâches terminées sont regroupées en bas de la liste. Appuyez à nouveau pour annuler.</string>
+    <string name="help_tasks_reminder_title">Rappels de tâches</string>
+    <string name="help_tasks_reminder_description">Définissez un rappel pour n’importe quelle tâche en appuyant sur l’icône de cloche. Vous recevrez une notification à l’heure prévue. Appuyez dessus pour ouvrir directement la tâche.</string>
+    <string name="help_reminders_title">Rappels</string>
+    <string name="help_reminders_notes_title">Rappels de notes</string>
+    <string name="help_reminders_notes_description">Ouvrez une note et appuyez sur l’icône de cloche pour définir un rappel. Choisissez une heure via les options rapides ou le sélecteur de date et d’heure. Une notification apparaîtra à l’heure prévue.</string>
+    <string name="help_reminders_repeat_title">Options de répétition</string>
+    <string name="help_reminders_repeat_description">Lors de la création d’un rappel de note, activez l’option « Répéter » pour choisir un cycle : quotidien, hebdomadaire ou mensuel. Le rappel est replanifié automatiquement après chaque notification.</string>
+    <string name="help_reminders_interval_title">Notifications par intervalle</string>
+    <string name="help_reminders_interval_description">Pour les rappels récurrents, vous pouvez activer une nouvelle notification toutes les 5, 10, 15, 30 ou 60 minutes. La notification se répétera à l’intervalle choisi jusqu’à la prochaine échéance.</string>
+    <string name="help_reminders_sound_title">Son et volume des notifications</string>
+    <string name="help_reminders_sound_description">Personnalisez la mélodie et le volume des rappels dans « Paramètres → Médias ». Les modifications s’appliquent à toutes les notifications futures.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Compte</string>
+    <string name="sync_signed_out_title">Non connecté</string>
+    <string name="sync_signed_out_description">La synchronisation et la sauvegarde Google Drive sont disponibles après connexion.</string>
 </resources>
