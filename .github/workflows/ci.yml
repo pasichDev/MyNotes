@@ -68,6 +68,20 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Decode google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          # Kept out of the repository and injected here. A fork or a pull request from a fork
+          # gets no secrets, and the build is deliberately able to run without the file: sign-in
+          # and Drive sync are simply disabled in that case.
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" | base64 -d > app/google-services.json
+            echo "google-services.json restored from the repository secret."
+          else
+            echo "GOOGLE_SERVICES_JSON is not available; building without Firebase."
+          fi
+
       - name: Build debug
         run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
