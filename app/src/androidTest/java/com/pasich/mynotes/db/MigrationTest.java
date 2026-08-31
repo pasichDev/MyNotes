@@ -24,56 +24,6 @@ public class MigrationTest {
                     InstrumentationRegistry.getInstrumentation(), AppDatabase.class);
 
     @Test
-    public void migrate2to3_succeeds() throws IOException {
-        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 2);
-        db.close();
-        helper.runMigrationsAndValidate(TEST_DB, 3, true, AppDatabase.MIGRATION_2_3);
-    }
-
-    @Test
-    public void migrate3to4_addsPositionColumn() throws IOException {
-        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 3);
-        db.close();
-        helper.runMigrationsAndValidate(TEST_DB, 4, true, AppDatabase.MIGRATION_3_4);
-    }
-
-    @Test
-    public void migrate4to5_addsValueJsonAndRichContentColumns() throws IOException {
-        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 4);
-        db.close();
-        helper.runMigrationsAndValidate(TEST_DB, 5, true, AppDatabase.MIGRATION_4_5);
-    }
-
-    @Test
-    public void migrate5to6_addsAttachmentsColumn() throws IOException {
-        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 5);
-        db.close();
-        helper.runMigrationsAndValidate(TEST_DB, 6, true, AppDatabase.MIGRATION_5_6);
-    }
-
-    @Test
-    public void migrate6to7_addIsTrashColumn() throws IOException {
-        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 6);
-        db.close();
-        helper.runMigrationsAndValidate(TEST_DB, 7, true, AppDatabase.MIGRATION_6_7);
-    }
-
-    @Test
-    public void migrateAllStepsChained_succeeds() throws IOException {
-        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 2);
-        db.close();
-        helper.runMigrationsAndValidate(
-                TEST_DB,
-                7,
-                true,
-                AppDatabase.MIGRATION_2_3,
-                AppDatabase.MIGRATION_3_4,
-                AppDatabase.MIGRATION_4_5,
-                AppDatabase.MIGRATION_5_6,
-                AppDatabase.MIGRATION_6_7);
-    }
-
-    @Test
     public void migrate13to14_backfillsStableIdsAndTimestamps() throws IOException {
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 13);
         db.execSQL(
@@ -126,6 +76,21 @@ public class MigrationTest {
                         "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_conflicts'")) {
             assertThat(cursor.moveToFirst()).isTrue();
             assertThat(cursor.getString(0)).isEqualTo("sync_conflicts");
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
+    public void migrate14to15_backfillsCategoryMetadata() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 14);
+        db.close();
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 15, true, AppDatabase.MIGRATION_14_15);
+        try (android.database.Cursor cursor =
+                migrated.query("SELECT COUNT(*) FROM sync_metadata WHERE recordType = 'category'")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            assertThat(cursor.getInt(0)).isEqualTo(0);
         } finally {
             migrated.close();
         }

@@ -27,6 +27,12 @@ preBuild.dependsOn(copyChangelog)
 
 android {
     compileSdkVersion 37
+    sourceSets {
+        androidTest {
+            // MigrationTestHelper loads exported Room schemas from test APK assets.
+            assets.srcDirs += "$projectDir/schemas"
+        }
+    }
     buildFeatures {
         viewBinding = true
         dataBinding = true
@@ -199,6 +205,17 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-android:5.23.0'
     androidTestImplementation 'com.google.truth:truth:1.4.5'
 
+}
+
+// Room 2.8.x migration tooling mixes serialization 1.7.x BOM constraints with its
+// 1.8.x generated serializers. Keep the runtime family aligned or Android migration
+// tests fail with AbstractMethodError at runtime.
+configurations.configureEach {
+    resolutionStrategy.force(
+            'org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1',
+            'org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1',
+            'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1',
+            'org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1')
 }
 
 spotless {
