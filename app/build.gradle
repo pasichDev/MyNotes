@@ -210,3 +210,13 @@ spotless {
         endWithNewline()
     }
 }
+
+tasks.named("spotlessJava").configure {
+    dependsOn generateLibsJson
+    dependsOn copyChangelog
+}
+
+tasks.named("spotlessJavaCheck").configure {
+    dependsOn generateLibsJson
+    dependsOn copyChangelog
+}

@@ -8,11 +8,13 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
+import com.pasich.mynotes.data.database.dao.SyncConflictDao;
 import com.pasich.mynotes.data.database.dao.SyncMetadataDao;
 import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
 import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
+import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -31,7 +33,8 @@ import javax.inject.Singleton;
             Note.class,
             Task.class,
             TaskCategory.class,
-            SyncMetadataEntity.class
+            SyncMetadataEntity.class,
+            SyncConflictEntity.class
         },
         autoMigrations = {@AutoMigration(from = 1, to = 2)})
 @Singleton
@@ -79,6 +82,38 @@ public abstract class AppDatabase extends RoomDatabase {
                 public void migrate(@NonNull SupportSQLiteDatabase database) {
                     insertMetadataForExistingRecords(
                             database, "category", "task_categories", System.currentTimeMillis());
+                }
+            };
+
+    public static final Migration MIGRATION_15_16 =
+            new Migration(15, 16) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "CREATE TABLE IF NOT EXISTS `sync_conflicts` ("
+                                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                                    + "`recordType` TEXT NOT NULL, "
+                                    + "`stableId` TEXT NOT NULL, "
+                                    + "`winnerSource` TEXT NOT NULL, "
+                                    + "`winnerJson` TEXT NOT NULL, "
+                                    + "`loserJson` TEXT NOT NULL, "
+                                    + "`winnerUpdatedAt` INTEGER NOT NULL, "
+                                    + "`loserUpdatedAt` INTEGER NOT NULL, "
+                                    + "`winnerTombstone` INTEGER NOT NULL, "
+                                    + "`loserTombstone` INTEGER NOT NULL, "
+                                    + "`resolution` TEXT NOT NULL, "
+                                    + "`resolved` INTEGER NOT NULL, "
+                                    + "`createdAt` INTEGER NOT NULL, "
+                                    + "`resolvedAt` INTEGER NOT NULL)");
+                    database.execSQL(
+                            "CREATE UNIQUE INDEX IF NOT EXISTS `index_sync_conflicts_recordType_stableId` "
+                                    + "ON `sync_conflicts` (`recordType`, `stableId`)");
+                    database.execSQL(
+                            "CREATE INDEX IF NOT EXISTS `index_sync_conflicts_resolved` "
+                                    + "ON `sync_conflicts` (`resolved`)");
+                    database.execSQL(
+                            "CREATE INDEX IF NOT EXISTS `index_sync_conflicts_createdAt` "
+                                    + "ON `sync_conflicts` (`createdAt`)");
                 }
             };
 
@@ -291,4 +326,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract TaskCategoryDao taskCategoryDao();
 
     public abstract SyncMetadataDao syncMetadataDao();
+
+    public abstract SyncConflictDao syncConflictDao();
 }

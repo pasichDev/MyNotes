@@ -1,12 +1,40 @@
-name: CI — build check
+name: CI — build and quality checks
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
+  editor:
+    name: Build notes editor and audit dependencies
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: notes_editor
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: notes_editor/package-lock.json
+
+      - name: Install editor dependencies
+        run: npm ci
+
+      - name: Build editor bundle
+        run: npm run build
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
   build:
-    name: Build debug & run tests
+    name: Android build, tests, lint, and formatting
     runs-on: ubuntu-latest
 
     steps:
@@ -35,13 +63,19 @@ jobs:
             --channel=3 \
             "platforms;android-37" \
             "build-tools;35.0.0" \
-            > /dev/null 2>&1 || true
+            > /dev/null 2>&1
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build debug
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
       - name: Run unit tests
-        run: ./gradlew test --no-daemon
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Run lint
+        run: ./gradlew :app:lintDebug --no-daemon --stacktrace
+
+      - name: Check Java formatting
+        run: ./gradlew :app:spotlessCheck --no-daemon --stacktrace

@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,26 +12,50 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Clock;
 
 /** Google Drive REST backend for the provider-independent sync protocol. */
 public final class GoogleDriveSyncBackend implements SyncBackend {
-    private static final String API = "https://www.googleapis.com/drive/v3";
-    private static final String UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
-    private static final String MANIFEST = "MyNotes.sync.json";
-    private static final String ATTACHMENT_PREFIX = "MyNotes.attachment.";
-    private static final String JSON = "application/json";
+    private static final String DEFAULT_API = "https://www.googleapis.com/drive/v3";
+    private static final String DEFAULT_UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
+    private static final String FOLDER_NAME = "MyNotes Sync";
+    private static final String BUNDLE_NAME = "MyNotes.sync.v1.zip";
+    private static final String MIME_FOLDER = "application/vnd.google-apps.folder";
+    private static final String MIME_JSON = "application/json; charset=UTF-8";
+    private static final String MIME_ZIP = "application/zip";
+    private static final String MIME_BINARY = "application/octet-stream";
+    private static final int MAX_BUNDLE_RESPONSE_BYTES = 32 * 1024 * 1024;
+    private static final int MAX_ATTACHMENT_RESPONSE_BYTES = 100 * 1024 * 1024;
     private static final Gson GSON = new Gson();
 
     private final String accessToken;
+    private final String apiBase;
+    private final String uploadBase;
+    private final Clock clock;
+    private final SyncBundleCodec bundleCodec;
+    @Nullable private RemoteFileRef lastReadBundle;
+    private boolean hasReadSnapshot;
 
     public GoogleDriveSyncBackend(@NonNull String accessToken) {
-        if (accessToken.trim().isEmpty())
+        this(accessToken, DEFAULT_API, DEFAULT_UPLOAD, Clock.systemUTC(), new SyncBundleCodec());
+    }
+
+    GoogleDriveSyncBackend(
+            @NonNull String accessToken,
+            @NonNull String apiBase,
+            @NonNull String uploadBase,
+            @NonNull Clock clock,
+            @NonNull SyncBundleCodec bundleCodec) {
+        if (accessToken.trim().isEmpty()) {
             throw new IllegalArgumentException("accessToken is empty");
+        }
         this.accessToken = accessToken;
+        this.apiBase = apiBase;
+        this.uploadBase = uploadBase;
+        this.clock = clock;
+        this.bundleCodec = bundleCodec;
     }
 
     @NonNull
@@ -43,176 +66,406 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
 
     @NonNull
     @Override
-    public SyncSnapshot readSnapshot() throws IOException {
-        String id = findFile(MANIFEST);
-        if (id == null) return SyncSnapshot.empty();
-        String json = request("GET", API + "/files/" + id + "?alt=media", null, null);
-        return decodeSnapshot(json);
-    }
-
-    @Override
-    public void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException {
-        byte[] body = encodeSnapshot(snapshot).getBytes(StandardCharsets.UTF_8);
-        String id = findFile(MANIFEST);
-        if (id == null) {
-            upload(MANIFEST, JSON, body, null);
-        } else {
-            upload(MANIFEST, JSON, body, id);
+    public synchronized SyncSnapshot readSnapshot() throws IOException {
+        String folderId = findFolderId();
+        if (folderId == null) {
+            hasReadSnapshot = true;
+            lastReadBundle = null;
+            return SyncSnapshot.empty();
         }
+
+        RemoteFileRef bundle = findUniqueBundle(folderId);
+        hasReadSnapshot = true;
+        lastReadBundle = bundle;
+        if (bundle == null) {
+            return SyncSnapshot.empty();
+        }
+
+        byte[] bytes =
+                requestBytes(
+                        "GET",
+                        apiBase + "/files/" + bundle.id + "?alt=media",
+                        MAX_BUNDLE_RESPONSE_BYTES);
+        return bundleCodec.decode(new ByteArrayInputStream(bytes)).getSnapshot();
+    }
+
+    @Override
+    public synchronized void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException {
+        String folderId = ensureFolderId();
+        RemoteFileRef current = findUniqueBundle(folderId);
+        verifyConcurrentState(current);
+
+        byte[] bundle = bundleCodec.encode(snapshot, clock.instant());
+        if (current == null) {
+            lastReadBundle = uploadFile(folderId, BUNDLE_NAME, MIME_ZIP, bundle, null, null, true);
+        } else {
+            lastReadBundle =
+                    uploadFile(
+                            folderId,
+                            BUNDLE_NAME,
+                            MIME_ZIP,
+                            bundle,
+                            current.id,
+                            current.eTag,
+                            true);
+        }
+        hasReadSnapshot = true;
+    }
+
+    @Override
+    public synchronized boolean hasAttachment(@NonNull String sha256) throws IOException {
+        String folderId = findFolderId();
+        return folderId != null && findAttachment(folderId, sha256) != null;
     }
 
     @Nullable
     @Override
-    public InputStream readAttachment(@NonNull String sha256) throws IOException {
-        String id = findFile(ATTACHMENT_PREFIX + sha256);
-        if (id == null) return null;
-        byte[] bytes = requestBytes("GET", API + "/files/" + id + "?alt=media");
-        return new ByteArrayInputStream(bytes);
+    public synchronized InputStream readAttachment(@NonNull String sha256) throws IOException {
+        String folderId = findFolderId();
+        if (folderId == null) {
+            return null;
+        }
+
+        RemoteFileRef attachment = findAttachment(folderId, sha256);
+        if (attachment == null) {
+            return null;
+        }
+        return new ByteArrayInputStream(
+                requestBytes(
+                        "GET",
+                        apiBase + "/files/" + attachment.id + "?alt=media",
+                        MAX_ATTACHMENT_RESPONSE_BYTES));
     }
 
     @Override
-    public void writeAttachment(@NonNull String sha256, @NonNull InputStream content)
+    public synchronized void writeAttachment(@NonNull String sha256, @NonNull InputStream content)
             throws IOException {
-        byte[] bytes = readFully(content);
-        String name = ATTACHMENT_PREFIX + sha256;
-        String id = findFile(name);
-        upload(name, "application/octet-stream", bytes, id);
+        String folderId = ensureFolderId();
+        if (findAttachment(folderId, sha256) != null) {
+            return;
+        }
+        uploadFile(folderId, sha256, MIME_BINARY, readFully(content), null, null, false);
     }
 
     @Nullable
-    private String findFile(String name) throws IOException {
-        String escaped = name.replace("'", "\\'");
-        String url =
-                API
-                        + "/files?q=name%3D%27"
-                        + escaped
-                        + "%27+and+trashed%3Dfalse"
-                        + "&spaces=drive&fields=files(id,name)&pageSize=1";
-        JsonObject result = GSON.fromJson(request("GET", url, null, null), JsonObject.class);
-        JsonArray files = result == null ? null : result.getAsJsonArray("files");
-        return files == null || files.isEmpty()
+    private String findFolderId() throws IOException {
+        JsonArray folders =
+                listFiles(
+                        "mimeType = '"
+                                + MIME_FOLDER
+                                + "' and trashed = false and "
+                                + appPropertyClause("mynotesOwner", "1"),
+                        "files(id,name)");
+        if (folders.size() > 1) {
+            throw new IOException("Drive sync folder is duplicated");
+        }
+        return folders.size() == 0
                 ? null
-                : files.get(0).getAsJsonObject().get("id").getAsString();
+                : folders.get(0).getAsJsonObject().get("id").getAsString();
     }
 
-    private void upload(String name, String mime, byte[] data, @Nullable String fileId)
+    @NonNull
+    private String ensureFolderId() throws IOException {
+        String folderId = findFolderId();
+        if (folderId != null) {
+            return folderId;
+        }
+
+        JsonObject metadata = new JsonObject();
+        metadata.addProperty("name", FOLDER_NAME);
+        metadata.addProperty("mimeType", MIME_FOLDER);
+        metadata.add("appProperties", appProperties("mynotesOwner", "1"));
+        return uploadMetadata(metadata).id;
+    }
+
+    @Nullable
+    private RemoteFileRef findUniqueBundle(@NonNull String folderId) throws IOException {
+        JsonArray bundles =
+                listFiles(
+                        "'"
+                                + folderId
+                                + "' in parents and trashed = false and "
+                                + appPropertyClause("mynotesBundle", "1"),
+                        "files(id,name)");
+        if (bundles.size() > 1) {
+            throw new IOException("Drive sync bundle is duplicated");
+        }
+        if (bundles.size() == 0) {
+            return null;
+        }
+        JsonObject item = bundles.get(0).getAsJsonObject();
+        return fetchFileRef(item.get("id").getAsString(), item.get("name").getAsString());
+    }
+
+    @Nullable
+    private RemoteFileRef findAttachment(@NonNull String folderId, @NonNull String sha256)
+            throws IOException {
+        JsonArray files =
+                listFiles(
+                        "'"
+                                + folderId
+                                + "' in parents and trashed = false and "
+                                + appPropertyClause("mynotesAttachmentSha256", sha256),
+                        "files(id,name)");
+        if (files.size() == 0) {
+            return null;
+        }
+        if (files.size() > 1) {
+            throw new IOException("Drive attachment is duplicated: " + sha256);
+        }
+        JsonObject item = files.get(0).getAsJsonObject();
+        return fetchFileRef(item.get("id").getAsString(), item.get("name").getAsString());
+    }
+
+    @NonNull
+    private JsonArray listFiles(@NonNull String query, @NonNull String fields) throws IOException {
+        String url =
+                apiBase
+                        + "/files?q="
+                        + URLEncoder.encode(query, StandardCharsets.UTF_8.name())
+                        + "&spaces=drive&fields="
+                        + URLEncoder.encode(fields, StandardCharsets.UTF_8.name())
+                        + "&pageSize=10";
+        JsonObject response = requestJson("GET", url, null, null, null);
+        JsonArray files = response.getAsJsonArray("files");
+        return files == null ? new JsonArray() : files;
+    }
+
+    @NonNull
+    private RemoteFileRef uploadMetadata(@NonNull JsonObject metadata) throws IOException {
+        JsonObject created =
+                requestJson(
+                        "POST",
+                        apiBase + "/files?fields=id,name",
+                        MIME_JSON,
+                        jsonBytes(metadata),
+                        null);
+        String id = created.get("id").getAsString();
+        String name = created.get("name").getAsString();
+        return fetchFileRef(id, name);
+    }
+
+    @NonNull
+    private RemoteFileRef uploadFile(
+            @NonNull String folderId,
+            @NonNull String name,
+            @NonNull String mimeType,
+            @NonNull byte[] data,
+            @Nullable String fileId,
+            @Nullable String ifMatch,
+            boolean bundleFile)
             throws IOException {
         String boundary = "mynotes-" + System.nanoTime();
-        String metadata = "{\"name\":\"" + name.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}";
+        JsonObject metadata = new JsonObject();
+        metadata.addProperty("name", name);
+        if (fileId == null) {
+            JsonArray parents = new JsonArray();
+            parents.add(folderId);
+            metadata.add("parents", parents);
+        }
+
+        JsonObject appProperties = new JsonObject();
+        if (bundleFile) {
+            appProperties.addProperty("mynotesBundle", "1");
+            appProperties.addProperty("mynotesBundlePublishedAt", Long.toString(clock.millis()));
+        } else {
+            appProperties.addProperty("mynotesAttachmentSha256", name);
+        }
+        metadata.add("appProperties", appProperties);
+
         String path =
-                fileId == null ? "?uploadType=multipart" : "/" + fileId + "?uploadType=multipart";
-        HttpURLConnection connection = open(fileId == null ? "POST" : "PATCH", UPLOAD + path);
+                fileId == null
+                        ? "?uploadType=multipart&fields=id,name"
+                        : "/" + fileId + "?uploadType=multipart&fields=id,name";
+        HttpURLConnection connection = open(fileId == null ? "POST" : "PATCH", uploadBase + path);
         connection.setRequestProperty("Content-Type", "multipart/related; boundary=" + boundary);
+        if (ifMatch != null) {
+            connection.setRequestProperty("If-Match", ifMatch);
+        }
         connection.setDoOutput(true);
         try (OutputStream out = connection.getOutputStream()) {
-            writePart(out, boundary, JSON, metadata.getBytes(StandardCharsets.UTF_8));
-            writePart(out, boundary, mime, data);
+            writePart(out, boundary, MIME_JSON, jsonBytes(metadata));
+            writePart(out, boundary, mimeType, data);
             out.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
         }
-        ensureSuccess(connection);
+        JsonObject response = readJsonResponse(connection);
+        return fetchFileRef(response.get("id").getAsString(), response.get("name").getAsString());
     }
 
-    private static void writePart(OutputStream out, String boundary, String mime, byte[] data)
+    private void verifyConcurrentState(@Nullable RemoteFileRef current) throws IOException {
+        if (!hasReadSnapshot) {
+            return;
+        }
+        if (lastReadBundle == null && current == null) {
+            return;
+        }
+        if (lastReadBundle == null || current == null) {
+            throw new IOException("Drive snapshot changed since it was read");
+        }
+        if (!lastReadBundle.id.equals(current.id) || !lastReadBundle.eTag.equals(current.eTag)) {
+            throw new IOException("Drive snapshot changed since it was read");
+        }
+    }
+
+    @NonNull
+    private RemoteFileRef fetchFileRef(@NonNull String id, @NonNull String fallbackName)
+            throws IOException {
+        HttpURLConnection connection =
+                open("GET", apiBase + "/files/" + id + "?fields=id,name,appProperties");
+        JsonObject response = readJsonResponse(connection);
+        String name =
+                response.has("name") && !response.get("name").isJsonNull()
+                        ? response.get("name").getAsString()
+                        : fallbackName;
+        String eTag = connection.getHeaderField("ETag");
+        if (eTag == null || eTag.trim().isEmpty()) {
+            eTag = connection.getHeaderField("etag");
+        }
+        if (eTag == null || eTag.trim().isEmpty()) {
+            throw new IOException("Drive file metadata response is missing an ETag");
+        }
+        return new RemoteFileRef(id, name, eTag);
+    }
+
+    @NonNull
+    private JsonObject requestJson(
+            @NonNull String method,
+            @NonNull String url,
+            @Nullable String contentType,
+            @Nullable byte[] body,
+            @Nullable String ifMatch)
+            throws IOException {
+        HttpURLConnection connection = open(method, url);
+        if (contentType != null) {
+            connection.setRequestProperty("Content-Type", contentType);
+        }
+        if (ifMatch != null) {
+            connection.setRequestProperty("If-Match", ifMatch);
+        }
+        if (body != null) {
+            connection.setDoOutput(true);
+            try (OutputStream output = connection.getOutputStream()) {
+                output.write(body);
+            }
+        }
+        return readJsonResponse(connection);
+    }
+
+    @NonNull
+    private JsonObject readJsonResponse(@NonNull HttpURLConnection connection) throws IOException {
+        ensureSuccess(connection);
+        try (InputStream input = connection.getInputStream()) {
+            return GSON.fromJson(
+                    new String(readFully(input), StandardCharsets.UTF_8), JsonObject.class);
+        }
+    }
+
+    @NonNull
+    private byte[] requestBytes(@NonNull String method, @NonNull String url, int maxBytes)
+            throws IOException {
+        HttpURLConnection connection = open(method, url);
+        ensureSuccess(connection);
+        try (InputStream input = connection.getInputStream()) {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                if (output.size() > maxBytes - read) {
+                    throw new IOException("Drive response exceeds the sync size limit");
+                }
+                output.write(buffer, 0, read);
+            }
+            return output.toByteArray();
+        }
+    }
+
+    private HttpURLConnection open(@NonNull String method, @NonNull String url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod(method);
+        connection.setConnectTimeout(20_000);
+        connection.setReadTimeout(20_000);
+        connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+        return connection;
+    }
+
+    private static void ensureSuccess(@NonNull HttpURLConnection connection) throws IOException {
+        int code = connection.getResponseCode();
+        if (code >= 200 && code < 300) {
+            return;
+        }
+
+        String detail = "";
+        InputStream error = connection.getErrorStream();
+        if (error != null) {
+            detail = new String(readFully(error), StandardCharsets.UTF_8);
+        }
+        if (code == HttpURLConnection.HTTP_PRECON_FAILED) {
+            throw new IOException("Drive snapshot changed since it was read");
+        }
+        throw new IOException("Drive API HTTP " + code + (detail.isEmpty() ? "" : ": " + detail));
+    }
+
+    @NonNull
+    private static byte[] readFully(@NonNull InputStream input) throws IOException {
+        try (InputStream stream = input;
+                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = stream.read(buffer)) != -1) {
+                output.write(buffer, 0, read);
+            }
+            return output.toByteArray();
+        }
+    }
+
+    @NonNull
+    private static byte[] jsonBytes(@NonNull JsonObject object) {
+        return GSON.toJson(object).getBytes(StandardCharsets.UTF_8);
+    }
+
+    @NonNull
+    private static JsonObject appProperties(@NonNull String key, @NonNull String value) {
+        JsonObject appProperties = new JsonObject();
+        appProperties.addProperty(key, value);
+        return appProperties;
+    }
+
+    @NonNull
+    private static String appPropertyClause(@NonNull String key, @NonNull String value) {
+        return "appProperties has { key='"
+                + escapeQuery(key)
+                + "' and value='"
+                + escapeQuery(value)
+                + "' }";
+    }
+
+    @NonNull
+    private static String escapeQuery(@NonNull String value) {
+        return value.replace("\\", "\\\\").replace("'", "\\'");
+    }
+
+    private static void writePart(
+            @NonNull OutputStream out,
+            @NonNull String boundary,
+            @NonNull String mimeType,
+            byte[] data)
             throws IOException {
         out.write(
-                ("--" + boundary + "\r\nContent-Type: " + mime + "\r\n\r\n")
+                ("--" + boundary + "\r\nContent-Type: " + mimeType + "\r\n\r\n")
                         .getBytes(StandardCharsets.UTF_8));
         out.write(data);
         out.write("\r\n".getBytes(StandardCharsets.UTF_8));
     }
 
-    private String request(String method, String url, @Nullable String type, @Nullable byte[] body)
-            throws IOException {
-        HttpURLConnection connection = open(method, url);
-        if (type != null) connection.setRequestProperty("Content-Type", type);
-        if (body != null) {
-            connection.setDoOutput(true);
-            try (OutputStream out = connection.getOutputStream()) {
-                out.write(body);
-            }
-        }
-        ensureSuccess(connection);
-        return new String(readFully(connection.getInputStream()), StandardCharsets.UTF_8);
-    }
+    private static final class RemoteFileRef {
+        private final String id;
+        private final String name;
+        private final String eTag;
 
-    private byte[] requestBytes(String method, String url) throws IOException {
-        HttpURLConnection connection = open(method, url);
-        ensureSuccess(connection);
-        return readFully(connection.getInputStream());
-    }
-
-    private HttpURLConnection open(String method, String url) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-        connection.setRequestMethod(method);
-        connection.setConnectTimeout(20_000);
-        connection.setReadTimeout(60_000);
-        connection.setRequestProperty("Authorization", "Bearer " + accessToken);
-        return connection;
-    }
-
-    private static void ensureSuccess(HttpURLConnection connection) throws IOException {
-        int code = connection.getResponseCode();
-        if (code < 200 || code >= 300) {
-            String detail = "";
-            InputStream error = connection.getErrorStream();
-            if (error != null) detail = new String(readFully(error), StandardCharsets.UTF_8);
-            throw new IOException(
-                    "Drive API HTTP " + code + (detail.isEmpty() ? "" : ": " + detail));
-        }
-    }
-
-    private static byte[] readFully(InputStream input) throws IOException {
-        try (InputStream in = input;
-                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
-            return out.toByteArray();
-        }
-    }
-
-    private static String encodeSnapshot(SyncSnapshot snapshot) {
-        JsonArray records = new JsonArray();
-        for (SyncRecord record : snapshot.getRecords()) {
-            JsonObject item = new JsonObject();
-            item.addProperty("type", record.getType().getWireValue());
-            item.addProperty("id", record.getId());
-            item.addProperty("updatedAt", record.getUpdatedAt().toString());
-            if (record.getDeletedAt() != null)
-                item.addProperty("deletedAt", record.getDeletedAt().toString());
-            item.add("payload", record.getPayload());
-            records.add(item);
-        }
-        JsonObject root = new JsonObject();
-        root.addProperty("schema", 1);
-        root.add("records", records);
-        return GSON.toJson(root);
-    }
-
-    private static SyncSnapshot decodeSnapshot(String json) throws IOException {
-        try {
-            JsonObject root = GSON.fromJson(json, JsonObject.class);
-            JsonArray records = root.getAsJsonArray("records");
-            List<SyncRecord> result = new ArrayList<>();
-            if (records == null) return SyncSnapshot.empty();
-            for (JsonElement element : records) {
-                JsonObject item = element.getAsJsonObject();
-                SyncRecord.Type type =
-                        SyncRecord.Type.fromWireValue(item.get("type").getAsString());
-                String id = item.get("id").getAsString();
-                Instant updated = Instant.parse(item.get("updatedAt").getAsString());
-                JsonElement deleted = item.get("deletedAt");
-                if (deleted != null && !deleted.isJsonNull()) {
-                    result.add(
-                            SyncRecord.tombstone(
-                                    type, id, updated, Instant.parse(deleted.getAsString())));
-                } else {
-                    result.add(SyncRecord.live(type, id, updated, item.getAsJsonObject("payload")));
-                }
-            }
-            return new SyncSnapshot(result);
-        } catch (RuntimeException error) {
-            throw new IOException("Invalid MyNotes sync manifest", error);
+        private RemoteFileRef(@NonNull String id, @NonNull String name, @NonNull String eTag) {
+            this.id = id;
+            this.name = name;
+            this.eTag = eTag;
         }
     }
 }

@@ -31,6 +31,9 @@ public interface SyncBackend {
     /** Atomically makes {@code snapshot} the current remote snapshot. */
     void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException;
 
+    /** Returns true when the immutable attachment blob already exists remotely. */
+    boolean hasAttachment(@NonNull String sha256) throws IOException;
+
     /**
      * Opens an attachment by its lowercase SHA-256 hash, or returns {@code null} when it is absent.
      * The caller closes the returned stream.

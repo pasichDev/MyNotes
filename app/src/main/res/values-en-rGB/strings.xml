@@ -455,5 +455,26 @@
     <string name="editor_switch_label">Editor</string>
     <string name="mode_simple">Simple</string>
     <string name="mode_extended">Extended</string>
+    <string name="sync_status_ready">Ready to sync</string>
+    <string name="sync_last_sync_never">Last sync: Never</string>
+    <string name="sync_last_sync_value">Last sync: %1$s</string>
+    <string name="sync_background">Background sync</string>
+    <string name="sync_background_enabled">Background sync enabled</string>
+    <string name="sync_background_disabled">Background sync disabled</string>
+    <string name="sync_sign_in_required">Google sign-in is required for sync</string>
+    <string name="sync_review_conflicts">Review conflicts</string>
+    <string name="sync_review_conflicts_count">Review conflicts (%1$d)</string>
+    <string name="sync_conflict_title">Resolve sync conflicts (%1$d remaining)</string>
+    <string name="sync_conflict_keep_local">Keep local version</string>
+    <string name="sync_conflict_keep_drive">Keep Google Drive version</string>
+    <string name="sync_conflict_later">Later</string>
+    <string name="sync_conflict_resolved">Sync conflict resolved</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Local version</string>
+    <string name="sync_conflict_drive_label">Google Drive version</string>
+    <string name="sync_conflict_deleted">Deleted</string>
+    <string name="sync_first_sync_title">Set up Google Drive sync</string>
+    <string name="sync_first_sync_message">This first sync will merge %1$d records and may upload about %2$s. Your local data stays available while the merge completes.</string>
+    <string name="sync_first_sync_cancel">Not now</string>
 
 </resources>

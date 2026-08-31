@@ -39,11 +39,15 @@ public final class GoogleDriveSyncWorker extends Worker {
                             Identity.getAuthorizationClient(getApplicationContext())
                                     .authorize(request));
             if (authorization.hasResolution() || authorization.getAccessToken() == null) {
-                return Result.retry();
+                return Result.failure();
             }
             SyncDependencies dependencies =
                     EntryPointAccessors.fromApplication(
                             getApplicationContext(), SyncDependencies.class);
+            if (!dependencies.preferenceHelper().isSyncEnabled()
+                    || !dependencies.preferenceHelper().isBackgroundSyncEnabled()) {
+                return Result.success();
+            }
             SyncState state =
                     new SyncService(
                                     new RoomSyncStore(
@@ -51,11 +55,23 @@ public final class GoogleDriveSyncWorker extends Worker {
                                             dependencies.database(),
                                             dependencies.preferenceHelper()))
                             .sync(new GoogleDriveSyncBackend(authorization.getAccessToken()));
-            return state.getStatus() == SyncState.Status.SUCCESS
-                    ? Result.success()
-                    : Result.retry();
+            if (state.getStatus() == SyncState.Status.SUCCESS) return Result.success();
+            return isRetryable(state.getErrorMessage()) ? Result.retry() : Result.failure();
         } catch (Exception error) {
-            return Result.retry();
+            return isRetryable(error.getMessage()) ? Result.retry() : Result.failure();
         }
+    }
+
+    private static boolean isRetryable(String message) {
+        if (message == null) return true;
+        String value = message.toLowerCase(java.util.Locale.ROOT);
+        return value.contains("offline")
+                || value.contains("timeout")
+                || value.contains("timed out")
+                || value.contains("http 408")
+                || value.contains("http 429")
+                || value.contains("http 5")
+                || value.contains("network")
+                || value.contains("temporar");
     }
 }

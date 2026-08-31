@@ -411,5 +411,26 @@
     <string name="editor_switch_label">Editor</string>
     <string name="mode_simple">Einfach</string>
     <string name="mode_extended">Erweitert</string>
+    <string name="sync_status_ready">Bereit zur Synchronisierung</string>
+    <string name="sync_last_sync_never">Letzte Synchronisierung: Nie</string>
+    <string name="sync_last_sync_value">Letzte Synchronisierung: %1$s</string>
+    <string name="sync_background">Hintergrundsynchronisierung</string>
+    <string name="sync_background_enabled">Hintergrundsynchronisierung aktiviert</string>
+    <string name="sync_background_disabled">Hintergrundsynchronisierung deaktiviert</string>
+    <string name="sync_sign_in_required">Für die Synchronisierung ist eine Google-Anmeldung erforderlich</string>
+    <string name="sync_review_conflicts">Konflikte prüfen</string>
+    <string name="sync_review_conflicts_count">Konflikte prüfen (%1$d)</string>
+    <string name="sync_conflict_title">Synchronisierungskonflikte lösen (%1$d verbleibend)</string>
+    <string name="sync_conflict_keep_local">Lokale Version behalten</string>
+    <string name="sync_conflict_keep_drive">Google-Drive-Version behalten</string>
+    <string name="sync_conflict_later">Später</string>
+    <string name="sync_conflict_resolved">Synchronisierungskonflikt gelöst</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Lokale Version</string>
+    <string name="sync_conflict_drive_label">Google-Drive-Version</string>
+    <string name="sync_conflict_deleted">Gelöscht</string>
+    <string name="sync_first_sync_title">Google-Drive-Synchronisierung einrichten</string>
+    <string name="sync_first_sync_message">Beim ersten Sync werden %1$d Einträge zusammengeführt und möglicherweise etwa %2$s hochgeladen. Deine lokalen Daten bleiben verfügbar.</string>
+    <string name="sync_first_sync_cancel">Nicht jetzt</string>
 
 </resources>

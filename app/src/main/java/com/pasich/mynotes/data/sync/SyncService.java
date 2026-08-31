@@ -1,6 +1,11 @@
 package com.pasich.mynotes.data.sync;
 
 import androidx.annotation.NonNull;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +14,8 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -53,7 +60,7 @@ public final class SyncService {
             SyncMergeResult mergeResult = merger.merge(local, remote);
             SyncSnapshot merged = mergeResult.getMergedSnapshot();
 
-            synchronizeAttachments(backend, merged);
+            synchronizeAttachments(backend, merged, attachmentSizes(merged));
             backend.writeSnapshot(merged);
             store.applySnapshot(merged, mergeResult.getConflicts());
 
@@ -73,32 +80,92 @@ public final class SyncService {
         }
     }
 
-    private void synchronizeAttachments(SyncBackend backend, SyncSnapshot merged)
+    private void synchronizeAttachments(
+            SyncBackend backend, SyncSnapshot merged, Map<String, Long> expectedSizes)
             throws IOException {
         Collection<String> hashes =
                 Objects.requireNonNull(store.getAttachmentHashes(merged), "hashes");
         for (String hash : hashes) {
             validateHash(hash);
             if (store.hasAttachment(hash)) {
-                copyVerified(hash, store.readAttachment(hash), backend::writeAttachment);
+                if (backend.hasAttachment(hash)) {
+                    verifyRemoteAttachment(
+                            hash, expectedSizes.get(hash), backend.readAttachment(hash));
+                } else {
+                    copyVerified(
+                            hash,
+                            expectedSizes.get(hash),
+                            store.readAttachment(hash),
+                            backend::writeAttachment);
+                }
             } else {
                 InputStream remoteAttachment = backend.readAttachment(hash);
                 if (remoteAttachment == null) {
                     throw new IOException("Required attachment is unavailable: " + hash);
                 }
-                copyVerified(hash, remoteAttachment, store::writeAttachment);
+                copyVerified(
+                        hash, expectedSizes.get(hash), remoteAttachment, store::writeAttachment);
             }
         }
     }
 
-    private void copyVerified(String expectedHash, InputStream source, AttachmentWriter destination)
+    private void verifyRemoteAttachment(String hash, Long expectedSize, InputStream source)
             throws IOException {
-        Objects.requireNonNull(source, "source");
+        if (source == null) {
+            throw new IOException("Required attachment is unavailable: " + hash);
+        }
         try (InputStream input = source;
-                VerifyingInputStream verified = new VerifyingInputStream(input, expectedHash)) {
-            destination.write(expectedHash, verified);
+                VerifyingInputStream verified =
+                        new VerifyingInputStream(input, hash, expectedSize)) {
+            byte[] buffer = new byte[8192];
+            while (verified.read(buffer) != -1) {
+                // Consume the complete blob before accepting an existing remote attachment.
+            }
             verified.verifyEndOfStream();
         }
+    }
+
+    private void copyVerified(
+            String expectedHash,
+            Long expectedSize,
+            InputStream source,
+            AttachmentWriter destination)
+            throws IOException {
+        Objects.requireNonNull(source, "source");
+        byte[] verifiedBytes;
+        try (InputStream input = source;
+                VerifyingInputStream verified =
+                        new VerifyingInputStream(input, expectedHash, expectedSize);
+                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = verified.read(buffer)) != -1) {
+                output.write(buffer, 0, read);
+            }
+            verified.verifyEndOfStream();
+            verifiedBytes = output.toByteArray();
+        }
+        destination.write(expectedHash, new ByteArrayInputStream(verifiedBytes));
+    }
+
+    private static Map<String, Long> attachmentSizes(SyncSnapshot snapshot) throws IOException {
+        Map<String, Long> sizes = new HashMap<>();
+        for (SyncRecord record : snapshot.getLiveRecords(SyncRecord.Type.NOTE)) {
+            JsonArray manifest = record.getPayload().getAsJsonArray("attachmentsManifest");
+            if (manifest == null) continue;
+            for (JsonElement element : manifest) {
+                if (!element.isJsonObject()) continue;
+                JsonObject value = element.getAsJsonObject();
+                if (!value.has("sha256") || !value.has("size")) continue;
+                String hash = value.get("sha256").getAsString();
+                long size = value.get("size").getAsLong();
+                Long previous = sizes.putIfAbsent(hash, size);
+                if (previous != null && previous.longValue() != size) {
+                    throw new IOException("Attachment metadata has conflicting sizes");
+                }
+            }
+        }
+        return sizes;
     }
 
     private SyncState safeReadState() {
@@ -149,11 +216,14 @@ public final class SyncService {
     private static final class VerifyingInputStream extends FilterInputStream {
         private final MessageDigest digest;
         private final String expectedHash;
+        private final Long expectedSize;
+        private long byteCount;
         private boolean verified;
 
-        VerifyingInputStream(InputStream input, String expectedHash) {
+        VerifyingInputStream(InputStream input, String expectedHash, Long expectedSize) {
             super(input);
             this.expectedHash = expectedHash;
+            this.expectedSize = expectedSize;
             try {
                 digest = MessageDigest.getInstance("SHA-256");
             } catch (NoSuchAlgorithmException exception) {
@@ -166,6 +236,7 @@ public final class SyncService {
             int value = super.read();
             if (value >= 0) {
                 digest.update((byte) value);
+                byteCount++;
             }
             return value;
         }
@@ -175,6 +246,7 @@ public final class SyncService {
             int read = super.read(buffer, offset, length);
             if (read > 0) {
                 digest.update(buffer, offset, read);
+                byteCount += read;
             }
             return read;
         }
@@ -187,6 +259,9 @@ public final class SyncService {
                 String actualHash = toHex(digest.digest());
                 if (!expectedHash.equals(actualHash)) {
                     throw new IOException("Attachment checksum does not match its declared hash");
+                }
+                if (expectedSize != null && expectedSize.longValue() != byteCount) {
+                    throw new IOException("Attachment size does not match its declared size");
                 }
                 verified = true;
             }

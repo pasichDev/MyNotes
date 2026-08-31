@@ -412,5 +412,26 @@
     <string name="editor_switch_label">Edytor</string>
     <string name="mode_simple">Prosty</string>
     <string name="mode_extended">Rozszerzony</string>
+    <string name="sync_status_ready">Gotowe do synchronizacji</string>
+    <string name="sync_last_sync_never">Ostatnia synchronizacja: nigdy</string>
+    <string name="sync_last_sync_value">Ostatnia synchronizacja: %1$s</string>
+    <string name="sync_background">Synchronizacja w tle</string>
+    <string name="sync_background_enabled">Synchronizacja w tle włączona</string>
+    <string name="sync_background_disabled">Synchronizacja w tle wyłączona</string>
+    <string name="sync_sign_in_required">Do synchronizacji wymagane jest logowanie Google</string>
+    <string name="sync_review_conflicts">Przejrzyj konflikty</string>
+    <string name="sync_review_conflicts_count">Przejrzyj konflikty (%1$d)</string>
+    <string name="sync_conflict_title">Rozwiąż konflikty synchronizacji (%1$d pozostało)</string>
+    <string name="sync_conflict_keep_local">Zachowaj wersję lokalną</string>
+    <string name="sync_conflict_keep_drive">Zachowaj wersję z Google Drive</string>
+    <string name="sync_conflict_later">Później</string>
+    <string name="sync_conflict_resolved">Konflikt synchronizacji rozwiązany</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Wersja lokalna</string>
+    <string name="sync_conflict_drive_label">Wersja z Google Drive</string>
+    <string name="sync_conflict_deleted">Usunięto</string>
+    <string name="sync_first_sync_title">Skonfiguruj synchronizację z Google Drive</string>
+    <string name="sync_first_sync_message">Pierwsza synchronizacja połączy %1$d wpisów i może wysłać około %2$s. Lokalne dane pozostaną dostępne.</string>
+    <string name="sync_first_sync_cancel">Nie teraz</string>
 
 </resources>

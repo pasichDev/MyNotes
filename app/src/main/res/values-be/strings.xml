@@ -411,5 +411,26 @@
     <string name="editor_switch_label">Рэдактар</string>
     <string name="mode_simple">Просты</string>
     <string name="mode_extended">Пашыраны</string>
+    <string name="sync_status_ready">Гатова да сінхранізацыі</string>
+    <string name="sync_last_sync_never">Апошняя сінхранізацыя: ніколі</string>
+    <string name="sync_last_sync_value">Апошняя сінхранізацыя: %1$s</string>
+    <string name="sync_background">Фонавая сінхранізацыя</string>
+    <string name="sync_background_enabled">Фонавую сінхранізацыю ўключана</string>
+    <string name="sync_background_disabled">Фонавую сінхранізацыю выключана</string>
+    <string name="sync_sign_in_required">Для сінхранізацыі патрэбны ўваход у Google</string>
+    <string name="sync_review_conflicts">Праглядзець канфлікты</string>
+    <string name="sync_review_conflicts_count">Праглядзець канфлікты (%1$d)</string>
+    <string name="sync_conflict_title">Вырашыць канфлікты сінхранізацыі (%1$d засталося)</string>
+    <string name="sync_conflict_keep_local">Пакінуць лакальную версію</string>
+    <string name="sync_conflict_keep_drive">Пакінуць версію з Google Drive</string>
+    <string name="sync_conflict_later">Пазней</string>
+    <string name="sync_conflict_resolved">Канфлікт сінхранізацыі вырашаны</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Лакальная версія</string>
+    <string name="sync_conflict_drive_label">Версія з Google Drive</string>
+    <string name="sync_conflict_deleted">Выдалена</string>
+    <string name="sync_first_sync_title">Наладзіць сінхранізацыю з Google Дыскам</string>
+    <string name="sync_first_sync_message">Падчас першай сінхранізацыі будзе аб’яднана запісаў: %1$d. Можа быць загружана каля %2$s. Лакальныя даныя застануцца даступнымі.</string>
+    <string name="sync_first_sync_cancel">Не цяпер</string>
 
 </resources>

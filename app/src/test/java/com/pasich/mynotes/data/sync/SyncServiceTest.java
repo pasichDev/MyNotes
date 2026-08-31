@@ -98,6 +98,23 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_skipsUploadingAttachmentWhenRemoteBlobAlreadyExists() throws Exception {
+        SyncRecord local = note(TEN, "Local with existing remote attachment");
+        byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, bytes);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, bytes);
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot").inOrder();
+    }
+
+    @Test
     public void sync_invalidAttachmentDoesNotPublishOrApplySnapshot() {
         SyncRecord remote = note(TEN, "Remote with corrupt attachment");
         FakeStore store = new FakeStore(SyncSnapshot.empty());
@@ -115,6 +132,7 @@ public class SyncServiceTest {
         assertThat(state.getErrorMessage()).contains("checksum");
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
         assertThat(store.applyCalls).isEqualTo(0);
+        assertThat(store.events).isEmpty();
     }
 
     @Test
@@ -250,6 +268,11 @@ public class SyncServiceTest {
             events.add("writeSnapshot");
             this.snapshot = snapshot;
             writeSnapshotCalls++;
+        }
+
+        @Override
+        public boolean hasAttachment(String sha256) {
+            return attachments.containsKey(sha256);
         }
 
         @Override

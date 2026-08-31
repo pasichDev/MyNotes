@@ -113,4 +113,21 @@ public class MigrationTest {
             migrated.close();
         }
     }
+
+    @Test
+    public void migrate15to16_createsConflictTable() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 15);
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 16, true, AppDatabase.MIGRATION_15_16);
+        try (android.database.Cursor cursor =
+                migrated.query(
+                        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_conflicts'")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            assertThat(cursor.getString(0)).isEqualTo("sync_conflicts");
+        } finally {
+            migrated.close();
+        }
+    }
 }

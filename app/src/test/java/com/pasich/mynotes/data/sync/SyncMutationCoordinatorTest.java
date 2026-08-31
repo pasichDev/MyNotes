@@ -15,6 +15,9 @@ import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
 import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.data.model.Task;
+import com.pasich.mynotes.data.model.TaskCategory;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,16 +29,20 @@ import org.junit.Test;
 public class SyncMutationCoordinatorTest {
 
     private NoteDao noteDao;
+    private TaskDao taskDao;
+    private TagsDao tagsDao;
+    private TaskCategoryDao taskCategoryDao;
+    private Transactions transactions;
     private FakeSyncMetadataDao syncMetadataDao;
     private SyncMutationCoordinator coordinator;
 
     @Before
     public void setUp() {
         noteDao = mock(NoteDao.class);
-        TaskDao taskDao = mock(TaskDao.class);
-        TagsDao tagsDao = mock(TagsDao.class);
-        TaskCategoryDao taskCategoryDao = mock(TaskCategoryDao.class);
-        Transactions transactions = mock(Transactions.class);
+        taskDao = mock(TaskDao.class);
+        tagsDao = mock(TagsDao.class);
+        taskCategoryDao = mock(TaskCategoryDao.class);
+        transactions = mock(Transactions.class);
         syncMetadataDao = new FakeSyncMetadataDao();
         coordinator =
                 new SyncMutationCoordinator(
@@ -160,6 +167,61 @@ public class SyncMutationCoordinatorTest {
         assertThat(second.deletedAt).isNull();
         assertThat(notes.get(0).getId()).isEqualTo(101);
         assertThat(notes.get(1).getId()).isEqualTo(102);
+    }
+
+    @Test
+    public void deleteTask_keepsTombstoneAndMarksDeletionTimestamp() {
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(
+                        SyncMetadata.RECORD_TYPE_TASK, 12L, "task-stable", 90L, null));
+        Task task = new Task();
+        task.setId(12);
+
+        coordinator.deleteTask(task);
+
+        verify(taskDao).deleteTask(task);
+        SyncMetadataEntity metadata = syncMetadataDao.get(SyncMetadata.RECORD_TYPE_TASK, 12L);
+        assertThat(metadata.stableId).isEqualTo("task-stable");
+        assertThat(metadata.updatedAt).isEqualTo(1_000L);
+        assertThat(metadata.deletedAt).isEqualTo(1_000L);
+    }
+
+    @Test
+    public void deleteCategory_keepsTombstoneAndMarksDeletionTimestamp() {
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(
+                        SyncMetadata.RECORD_TYPE_CATEGORY, 13L, "category-stable", 90L, null));
+        TaskCategory category = new TaskCategory();
+        category.setId(13);
+
+        coordinator.deleteCategory(category);
+
+        verify(taskCategoryDao).deleteCategory(category);
+        SyncMetadataEntity metadata = syncMetadataDao.get(SyncMetadata.RECORD_TYPE_CATEGORY, 13L);
+        assertThat(metadata.stableId).isEqualTo("category-stable");
+        assertThat(metadata.updatedAt).isEqualTo(1_000L);
+        assertThat(metadata.deletedAt).isEqualTo(1_000L);
+    }
+
+    @Test
+    public void renameTag_touchesTagAndAllNotesChangedByRename() {
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(SyncMetadata.RECORD_TYPE_TAG, 14L, "tag-stable", 90L, null));
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(
+                        SyncMetadata.RECORD_TYPE_NOTE, 15L, "note-stable", 90L, null));
+        Tag tag = new Tag().create("old");
+        tag.id = 14L;
+        when(transactions.getNoteIdsForTag("old")).thenReturn(List.of(15));
+
+        coordinator.renameTag(tag, "new");
+
+        verify(transactions).renameTagNotes("old", "new");
+        verify(transactions).updateTagName("new", 14L);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_TAG, 14L).updatedAt)
+                .isEqualTo(1_000L);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 15L).updatedAt)
+                .isEqualTo(1_000L);
     }
 
     private static final class FixedTimeProvider implements SyncMutationCoordinator.TimeProvider {

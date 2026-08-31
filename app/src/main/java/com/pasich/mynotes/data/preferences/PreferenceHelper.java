@@ -25,4 +25,16 @@ public interface PreferenceHelper {
     String getLastKnownVersion();
 
     void setLastKnownVersion(String version);
+
+    boolean isSyncEnabled();
+
+    void setSyncEnabled(boolean enabled);
+
+    boolean isBackgroundSyncEnabled();
+
+    void setBackgroundSyncEnabled(boolean enabled);
+
+    int getSyncRolloutBucket();
+
+    void setSyncRolloutBucket(int bucket);
 }

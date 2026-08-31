@@ -19,6 +19,8 @@ import android.view.View;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
@@ -27,19 +29,27 @@ import androidx.work.WorkManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.base.view.BackupOptionsCallback;
 import com.pasich.mynotes.data.database.AppDatabase;
+import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.data.sync.GoogleDriveSyncBackend;
 import com.pasich.mynotes.data.sync.RoomSyncStore;
+import com.pasich.mynotes.data.sync.SyncBundleCodec;
+import com.pasich.mynotes.data.sync.SyncResolution;
 import com.pasich.mynotes.data.sync.SyncService;
+import com.pasich.mynotes.data.sync.SyncSnapshot;
 import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
+import com.pasich.mynotes.ui.sync.SyncCoordinator;
 import com.pasich.mynotes.ui.view.dialogs.BackupOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.OtherAppImportDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
@@ -56,7 +66,14 @@ import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.file.DriveProcess;
 import com.pasich.mynotes.utils.file.FileExportUtils;
 import dagger.hilt.android.AndroidEntryPoint;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -65,6 +82,7 @@ import javax.inject.Inject;
 /** Activity for creating and restoring app data backups. */
 @AndroidEntryPoint
 public class BackupActivity extends BaseActivity implements BackupContract.view {
+    private static final String BACKGROUND_SYNC_WORK_NAME = "mynotes-drive-sync";
 
     @Inject public BackupContract.presenter presenter;
     @Inject AppDatabase appDatabase;
@@ -158,8 +176,11 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     private Dialog progressDialog;
     private GoogleCredentialAuth googleCredentialAuth;
     private GoogleDriveAuthorization googleDriveAuthorization;
+    private RoomSyncStore roomSyncStore;
+    private SyncCoordinator syncCoordinator;
     private final ExecutorService syncExecutor = Executors.newSingleThreadExecutor();
     @Inject FirebaseGoogleAuth firebaseGoogleAuth;
+    private boolean updatingSyncControls;
 
     @Override
     public void onRestoreSuccessFlag() {
@@ -177,10 +198,64 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         googleCredentialAuth =
                 new GoogleCredentialAuth(this, getString(R.string.default_web_client_id));
         googleDriveAuthorization = new GoogleDriveAuthorization(this);
+        roomSyncStore = new RoomSyncStore(this, appDatabase, preferenceHelper);
+        syncCoordinator =
+                new SyncCoordinator(
+                        preferenceHelper,
+                        firebaseGoogleAuth,
+                        googleCredentialAuth,
+                        googleDriveAuthorization,
+                        new SyncCoordinator.ConflictStore() {
+                            @NonNull
+                            @Override
+                            public SyncState readState() {
+                                try {
+                                    return roomSyncStore.readState();
+                                } catch (java.io.IOException ignored) {
+                                    return SyncState.idle();
+                                }
+                            }
+
+                            @NonNull
+                            @Override
+                            public List<SyncConflictEntity> getConflicts() {
+                                return roomSyncStore.getConflicts();
+                            }
+
+                            @Override
+                            public void resolveConflict(
+                                    long conflictId, @NonNull SyncResolution resolution)
+                                    throws java.io.IOException {
+                                roomSyncStore.resolveConflict(conflictId, resolution);
+                            }
+
+                            @NonNull
+                            @Override
+                            public SyncState sync(@NonNull String accessToken) {
+                                return new SyncService(roomSyncStore)
+                                        .sync(new GoogleDriveSyncBackend(accessToken));
+                            }
+                        },
+                        new SyncCoordinator.BackgroundScheduler() {
+                            @Override
+                            public void enable() {
+                                enableBackgroundSyncWork();
+                            }
+
+                            @Override
+                            public void disable() {
+                                disableBackgroundSyncWork();
+                            }
+                        },
+                        syncExecutor,
+                        this::runOnUiThread);
         updateGoogleSignInButton();
         binding.googleSignInButton.setOnClickListener(v -> onGoogleSignInClicked());
         binding.googleSignInButtonSignedOut.setOnClickListener(v -> onGoogleSignInClicked());
         binding.syncButton.setOnClickListener(v -> startSync());
+        binding.syncConflictsButton.setOnClickListener(v -> showNextConflictDialog());
+        binding.syncBackgroundSwitch.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> onBackgroundSyncToggled(isChecked));
 
         setupEdgeToEdgeInsets(binding.getRoot());
         presenter.attachView(this);
@@ -200,54 +275,150 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     }
 
     private void updateGoogleSignInButton() {
-        if (firebaseGoogleAuth == null || !firebaseGoogleAuth.isSignedIn()) {
+        SyncCoordinator.Profile profile = syncCoordinator.getProfile();
+        if (!profile.isSignedIn()) {
             binding.googleProfile.setVisibility(View.GONE);
             binding.googleSignInButtonSignedOut.setVisibility(View.VISIBLE);
+            updateSyncUi();
             return;
         }
-        com.google.firebase.auth.FirebaseUser user = firebaseGoogleAuth.getCurrentUser();
-        String name = user.getDisplayName();
-        String email = user.getEmail();
-        String label = name == null || name.trim().isEmpty() ? "Google" : name.trim();
-        binding.googleName.setText(label);
-        binding.googleEmail.setText(email == null ? "" : email);
-        binding.googleAvatar.setText(label.substring(0, 1).toUpperCase(java.util.Locale.ROOT));
+        binding.googleName.setText(profile.getDisplayName());
+        binding.googleEmail.setText(profile.getEmail());
+        binding.googleAvatar.setText(profile.getAvatarLabel());
         binding.googleProfile.setVisibility(View.VISIBLE);
         binding.googleSignInButtonSignedOut.setVisibility(View.GONE);
+        updateSyncUi();
+    }
+
+    private void updateSyncUi() {
+        if (syncCoordinator == null) return;
+        SyncCoordinator.Profile profile = syncCoordinator.getProfile();
+        SyncState state = syncCoordinator.getLastState();
+        int unresolvedConflicts = unresolvedConflictCount(syncCoordinator.getConflicts());
+
+        updatingSyncControls = true;
+        binding.syncButton.setEnabled(profile.isSignedIn());
+        binding.syncBackgroundSwitch.setEnabled(profile.isSignedIn());
+        binding.syncBackgroundSwitch.setChecked(
+                profile.isSignedIn() && syncCoordinator.isBackgroundSyncEnabled());
+        updatingSyncControls = false;
+
+        binding.syncConflictsButton.setVisibility(
+                profile.isSignedIn() && unresolvedConflicts > 0 ? View.VISIBLE : View.GONE);
+        if (unresolvedConflicts > 0) {
+            binding.syncConflictsButton.setText(
+                    getString(R.string.sync_review_conflicts_count, unresolvedConflicts));
+        }
+        binding.syncStatusText.setText(
+                resolveStatusText(profile.isSignedIn(), state, unresolvedConflicts));
+        binding.syncLastSyncText.setText(formatLastSync(state));
     }
 
     private void startSync() {
-        if (!firebaseGoogleAuth.isSignedIn()) {
+        if (!syncCoordinator.getProfile().isSignedIn()) {
             onInfoSnack(
                     R.string.google_sign_in_failed, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             return;
         }
+        if (syncCoordinator.getLastState().getLastSuccessfulSyncAt() == null) {
+            prepareFirstSyncConfirmation();
+            return;
+        }
+        runSync();
+    }
+
+    private void prepareFirstSyncConfirmation() {
+        binding.syncButton.setEnabled(false);
+        binding.syncStatusText.setText(R.string.sync_started);
+        syncExecutor.execute(
+                () -> {
+                    try {
+                        SyncSnapshot snapshot = roomSyncStore.readSnapshot();
+                        byte[] bundle =
+                                new SyncBundleCodec().encode(snapshot, java.time.Instant.now());
+                        long attachmentBytes = 0L;
+                        Set<String> seenAttachmentHashes = new HashSet<>();
+                        for (com.pasich.mynotes.data.sync.SyncRecord record :
+                                snapshot.getLiveRecords(
+                                        com.pasich.mynotes.data.sync.SyncRecord.Type.NOTE)) {
+                            JsonElement manifest = record.getPayload().get("attachmentsManifest");
+                            if (manifest != null && manifest.isJsonArray()) {
+                                for (JsonElement value : manifest.getAsJsonArray()) {
+                                    if (value.isJsonObject()
+                                            && value.getAsJsonObject().has("size")) {
+                                        String hash =
+                                                value.getAsJsonObject().has("sha256")
+                                                        ? value.getAsJsonObject()
+                                                                .get("sha256")
+                                                                .getAsString()
+                                                        : null;
+                                        if (hash == null || seenAttachmentHashes.add(hash)) {
+                                            attachmentBytes +=
+                                                    Math.max(
+                                                            0L,
+                                                            value.getAsJsonObject()
+                                                                    .get("size")
+                                                                    .getAsLong());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        long estimatedBytes = bundle.length + attachmentBytes;
+                        runOnUiThread(
+                                () -> {
+                                    binding.syncButton.setEnabled(true);
+                                    new MaterialAlertDialogBuilder(this)
+                                            .setTitle(R.string.sync_first_sync_title)
+                                            .setMessage(
+                                                    getString(
+                                                            R.string.sync_first_sync_message,
+                                                            snapshot.getRecords().size(),
+                                                            formatBytes(estimatedBytes)))
+                                            .setNegativeButton(
+                                                    R.string.sync_first_sync_cancel,
+                                                    (dialog, which) -> updateSyncUi())
+                                            .setPositiveButton(
+                                                    R.string.sync_now, (dialog, which) -> runSync())
+                                            .show();
+                                });
+                    } catch (Exception error) {
+                        runOnUiThread(
+                                () -> {
+                                    binding.syncButton.setEnabled(true);
+                                    finishSyncError(error);
+                                });
+                    }
+                });
+    }
+
+    private void runSync() {
         binding.syncButton.setEnabled(false);
         binding.syncButton.setVisibility(View.GONE);
         binding.syncProgress.setVisibility(View.VISIBLE);
-        googleDriveAuthorization.authorize(
+        binding.syncStatusText.setText(R.string.sync_started);
+        syncCoordinator.syncNow(
                 this,
-                new GoogleDriveAuthorization.Callback() {
+                new SyncCoordinator.Callback<SyncState>() {
                     @Override
-                    public void onAuthorized(@androidx.annotation.NonNull String accessToken) {
-                        syncExecutor.execute(
-                                () -> {
-                                    SyncState state =
-                                            new SyncService(
-                                                            new RoomSyncStore(
-                                                                    BackupActivity.this,
-                                                                    appDatabase,
-                                                                    preferenceHelper))
-                                                    .sync(new GoogleDriveSyncBackend(accessToken));
-                                    runOnUiThread(() -> finishSync(state));
-                                });
+                    public void onSuccess(@NonNull SyncState state) {
+                        finishSync(state);
                     }
 
                     @Override
-                    public void onError(@androidx.annotation.NonNull Exception error) {
-                        runOnUiThread(() -> finishSyncError(error));
+                    public void onError(@NonNull Exception error) {
+                        finishSyncError(error);
                     }
                 });
+    }
+
+    @NonNull
+    private static String formatBytes(long bytes) {
+        if (bytes < 1024L) return bytes + " B";
+        if (bytes < 1024L * 1024L) {
+            return String.format(Locale.ROOT, "%.1f KB", bytes / 1024.0d);
+        }
+        return String.format(Locale.ROOT, "%.1f MB", bytes / (1024.0d * 1024.0d));
     }
 
     private void finishSync(SyncState state) {
@@ -255,8 +426,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         binding.syncButton.setVisibility(View.VISIBLE);
         binding.syncProgress.setVisibility(View.GONE);
         if (state.getStatus() == SyncState.Status.SUCCESS) {
-            scheduleAutomaticSync();
             int conflicts = state.getConflictCount();
+            updateSyncUi();
             onInfoSnack(
                     conflicts == 0
                             ? getString(R.string.sync_success)
@@ -264,12 +435,15 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                     null,
                     SnackBarInfo.Success,
                     Snackbar.LENGTH_LONG);
+            if (conflicts > 0) {
+                showNextConflictDialog();
+            }
         } else {
             finishSyncError(new IllegalStateException(state.getErrorMessage()));
         }
     }
 
-    private void scheduleAutomaticSync() {
+    private void enableBackgroundSyncWork() {
         Constraints constraints =
                 new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
         PeriodicWorkRequest request =
@@ -278,16 +452,23 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                                 6,
                                 TimeUnit.HOURS)
                         .setConstraints(constraints)
+                        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
                         .build();
         WorkManager.getInstance(getApplicationContext())
                 .enqueueUniquePeriodicWork(
-                        "mynotes-drive-sync", ExistingPeriodicWorkPolicy.UPDATE, request);
+                        BACKGROUND_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request);
+    }
+
+    private void disableBackgroundSyncWork() {
+        WorkManager.getInstance(getApplicationContext())
+                .cancelUniqueWork(BACKGROUND_SYNC_WORK_NAME);
     }
 
     private void finishSyncError(Exception error) {
         binding.syncButton.setEnabled(true);
         binding.syncButton.setVisibility(View.VISIBLE);
         binding.syncProgress.setVisibility(View.GONE);
+        updateSyncUi();
         onInfoSnack(
                 getString(
                         R.string.sync_failed,
@@ -301,61 +482,37 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (googleDriveAuthorization != null
-                && googleDriveAuthorization.onActivityResult(requestCode, resultCode, data)) return;
+        if (syncCoordinator != null
+                && syncCoordinator.onActivityResult(requestCode, resultCode, data)) return;
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void onGoogleSignInClicked() {
-        if (firebaseGoogleAuth.isSignedIn()) {
-            firebaseGoogleAuth.signOut();
-            updateGoogleSignInButton();
-            googleCredentialAuth.signOut(
-                    new GoogleCredentialAuth.SignOutCallback() {
+        if (syncCoordinator.getProfile().isSignedIn()) {
+            syncCoordinator.disconnect(
+                    new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
                         @Override
-                        public void onSuccess() {
-                            // Firebase state was already reflected immediately.
+                        public void onSuccess(@NonNull SyncCoordinator.Profile value) {
+                            updateGoogleSignInButton();
                         }
 
                         @Override
-                        public void onError(@androidx.annotation.NonNull Exception error) {
-                            // Credential Manager cleanup is best-effort.
+                        public void onError(@NonNull Exception error) {
+                            updateGoogleSignInButton();
                         }
                     });
             return;
         }
-        googleCredentialAuth.signIn(
+        syncCoordinator.connect(
                 this,
-                new GoogleCredentialAuth.Callback() {
+                new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
                     @Override
-                    public void onSuccess(
-                            @androidx.annotation.NonNull
-                                    com.pasich.mynotes.utils.auth.GoogleCredential credential) {
-                        firebaseGoogleAuth.signIn(
-                                credential,
-                                new FirebaseGoogleAuth.Callback() {
-                                    @Override
-                                    public void onSuccess(
-                                            @androidx.annotation.NonNull
-                                                    com.google.firebase.auth.FirebaseUser user) {
-                                        updateGoogleSignInButton();
-                                        scheduleAutomaticSync();
-                                    }
-
-                                    @Override
-                                    public void onError(
-                                            @androidx.annotation.NonNull Exception error) {
-                                        onInfoSnack(
-                                                R.string.google_sign_in_failed,
-                                                null,
-                                                SnackBarInfo.Error,
-                                                Snackbar.LENGTH_LONG);
-                                    }
-                                });
+                    public void onSuccess(@NonNull SyncCoordinator.Profile value) {
+                        updateGoogleSignInButton();
                     }
 
                     @Override
-                    public void onError(@androidx.annotation.NonNull Exception error) {
+                    public void onError(@NonNull Exception error) {
                         onInfoSnack(
                                 R.string.google_sign_in_failed,
                                 null,
@@ -363,6 +520,165 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                                 Snackbar.LENGTH_LONG);
                     }
                 });
+    }
+
+    private void onBackgroundSyncToggled(boolean enabled) {
+        if (updatingSyncControls) return;
+        if (!syncCoordinator.getProfile().isSignedIn()) {
+            updateSyncUi();
+            onInfoSnack(
+                    R.string.sync_sign_in_required, null, SnackBarInfo.Info, Snackbar.LENGTH_LONG);
+            return;
+        }
+        syncCoordinator.setBackgroundSyncEnabled(enabled);
+        updateSyncUi();
+        onInfoSnack(
+                enabled ? R.string.sync_background_enabled : R.string.sync_background_disabled,
+                null,
+                SnackBarInfo.Info,
+                Snackbar.LENGTH_LONG);
+    }
+
+    private void showNextConflictDialog() {
+        List<SyncConflictEntity> unresolved = unresolvedConflicts(syncCoordinator.getConflicts());
+        if (unresolved.isEmpty()) {
+            updateSyncUi();
+            return;
+        }
+        SyncConflictEntity conflict = unresolved.get(0);
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.sync_conflict_title, unresolved.size()))
+                .setMessage(buildConflictMessage(conflict))
+                .setNegativeButton(R.string.sync_conflict_later, null)
+                .setNeutralButton(
+                        R.string.sync_conflict_keep_local,
+                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_LOCAL))
+                .setPositiveButton(
+                        R.string.sync_conflict_keep_drive,
+                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_DRIVE))
+                .show();
+    }
+
+    private void resolveConflict(long conflictId, SyncResolution resolution) {
+        syncCoordinator.resolveConflict(
+                conflictId,
+                resolution,
+                new SyncCoordinator.Callback<List<SyncConflictEntity>>() {
+                    @Override
+                    public void onSuccess(@NonNull List<SyncConflictEntity> value) {
+                        updateSyncUi();
+                        onInfoSnack(
+                                R.string.sync_conflict_resolved,
+                                null,
+                                SnackBarInfo.Success,
+                                Snackbar.LENGTH_LONG);
+                        if (!unresolvedConflicts(value).isEmpty()) {
+                            showNextConflictDialog();
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Exception error) {
+                        finishSyncError(error);
+                    }
+                });
+    }
+
+    @NonNull
+    private CharSequence resolveStatusText(
+            boolean signedIn, SyncState state, int unresolvedConflicts) {
+        if (!signedIn) {
+            return getString(R.string.sync_sign_in_required);
+        }
+        if (state.getStatus() == SyncState.Status.SYNCING) {
+            return getString(R.string.sync_started);
+        }
+        if (state.getStatus() == SyncState.Status.SUCCESS) {
+            return unresolvedConflicts == 0
+                    ? getString(R.string.sync_success)
+                    : getString(R.string.sync_success_conflicts, unresolvedConflicts);
+        }
+        if (state.getStatus() == SyncState.Status.ERROR) {
+            return getString(
+                    R.string.sync_failed,
+                    state.getErrorMessage() == null ? "Unknown" : state.getErrorMessage());
+        }
+        return getString(R.string.sync_status_ready);
+    }
+
+    @NonNull
+    private CharSequence formatLastSync(@NonNull SyncState state) {
+        if (state.getLastSuccessfulSyncAt() == null) {
+            return getString(R.string.sync_last_sync_never);
+        }
+        String value =
+                DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                        .format(Date.from(state.getLastSuccessfulSyncAt()));
+        return getString(R.string.sync_last_sync_value, value);
+    }
+
+    @NonNull
+    private String buildConflictMessage(@NonNull SyncConflictEntity conflict) {
+        return getString(
+                        R.string.sync_conflict_version,
+                        getString(R.string.sync_conflict_local_label),
+                        describeConflictPayload(
+                                conflict.winnerSource.equals("LOCAL")
+                                        ? conflict.winnerJson
+                                        : conflict.loserJson))
+                + "\n\n"
+                + getString(
+                        R.string.sync_conflict_version,
+                        getString(R.string.sync_conflict_drive_label),
+                        describeConflictPayload(
+                                conflict.winnerSource.equals("REMOTE")
+                                        ? conflict.winnerJson
+                                        : conflict.loserJson));
+    }
+
+    @NonNull
+    private String describeConflictPayload(@NonNull String recordJson) {
+        try {
+            JsonObject root = JsonParser.parseString(recordJson).getAsJsonObject();
+            JsonElement deletedAt = root.get("deletedAt");
+            if (deletedAt != null && !deletedAt.isJsonNull()) {
+                return getString(R.string.sync_conflict_deleted);
+            }
+            JsonObject payload = root.getAsJsonObject("payload");
+            if (payload == null) return getString(R.string.sync_conflict_deleted);
+            if (payload.has("title") && !payload.get("title").isJsonNull()) {
+                String title = payload.get("title").getAsString();
+                if (!title.trim().isEmpty()) return title.trim();
+            }
+            if (payload.has("name") && !payload.get("name").isJsonNull()) {
+                String name = payload.get("name").getAsString();
+                if (!name.trim().isEmpty()) return name.trim();
+            }
+            if (payload.has("value") && !payload.get("value").isJsonNull()) {
+                String value = payload.get("value").getAsString().trim();
+                if (!value.isEmpty()) {
+                    return value.length() > 120 ? value.substring(0, 120) + "…" : value;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return getString(R.string.sync_status_ready);
+    }
+
+    private int unresolvedConflictCount(@NonNull List<SyncConflictEntity> conflicts) {
+        return unresolvedConflicts(conflicts).size();
+    }
+
+    @NonNull
+    private List<SyncConflictEntity> unresolvedConflicts(
+            @NonNull List<SyncConflictEntity> conflicts) {
+        List<SyncConflictEntity> unresolved = new ArrayList<>();
+        for (SyncConflictEntity conflict : conflicts) {
+            if (!conflict.resolved) {
+                unresolved.add(conflict);
+            }
+        }
+        return unresolved;
     }
 
     private void setupTabs() {

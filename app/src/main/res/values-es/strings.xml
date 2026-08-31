@@ -412,5 +412,26 @@
     <string name="editor_switch_label">Editor</string>
     <string name="mode_simple">Simple</string>
     <string name="mode_extended">Extendido</string>
+    <string name="sync_status_ready">Listo para sincronizar</string>
+    <string name="sync_last_sync_never">Última sincronización: nunca</string>
+    <string name="sync_last_sync_value">Última sincronización: %1$s</string>
+    <string name="sync_background">Sincronización en segundo plano</string>
+    <string name="sync_background_enabled">Sincronización en segundo plano activada</string>
+    <string name="sync_background_disabled">Sincronización en segundo plano desactivada</string>
+    <string name="sync_sign_in_required">Se requiere iniciar sesión en Google para sincronizar</string>
+    <string name="sync_review_conflicts">Revisar conflictos</string>
+    <string name="sync_review_conflicts_count">Revisar conflictos (%1$d)</string>
+    <string name="sync_conflict_title">Resolver conflictos de sincronización (%1$d restantes)</string>
+    <string name="sync_conflict_keep_local">Mantener versión local</string>
+    <string name="sync_conflict_keep_drive">Mantener versión de Google Drive</string>
+    <string name="sync_conflict_later">Más tarde</string>
+    <string name="sync_conflict_resolved">Conflicto de sincronización resuelto</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Versión local</string>
+    <string name="sync_conflict_drive_label">Versión de Google Drive</string>
+    <string name="sync_conflict_deleted">Eliminado</string>
+    <string name="sync_first_sync_title">Configurar la sincronización con Google Drive</string>
+    <string name="sync_first_sync_message">La primera sincronización combinará %1$d registros y puede subir unos %2$s. Tus datos locales seguirán disponibles.</string>
+    <string name="sync_first_sync_cancel">Ahora no</string>
 
 </resources>
