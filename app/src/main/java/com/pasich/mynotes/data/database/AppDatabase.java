@@ -10,12 +10,14 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
 import com.pasich.mynotes.data.database.dao.SyncConflictDao;
 import com.pasich.mynotes.data.database.dao.SyncMetadataDao;
+import com.pasich.mynotes.data.database.dao.SyncStateDao;
 import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
 import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
+import com.pasich.mynotes.data.database.entities.SyncStateEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
@@ -34,7 +36,8 @@ import javax.inject.Singleton;
             Task.class,
             TaskCategory.class,
             SyncMetadataEntity.class,
-            SyncConflictEntity.class
+            SyncConflictEntity.class,
+            SyncStateEntity.class
         },
         autoMigrations = {@AutoMigration(from = 1, to = 2)})
 @Singleton
@@ -114,6 +117,23 @@ public abstract class AppDatabase extends RoomDatabase {
                     database.execSQL(
                             "CREATE INDEX IF NOT EXISTS `index_sync_conflicts_createdAt` "
                                     + "ON `sync_conflicts` (`createdAt`)");
+                }
+            };
+
+    public static final Migration MIGRATION_16_17 =
+            new Migration(16, 17) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "CREATE TABLE IF NOT EXISTS `sync_state` ("
+                                    + "`id` INTEGER NOT NULL, "
+                                    + "`status` TEXT NOT NULL, "
+                                    + "`backendIdentifier` TEXT, "
+                                    + "`lastSuccessfulSyncAt` INTEGER, "
+                                    + "`attemptStartedAt` INTEGER, "
+                                    + "`errorMessage` TEXT, "
+                                    + "`conflictCount` INTEGER NOT NULL, "
+                                    + "PRIMARY KEY(`id`))");
                 }
             };
 
@@ -328,4 +348,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract SyncMetadataDao syncMetadataDao();
 
     public abstract SyncConflictDao syncConflictDao();
+
+    public abstract SyncStateDao syncStateDao();
 }

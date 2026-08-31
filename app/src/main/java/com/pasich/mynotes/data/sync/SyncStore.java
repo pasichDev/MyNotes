@@ -30,6 +30,20 @@ public interface SyncStore {
             @NonNull SyncSnapshot snapshot, @NonNull List<SyncMergeResult.Conflict> conflicts)
             throws IOException;
 
+    /**
+     * Applies a successful sync result and persists its final state in the same transaction.
+     * Implementations without a transactional state store retain compatibility by writing the state
+     * immediately after applying the snapshot.
+     */
+    default void applySnapshot(
+            @NonNull SyncSnapshot snapshot,
+            @NonNull List<SyncMergeResult.Conflict> conflicts,
+            @NonNull SyncState finalState)
+            throws IOException {
+        applySnapshot(snapshot, conflicts);
+        writeState(finalState);
+    }
+
     /** Returns every attachment content hash referenced by {@code snapshot}. */
     @NonNull
     Collection<String> getAttachmentHashes(@NonNull SyncSnapshot snapshot) throws IOException;
@@ -53,6 +67,6 @@ public interface SyncStore {
     @NonNull
     SyncState readState() throws IOException;
 
-    /** Persists a state transition independently from the content transaction. */
+    /** Persists a state transition that is not coupled to a content transaction. */
     void writeState(@NonNull SyncState state) throws IOException;
 }

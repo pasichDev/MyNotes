@@ -82,6 +82,23 @@ public class MigrationTest {
     }
 
     @Test
+    public void migrate16to17_createsSyncStateTable() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 16);
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 17, true, AppDatabase.MIGRATION_16_17);
+        try (android.database.Cursor cursor =
+                migrated.query(
+                        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sync_state'")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            assertThat(cursor.getString(0)).isEqualTo("sync_state");
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
     public void migrate14to15_backfillsCategoryMetadata() throws IOException {
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 14);
         db.close();

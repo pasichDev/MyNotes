@@ -62,12 +62,10 @@ public final class SyncService {
 
             synchronizeAttachments(backend, merged, attachmentSizes(merged));
             backend.writeSnapshot(merged);
-            store.applySnapshot(merged, mergeResult.getConflicts());
-
             SyncState success =
                     SyncState.success(
                             backendIdentifier, clock.instant(), mergeResult.getConflicts().size());
-            persistState(success);
+            store.applySnapshot(merged, mergeResult.getConflicts(), success);
             return success;
         } catch (Exception exception) {
             SyncState failure =

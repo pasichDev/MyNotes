@@ -12,6 +12,7 @@ import com.google.gson.JsonParser;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
+import com.pasich.mynotes.data.database.entities.SyncStateEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
@@ -41,7 +42,7 @@ import java.util.UUID;
 /** Room-backed sync store. Stable sync IDs remain separate from local integer primary keys. */
 public final class RoomSyncStore implements SyncStore {
     private static final String PREFS = "sync_state";
-    private static final String STATE = "last_state";
+    private static final String LEGACY_STATE = "last_state";
     private static final String PREFERENCES_HASH = "preferences_hash";
     private final AppDatabase database;
     private final SharedPreferences preferences;
@@ -102,6 +103,23 @@ public final class RoomSyncStore implements SyncStore {
     public void applySnapshot(
             @NonNull SyncSnapshot snapshot, @NonNull List<SyncMergeResult.Conflict> conflicts)
             throws IOException {
+        applySnapshotInternal(snapshot, conflicts, null);
+    }
+
+    @Override
+    public void applySnapshot(
+            @NonNull SyncSnapshot snapshot,
+            @NonNull List<SyncMergeResult.Conflict> conflicts,
+            @NonNull SyncState finalState)
+            throws IOException {
+        applySnapshotInternal(snapshot, conflicts, finalState);
+    }
+
+    private void applySnapshotInternal(
+            @NonNull SyncSnapshot snapshot,
+            @NonNull List<SyncMergeResult.Conflict> conflicts,
+            @Nullable SyncState finalState)
+            throws IOException {
         database.runInTransaction(
                 () -> {
                     Map<String, SyncMetadataEntity> byStableId = new HashMap<>();
@@ -146,6 +164,9 @@ public final class RoomSyncStore implements SyncStore {
                                         null);
                     }
                     persistConflicts(conflicts);
+                    if (finalState != null) {
+                        database.syncStateDao().upsert(toEntity(finalState));
+                    }
                 });
     }
 
@@ -608,7 +629,44 @@ public final class RoomSyncStore implements SyncStore {
     @NonNull
     @Override
     public SyncState readState() throws IOException {
-        String json = preferences.getString(STATE, null);
+        SyncStateEntity entity = database.syncStateDao().get();
+        if (entity == null) {
+            SyncState legacy = readLegacyState();
+            if (legacy.getStatus() != SyncState.Status.IDLE) {
+                database.syncStateDao().upsert(toEntity(legacy));
+            }
+            return legacy;
+        }
+        try {
+            SyncState.Status status = SyncState.Status.valueOf(entity.status);
+            String backend = entity.backendIdentifier;
+            if (status == SyncState.Status.IDLE) return SyncState.idle();
+            if (backend == null || backend.trim().isEmpty()) return SyncState.idle();
+            if (status == SyncState.Status.SYNCING) {
+                if (entity.attemptStartedAt == null) return SyncState.idle();
+                return SyncState.syncing(backend, Instant.ofEpochMilli(entity.attemptStartedAt));
+            }
+            if (status == SyncState.Status.SUCCESS) {
+                if (entity.lastSuccessfulSyncAt == null) return SyncState.idle();
+                return SyncState.success(
+                        backend,
+                        Instant.ofEpochMilli(entity.lastSuccessfulSyncAt),
+                        entity.conflictCount);
+            }
+            if (entity.errorMessage == null) return SyncState.idle();
+            Instant last =
+                    entity.lastSuccessfulSyncAt == null
+                            ? null
+                            : Instant.ofEpochMilli(entity.lastSuccessfulSyncAt);
+            return SyncState.error(backend, last, entity.errorMessage);
+        } catch (RuntimeException error) {
+            return SyncState.idle();
+        }
+    }
+
+    @NonNull
+    private SyncState readLegacyState() {
+        String json = preferences.getString(LEGACY_STATE, null);
         if (json == null) return SyncState.idle();
         try {
             JsonObject value = JsonParser.parseString(json).getAsJsonObject();
@@ -631,6 +689,10 @@ public final class RoomSyncStore implements SyncStore {
                                 : null;
                 return SyncState.error(backend, last, value.get("errorMessage").getAsString());
             }
+            if ("SYNCING".equals(status) && value.has("attemptStartedAt")) {
+                return SyncState.syncing(
+                        backend, Instant.parse(value.get("attemptStartedAt").getAsString()));
+            }
             return SyncState.idle();
         } catch (RuntimeException error) {
             return SyncState.idle();
@@ -639,6 +701,22 @@ public final class RoomSyncStore implements SyncStore {
 
     @Override
     public void writeState(@NonNull SyncState state) {
-        preferences.edit().putString(STATE, gson.toJson(state)).apply();
+        database.syncStateDao().upsert(toEntity(state));
+    }
+
+    @NonNull
+    private static SyncStateEntity toEntity(@NonNull SyncState state) {
+        return new SyncStateEntity(
+                1,
+                state.getStatus().name(),
+                state.getBackendIdentifier(),
+                state.getLastSuccessfulSyncAt() == null
+                        ? null
+                        : state.getLastSuccessfulSyncAt().toEpochMilli(),
+                state.getAttemptStartedAt() == null
+                        ? null
+                        : state.getAttemptStartedAt().toEpochMilli(),
+                state.getErrorMessage(),
+                state.getConflictCount());
     }
 }
