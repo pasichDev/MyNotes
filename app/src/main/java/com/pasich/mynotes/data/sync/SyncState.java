@@ -48,7 +48,22 @@ public final class SyncState {
 
     @NonNull
     public static SyncState syncing(@NonNull String backendIdentifier, @NonNull Instant startedAt) {
-        return new SyncState(Status.SYNCING, backendIdentifier, null, startedAt, null, 0);
+        return syncing(backendIdentifier, startedAt, null);
+    }
+
+    /**
+     * A sync in progress, remembering when the last successful one happened.
+     *
+     * <p>Without carrying it, starting a sync erased the only record of the previous success: the
+     * screen then read "never synced" for the whole attempt, and permanently if the process died
+     * before the attempt finished.
+     */
+    public static SyncState syncing(
+            @NonNull String backendIdentifier,
+            @NonNull Instant startedAt,
+            @Nullable Instant lastSuccessfulSyncAt) {
+        return new SyncState(
+                Status.SYNCING, backendIdentifier, lastSuccessfulSyncAt, startedAt, null, 0);
     }
 
     @NonNull

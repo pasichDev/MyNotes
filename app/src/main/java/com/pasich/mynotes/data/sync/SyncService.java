@@ -52,7 +52,9 @@ public final class SyncService {
         String backendIdentifier = requireBackendIdentifier(backend.getIdentifier());
         SyncState previousState = safeReadState();
         Instant startedAt = clock.instant();
-        persistState(SyncState.syncing(backendIdentifier, startedAt));
+        persistState(
+                SyncState.syncing(
+                        backendIdentifier, startedAt, previousState.getLastSuccessfulSyncAt()));
 
         try {
             SyncSnapshot local = Objects.requireNonNull(store.readSnapshot(), "local snapshot");
