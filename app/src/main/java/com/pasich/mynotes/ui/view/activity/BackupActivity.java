@@ -15,11 +15,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -39,24 +39,22 @@ import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
-import com.pasich.mynotes.data.sync.GoogleDriveSyncBackend;
 import com.pasich.mynotes.data.sync.RoomSyncStore;
 import com.pasich.mynotes.data.sync.SyncBundleCodec;
 import com.pasich.mynotes.data.sync.SyncResolution;
-import com.pasich.mynotes.data.sync.SyncService;
 import com.pasich.mynotes.data.sync.SyncSnapshot;
 import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
 import com.pasich.mynotes.ui.sync.SyncCoordinator;
+import com.pasich.mynotes.ui.sync.SyncCoordinatorFactory;
 import com.pasich.mynotes.ui.view.dialogs.BackupOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.OtherAppImportDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
+import com.pasich.mynotes.ui.view.fragment.mydata.AccountSyncFragment;
 import com.pasich.mynotes.utils.adapters.BackupPagerAdapter;
 import com.pasich.mynotes.utils.auth.FirebaseGoogleAuth;
-import com.pasich.mynotes.utils.auth.GoogleCredentialAuth;
-import com.pasich.mynotes.utils.auth.GoogleDriveAuthorization;
 import com.pasich.mynotes.utils.backup.ScramblerBackupHelper;
 import com.pasich.mynotes.utils.backup.local.BackupFileValidator;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
@@ -81,7 +79,10 @@ import javax.inject.Inject;
 
 /** Activity for creating and restoring app data backups. */
 @AndroidEntryPoint
-public class BackupActivity extends BaseActivity implements BackupContract.view {
+public class BackupActivity extends BaseActivity
+        implements BackupContract.view, AccountSyncFragment.Host {
+
+    private static final String TAG = "BackupActivity";
     private static final String BACKGROUND_SYNC_WORK_NAME = "mynotes-drive-sync";
 
     @Inject public BackupContract.presenter presenter;
@@ -174,9 +175,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     private boolean restoreSuccess = false;
     private OtherAppImportDialog importDialog;
     private Dialog progressDialog;
-    private GoogleCredentialAuth googleCredentialAuth;
-    private GoogleDriveAuthorization googleDriveAuthorization;
     private RoomSyncStore roomSyncStore;
+    private SyncCoordinatorFactory.Result syncSetup;
+    @Nullable private AccountSyncFragment accountTab;
+    private boolean syncRunning;
     private SyncCoordinator syncCoordinator;
     private final ExecutorService syncExecutor = Executors.newSingleThreadExecutor();
     @Inject FirebaseGoogleAuth firebaseGoogleAuth;
@@ -195,67 +197,21 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
 
         setContentView(binding.getRoot());
 
-        googleCredentialAuth =
-                new GoogleCredentialAuth(this, getString(R.string.default_web_client_id));
-        googleDriveAuthorization = new GoogleDriveAuthorization(this);
-        roomSyncStore = new RoomSyncStore(this, appDatabase, preferenceHelper);
-        syncCoordinator =
-                new SyncCoordinator(
-                        preferenceHelper,
-                        firebaseGoogleAuth,
-                        googleCredentialAuth,
-                        googleDriveAuthorization,
-                        new SyncCoordinator.ConflictStore() {
-                            @NonNull
-                            @Override
-                            public SyncState readState() {
-                                try {
-                                    return roomSyncStore.readState();
-                                } catch (java.io.IOException ignored) {
-                                    return SyncState.idle();
-                                }
-                            }
-
-                            @NonNull
-                            @Override
-                            public List<SyncConflictEntity> getConflicts() {
-                                return roomSyncStore.getConflicts();
-                            }
-
-                            @Override
-                            public void resolveConflict(
-                                    long conflictId, @NonNull SyncResolution resolution)
-                                    throws java.io.IOException {
-                                roomSyncStore.resolveConflict(conflictId, resolution);
-                            }
-
-                            @NonNull
-                            @Override
-                            public SyncState sync(@NonNull String accessToken) {
-                                return new SyncService(roomSyncStore)
-                                        .sync(new GoogleDriveSyncBackend(accessToken));
-                            }
-                        },
-                        new SyncCoordinator.BackgroundScheduler() {
-                            @Override
-                            public void enable() {
-                                enableBackgroundSyncWork();
-                            }
-
-                            @Override
-                            public void disable() {
-                                disableBackgroundSyncWork();
-                            }
-                        },
-                        syncExecutor,
-                        this::runOnUiThread);
-        updateGoogleSignInButton();
-        binding.googleSignInButton.setOnClickListener(v -> onGoogleSignInClicked());
-        binding.googleSignInButtonSignedOut.setOnClickListener(v -> onGoogleSignInClicked());
-        binding.syncButton.setOnClickListener(v -> startSync());
-        binding.syncConflictsButton.setOnClickListener(v -> showNextConflictDialog());
-        binding.syncBackgroundSwitch.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> onBackgroundSyncToggled(isChecked));
+        syncSetup =
+                SyncCoordinatorFactory.create(
+                        this, appDatabase, preferenceHelper, firebaseGoogleAuth, syncExecutor);
+        if (syncSetup == null) {
+            // No Firebase configuration in this build; GoogleCredentialAuth rejects a blank client
+            // ID, so the sync controls are hidden instead of crashing the screen.
+            if (accountTab != null) {
+                accountTab.showUnavailable();
+            }
+        }
+        if (syncSetup != null) {
+            syncCoordinator = syncSetup.getCoordinator();
+            roomSyncStore = syncSetup.getStore();
+            updateGoogleSignInButton();
+        }
 
         setupEdgeToEdgeInsets(binding.getRoot());
         presenter.attachView(this);
@@ -274,44 +230,74 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                         });
     }
 
+    /** The account tab draws itself from the state the next updateSyncUi() pushes. */
     private void updateGoogleSignInButton() {
-        SyncCoordinator.Profile profile = syncCoordinator.getProfile();
-        if (!profile.isSignedIn()) {
-            binding.googleProfile.setVisibility(View.GONE);
-            binding.googleSignInButtonSignedOut.setVisibility(View.VISIBLE);
-            updateSyncUi();
-            return;
-        }
-        binding.googleName.setText(profile.getDisplayName());
-        binding.googleEmail.setText(profile.getEmail());
-        binding.googleAvatar.setText(profile.getAvatarLabel());
-        binding.googleProfile.setVisibility(View.VISIBLE);
-        binding.googleSignInButtonSignedOut.setVisibility(View.GONE);
         updateSyncUi();
     }
 
-    private void updateSyncUi() {
-        if (syncCoordinator == null) return;
-        SyncCoordinator.Profile profile = syncCoordinator.getProfile();
-        SyncState state = syncCoordinator.getLastState();
-        int unresolvedConflicts = unresolvedConflictCount(syncCoordinator.getConflicts());
+    /**
+     * Loads the sync state off the main thread and then draws it.
+     *
+     * <p>The state and the conflict list live in Room, which refuses main-thread access; the
+     * profile comes from Firebase and is safe to read here.
+     */
+    /** True while the screen can still be drawn into. */
+    private boolean canSchedule() {
+        return syncCoordinator != null && !isFinishing() && !isDestroyed();
+    }
 
-        updatingSyncControls = true;
-        binding.syncButton.setEnabled(profile.isSignedIn());
-        binding.syncBackgroundSwitch.setEnabled(profile.isSignedIn());
-        binding.syncBackgroundSwitch.setChecked(
-                profile.isSignedIn() && syncCoordinator.isBackgroundSyncEnabled());
-        updatingSyncControls = false;
-
-        binding.syncConflictsButton.setVisibility(
-                profile.isSignedIn() && unresolvedConflicts > 0 ? View.VISIBLE : View.GONE);
-        if (unresolvedConflicts > 0) {
-            binding.syncConflictsButton.setText(
-                    getString(R.string.sync_review_conflicts_count, unresolvedConflicts));
+    /**
+     * Runs background work without letting a finished screen crash the app.
+     *
+     * <p>Checking {@code isShutdown()} first leaves a race between the check and the submission, so
+     * the rejection is caught instead.
+     */
+    private void runInBackground(Runnable task) {
+        try {
+            syncExecutor.execute(
+                    () -> {
+                        try {
+                            task.run();
+                        } catch (RuntimeException error) {
+                            // An exception escaping a worker thread kills the process; a failed
+                            // background read must degrade the screen, not the app.
+                            Log.e(TAG, "Background work failed", error);
+                        }
+                    });
+        } catch (java.util.concurrent.RejectedExecutionException rejected) {
+            Log.w(TAG, "Background work could not be scheduled; the screen is gone", rejected);
         }
-        binding.syncStatusText.setText(
-                resolveStatusText(profile.isSignedIn(), state, unresolvedConflicts));
-        binding.syncLastSyncText.setText(formatLastSync(state));
+    }
+
+    private void updateSyncUi() {
+        if (!canSchedule()) return;
+        SyncCoordinator.Profile profile = syncCoordinator.getProfile();
+        runInBackground(
+                () -> {
+                    SyncState state = syncCoordinator.getLastState();
+                    int unresolved = unresolvedConflictCount(syncCoordinator.getConflicts());
+                    runOnUiThread(
+                            () -> {
+                                if (!isFinishing() && !isDestroyed()) {
+                                    renderSyncUi(profile, state, unresolved);
+                                }
+                            });
+                });
+    }
+
+    private void renderSyncUi(
+            SyncCoordinator.Profile profile, SyncState state, int unresolvedConflicts) {
+        if (accountTab == null || !accountTab.isBound()) {
+            return;
+        }
+        accountTab.render(
+                profile,
+                state,
+                profile.isSignedIn() ? unresolvedConflicts : 0,
+                profile.isSignedIn() && syncCoordinator.isBackgroundSyncEnabled(),
+                resolveStatusText(profile.isSignedIn(), state, unresolvedConflicts),
+                formatLastSync(state));
+        accountTab.setSyncing(syncRunning);
     }
 
     private void startSync() {
@@ -320,17 +306,28 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                     R.string.google_sign_in_failed, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             return;
         }
-        if (syncCoordinator.getLastState().getLastSuccessfulSyncAt() == null) {
-            prepareFirstSyncConfirmation();
-            return;
-        }
-        runSync();
+        runInBackground(
+                () -> {
+                    boolean neverSynced =
+                            syncCoordinator.getLastState().getLastSuccessfulSyncAt() == null;
+                    runOnUiThread(
+                            () -> {
+                                if (isFinishing() || isDestroyed()) {
+                                    return;
+                                }
+                                if (neverSynced) {
+                                    prepareFirstSyncConfirmation();
+                                } else {
+                                    runSync();
+                                }
+                            });
+                });
     }
 
     private void prepareFirstSyncConfirmation() {
-        binding.syncButton.setEnabled(false);
-        binding.syncStatusText.setText(R.string.sync_started);
-        syncExecutor.execute(
+        syncRunning = true;
+        if (accountTab != null) accountTab.setSyncing(true);
+        runInBackground(
                 () -> {
                     try {
                         SyncSnapshot snapshot = roomSyncStore.readSnapshot();
@@ -367,7 +364,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                         long estimatedBytes = bundle.length + attachmentBytes;
                         runOnUiThread(
                                 () -> {
-                                    binding.syncButton.setEnabled(true);
+                                    syncRunning = false;
+                                    if (accountTab != null) accountTab.setSyncing(false);
                                     new MaterialAlertDialogBuilder(this)
                                             .setTitle(R.string.sync_first_sync_title)
                                             .setMessage(
@@ -385,7 +383,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                     } catch (Exception error) {
                         runOnUiThread(
                                 () -> {
-                                    binding.syncButton.setEnabled(true);
+                                    syncRunning = false;
+                                    if (accountTab != null) accountTab.setSyncing(false);
                                     finishSyncError(error);
                                 });
                     }
@@ -393,10 +392,8 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     }
 
     private void runSync() {
-        binding.syncButton.setEnabled(false);
-        binding.syncButton.setVisibility(View.GONE);
-        binding.syncProgress.setVisibility(View.VISIBLE);
-        binding.syncStatusText.setText(R.string.sync_started);
+        syncRunning = true;
+        if (accountTab != null) accountTab.setSyncing(true);
         syncCoordinator.syncNow(
                 this,
                 new SyncCoordinator.Callback<SyncState>() {
@@ -421,10 +418,47 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         return String.format(Locale.ROOT, "%.1f MB", bytes / (1024.0d * 1024.0d));
     }
 
+    private void onGoogleSignInClicked() {
+        if (syncCoordinator.getProfile().isSignedIn()) {
+            syncCoordinator.disconnect(
+                    new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
+                        @Override
+                        public void onSuccess(@NonNull SyncCoordinator.Profile value) {
+                            updateGoogleSignInButton();
+                        }
+
+                        @Override
+                        public void onError(@NonNull Exception error) {
+                            updateGoogleSignInButton();
+                        }
+                    });
+            return;
+        }
+        syncCoordinator.connect(
+                this,
+                new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
+                    @Override
+                    public void onSuccess(@NonNull SyncCoordinator.Profile value) {
+                        updateGoogleSignInButton();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Exception error) {
+                        onInfoSnack(
+                                R.string.google_sign_in_failed,
+                                null,
+                                SnackBarInfo.Error,
+                                Snackbar.LENGTH_LONG);
+                    }
+                });
+    }
+
     private void finishSync(SyncState state) {
-        binding.syncButton.setEnabled(true);
-        binding.syncButton.setVisibility(View.VISIBLE);
-        binding.syncProgress.setVisibility(View.GONE);
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+        syncRunning = false;
+        if (accountTab != null) accountTab.setSyncing(false);
         if (state.getStatus() == SyncState.Status.SUCCESS) {
             int conflicts = state.getConflictCount();
             updateSyncUi();
@@ -465,9 +499,11 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     }
 
     private void finishSyncError(Exception error) {
-        binding.syncButton.setEnabled(true);
-        binding.syncButton.setVisibility(View.VISIBLE);
-        binding.syncProgress.setVisibility(View.GONE);
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+        syncRunning = false;
+        if (accountTab != null) accountTab.setSyncing(false);
         updateSyncUi();
         onInfoSnack(
                 getString(
@@ -485,41 +521,6 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         if (syncCoordinator != null
                 && syncCoordinator.onActivityResult(requestCode, resultCode, data)) return;
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void onGoogleSignInClicked() {
-        if (syncCoordinator.getProfile().isSignedIn()) {
-            syncCoordinator.disconnect(
-                    new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
-                        @Override
-                        public void onSuccess(@NonNull SyncCoordinator.Profile value) {
-                            updateGoogleSignInButton();
-                        }
-
-                        @Override
-                        public void onError(@NonNull Exception error) {
-                            updateGoogleSignInButton();
-                        }
-                    });
-            return;
-        }
-        syncCoordinator.connect(
-                this,
-                new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
-                    @Override
-                    public void onSuccess(@NonNull SyncCoordinator.Profile value) {
-                        updateGoogleSignInButton();
-                    }
-
-                    @Override
-                    public void onError(@NonNull Exception error) {
-                        onInfoSnack(
-                                R.string.google_sign_in_failed,
-                                null,
-                                SnackBarInfo.Error,
-                                Snackbar.LENGTH_LONG);
-                    }
-                });
     }
 
     private void onBackgroundSyncToggled(boolean enabled) {
@@ -540,7 +541,20 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     }
 
     private void showNextConflictDialog() {
-        List<SyncConflictEntity> unresolved = unresolvedConflicts(syncCoordinator.getConflicts());
+        runInBackground(
+                () -> {
+                    List<SyncConflictEntity> unresolved =
+                            unresolvedConflicts(syncCoordinator.getConflicts());
+                    runOnUiThread(
+                            () -> {
+                                if (!isFinishing() && !isDestroyed()) {
+                                    showConflictDialog(unresolved);
+                                }
+                            });
+                });
+    }
+
+    private void showConflictDialog(List<SyncConflictEntity> unresolved) {
         if (unresolved.isEmpty()) {
             updateSyncUi();
             return;
@@ -590,8 +604,15 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         if (!signedIn) {
             return getString(R.string.sync_sign_in_required);
         }
+        if (state == null) {
+            return getString(R.string.sync_status_ready);
+        }
         if (state.getStatus() == SyncState.Status.SYNCING) {
-            return getString(R.string.sync_started);
+            // A SYNCING state read back from storage can be the leftover of a run this process
+            // never finished; reporting it forever would make the screen look stuck.
+            return syncRunning
+                    ? getString(R.string.sync_started)
+                    : getString(R.string.sync_status_ready);
         }
         if (state.getStatus() == SyncState.Status.SUCCESS) {
             return unresolvedConflicts == 0
@@ -681,6 +702,48 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         return unresolved;
     }
 
+    // ---- AccountSyncFragment.Host ----
+
+    @Override
+    public void onAccountTabAttached(@NonNull AccountSyncFragment fragment) {
+        accountTab = fragment;
+        if (syncSetup == null) {
+            fragment.showUnavailable();
+            return;
+        }
+        updateSyncUi();
+    }
+
+    @Override
+    public void onAccountTabDetached() {
+        accountTab = null;
+    }
+
+    @Override
+    public void onAccountSignInClicked() {
+        if (syncSetup != null) onGoogleSignInClicked();
+    }
+
+    @Override
+    public void onAccountSignOutClicked() {
+        if (syncSetup != null) onGoogleSignInClicked();
+    }
+
+    @Override
+    public void onAccountSyncClicked() {
+        if (syncSetup != null) startSync();
+    }
+
+    @Override
+    public void onAccountBackgroundSyncChanged(boolean enabled) {
+        if (syncSetup != null) onBackgroundSyncToggled(enabled);
+    }
+
+    @Override
+    public void onAccountConflictsClicked() {
+        if (syncSetup != null) showNextConflictDialog();
+    }
+
     private void setupTabs() {
         BackupPagerAdapter pagerAdapter = new BackupPagerAdapter(this);
         binding.viewPager.setAdapter(pagerAdapter);
@@ -691,9 +754,12 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                         (tab, position) -> {
                             switch (position) {
                                 case 0:
-                                    tab.setText(R.string.backup_and_export);
+                                    tab.setText(R.string.tab_account);
                                     break;
                                 case 1:
+                                    tab.setText(R.string.backup_and_export);
+                                    break;
+                                case 2:
                                     tab.setText(R.string.import_data);
                                     break;
                             }
@@ -732,7 +798,11 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        syncExecutor.shutdownNow();
+        // onDestroy also runs on rotation, and a sync started here delivers its callback later.
+        // Killing the executor then made that callback throw RejectedExecutionException.
+        if (isFinishing()) {
+            syncExecutor.shutdown();
+        }
         if (isDestroyed()) {
             presenter.detachView();
         }

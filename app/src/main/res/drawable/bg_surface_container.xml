@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A card that is actually visible on a colorSurface screen: bg_item_full paints colorSurface,
+     which is the same value as this screen's background. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorSurfaceContainer" />
+
+    <corners android:radius="12dp" />
+</shape>
