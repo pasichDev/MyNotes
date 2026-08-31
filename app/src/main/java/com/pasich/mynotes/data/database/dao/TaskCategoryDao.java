@@ -3,6 +3,7 @@ package com.pasich.mynotes.data.database.dao;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 import com.pasich.mynotes.data.model.TaskCategory;
@@ -24,7 +25,7 @@ public interface TaskCategoryDao {
     @Query("SELECT * FROM task_categories ORDER BY position ASC, id ASC")
     List<TaskCategory> getCategoriesSync();
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertCategory(TaskCategory category);
 
     @Update

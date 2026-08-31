@@ -24,6 +24,11 @@ public interface SyncMetadataDao {
     SyncMetadataEntity get(String recordType, long localId);
 
     @Query(
+            "SELECT EXISTS(SELECT 1 FROM sync_metadata "
+                    + "WHERE recordType = :recordType AND localId = :localId)")
+    boolean exists(String recordType, long localId);
+
+    @Query(
             "SELECT * FROM sync_metadata WHERE recordType = :recordType AND stableId = :stableId LIMIT 1")
     SyncMetadataEntity getByStableId(String recordType, String stableId);
 

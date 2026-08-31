@@ -16,6 +16,9 @@ public abstract class Transactions {
     @Query("UPDATE notes SET tag = :newTag WHERE tag = :oldTag")
     public abstract void renameTagNotes(String oldTag, String newTag);
 
+    @Query("SELECT id FROM notes WHERE tag = :tag")
+    public abstract List<Integer> getNoteIdsForTag(String tag);
+
     @Delete
     public abstract void deleteTag(Tag tag);
 
@@ -32,10 +35,13 @@ public abstract class Transactions {
     public abstract long addNote(Note note);
 
     @Query("UPDATE notes SET tag='' WHERE tag NOT IN (SELECT name FROM tags)")
-    protected abstract void clearInvalidTags();
+    public abstract void clearInvalidTags();
+
+    @Query("SELECT id FROM notes WHERE tag != '' AND tag NOT IN (SELECT name FROM tags)")
+    public abstract List<Integer> getNoteIdsWithInvalidTags();
 
     @Query("UPDATE notes SET isTrash = 0 WHERE id IN (:ids)")
-    protected abstract void restoreNotesInternal(List<Integer> ids);
+    public abstract void restoreNotesInternal(List<Integer> ids);
 
     @Transaction
     public long addNoteTransaction(Note note) {

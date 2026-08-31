@@ -88,7 +88,7 @@ public abstract class AppDatabase extends RoomDatabase {
             String sourceTable,
             long migrationTimestamp) {
         database.execSQL(
-                "INSERT INTO `sync_metadata` "
+                "INSERT OR IGNORE INTO `sync_metadata` "
                         + "(`recordType`, `localId`, `stableId`, `updatedAt`, `deletedAt`) "
                         + "SELECT '"
                         + recordType

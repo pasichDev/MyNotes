@@ -39,7 +39,7 @@ public interface NoteDao {
     Long addNoteCopy(Note note);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void addNotes(List<Note> notes);
+    long[] addNotes(List<Note> notes);
 
     @Query(
             "UPDATE notes SET title = :title, value = :value, valueJson = :valueJson, date = :date, tag = :tag, attachments = :attachments WHERE id = :id")
@@ -63,6 +63,9 @@ public interface NoteDao {
 
     @Query("SELECT * FROM notes WHERE tag = :nameTag AND isTrash = 0")
     List<Note> getNotesForTag(String nameTag);
+
+    @Query("SELECT id FROM notes WHERE isTrash = 1")
+    List<Integer> getTrashNoteIdsSync();
 
     @Query("SELECT * FROM notes WHERE id=:idNote")
     Single<Note> getNoteForId(long idNote);

@@ -3,6 +3,7 @@ package com.pasich.mynotes.data.database.dao;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 import com.pasich.mynotes.data.model.Task;
@@ -32,7 +33,7 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY position ASC, createdAt ASC LIMIT 10")
     List<Task> getActiveTasksSync();
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertTask(Task task);
 
     @Update
@@ -46,6 +47,9 @@ public interface TaskDao {
 
     @Query("DELETE FROM tasks WHERE isDone = 1")
     void clearCompletedTasks();
+
+    @Query("SELECT id FROM tasks WHERE isDone = 1")
+    List<Integer> getCompletedTaskIdsSync();
 
     @Query("SELECT COUNT(*) FROM tasks WHERE categoryId = :categoryId")
     int getTaskCountForCategory(int categoryId);

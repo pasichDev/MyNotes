@@ -24,7 +24,7 @@ public interface TagsDao {
     void deleteById(long id);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void addTags(List<Tag> tags);
+    long[] addTags(List<Tag> tags);
 
     @Update
     void updateTags(List<Tag> tags);
