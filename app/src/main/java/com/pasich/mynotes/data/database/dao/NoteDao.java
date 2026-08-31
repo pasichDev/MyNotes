@@ -26,6 +26,12 @@ public interface NoteDao {
     @Query("SELECT * FROM notes WHERE isTrash = 1")
     List<Note> getTrashNotesSync();
 
+    @Query("SELECT * FROM notes WHERE id = :id LIMIT 1")
+    Note getNoteSync(int id);
+
+    @Query("DELETE FROM notes WHERE id = :id")
+    void deleteById(int id);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Long addNote(Note note);
 

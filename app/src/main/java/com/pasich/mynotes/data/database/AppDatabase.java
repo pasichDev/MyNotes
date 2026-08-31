@@ -73,6 +73,15 @@ public abstract class AppDatabase extends RoomDatabase {
                 }
             };
 
+    public static final Migration MIGRATION_14_15 =
+            new Migration(14, 15) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    insertMetadataForExistingRecords(
+                            database, "category", "task_categories", System.currentTimeMillis());
+                }
+            };
+
     private static void insertMetadataForExistingRecords(
             SupportSQLiteDatabase database,
             String recordType,

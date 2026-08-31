@@ -31,8 +31,10 @@ public final class SyncRecord {
     /** Types that have their own stable-ID namespace in a sync snapshot. */
     public enum Type {
         NOTE("note"),
+        CATEGORY("category"),
         TASK("task"),
-        TAG("tag");
+        TAG("tag"),
+        PREFERENCES("preferences");
 
         private final String wireValue;
 

@@ -26,11 +26,14 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :taskId LIMIT 1")
     Task getTaskSync(int taskId);
 
+    @Query("DELETE FROM tasks WHERE id = :taskId")
+    void deleteById(int taskId);
+
     @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY position ASC, createdAt ASC LIMIT 10")
     List<Task> getActiveTasksSync();
 
     @Insert
-    void insertTask(Task task);
+    long insertTask(Task task);
 
     @Update
     void updateTask(Task task);

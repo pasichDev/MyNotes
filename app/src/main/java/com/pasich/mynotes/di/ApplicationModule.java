@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import androidx.room.Room;
+import com.google.firebase.auth.FirebaseAuth;
 import com.pasich.mynotes.data.AppDataManager;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.database.AppDatabase;
@@ -34,6 +35,12 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
+    FirebaseAuth providesFirebaseAuth() {
+        return FirebaseAuth.getInstance();
+    }
+
+    @Provides
+    @Singleton
     AppDatabase providesAppDatabase(@ApplicationContext Context context) {
         AppDatabase.setContext(context);
         return Room.databaseBuilder(
@@ -52,7 +59,8 @@ public class ApplicationModule {
                         AppDatabase.MIGRATION_10_11,
                         AppDatabase.MIGRATION_11_12,
                         AppDatabase.MIGRATION_12_13,
-                        AppDatabase.MIGRATION_13_14)
+                        AppDatabase.MIGRATION_13_14,
+                        AppDatabase.MIGRATION_14_15)
                 .build();
     }
 

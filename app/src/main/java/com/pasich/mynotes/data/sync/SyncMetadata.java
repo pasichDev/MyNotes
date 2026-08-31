@@ -7,8 +7,10 @@ import java.util.UUID;
 public final class SyncMetadata {
 
     public static final String RECORD_TYPE_NOTE = "note";
+    public static final String RECORD_TYPE_CATEGORY = "category";
     public static final String RECORD_TYPE_TASK = "task";
     public static final String RECORD_TYPE_TAG = "tag";
+    public static final String RECORD_TYPE_PREFERENCES = "preferences";
 
     private SyncMetadata() {}
 
@@ -21,7 +23,9 @@ public final class SyncMetadata {
     public static boolean isSupportedRecordType(String recordType) {
         return RECORD_TYPE_NOTE.equals(recordType)
                 || RECORD_TYPE_TASK.equals(recordType)
-                || RECORD_TYPE_TAG.equals(recordType);
+                || RECORD_TYPE_TAG.equals(recordType)
+                || RECORD_TYPE_CATEGORY.equals(recordType)
+                || RECORD_TYPE_PREFERENCES.equals(recordType);
     }
 
     /**

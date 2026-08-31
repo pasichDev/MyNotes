@@ -311,6 +311,15 @@
     <string name="backup">Backup</string>
     <string name="device_storage">Device storage</string>
     <string name="google_drive">Google drive</string>
+    <string name="google_sign_in">Sign in with Google</string>
+    <string name="google_sign_out">Sign out (%1$s)</string>
+    <string name="google_sign_out_action">Sign out</string>
+    <string name="google_sign_in_failed">Google sign-in failed</string>
+    <string name="sync_now">Sync</string>
+    <string name="sync_started">Syncing…</string>
+    <string name="sync_success">Synced successfully</string>
+    <string name="sync_success_conflicts">Synced with %1$d conflicts</string>
+    <string name="sync_failed">Sync failed: %1$s</string>
     <string name="save_backup">Save backup</string>
     <string name="restore_backup">Restore backup</string>
     <string name="file_not_selected">File not selected</string>
@@ -461,4 +470,3 @@
     <string name="mode_extended">Extended</string>
 
 </resources>
-

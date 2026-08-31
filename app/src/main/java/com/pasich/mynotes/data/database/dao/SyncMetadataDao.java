@@ -15,15 +15,26 @@ public interface SyncMetadataDao {
     long insertIfAbsent(SyncMetadataEntity metadata);
 
     @Query(
+            "UPDATE sync_metadata SET updatedAt = :updatedAt, deletedAt = :deletedAt WHERE recordType = :recordType AND localId = :localId")
+    void setVersion(String recordType, long localId, long updatedAt, Long deletedAt);
+
+    @Query(
             "SELECT * FROM sync_metadata "
                     + "WHERE recordType = :recordType AND localId = :localId LIMIT 1")
     SyncMetadataEntity get(String recordType, long localId);
+
+    @Query(
+            "SELECT * FROM sync_metadata WHERE recordType = :recordType AND stableId = :stableId LIMIT 1")
+    SyncMetadataEntity getByStableId(String recordType, String stableId);
 
     @Query("SELECT * FROM sync_metadata WHERE deletedAt IS NULL ORDER BY recordType, stableId")
     List<SyncMetadataEntity> getLiveRecords();
 
     @Query("SELECT * FROM sync_metadata WHERE deletedAt IS NOT NULL ORDER BY recordType, stableId")
     List<SyncMetadataEntity> getTombstones();
+
+    @Query("SELECT * FROM sync_metadata ORDER BY recordType, stableId")
+    List<SyncMetadataEntity> getAll();
 
     @Query("SELECT * FROM sync_metadata WHERE updatedAt > :timestamp ORDER BY updatedAt, stableId")
     List<SyncMetadataEntity> getChangedSince(long timestamp);

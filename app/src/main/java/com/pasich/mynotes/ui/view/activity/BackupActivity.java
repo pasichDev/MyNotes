@@ -15,16 +15,28 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.base.view.BackupOptionsCallback;
+import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.model.Note;
+import com.pasich.mynotes.data.preferences.PreferenceHelper;
+import com.pasich.mynotes.data.sync.GoogleDriveSyncBackend;
+import com.pasich.mynotes.data.sync.RoomSyncStore;
+import com.pasich.mynotes.data.sync.SyncService;
+import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
@@ -32,6 +44,9 @@ import com.pasich.mynotes.ui.view.dialogs.BackupOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.OtherAppImportDialog;
 import com.pasich.mynotes.ui.view.dialogs.ShareOptionsDialog;
 import com.pasich.mynotes.utils.adapters.BackupPagerAdapter;
+import com.pasich.mynotes.utils.auth.FirebaseGoogleAuth;
+import com.pasich.mynotes.utils.auth.GoogleCredentialAuth;
+import com.pasich.mynotes.utils.auth.GoogleDriveAuthorization;
 import com.pasich.mynotes.utils.backup.ScramblerBackupHelper;
 import com.pasich.mynotes.utils.backup.local.BackupFileValidator;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
@@ -42,6 +57,9 @@ import com.pasich.mynotes.utils.file.DriveProcess;
 import com.pasich.mynotes.utils.file.FileExportUtils;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 /** Activity for creating and restoring app data backups. */
@@ -49,6 +67,8 @@ import javax.inject.Inject;
 public class BackupActivity extends BaseActivity implements BackupContract.view {
 
     @Inject public BackupContract.presenter presenter;
+    @Inject AppDatabase appDatabase;
+    @Inject PreferenceHelper preferenceHelper;
 
     /** Save local backup intent */
     private final ActivityResultLauncher<Intent> intentExportDevice =
@@ -136,6 +156,10 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     private boolean restoreSuccess = false;
     private OtherAppImportDialog importDialog;
     private Dialog progressDialog;
+    private GoogleCredentialAuth googleCredentialAuth;
+    private GoogleDriveAuthorization googleDriveAuthorization;
+    private final ExecutorService syncExecutor = Executors.newSingleThreadExecutor();
+    @Inject FirebaseGoogleAuth firebaseGoogleAuth;
 
     @Override
     public void onRestoreSuccessFlag() {
@@ -149,6 +173,14 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
         binding = ActivityBackupBinding.inflate(getLayoutInflater());
 
         setContentView(binding.getRoot());
+
+        googleCredentialAuth =
+                new GoogleCredentialAuth(this, getString(R.string.default_web_client_id));
+        googleDriveAuthorization = new GoogleDriveAuthorization(this);
+        updateGoogleSignInButton();
+        binding.googleSignInButton.setOnClickListener(v -> onGoogleSignInClicked());
+        binding.googleSignInButtonSignedOut.setOnClickListener(v -> onGoogleSignInClicked());
+        binding.syncButton.setOnClickListener(v -> startSync());
 
         setupEdgeToEdgeInsets(binding.getRoot());
         presenter.attachView(this);
@@ -165,6 +197,172 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
                                 setEnabled(finishActivity());
                             }
                         });
+    }
+
+    private void updateGoogleSignInButton() {
+        if (firebaseGoogleAuth == null || !firebaseGoogleAuth.isSignedIn()) {
+            binding.googleProfile.setVisibility(View.GONE);
+            binding.googleSignInButtonSignedOut.setVisibility(View.VISIBLE);
+            return;
+        }
+        com.google.firebase.auth.FirebaseUser user = firebaseGoogleAuth.getCurrentUser();
+        String name = user.getDisplayName();
+        String email = user.getEmail();
+        String label = name == null || name.trim().isEmpty() ? "Google" : name.trim();
+        binding.googleName.setText(label);
+        binding.googleEmail.setText(email == null ? "" : email);
+        binding.googleAvatar.setText(label.substring(0, 1).toUpperCase(java.util.Locale.ROOT));
+        binding.googleProfile.setVisibility(View.VISIBLE);
+        binding.googleSignInButtonSignedOut.setVisibility(View.GONE);
+    }
+
+    private void startSync() {
+        if (!firebaseGoogleAuth.isSignedIn()) {
+            onInfoSnack(
+                    R.string.google_sign_in_failed, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+            return;
+        }
+        binding.syncButton.setEnabled(false);
+        binding.syncButton.setVisibility(View.GONE);
+        binding.syncProgress.setVisibility(View.VISIBLE);
+        googleDriveAuthorization.authorize(
+                this,
+                new GoogleDriveAuthorization.Callback() {
+                    @Override
+                    public void onAuthorized(@androidx.annotation.NonNull String accessToken) {
+                        syncExecutor.execute(
+                                () -> {
+                                    SyncState state =
+                                            new SyncService(
+                                                            new RoomSyncStore(
+                                                                    BackupActivity.this,
+                                                                    appDatabase,
+                                                                    preferenceHelper))
+                                                    .sync(new GoogleDriveSyncBackend(accessToken));
+                                    runOnUiThread(() -> finishSync(state));
+                                });
+                    }
+
+                    @Override
+                    public void onError(@androidx.annotation.NonNull Exception error) {
+                        runOnUiThread(() -> finishSyncError(error));
+                    }
+                });
+    }
+
+    private void finishSync(SyncState state) {
+        binding.syncButton.setEnabled(true);
+        binding.syncButton.setVisibility(View.VISIBLE);
+        binding.syncProgress.setVisibility(View.GONE);
+        if (state.getStatus() == SyncState.Status.SUCCESS) {
+            scheduleAutomaticSync();
+            int conflicts = state.getConflictCount();
+            onInfoSnack(
+                    conflicts == 0
+                            ? getString(R.string.sync_success)
+                            : getString(R.string.sync_success_conflicts, conflicts),
+                    null,
+                    SnackBarInfo.Success,
+                    Snackbar.LENGTH_LONG);
+        } else {
+            finishSyncError(new IllegalStateException(state.getErrorMessage()));
+        }
+    }
+
+    private void scheduleAutomaticSync() {
+        Constraints constraints =
+                new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+        PeriodicWorkRequest request =
+                new PeriodicWorkRequest.Builder(
+                                com.pasich.mynotes.data.sync.GoogleDriveSyncWorker.class,
+                                6,
+                                TimeUnit.HOURS)
+                        .setConstraints(constraints)
+                        .build();
+        WorkManager.getInstance(getApplicationContext())
+                .enqueueUniquePeriodicWork(
+                        "mynotes-drive-sync", ExistingPeriodicWorkPolicy.UPDATE, request);
+    }
+
+    private void finishSyncError(Exception error) {
+        binding.syncButton.setEnabled(true);
+        binding.syncButton.setVisibility(View.VISIBLE);
+        binding.syncProgress.setVisibility(View.GONE);
+        onInfoSnack(
+                getString(
+                        R.string.sync_failed,
+                        error.getMessage() == null
+                                ? error.getClass().getSimpleName()
+                                : error.getMessage()),
+                null,
+                SnackBarInfo.Error,
+                Snackbar.LENGTH_LONG);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (googleDriveAuthorization != null
+                && googleDriveAuthorization.onActivityResult(requestCode, resultCode, data)) return;
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void onGoogleSignInClicked() {
+        if (firebaseGoogleAuth.isSignedIn()) {
+            firebaseGoogleAuth.signOut();
+            updateGoogleSignInButton();
+            googleCredentialAuth.signOut(
+                    new GoogleCredentialAuth.SignOutCallback() {
+                        @Override
+                        public void onSuccess() {
+                            // Firebase state was already reflected immediately.
+                        }
+
+                        @Override
+                        public void onError(@androidx.annotation.NonNull Exception error) {
+                            // Credential Manager cleanup is best-effort.
+                        }
+                    });
+            return;
+        }
+        googleCredentialAuth.signIn(
+                this,
+                new GoogleCredentialAuth.Callback() {
+                    @Override
+                    public void onSuccess(
+                            @androidx.annotation.NonNull
+                                    com.pasich.mynotes.utils.auth.GoogleCredential credential) {
+                        firebaseGoogleAuth.signIn(
+                                credential,
+                                new FirebaseGoogleAuth.Callback() {
+                                    @Override
+                                    public void onSuccess(
+                                            @androidx.annotation.NonNull
+                                                    com.google.firebase.auth.FirebaseUser user) {
+                                        updateGoogleSignInButton();
+                                        scheduleAutomaticSync();
+                                    }
+
+                                    @Override
+                                    public void onError(
+                                            @androidx.annotation.NonNull Exception error) {
+                                        onInfoSnack(
+                                                R.string.google_sign_in_failed,
+                                                null,
+                                                SnackBarInfo.Error,
+                                                Snackbar.LENGTH_LONG);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError(@androidx.annotation.NonNull Exception error) {
+                        onInfoSnack(
+                                R.string.google_sign_in_failed,
+                                null,
+                                SnackBarInfo.Error,
+                                Snackbar.LENGTH_LONG);
+                    }
+                });
     }
 
     private void setupTabs() {
@@ -218,6 +416,7 @@ public class BackupActivity extends BaseActivity implements BackupContract.view 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        syncExecutor.shutdownNow();
         if (isDestroyed()) {
             presenter.detachView();
         }

@@ -12,6 +12,12 @@ import java.util.List;
 @Dao
 public interface TaskCategoryDao {
 
+    @Query("SELECT * FROM task_categories WHERE id = :id LIMIT 1")
+    TaskCategory getCategorySync(int id);
+
+    @Query("DELETE FROM task_categories WHERE id = :id")
+    void deleteById(int id);
+
     @Query("SELECT * FROM task_categories ORDER BY position ASC, id ASC")
     Flowable<List<TaskCategory>> getCategories();
 
