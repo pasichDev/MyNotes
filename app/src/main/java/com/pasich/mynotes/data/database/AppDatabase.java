@@ -8,10 +8,12 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
+import com.pasich.mynotes.data.database.dao.SyncMetadataDao;
 import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
 import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
+import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
@@ -24,10 +26,80 @@ import javax.inject.Singleton;
 /** Room database definition with all migrations. */
 @Database(
         version = DatabaseConstants.DB_VERSION,
-        entities = {Tag.class, Note.class, Task.class, TaskCategory.class},
+        entities = {
+            Tag.class,
+            Note.class,
+            Task.class,
+            TaskCategory.class,
+            SyncMetadataEntity.class
+        },
         autoMigrations = {@AutoMigration(from = 1, to = 2)})
 @Singleton
 public abstract class AppDatabase extends RoomDatabase {
+
+    /**
+     * Adds a durable, cross-device identity mapping for existing records.
+     *
+     * <p>Existing Room IDs are intentionally preserved as local primary keys. Every note, task, and
+     * tag instead receives an independent UUID and the same migration timestamp as its sync
+     * baseline. There are no tombstones for records that existed before sync metadata was added.
+     */
+    public static final Migration MIGRATION_13_14 =
+            new Migration(13, 14) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    long migrationTimestamp = System.currentTimeMillis();
+                    database.execSQL(
+                            "CREATE TABLE IF NOT EXISTS `sync_metadata` ("
+                                    + "`recordType` TEXT NOT NULL, "
+                                    + "`localId` INTEGER NOT NULL, "
+                                    + "`stableId` TEXT NOT NULL, "
+                                    + "`updatedAt` INTEGER NOT NULL, "
+                                    + "`deletedAt` INTEGER, "
+                                    + "PRIMARY KEY(`recordType`, `localId`))");
+                    database.execSQL(
+                            "CREATE UNIQUE INDEX IF NOT EXISTS `index_sync_metadata_recordType_stableId` "
+                                    + "ON `sync_metadata` (`recordType`, `stableId`)");
+                    database.execSQL(
+                            "CREATE INDEX IF NOT EXISTS `index_sync_metadata_updatedAt` "
+                                    + "ON `sync_metadata` (`updatedAt`)");
+                    database.execSQL(
+                            "CREATE INDEX IF NOT EXISTS `index_sync_metadata_deletedAt` "
+                                    + "ON `sync_metadata` (`deletedAt`)");
+
+                    insertMetadataForExistingRecords(database, "note", "notes", migrationTimestamp);
+                    insertMetadataForExistingRecords(database, "task", "tasks", migrationTimestamp);
+                    insertMetadataForExistingRecords(database, "tag", "tags", migrationTimestamp);
+                }
+            };
+
+    private static void insertMetadataForExistingRecords(
+            SupportSQLiteDatabase database,
+            String recordType,
+            String sourceTable,
+            long migrationTimestamp) {
+        database.execSQL(
+                "INSERT INTO `sync_metadata` "
+                        + "(`recordType`, `localId`, `stableId`, `updatedAt`, `deletedAt`) "
+                        + "SELECT '"
+                        + recordType
+                        + "', `id`, "
+                        + sqliteUuidExpression()
+                        + ", ?, NULL FROM `"
+                        + sourceTable
+                        + "`",
+                new Object[] {migrationTimestamp});
+    }
+
+    /** Returns a lowercase RFC 4122 version-4 UUID expression supported by Android SQLite. */
+    private static String sqliteUuidExpression() {
+        return "lower(hex(randomblob(4))) || '-' || "
+                + "lower(hex(randomblob(2))) || '-4' || "
+                + "substr(lower(hex(randomblob(2))), 2, 3) || '-' || "
+                + "substr('89ab', (random() & 3) + 1, 1) || "
+                + "substr(lower(hex(randomblob(2))), 2, 3) || '-' || "
+                + "lower(hex(randomblob(6)))";
+    }
 
     /** Remove old system tags Add the position field to the tags table */
     public static final Migration MIGRATION_3_4 =
@@ -208,4 +280,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract TaskDao taskDao();
 
     public abstract TaskCategoryDao taskCategoryDao();
+
+    public abstract SyncMetadataDao syncMetadataDao();
 }
