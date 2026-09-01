@@ -18,6 +18,7 @@ app/src/main/res/raw/*
 !app/src/main/res/raw/keep.xml
 # Firebase project configuration (local/variant-specific)
 app/google-services.json
+gha-creds-*.json
 
 # Local design/plan notes, deliberately kept out of the repository
 docs/

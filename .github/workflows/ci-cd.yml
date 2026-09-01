@@ -1,26 +1,31 @@
 name: Release — build & publish
 
 on:
-  pull_request:
-    types: [closed]
-    branches: [master]
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
     name: Build signed APK/AAB & publish
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Validate release tag
+        run: |
+          git fetch origin master --no-tags
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/master
+          VERSION=$(sed -nE 's/^def appVersionName = "([^"]+)"$/\1/p' app/build.gradle)
+          test -n "$VERSION"
+          test "$GITHUB_REF_NAME" = "v$VERSION"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -48,13 +53,6 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-
-      - name: Extract version
-        id: version
-        run: |
-          CODE=$(grep -oP '(?<=def appVersionCode = )\d+' app/build.gradle | head -n1)
-          echo "code=$CODE" >> $GITHUB_OUTPUT
-          echo "name=2.6.$CODE" >> $GITHUB_OUTPUT
 
       - name: Decode google-services.json
         env:
@@ -85,49 +83,102 @@ jobs:
         run: |
           mkdir -p artifacts
           cp app/build/outputs/apk/release/*.apk \
-             "artifacts/MyNotes-v${{ steps.version.outputs.name }}.apk"
+             "artifacts/MyNotes-${{ github.ref_name }}.apk"
           cp app/build/outputs/bundle/release/*.aab \
-             "artifacts/MyNotes-v${{ steps.version.outputs.name }}.aab"
+             "artifacts/MyNotes-${{ github.ref_name }}.aab"
 
-      - name: Generate release notes from commits
+      - name: Generate English release notes from changelog
         id: notes
         run: |
-          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          RANGE=${PREV:+"$PREV..HEAD"}
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v version="$VERSION" '
+            $0 == "## [" version "]" || index($0, "## [" version "] -") == 1 { in_version = 1; next }
+            in_version && /^## \[/ { exit }
+            in_version { print }
+          ' CHANGELOG.md > release-notes.md
+          test -s release-notes.md
+
+          mkdir -p distribution/whatsnew
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          sections = []
+          section = None
+          bullet = None
+          for raw_line in Path("release-notes.md").read_text(encoding="utf-8").splitlines():
+              line = raw_line.strip()
+              if not line:
+                  continue
+              heading = re.fullmatch(r"\*\*(.+?)\*\*", line)
+              if heading:
+                  section = heading.group(1)
+                  continue
+              if line.startswith("- "):
+                  bullet = [line[2:]]
+                  sections.append((section, bullet))
+              elif bullet is not None:
+                  bullet.append(line)
+
+          def shorten(text, limit=140):
+              text = re.sub(r"\*\*(.*?)\*\*", r"\1", " ".join(text))
+              text = re.sub(r"\s+", " ", text).strip()
+              if len(text) <= limit:
+                  return text
+              return text[: limit - 1].rsplit(" ", 1)[0] + "…"
+
+          seen_sections = set()
+          highlights = []
+          for category, lines in sections:
+              category = category or "Updates"
+              if category in seen_sections:
+                  continue
+              seen_sections.add(category)
+              highlights.append(f"• {category} — {shorten(lines)}")
+
+          selected = []
+          for highlight in highlights:
+              candidate = "\n".join(selected + [highlight])
+              if len(candidate) > 500:
+                  break
+              selected.append(highlight)
+          Path("distribution/whatsnew/whatsnew-en-US").write_text(
+              "\n".join(selected), encoding="utf-8"
+          )
+          PY
+
           {
             echo 'notes<<EOF'
-            git log ${RANGE} --no-merges --format='### %s%n%n%b' | \
-              awk '/^$/{if(p)print ""; p=0; next} {p=1; print}'
+            cat release-notes.md
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to Google Cloud
+        id: google-auth
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GOOGLE_CLOUD_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL }}
+          create_credentials_file: true
+
+      - name: Publish AAB to Google Play closed testing
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJson: ${{ steps.google-auth.outputs.credentials_file_path }}
+          packageName: com.pasich.mynotes
+          releaseFiles: artifacts/MyNotes-${{ github.ref_name }}.aab
+          tracks: ${{ vars.GOOGLE_PLAY_CLOSED_TRACK }}
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
 
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          tag: v${{ steps.version.outputs.name }}
-          name: "MyNotes v${{ steps.version.outputs.name }}"
+          tag: ${{ github.ref_name }}
+          name: "MyNotes ${{ github.ref_name }}"
           body: ${{ steps.notes.outputs.notes }}
           artifacts: "artifacts/*"
           artifactErrorsFailBuild: true
           makeLatest: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Generate Play Store release notes
-      #   run: |
-      #     mkdir -p distribution/whatsnew
-      #     PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-      #     RANGE=${PREV:+"$PREV..HEAD"}
-      #     git log ${RANGE} --no-merges --format='• %s' \
-      #       | head -20 \
-      #       | head -c 490 \
-      #       > distribution/whatsnew/whatsnew-en-US
-
-      # - name: Publish to Google Play (Open Testing)
-      #   uses: r0adkll/upload-google-play@v3
-      #   with:
-      #     serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-      #     packageName: com.pasich.mynotes
-      #     releaseFiles: artifacts/MyNotes-v${{ steps.version.outputs.name }}.aab
-      #     track: beta
-      #     status: completed
-      #     whatsNewDirectory: distribution/whatsnew
