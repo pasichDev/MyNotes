@@ -483,7 +483,10 @@ public class BackupActivity extends BaseActivity
 
     private void enableBackgroundSyncWork() {
         Constraints constraints =
-                new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+                new Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.UNMETERED)
+                        .setRequiresBatteryNotLow(true)
+                        .build();
         PeriodicWorkRequest request =
                 new PeriodicWorkRequest.Builder(
                                 com.pasich.mynotes.data.sync.GoogleDriveSyncWorker.class,

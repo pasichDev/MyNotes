@@ -64,6 +64,19 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_matchingRemoteSnapshotDoesNotPublishAgain() {
+        SyncRecord note = note(TEN, "Already synchronized");
+        FakeStore store = new FakeStore(snapshot(note));
+        FakeBackend backend = new FakeBackend(snapshot(note));
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+        assertThat(store.appliedSnapshot.getRecords()).containsExactly(note);
+    }
+
+    @Test
     public void sync_downloadsRequiredRemoteAttachmentBeforeApplyingSnapshot() throws Exception {
         SyncRecord remote = note(TEN, "Remote with attachment");
         byte[] bytes = "attachment content".getBytes(StandardCharsets.UTF_8);
@@ -78,7 +91,7 @@ public class SyncServiceTest {
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         assertThat(store.attachments.get(hash)).isEqualTo(bytes);
         assertThat(store.events).containsExactly("writeAttachment", "applySnapshot").inOrder();
-        assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot").inOrder();
+        assertThat(backend.events).containsExactly("readAttachment");
     }
 
     @Test

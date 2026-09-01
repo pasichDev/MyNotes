@@ -65,7 +65,9 @@ public final class SyncService {
 
             Map<String, Long> expectedSizes = attachmentSizes(merged);
             synchronizeAttachments(backend, merged, expectedSizes);
-            backend.writeSnapshot(merged);
+            if (!snapshotsMatch(merged, remote)) {
+                backend.writeSnapshot(merged);
+            }
             SyncState success =
                     SyncState.success(
                             backendIdentifier, clock.instant(), mergeResult.getConflicts().size());
@@ -80,6 +82,28 @@ public final class SyncService {
             persistState(failure);
             return failure;
         }
+    }
+
+    private static boolean snapshotsMatch(@NonNull SyncSnapshot first, @NonNull SyncSnapshot second) {
+        Collection<SyncRecord> firstRecords = first.getRecords();
+        Collection<SyncRecord> secondRecords = second.getRecords();
+        if (firstRecords.size() != secondRecords.size()) {
+            return false;
+        }
+        java.util.Iterator<SyncRecord> firstIterator = firstRecords.iterator();
+        java.util.Iterator<SyncRecord> secondIterator = secondRecords.iterator();
+        while (firstIterator.hasNext()) {
+            SyncRecord firstRecord = firstIterator.next();
+            SyncRecord secondRecord = secondIterator.next();
+            if (firstRecord.getType() != secondRecord.getType()
+                    || !firstRecord.getId().equals(secondRecord.getId())
+                    || !firstRecord
+                            .getCanonicalPayloadHash()
+                            .equals(secondRecord.getCanonicalPayloadHash())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void synchronizeAttachments(
