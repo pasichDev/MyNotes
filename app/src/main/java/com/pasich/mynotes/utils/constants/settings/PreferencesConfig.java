@@ -67,8 +67,10 @@ public class PreferencesConfig {
     public static final String ARGUMENT_PREFERENCE_SYNC_ENABLED = "sync_enabled";
     public static final String ARGUMENT_PREFERENCE_SYNC_BACKGROUND_ENABLED =
             "sync_background_enabled";
+    public static final String ARGUMENT_PREFERENCE_SYNC_FIRST_CONFIRMED = "sync_first_confirmed";
     public static final String ARGUMENT_PREFERENCE_SYNC_ROLLOUT_BUCKET = "sync_rollout_bucket";
     public static final boolean ARGUMENT_DEFAULT_SYNC_ENABLED = false;
     public static final boolean ARGUMENT_DEFAULT_SYNC_BACKGROUND_ENABLED = false;
+    public static final boolean ARGUMENT_DEFAULT_SYNC_FIRST_CONFIRMED = false;
     public static final int ARGUMENT_DEFAULT_SYNC_ROLLOUT_BUCKET = -1;
 }

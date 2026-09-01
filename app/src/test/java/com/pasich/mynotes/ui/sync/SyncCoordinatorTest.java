@@ -47,6 +47,28 @@ public class SyncCoordinatorTest {
     }
 
     @Test
+    public void backgroundSync_waitsForFirstSyncConfirmation() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        FakeScheduler scheduler = new FakeScheduler();
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        mock(GoogleCredentialAuth.class),
+                        mock(GoogleDriveAuthorization.class),
+                        new FakeConflictStore(),
+                        scheduler,
+                        directExecutor,
+                        directExecutor);
+
+        coordinator.setBackgroundSyncEnabled(true);
+        coordinator.confirmFirstSync();
+
+        assertThat(preferences.firstSyncConfirmed).isTrue();
+        assertThat(scheduler.enableCalls).isEqualTo(1);
+    }
+
+    @Test
     public void connect_marksSyncEnabledAndReturnsProfile() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         FakeScheduler scheduler = new FakeScheduler();
@@ -244,6 +266,7 @@ public class SyncCoordinatorTest {
     private static final class FakePreferenceHelper implements PreferenceHelper {
         private boolean syncEnabled;
         private boolean backgroundEnabled;
+        private boolean firstSyncConfirmed;
 
         @Override
         public int getFormatCount() {
@@ -311,6 +334,16 @@ public class SyncCoordinatorTest {
         @Override
         public void setBackgroundSyncEnabled(boolean enabled) {
             backgroundEnabled = enabled;
+        }
+
+        @Override
+        public boolean isFirstSyncConfirmed() {
+            return firstSyncConfirmed;
+        }
+
+        @Override
+        public void setFirstSyncConfirmed(boolean confirmed) {
+            firstSyncConfirmed = confirmed;
         }
 
         @Override

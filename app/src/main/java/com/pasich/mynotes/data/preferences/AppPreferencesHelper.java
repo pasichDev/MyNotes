@@ -177,6 +177,18 @@ public class AppPreferencesHelper implements PreferenceHelper {
     }
 
     @Override
+    public boolean isFirstSyncConfirmed() {
+        return prefs.getBoolean(
+                PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_FIRST_CONFIRMED,
+                PreferencesConfig.ARGUMENT_DEFAULT_SYNC_FIRST_CONFIRMED);
+    }
+
+    @Override
+    public void setFirstSyncConfirmed(boolean confirmed) {
+        prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_FIRST_CONFIRMED, confirmed);
+    }
+
+    @Override
     public int getSyncRolloutBucket() {
         return prefs.getInt(
                 PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_ROLLOUT_BUCKET,

@@ -34,6 +34,10 @@ public interface PreferenceHelper {
 
     void setBackgroundSyncEnabled(boolean enabled);
 
+    boolean isFirstSyncConfirmed();
+
+    void setFirstSyncConfirmed(boolean confirmed);
+
     int getSyncRolloutBucket();
 
     void setSyncRolloutBucket(int bucket);

@@ -149,10 +149,18 @@ public final class SyncCoordinator {
 
     public void setBackgroundSyncEnabled(boolean enabled) {
         preferenceHelper.setBackgroundSyncEnabled(enabled);
-        if (enabled && firebaseGoogleAuth.isSignedIn()) {
+        if (enabled && preferenceHelper.isFirstSyncConfirmed() && firebaseGoogleAuth.isSignedIn()) {
             backgroundScheduler.enable();
         } else {
             backgroundScheduler.disable();
+        }
+    }
+
+    /** Records the user's first-sync consent before any content can leave the device. */
+    public void confirmFirstSync() {
+        preferenceHelper.setFirstSyncConfirmed(true);
+        if (preferenceHelper.isBackgroundSyncEnabled() && firebaseGoogleAuth.isSignedIn()) {
+            backgroundScheduler.enable();
         }
     }
 
@@ -169,7 +177,8 @@ public final class SyncCoordinator {
                                     public void onSuccess(@NonNull FirebaseUser user) {
                                         ensureRolloutBucket();
                                         preferenceHelper.setSyncEnabled(true);
-                                        if (preferenceHelper.isBackgroundSyncEnabled()) {
+                                        if (preferenceHelper.isBackgroundSyncEnabled()
+                                                && preferenceHelper.isFirstSyncConfirmed()) {
                                             backgroundScheduler.enable();
                                         }
                                         deliverSuccess(callback, getProfile());
@@ -193,6 +202,7 @@ public final class SyncCoordinator {
         firebaseGoogleAuth.signOut();
         preferenceHelper.setSyncEnabled(false);
         preferenceHelper.setBackgroundSyncEnabled(false);
+        preferenceHelper.setFirstSyncConfirmed(false);
         backgroundScheduler.disable();
         googleCredentialAuth.signOut(
                 new GoogleCredentialAuth.SignOutCallback() {

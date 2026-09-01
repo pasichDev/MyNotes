@@ -13,6 +13,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import dagger.hilt.android.EntryPointAccessors;
 import java.util.Collections;
 
@@ -51,8 +52,7 @@ public final class GoogleDriveSyncWorker extends Worker {
             SyncDependencies dependencies =
                     EntryPointAccessors.fromApplication(
                             getApplicationContext(), SyncDependencies.class);
-            if (!dependencies.preferenceHelper().isSyncEnabled()
-                    || !dependencies.preferenceHelper().isBackgroundSyncEnabled()) {
+            if (!isBackgroundSyncAllowed(dependencies.preferenceHelper())) {
                 return Result.success();
             }
             SyncState state =
@@ -80,5 +80,11 @@ public final class GoogleDriveSyncWorker extends Worker {
                 || value.contains("http 5")
                 || value.contains("network")
                 || value.contains("temporar");
+    }
+
+    static boolean isBackgroundSyncAllowed(PreferenceHelper preferences) {
+        return preferences.isSyncEnabled()
+                && preferences.isBackgroundSyncEnabled()
+                && preferences.isFirstSyncConfirmed();
     }
 }

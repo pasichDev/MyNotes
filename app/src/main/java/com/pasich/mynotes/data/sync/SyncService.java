@@ -48,21 +48,23 @@ public final class SyncService {
     /** Runs one serialized manual synchronization attempt and returns its durable final state. */
     @NonNull
     public synchronized SyncState sync(@NonNull SyncBackend backend) {
-        Objects.requireNonNull(backend, "backend");
-        String backendIdentifier = requireBackendIdentifier(backend.getIdentifier());
         SyncState previousState = safeReadState();
-        Instant startedAt = clock.instant();
-        persistState(
-                SyncState.syncing(
-                        backendIdentifier, startedAt, previousState.getLastSuccessfulSyncAt()));
+        String backendIdentifier = "unknown";
 
         try {
+            Objects.requireNonNull(backend, "backend");
+            backendIdentifier = requireBackendIdentifier(backend.getIdentifier());
+            Instant startedAt = clock.instant();
+            persistState(
+                    SyncState.syncing(
+                            backendIdentifier, startedAt, previousState.getLastSuccessfulSyncAt()));
             SyncSnapshot local = Objects.requireNonNull(store.readSnapshot(), "local snapshot");
             SyncSnapshot remote = Objects.requireNonNull(backend.readSnapshot(), "remote snapshot");
             SyncMergeResult mergeResult = merger.merge(local, remote);
             SyncSnapshot merged = mergeResult.getMergedSnapshot();
 
-            synchronizeAttachments(backend, merged, attachmentSizes(merged));
+            Map<String, Long> expectedSizes = attachmentSizes(merged);
+            synchronizeAttachments(backend, merged, expectedSizes);
             backend.writeSnapshot(merged);
             SyncState success =
                     SyncState.success(
@@ -89,8 +91,16 @@ public final class SyncService {
             validateHash(hash);
             if (store.hasAttachment(hash)) {
                 if (backend.hasAttachment(hash)) {
-                    verifyRemoteAttachment(
-                            hash, expectedSizes.get(hash), backend.readAttachment(hash));
+                    try {
+                        verifyAttachment(hash, expectedSizes.get(hash), store.readAttachment(hash));
+                    } catch (IOException localError) {
+                        copyVerified(
+                                hash,
+                                expectedSizes.get(hash),
+                                backend.readAttachment(hash),
+                                store::writeAttachment);
+                    }
+                    verifyAttachment(hash, expectedSizes.get(hash), backend.readAttachment(hash));
                 } else {
                     copyVerified(
                             hash,
@@ -109,7 +119,7 @@ public final class SyncService {
         }
     }
 
-    private void verifyRemoteAttachment(String hash, Long expectedSize, InputStream source)
+    private void verifyAttachment(String hash, Long expectedSize, InputStream source)
             throws IOException {
         if (source == null) {
             throw new IOException("Required attachment is unavailable: " + hash);
@@ -159,6 +169,9 @@ public final class SyncService {
                 if (!value.has("sha256") || !value.has("size")) continue;
                 String hash = value.get("sha256").getAsString();
                 long size = value.get("size").getAsLong();
+                if (size < 0L || size > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
+                    throw new IOException("Attachment size exceeds the sync limit");
+                }
                 Long previous = sizes.putIfAbsent(hash, size);
                 if (previous != null && previous.longValue() != size) {
                     throw new IOException("Attachment metadata has conflicting sizes");
@@ -172,7 +185,7 @@ public final class SyncService {
         try {
             SyncState state = store.readState();
             return state == null ? SyncState.idle() : state;
-        } catch (IOException ignored) {
+        } catch (Exception ignored) {
             return SyncState.idle();
         }
     }
@@ -180,7 +193,7 @@ public final class SyncService {
     private void persistState(SyncState state) {
         try {
             store.writeState(state);
-        } catch (IOException ignored) {
+        } catch (Exception ignored) {
             // Content sync remains valid when only the user-visible status store is temporarily
             // unavailable.
         }
@@ -237,6 +250,9 @@ public final class SyncService {
             if (value >= 0) {
                 digest.update((byte) value);
                 byteCount++;
+                if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
+                    throw new IOException("Attachment exceeds the sync size limit");
+                }
             }
             return value;
         }
@@ -247,6 +263,9 @@ public final class SyncService {
             if (read > 0) {
                 digest.update(buffer, offset, read);
                 byteCount += read;
+                if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
+                    throw new IOException("Attachment exceeds the sync size limit");
+                }
             }
             return read;
         }

@@ -2,6 +2,7 @@ package com.pasich.mynotes.data.sync;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -152,6 +153,70 @@ public class SyncServiceTest {
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
     }
 
+    @Test
+    public void sync_invalidBackendIdentifierReturnsErrorInsteadOfThrowing() {
+        FakeStore store = new FakeStore(SyncSnapshot.empty());
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.identifier = " ";
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(state.getBackendIdentifier()).isEqualTo("unknown");
+        assertThat(state.getErrorMessage()).contains("identifier");
+        assertThat(store.applyCalls).isEqualTo(0);
+    }
+
+    @Test
+    public void sync_runtimeStatusStoreFailureDoesNotCrashAfterApplyingContent() {
+        SyncRecord local = note(TEN, "Local");
+        FakeStore store = new FakeStore(snapshot(local));
+        store.readStateFailure = new IllegalStateException("Room is unavailable");
+        store.writeStateFailure = new IllegalStateException("Room is unavailable");
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(store.applyCalls).isEqualTo(1);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(1);
+    }
+
+    @Test
+    public void sync_oversizedAttachmentMetadataDoesNotUploadOrPublish() throws Exception {
+        byte[] bytes = "small attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        SyncRecord local = noteWithAttachment(hash, SyncBundleValidator.MAX_ATTACHMENT_BYTES + 1L);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, bytes);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(state.getErrorMessage()).contains("size exceeds");
+        assertThat(backend.events).isEmpty();
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+    }
+
+    @Test
+    public void sync_replacesCorruptLocalAttachmentWithVerifiedRemoteBlob() throws Exception {
+        byte[] expected = "remote attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(expected);
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local")));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, "corrupt local".getBytes(StandardCharsets.UTF_8));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, expected);
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(store.attachments.get(hash)).isEqualTo(expected);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(1);
+    }
+
     private static SyncSnapshot snapshot(SyncRecord... records) {
         return new SyncSnapshot(Arrays.asList(records));
     }
@@ -161,6 +226,17 @@ public class SyncServiceTest {
         payload.addProperty("title", "Shopping");
         payload.addProperty("value", value);
         return SyncRecord.live(SyncRecord.Type.NOTE, NOTE_ID, updatedAt, payload);
+    }
+
+    private static SyncRecord noteWithAttachment(String hash, long size) {
+        JsonObject payload = new JsonObject();
+        JsonArray manifest = new JsonArray();
+        JsonObject attachment = new JsonObject();
+        attachment.addProperty("sha256", hash);
+        attachment.addProperty("size", size);
+        manifest.add(attachment);
+        payload.add("attachmentsManifest", manifest);
+        return SyncRecord.live(SyncRecord.Type.NOTE, NOTE_ID, TEN, payload);
     }
 
     private static String sha256(byte[] bytes) throws Exception {
@@ -182,6 +258,8 @@ public class SyncServiceTest {
         private final List<SyncState.Status> states = new ArrayList<>();
         private final List<String> events = new ArrayList<>();
         private int applyCalls;
+        private RuntimeException readStateFailure;
+        private RuntimeException writeStateFailure;
 
         FakeStore(SyncSnapshot snapshot) {
             this.snapshot = snapshot;
@@ -228,18 +306,24 @@ public class SyncServiceTest {
 
         @Override
         public SyncState readState() {
+            if (readStateFailure != null) {
+                throw readStateFailure;
+            }
             return state;
         }
 
         @Override
         public void writeState(SyncState state) {
+            if (writeStateFailure != null) {
+                throw writeStateFailure;
+            }
             this.state = state;
             states.add(state.getStatus());
         }
     }
 
     private static final class FakeBackend implements SyncBackend {
-        private final String identifier = "fake-drive";
+        private String identifier = "fake-drive";
         private SyncSnapshot snapshot;
         private final Map<String, byte[]> attachments = new HashMap<>();
         private final List<String> events = new ArrayList<>();

@@ -115,6 +115,16 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public boolean isFirstSyncConfirmed() {
+        return preferencesHelper.isFirstSyncConfirmed();
+    }
+
+    @Override
+    public void setFirstSyncConfirmed(boolean confirmed) {
+        preferencesHelper.setFirstSyncConfirmed(confirmed);
+    }
+
+    @Override
     public int getSyncRolloutBucket() {
         return preferencesHelper.getSyncRolloutBucket();
     }

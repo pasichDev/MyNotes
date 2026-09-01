@@ -14,6 +14,7 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -266,7 +267,7 @@ public class SyncMutationCoordinator {
     }
 
     public void moveNoteToTrash(int noteId) {
-        moveNotesToTrash(List.of(noteId));
+        moveNotesToTrash(Collections.singletonList(noteId));
     }
 
     public void moveNotesToTrash(List<Integer> noteIds) {
@@ -281,7 +282,7 @@ public class SyncMutationCoordinator {
     }
 
     public void restoreNoteFromTrash(int noteId) {
-        restoreNotesFromTrash(List.of(noteId));
+        restoreNotesFromTrash(Collections.singletonList(noteId));
     }
 
     public void restoreNotesFromTrash(List<Integer> noteIds) {

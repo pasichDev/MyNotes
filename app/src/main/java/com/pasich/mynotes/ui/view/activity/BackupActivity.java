@@ -377,7 +377,11 @@ public class BackupActivity extends BaseActivity
                                                     R.string.sync_first_sync_cancel,
                                                     (dialog, which) -> updateSyncUi())
                                             .setPositiveButton(
-                                                    R.string.sync_now, (dialog, which) -> runSync())
+                                                    R.string.sync_now,
+                                                    (dialog, which) -> {
+                                                        syncCoordinator.confirmFirstSync();
+                                                        runSync();
+                                                    })
                                             .show();
                                 });
                     } catch (Exception error) {
