@@ -14,6 +14,7 @@ import com.pasich.mynotes.utils.auth.FirebaseGoogleAuth;
 import com.pasich.mynotes.utils.auth.GoogleCredential;
 import com.pasich.mynotes.utils.auth.GoogleCredentialAuth;
 import com.pasich.mynotes.utils.auth.GoogleDriveAuthorization;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,24 @@ public class SyncCoordinatorTest {
 
         assertThat(preferences.firstSyncConfirmed).isTrue();
         assertThat(scheduler.enableCalls).isEqualTo(1);
+    }
+
+    @Test
+    public void getLastState_returnsIdleWhenStoredSyncStateCannotBeRead() {
+        FakeConflictStore store = new FakeConflictStore();
+        store.readStateError = new IOException("unreadable sync state");
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        new FakePreferenceHelper(),
+                        firebaseAuth(null),
+                        mock(GoogleCredentialAuth.class),
+                        mock(GoogleDriveAuthorization.class),
+                        store,
+                        new FakeScheduler(),
+                        directExecutor,
+                        directExecutor);
+
+        assertThat(coordinator.getLastState().getStatus()).isEqualTo(SyncState.Status.IDLE);
     }
 
     @Test
@@ -171,18 +190,30 @@ public class SyncCoordinatorTest {
     }
 
     @Test
-    public void syncNow_blocksUsersOutsideTheStagedRollout() {
+    public void syncNow_allowsUsersInTheHighestRolloutBucket() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.firstSyncConfirmed = true;
-        preferences.rolloutBucket = 11;
+        preferences.rolloutBucket = 100;
         GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
+        Mockito.doAnswer(
+                        invocation -> {
+                            GoogleDriveAuthorization.Callback callback = invocation.getArgument(1);
+                            callback.onAuthorized("access-token");
+                            return null;
+                        })
+                .when(authorization)
+                .authorize(
+                        Mockito.any(Activity.class),
+                        Mockito.any(GoogleDriveAuthorization.Callback.class));
+        FakeConflictStore store = new FakeConflictStore();
+        store.state = SyncState.success("google-drive", Instant.parse("2026-09-01T12:00:00Z"), 1);
         SyncCoordinator coordinator =
                 new SyncCoordinator(
                         preferences,
                         firebaseAuth(mock(FirebaseUser.class)),
                         mock(GoogleCredentialAuth.class),
                         authorization,
-                        new FakeConflictStore(),
+                        store,
                         new FakeScheduler(),
                         directExecutor,
                         directExecutor);
@@ -190,9 +221,46 @@ public class SyncCoordinatorTest {
         CapturingCallback<SyncState> callback = new CapturingCallback<>();
         coordinator.syncNow(mock(Activity.class), callback);
 
-        assertThat(callback.value).isNull();
-        assertThat(callback.error).hasMessageThat().contains("not available in this rollout");
-        Mockito.verifyNoInteractions(authorization);
+        assertThat(store.lastToken).isEqualTo("access-token");
+        assertThat(callback.error).isNull();
+        assertThat(callback.value.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+    }
+
+    @Test
+    public void syncNow_repairsAnInvalidStoredRolloutBucketBeforeSyncing() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        preferences.firstSyncConfirmed = true;
+        preferences.rolloutBucket = 0;
+        GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
+        Mockito.doAnswer(
+                        invocation -> {
+                            GoogleDriveAuthorization.Callback callback = invocation.getArgument(1);
+                            callback.onAuthorized("access-token");
+                            return null;
+                        })
+                .when(authorization)
+                .authorize(
+                        Mockito.any(Activity.class),
+                        Mockito.any(GoogleDriveAuthorization.Callback.class));
+        FakeConflictStore store = new FakeConflictStore();
+        store.state = SyncState.success("google-drive", Instant.parse("2026-09-01T12:00:00Z"), 1);
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        mock(GoogleCredentialAuth.class),
+                        authorization,
+                        store,
+                        new FakeScheduler(),
+                        directExecutor,
+                        directExecutor);
+
+        CapturingCallback<SyncState> callback = new CapturingCallback<>();
+        coordinator.syncNow(mock(Activity.class), callback);
+
+        assertThat(preferences.rolloutBucket >= 1 && preferences.rolloutBucket <= 100).isTrue();
+        assertThat(store.lastToken).isEqualTo("access-token");
+        assertThat(callback.error).isNull();
     }
 
     @Test
@@ -268,13 +336,17 @@ public class SyncCoordinatorTest {
 
     private static final class FakeConflictStore implements SyncCoordinator.ConflictStore {
         private SyncState state = SyncState.idle();
+        private IOException readStateError;
         private final List<SyncConflictEntity> conflicts = new ArrayList<>();
         private final List<String> resolutions = new ArrayList<>();
         private String lastToken;
 
         @NonNull
         @Override
-        public SyncState readState() {
+        public SyncState readState() throws IOException {
+            if (readStateError != null) {
+                throw readStateError;
+            }
             return state;
         }
 
