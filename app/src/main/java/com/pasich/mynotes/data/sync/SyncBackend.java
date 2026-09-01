@@ -28,7 +28,7 @@ public interface SyncBackend {
     @NonNull
     SyncSnapshot readSnapshot() throws IOException;
 
-    /** Atomically makes {@code snapshot} the current remote snapshot. */
+    /** Publishes a complete remote snapshot. Implementations must not expose a partial snapshot. */
     void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException;
 
     /** Returns true when the immutable attachment blob already exists remotely. */

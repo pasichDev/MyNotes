@@ -34,6 +34,7 @@ import org.junit.Test;
 
 public class GoogleDriveSyncBackendTest {
     private static final String NOTE_ID = "550e8400-e29b-41d4-a716-446655440000";
+    private static final String SECOND_NOTE_ID = "550e8400-e29b-41d4-a716-446655440001";
     private static final Clock CLOCK =
             Clock.fixed(Instant.parse("2026-08-31T12:00:00Z"), ZoneOffset.UTC);
 
@@ -96,7 +97,7 @@ public class GoogleDriveSyncBackendTest {
     }
 
     @Test
-    public void writeSnapshot_rejectsConcurrentBundleUpdate() throws Exception {
+    public void writeSnapshot_createsNewBundleWhenLegacyBundleChanges() throws Exception {
         String hash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
         server.seedOwnedBundle(snapshot(hash));
         GoogleDriveSyncBackend backend =
@@ -111,16 +112,47 @@ public class GoogleDriveSyncBackendTest {
         server.forceConcurrentBundleUpdate(
                 snapshot("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"));
 
-        try {
-            backend.writeSnapshot(snapshot(hash));
-        } catch (IOException error) {
-            assertThat(error).hasMessageThat().contains("changed since it was read");
-            return;
-        }
-        throw new AssertionError("Expected an IOException");
+        backend.writeSnapshot(snapshot(hash));
+
+        assertThat(server.bundleCount()).isEqualTo(2);
+    }
+
+    @Test
+    public void writeSnapshot_preservesUpdateThatArrivesBetweenReadAndPublish() throws Exception {
+        String firstHash =
+                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        String secondHash =
+                "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
+        server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
+        GoogleDriveSyncBackend backend =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        CLOCK,
+                        new SyncBundleCodec());
+
+        backend.readSnapshot();
+        server.updateBundleImmediatelyBeforeNextUpload(snapshot(SECOND_NOTE_ID, secondHash));
+        backend.writeSnapshot(snapshot(NOTE_ID, firstHash));
+
+        SyncSnapshot remote =
+                new GoogleDriveSyncBackend(
+                                "token",
+                                server.apiBase(),
+                                server.uploadBase(),
+                                CLOCK,
+                                new SyncBundleCodec())
+                        .readSnapshot();
+        assertThat(remote.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(remote.find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
     }
 
     private static SyncSnapshot snapshot(String hash) throws IOException {
+        return snapshot(NOTE_ID, hash);
+    }
+
+    private static SyncSnapshot snapshot(String noteId, String hash) throws IOException {
         JsonObject note = new JsonObject();
         note.addProperty("title", "Shopping");
         note.addProperty("value", "Milk");
@@ -143,7 +175,7 @@ public class GoogleDriveSyncBackendTest {
                 Collections.singletonList(
                         SyncRecord.live(
                                 SyncRecord.Type.NOTE,
-                                NOTE_ID,
+                                noteId,
                                 Instant.parse("2026-08-31T12:00:00Z"),
                                 note)));
     }
@@ -166,6 +198,7 @@ public class GoogleDriveSyncBackendTest {
         private final Thread thread;
         private final Map<String, DriveFile> files = new LinkedHashMap<>();
         private volatile boolean running = true;
+        private SyncSnapshot updateBeforeNextPatch;
         private int nextId = 1;
 
         FakeDriveServer() throws IOException {
@@ -271,6 +304,10 @@ public class GoogleDriveSyncBackendTest {
             throw new IOException("No bundle to update");
         }
 
+        void updateBundleImmediatelyBeforeNextUpload(SyncSnapshot snapshot) {
+            updateBeforeNextPatch = snapshot;
+        }
+
         private void handle(Socket socket) throws IOException {
             try (Socket current = socket;
                     BufferedInputStream input = new BufferedInputStream(current.getInputStream());
@@ -348,8 +385,11 @@ public class GoogleDriveSyncBackendTest {
             if (fileId != null && existing == null) {
                 return Response.json(404, "{}");
             }
-            // No If-Match enforcement: Drive v3 does not honour the header on files, so the
-            // concurrency guarantee has to come from the client comparing the version it read.
+            if (updateBeforeNextPatch != null) {
+                SyncSnapshot concurrent = updateBeforeNextPatch;
+                updateBeforeNextPatch = null;
+                forceConcurrentBundleUpdate(concurrent);
+            }
 
             MultipartPayload payload = readMultipart(request);
             DriveFile file =

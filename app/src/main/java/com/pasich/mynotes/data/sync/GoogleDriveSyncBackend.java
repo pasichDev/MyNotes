@@ -15,6 +15,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
 
 /** Google Drive REST backend for the provider-independent sync protocol. */
 public final class GoogleDriveSyncBackend implements SyncBackend {
@@ -35,8 +39,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private final String uploadBase;
     private final Clock clock;
     private final SyncBundleCodec bundleCodec;
-    @Nullable private RemoteFileRef lastReadBundle;
-    private boolean hasReadSnapshot;
+    private final SyncMerger merger = new SyncMerger();
 
     public GoogleDriveSyncBackend(@NonNull String accessToken) {
         this(accessToken, DEFAULT_API, DEFAULT_UPLOAD, Clock.systemUTC(), new SyncBundleCodec());
@@ -69,43 +72,31 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     public synchronized SyncSnapshot readSnapshot() throws IOException {
         String folderId = findFolderId();
         if (folderId == null) {
-            hasReadSnapshot = true;
-            lastReadBundle = null;
             return SyncSnapshot.empty();
         }
 
-        RemoteFileRef bundle = findUniqueBundle(folderId);
-        hasReadSnapshot = true;
-        lastReadBundle = bundle;
-        if (bundle == null) {
-            return SyncSnapshot.empty();
+        SyncSnapshot merged = SyncSnapshot.empty();
+        for (RemoteFileRef bundle : findBundles(folderId)) {
+            byte[] bytes =
+                    requestBytes(
+                            "GET",
+                            apiBase + "/files/" + bundle.id + "?alt=media",
+                            MAX_BUNDLE_RESPONSE_BYTES);
+            SyncSnapshot decoded = bundleCodec.decode(new ByteArrayInputStream(bytes)).getSnapshot();
+            merged = merger.merge(merged, decoded).getMergedSnapshot();
         }
-
-        byte[] bytes =
-                requestBytes(
-                        "GET",
-                        apiBase + "/files/" + bundle.id + "?alt=media",
-                        MAX_BUNDLE_RESPONSE_BYTES);
-        return bundleCodec.decode(new ByteArrayInputStream(bytes)).getSnapshot();
+        return merged;
     }
 
     @Override
     public synchronized void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException {
         String folderId = ensureFolderId();
-        RemoteFileRef current = findUniqueBundle(folderId);
-        verifyConcurrentState(current);
-
         byte[] bundle = bundleCodec.encode(snapshot, clock.instant());
-        if (current == null) {
-            lastReadBundle = uploadFile(folderId, BUNDLE_NAME, MIME_ZIP, bundle, null, null, true);
-        } else {
-            // No If-Match: the token is Drive's "version" counter, not an entity-tag, and RFC
-            // 7232 requires a quoted entity-tag or "*". verifyConcurrentState above already
-            // rejected a bundle that changed since it was read, which is the actual guarantee.
-            lastReadBundle =
-                    uploadFile(folderId, BUNDLE_NAME, MIME_ZIP, bundle, current.id, null, true);
-        }
-        hasReadSnapshot = true;
+        // Every bundle is immutable. Drive offers no conditional update based on its version
+        // counter, so replacing one file leaves a race where another device can be overwritten.
+        // Publishing a distinct file makes each successful upload independently durable; readers
+        // merge the complete set deterministically.
+        uploadFile(folderId, nextBundleName(), MIME_ZIP, bundle, null, null, true);
     }
 
     @Override
@@ -175,7 +166,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     }
 
     @Nullable
-    private RemoteFileRef findUniqueBundle(@NonNull String folderId) throws IOException {
+    private List<RemoteFileRef> findBundles(@NonNull String folderId) throws IOException {
         JsonArray bundles =
                 listFiles(
                         "'"
@@ -183,14 +174,13 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                                 + "' in parents and trashed = false and "
                                 + appPropertyClause("mynotesBundle", "1"),
                         "files(id,name)");
-        if (bundles.size() > 1) {
-            throw new IOException("Drive sync bundle is duplicated");
+        List<RemoteFileRef> result = new ArrayList<>(bundles.size());
+        for (int index = 0; index < bundles.size(); index++) {
+            JsonObject item = bundles.get(index).getAsJsonObject();
+            result.add(fetchFileRef(item.get("id").getAsString(), item.get("name").getAsString()));
         }
-        if (bundles.size() == 0) {
-            return null;
-        }
-        JsonObject item = bundles.get(0).getAsJsonObject();
-        return fetchFileRef(item.get("id").getAsString(), item.get("name").getAsString());
+        result.sort(Comparator.comparing(ref -> ref.id));
+        return result;
     }
 
     @Nullable
@@ -215,16 +205,33 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
 
     @NonNull
     private JsonArray listFiles(@NonNull String query, @NonNull String fields) throws IOException {
-        String url =
-                apiBase
-                        + "/files?q="
-                        + URLEncoder.encode(query, StandardCharsets.UTF_8.name())
-                        + "&spaces=drive&fields="
-                        + URLEncoder.encode(fields, StandardCharsets.UTF_8.name())
-                        + "&pageSize=10";
-        JsonObject response = requestJson("GET", url, null, null, null);
-        JsonArray files = response.getAsJsonArray("files");
-        return files == null ? new JsonArray() : files;
+        JsonArray result = new JsonArray();
+        String nextPageToken = null;
+        do {
+            String url =
+                    apiBase
+                            + "/files?q="
+                            + URLEncoder.encode(query, StandardCharsets.UTF_8.name())
+                            + "&spaces=drive&fields="
+                            + URLEncoder.encode(
+                                    "nextPageToken," + fields, StandardCharsets.UTF_8.name())
+                            + "&pageSize=1000";
+            if (nextPageToken != null) {
+                url += "&pageToken=" + URLEncoder.encode(nextPageToken, StandardCharsets.UTF_8.name());
+            }
+            JsonObject response = requestJson("GET", url, null, null, null);
+            JsonArray files = response.getAsJsonArray("files");
+            if (files != null) {
+                for (int index = 0; index < files.size(); index++) {
+                    result.add(files.get(index));
+                }
+            }
+            nextPageToken =
+                    response.has("nextPageToken") && !response.get("nextPageToken").isJsonNull()
+                            ? response.get("nextPageToken").getAsString()
+                            : null;
+        } while (nextPageToken != null && !nextPageToken.isEmpty());
+        return result;
     }
 
     @NonNull
@@ -288,19 +295,12 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         return fetchFileRef(response.get("id").getAsString(), response.get("name").getAsString());
     }
 
-    private void verifyConcurrentState(@Nullable RemoteFileRef current) throws IOException {
-        if (!hasReadSnapshot) {
-            return;
-        }
-        if (lastReadBundle == null && current == null) {
-            return;
-        }
-        if (lastReadBundle == null || current == null) {
-            throw new IOException("Drive snapshot changed since it was read");
-        }
-        if (!lastReadBundle.id.equals(current.id) || !lastReadBundle.eTag.equals(current.eTag)) {
-            throw new IOException("Drive snapshot changed since it was read");
-        }
+    @NonNull
+    private static String nextBundleName() {
+        return BUNDLE_NAME.substring(0, BUNDLE_NAME.length() - ".zip".length())
+                + "."
+                + UUID.randomUUID()
+                + ".zip";
     }
 
     @NonNull
@@ -313,10 +313,6 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                 response.has("name") && !response.get("name").isJsonNull()
                         ? response.get("name").getAsString()
                         : fallbackName;
-        // Drive API v3 dropped the ETags that v2 sent, so no response carries that header and
-        // reading one always failed. The Files resource exposes "version" instead: a counter the
-        // server bumps on every change to the file, which is the token the read-compare-write
-        // check in verifyConcurrentState needs.
         String version =
                 response.has("version") && !response.get("version").isJsonNull()
                         ? response.get("version").getAsString()
