@@ -23,7 +23,9 @@ jobs:
         run: |
           git fetch origin master --no-tags
           git merge-base --is-ancestor "$GITHUB_SHA" origin/master
-          VERSION=$(sed -nE 's/^def appVersionName = "([^"]+)"$/\1/p' app/build.gradle)
+          VERSION_CODE=$(sed -nE 's/^def appVersionCode = ([0-9]+)$/\1/p' app/build.gradle)
+          VERSION_TEMPLATE=$(sed -nE 's/^def appVersionName = "([^"]+)"$/\1/p' app/build.gradle)
+          VERSION=${VERSION_TEMPLATE//\$\{appVersionCode\}/$VERSION_CODE}
           test -n "$VERSION"
           test "$GITHUB_REF_NAME" = "v$VERSION"
 
