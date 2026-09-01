@@ -84,7 +84,8 @@ public final class SyncService {
         }
     }
 
-    private static boolean snapshotsMatch(@NonNull SyncSnapshot first, @NonNull SyncSnapshot second) {
+    private static boolean snapshotsMatch(
+            @NonNull SyncSnapshot first, @NonNull SyncSnapshot second) {
         Collection<SyncRecord> firstRecords = first.getRecords();
         Collection<SyncRecord> secondRecords = second.getRecords();
         if (firstRecords.size() != secondRecords.size()) {

@@ -119,10 +119,8 @@ public class GoogleDriveSyncBackendTest {
 
     @Test
     public void writeSnapshot_preservesUpdateThatArrivesBetweenReadAndPublish() throws Exception {
-        String firstHash =
-                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-        String secondHash =
-                "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
+        String firstHash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        String secondHash = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
         server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
         GoogleDriveSyncBackend backend =
                 new GoogleDriveSyncBackend(

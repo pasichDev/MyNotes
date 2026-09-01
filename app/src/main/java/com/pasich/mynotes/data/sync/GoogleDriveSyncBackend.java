@@ -82,7 +82,8 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                             "GET",
                             apiBase + "/files/" + bundle.id + "?alt=media",
                             MAX_BUNDLE_RESPONSE_BYTES);
-            SyncSnapshot decoded = bundleCodec.decode(new ByteArrayInputStream(bytes)).getSnapshot();
+            SyncSnapshot decoded =
+                    bundleCodec.decode(new ByteArrayInputStream(bytes)).getSnapshot();
             merged = merger.merge(merged, decoded).getMergedSnapshot();
         }
         return merged;
@@ -217,7 +218,9 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                                     "nextPageToken," + fields, StandardCharsets.UTF_8.name())
                             + "&pageSize=1000";
             if (nextPageToken != null) {
-                url += "&pageToken=" + URLEncoder.encode(nextPageToken, StandardCharsets.UTF_8.name());
+                url +=
+                        "&pageToken="
+                                + URLEncoder.encode(nextPageToken, StandardCharsets.UTF_8.name());
             }
             JsonObject response = requestJson("GET", url, null, null, null);
             JsonArray files = response.getAsJsonArray("files");

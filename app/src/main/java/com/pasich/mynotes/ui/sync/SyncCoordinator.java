@@ -224,7 +224,9 @@ public final class SyncCoordinator {
             return;
         }
         if (!preferenceHelper.isFirstSyncConfirmed()) {
-            deliverError(callback, new IllegalStateException("Confirm the first sync before continuing"));
+            deliverError(
+                    callback,
+                    new IllegalStateException("Confirm the first sync before continuing"));
             return;
         }
         ensureRolloutBucket();
