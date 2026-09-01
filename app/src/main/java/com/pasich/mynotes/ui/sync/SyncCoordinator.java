@@ -94,7 +94,13 @@ public final class SyncCoordinator {
     private final BackgroundScheduler backgroundScheduler;
     private final Executor workerExecutor;
     private final Executor mainExecutor;
-    private static final int CURRENT_ROLLOUT_PERCENT = 10;
+
+    /**
+     * The v2.6.48 sync safety release completed its staged rollout; sync is now available to all
+     * cohorts.
+     */
+    private static final int CURRENT_ROLLOUT_PERCENT = 100;
+
     private static final SecureRandom ROLLOUT_RANDOM = new SecureRandom();
 
     public SyncCoordinator(

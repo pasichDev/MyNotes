@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [2.6.49] - 01.09.2026
+
+**Improvements**
+
+- **Google Drive sync for everyone:** The staged rollout is complete. All signed-in users who
+  explicitly confirm their first sync can now sync their notes, tasks, tags, preferences, and
+  attachments across devices.
+
 ## [2.6.48] - 01.09.2026
 
 **Improvements**
