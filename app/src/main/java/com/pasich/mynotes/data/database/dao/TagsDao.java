@@ -17,8 +17,14 @@ public interface TagsDao {
     @Query("SELECT * FROM tags")
     Flowable<List<Tag>> getTags();
 
+    @Query("SELECT * FROM tags WHERE id = :id LIMIT 1")
+    Tag getTagSync(long id);
+
+    @Query("DELETE FROM tags WHERE id = :id")
+    void deleteById(long id);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void addTags(List<Tag> tags);
+    long[] addTags(List<Tag> tags);
 
     @Update
     void updateTags(List<Tag> tags);
@@ -27,7 +33,7 @@ public interface TagsDao {
     Flowable<List<Tag>> getTagsUser();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void addTag(Tag tag);
+    long addTag(Tag tag);
 
     @Query(
             "SELECT COUNT(name) FROM tags WHERE systemAction = "

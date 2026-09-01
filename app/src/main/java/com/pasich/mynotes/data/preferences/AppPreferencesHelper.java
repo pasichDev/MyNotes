@@ -151,4 +151,52 @@ public class AppPreferencesHelper implements PreferenceHelper {
     public void setLastKnownVersion(String version) {
         appCache.setLastKnownVersion(version);
     }
+
+    @Override
+    public boolean isSyncEnabled() {
+        return prefs.getBoolean(
+                PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_ENABLED,
+                PreferencesConfig.ARGUMENT_DEFAULT_SYNC_ENABLED);
+    }
+
+    @Override
+    public void setSyncEnabled(boolean enabled) {
+        prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_ENABLED, enabled);
+    }
+
+    @Override
+    public boolean isBackgroundSyncEnabled() {
+        return prefs.getBoolean(
+                PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_BACKGROUND_ENABLED,
+                PreferencesConfig.ARGUMENT_DEFAULT_SYNC_BACKGROUND_ENABLED);
+    }
+
+    @Override
+    public void setBackgroundSyncEnabled(boolean enabled) {
+        prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_BACKGROUND_ENABLED, enabled);
+    }
+
+    @Override
+    public boolean isFirstSyncConfirmed() {
+        return prefs.getBoolean(
+                PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_FIRST_CONFIRMED,
+                PreferencesConfig.ARGUMENT_DEFAULT_SYNC_FIRST_CONFIRMED);
+    }
+
+    @Override
+    public void setFirstSyncConfirmed(boolean confirmed) {
+        prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_FIRST_CONFIRMED, confirmed);
+    }
+
+    @Override
+    public int getSyncRolloutBucket() {
+        return prefs.getInt(
+                PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_ROLLOUT_BUCKET,
+                PreferencesConfig.ARGUMENT_DEFAULT_SYNC_ROLLOUT_BUCKET);
+    }
+
+    @Override
+    public void setSyncRolloutBucket(int bucket) {
+        prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_ROLLOUT_BUCKET, bucket);
+    }
 }

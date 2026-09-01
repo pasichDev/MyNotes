@@ -8,7 +8,10 @@ import static com.pasich.mynotes.data.database.AppDatabase.MIGRATION_7_8;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import androidx.annotation.Nullable;
 import androidx.room.Room;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.pasich.mynotes.data.AppDataManager;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.database.AppDatabase;
@@ -32,6 +35,21 @@ import javax.inject.Singleton;
 @InstallIn(SingletonComponent.class)
 public class ApplicationModule {
 
+    /**
+     * Returns null when the app was built without google-services.json.
+     *
+     * <p>The default FirebaseApp is created from resources the google-services plugin generates.
+     * Calling {@code FirebaseAuth.getInstance()} unconditionally crashes such a build as soon as
+     * any screen injects it.
+     */
+    @Provides
+    @Singleton
+    @Nullable
+    FirebaseAuth providesFirebaseAuth(@ApplicationContext Context context) {
+        FirebaseApp app = FirebaseApp.initializeApp(context);
+        return app == null ? null : FirebaseAuth.getInstance(app);
+    }
+
     @Provides
     @Singleton
     AppDatabase providesAppDatabase(@ApplicationContext Context context) {
@@ -51,7 +69,11 @@ public class ApplicationModule {
                         AppDatabase.MIGRATION_9_10,
                         AppDatabase.MIGRATION_10_11,
                         AppDatabase.MIGRATION_11_12,
-                        AppDatabase.MIGRATION_12_13)
+                        AppDatabase.MIGRATION_12_13,
+                        AppDatabase.MIGRATION_13_14,
+                        AppDatabase.MIGRATION_14_15,
+                        AppDatabase.MIGRATION_15_16,
+                        AppDatabase.MIGRATION_16_17)
                 .build();
     }
 

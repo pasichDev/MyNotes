@@ -1,13 +1,11 @@
 package com.pasich.mynotes.data.database;
 
-import android.content.Context;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
-import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
+import com.pasich.mynotes.data.sync.SyncMutationCoordinator;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
-import dagger.hilt.android.qualifiers.ApplicationContext;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -21,13 +19,12 @@ import javax.inject.Singleton;
 public class AppDbHelper implements DbHelper {
 
     private final AppDatabase appDatabase;
-
-    private final Context appContext;
+    private final SyncMutationCoordinator syncMutationCoordinator;
 
     @Inject
-    AppDbHelper(AppDatabase appDatabase, @ApplicationContext Context context) {
+    AppDbHelper(AppDatabase appDatabase, SyncMutationCoordinator syncMutationCoordinator) {
         this.appDatabase = appDatabase;
-        this.appContext = context;
+        this.syncMutationCoordinator = syncMutationCoordinator;
     }
 
     @Override
@@ -54,100 +51,78 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable addTag(Tag tag) {
-        return Completable.fromAction(() -> appDatabase.tagsDao().addTag(tag));
+        return Completable.fromAction(() -> syncMutationCoordinator.insertTag(tag));
     }
 
     @Override
     public Completable addTags(List<Tag> tags) {
-        return Completable.fromAction(() -> appDatabase.tagsDao().addTags(tags));
+        return Completable.fromAction(() -> syncMutationCoordinator.insertTags(tags));
     }
 
     @Override
     public Completable deleteTag(Tag tag) {
-        return Completable.fromAction(() -> appDatabase.tagsDao().deleteTag(tag));
+        return Completable.fromAction(() -> syncMutationCoordinator.deleteTag(tag));
     }
 
     @Override
     public Completable updateTag(Tag tag) {
-        return Completable.fromAction(() -> appDatabase.tagsDao().updateTag(tag));
+        return Completable.fromAction(() -> syncMutationCoordinator.updateTag(tag));
     }
 
     @Override
     public Completable updateTags(List<Tag> tags) {
-        return Completable.fromAction(() -> appDatabase.tagsDao().updateTags(tags));
+        return Completable.fromAction(() -> syncMutationCoordinator.updateTags(tags));
     }
 
     @Override
     public Completable clearTagInNotes(Tag tag) {
-        return Completable.fromAction(
-                () -> appDatabase.transactionsNote().deleteTagButKeepNotes(tag));
+        return Completable.fromAction(() -> syncMutationCoordinator.deleteTagButKeepNotes(tag));
     }
 
     @Override
     public Completable deleteTagAndMoveNotesToTrash(Tag tag) {
         return Completable.fromAction(
-                () -> appDatabase.transactionsNote().deleteTagAndMoveNotesToTrash(tag));
+                () -> syncMutationCoordinator.deleteTagAndMoveNotesToTrash(tag));
     }
 
     @Override
     public Completable moveNoteToTrash(int id) {
-        return Completable.fromCallable(
-                () -> {
-                    appDatabase.noteDao().moveNoteToTrash(id);
-                    return null;
-                });
+        return Completable.fromAction(() -> syncMutationCoordinator.moveNoteToTrash(id));
     }
 
     @Override
     public Completable moveNotesToTrash(List<Integer> ids) {
-        return Completable.fromAction(() -> appDatabase.noteDao().moveNotesToTrash(ids));
+        return Completable.fromAction(() -> syncMutationCoordinator.moveNotesToTrash(ids));
     }
 
     @Override
     public Completable transferNoteOutTrash(int id) {
-        return Completable.fromCallable(
-                () -> {
-                    appDatabase.noteDao().restoreNoteFromTrash(id);
-                    return null;
-                });
+        return Completable.fromAction(() -> syncMutationCoordinator.restoreNoteFromTrash(id));
     }
 
     @Override
     public Completable transferNotesOutTrash(List<Integer> ids) {
-        return Completable.fromAction(() -> appDatabase.noteDao().restoreNotesFromTrash(ids));
+        return Completable.fromAction(() -> syncMutationCoordinator.restoreNotesFromTrash(ids));
     }
 
     @Override
     public Completable clearTrash() {
-        return Completable.fromAction(
-                () -> {
-                    List<Note> trashNotes = appDatabase.noteDao().getTrashNotesSync();
-
-                    // Deleting attachments
-                    for (Note note : trashNotes) {
-                        AttachmentCleaner.deleteAttachmentFolderByNoteId(appContext, note.getId());
-                    }
-
-                    // Deleting notes
-                    appDatabase.noteDao().deleteAllTrashNotes();
-                });
+        return Completable.fromAction(syncMutationCoordinator::deleteAllTrashNotes);
     }
 
     @Override
     public Completable setTagForNotes(String tag, List<Integer> noteIds) {
-        return Completable.fromAction(() -> appDatabase.noteDao().setTagForNotes(tag, noteIds));
+        return Completable.fromAction(() -> syncMutationCoordinator.setTagForNotes(tag, noteIds));
     }
 
     @Override
     public Completable renameTag(Tag mTag, String newName) {
-        return Completable.fromAction(
-                () -> appDatabase.transactionsNote().renameTag(mTag, newName));
+        return Completable.fromAction(() -> syncMutationCoordinator.renameTag(mTag, newName));
     }
 
     @Override
     public Completable restoreNotesAndFixTags(List<Integer> ids) {
-        return Completable.fromAction(
-                () -> appDatabase.transactionsNote().restoreNotesAndFixTags(ids));
+        return Completable.fromAction(() -> syncMutationCoordinator.restoreNotesAndFixTags(ids));
     }
 
     @Override
@@ -183,11 +158,7 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Single<Long> addNote(Note note, boolean copyNote) {
-        return Single.fromCallable(
-                () ->
-                        copyNote
-                                ? appDatabase.noteDao().addNoteCopy(note)
-                                : appDatabase.transactionsNote().addNoteTransaction(note));
+        return Single.fromCallable(() -> syncMutationCoordinator.insertNote(note));
     }
 
     public Single<Long> copyNote(Note original) {
@@ -196,46 +167,32 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable addNotes(List<Note> notes) {
-        return Completable.fromAction(() -> appDatabase.noteDao().addNotes(notes));
+        return Completable.fromAction(() -> syncMutationCoordinator.insertNotes(notes));
     }
 
     @Override
     public Completable deleteNote(Note note) {
-        return Completable.fromAction(() -> appDatabase.noteDao().deleteNote(note));
+        return Completable.fromAction(() -> syncMutationCoordinator.deleteNote(note));
     }
 
     @Override
     public Completable deleteNote(ArrayList<Note> notes) {
-        return Completable.fromAction(
-                () -> {
-                    for (Note note : notes) appDatabase.noteDao().deleteNote(note);
-                });
+        return Completable.fromAction(() -> syncMutationCoordinator.deleteNotes(notes));
     }
 
     @Override
     public Completable updateNote(Note note) {
-        return Completable.fromAction(
-                () ->
-                        appDatabase
-                                .noteDao()
-                                .updateNoteContent(
-                                        note.getId(),
-                                        note.getTitle(),
-                                        note.getValue(),
-                                        note.getValueJson(),
-                                        note.getDate(),
-                                        note.getTag(),
-                                        note.getAttachments()));
+        return Completable.fromAction(() -> syncMutationCoordinator.updateNoteContent(note));
     }
 
     @Override
     public Completable moveToNotes(List<Note> notes) {
-        return Completable.fromAction(() -> appDatabase.noteDao().addNotes(notes));
+        return Completable.fromAction(() -> syncMutationCoordinator.insertNotes(notes));
     }
 
     @Override
     public Completable setTagNote(String nameTag, int idNote) {
-        return Completable.fromAction(() -> appDatabase.noteDao().setTagNote(nameTag, idNote));
+        return Completable.fromAction(() -> syncMutationCoordinator.setTagNote(nameTag, idNote));
     }
 
     @Override
@@ -267,10 +224,7 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable clearReminder(int noteId) {
-        RuntimeException caller =
-                new RuntimeException("clearReminder(noteId=" + noteId + ") CALLER");
-        android.util.Log.w("ReminderDebug", "clearReminder called for noteId=" + noteId, caller);
-        return Completable.fromAction(() -> appDatabase.noteDao().clearReminderSync(noteId))
+        return Completable.fromAction(() -> syncMutationCoordinator.clearReminder(noteId))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
@@ -278,9 +232,8 @@ public class AppDbHelper implements DbHelper {
     public Completable updateNoteReminder(int noteId, long reminderTime, String repeat) {
         return Completable.fromAction(
                         () ->
-                                appDatabase
-                                        .noteDao()
-                                        .updateReminderSync(noteId, reminderTime, repeat))
+                                syncMutationCoordinator.updateNoteReminder(
+                                        noteId, reminderTime, repeat))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
@@ -289,16 +242,14 @@ public class AppDbHelper implements DbHelper {
             int noteId, long reminderTime, String repeat, int intervalMinutes) {
         return Completable.fromAction(
                         () ->
-                                appDatabase
-                                        .noteDao()
-                                        .updateReminderFullSync(
-                                                noteId, reminderTime, repeat, intervalMinutes))
+                                syncMutationCoordinator.updateNoteReminderFull(
+                                        noteId, reminderTime, repeat, intervalMinutes))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
     @Override
     public Completable setPinNote(int noteId, boolean pinned) {
-        return Completable.fromAction(() -> appDatabase.noteDao().setPinNoteSync(noteId, pinned))
+        return Completable.fromAction(() -> syncMutationCoordinator.setPinNote(noteId, pinned))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
@@ -321,28 +272,27 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable addTask(Task task) {
-        return Completable.fromAction(() -> appDatabase.taskDao().insertTask(task));
+        return Completable.fromAction(() -> syncMutationCoordinator.insertTask(task));
     }
 
     @Override
     public Completable updateTask(Task task) {
-        return Completable.fromAction(() -> appDatabase.taskDao().updateTask(task));
+        return Completable.fromAction(() -> syncMutationCoordinator.updateTask(task));
     }
 
     @Override
     public Completable deleteTask(Task task) {
-        return Completable.fromAction(() -> appDatabase.taskDao().deleteTask(task));
+        return Completable.fromAction(() -> syncMutationCoordinator.deleteTask(task));
     }
 
     @Override
     public Completable toggleTask(int taskId, boolean isDone) {
-        return Completable.fromAction(
-                () -> appDatabase.taskDao().setTaskDone(taskId, isDone ? 1 : 0));
+        return Completable.fromAction(() -> syncMutationCoordinator.setTaskDone(taskId, isDone));
     }
 
     @Override
     public Completable clearCompletedTasks() {
-        return Completable.fromAction(() -> appDatabase.taskDao().clearCompletedTasks());
+        return Completable.fromAction(() -> syncMutationCoordinator.clearCompletedTasks());
     }
 
     @Override
@@ -352,17 +302,17 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable addCategory(TaskCategory category) {
-        return Completable.fromAction(() -> appDatabase.taskCategoryDao().insertCategory(category));
+        return Completable.fromAction(() -> syncMutationCoordinator.insertCategory(category));
     }
 
     @Override
     public Completable updateCategory(TaskCategory category) {
-        return Completable.fromAction(() -> appDatabase.taskCategoryDao().updateCategory(category));
+        return Completable.fromAction(() -> syncMutationCoordinator.updateCategory(category));
     }
 
     @Override
     public Completable deleteCategory(TaskCategory category) {
-        return Completable.fromAction(() -> appDatabase.taskCategoryDao().deleteCategory(category));
+        return Completable.fromAction(() -> syncMutationCoordinator.deleteCategory(category));
     }
 
     @Override
@@ -372,22 +322,21 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable setTaskReminder(int taskId, long time) {
-        return Completable.fromAction(() -> appDatabase.taskDao().setTaskReminder(taskId, time));
+        return Completable.fromAction(() -> syncMutationCoordinator.setTaskReminder(taskId, time));
     }
 
     @Override
     public Completable setTaskReminderFull(int taskId, long time, int intervalMinutes) {
         return Completable.fromAction(
                         () ->
-                                appDatabase
-                                        .taskDao()
-                                        .setTaskReminderFullSync(taskId, time, intervalMinutes))
+                                syncMutationCoordinator.setTaskReminderFull(
+                                        taskId, time, intervalMinutes))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
     @Override
     public Completable clearTaskReminder(int taskId) {
-        return Completable.fromAction(() -> appDatabase.taskDao().clearTaskReminder(taskId))
+        return Completable.fromAction(() -> syncMutationCoordinator.clearTaskReminder(taskId))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 

@@ -266,6 +266,15 @@
     <string name="backup">Резервная копия</string>
     <string name="device_storage">Память устройства</string>
     <string name="google_drive">Google Диск</string>
+    <string name="google_sign_in">Войти через Google</string>
+    <string name="google_sign_out">Выйти (%1$s)</string>
+    <string name="google_sign_out_action">Выйти</string>
+    <string name="google_sign_in_failed">Не удалось войти через Google</string>
+    <string name="sync_now">Синхронизировать</string>
+    <string name="sync_started">Синхронизация…</string>
+    <string name="sync_success">Синхронизация завершена</string>
+    <string name="sync_success_conflicts">Синхронизация завершена, конфликтов: %1$d</string>
+    <string name="sync_failed">Ошибка синхронизации: %1$s</string>
     <string name="save_backup">Сохранить резервную копию</string>
     <string name="restore_backup">Восстановить резервную копию</string>
     <string name="file_not_selected">Файл не выбран</string>
@@ -407,5 +416,65 @@
     <string name="editor_switch_label">Редактор</string>
     <string name="mode_simple">Простой</string>
     <string name="mode_extended">Расширенный</string>
+    <string name="sync_status_ready">Готово к синхронизации</string>
+    <string name="sync_last_sync_never">Последняя синхронизация: никогда</string>
+    <string name="sync_last_sync_value">Последняя синхронизация: %1$s</string>
+    <string name="sync_background">Фоновая синхронизация</string>
+    <string name="sync_background_enabled">Фоновая синхронизация включена</string>
+    <string name="sync_background_disabled">Фоновая синхронизация выключена</string>
+    <string name="sync_sign_in_required">Для синхронизации нужен вход в Google</string>
+    <string name="sync_review_conflicts">Просмотреть конфликты</string>
+    <string name="sync_review_conflicts_count">Просмотреть конфликты (%1$d)</string>
+    <string name="sync_conflict_title">Разрешить конфликты синхронизации (%1$d осталось)</string>
+    <string name="sync_conflict_keep_local">Оставить локальную версию</string>
+    <string name="sync_conflict_keep_drive">Оставить версию из Google Drive</string>
+    <string name="sync_conflict_later">Позже</string>
+    <string name="sync_conflict_resolved">Конфликт синхронизации разрешён</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Локальная версия</string>
+    <string name="sync_conflict_drive_label">Версия из Google Drive</string>
+    <string name="sync_conflict_deleted">Удалено</string>
+    <string name="sync_first_sync_title">Настроить синхронизацию с Google Диском</string>
+    <string name="sync_first_sync_message">При первой синхронизации будут объединены записи: %1$d. Возможно, будет загружено около %2$s. Локальные данные останутся доступны.</string>
+    <string name="sync_first_sync_cancel">Не сейчас</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Применить</string>
+    <string name="help_tasks_title">Задачи</string>
+    <string name="help_tasks_create_title">Создание задач</string>
+    <string name="help_tasks_create_description">Откройте «Задачи» из главного меню. Нажмите кнопку \"+\", чтобы добавить новую задачу. Можно указать название, описание и назначить категорию.</string>
+    <string name="help_tasks_categories_title">Категории</string>
+    <string name="help_tasks_categories_description">Распределяйте задачи по своим категориям. Нажмите «Добавить категорию», чтобы создать её. Задачи одной категории группируются вместе — так ими проще управлять.</string>
+    <string name="help_tasks_complete_title">Завершение задач</string>
+    <string name="help_tasks_complete_description">Нажмите флажок рядом с задачей, чтобы отметить её выполненной. Выполненные задачи собираются внизу списка. Нажмите ещё раз, чтобы снять отметку.</string>
+    <string name="help_tasks_reminder_title">Напоминания о задачах</string>
+    <string name="help_tasks_reminder_description">Задайте напоминание для любой задачи, нажав значок колокольчика. В указанное время придёт уведомление. Нажмите на него, чтобы сразу открыть задачу.</string>
+    <string name="help_reminders_title">Напоминания</string>
+    <string name="help_reminders_notes_title">Напоминания о заметках</string>
+    <string name="help_reminders_notes_description">Откройте любую заметку и нажмите значок колокольчика, чтобы задать напоминание. Выберите время быстрым вариантом или через выбор даты и времени. В назначенное время появится уведомление.</string>
+    <string name="help_reminders_repeat_title">Повторение</string>
+    <string name="help_reminders_repeat_description">При настройке напоминания для заметки включите переключатель «Повтор», чтобы выбрать цикл: ежедневно, еженедельно или ежемесячно. После каждого уведомления напоминание переносится автоматически.</string>
+    <string name="help_reminders_interval_title">Интервальные уведомления</string>
+    <string name="help_reminders_interval_description">Для повторяющихся напоминаний можно включить повторное уведомление каждые 5, 10, 15, 30 или 60 минут. Уведомление будет повторяться с выбранным интервалом до следующего срабатывания.</string>
+    <string name="help_reminders_sound_title">Звук и громкость уведомлений</string>
+    <string name="help_reminders_sound_description">Настройте мелодию и громкость напоминаний в «Настройки → Медиа». Изменения применяются ко всем будущим уведомлениям.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Аккаунт</string>
+    <string name="sync_signed_out_title">Вы не вошли</string>
+    <string name="sync_signed_out_description">Синхронизация и копия на Google Диске доступны после входа.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Синхронизация</string>
+    <string name="help_sync_setup_title">Синхронизация с Google Drive</string>
+    <string name="help_sync_setup_description">Синхронизация необязательна. Войдите в аккаунт Google на вкладке «Аккаунт», затем нажмите «Синхронизировать». Когда синхронизация выключена, данные остаются доступными на этом устройстве.</string>
+    <string name="help_sync_first_title">Первая синхронизация</string>
+    <string name="help_sync_first_description">Перед первой синхронизацией приложение покажет количество записей для объединения и примерный размер загрузки. Проверьте информацию и подтвердите запуск.</string>
+    <string name="help_sync_data_title">Что синхронизируется</string>
+    <string name="help_sync_data_description">С Google Drive синхронизируются заметки и их вложения, задачи, теги, категории задач и настройки приложения.</string>
+    <string name="help_sync_background_title">Фоновая синхронизация</string>
+    <string name="help_sync_background_description">После подтверждения первой синхронизации можно включить фоновую. Она запускается примерно каждые 6 часов при наличии интернета, и её можно отключить в любое время.</string>
+    <string name="help_sync_conflicts_title">Разрешение конфликтов</string>
+    <string name="help_sync_conflicts_description">Когда локальная версия и версия на Drive отличаются, для каждого конфликта выберите, какую сохранить: локальную или из Google Drive.</string>
 </resources>

@@ -42,6 +42,7 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
         selectTheme();
         binding = ActivityTasksBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        setupEdgeToEdgeInsets(binding.getRoot());
 
         tasksAdapter =
                 new TasksAdapter(

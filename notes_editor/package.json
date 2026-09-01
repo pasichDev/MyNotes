@@ -12,21 +12,21 @@
   "license": "ISC",
   "dependencies": {
     "@editorjs/delimiter": "^1.4.2",
-    "@editorjs/editorjs": "^2.31.0",
-    "@editorjs/header": "^2.8.8",
+    "@editorjs/editorjs": "^2.31.6",
+    "@editorjs/header": "^2.8.9",
     "@editorjs/image": "^2.10.3",
     "@editorjs/inline-code": "^1.5.2",
-    "@editorjs/list": "^2.0.8",
+    "@editorjs/list": "^2.0.9",
     "@editorjs/marker": "^1.4.0",
     "@editorjs/paragraph": "^2.11.7",
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-commonjs": "^28.0.9",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "editorjs-image-tune-plus": "^1.0.6",
-    "rollup": "^4.52.3"
+    "rollup": "^4.63.1"
   },
   "description": "",
   "devDependencies": {
-    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-terser": "^1.0.0",
     "rollup-plugin-postcss": "^4.0.2"
   }
 }

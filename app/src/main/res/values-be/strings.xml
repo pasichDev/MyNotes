@@ -262,6 +262,15 @@
     <string name="backup">Рэзервовая копія</string>
     <string name="device_storage">Памяць прылады</string>
     <string name="google_drive">Google Дыск</string>
+    <string name="google_sign_in">Увайсці праз Google</string>
+    <string name="google_sign_out">Выйсці (%1$s)</string>
+    <string name="google_sign_out_action">Выйсці</string>
+    <string name="google_sign_in_failed">Не ўдалося ўвайсці праз Google</string>
+    <string name="sync_now">Сінхранізаваць</string>
+    <string name="sync_started">Сінхранізацыя…</string>
+    <string name="sync_success">Сінхранізацыя завершана</string>
+    <string name="sync_success_conflicts">Сінхранізацыя завершана, канфліктаў: %1$d</string>
+    <string name="sync_failed">Памылка сінхранізацыі: %1$s</string>
     <string name="save_backup">Захаваць рэзервовую копію</string>
     <string name="restore_backup">Адноўліваць рэзервовую копію</string>
     <string name="file_not_selected">Файл не абраны</string>
@@ -402,5 +411,65 @@
     <string name="editor_switch_label">Рэдактар</string>
     <string name="mode_simple">Просты</string>
     <string name="mode_extended">Пашыраны</string>
+    <string name="sync_status_ready">Гатова да сінхранізацыі</string>
+    <string name="sync_last_sync_never">Апошняя сінхранізацыя: ніколі</string>
+    <string name="sync_last_sync_value">Апошняя сінхранізацыя: %1$s</string>
+    <string name="sync_background">Фонавая сінхранізацыя</string>
+    <string name="sync_background_enabled">Фонавую сінхранізацыю ўключана</string>
+    <string name="sync_background_disabled">Фонавую сінхранізацыю выключана</string>
+    <string name="sync_sign_in_required">Для сінхранізацыі патрэбны ўваход у Google</string>
+    <string name="sync_review_conflicts">Праглядзець канфлікты</string>
+    <string name="sync_review_conflicts_count">Праглядзець канфлікты (%1$d)</string>
+    <string name="sync_conflict_title">Вырашыць канфлікты сінхранізацыі (%1$d засталося)</string>
+    <string name="sync_conflict_keep_local">Пакінуць лакальную версію</string>
+    <string name="sync_conflict_keep_drive">Пакінуць версію з Google Drive</string>
+    <string name="sync_conflict_later">Пазней</string>
+    <string name="sync_conflict_resolved">Канфлікт сінхранізацыі вырашаны</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Лакальная версія</string>
+    <string name="sync_conflict_drive_label">Версія з Google Drive</string>
+    <string name="sync_conflict_deleted">Выдалена</string>
+    <string name="sync_first_sync_title">Наладзіць сінхранізацыю з Google Дыскам</string>
+    <string name="sync_first_sync_message">Падчас першай сінхранізацыі будзе аб’яднана запісаў: %1$d. Можа быць загружана каля %2$s. Лакальныя даныя застануцца даступнымі.</string>
+    <string name="sync_first_sync_cancel">Не цяпер</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Ужыць</string>
+    <string name="help_tasks_title">Заданні</string>
+    <string name="help_tasks_create_title">Стварэнне заданняў</string>
+    <string name="help_tasks_create_description">Адкрыйце «Заданні» з галоўнага меню. Націсніце кнопку \"+\", каб дадаць новае заданне. Можна задаць назву, апісанне і прызначыць катэгорыю.</string>
+    <string name="help_tasks_categories_title">Катэгорыі</string>
+    <string name="help_tasks_categories_description">Размяркоўвайце заданні па ўласных катэгорыях. Націсніце «Дадаць катэгорыю», каб стварыць яе. Заданні адной катэгорыі згрупаваны разам — так імі прасцей кіраваць.</string>
+    <string name="help_tasks_complete_title">Завяршэнне заданняў</string>
+    <string name="help_tasks_complete_description">Націсніце сцяжок побач з заданнем, каб адзначыць яго выкананым. Выкананыя заданні збіраюцца ўнізе спіса. Націсніце яшчэ раз, каб зняць адзнаку.</string>
+    <string name="help_tasks_reminder_title">Нагадванні пра заданні</string>
+    <string name="help_tasks_reminder_description">Задайце нагадванне для любога задання, націснуўшы значок званочка. У прызначаны час прыйдзе апавяшчэнне. Націсніце на яго, каб адразу адкрыць заданне.</string>
+    <string name="help_reminders_title">Нагадванні</string>
+    <string name="help_reminders_notes_title">Нагадванні пра нататкі</string>
+    <string name="help_reminders_notes_description">Адкрыйце любую нататку і націсніце значок званочка, каб задаць нагадванне. Выберыце час хуткім варыянтам або праз выбар даты і часу. У прызначаны час з’явіцца апавяшчэнне.</string>
+    <string name="help_reminders_repeat_title">Паўтарэнне</string>
+    <string name="help_reminders_repeat_description">Пры наладзе нагадвання для нататкі ўключыце пераключальнік «Паўтор», каб выбраць цыкл: штодня, штотыдня або штомесяц. Пасля кожнага апавяшчэння нагадванне пераносіцца аўтаматычна.</string>
+    <string name="help_reminders_interval_title">Інтэрвальныя апавяшчэнні</string>
+    <string name="help_reminders_interval_description">Для паўтаральных нагадванняў можна ўключыць паўторнае апавяшчэнне кожныя 5, 10, 15, 30 або 60 хвілін. Апавяшчэнне будзе паўтарацца з выбраным інтэрвалам да наступнага спрацоўвання.</string>
+    <string name="help_reminders_sound_title">Гук і гучнасць апавяшчэнняў</string>
+    <string name="help_reminders_sound_description">Наладзьце мелодыю і гучнасць нагадванняў у «Налады → Медыя». Змены дзейнічаюць для ўсіх будучых апавяшчэнняў.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Уліковы запіс</string>
+    <string name="sync_signed_out_title">Вы не ўвайшлі</string>
+    <string name="sync_signed_out_description">Сінхранізацыя і копія на Google Дыску даступныя пасля ўваходу.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Сінхранізацыя</string>
+    <string name="help_sync_setup_title">Сінхранізацыя з Google Drive</string>
+    <string name="help_sync_setup_description">Сінхранізацыя неабавязковая. Увайдзіце ў акаўнт Google на ўкладцы «Акаўнт», затым націсніце «Сінхранізаваць». Калі сінхранізацыя выключана, даныя застаюцца даступнымі на гэтай прыладзе.</string>
+    <string name="help_sync_first_title">Першая сінхранізацыя</string>
+    <string name="help_sync_first_description">Перад першай сінхранізацыяй праграма пакажа колькасць запісаў для аб’яднання і прыблізны памер загрузкі. Праверце інфармацыю і пацвердзіце запуск.</string>
+    <string name="help_sync_data_title">Што сінхранізуецца</string>
+    <string name="help_sync_data_description">З Google Drive сінхранізуюцца нататкі і іх укладанні, задачы, тэгі, катэгорыі задач і налады праграмы.</string>
+    <string name="help_sync_background_title">Фонавая сінхранізацыя</string>
+    <string name="help_sync_background_description">Пасля пацвярджэння першай сінхранізацыі можна ўключыць фонавую. Яна запускаецца прыблізна кожныя 6 гадзін пры наяўнасці інтэрнэту, і яе можна выключыць у любы час.</string>
+    <string name="help_sync_conflicts_title">Вырашэнне канфліктаў</string>
+    <string name="help_sync_conflicts_description">Калі лакальная версія і версія на Drive адрозніваюцца, для кожнага канфлікту выберыце, якую захаваць: лакальную або з Google Drive.</string>
 </resources>

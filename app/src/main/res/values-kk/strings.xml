@@ -261,6 +261,15 @@
     <string name="backup">Сақтық көшірме</string>
     <string name="device_storage">Құрылғы жады</string>
     <string name="google_drive">Google Диск</string>
+    <string name="google_sign_in">Google арқылы кіру</string>
+    <string name="google_sign_out">Шығу (%1$s)</string>
+    <string name="google_sign_out_action">Шығу</string>
+    <string name="google_sign_in_failed">Google арқылы кіру сәтсіз аяқталды</string>
+    <string name="sync_now">Синхрондау</string>
+    <string name="sync_started">Синхрондалуда…</string>
+    <string name="sync_success">Синхрондау сәтті аяқталды</string>
+    <string name="sync_success_conflicts">%1$d қайшылықпен синхрондалды</string>
+    <string name="sync_failed">Синхрондау сәтсіз аяқталды: %1$s</string>
     <string name="save_backup">Сақтық көшірмесін сақтау</string>
     <string name="restore_backup">Сақтық көшірмесін қалпына келтіру</string>
     <string name="file_not_selected">Файл таңдалмады</string>
@@ -392,11 +401,72 @@
     <string name="reminder_interval_60min">60 мин</string>
 
     <plurals name="wordCount">
+        <item quantity="one">%d сөз</item>
         <item quantity="other">%d сөз</item>
     </plurals>
 
     <string name="editor_switch_label">Редактор</string>
     <string name="mode_simple">Қарапайым</string>
     <string name="mode_extended">Кеңейтілген</string>
+    <string name="sync_status_ready">Синхрондауға дайын</string>
+    <string name="sync_last_sync_never">Соңғы синхрондау: ешқашан</string>
+    <string name="sync_last_sync_value">Соңғы синхрондау: %1$s</string>
+    <string name="sync_background">Фондық синхрондау</string>
+    <string name="sync_background_enabled">Фондық синхрондау қосылды</string>
+    <string name="sync_background_disabled">Фондық синхрондау өшірілді</string>
+    <string name="sync_sign_in_required">Синхрондау үшін Google арқылы кіру қажет</string>
+    <string name="sync_review_conflicts">Қайшылықтарды қарау</string>
+    <string name="sync_review_conflicts_count">Қайшылықтарды қарау (%1$d)</string>
+    <string name="sync_conflict_title">Синхрондау қайшылықтарын шешу (%1$d қалды)</string>
+    <string name="sync_conflict_keep_local">Жергілікті нұсқаны сақтау</string>
+    <string name="sync_conflict_keep_drive">Google Drive нұсқасын сақтау</string>
+    <string name="sync_conflict_later">Кейінірек</string>
+    <string name="sync_conflict_resolved">Синхрондау қайшылығы шешілді</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Жергілікті нұсқа</string>
+    <string name="sync_conflict_drive_label">Google Drive нұсқасы</string>
+    <string name="sync_conflict_deleted">Жойылды</string>
+    <string name="sync_first_sync_title">Google Drive синхрондауды баптау</string>
+    <string name="sync_first_sync_message">Алғашқы синхрондау %1$d жазбаны біріктіреді және шамамен %2$s жүктеуі мүмкін. Жергілікті деректер қолжетімді болып қалады.</string>
+    <string name="sync_first_sync_cancel">Қазір емес</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Қолдану</string>
+    <string name="help_tasks_title">Тапсырмалар</string>
+    <string name="help_tasks_create_title">Тапсырма құру</string>
+    <string name="help_tasks_create_description">Негізгі мәзірден «Тапсырмалар» бөлімін ашыңыз. Жаңа тапсырма қосу үшін \"+\" түймесін басыңыз. Атауын, сипаттамасын көрсетіп, санатқа тағайындай аласыз.</string>
+    <string name="help_tasks_categories_title">Санаттар</string>
+    <string name="help_tasks_categories_description">Тапсырмаларды өз санаттарыңызға бөліңіз. Санат жасау үшін «Санат қосу» түймесін басыңыз. Бір санаттағы тапсырмалар бірге топталады — оларды басқару оңай.</string>
+    <string name="help_tasks_complete_title">Тапсырманы аяқтау</string>
+    <string name="help_tasks_complete_description">Тапсырманы орындалды деп белгілеу үшін жанындағы құсбелгіні басыңыз. Орындалған тапсырмалар тізімнің төменгі жағына жиналады. Белгіні алу үшін қайта басыңыз.</string>
+    <string name="help_tasks_reminder_title">Тапсырма еске салғыштары</string>
+    <string name="help_tasks_reminder_description">Қоңырау белгішесін басып, кез келген тапсырмаға еске салғыш қойыңыз. Белгіленген уақытта хабарландыру келеді. Тапсырманы бірден ашу үшін хабарландыруды басыңыз.</string>
+    <string name="help_reminders_title">Еске салғыштар</string>
+    <string name="help_reminders_notes_title">Жазба еске салғыштары</string>
+    <string name="help_reminders_notes_description">Кез келген жазбаны ашып, еске салғыш қою үшін қоңырау белгішесін басыңыз. Уақытты жылдам нұсқалар арқылы немесе күн мен уақытты таңдау терезесінен көрсетіңіз. Белгіленген уақытта хабарландыру шығады.</string>
+    <string name="help_reminders_repeat_title">Қайталау параметрлері</string>
+    <string name="help_reminders_repeat_description">Жазбаға еске салғыш қойғанда қайталау циклін таңдау үшін «Қайталау» қосқышын қосыңыз: күн сайын, апта сайын немесе ай сайын. Әр хабарландырудан кейін еске салғыш автоматты түрде қайта жоспарланады.</string>
+    <string name="help_reminders_interval_title">Аралық хабарландырулар</string>
+    <string name="help_reminders_interval_description">Қайталанатын еске салғыштар үшін әр 5, 10, 15, 30 немесе 60 минут сайын қайта хабарлауды қосуға болады. Хабарландыру келесі жоспарланған уақытқа дейін таңдалған аралықпен қайталанады.</string>
+    <string name="help_reminders_sound_title">Хабарландыру дыбысы мен қаттылығы</string>
+    <string name="help_reminders_sound_description">Еске салғыш әуені мен дыбыс қаттылығын «Параметрлер → Медиа» бөлімінде реттеңіз. Өзгерістер барлық болашақ хабарландыруларға қолданылады.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Есептік жазба</string>
+    <string name="sync_signed_out_title">Сіз кірмегенсіз</string>
+    <string name="sync_signed_out_description">Синхрондау және Google Дискідегі көшірме кіргеннен кейін қолжетімді.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Синхрондау</string>
+    <string name="help_sync_setup_title">Google Drive-пен синхрондау</string>
+    <string name="help_sync_setup_description">Синхрондау міндетті емес. «Есептік жазба» қойындысында Google есептік жазбаңызға кіріп, «Синхрондау» түймесін түртіңіз. Синхрондау өшірілген кезде деректер осы құрылғыда қолжетімді болып қалады.</string>
+    <string name="help_sync_first_title">Алғашқы синхрондау</string>
+    <string name="help_sync_first_description">Алғашқы синхрондаудың алдында қолданба біріктірілетін жазбалар санын және жүктеудің болжамды көлемін көрсетеді. Ақпаратты тексеріп, бастау үшін растаңыз.</string>
+    <string name="help_sync_data_title">Не синхрондалады</string>
+    <string name="help_sync_data_description">Жазбалар мен олардың тіркемелері, тапсырмалар, тегтер, тапсырма санаттары және қолданба баптаулары Google Drive-пен синхрондалады.</string>
+    <string name="help_sync_background_title">Фондық синхрондау</string>
+    <string name="help_sync_background_description">Алғашқы синхрондауды растағаннан кейін фондық синхрондауды қоса аласыз. Ол құрылғы интернетке қосылған кезде шамамен әр 6 сағат сайын орындалады және оны кез келген уақытта өшіруге болады.</string>
+    <string name="help_sync_conflicts_title">Қайшылықтарды шешу</string>
+    <string name="help_sync_conflicts_description">Жергілікті және Drive нұсқалары әртүрлі болса, әр қайшылық үшін жергілікті нұсқаны не Google Drive нұсқасын сақтауды таңдаңыз.</string>
 </resources>

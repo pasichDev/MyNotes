@@ -95,6 +95,46 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public boolean isSyncEnabled() {
+        return preferencesHelper.isSyncEnabled();
+    }
+
+    @Override
+    public void setSyncEnabled(boolean enabled) {
+        preferencesHelper.setSyncEnabled(enabled);
+    }
+
+    @Override
+    public boolean isBackgroundSyncEnabled() {
+        return preferencesHelper.isBackgroundSyncEnabled();
+    }
+
+    @Override
+    public void setBackgroundSyncEnabled(boolean enabled) {
+        preferencesHelper.setBackgroundSyncEnabled(enabled);
+    }
+
+    @Override
+    public boolean isFirstSyncConfirmed() {
+        return preferencesHelper.isFirstSyncConfirmed();
+    }
+
+    @Override
+    public void setFirstSyncConfirmed(boolean confirmed) {
+        preferencesHelper.setFirstSyncConfirmed(confirmed);
+    }
+
+    @Override
+    public int getSyncRolloutBucket() {
+        return preferencesHelper.getSyncRolloutBucket();
+    }
+
+    @Override
+    public void setSyncRolloutBucket(int bucket) {
+        preferencesHelper.setSyncRolloutBucket(bucket);
+    }
+
+    @Override
     public String getTypeFaceNoteActivity() {
         return preferencesHelper.getTypeFaceNoteActivity();
     }

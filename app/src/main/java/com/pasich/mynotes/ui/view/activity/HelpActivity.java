@@ -18,7 +18,7 @@ import javax.inject.Named;
 @AndroidEntryPoint
 public class HelpActivity extends BaseActivity {
 
-    private final String actualVersionHelp = "2.6.46";
+    private final String actualVersionHelp = "2.6.47";
 
     @Inject
     @Named("NotesItemSpaceDecoration")
@@ -32,6 +32,7 @@ public class HelpActivity extends BaseActivity {
         selectTheme();
         binding = ActivityHelpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        setupEdgeToEdgeInsets(binding.getRoot());
 
         setupToolbar();
         setupRecyclerView();
@@ -133,6 +134,54 @@ public class HelpActivity extends BaseActivity {
                         getString(R.string.help_navigation_swipe_title),
                         getString(R.string.help_navigation_swipe_description),
                         R.drawable.ic_gesture,
+                        null));
+
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_SECTION_TITLE,
+                        getString(R.string.help_sync_title),
+                        null,
+                        R.drawable.ic_sync,
+                        null));
+
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_sync_setup_title),
+                        getString(R.string.help_sync_setup_description),
+                        R.drawable.ic_google_drive,
+                        null));
+
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_sync_first_title),
+                        getString(R.string.help_sync_first_description),
+                        R.drawable.ic_info,
+                        null));
+
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_sync_data_title),
+                        getString(R.string.help_sync_data_description),
+                        R.drawable.ic_backup_restore,
+                        null));
+
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_sync_background_title),
+                        getString(R.string.help_sync_background_description),
+                        R.drawable.ic_cloud_upload,
+                        null));
+
+        sections.add(
+                new HelpSection(
+                        HelpSection.TYPE_FEATURE,
+                        getString(R.string.help_sync_conflicts_title),
+                        getString(R.string.help_sync_conflicts_description),
+                        R.drawable.ic_sync,
                         null));
 
         // Розділ про теги (другий)

@@ -144,7 +144,7 @@
                     android:layout_marginEnd="6dp"
                     android:contentDescription="@string/pinNote"
                     android:src="@drawable/ic_pin"
-                    android:tint="?attr/colorOnSecondaryContainer"
+                    app:tint="?attr/colorOnSecondaryContainer"
                     android:visibility="@{Note.pinned ? View.VISIBLE : View.GONE}" />
             </LinearLayout>
 

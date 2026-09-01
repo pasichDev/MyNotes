@@ -2,6 +2,7 @@ package com.pasich.mynotes.utils.file;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -368,6 +369,11 @@ public class FileExportUtils {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /** Returns whether the device has an activity that can handle the exact intent. */
+    public static boolean canHandleIntent(PackageManager packageManager, Intent intent) {
+        return intent.resolveActivity(packageManager) != null;
     }
 
     /** Generates a timestamped backup file name with .json extension. */

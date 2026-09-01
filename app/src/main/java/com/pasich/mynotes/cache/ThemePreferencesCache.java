@@ -78,10 +78,14 @@ public class ThemePreferencesCache {
                             PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE,
                             PreferencesConfig.ARGUMENT_DEFAULT_TEXT_STYLE);
 
-            sizeTextNoteActivity =
+            int savedTextSize =
                     prefs.getInt(
                             PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE,
                             PreferencesConfig.ARGUMENT_DEFAULT_TEXT_SIZE);
+            sizeTextNoteActivity = PreferencesConfig.normalizeNoteTextSize(savedTextSize);
+            if (savedTextSize != sizeTextNoteActivity) {
+                prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, sizeTextNoteActivity);
+            }
 
             uiFontScale =
                     prefs.getFloat(
@@ -168,8 +172,9 @@ public class ThemePreferencesCache {
 
     public synchronized void setSizeTextNoteActivity(int size) {
         try {
-            this.sizeTextNoteActivity = size;
-            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, size);
+            this.sizeTextNoteActivity = PreferencesConfig.normalizeNoteTextSize(size);
+            prefs.putInt(
+                    PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, this.sizeTextNoteActivity);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set size text note", e);
         }

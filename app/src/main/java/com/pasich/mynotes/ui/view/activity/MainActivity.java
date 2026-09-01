@@ -126,6 +126,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         selectTheme();
         mActivityBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mActivityBinding.getRoot());
+        setupEdgeToEdgeInsets(mActivityBinding.getRoot());
 
         selectionController = new SelectionController(mNoteAdapter, mActivityBinding.getRoot());
         mNoteAdapter.setSelectionController(selectionController);

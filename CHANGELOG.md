@@ -1,5 +1,47 @@
 # CHANGELOG
 
+## [2.6.48] - 01.09.2026
+
+**Improvements**
+
+- **Safer Google Drive sync:** Sync snapshots are now published as immutable files and merged
+  deterministically, so a concurrent device update cannot overwrite another device's data.
+- **Efficient background sync:** Periodic sync now runs only on unmetered networks when the battery
+  is not low, and unchanged data no longer creates an extra Drive snapshot.
+- **Quality visibility:** Added JaCoCo unit-test coverage reports to CI for every pull request.
+
+**Fixes**
+
+- Sync now requires explicit first-sync confirmation in the coordinator itself, preventing any
+  caller from bypassing the data-upload review.
+- Fixed updates to an existing Drive sync bundle on Android/JDK configurations that reject HTTP
+  PATCH requests.
+
+## [2.6.47] - 01.09.2026
+
+**New**
+
+- **Google Drive sync:** Optionally keep notes, tasks, tags, preferences, and attachments in sync
+  across devices while continuing to work offline. Your data is merged safely before a sync is
+  published, and the first sync clearly explains what may be uploaded.
+- **Your data:** Added an Account tab with Google sign-in, sync status, a manual sync action, and
+  an optional background-sync switch. Backup, export, and import remain available in their own
+  tabs.
+
+**Improvements**
+
+- Attachments are deduplicated and verified during sync, reducing unnecessary uploads while
+  protecting file integrity.
+- The app now remains fully usable when Google services are unavailable or when you choose not to
+  sign in.
+- Updated translations across all supported languages for the new sync and account experience.
+
+**Fixes**
+
+- Fixed several sync stability issues, including leaving the screen during an active sync and
+  preserving the time of the last successful sync.
+- Fixed Google sign-in compatibility on Android 8.0 and 8.1.
+
 ## [2.6.46] - 18.05.2026
 
 **New**

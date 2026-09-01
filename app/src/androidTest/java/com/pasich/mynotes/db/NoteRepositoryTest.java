@@ -145,7 +145,7 @@ public class NoteRepositoryTest {
     @Test
     public void updateNoteContent_doesNotOverwriteReminderFields() {
         Note note = makeNote("Title", "content");
-        int id = (int) noteDao.addNote(note);
+        int id = noteDao.addNote(note).intValue();
         note.setId(id);
 
         // Set reminder fields directly
@@ -165,7 +165,7 @@ public class NoteRepositoryTest {
     @Test
     public void clearReminderSync_nullifiesReminderFields() {
         Note note = makeNote("Reminder note", "body");
-        int id = (int) noteDao.addNote(note);
+        int id = noteDao.addNote(note).intValue();
         noteDao.updateReminderFullSync(id, System.currentTimeMillis() + 3_600_000L, "DAILY", 0);
 
         noteDao.clearReminderSync(id);
@@ -179,7 +179,7 @@ public class NoteRepositoryTest {
     @Test
     public void updateReminderFullSync_setsAllReminderFields() {
         Note note = makeNote("Interval note", "body");
-        int id = (int) noteDao.addNote(note);
+        int id = noteDao.addNote(note).intValue();
         long time = System.currentTimeMillis() + 600_000L;
 
         noteDao.updateReminderFullSync(id, time, "NONE", 10);
@@ -194,8 +194,8 @@ public class NoteRepositoryTest {
     public void getNotesWithActiveReminders_excludesPastReminders() {
         Note future = makeNote("Future", "");
         Note past = makeNote("Past", "");
-        int futureId = (int) noteDao.addNote(future);
-        int pastId = (int) noteDao.addNote(past);
+        int futureId = noteDao.addNote(future).intValue();
+        int pastId = noteDao.addNote(past).intValue();
         long now = System.currentTimeMillis();
         noteDao.updateReminderFullSync(futureId, now + 3_600_000L, "NONE", 0);
         noteDao.updateReminderFullSync(pastId, now - 3_600_000L, "DAILY", 0);

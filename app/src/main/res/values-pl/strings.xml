@@ -263,6 +263,15 @@
     <string name="backup">Kopia zapasowa</string>
     <string name="device_storage">Pamięć urządzenia</string>
     <string name="google_drive">Google Drive</string>
+    <string name="google_sign_in">Zaloguj się przez Google</string>
+    <string name="google_sign_out">Wyloguj (%1$s)</string>
+    <string name="google_sign_out_action">Wyloguj</string>
+    <string name="google_sign_in_failed">Logowanie przez Google nie powiodło się</string>
+    <string name="sync_now">Synchronizuj</string>
+    <string name="sync_started">Synchronizowanie…</string>
+    <string name="sync_success">Zsynchronizowano pomyślnie</string>
+    <string name="sync_success_conflicts">Zsynchronizowano z %1$d konfliktami</string>
+    <string name="sync_failed">Synchronizacja nie powiodła się: %1$s</string>
     <string name="save_backup">Zapisz kopię zapasową</string>
     <string name="restore_backup">Przywróć kopię zapasową</string>
     <string name="file_not_selected">Plik nie wybrano</string>
@@ -403,5 +412,65 @@
     <string name="editor_switch_label">Edytor</string>
     <string name="mode_simple">Prosty</string>
     <string name="mode_extended">Rozszerzony</string>
+    <string name="sync_status_ready">Gotowe do synchronizacji</string>
+    <string name="sync_last_sync_never">Ostatnia synchronizacja: nigdy</string>
+    <string name="sync_last_sync_value">Ostatnia synchronizacja: %1$s</string>
+    <string name="sync_background">Synchronizacja w tle</string>
+    <string name="sync_background_enabled">Synchronizacja w tle włączona</string>
+    <string name="sync_background_disabled">Synchronizacja w tle wyłączona</string>
+    <string name="sync_sign_in_required">Do synchronizacji wymagane jest logowanie Google</string>
+    <string name="sync_review_conflicts">Przejrzyj konflikty</string>
+    <string name="sync_review_conflicts_count">Przejrzyj konflikty (%1$d)</string>
+    <string name="sync_conflict_title">Rozwiąż konflikty synchronizacji (%1$d pozostało)</string>
+    <string name="sync_conflict_keep_local">Zachowaj wersję lokalną</string>
+    <string name="sync_conflict_keep_drive">Zachowaj wersję z Google Drive</string>
+    <string name="sync_conflict_later">Później</string>
+    <string name="sync_conflict_resolved">Konflikt synchronizacji rozwiązany</string>
+    <string name="sync_conflict_version">%1$s • %2$s</string>
+    <string name="sync_conflict_local_label">Wersja lokalna</string>
+    <string name="sync_conflict_drive_label">Wersja z Google Drive</string>
+    <string name="sync_conflict_deleted">Usunięto</string>
+    <string name="sync_first_sync_title">Skonfiguruj synchronizację z Google Drive</string>
+    <string name="sync_first_sync_message">Pierwsza synchronizacja połączy %1$d wpisów i może wysłać około %2$s. Lokalne dane pozostaną dostępne.</string>
+    <string name="sync_first_sync_cancel">Nie teraz</string>
 
+
+    <!-- Help: tasks & reminders -->
+    <string name="apply">Zastosuj</string>
+    <string name="help_tasks_title">Zadania</string>
+    <string name="help_tasks_create_title">Tworzenie zadań</string>
+    <string name="help_tasks_create_description">Otwórz „Zadania” z menu głównego. Naciśnij przycisk \"+\", aby dodać nowe zadanie. Możesz podać tytuł, opis i przypisać kategorię.</string>
+    <string name="help_tasks_categories_title">Kategorie</string>
+    <string name="help_tasks_categories_description">Porządkuj zadania we własnych kategoriach. Naciśnij „Dodaj kategorię”, aby ją utworzyć. Zadania z jednej kategorii są grupowane razem, co ułatwia zarządzanie.</string>
+    <string name="help_tasks_complete_title">Kończenie zadań</string>
+    <string name="help_tasks_complete_description">Naciśnij pole wyboru obok zadania, aby oznaczyć je jako wykonane. Wykonane zadania są zbierane na dole listy. Naciśnij ponownie, aby usunąć oznaczenie.</string>
+    <string name="help_tasks_reminder_title">Przypomnienia o zadaniach</string>
+    <string name="help_tasks_reminder_description">Ustaw przypomnienie dla dowolnego zadania, naciskając ikonę dzwonka. O wyznaczonej porze otrzymasz powiadomienie. Naciśnij je, aby od razu otworzyć zadanie.</string>
+    <string name="help_reminders_title">Przypomnienia</string>
+    <string name="help_reminders_notes_title">Przypomnienia o notatkach</string>
+    <string name="help_reminders_notes_description">Otwórz dowolną notatkę i naciśnij ikonę dzwonka, aby ustawić przypomnienie. Wybierz godzinę za pomocą opcji szybkiego wyboru albo selektora daty i godziny. O wyznaczonej porze pojawi się powiadomienie.</string>
+    <string name="help_reminders_repeat_title">Opcje powtarzania</string>
+    <string name="help_reminders_repeat_description">Podczas ustawiania przypomnienia do notatki włącz przełącznik „Powtarzaj”, aby wybrać cykl: codziennie, co tydzień lub co miesiąc. Po każdym powiadomieniu przypomnienie jest planowane ponownie automatycznie.</string>
+    <string name="help_reminders_interval_title">Powiadomienia interwałowe</string>
+    <string name="help_reminders_interval_description">Dla powtarzających się przypomnień możesz włączyć ponowne powiadamianie co 5, 10, 15, 30 lub 60 minut. Powiadomienie będzie powtarzane w wybranym odstępie aż do następnego terminu.</string>
+    <string name="help_reminders_sound_title">Dźwięk i głośność powiadomień</string>
+    <string name="help_reminders_sound_description">Dostosuj melodię i głośność przypomnień w „Ustawienia → Media”. Zmiany dotyczą wszystkich przyszłych powiadomień.</string>
+
+
+    <!-- Account tab -->
+    <string name="tab_account">Konto</string>
+    <string name="sync_signed_out_title">Nie zalogowano</string>
+    <string name="sync_signed_out_description">Synchronizacja i kopia na Dysku Google są dostępne po zalogowaniu.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Synchronizacja</string>
+    <string name="help_sync_setup_title">Synchronizacja z Google Drive</string>
+    <string name="help_sync_setup_description">Synchronizacja jest opcjonalna. Zaloguj się na konto Google na karcie Konto, a następnie stuknij Synchronizuj. Gdy synchronizacja jest wyłączona, dane pozostają dostępne na tym urządzeniu.</string>
+    <string name="help_sync_first_title">Pierwsza synchronizacja</string>
+    <string name="help_sync_first_description">Przed pierwszą synchronizacją aplikacja pokaże liczbę rekordów do scalenia i szacowany rozmiar przesyłania. Sprawdź informacje i potwierdź rozpoczęcie.</string>
+    <string name="help_sync_data_title">Co jest synchronizowane</string>
+    <string name="help_sync_data_description">Notatki i ich załączniki, zadania, tagi, kategorie zadań oraz preferencje aplikacji są synchronizowane z Google Drive.</string>
+    <string name="help_sync_background_title">Synchronizacja w tle</string>
+    <string name="help_sync_background_description">Po potwierdzeniu pierwszej synchronizacji możesz włączyć synchronizację w tle. Uruchamia się ona mniej więcej co 6 godzin, gdy urządzenie ma połączenie z internetem, i można ją wyłączyć w dowolnym momencie.</string>
+    <string name="help_sync_conflicts_title">Rozwiązywanie konfliktów</string>
+    <string name="help_sync_conflicts_description">Gdy wersje lokalna i Drive się różnią, dla każdego konfliktu wybierz, czy zachować wersję lokalną, czy wersję z Google Drive.</string>
 </resources>
