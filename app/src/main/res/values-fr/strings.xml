@@ -456,4 +456,16 @@
     <string name="tab_account">Compte</string>
     <string name="sync_signed_out_title">Non connecté</string>
     <string name="sync_signed_out_description">La synchronisation et la sauvegarde Google Drive sont disponibles après connexion.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Synchronisation</string>
+    <string name="help_sync_setup_title">Synchronisation Google Drive</string>
+    <string name="help_sync_setup_description">La synchronisation est facultative. Connectez-vous à votre compte Google dans l’onglet Compte, puis appuyez sur Synchroniser. Vos données restent disponibles sur cet appareil lorsque la synchronisation est désactivée.</string>
+    <string name="help_sync_first_title">Première synchronisation</string>
+    <string name="help_sync_first_description">Avant la première synchronisation, l’application affiche le nombre d’enregistrements à fusionner et la taille estimée de l’envoi. Vérifiez ces informations et confirmez pour commencer.</string>
+    <string name="help_sync_data_title">Données synchronisées</string>
+    <string name="help_sync_data_description">Les notes et leurs pièces jointes, les tâches, les étiquettes, les catégories de tâches et les préférences de l’application sont synchronisées avec Google Drive.</string>
+    <string name="help_sync_background_title">Synchronisation en arrière-plan</string>
+    <string name="help_sync_background_description">Après avoir confirmé la première synchronisation, vous pouvez activer la synchronisation en arrière-plan. Elle s’exécute environ toutes les 6 heures lorsque l’appareil est connecté à Internet et peut être désactivée à tout moment.</string>
+    <string name="help_sync_conflicts_title">Résoudre les conflits</string>
+    <string name="help_sync_conflicts_description">Lorsque les versions locale et Drive diffèrent, choisissez pour chaque conflit de conserver la version locale ou celle de Google Drive.</string>
 </resources>

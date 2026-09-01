@@ -507,4 +507,16 @@
     <string name="tab_account">Account</string>
     <string name="sync_signed_out_title">Not signed in</string>
     <string name="sync_signed_out_description">Sync and Google Drive backup become available after you sign in.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Synchronisation</string>
+    <string name="help_sync_setup_title">Google Drive Sync</string>
+    <string name="help_sync_setup_description">Sync is optional. Sign in to your Google account on the Account tab, then tap Sync. Your data remains available on this device when sync is off.</string>
+    <string name="help_sync_first_title">First Sync</string>
+    <string name="help_sync_first_description">Before the first sync, the app shows how many records will be merged and the estimated upload size. Review the information and confirm to begin.</string>
+    <string name="help_sync_data_title">What Is Synced</string>
+    <string name="help_sync_data_description">Notes and their attachments, tasks, tags, task categories, and app preferences are synchronised with your Google Drive.</string>
+    <string name="help_sync_background_title">Background Sync</string>
+    <string name="help_sync_background_description">After you confirm the first sync, you can enable background sync. It runs about every 6 hours when the device has an internet connection and can be turned off at any time.</string>
+    <string name="help_sync_conflicts_title">Resolve Conflicts</string>
+    <string name="help_sync_conflicts_description">When local and Drive versions differ, choose whether to keep the local version or the version from Google Drive for each conflict.</string>
 </resources>

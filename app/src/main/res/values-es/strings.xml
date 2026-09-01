@@ -461,4 +461,16 @@
     <string name="tab_account">Cuenta</string>
     <string name="sync_signed_out_title">No has iniciado sesión</string>
     <string name="sync_signed_out_description">La sincronización y la copia en Google Drive están disponibles tras iniciar sesión.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Sincronización</string>
+    <string name="help_sync_setup_title">Sincronización con Google Drive</string>
+    <string name="help_sync_setup_description">La sincronización es opcional. Inicia sesión en tu cuenta de Google en la pestaña Cuenta y luego toca Sincronizar. Tus datos siguen disponibles en este dispositivo cuando la sincronización está desactivada.</string>
+    <string name="help_sync_first_title">Primera sincronización</string>
+    <string name="help_sync_first_description">Antes de la primera sincronización, la aplicación muestra cuántos registros se combinarán y el tamaño estimado de carga. Revisa la información y confirma para empezar.</string>
+    <string name="help_sync_data_title">Qué se sincroniza</string>
+    <string name="help_sync_data_description">Las notas y sus adjuntos, tareas, etiquetas, categorías de tareas y preferencias de la aplicación se sincronizan con Google Drive.</string>
+    <string name="help_sync_background_title">Sincronización en segundo plano</string>
+    <string name="help_sync_background_description">Después de confirmar la primera sincronización, puedes activar la sincronización en segundo plano. Se ejecuta aproximadamente cada 6 horas cuando el dispositivo tiene conexión a internet y se puede desactivar en cualquier momento.</string>
+    <string name="help_sync_conflicts_title">Resolver conflictos</string>
+    <string name="help_sync_conflicts_description">Cuando las versiones local y de Drive son distintas, elige para cada conflicto si conservar la versión local o la versión de Google Drive.</string>
 </resources>

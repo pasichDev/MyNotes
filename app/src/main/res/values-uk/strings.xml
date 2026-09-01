@@ -179,6 +179,19 @@
     <string name="help_navigation_swipe_title">Жести свайп</string>
     <string name="help_navigation_swipe_description">Керуйте нотатками інтуїтивно! Проведіть пальцем ліворуч, щоб увімкнути режим вибору кількох нотаток для швидких масових операцій, або вправо — щоб миттєво видалити нотатку та відправити її в кошик. Жести доступні лише в одноколонковому режимі.</string>
 
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Синхронізація</string>
+    <string name="help_sync_setup_title">Синхронізація з Google Drive</string>
+    <string name="help_sync_setup_description">Синхронізація необов’язкова. Увійдіть у Google-акаунт на вкладці «Акаунт», а потім натисніть «Синхронізувати». Коли синхронізацію вимкнено, дані залишаються доступними на цьому пристрої.</string>
+    <string name="help_sync_first_title">Перша синхронізація</string>
+    <string name="help_sync_first_description">Перед першою синхронізацією додаток покаже кількість записів для об’єднання й орієнтовний розмір вивантаження. Перевірте інформацію та підтвердьте запуск.</string>
+    <string name="help_sync_data_title">Що синхронізується</string>
+    <string name="help_sync_data_description">З Google Drive синхронізуються нотатки та їхні вкладення, завдання, теги, категорії завдань і налаштування додатку.</string>
+    <string name="help_sync_background_title">Фонова синхронізація</string>
+    <string name="help_sync_background_description">Після підтвердження першої синхронізації можна увімкнути фонову. Вона запускається приблизно кожні 6 годин за наявності інтернету, і її можна вимкнути будь-коли.</string>
+    <string name="help_sync_conflicts_title">Вирішення конфліктів</string>
+    <string name="help_sync_conflicts_description">Коли локальна версія та версія на Drive відрізняються, для кожного конфлікту виберіть, яку з них зберегти: локальну чи з Google Drive.</string>
+
     <!-- Help - Notes Features Section -->
     <string name="help_notes_title">Функції нотаток</string>
     <string name="help_notes_limit_title">Обмеження тексту</string>

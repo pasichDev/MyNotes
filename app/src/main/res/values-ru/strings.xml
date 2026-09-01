@@ -465,4 +465,16 @@
     <string name="tab_account">Аккаунт</string>
     <string name="sync_signed_out_title">Вы не вошли</string>
     <string name="sync_signed_out_description">Синхронизация и копия на Google Диске доступны после входа.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Синхронизация</string>
+    <string name="help_sync_setup_title">Синхронизация с Google Drive</string>
+    <string name="help_sync_setup_description">Синхронизация необязательна. Войдите в аккаунт Google на вкладке «Аккаунт», затем нажмите «Синхронизировать». Когда синхронизация выключена, данные остаются доступными на этом устройстве.</string>
+    <string name="help_sync_first_title">Первая синхронизация</string>
+    <string name="help_sync_first_description">Перед первой синхронизацией приложение покажет количество записей для объединения и примерный размер загрузки. Проверьте информацию и подтвердите запуск.</string>
+    <string name="help_sync_data_title">Что синхронизируется</string>
+    <string name="help_sync_data_description">С Google Drive синхронизируются заметки и их вложения, задачи, теги, категории задач и настройки приложения.</string>
+    <string name="help_sync_background_title">Фоновая синхронизация</string>
+    <string name="help_sync_background_description">После подтверждения первой синхронизации можно включить фоновую. Она запускается примерно каждые 6 часов при наличии интернета, и её можно отключить в любое время.</string>
+    <string name="help_sync_conflicts_title">Разрешение конфликтов</string>
+    <string name="help_sync_conflicts_description">Когда локальная версия и версия на Drive отличаются, для каждого конфликта выберите, какую сохранить: локальную или из Google Drive.</string>
 </resources>

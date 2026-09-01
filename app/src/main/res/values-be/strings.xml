@@ -460,4 +460,16 @@
     <string name="tab_account">Уліковы запіс</string>
     <string name="sync_signed_out_title">Вы не ўвайшлі</string>
     <string name="sync_signed_out_description">Сінхранізацыя і копія на Google Дыску даступныя пасля ўваходу.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Сінхранізацыя</string>
+    <string name="help_sync_setup_title">Сінхранізацыя з Google Drive</string>
+    <string name="help_sync_setup_description">Сінхранізацыя неабавязковая. Увайдзіце ў акаўнт Google на ўкладцы «Акаўнт», затым націсніце «Сінхранізаваць». Калі сінхранізацыя выключана, даныя застаюцца даступнымі на гэтай прыладзе.</string>
+    <string name="help_sync_first_title">Першая сінхранізацыя</string>
+    <string name="help_sync_first_description">Перад першай сінхранізацыяй праграма пакажа колькасць запісаў для аб’яднання і прыблізны памер загрузкі. Праверце інфармацыю і пацвердзіце запуск.</string>
+    <string name="help_sync_data_title">Што сінхранізуецца</string>
+    <string name="help_sync_data_description">З Google Drive сінхранізуюцца нататкі і іх укладанні, задачы, тэгі, катэгорыі задач і налады праграмы.</string>
+    <string name="help_sync_background_title">Фонавая сінхранізацыя</string>
+    <string name="help_sync_background_description">Пасля пацвярджэння першай сінхранізацыі можна ўключыць фонавую. Яна запускаецца прыблізна кожныя 6 гадзін пры наяўнасці інтэрнэту, і яе можна выключыць у любы час.</string>
+    <string name="help_sync_conflicts_title">Вырашэнне канфліктаў</string>
+    <string name="help_sync_conflicts_description">Калі лакальная версія і версія на Drive адрозніваюцца, для кожнага канфлікту выберыце, якую захаваць: лакальную або з Google Drive.</string>
 </resources>

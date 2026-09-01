@@ -458,4 +458,16 @@
     <string name="tab_account">Account</string>
     <string name="sync_signed_out_title">Non hai eseguito l’accesso</string>
     <string name="sync_signed_out_description">Sincronizzazione e backup su Google Drive sono disponibili dopo l’accesso.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Sincronizzazione</string>
+    <string name="help_sync_setup_title">Sincronizzazione con Google Drive</string>
+    <string name="help_sync_setup_description">La sincronizzazione è facoltativa. Accedi al tuo account Google nella scheda Account, quindi tocca Sincronizza. I tuoi dati restano disponibili su questo dispositivo quando la sincronizzazione è disattivata.</string>
+    <string name="help_sync_first_title">Prima sincronizzazione</string>
+    <string name="help_sync_first_description">Prima della prima sincronizzazione, l’app mostra quanti record verranno uniti e la dimensione stimata del caricamento. Controlla le informazioni e conferma per iniziare.</string>
+    <string name="help_sync_data_title">Dati sincronizzati</string>
+    <string name="help_sync_data_description">Note e relativi allegati, attività, tag, categorie delle attività e preferenze dell’app vengono sincronizzati con Google Drive.</string>
+    <string name="help_sync_background_title">Sincronizzazione in background</string>
+    <string name="help_sync_background_description">Dopo aver confermato la prima sincronizzazione, puoi attivare la sincronizzazione in background. Viene eseguita circa ogni 6 ore quando il dispositivo dispone di una connessione Internet e può essere disattivata in qualsiasi momento.</string>
+    <string name="help_sync_conflicts_title">Risolvi conflitti</string>
+    <string name="help_sync_conflicts_description">Quando le versioni locale e Drive differiscono, scegli per ogni conflitto se mantenere la versione locale o quella di Google Drive.</string>
 </resources>

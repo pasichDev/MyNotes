@@ -457,4 +457,16 @@
     <string name="tab_account">Есептік жазба</string>
     <string name="sync_signed_out_title">Сіз кірмегенсіз</string>
     <string name="sync_signed_out_description">Синхрондау және Google Дискідегі көшірме кіргеннен кейін қолжетімді.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Синхрондау</string>
+    <string name="help_sync_setup_title">Google Drive-пен синхрондау</string>
+    <string name="help_sync_setup_description">Синхрондау міндетті емес. «Есептік жазба» қойындысында Google есептік жазбаңызға кіріп, «Синхрондау» түймесін түртіңіз. Синхрондау өшірілген кезде деректер осы құрылғыда қолжетімді болып қалады.</string>
+    <string name="help_sync_first_title">Алғашқы синхрондау</string>
+    <string name="help_sync_first_description">Алғашқы синхрондаудың алдында қолданба біріктірілетін жазбалар санын және жүктеудің болжамды көлемін көрсетеді. Ақпаратты тексеріп, бастау үшін растаңыз.</string>
+    <string name="help_sync_data_title">Не синхрондалады</string>
+    <string name="help_sync_data_description">Жазбалар мен олардың тіркемелері, тапсырмалар, тегтер, тапсырма санаттары және қолданба баптаулары Google Drive-пен синхрондалады.</string>
+    <string name="help_sync_background_title">Фондық синхрондау</string>
+    <string name="help_sync_background_description">Алғашқы синхрондауды растағаннан кейін фондық синхрондауды қоса аласыз. Ол құрылғы интернетке қосылған кезде шамамен әр 6 сағат сайын орындалады және оны кез келген уақытта өшіруге болады.</string>
+    <string name="help_sync_conflicts_title">Қайшылықтарды шешу</string>
+    <string name="help_sync_conflicts_description">Жергілікті және Drive нұсқалары әртүрлі болса, әр қайшылық үшін жергілікті нұсқаны не Google Drive нұсқасын сақтауды таңдаңыз.</string>
 </resources>

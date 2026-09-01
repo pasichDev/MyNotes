@@ -460,4 +460,16 @@
     <string name="tab_account">Konto</string>
     <string name="sync_signed_out_title">Nicht angemeldet</string>
     <string name="sync_signed_out_description">Synchronisierung und Google-Drive-Backup sind nach der Anmeldung verfügbar.</string>
+    <!-- Sync Help Section -->
+    <string name="help_sync_title">Synchronisierung</string>
+    <string name="help_sync_setup_title">Google-Drive-Synchronisierung</string>
+    <string name="help_sync_setup_description">Die Synchronisierung ist optional. Melden Sie sich auf der Registerkarte Konto bei Ihrem Google-Konto an und tippen Sie dann auf Synchronisieren. Ihre Daten bleiben auf diesem Gerät verfügbar, wenn die Synchronisierung ausgeschaltet ist.</string>
+    <string name="help_sync_first_title">Erste Synchronisierung</string>
+    <string name="help_sync_first_description">Vor der ersten Synchronisierung zeigt die App die Anzahl der zusammenzuführenden Einträge und die geschätzte Uploadgröße an. Prüfen Sie die Angaben und bestätigen Sie den Start.</string>
+    <string name="help_sync_data_title">Synchronisierte Daten</string>
+    <string name="help_sync_data_description">Notizen und ihre Anhänge, Aufgaben, Tags, Aufgabenkategorien und App-Einstellungen werden mit Ihrem Google Drive synchronisiert.</string>
+    <string name="help_sync_background_title">Hintergrundsynchronisierung</string>
+    <string name="help_sync_background_description">Nach der Bestätigung der ersten Synchronisierung können Sie die Hintergrundsynchronisierung aktivieren. Sie läuft bei bestehender Internetverbindung etwa alle 6 Stunden und kann jederzeit deaktiviert werden.</string>
+    <string name="help_sync_conflicts_title">Konflikte lösen</string>
+    <string name="help_sync_conflicts_description">Wenn sich die lokale und die Drive-Version unterscheiden, wählen Sie für jeden Konflikt, ob die lokale Version oder die Version aus Google Drive behalten werden soll.</string>
 </resources>
