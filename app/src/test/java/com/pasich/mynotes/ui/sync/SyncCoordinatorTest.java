@@ -112,6 +112,7 @@ public class SyncCoordinatorTest {
     public void syncNow_runsStoreAndEnablesSchedulerOnlyWhenSuccessful() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.backgroundEnabled = true;
+        preferences.firstSyncConfirmed = true;
         FakeScheduler scheduler = new FakeScheduler();
         FakeConflictStore store = new FakeConflictStore();
         store.state = SyncState.success("google-drive", Instant.parse("2026-08-31T12:00:00Z"), 1);
@@ -144,6 +145,54 @@ public class SyncCoordinatorTest {
         assertThat(store.lastToken).isEqualTo("access-token");
         assertThat(scheduler.enableCalls).isEqualTo(1);
         assertThat(callback.value.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+    }
+
+    @Test
+    public void syncNow_requiresFirstSyncConfirmationBeforeAuthorizing() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        mock(GoogleCredentialAuth.class),
+                        authorization,
+                        new FakeConflictStore(),
+                        new FakeScheduler(),
+                        directExecutor,
+                        directExecutor);
+
+        CapturingCallback<SyncState> callback = new CapturingCallback<>();
+        coordinator.syncNow(mock(Activity.class), callback);
+
+        assertThat(callback.value).isNull();
+        assertThat(callback.error).hasMessageThat().contains("Confirm the first sync");
+        Mockito.verifyNoInteractions(authorization);
+    }
+
+    @Test
+    public void syncNow_blocksUsersOutsideTheStagedRollout() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        preferences.firstSyncConfirmed = true;
+        preferences.rolloutBucket = 11;
+        GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        mock(GoogleCredentialAuth.class),
+                        authorization,
+                        new FakeConflictStore(),
+                        new FakeScheduler(),
+                        directExecutor,
+                        directExecutor);
+
+        CapturingCallback<SyncState> callback = new CapturingCallback<>();
+        coordinator.syncNow(mock(Activity.class), callback);
+
+        assertThat(callback.value).isNull();
+        assertThat(callback.error).hasMessageThat().contains("not available in this rollout");
+        Mockito.verifyNoInteractions(authorization);
     }
 
     @Test
@@ -267,6 +316,7 @@ public class SyncCoordinatorTest {
         private boolean syncEnabled;
         private boolean backgroundEnabled;
         private boolean firstSyncConfirmed;
+        private int rolloutBucket = 1;
 
         @Override
         public int getFormatCount() {
@@ -348,10 +398,12 @@ public class SyncCoordinatorTest {
 
         @Override
         public int getSyncRolloutBucket() {
-            return 0;
+            return rolloutBucket;
         }
 
         @Override
-        public void setSyncRolloutBucket(int bucket) {}
+        public void setSyncRolloutBucket(int bucket) {
+            rolloutBucket = bucket;
+        }
     }
 }

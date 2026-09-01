@@ -1,7 +1,7 @@
 # My Notes
 
-**My Notes** is a fast, clean, and fully private note-taking app for Android.  
-No accounts, no cloud, no ads — just your content stored safely on your device.
+**My Notes** is a fast, clean, local-first note-taking app for Android.
+No ads or tracking — your content stays on your device unless you explicitly enable Google Drive sync.
 
 ---
 
@@ -39,15 +39,18 @@ No accounts, no cloud, no ads — just your content stored safely on your device
 - 🎨 **Themes and colors** to match your mood
 - 🌍 **10 languages** — EN, UK, RU, DE, FR, ES, IT, PL, BE, KK
 - 🚫 **No ads** — just your notes
-- 🔒 **Fully offline** — no servers, no cloud
+- 🔒 **Local-first** — works fully offline; Google Drive sync is optional
 - 💻 **Open-source** — transparent and accessible code
 - 🎯 **Modern and intuitive design**
 
 ## Privacy
 
-My Notes does not collect or send any data to external servers.  
-All notes, attachments, and preferences are stored **locally on the device**.  
-No tracking, no analytics, no cloud — full privacy by design.
+My Notes does not include advertising, analytics, or tracking. By default, notes, attachments,
+and preferences remain **locally on the device**. Google Drive sync is optional and starts only
+after you sign in, review the first-sync estimate, and confirm it. When enabled, the selected
+notes, attachments, tasks, tags, categories, and preferences are transferred to the Google Drive
+of the account you chose, solely to provide sync. Disabling sync leaves the local data available
+on the device.
 
 ## Tech Stack
 

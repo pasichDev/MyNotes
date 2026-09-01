@@ -114,6 +114,7 @@ android {
             debuggable true
             minifyEnabled false
             shrinkResources false
+            enableUnitTestCoverage true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 

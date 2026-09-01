@@ -88,8 +88,16 @@ jobs:
       - name: Build debug
         run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Run unit tests
-        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
+      - name: Run unit tests and generate coverage
+        run: ./gradlew :app:testDebugUnitTest :app:createDebugUnitTestCoverageReport --no-daemon --stacktrace
+
+      - name: Upload debug unit-test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-unit-test-coverage
+          path: app/build/reports/coverage/
+          if-no-files-found: error
 
       - name: Run lint
         run: ./gradlew :app:lintDebug --no-daemon --stacktrace

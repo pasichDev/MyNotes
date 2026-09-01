@@ -94,7 +94,7 @@ public final class SyncCoordinator {
     private final BackgroundScheduler backgroundScheduler;
     private final Executor workerExecutor;
     private final Executor mainExecutor;
-    private static final int CURRENT_ROLLOUT_PERCENT = 100;
+    private static final int CURRENT_ROLLOUT_PERCENT = 10;
     private static final SecureRandom ROLLOUT_RANDOM = new SecureRandom();
 
     public SyncCoordinator(
@@ -221,6 +221,10 @@ public final class SyncCoordinator {
     public void syncNow(@NonNull Activity activity, @NonNull Callback<SyncState> callback) {
         if (!firebaseGoogleAuth.isSignedIn()) {
             deliverError(callback, new IllegalStateException("Google sign-in is required"));
+            return;
+        }
+        if (!preferenceHelper.isFirstSyncConfirmed()) {
+            deliverError(callback, new IllegalStateException("Confirm the first sync before continuing"));
             return;
         }
         ensureRolloutBucket();
