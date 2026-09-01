@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [2.6.48] - 01.09.2026
+
+**Improvements**
+
+- **Safer Google Drive sync:** Sync snapshots are now published as immutable files and merged
+  deterministically, so a concurrent device update cannot overwrite another device's data.
+- **Efficient background sync:** Periodic sync now runs only on unmetered networks when the battery
+  is not low, and unchanged data no longer creates an extra Drive snapshot.
+- **Quality visibility:** Added JaCoCo unit-test coverage reports to CI for every pull request.
+
+**Fixes**
+
+- Sync now requires explicit first-sync confirmation in the coordinator itself, preventing any
+  caller from bypassing the data-upload review.
+- Fixed updates to an existing Drive sync bundle on Android/JDK configurations that reject HTTP
+  PATCH requests.
+
 ## [2.6.47] - 01.09.2026
 
 **New**
