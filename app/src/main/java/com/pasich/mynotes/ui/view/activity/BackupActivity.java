@@ -10,28 +10,30 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.RadioButton;
+import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.work.BackoffPolicy;
-import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.base.view.BackupOptionsCallback;
@@ -47,6 +49,7 @@ import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
+import com.pasich.mynotes.ui.sync.SyncConflictPresentation;
 import com.pasich.mynotes.ui.sync.SyncCoordinator;
 import com.pasich.mynotes.ui.sync.SyncCoordinatorFactory;
 import com.pasich.mynotes.ui.view.dialogs.BackupOptionsDialog;
@@ -74,7 +77,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 /** Activity for creating and restoring app data backups. */
@@ -83,7 +85,6 @@ public class BackupActivity extends BaseActivity
         implements BackupContract.view, AccountSyncFragment.Host {
 
     private static final String TAG = "BackupActivity";
-    private static final String BACKGROUND_SYNC_WORK_NAME = "mynotes-drive-sync";
 
     @Inject public BackupContract.presenter presenter;
     @Inject AppDatabase appDatabase;
@@ -182,7 +183,6 @@ public class BackupActivity extends BaseActivity
     private SyncCoordinator syncCoordinator;
     private final ExecutorService syncExecutor = Executors.newSingleThreadExecutor();
     @Inject FirebaseGoogleAuth firebaseGoogleAuth;
-    private boolean updatingSyncControls;
 
     @Override
     public void onRestoreSuccessFlag() {
@@ -200,13 +200,9 @@ public class BackupActivity extends BaseActivity
         syncSetup =
                 SyncCoordinatorFactory.create(
                         this, appDatabase, preferenceHelper, firebaseGoogleAuth, syncExecutor);
-        if (syncSetup == null) {
-            // No Firebase configuration in this build; GoogleCredentialAuth rejects a blank client
-            // ID, so the sync controls are hidden instead of crashing the screen.
-            if (accountTab != null) {
-                accountTab.showUnavailable();
-            }
-        }
+        // A build with no Firebase configuration gets a null setup; GoogleCredentialAuth rejects
+        // a blank client ID. The account tab hides its controls from onAccountTabAttached, which
+        // is the only point where the fragment actually exists.
         if (syncSetup != null) {
             syncCoordinator = syncSetup.getCoordinator();
             roomSyncStore = syncSetup.getStore();
@@ -301,27 +297,22 @@ public class BackupActivity extends BaseActivity
     }
 
     private void startSync() {
+        if (syncCoordinator == null) return;
         if (!syncCoordinator.getProfile().isSignedIn()) {
             onInfoSnack(
                     R.string.google_sign_in_failed, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             return;
         }
-        runInBackground(
-                () -> {
-                    boolean neverSynced =
-                            syncCoordinator.getLastState().getLastSuccessfulSyncAt() == null;
-                    runOnUiThread(
-                            () -> {
-                                if (isFinishing() || isDestroyed()) {
-                                    return;
-                                }
-                                if (neverSynced) {
-                                    prepareFirstSyncConfirmation();
-                                } else {
-                                    runSync();
-                                }
-                            });
-                });
+        // Asked from the same flag SyncCoordinator.syncNow() gates on. Deciding from the stored
+        // lastSuccessfulSyncAt instead let the two disagree after a sign-out: the timestamp is
+        // durable, the consent preference is not, so the dialog was skipped and every sync was
+        // then refused with no way left to give consent.
+        boolean needsConsent = !syncCoordinator.isFirstSyncConfirmed();
+        if (needsConsent) {
+            prepareFirstSyncConfirmation();
+        } else {
+            runSync();
+        }
     }
 
     private void prepareFirstSyncConfirmation() {
@@ -364,6 +355,12 @@ public class BackupActivity extends BaseActivity
                         long estimatedBytes = bundle.length + attachmentBytes;
                         runOnUiThread(
                                 () -> {
+                                    // Reading the snapshot hashes every attachment on disk, so
+                                    // seconds can pass here. Showing a dialog on a window that is
+                                    // already gone throws BadTokenException.
+                                    if (isFinishing() || isDestroyed()) {
+                                        return;
+                                    }
                                     syncRunning = false;
                                     if (accountTab != null) accountTab.setSyncing(false);
                                     new MaterialAlertDialogBuilder(this)
@@ -423,6 +420,7 @@ public class BackupActivity extends BaseActivity
     }
 
     private void onGoogleSignInClicked() {
+        if (syncCoordinator == null) return;
         if (syncCoordinator.getProfile().isSignedIn()) {
             syncCoordinator.disconnect(
                     new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
@@ -473,36 +471,44 @@ public class BackupActivity extends BaseActivity
                     null,
                     SnackBarInfo.Success,
                     Snackbar.LENGTH_LONG);
+            boolean settingsArrived =
+                    roomSyncStore != null && roomSyncStore.consumeAppliedPreferencesChange();
             if (conflicts > 0) {
                 showNextConflictDialog();
+            } else if (settingsArrived) {
+                // Theme, dynamic colour and UI scale are read when an activity is created, so a
+                // settings version received from another device was stored but stayed invisible
+                // until the user navigated away and back.
+                //
+                // Only with no conflicts: redrawing while the user is choosing between versions
+                // would dismiss that dialog. The values are stored either way, so they still
+                // take effect on the next screen.
+                applyReceivedPreferences();
             }
         } else {
             finishSyncError(new IllegalStateException(state.getErrorMessage()));
         }
     }
 
-    private void enableBackgroundSyncWork() {
-        Constraints constraints =
-                new Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.UNMETERED)
-                        .setRequiresBatteryNotLow(true)
-                        .build();
-        PeriodicWorkRequest request =
-                new PeriodicWorkRequest.Builder(
-                                com.pasich.mynotes.data.sync.GoogleDriveSyncWorker.class,
-                                6,
-                                TimeUnit.HOURS)
-                        .setConstraints(constraints)
-                        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
-                        .build();
-        WorkManager.getInstance(getApplicationContext())
-                .enqueueUniquePeriodicWork(
-                        BACKGROUND_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request);
-    }
-
-    private void disableBackgroundSyncWork() {
-        WorkManager.getInstance(getApplicationContext())
-                .cancelUniqueWork(BACKGROUND_SYNC_WORK_NAME);
+    /**
+     * Redraws the screen so settings that arrived with a sync take effect immediately.
+     *
+     * <p>Delayed so the sync result stays readable for a moment before the screen rebuilds.
+     */
+    private void applyReceivedPreferences() {
+        onInfoSnack(
+                getString(R.string.sync_preferences_applied),
+                null,
+                SnackBarInfo.Success,
+                Snackbar.LENGTH_LONG);
+        binding.getRoot()
+                .postDelayed(
+                        () -> {
+                            if (!isFinishing() && !isDestroyed()) {
+                                recreate();
+                            }
+                        },
+                        1500L);
     }
 
     private void finishSyncError(Exception error) {
@@ -531,7 +537,7 @@ public class BackupActivity extends BaseActivity
     }
 
     private void onBackgroundSyncToggled(boolean enabled) {
-        if (updatingSyncControls) return;
+        if (syncCoordinator == null) return;
         if (!syncCoordinator.getProfile().isSignedIn()) {
             updateSyncUi();
             onInfoSnack(
@@ -567,17 +573,131 @@ public class BackupActivity extends BaseActivity
             return;
         }
         SyncConflictEntity conflict = unresolved.get(0);
+        SyncConflictPresentation presentation = SyncConflictPresentation.of(conflict);
+
+        View body = getLayoutInflater().inflate(R.layout.dialog_sync_conflict, null, false);
+        ((TextView) body.findViewById(R.id.conflict_summary))
+                .setText(R.string.sync_conflict_explain);
+
+        MaterialCardView firstCard = body.findViewById(R.id.version_one_card);
+        MaterialCardView secondCard = body.findViewById(R.id.version_two_card);
+        RadioButton firstRadio = body.findViewById(R.id.version_one_radio);
+        RadioButton secondRadio = body.findViewById(R.id.version_two_radio);
+
+        bindConflictVersion(
+                body,
+                presentation.winner,
+                R.id.version_one_origin,
+                R.id.version_one_newer,
+                R.id.version_one_time,
+                R.id.version_one_preview);
+        bindConflictVersion(
+                body,
+                presentation.alternative,
+                R.id.version_two_origin,
+                R.id.version_two_newer,
+                R.id.version_two_time,
+                R.id.version_two_preview);
+
+        // The deterministic winner is what a sync already applied, so it starts selected: a user
+        // who taps through without reading changes nothing.
+        boolean[] keepWinner = {true};
+        Runnable paint =
+                () -> {
+                    firstCard.setChecked(keepWinner[0]);
+                    secondCard.setChecked(!keepWinner[0]);
+                    firstRadio.setChecked(keepWinner[0]);
+                    secondRadio.setChecked(!keepWinner[0]);
+                };
+        firstCard.setOnClickListener(
+                view -> {
+                    keepWinner[0] = true;
+                    paint.run();
+                });
+        secondCard.setOnClickListener(
+                view -> {
+                    keepWinner[0] = false;
+                    paint.run();
+                });
+        paint.run();
+
         new MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.sync_conflict_title, unresolved.size()))
-                .setMessage(buildConflictMessage(conflict))
+                .setView(body)
                 .setNegativeButton(R.string.sync_conflict_later, null)
-                .setNeutralButton(
-                        R.string.sync_conflict_keep_local,
-                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_LOCAL))
                 .setPositiveButton(
-                        R.string.sync_conflict_keep_drive,
-                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_DRIVE))
+                        R.string.sync_conflict_keep_selected,
+                        (dialog, which) ->
+                                resolveConflict(
+                                        conflict.id,
+                                        keepWinner[0]
+                                                ? SyncResolution.KEEP_WINNER
+                                                : SyncResolution.KEEP_ALTERNATIVE))
                 .show();
+    }
+
+    /** Fills one version card, highlighting the part that differs from the other version. */
+    private void bindConflictVersion(
+            @NonNull View body,
+            @NonNull SyncConflictPresentation.Version version,
+            int originId,
+            int newerId,
+            int timeId,
+            int previewId) {
+        ((TextView) body.findViewById(originId))
+                .setText(
+                        version.local
+                                ? R.string.sync_conflict_local_label
+                                : R.string.sync_conflict_drive_label);
+
+        TextView newer = body.findViewById(newerId);
+        newer.setText(R.string.sync_conflict_newer);
+        newer.setVisibility(version.newer ? View.VISIBLE : View.GONE);
+
+        ((TextView) body.findViewById(timeId))
+                .setText(
+                        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                                .format(new Date(version.updatedAt)));
+
+        TextView preview = body.findViewById(previewId);
+        preview.setText(conflictPreview(version));
+    }
+
+    /**
+     * Renders a version's preview, marking the differing span.
+     *
+     * <p>The difference is emphasised rather than the whole text restyled, because the point of the
+     * card is to answer "what changed" at a glance.
+     */
+    @NonNull
+    private CharSequence conflictPreview(@NonNull SyncConflictPresentation.Version version) {
+        switch (version.kind) {
+            case DELETED:
+                return getString(R.string.sync_conflict_deleted);
+            case SETTINGS:
+                return getString(R.string.settings);
+            case UNTITLED:
+                return getString(R.string.sync_conflict_untitled);
+            default:
+                break;
+        }
+        if (!version.hasHighlight()) {
+            return version.preview;
+        }
+        SpannableString text = new SpannableString(version.preview);
+        int accent =
+                MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary, Color.GRAY);
+        text.setSpan(
+                new ForegroundColorSpan(accent),
+                version.highlightStart,
+                version.highlightEnd,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(
+                new StyleSpan(android.graphics.Typeface.BOLD),
+                version.highlightStart,
+                version.highlightEnd,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return text;
     }
 
     private void resolveConflict(long conflictId, SyncResolution resolution) {
@@ -643,54 +763,6 @@ public class BackupActivity extends BaseActivity
                 DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
                         .format(Date.from(state.getLastSuccessfulSyncAt()));
         return getString(R.string.sync_last_sync_value, value);
-    }
-
-    @NonNull
-    private String buildConflictMessage(@NonNull SyncConflictEntity conflict) {
-        return getString(
-                        R.string.sync_conflict_version,
-                        getString(R.string.sync_conflict_local_label),
-                        describeConflictPayload(
-                                conflict.winnerSource.equals("LOCAL")
-                                        ? conflict.winnerJson
-                                        : conflict.loserJson))
-                + "\n\n"
-                + getString(
-                        R.string.sync_conflict_version,
-                        getString(R.string.sync_conflict_drive_label),
-                        describeConflictPayload(
-                                conflict.winnerSource.equals("REMOTE")
-                                        ? conflict.winnerJson
-                                        : conflict.loserJson));
-    }
-
-    @NonNull
-    private String describeConflictPayload(@NonNull String recordJson) {
-        try {
-            JsonObject root = JsonParser.parseString(recordJson).getAsJsonObject();
-            JsonElement deletedAt = root.get("deletedAt");
-            if (deletedAt != null && !deletedAt.isJsonNull()) {
-                return getString(R.string.sync_conflict_deleted);
-            }
-            JsonObject payload = root.getAsJsonObject("payload");
-            if (payload == null) return getString(R.string.sync_conflict_deleted);
-            if (payload.has("title") && !payload.get("title").isJsonNull()) {
-                String title = payload.get("title").getAsString();
-                if (!title.trim().isEmpty()) return title.trim();
-            }
-            if (payload.has("name") && !payload.get("name").isJsonNull()) {
-                String name = payload.get("name").getAsString();
-                if (!name.trim().isEmpty()) return name.trim();
-            }
-            if (payload.has("value") && !payload.get("value").isJsonNull()) {
-                String value = payload.get("value").getAsString().trim();
-                if (!value.isEmpty()) {
-                    return value.length() > 120 ? value.substring(0, 120) + "…" : value;
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return getString(R.string.sync_status_ready);
     }
 
     private int unresolvedConflictCount(@NonNull List<SyncConflictEntity> conflicts) {
@@ -805,11 +877,15 @@ public class BackupActivity extends BaseActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // onDestroy also runs on rotation, and a sync started here delivers its callback later.
-        // Killing the executor then made that callback throw RejectedExecutionException.
-        if (isFinishing()) {
-            syncExecutor.shutdown();
-        }
+        // The executor belongs to this instance, so it has to die with it. Sparing it on rotation
+        // leaked both its live core thread and, through the queued tasks, this activity — once per
+        // rotation, for the lifetime of the process.
+        //
+        // shutdown(), not shutdownNow(): a sync already running is left to finish rather than
+        // interrupted mid-transaction, and the thread then exits on its own. New submissions are
+        // refused, which runInBackground already handles, and every delivery re-checks
+        // isFinishing()/isDestroyed() before touching a view.
+        syncExecutor.shutdown();
         if (isDestroyed()) {
             presenter.detachView();
         }

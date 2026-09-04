@@ -28,4 +28,13 @@ public class GoogleDriveSyncWorkerTest {
 
         assertThat(GoogleDriveSyncWorker.isBackgroundSyncAllowed(preferences)).isTrue();
     }
+
+    @Test
+    public void backgroundSyncAllowed_doesNotRequireRemoteConfiguration() {
+        PreferenceHelper preferences = mock(PreferenceHelper.class);
+        when(preferences.isSyncEnabled()).thenReturn(true);
+        when(preferences.isBackgroundSyncEnabled()).thenReturn(true);
+        when(preferences.isFirstSyncConfirmed()).thenReturn(true);
+        assertThat(GoogleDriveSyncWorker.isBackgroundSyncAllowed(preferences)).isTrue();
+    }
 }

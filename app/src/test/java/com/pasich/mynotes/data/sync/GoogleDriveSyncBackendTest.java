@@ -21,11 +21,16 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.After;
@@ -64,9 +69,11 @@ public class GoogleDriveSyncBackendTest {
 
         assertThat(backend.readSnapshot().getRecords()).isEmpty();
 
-        backend.writeAttachment(hash, new ByteArrayInputStream(attachmentBytes));
-        backend.writeAttachment(hash, new ByteArrayInputStream(attachmentBytes));
-        backend.writeSnapshot(snapshot(hash));
+        backend.writeAttachment(
+                hash, attachmentBytes.length, new ByteArrayInputStream(attachmentBytes));
+        backend.writeAttachment(
+                hash, attachmentBytes.length, new ByteArrayInputStream(attachmentBytes));
+        publish(backend, snapshot(hash));
 
         assertThat(server.ownedFolderCount()).isEqualTo(1);
         assertThat(server.bundleCount()).isEqualTo(1);
@@ -79,6 +86,611 @@ public class GoogleDriveSyncBackendTest {
                         .decode(new ByteArrayInputStream(server.readBundleBytes()))
                         .getSnapshot();
         assertThat(remoteSnapshot.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+    }
+
+    @Test
+    public void writeAttachment_resumesAcrossMultipleDriveChunksWithoutBufferingTheFile()
+            throws Exception {
+        GoogleDriveSyncBackend backend =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        CLOCK,
+                        new SyncBundleCodec());
+        byte[] bytes = new byte[600 * 1024];
+        for (int index = 0; index < bytes.length; index++) {
+            bytes[index] = (byte) (index % 251);
+        }
+        String hash = sha256(bytes);
+
+        backend.writeAttachment(hash, bytes.length, new ByteArrayInputStream(bytes));
+
+        assertThat(server.ownedAttachmentCount(hash)).isEqualTo(1);
+        assertThat(server.readAttachment(hash)).isEqualTo(bytes);
+    }
+
+    @Test
+    public void writeAttachment_doesNotTrustCorruptObjectTaggedWithExpectedHash() throws Exception {
+        byte[] expected = "verified attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(expected);
+        server.seedCorruptAttachment(hash, "wrong bytes".getBytes(StandardCharsets.UTF_8));
+
+        backend().writeAttachment(hash, expected.length, new ByteArrayInputStream(expected));
+
+        assertThat(server.ownedAttachmentCount(hash)).isEqualTo(2);
+        try (java.io.InputStream restored = backend().readAttachment(hash)) {
+            assertThat(readAll(restored)).isEqualTo(expected);
+        }
+    }
+
+    @Test
+    public void concurrentFirstSync_createsDuplicateRootsThenConvergesWithoutLosingEitherNote()
+            throws Exception {
+        GoogleDriveSyncBackend first = backend();
+        GoogleDriveSyncBackend second = backend();
+        // Both devices read the empty account first, which is what makes the publishes concurrent.
+        RemoteSnapshot firstContext = first.readSnapshotResult();
+        RemoteSnapshot secondContext = second.readSnapshotResult();
+        server.pauseTheNextTwoEmptyRootListings();
+        SyncSnapshot firstSnapshot = snapshot(NOTE_ID, null);
+        SyncSnapshot secondSnapshot = snapshot(SECOND_NOTE_ID, null);
+        Thread firstThread = new Thread(() -> publishUnchecked(first, firstSnapshot, firstContext));
+        Thread secondThread =
+                new Thread(() -> publishUnchecked(second, secondSnapshot, secondContext));
+
+        firstThread.start();
+        secondThread.start();
+        firstThread.join(5_000L);
+        secondThread.join(5_000L);
+        assertThat(firstThread.isAlive()).isFalse();
+        assertThat(secondThread.isAlive()).isFalse();
+        assertThat(server.ownedFolderCount()).isEqualTo(2);
+
+        SyncSnapshot reconciled = backend().readSnapshot();
+
+        assertThat(reconciled.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(reconciled.find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
+        publish(first, reconciled);
+        assertThat(second.readSnapshot().find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(second.readSnapshot().find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
+    }
+
+    @Test
+    public void readSnapshotResult_preservesConflictBetweenConcurrentCausalHeads()
+            throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
+        String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
+        byte[] first =
+                codec.encode(
+                        snapshotWithTitle("First offline edit"),
+                        CLOCK.instant(),
+                        Collections.singleton(baseId));
+        byte[] second =
+                codec.encode(
+                        snapshotWithTitle("Second offline edit"),
+                        CLOCK.instant(),
+                        Collections.singleton(baseId));
+        server.seedOwnedBundleBytes(base);
+        server.seedOwnedBundleBytes(first);
+        server.seedOwnedBundleBytes(second);
+
+        RemoteSnapshot remote = backend().readSnapshotResult();
+
+        assertThat(remote.getFrontierBundleIds()).hasSize(2);
+        assertThat(remote.getConflicts()).hasSize(1);
+        assertThat(remote.getConflicts().get(0).getLoser().getPayload().get("title").getAsString())
+                .isAnyOf("First offline edit", "Second offline edit");
+    }
+
+    @Test
+    public void readSnapshotResult_descendantSupersedesSiblingHeadsWithoutRepeatingConflict()
+            throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
+        String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
+        byte[] first =
+                codec.encode(
+                        snapshotWithTitle("First"), CLOCK.instant(), Collections.singleton(baseId));
+        String firstId = codec.decode(new ByteArrayInputStream(first)).getBundleId();
+        byte[] second =
+                codec.encode(
+                        snapshotWithTitle("Second"),
+                        CLOCK.instant(),
+                        Collections.singleton(baseId));
+        String secondId = codec.decode(new ByteArrayInputStream(second)).getBundleId();
+        byte[] descendant =
+                codec.encode(
+                        snapshotWithTitle("Resolved"),
+                        CLOCK.instant(),
+                        Arrays.asList(firstId, secondId));
+        server.seedOwnedBundleBytes(base);
+        server.seedOwnedBundleBytes(first);
+        server.seedOwnedBundleBytes(second);
+        server.seedOwnedBundleBytes(descendant);
+
+        RemoteSnapshot remote = backend().readSnapshotResult();
+
+        assertThat(remote.getFrontierBundleIds())
+                .containsExactly(codec.decode(new ByteArrayInputStream(descendant)).getBundleId());
+        assertThat(remote.getConflicts()).isEmpty();
+        assertThat(
+                        remote.getSnapshot()
+                                .find(SyncRecord.Type.NOTE, NOTE_ID)
+                                .getPayload()
+                                .get("title")
+                                .getAsString())
+                .isEqualTo("Resolved");
+    }
+
+    // ---------------------------------------------------------------- resumable uploads
+
+    @Test
+    public void resumableUpload_completesWhenTheFirstChunkIsOnlyPartiallyAcknowledged()
+            throws Exception {
+        byte[] payload = payloadOfBytes(600 * 1024);
+        String hash = sha256(payload);
+        server.acceptOnlyNextChunkBytes(100_000);
+
+        backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(payload));
+
+        assertThat(server.attachmentContent(hash)).isEqualTo(payload);
+        assertThat(server.rejectedChunkRanges()).isEmpty();
+    }
+
+    @Test
+    public void resumableUpload_completesAcrossSeveralPartialAcknowledgements() throws Exception {
+        byte[] payload = payloadOfBytes(700 * 1024);
+        String hash = sha256(payload);
+        server.acceptOnlyNextChunkBytes(1);
+        server.acceptOnlyNextChunkBytes(50_000);
+        server.acceptOnlyNextChunkBytes(3);
+        server.acceptOnlyNextChunkBytes(200_000);
+
+        backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(payload));
+
+        assertThat(server.attachmentContent(hash)).isEqualTo(payload);
+        assertThat(server.rejectedChunkRanges()).isEmpty();
+    }
+
+    @Test
+    public void resumableUpload_completesOnExactChunkBoundaries() throws Exception {
+        byte[] payload = payloadOfBytes(512 * 1024);
+        String hash = sha256(payload);
+
+        backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(payload));
+
+        assertThat(server.attachmentContent(hash)).isEqualTo(payload);
+        assertThat(server.rejectedChunkRanges()).isEmpty();
+    }
+
+    @Test
+    public void resumableUpload_rejectsAnAcknowledgementThatMovesBackwards() throws Exception {
+        byte[] payload = payloadOfBytes(600 * 1024);
+        String hash = sha256(payload);
+        server.acceptOnlyNextChunkBytes(200_000);
+        server.reportNextChunkRangeEnd(1_000);
+
+        IOException failure = assertUploadFails(hash, payload);
+
+        assertThat(failure).hasMessageThat().contains("backwards");
+        assertThat(server.attachmentContent(hash)).isNull();
+    }
+
+    @Test
+    public void resumableUpload_rejectsAnAcknowledgementBeyondTheDeclaredSize() throws Exception {
+        byte[] payload = payloadOfBytes(300 * 1024);
+        String hash = sha256(payload);
+        server.reportNextChunkRangeEnd(payload.length + 5_000L);
+
+        IOException failure = assertUploadFails(hash, payload);
+
+        assertThat(failure).hasMessageThat().contains("more bytes than the attachment declares");
+        assertThat(server.attachmentContent(hash)).isNull();
+    }
+
+    @Test
+    public void resumableUpload_rejectsAnAcknowledgementOfBytesThatWereNeverSent()
+            throws Exception {
+        // Inside the declared size, but past the end of the 256 KiB range actually sent.
+        byte[] payload = payloadOfBytes(600 * 1024);
+        String hash = sha256(payload);
+        server.reportNextChunkRangeEnd(400_000L);
+
+        IOException failure = assertUploadFails(hash, payload);
+
+        assertThat(failure).hasMessageThat().contains("never sent");
+        assertThat(server.attachmentContent(hash)).isNull();
+    }
+
+    @Test
+    public void resumableUpload_failsRatherThanSpinWhenDriveStopsMakingProgress() throws Exception {
+        byte[] payload = payloadOfBytes(300 * 1024);
+        String hash = sha256(payload);
+        // Every PUT answered with a 308 that commits nothing at all.
+        for (int index = 0; index < 6; index++) {
+            server.acceptOnlyNextChunkBytes(0);
+        }
+
+        IOException failure = assertUploadFails(hash, payload);
+
+        assertThat(failure).hasMessageThat().contains("stopped making progress");
+        assertThat(server.attachmentContent(hash)).isNull();
+    }
+
+    @Test
+    public void resumableUpload_recoversFromATransientServerErrorBetweenChunks() throws Exception {
+        byte[] payload = payloadOfBytes(600 * 1024);
+        String hash = sha256(payload);
+        server.acceptOnlyNextChunkBytes(120_000);
+        server.failNextChunk(503);
+
+        backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(payload));
+
+        assertThat(server.attachmentContent(hash)).isEqualTo(payload);
+        assertThat(server.rejectedChunkRanges()).isEmpty();
+    }
+
+    @Test
+    public void resumableUpload_neverCommitsWrongBytesWhenTheConnectionDropsBetweenChunks()
+            throws Exception {
+        byte[] payload = payloadOfBytes(600 * 1024);
+        String hash = sha256(payload);
+        server.acceptOnlyNextChunkBytes(90_000);
+        server.dropNextChunkConnection();
+
+        try {
+            backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(payload));
+        } catch (IOException recoveredOrFailed) {
+            // Either outcome is acceptable here; a committed blob with wrong bytes is not.
+        }
+
+        byte[] stored = server.attachmentContent(hash);
+        if (stored != null) {
+            assertThat(stored).isEqualTo(payload);
+        }
+        assertThat(server.rejectedChunkRanges()).isEmpty();
+    }
+
+    @Test
+    public void resumableUpload_abortsWhenTheThreadIsInterrupted() throws Exception {
+        byte[] payload = payloadOfBytes(600 * 1024);
+        String hash = sha256(payload);
+
+        Thread.currentThread().interrupt();
+        try {
+            backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(payload));
+            throw new AssertionError("Expected an interrupted upload to fail");
+        } catch (IOException expected) {
+            assertThat(expected).isInstanceOf(java.io.InterruptedIOException.class);
+        } finally {
+            Thread.interrupted();
+        }
+
+        assertThat(server.attachmentContent(hash)).isNull();
+    }
+
+    @Test
+    public void resumableUpload_rejectsASourceShorterThanItsDeclaredSize() throws Exception {
+        byte[] payload = payloadOfBytes(600 * 1024);
+        String hash = sha256(payload);
+        byte[] truncated = Arrays.copyOf(payload, 300 * 1024);
+
+        try {
+            backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(truncated));
+            throw new AssertionError("Expected a short source to fail");
+        } catch (IOException expected) {
+            assertThat(expected).hasMessageThat().contains("ended before its declared size");
+        }
+
+        assertThat(server.attachmentContent(hash)).isNull();
+    }
+
+    @Test
+    public void resumableUpload_rejectsASourceLongerThanItsDeclaredSize() throws Exception {
+        byte[] declared = payloadOfBytes(300 * 1024);
+        byte[] actual = payloadOfBytes(400 * 1024);
+        String hash = sha256(declared);
+
+        try {
+            backend().writeAttachment(hash, declared.length, new ByteArrayInputStream(actual));
+            throw new AssertionError("Expected an oversized source to fail");
+        } catch (IOException expected) {
+            assertThat(expected).hasMessageThat().contains("exceeds its declared size");
+        }
+    }
+
+    // ---------------------------------------------------------------- zero-byte attachments
+
+    @Test
+    public void writeAttachment_publishesAZeroByteBlobThatIsReadableAgain() throws Exception {
+        byte[] empty = new byte[0];
+        String hash = sha256(empty);
+        assertThat(hash)
+                .isEqualTo("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+
+        GoogleDriveSyncBackend backend = backend();
+        backend.writeAttachment(hash, 0L, new ByteArrayInputStream(empty));
+
+        assertThat(server.attachmentContent(hash)).isEqualTo(empty);
+        assertThat(backend.hasAttachment(hash)).isTrue();
+        try (java.io.InputStream restored = backend.readAttachment(hash)) {
+            assertThat(restored).isNotNull();
+            assertThat(readAll(restored)).isEqualTo(empty);
+        }
+    }
+
+    @Test
+    public void writeAttachment_rejectsANonEmptySourceDeclaredAsZeroBytes() throws Exception {
+        String hash = sha256(new byte[0]);
+
+        try {
+            backend().writeAttachment(hash, 0L, new ByteArrayInputStream(new byte[] {1}));
+            throw new AssertionError("Expected a non-empty source declared as empty to fail");
+        } catch (IOException expected) {
+            assertThat(expected).hasMessageThat().contains("exceeds its declared size");
+        }
+    }
+
+    private IOException assertUploadFails(String hash, byte[] payload) {
+        try {
+            backend().writeAttachment(hash, payload.length, new ByteArrayInputStream(payload));
+        } catch (IOException failure) {
+            return failure;
+        }
+        throw new AssertionError("Expected the resumable upload to fail");
+    }
+
+    private static byte[] payloadOfBytes(int size) {
+        byte[] payload = new byte[size];
+        for (int index = 0; index < size; index++) {
+            payload[index] = (byte) ((index * 31 + 7) & 0xff);
+        }
+        return payload;
+    }
+
+    // ------------------------------------------------- durable unresolved conflicts
+
+    @Test
+    public void aFreshDeviceStillDiscoversAnUnresolvedConflictAfterAMergedDescendant()
+            throws Exception {
+        // Device A publishes its version.
+        MemoryStore deviceA = new MemoryStore(note(NOTE_ID, T10, "written on A"));
+        assertThat(sync(deviceA).getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+
+        // Device B has its own concurrent edit of the same note, merges, and publishes the
+        // descendant. Before this change that descendant carried only the winner.
+        MemoryStore deviceB = new MemoryStore(note(NOTE_ID, T20, "written on B"));
+        assertThat(sync(deviceB).getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(deviceB.conflicts).hasSize(1);
+
+        // Device D is brand new: empty local database, no knowledge of either edit.
+        MemoryStore deviceD = new MemoryStore();
+        assertThat(sync(deviceD).getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+
+        // The deterministic winner is visible...
+        SyncRecord winner = deviceD.snapshot.find(SyncRecord.Type.NOTE, NOTE_ID);
+        assertThat(winner).isNotNull();
+        assertThat(winner.getPayload().get("value").getAsString()).isEqualTo("written on B");
+
+        // ...and the losing version is still recoverable, with identity enough to resolve it.
+        assertThat(deviceD.conflicts).hasSize(1);
+        SyncMergeResult.Conflict recovered = deviceD.conflicts.get(0);
+        assertThat(recovered.getLoser().getPayload().get("value").getAsString())
+                .isEqualTo("written on A");
+        assertThat(recovered.getLoserVersionId()).isNotEmpty();
+        assertThat(recovered.getWinnerSource()).isEqualTo(SyncMergeResult.Source.REMOTE);
+        assertThat(recovered.getLoserSource()).isEqualTo(SyncMergeResult.Source.REMOTE);
+    }
+
+    @Test
+    public void resolvingAConflictRetiresItForEveryOtherDevice() throws Exception {
+        MemoryStore deviceA = new MemoryStore(note(NOTE_ID, T10, "written on A"));
+        sync(deviceA);
+        MemoryStore deviceB = new MemoryStore(note(NOTE_ID, T20, "written on B"));
+        sync(deviceB);
+        assertThat(deviceB.conflicts).hasSize(1);
+
+        // The user settles it on B, which records both versions as resolved.
+        deviceB.resolved.add(deviceB.conflicts.get(0).getWinnerVersionId());
+        deviceB.resolved.add(deviceB.conflicts.get(0).getLoserVersionId());
+        deviceB.conflicts.clear();
+        sync(deviceB);
+
+        MemoryStore deviceD = new MemoryStore();
+        sync(deviceD);
+
+        assertThat(deviceD.snapshot.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(deviceD.conflicts).isEmpty();
+    }
+
+    @Test
+    public void anUnresolvedAlternativeSurvivesSeveralUnrelatedPublishes() throws Exception {
+        MemoryStore deviceA = new MemoryStore(note(NOTE_ID, T10, "written on A"));
+        sync(deviceA);
+        MemoryStore deviceB = new MemoryStore(note(NOTE_ID, T20, "written on B"));
+        sync(deviceB);
+
+        // Three more publishes, each adding a note of its own so nothing else conflicts.
+        for (int round = 0; round < 3; round++) {
+            MemoryStore other =
+                    new MemoryStore(
+                            note(
+                                    "6ba7b810-9dad-11d1-80b4-00c04fd4300" + round,
+                                    T20.plusSeconds(round + 1),
+                                    "unrelated " + round));
+            SyncState roundState = sync(other);
+            assertThat(roundState.getErrorMessage()).isNull();
+            assertThat(roundState.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        }
+
+        MemoryStore deviceD = new MemoryStore();
+        sync(deviceD);
+
+        assertThat(deviceD.conflicts).hasSize(1);
+        assertThat(deviceD.conflicts.get(0).getLoser().getPayload().get("value").getAsString())
+                .isEqualTo("written on A");
+    }
+
+    @Test
+    public void publishingWithoutAPrecedingReadIsRefused() throws Exception {
+        GoogleDriveSyncBackend backend = backend();
+
+        try {
+            backend.writeSnapshot(snapshot(NOTE_ID, null));
+            throw new AssertionError("Expected a publish with no read context to be refused");
+        } catch (IOException expected) {
+            assertThat(expected).hasMessageThat().contains("read context");
+        }
+    }
+
+    @Test
+    public void publishingWithAStaleReadContextIsRefused() throws Exception {
+        GoogleDriveSyncBackend backend = backend();
+        RemoteSnapshot stale = backend.readSnapshotResult();
+        // Something else reads through the same backend, so the earlier context is no longer
+        // the one describing remote state.
+        backend.readSnapshotResult();
+
+        try {
+            backend.publish(
+                    new SyncPublication(
+                            snapshot(NOTE_ID, null),
+                            Collections.emptyList(),
+                            Collections.emptySet(),
+                            stale));
+            throw new AssertionError("Expected a stale read context to be refused");
+        } catch (IOException expected) {
+            assertThat(expected).hasMessageThat().contains("latest remote read");
+        }
+    }
+
+    @Test
+    public void aDeletedAncestorBundleDoesNotBreakSyncOrLoseAnAlternative() throws Exception {
+        MemoryStore deviceA = new MemoryStore(note(NOTE_ID, T10, "written on A"));
+        sync(deviceA);
+        MemoryStore deviceB = new MemoryStore(note(NOTE_ID, T20, "written on B"));
+        sync(deviceB);
+        assertThat(server.bundleCount()).isEqualTo(2);
+
+        // The oldest bundle is now only an ancestor: its content lives on in the descendant.
+        assertThat(server.deleteOldestBundle()).isTrue();
+
+        MemoryStore deviceD = new MemoryStore();
+        SyncState state = sync(deviceD);
+
+        assertThat(state.getErrorMessage()).isNull();
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(deviceD.snapshot.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        // The losing version travels in the descendant, so removing the ancestor loses nothing.
+        assertThat(deviceD.conflicts).hasSize(1);
+        assertThat(deviceD.conflicts.get(0).getLoser().getPayload().get("value").getAsString())
+                .isEqualTo("written on A");
+    }
+
+    private static final java.time.Instant T10 = java.time.Instant.parse("2026-08-31T12:00:10Z");
+    private static final java.time.Instant T20 = java.time.Instant.parse("2026-08-31T12:00:20Z");
+
+    private SyncState sync(MemoryStore store) {
+        return new SyncService(store, new SyncMerger(), CLOCK).sync(backend());
+    }
+
+    private static SyncRecord note(String id, java.time.Instant updatedAt, String value) {
+        JsonObject payload = new JsonObject();
+        payload.addProperty("title", "Shopping");
+        payload.addProperty("value", value);
+        return SyncRecord.live(SyncRecord.Type.NOTE, id, updatedAt, payload);
+    }
+
+    /** One device's durable state: its records, its conflict queue and its settled versions. */
+    private static final class MemoryStore implements SyncStore {
+        private SyncSnapshot snapshot;
+        private final List<SyncMergeResult.Conflict> conflicts = new ArrayList<>();
+        private final java.util.Set<String> resolved = new java.util.LinkedHashSet<>();
+        private SyncState state = SyncState.idle();
+
+        MemoryStore(SyncRecord... records) {
+            snapshot = new SyncSnapshot(Arrays.asList(records));
+        }
+
+        @Override
+        public SyncSnapshot readSnapshot() {
+            return snapshot;
+        }
+
+        @Override
+        public void applySnapshot(SyncSnapshot snapshot, List<SyncMergeResult.Conflict> conflicts) {
+            this.snapshot = snapshot;
+            for (SyncMergeResult.Conflict conflict : conflicts) {
+                if (!resolved.contains(conflict.getLoserVersionId())) {
+                    this.conflicts.add(conflict);
+                }
+            }
+        }
+
+        @Override
+        public java.util.Set<String> getResolvedAlternativeIds() {
+            return resolved;
+        }
+
+        @Override
+        public java.util.Collection<String> getAttachmentHashes(SyncSnapshot snapshot) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean hasAttachment(String sha256) {
+            return false;
+        }
+
+        @Override
+        public java.io.InputStream readAttachment(String sha256) {
+            return new ByteArrayInputStream(new byte[0]);
+        }
+
+        @Override
+        public void writeAttachment(String sha256, long sizeBytes, java.io.InputStream content) {}
+
+        @Override
+        public SyncState readState() {
+            return state;
+        }
+
+        @Override
+        public void writeState(SyncState state) {
+            this.state = state;
+        }
+    }
+
+    /**
+     * Publishes the way {@code SyncService} does: read first, then publish quoting that read.
+     *
+     * <p>{@code writeSnapshot} on its own is refused now, because taking causal parents from a
+     * mutable field let a write with no preceding read fork the bundle DAG permanently.
+     */
+    private static void publish(GoogleDriveSyncBackend backend, SyncSnapshot snapshot)
+            throws IOException {
+        RemoteSnapshot context = backend.readSnapshotResult();
+        backend.publish(
+                new SyncPublication(
+                        snapshot, Collections.emptyList(), Collections.emptySet(), context));
+    }
+
+    private GoogleDriveSyncBackend backend() {
+        return new GoogleDriveSyncBackend(
+                "token", server.apiBase(), server.uploadBase(), CLOCK, new SyncBundleCodec());
+    }
+
+    private static void publishUnchecked(
+            GoogleDriveSyncBackend backend, SyncSnapshot snapshot, RemoteSnapshot context) {
+        try {
+            backend.publish(
+                    new SyncPublication(
+                            snapshot, Collections.emptyList(), Collections.emptySet(), context));
+        } catch (IOException error) {
+            throw new AssertionError(error);
+        }
     }
 
     @Test
@@ -97,9 +709,63 @@ public class GoogleDriveSyncBackendTest {
     }
 
     @Test
+    public void readSnapshot_mergesEveryOwnedRootAfterAFirstSyncRace() throws Exception {
+        String firstHash = server.registerAttachment("first".getBytes(StandardCharsets.UTF_8));
+        String secondHash = server.registerAttachment("other".getBytes(StandardCharsets.UTF_8));
+        // These are the durable results of two devices that both listed Drive before either
+        // created its root folder. Choosing only the lowest folder ID would lose note B forever.
+        server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
+        server.seedOwnedBundle(snapshot(SECOND_NOTE_ID, secondHash));
+        GoogleDriveSyncBackend backend =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        CLOCK,
+                        new SyncBundleCodec());
+
+        SyncSnapshot merged = backend.readSnapshot();
+
+        assertThat(server.ownedFolderCount()).isEqualTo(2);
+        assertThat(merged.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(merged.find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
+    }
+
+    @Test
+    public void writeSnapshot_copiesDuplicateRootAttachmentsIntoTheCanonicalRoot()
+            throws Exception {
+        String firstHash = server.registerAttachment("first".getBytes(StandardCharsets.UTF_8));
+        String secondHash = server.registerAttachment("other".getBytes(StandardCharsets.UTF_8));
+        server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
+        server.seedOwnedBundle(snapshot(SECOND_NOTE_ID, secondHash));
+        GoogleDriveSyncBackend backend =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        CLOCK,
+                        new SyncBundleCodec());
+
+        SyncSnapshot merged = backend.readSnapshot();
+        publish(backend, merged);
+
+        assertThat(server.ownedAttachmentCountInCanonicalRoot(firstHash)).isEqualTo(1);
+        assertThat(server.ownedAttachmentCountInCanonicalRoot(secondHash)).isEqualTo(1);
+        SyncSnapshot reread =
+                new GoogleDriveSyncBackend(
+                                "token",
+                                server.apiBase(),
+                                server.uploadBase(),
+                                CLOCK,
+                                new SyncBundleCodec())
+                        .readSnapshot();
+        assertThat(reread.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(reread.find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
+    }
+
+    @Test
     public void writeSnapshot_createsNewBundleWhenLegacyBundleChanges() throws Exception {
-        String hash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-        server.seedOwnedBundle(snapshot(hash));
+        server.seedOwnedBundle(snapshot(NOTE_ID, null));
         GoogleDriveSyncBackend backend =
                 new GoogleDriveSyncBackend(
                         "token",
@@ -112,16 +778,14 @@ public class GoogleDriveSyncBackendTest {
         server.forceConcurrentBundleUpdate(
                 snapshot("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"));
 
-        backend.writeSnapshot(snapshot(hash));
+        publish(backend, snapshot(NOTE_ID, null));
 
-        assertThat(server.bundleCount()).isEqualTo(2);
+        assertThat(server.bundleCount()).isEqualTo(3);
     }
 
     @Test
     public void writeSnapshot_preservesUpdateThatArrivesBetweenReadAndPublish() throws Exception {
-        String firstHash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-        String secondHash = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
-        server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
+        server.seedOwnedBundle(snapshot(NOTE_ID, null));
         GoogleDriveSyncBackend backend =
                 new GoogleDriveSyncBackend(
                         "token",
@@ -131,8 +795,8 @@ public class GoogleDriveSyncBackendTest {
                         new SyncBundleCodec());
 
         backend.readSnapshot();
-        server.updateBundleImmediatelyBeforeNextUpload(snapshot(SECOND_NOTE_ID, secondHash));
-        backend.writeSnapshot(snapshot(NOTE_ID, firstHash));
+        server.updateBundleImmediatelyBeforeNextUpload(snapshot(SECOND_NOTE_ID, null));
+        publish(backend, snapshot(NOTE_ID, null));
 
         SyncSnapshot remote =
                 new GoogleDriveSyncBackend(
@@ -150,24 +814,35 @@ public class GoogleDriveSyncBackendTest {
         return snapshot(NOTE_ID, hash);
     }
 
+    private static SyncSnapshot snapshotWithTitle(String title) {
+        JsonObject note = new JsonObject();
+        note.addProperty("title", title);
+        note.addProperty("value", "body");
+        return new SyncSnapshot(
+                Collections.singletonList(
+                        SyncRecord.live(SyncRecord.Type.NOTE, NOTE_ID, CLOCK.instant(), note)));
+    }
+
     private static SyncSnapshot snapshot(String noteId, String hash) throws IOException {
         JsonObject note = new JsonObject();
         note.addProperty("title", "Shopping");
         note.addProperty("value", "Milk");
         JsonArray hashes = new JsonArray();
-        hashes.add(hash);
+        if (hash != null) hashes.add(hash);
         note.add("attachmentHashes", hashes);
         JsonArray manifest = new JsonArray();
-        manifest.add(
-                new SyncBundleCodec.AttachmentManifestEntry(
-                                UUID.nameUUIDFromBytes(hash.getBytes(StandardCharsets.UTF_8))
-                                        .toString(),
-                                hash,
-                                "image/png",
-                                5L,
-                                "attachments/" + hash,
-                                "photo.png")
-                        .toJson(true));
+        if (hash != null) {
+            manifest.add(
+                    new SyncBundleCodec.AttachmentManifestEntry(
+                                    UUID.nameUUIDFromBytes(hash.getBytes(StandardCharsets.UTF_8))
+                                            .toString(),
+                                    hash,
+                                    "image/png",
+                                    5L,
+                                    "attachments/" + hash,
+                                    "photo.png")
+                            .toJson(true));
+        }
         note.add("attachmentsManifest", manifest);
         return new SyncSnapshot(
                 Collections.singletonList(
@@ -187,6 +862,16 @@ public class GoogleDriveSyncBackendTest {
         return value.toString();
     }
 
+    private static byte[] readAll(java.io.InputStream input) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            output.write(buffer, 0, read);
+        }
+        return output.toByteArray();
+    }
+
     private static final class FakeDriveServer implements AutoCloseable {
         private static final Pattern PARENT_PATTERN = Pattern.compile("'([^']+)' in parents");
         private static final Pattern APP_PROPERTY_PATTERN =
@@ -194,10 +879,17 @@ public class GoogleDriveSyncBackendTest {
 
         private final ServerSocket serverSocket;
         private final Thread thread;
-        private final Map<String, DriveFile> files = new LinkedHashMap<>();
+        private final Map<String, DriveFile> files = new ConcurrentHashMap<>();
+        private final Map<String, byte[]> seededAttachmentContent = new LinkedHashMap<>();
+        private final Map<String, UploadSession> uploadSessions = new ConcurrentHashMap<>();
+        private final java.util.Queue<ChunkScript> scriptedChunks =
+                new java.util.concurrent.ConcurrentLinkedQueue<>();
+        private final List<String> rejectedChunkRanges =
+                java.util.Collections.synchronizedList(new ArrayList<>());
         private volatile boolean running = true;
+        private volatile CyclicBarrier emptyRootListingBarrier;
         private SyncSnapshot updateBeforeNextPatch;
-        private int nextId = 1;
+        private final AtomicInteger nextId = new AtomicInteger(1);
 
         FakeDriveServer() throws IOException {
             serverSocket = new ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"));
@@ -207,7 +899,16 @@ public class GoogleDriveSyncBackendTest {
                                 while (running) {
                                     try {
                                         Socket socket = serverSocket.accept();
-                                        handle(socket);
+                                        new Thread(
+                                                        () -> {
+                                                            try {
+                                                                handle(socket);
+                                                            } catch (IOException ignored) {
+                                                                // Individual test connection
+                                                                // failed.
+                                                            }
+                                                        })
+                                                .start();
                                     } catch (IOException ignored) {
                                         if (running) {
                                             // Keep the fake server lightweight for tests.
@@ -227,6 +928,45 @@ public class GoogleDriveSyncBackendTest {
             return "http://127.0.0.1:" + serverSocket.getLocalPort() + "/upload/drive/v3/files";
         }
 
+        /** Commits only the first {@code bytes} of the next chunk, then reports real progress. */
+        void acceptOnlyNextChunkBytes(int bytes) {
+            scriptedChunks.add(ChunkScript.partial(bytes));
+        }
+
+        /** Answers the next chunk with an HTTP status and commits nothing. */
+        void failNextChunk(int status) {
+            scriptedChunks.add(ChunkScript.status(status));
+        }
+
+        /** Closes the socket mid-chunk without writing a response. */
+        void dropNextChunkConnection() {
+            scriptedChunks.add(ChunkScript.drop());
+        }
+
+        /** Answers the next chunk with a 308 carrying a fabricated acknowledged range. */
+        void reportNextChunkRangeEnd(long inclusiveEnd) {
+            scriptedChunks.add(ChunkScript.forcedRange(inclusiveEnd));
+        }
+
+        /** Content-Range values the server refused because they did not continue the upload. */
+        List<String> rejectedChunkRanges() {
+            return new ArrayList<>(rejectedChunkRanges);
+        }
+
+        /** Committed bytes of the attachment blob carrying {@code sha256}, or null. */
+        byte[] attachmentContent(String sha256) {
+            for (DriveFile file : files.values()) {
+                if (sha256.equals(file.appProperties.get("mynotesAttachmentSha256"))) {
+                    return file.content;
+                }
+            }
+            return null;
+        }
+
+        void pauseTheNextTwoEmptyRootListings() {
+            emptyRootListingBarrier = new CyclicBarrier(2);
+        }
+
         int ownedFolderCount() {
             int count = 0;
             for (DriveFile file : files.values()) {
@@ -236,6 +976,18 @@ public class GoogleDriveSyncBackendTest {
                 }
             }
             return count;
+        }
+
+        /** Removes one stored bundle, the way a user tidying Drive or its trash purge would. */
+        boolean deleteOldestBundle() {
+            String oldest = null;
+            for (Map.Entry<String, DriveFile> entry : files.entrySet()) {
+                if (!"1".equals(entry.getValue().appProperties.get("mynotesBundle"))) continue;
+                if (oldest == null || entry.getKey().compareTo(oldest) < 0) {
+                    oldest = entry.getKey();
+                }
+            }
+            return oldest != null && files.remove(oldest) != null;
         }
 
         int bundleCount() {
@@ -252,6 +1004,25 @@ public class GoogleDriveSyncBackendTest {
             int count = 0;
             for (DriveFile file : files.values()) {
                 if (hash.equals(file.appProperties.get("mynotesAttachmentSha256"))) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        int ownedAttachmentCountInCanonicalRoot(String hash) {
+            String canonical = null;
+            for (DriveFile file : files.values()) {
+                if ("application/vnd.google-apps.folder".equals(file.mimeType)
+                        && "1".equals(file.appProperties.get("mynotesOwner"))
+                        && (canonical == null || file.id.compareTo(canonical) < 0)) {
+                    canonical = file.id;
+                }
+            }
+            int count = 0;
+            for (DriveFile file : files.values()) {
+                if (hash.equals(file.appProperties.get("mynotesAttachmentSha256"))
+                        && file.parents.contains(canonical)) {
                     count++;
                 }
             }
@@ -276,6 +1047,21 @@ public class GoogleDriveSyncBackendTest {
             return null;
         }
 
+        String registerAttachment(byte[] bytes) throws Exception {
+            String hash = sha256(bytes);
+            seededAttachmentContent.put(hash, bytes);
+            return hash;
+        }
+
+        void seedCorruptAttachment(String claimedHash, byte[] bytes) {
+            DriveFile folder =
+                    createFile("MyNotes Sync", "application/vnd.google-apps.folder", null);
+            folder.appProperties.put("mynotesOwner", "1");
+            DriveFile blob = createFile(claimedHash, "application/octet-stream", folder.id);
+            blob.appProperties.put("mynotesAttachmentSha256", claimedHash);
+            blob.content = bytes;
+        }
+
         void seedOwnedBundle(SyncSnapshot snapshot) throws IOException {
             DriveFile folder =
                     createFile("MyNotes Sync", "application/vnd.google-apps.folder", null);
@@ -283,6 +1069,30 @@ public class GoogleDriveSyncBackendTest {
             DriveFile bundle = createFile("MyNotes.sync.v1.zip", "application/zip", folder.id);
             bundle.appProperties.put("mynotesBundle", "1");
             bundle.content = new SyncBundleCodec().encode(snapshot, CLOCK.instant());
+            for (SyncRecord record : snapshot.getLiveRecords(SyncRecord.Type.NOTE)) {
+                JsonArray manifest = record.getPayload().getAsJsonArray("attachmentsManifest");
+                if (manifest == null) {
+                    continue;
+                }
+                for (int index = 0; index < manifest.size(); index++) {
+                    JsonObject attachment = manifest.get(index).getAsJsonObject();
+                    String hash = attachment.get("sha256").getAsString();
+                    DriveFile blob = createFile(hash, "application/octet-stream", folder.id);
+                    blob.appProperties.put("mynotesAttachmentSha256", hash);
+                    blob.content =
+                            seededAttachmentContent.getOrDefault(
+                                    hash, new byte[attachment.get("size").getAsInt()]);
+                }
+            }
+        }
+
+        void seedOwnedBundleBytes(byte[] bytes) {
+            DriveFile folder =
+                    createFile("MyNotes Sync", "application/vnd.google-apps.folder", null);
+            folder.appProperties.put("mynotesOwner", "1");
+            DriveFile bundle = createFile("MyNotes.sync.v1.zip", "application/zip", folder.id);
+            bundle.appProperties.put("mynotesBundle", "1");
+            bundle.content = bytes;
         }
 
         void seedUnownedBundle(SyncSnapshot snapshot) throws IOException {
@@ -294,8 +1104,13 @@ public class GoogleDriveSyncBackendTest {
         void forceConcurrentBundleUpdate(SyncSnapshot snapshot) throws IOException {
             for (DriveFile file : files.values()) {
                 if ("1".equals(file.appProperties.get("mynotesBundle"))) {
-                    file.content = new SyncBundleCodec().encode(snapshot, CLOCK.instant());
-                    file.version++;
+                    // Bundles are immutable. Model another device's publication as a sibling,
+                    // never as replacement of a durable history object.
+                    String parent = file.parents.isEmpty() ? null : file.parents.get(0);
+                    DriveFile sibling =
+                            createFile("MyNotes.sync.v1.zip", "application/zip", parent);
+                    sibling.appProperties.put("mynotesBundle", "1");
+                    sibling.content = new SyncBundleCodec().encode(snapshot, CLOCK.instant());
                     return;
                 }
             }
@@ -332,7 +1147,13 @@ public class GoogleDriveSyncBackendTest {
                 return handleFileRead(uri, path.substring("/drive/v3/files/".length()));
             }
             if ("/upload/drive/v3/files".equals(path) && "POST".equals(request.method)) {
+                if ("resumable".equals(parseQuery(uri).get("uploadType"))) {
+                    return handleResumableInitiation(request);
+                }
                 return handleUpload(request, null);
+            }
+            if (path.startsWith("/resumable/") && "PUT".equals(request.method)) {
+                return handleResumableChunk(request, path.substring("/resumable/".length()));
             }
             if (path.startsWith("/upload/drive/v3/files/")) {
                 return handleUpload(request, path.substring("/upload/drive/v3/files/".length()));
@@ -342,6 +1163,18 @@ public class GoogleDriveSyncBackendTest {
 
         private Response handleList(URI uri) {
             String query = parseQuery(uri).get("q");
+            CyclicBarrier barrier = emptyRootListingBarrier;
+            if (barrier != null
+                    && query != null
+                    && query.contains("mynotesOwner")
+                    && ownedFolderCount() == 0) {
+                try {
+                    barrier.await(5L, TimeUnit.SECONDS);
+                    emptyRootListingBarrier = null;
+                } catch (Exception error) {
+                    return Response.json(500, "{}");
+                }
+            }
             JsonArray array = new JsonArray();
             for (DriveFile file : files.values()) {
                 if (matchesQuery(file, query)) {
@@ -407,6 +1240,95 @@ public class GoogleDriveSyncBackendTest {
             return Response.json(200, fileMetadata(file).toString(), file.eTag());
         }
 
+        private Response handleResumableInitiation(Request request) throws IOException {
+            String length = request.headers.get("x-upload-content-length");
+            if (length == null) {
+                return Response.json(400, "{}");
+            }
+            String id = "session-" + uploadSessions.size();
+            uploadSessions.put(
+                    id,
+                    new UploadSession(
+                            readJson(request.body),
+                            Long.parseLong(length),
+                            request.headers.get("x-upload-content-type")));
+            Map<String, String> headers = new LinkedHashMap<>();
+            headers.put(
+                    "Location",
+                    "http://127.0.0.1:" + serverSocket.getLocalPort() + "/resumable/" + id);
+            return Response.json(200, "{}", headers);
+        }
+
+        private Response handleResumableChunk(Request request, String sessionId)
+                throws IOException {
+            UploadSession session = uploadSessions.get(sessionId);
+            if (session == null) {
+                return Response.json(404, "{}");
+            }
+            ChunkScript script = scriptedChunks.poll();
+            if (script != null && script.dropConnection) {
+                throw new IOException("Fake Drive dropped the connection mid-chunk");
+            }
+            if (script != null && script.status > 0) {
+                return Response.json(script.status, "{}");
+            }
+
+            String range = request.headers.get("content-range");
+            if (range == null) {
+                return Response.json(400, "{}");
+            }
+            if (range.startsWith("bytes */")) {
+                return resumableProgress(session);
+            }
+            Matcher matcher = Pattern.compile("bytes (\\d+)-(\\d+)/(\\d+)").matcher(range);
+            if (!matcher.matches() || Long.parseLong(matcher.group(3)) != session.totalBytes) {
+                rejectedChunkRanges.add(range);
+                return Response.json(400, "{}");
+            }
+            long start = Long.parseLong(matcher.group(1));
+            long end = Long.parseLong(matcher.group(2));
+            if (start != session.data.size() || end - start + 1L != request.body.length) {
+                // The client tried to continue somewhere other than the first unacknowledged
+                // byte. Recorded so a test can assert this never happens.
+                rejectedChunkRanges.add(range);
+                return Response.json(400, "{}");
+            }
+
+            if (script != null && script.forcedRangeInclusiveEnd != null) {
+                Map<String, String> headers = new LinkedHashMap<>();
+                headers.put("Range", "bytes=0-" + script.forcedRangeInclusiveEnd);
+                return Response.json(308, "", headers);
+            }
+
+            int accepted =
+                    script == null || script.acceptBytes < 0
+                            ? request.body.length
+                            : Math.min(script.acceptBytes, request.body.length);
+            session.data.write(request.body, 0, accepted);
+            if (session.data.size() < session.totalBytes) {
+                return resumableProgress(session);
+            }
+            DriveFile file =
+                    createFile(
+                            session.metadata.get("name").getAsString(),
+                            session.mimeType == null
+                                    ? "application/octet-stream"
+                                    : session.mimeType,
+                            firstParent(session.metadata));
+            file.content = session.data.toByteArray();
+            applyMetadata(file, session.metadata);
+            uploadSessions.remove(sessionId);
+            return Response.json(200, fileMetadata(file).toString(), file.eTag());
+        }
+
+        private static Response resumableProgress(UploadSession session) {
+            Map<String, String> headers = new LinkedHashMap<>();
+            if (session.data.size() > 0) {
+                headers.put("Range", "bytes=0-" + (session.data.size() - 1));
+            }
+            return Response.json(308, "", headers);
+        }
+
         private void applyMetadata(DriveFile file, JsonObject metadata) {
             if (metadata.has("name")) {
                 file.name = metadata.get("name").getAsString();
@@ -432,7 +1354,8 @@ public class GoogleDriveSyncBackendTest {
         }
 
         private DriveFile createFile(String name, String mimeType, String parentId) {
-            DriveFile file = new DriveFile(Integer.toString(nextId++), name, mimeType);
+            DriveFile file =
+                    new DriveFile(Integer.toString(nextId.getAndIncrement()), name, mimeType);
             if (parentId != null) {
                 file.parents.add(parentId);
             }
@@ -605,6 +1528,12 @@ public class GoogleDriveSyncBackendTest {
             headers.append("Content-Length: ").append(response.body.length).append("\r\n");
             headers.append("Connection: close\r\n");
             headers.append("Content-Type: ").append(response.contentType).append("\r\n");
+            for (Map.Entry<String, String> header : response.headers.entrySet()) {
+                headers.append(header.getKey())
+                        .append(": ")
+                        .append(header.getValue())
+                        .append("\r\n");
+            }
             // Deliberately no ETag header. Drive API v3 dropped the ETags that v2 sent; a fake
             // that returns one lets code depending on the header pass its tests and fail against
             // the real API, which is exactly what happened before.
@@ -668,25 +1597,87 @@ public class GoogleDriveSyncBackendTest {
         private final String contentType;
         private final byte[] body;
         private final String eTag;
+        private final Map<String, String> headers;
 
-        private Response(int code, String contentType, byte[] body, String eTag) {
+        private Response(
+                int code,
+                String contentType,
+                byte[] body,
+                String eTag,
+                Map<String, String> headers) {
             this.code = code;
             this.contentType = contentType;
             this.body = body;
             this.eTag = eTag;
+            this.headers = headers;
         }
 
         private static Response json(int code, String body) {
-            return json(code, body, null);
+            return json(code, body, (String) null);
         }
 
         private static Response json(int code, String body, String eTag) {
             return new Response(
-                    code, "application/json", body.getBytes(StandardCharsets.UTF_8), eTag);
+                    code,
+                    "application/json",
+                    body.getBytes(StandardCharsets.UTF_8),
+                    eTag,
+                    new LinkedHashMap<>());
+        }
+
+        private static Response json(int code, String body, Map<String, String> headers) {
+            return new Response(
+                    code, "application/json", body.getBytes(StandardCharsets.UTF_8), null, headers);
         }
 
         private static Response binary(int code, byte[] body, String eTag) {
-            return new Response(code, "application/octet-stream", body, eTag);
+            return new Response(
+                    code, "application/octet-stream", body, eTag, new LinkedHashMap<>());
+        }
+    }
+
+    /** One scripted response for the next resumable chunk PUT. */
+    private static final class ChunkScript {
+        private final int acceptBytes;
+        private final int status;
+        private final Long forcedRangeInclusiveEnd;
+        private final boolean dropConnection;
+
+        private ChunkScript(
+                int acceptBytes, int status, Long forcedRangeInclusiveEnd, boolean dropConnection) {
+            this.acceptBytes = acceptBytes;
+            this.status = status;
+            this.forcedRangeInclusiveEnd = forcedRangeInclusiveEnd;
+            this.dropConnection = dropConnection;
+        }
+
+        static ChunkScript partial(int bytes) {
+            return new ChunkScript(bytes, 0, null, false);
+        }
+
+        static ChunkScript status(int status) {
+            return new ChunkScript(-1, status, null, false);
+        }
+
+        static ChunkScript forcedRange(long inclusiveEnd) {
+            return new ChunkScript(-1, 0, inclusiveEnd, false);
+        }
+
+        static ChunkScript drop() {
+            return new ChunkScript(-1, 0, null, true);
+        }
+    }
+
+    private static final class UploadSession {
+        private final JsonObject metadata;
+        private final long totalBytes;
+        private final String mimeType;
+        private final ByteArrayOutputStream data = new ByteArrayOutputStream();
+
+        private UploadSession(JsonObject metadata, long totalBytes, String mimeType) {
+            this.metadata = metadata;
+            this.totalBytes = totalBytes;
+            this.mimeType = mimeType;
         }
     }
 

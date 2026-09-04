@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +62,110 @@ public class SyncMutationCoordinatorTest {
                         syncMetadataDao,
                         new FixedTimeProvider(1_000L),
                         new QueueStableIdGenerator("stable-a", "stable-b", "stable-c"));
+    }
+
+    @Test
+    public void insertNotes_insertsIdKeepingNotesBeforeReassignedOnes() {
+        // A restore where one incoming id is taken and another is free. addNotes is a REPLACE
+        // insert, so if the reassigned note is inserted first it takes the next autoincrement id
+        // — which is exactly the id the second note is about to claim — and one of the two is
+        // silently destroyed. Reproduced on a device before this ordering was introduced.
+        Note taken = new Note().create("Alpha", "body", 10L, "");
+        taken.setId(1);
+        Note free = new Note().create("Beta", "body", 20L, "");
+        free.setId(2);
+        when(noteDao.getNoteSync(1)).thenReturn(new Note().create("Occupant", "", 5L, ""));
+        when(noteDao.getNoteSync(2)).thenReturn(null);
+        when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList()))
+                .thenReturn(new long[] {2L})
+                .thenReturn(new long[] {3L});
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(taken, free)));
+
+        org.mockito.ArgumentCaptor<java.util.List> batches =
+                org.mockito.ArgumentCaptor.forClass(java.util.List.class);
+        verify(noteDao, org.mockito.Mockito.times(2)).addNotes(batches.capture());
+        java.util.List<java.util.List> captured = batches.getAllValues();
+        assertThat(((Note) captured.get(0).get(0)).getTitle()).isEqualTo("Beta");
+        assertThat(((Note) captured.get(1).get(0)).getTitle()).isEqualTo("Alpha");
+        // Both survive, with the reassigned one placed beyond the id the other kept.
+        assertThat(free.getId()).isEqualTo(2);
+        assertThat(taken.getId()).isEqualTo(3);
+    }
+
+    @Test
+    public void insertNotes_keepsEveryIdWhenNoneAreTaken() {
+        Note first = new Note().create("One", "body", 10L, "");
+        first.setId(4);
+        Note second = new Note().create("Two", "body", 20L, "");
+        second.setId(5);
+        when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList()))
+                .thenReturn(new long[] {4L, 5L});
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(first, second)));
+
+        // The ordinary restore onto an empty library must still preserve ids exactly.
+        verify(noteDao, org.mockito.Mockito.times(1))
+                .addNotes(org.mockito.ArgumentMatchers.anyList());
+        assertThat(first.getId()).isEqualTo(4);
+        assertThat(second.getId()).isEqualTo(5);
+    }
+
+    @Test
+    public void insertNotes_skipsANoteThisDeviceAlreadyHasUnchanged() {
+        // Restoring a backup onto the library it came from must stay a no-op: restore inserts
+        // rather than replaces, so without this every note would be duplicated.
+        Note existing = new Note().create("Title", "Body", 10L, "work");
+        existing.setId(5);
+        Note fromBackup = new Note().create("Title", "Body", 10L, "work");
+        fromBackup.setId(5);
+        when(noteDao.getNoteSync(5)).thenReturn(existing);
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
+
+        verify(noteDao, never()).addNotes(org.mockito.ArgumentMatchers.anyList());
+    }
+
+    @Test
+    public void insertNotes_keepsADifferentNoteThatHappensToShareARowId() {
+        // A backup from another device can reuse an id for entirely different content; that note
+        // has to survive alongside the local one rather than overwrite it.
+        Note existing = new Note().create("Local", "Local body", 10L, "");
+        existing.setId(5);
+        Note fromBackup = new Note().create("Other", "Other body", 20L, "");
+        fromBackup.setId(5);
+        when(noteDao.getNoteSync(5)).thenReturn(existing);
+        when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList())).thenReturn(new long[] {77L});
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
+
+        assertThat(fromBackup.getId()).isEqualTo(77);
+    }
+
+    @Test
+    public void insertTags_skipsATagNameThisDeviceAlreadyHas() {
+        Tag existing = new Tag().create("work");
+        existing.id = 3;
+        when(tagsDao.getTagByNameSync("work")).thenReturn(existing);
+        Tag fromBackup = new Tag().create("work");
+        fromBackup.id = 9;
+
+        coordinator.insertTags(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
+
+        // A note references its tag by name, so a second row with the same name is the same tag
+        // shown twice with no way to tell them apart.
+        verify(tagsDao, never()).addTags(org.mockito.ArgumentMatchers.anyList());
+    }
+
+    @Test
+    public void insertTags_dropsRepeatsWithinOneRestoreBatch() {
+        Tag first = new Tag().create("work");
+        Tag duplicate = new Tag().create("work");
+        when(tagsDao.addTags(org.mockito.ArgumentMatchers.anyList())).thenReturn(new long[] {4L});
+
+        coordinator.insertTags(new java.util.ArrayList<>(java.util.List.of(first, duplicate)));
+
+        assertThat(first.getId()).isEqualTo(4L);
     }
 
     @Test
@@ -167,6 +272,65 @@ public class SyncMutationCoordinatorTest {
         assertThat(second.deletedAt).isNull();
         assertThat(notes.get(0).getId()).isEqualTo(101);
         assertThat(notes.get(1).getId()).isEqualTo(102);
+    }
+
+    @Test
+    public void updateNote_onADeviceWithABackwardsClockStillOutranksWhatItSynced() {
+        // Merging is last-write-wins on wall-clock time, which reads like "the device whose clock
+        // runs slow always loses". It does not: applySnapshot copies the winner's timestamp into
+        // local metadata, and touch() then assigns max(now, stored + 1). So an edit made after
+        // seeing a newer remote version wins even when this device's clock is hours behind.
+        // This device's clock reads 1_000; the record it synced carries 5_000 from a device whose
+        // clock runs ahead.
+        long remoteTimestamp = 5_000L;
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(
+                        SyncMetadata.RECORD_TYPE_NOTE, 1L, "stable-a", remoteTimestamp, null));
+
+        Note note = new Note().create("Edited here", "text", 1L, "");
+        note.setId(1);
+        coordinator.updateNoteContent(note);
+
+        SyncMetadataEntity metadata = syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 1L);
+        assertThat(metadata.updatedAt).isGreaterThan(remoteTimestamp);
+    }
+
+    @Test
+    public void insertNotes_keepsBackupIdsWhenNothingOccupiesThem() {
+        // The ordinary restore, and the one after a reinstall: an empty library, so every note
+        // keeps the ID it had when the backup was taken.
+        List<Note> notes = new ArrayList<>();
+        Note restored = new Note().create("One", "1", 1L, "");
+        restored.setId(7);
+        notes.add(restored);
+        when(noteDao.getNoteSync(7)).thenReturn(null);
+        when(noteDao.addNotes(anyList())).thenReturn(new long[] {7L});
+
+        coordinator.insertNotes(notes);
+
+        assertThat(notes.get(0).getId()).isEqualTo(7);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 7L)).isNotNull();
+    }
+
+    @Test
+    public void insertNotes_doesNotOverwriteAnExistingNoteThatHoldsTheSameId() {
+        // addNotes is a REPLACE insert and backups carry their original IDs, so restoring onto a
+        // device that already has notes used to destroy every colliding one — and hand its stable
+        // ID to the replacement, propagating the loss to every other device. The restored note is
+        // inserted as a new row instead; nothing existing is touched.
+        List<Note> notes = new ArrayList<>();
+        Note restored = new Note().create("Restored", "r", 1L, "");
+        restored.setId(7);
+        notes.add(restored);
+        Note occupant = new Note().create("Already here", "x", 2L, "");
+        occupant.setId(7);
+        when(noteDao.getNoteSync(7)).thenReturn(occupant);
+        when(noteDao.addNotes(anyList())).thenReturn(new long[] {42L});
+
+        coordinator.insertNotes(notes);
+
+        assertThat(notes.get(0).getId()).isEqualTo(42);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 42L)).isNotNull();
     }
 
     @Test

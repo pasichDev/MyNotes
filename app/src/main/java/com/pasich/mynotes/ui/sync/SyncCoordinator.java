@@ -15,7 +15,6 @@ import com.pasich.mynotes.utils.auth.GoogleCredential;
 import com.pasich.mynotes.utils.auth.GoogleCredentialAuth;
 import com.pasich.mynotes.utils.auth.GoogleDriveAuthorization;
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +44,9 @@ public final class SyncCoordinator {
 
         @NonNull
         SyncState sync(@NonNull String accessToken);
+
+        /** Drops everything tied to the account being disconnected. */
+        void clearAfterDisconnect();
     }
 
     public interface BackgroundScheduler {
@@ -95,14 +97,6 @@ public final class SyncCoordinator {
     private final Executor workerExecutor;
     private final Executor mainExecutor;
 
-    /**
-     * The v2.6.48 sync safety release completed its staged rollout; sync is now available to all
-     * cohorts.
-     */
-    private static final int CURRENT_ROLLOUT_PERCENT = 100;
-
-    private static final SecureRandom ROLLOUT_RANDOM = new SecureRandom();
-
     public SyncCoordinator(
             @NonNull PreferenceHelper preferenceHelper,
             @NonNull FirebaseGoogleAuth firebaseGoogleAuth,
@@ -136,6 +130,18 @@ public final class SyncCoordinator {
 
     public boolean isBackgroundSyncEnabled() {
         return preferenceHelper.isBackgroundSyncEnabled();
+    }
+
+    /**
+     * Whether the user has consented to the first upload for the currently connected account.
+     *
+     * <p>The screen must decide whether to ask from this flag, not from a stored "last successful
+     * sync" timestamp: {@link #disconnect} clears the flag but the timestamp is durable, so the two
+     * disagreed after any sign-out and the consent dialog became unreachable while {@link #syncNow}
+     * kept refusing to run.
+     */
+    public boolean isFirstSyncConfirmed() {
+        return preferenceHelper.isFirstSyncConfirmed();
     }
 
     @NonNull
@@ -181,7 +187,6 @@ public final class SyncCoordinator {
                                 new FirebaseGoogleAuth.Callback() {
                                     @Override
                                     public void onSuccess(@NonNull FirebaseUser user) {
-                                        ensureRolloutBucket();
                                         preferenceHelper.setSyncEnabled(true);
                                         if (preferenceHelper.isBackgroundSyncEnabled()
                                                 && preferenceHelper.isFirstSyncConfirmed()) {
@@ -210,6 +215,21 @@ public final class SyncCoordinator {
         preferenceHelper.setBackgroundSyncEnabled(false);
         preferenceHelper.setFirstSyncConfirmed(false);
         backgroundScheduler.disable();
+        // The stored sync state, the conflict queue and the downloaded blob cache all describe the
+        // account being disconnected. Leaving them behind also left a lastSuccessfulSyncAt that
+        // made the next connection look like it had already synced.
+        //
+        // Off the main thread: this runs from a button tap and Room refuses main-thread access.
+        // A failure here must not take the sign-out down with it, so it is logged, not propagated.
+        runOnWorker(
+                callback,
+                () -> {
+                    try {
+                        conflictStore.clearAfterDisconnect();
+                    } catch (Exception error) {
+                        Log.w(TAG, "Could not clear sync state after disconnect", error);
+                    }
+                });
         googleCredentialAuth.signOut(
                 new GoogleCredentialAuth.SignOutCallback() {
                     @Override
@@ -233,12 +253,6 @@ public final class SyncCoordinator {
             deliverError(
                     callback,
                     new IllegalStateException("Confirm the first sync before continuing"));
-            return;
-        }
-        ensureRolloutBucket();
-        if (preferenceHelper.getSyncRolloutBucket() > CURRENT_ROLLOUT_PERCENT) {
-            deliverError(
-                    callback, new IllegalStateException("Sync is not available in this rollout"));
             return;
         }
         googleDriveAuthorization.authorize(
@@ -315,19 +329,20 @@ public final class SyncCoordinator {
         postToMain(() -> callback.onError(error));
     }
 
-    /** Delivery to a destroyed screen is a no-op rather than a crash. */
+    /**
+     * Hands the result to the main executor, which owns the decision to drop it.
+     *
+     * <p>Whether delivery to a destroyed screen is safe depends entirely on the executor that was
+     * injected — an {@code Activity::runOnUiThread} method reference posts to a handler and never
+     * rejects, so it would happily run the task against destroyed views. {@code
+     * SyncCoordinatorFactory} supplies a lifecycle-aware executor for that reason; the catch below
+     * only covers an executor that shuts down instead.
+     */
     private void postToMain(@NonNull Runnable task) {
         try {
             mainExecutor.execute(task);
         } catch (RejectedExecutionException rejected) {
             Log.w(TAG, "Sync result could not be delivered; the screen is gone", rejected);
-        }
-    }
-
-    private void ensureRolloutBucket() {
-        int bucket = preferenceHelper.getSyncRolloutBucket();
-        if (bucket < 1 || bucket > 100) {
-            preferenceHelper.setSyncRolloutBucket(ROLLOUT_RANDOM.nextInt(100) + 1);
         }
     }
 }

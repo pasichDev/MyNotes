@@ -19,6 +19,38 @@ public final class SyncMetadata {
         return UUID.randomUUID().toString().toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Removes every payload field that only means something on the device that wrote it.
+     *
+     * <p>Room primary keys and attachment {@code file://} paths differ per device, so leaving them
+     * in the payload makes two devices compute different canonical hashes for the same logical
+     * record. Because {@code applySnapshot} copies the record's {@code updatedAt} verbatim, the
+     * next merge sees equal timestamps, falls through to the hash tiebreaker, and reports a
+     * conflict for every note, tag, task and category on every sync forever. It also keeps {@code
+     * snapshotsMatch} permanently false, so each sync republishes a full bundle.
+     *
+     * <p>Identity travels in the record's stable ID and attachments travel in the bundle manifest,
+     * so nothing here is needed on the wire. Applied to decoded remote records as well, so bundles
+     * written by 2.6.48/2.6.49 normalize to the same shape instead of conflicting forever.
+     */
+    public static void stripDeviceLocalFields(
+            String recordType, com.google.gson.JsonObject payload) {
+        if (payload == null) {
+            return;
+        }
+        if (RECORD_TYPE_NOTE.equals(recordType)) {
+            payload.remove("a"); // Note.id
+            payload.remove("h"); // Note.attachments: device-local file:// paths
+        } else if (RECORD_TYPE_TAG.equals(recordType)) {
+            payload.remove("a"); // Tag.id
+        } else if (RECORD_TYPE_TASK.equals(recordType)) {
+            payload.remove("id");
+            payload.remove("categoryId"); // travels as categoryStableId
+        } else if (RECORD_TYPE_CATEGORY.equals(recordType)) {
+            payload.remove("id");
+        }
+    }
+
     /** Returns true only for the record types defined by sync schema version 1. */
     public static boolean isSupportedRecordType(String recordType) {
         return RECORD_TYPE_NOTE.equals(recordType)

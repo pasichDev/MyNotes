@@ -421,14 +421,16 @@
     <string name="sync_review_conflicts">Konflikte prüfen</string>
     <string name="sync_review_conflicts_count">Konflikte prüfen (%1$d)</string>
     <string name="sync_conflict_title">Synchronisierungskonflikte lösen (%1$d verbleibend)</string>
-    <string name="sync_conflict_keep_local">Lokale Version behalten</string>
-    <string name="sync_conflict_keep_drive">Google-Drive-Version behalten</string>
+    <string name="sync_preferences_applied">Settings received from Google Drive applied</string>
     <string name="sync_conflict_later">Später</string>
+    <string name="sync_conflict_explain">Keep one version — the other will be discarded.</string>
+    <string name="sync_conflict_keep_selected">Keep selected</string>
+    <string name="sync_conflict_newer">newer</string>
     <string name="sync_conflict_resolved">Synchronisierungskonflikt gelöst</string>
-    <string name="sync_conflict_version">%1$s • %2$s</string>
     <string name="sync_conflict_local_label">Lokale Version</string>
     <string name="sync_conflict_drive_label">Google-Drive-Version</string>
     <string name="sync_conflict_deleted">Gelöscht</string>
+    <string name="sync_conflict_untitled">Ohne Titel</string>
     <string name="sync_first_sync_title">Google-Drive-Synchronisierung einrichten</string>
     <string name="sync_first_sync_message">Beim ersten Sync werden %1$d Einträge zusammengeführt und möglicherweise etwa %2$s hochgeladen. Deine lokalen Daten bleiben verfügbar.</string>
     <string name="sync_first_sync_cancel">Nicht jetzt</string>
@@ -460,6 +462,8 @@
     <string name="tab_account">Konto</string>
     <string name="sync_signed_out_title">Nicht angemeldet</string>
     <string name="sync_signed_out_description">Synchronisierung und Google-Drive-Backup sind nach der Anmeldung verfügbar.</string>
+    <string name="sync_unavailable_title">Synchronisierung nicht verfügbar</string>
+    <string name="sync_unavailable_description">Synchronisierung und Google-Drive-Backup benötigen die Google-Play-Dienste, die auf diesem Gerät fehlen.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Synchronisierung</string>
     <string name="help_sync_setup_title">Google-Drive-Synchronisierung</string>

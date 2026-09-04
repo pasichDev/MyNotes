@@ -1,11 +1,10 @@
 package com.pasich.mynotes.data.sync;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +16,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 /**
@@ -29,7 +30,12 @@ import java.util.regex.Pattern;
  */
 public final class SyncService {
 
+    private static final String TAG = "SyncService";
     private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
+    private static final long MAX_TOLERATED_CLOCK_SKEW_MILLIS = 24L * 60L * 60L * 1000L;
+
+    /** Well under the schema record limit, so a bundle can always still be published. */
+    private static final int MAX_PUBLISHED_SETTLED_IDS = 2_000;
 
     private final SyncStore store;
     private final SyncMerger merger;
@@ -45,9 +51,44 @@ public final class SyncService {
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
+    /**
+     * Serializes every sync attempt in the process.
+     *
+     * <p>This method used to rely on {@code synchronized}, but a fresh {@code SyncService} is
+     * constructed for each attempt — once by the Backup screen and once by {@code
+     * GoogleDriveSyncWorker} — so the monitor was per-instance and guarded nothing. A manual sync
+     * and the six-hourly worker could interleave their Room writes and both publish a bundle.
+     */
+    private static final ReentrantLock SYNC_LOCK = new ReentrantLock();
+
+    private static final long LOCK_WAIT_SECONDS = 5L;
+
     /** Runs one serialized manual synchronization attempt and returns its durable final state. */
     @NonNull
-    public synchronized SyncState sync(@NonNull SyncBackend backend) {
+    public SyncState sync(@NonNull SyncBackend backend) {
+        boolean acquired = false;
+        try {
+            acquired = SYNC_LOCK.tryLock(LOCK_WAIT_SECONDS, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+        }
+        if (!acquired) {
+            // Deliberately not persisted: the sync that holds the lock owns the stored state.
+            // The wording keeps GoogleDriveSyncWorker.isRetryable() treating this as retryable.
+            return SyncState.error(
+                    "google-drive",
+                    safeReadState().getLastSuccessfulSyncAt(),
+                    "Another sync is already running; this attempt was temporarily skipped");
+        }
+        try {
+            return syncExclusively(backend);
+        } finally {
+            SYNC_LOCK.unlock();
+        }
+    }
+
+    @NonNull
+    private SyncState syncExclusively(@NonNull SyncBackend backend) {
         SyncState previousState = safeReadState();
         String backendIdentifier = "unknown";
 
@@ -58,20 +99,84 @@ public final class SyncService {
             persistState(
                     SyncState.syncing(
                             backendIdentifier, startedAt, previousState.getLastSuccessfulSyncAt()));
-            SyncSnapshot local = Objects.requireNonNull(store.readSnapshot(), "local snapshot");
-            SyncSnapshot remote = Objects.requireNonNull(backend.readSnapshot(), "remote snapshot");
+            SnapshotBuildResult localBuild =
+                    Objects.requireNonNull(store.buildSnapshot(), "local snapshot build");
+            // Do this before reading Drive or transferring blobs. Publishing a snapshot that
+            // merely skipped an unresolved local attachment turns a local storage fault into
+            // permanent remote data loss on the next successful sync from another device.
+            SyncSnapshot local = localBuild.requireSnapshot();
+            RemoteSnapshot remoteResult =
+                    Objects.requireNonNull(backend.readSnapshotResult(), "remote snapshot");
+            SyncSnapshot remote = remoteResult.getSnapshot();
+            warnAboutClockSkew(remote);
             SyncMergeResult mergeResult = merger.merge(local, remote);
             SyncSnapshot merged = mergeResult.getMergedSnapshot();
 
+            // A choice the user already made must never be offered again, wherever it was made.
+            java.util.Set<String> settledVersionIds =
+                    new java.util.LinkedHashSet<>(store.getResolvedAlternativeIds());
+            settledVersionIds.addAll(remoteResult.getResolvedAlternativeIds());
+            settledVersionIds = capSettledVersionIds(settledVersionIds);
+
+            java.util.List<SyncMergeResult.Conflict> allConflicts = new java.util.ArrayList<>();
+            for (SyncMergeResult.Conflict conflict : remoteResult.getConflicts()) {
+                if (!settledVersionIds.contains(conflict.getLoserVersionId())) {
+                    allConflicts.add(conflict);
+                }
+            }
+            for (SyncMergeResult.Conflict conflict : mergeResult.getConflicts()) {
+                if (!settledVersionIds.contains(conflict.getLoserVersionId())) {
+                    allConflicts.add(conflict);
+                }
+            }
+
+            // A conflict reported by the backend names the winner of the *remote* fold, which
+            // is not necessarily the version this sync ends up applying. Persisting it unchanged
+            // made "keep the version the merge selected" write a stale version over the live one.
+            allConflicts = realignWinners(allConflicts, merged, local);
+
+            // Every still-open alternative is republished, so a merged descendant can never be
+            // the thing that makes a losing version unreachable.
+            Map<String, SyncRecord> alternatives = new java.util.LinkedHashMap<>();
+            for (SyncMergeResult.Conflict conflict : allConflicts) {
+                alternatives.putIfAbsent(conflict.getLoserVersionId(), conflict.getLoser());
+            }
+            for (SyncRecord carried : remoteResult.getAlternatives()) {
+                String versionId = carried.getCanonicalPayloadHash();
+                if (!settledVersionIds.contains(versionId)) {
+                    alternatives.putIfAbsent(versionId, carried);
+                }
+            }
+
             Map<String, Long> expectedSizes = attachmentSizes(merged);
+            // The merged snapshot contains only the deterministic winner. A conflict row is not
+            // durable unless the loser can later be restored as well, so preflight and pin each
+            // version independently; SyncSnapshot deliberately forbids two versions of one ID.
             synchronizeAttachments(backend, merged, expectedSizes);
-            if (!snapshotsMatch(merged, remote)) {
-                backend.writeSnapshot(merged);
+            for (SyncMergeResult.Conflict conflict : allConflicts) {
+                // Best effort. The merged snapshot's own blobs are mandatory and were just
+                // transferred above; these are the extra copies that let a conflict be resolved
+                // later. An alternative whose bytes have gone from Drive is already beyond
+                // recovery, and failing here made that one missing blob stop every device from
+                // syncing anything at all, including the devices that could never resolve it.
+                // Resolution still verifies before it applies, so a version that cannot be
+                // materialized simply cannot be chosen.
+                pinConflictVersionQuietly(backend, conflict.getWinner());
+                pinConflictVersionQuietly(backend, conflict.getLoser());
+            }
+
+            if (needsPublication(
+                    merged, remote, alternatives.keySet(), settledVersionIds, remoteResult)) {
+                backend.publish(
+                        new SyncPublication(
+                                merged,
+                                new java.util.ArrayList<>(alternatives.values()),
+                                settledVersionIds,
+                                remoteResult));
             }
             SyncState success =
-                    SyncState.success(
-                            backendIdentifier, clock.instant(), mergeResult.getConflicts().size());
-            store.applySnapshot(merged, mergeResult.getConflicts(), success);
+                    SyncState.success(backendIdentifier, clock.instant(), allConflicts.size());
+            store.applySnapshot(merged, allConflicts, success);
             return success;
         } catch (Exception exception) {
             SyncState failure =
@@ -82,6 +187,135 @@ public final class SyncService {
             persistState(failure);
             return failure;
         }
+    }
+
+    /**
+     * Flags a device clock that disagrees badly with the rest of the account.
+     *
+     * <p>Merging is last-write-wins on wall-clock time. Per record that self-corrects: {@code
+     * SyncMetadataDao.touch} assigns {@code max(now, storedUpdatedAt + 1)}, so once a device has
+     * seen a newer remote version its own next edit outranks it however far behind its clock runs.
+     * What stays exposed is the first divergent edit to a record neither side has synced since,
+     * where the raw clocks decide and the slower device loses silently. A wrong device clock is
+     * therefore worth a line in the log when support has to explain a "lost" edit.
+     */
+    private void warnAboutClockSkew(@NonNull SyncSnapshot remote) {
+        Instant newest = null;
+        for (SyncRecord record : remote.getRecords()) {
+            if (newest == null || record.getUpdatedAt().isAfter(newest)) {
+                newest = record.getUpdatedAt();
+            }
+        }
+        if (newest == null) {
+            return;
+        }
+        long skewMillis = newest.toEpochMilli() - clock.millis();
+        if (skewMillis > MAX_TOLERATED_CLOCK_SKEW_MILLIS) {
+            Log.w(
+                    TAG,
+                    "Remote records are "
+                            + (skewMillis / 3_600_000L)
+                            + "h ahead of this device's clock; merge order may be wrong");
+        }
+    }
+
+    /**
+     * Bounds the set of settled versions a bundle carries.
+     *
+     * <p>Every resolution adds its two version identities and they were never dropped, so the array
+     * grew for the life of the account. Past the schema's record limit {@code encode} refuses the
+     * bundle and every publish fails permanently, with nothing the user can do about it. Trimming
+     * preserves the identities this device settled most recently; the worst case for a dropped one
+     * is that an already-settled conflict is offered again, which is recoverable, whereas a bundle
+     * that cannot be published is not.
+     */
+    @NonNull
+    private static java.util.Set<String> capSettledVersionIds(
+            @NonNull java.util.Set<String> settled) {
+        if (settled.size() <= MAX_PUBLISHED_SETTLED_IDS) {
+            return settled;
+        }
+        Log.w(
+                TAG,
+                "Trimming "
+                        + settled.size()
+                        + " settled conflict versions to the publishable limit");
+        java.util.Set<String> trimmed = new java.util.LinkedHashSet<>();
+        for (String versionId : settled) {
+            if (trimmed.size() >= MAX_PUBLISHED_SETTLED_IDS) {
+                break;
+            }
+            trimmed.add(versionId);
+        }
+        return trimmed;
+    }
+
+    /**
+     * Re-points every conflict at the version this sync actually applies.
+     *
+     * <p>{@code KEEP_WINNER} promises the version the deterministic merge selected. The remote
+     * backend reports conflicts from folding Drive's heads together, before local state is
+     * considered, so its "winner" can be a version the final merge rejected. Left alone, choosing
+     * "keep winner" reverted the record to that rejected version and republished it everywhere.
+     *
+     * <p>A conflict whose winner and alternative collapse to the same version is dropped: there is
+     * nothing left for the user to choose between.
+     */
+    @NonNull
+    private static java.util.List<SyncMergeResult.Conflict> realignWinners(
+            @NonNull java.util.List<SyncMergeResult.Conflict> conflicts,
+            @NonNull SyncSnapshot merged,
+            @NonNull SyncSnapshot local) {
+        java.util.List<SyncMergeResult.Conflict> aligned = new java.util.ArrayList<>();
+        for (SyncMergeResult.Conflict conflict : conflicts) {
+            SyncRecord winner = merged.find(conflict.getType(), conflict.getId());
+            if (winner == null) {
+                aligned.add(conflict);
+                continue;
+            }
+            String winnerVersion = winner.getCanonicalPayloadHash();
+            if (winnerVersion.equals(conflict.getLoserVersionId())) {
+                continue;
+            }
+            if (winnerVersion.equals(conflict.getWinnerVersionId())) {
+                aligned.add(conflict);
+                continue;
+            }
+            SyncRecord localRecord = local.find(conflict.getType(), conflict.getId());
+            SyncMergeResult.Source winnerSource =
+                    localRecord != null
+                                    && localRecord.getCanonicalPayloadHash().equals(winnerVersion)
+                            ? SyncMergeResult.Source.LOCAL
+                            : SyncMergeResult.Source.REMOTE;
+            aligned.add(
+                    new SyncMergeResult.Conflict(
+                            winner, conflict.getLoser(), winnerSource, conflict.getLoserSource()));
+        }
+        return aligned;
+    }
+
+    /**
+     * Whether the remote state already says everything this sync would say.
+     *
+     * <p>Records alone are not enough: an unchanged record set with a newly discovered alternative,
+     * or with a conflict the user has just resolved, still has to be published or that information
+     * exists on one device only.
+     */
+    private static boolean needsPublication(
+            @NonNull SyncSnapshot merged,
+            @NonNull SyncSnapshot remote,
+            @NonNull Collection<String> alternativeVersionIds,
+            @NonNull java.util.Set<String> settledVersionIds,
+            @NonNull RemoteSnapshot remoteResult) {
+        if (!snapshotsMatch(merged, remote)) {
+            return true;
+        }
+        java.util.Set<String> publishedAlternatives = new java.util.LinkedHashSet<>();
+        for (SyncRecord alternative : remoteResult.getAlternatives()) {
+            publishedAlternatives.add(alternative.getCanonicalPayloadHash());
+        }
+        return !publishedAlternatives.equals(new java.util.LinkedHashSet<>(alternativeVersionIds))
+                || !remoteResult.getResolvedAlternativeIds().equals(settledVersionIds);
     }
 
     private static boolean snapshotsMatch(
@@ -115,23 +349,48 @@ public final class SyncService {
         for (String hash : hashes) {
             validateHash(hash);
             if (store.hasAttachment(hash)) {
-                if (backend.hasAttachment(hash)) {
-                    try {
-                        verifyAttachment(hash, expectedSizes.get(hash), store.readAttachment(hash));
-                    } catch (IOException localError) {
-                        copyVerified(
-                                hash,
-                                expectedSizes.get(hash),
-                                backend.readAttachment(hash),
-                                store::writeAttachment);
+                Long expectedSize = expectedSizes.get(hash);
+                // Index lookup only; the bytes are checked once, below.
+                boolean remotePresent = backend.hasAttachment(hash);
+                try {
+                    verifyAttachment(hash, expectedSize, store.readAttachment(hash));
+                } catch (IOException localError) {
+                    if (!remotePresent) {
+                        throw localError;
                     }
-                    verifyAttachment(hash, expectedSizes.get(hash), backend.readAttachment(hash));
-                } else {
+                    // The local copy is missing or corrupt; repair it from the remote blob,
+                    // which copyVerified refuses to accept unless it hashes correctly.
                     copyVerified(
                             hash,
-                            expectedSizes.get(hash),
+                            expectedSize,
+                            backend.readAttachment(hash),
+                            store::writeAttachment);
+                }
+                // Drive is untrusted: a matching appProperty is only a claim. The blob is read
+                // and hashed exactly once per sync, and the result is remembered, so publishing
+                // it into the canonical root does not download it again.
+                if (!remotePresent) {
+                    copyVerified(
+                            hash,
+                            expectedSize,
                             store.readAttachment(hash),
                             backend::writeAttachment);
+                } else if (!backend.hasVerifiedAttachment(hash, expectedSize)) {
+                    // Present but corrupt. Blobs are content-addressed and duplicates are
+                    // tolerated — the reader picks a verified candidate — so publishing a fresh
+                    // copy of the known-good local bytes repairs the account. Throwing here
+                    // instead left every device failing every sync until someone deleted the bad
+                    // object from Drive by hand. The replacement is confirmed before the bundle
+                    // is allowed to depend on it.
+                    copyVerified(
+                            hash,
+                            expectedSize,
+                            store.readAttachment(hash),
+                            backend::writeAttachment);
+                    if (!backend.hasVerifiedAttachment(hash, expectedSize)) {
+                        throw new AttachmentIntegrityException(
+                                "Attachment checksum does not match its declared hash");
+                    }
                 }
             } else {
                 InputStream remoteAttachment = backend.readAttachment(hash);
@@ -141,6 +400,32 @@ public final class SyncService {
                 copyVerified(
                         hash, expectedSizes.get(hash), remoteAttachment, store::writeAttachment);
             }
+        }
+    }
+
+    /** Pins a conflict version's blobs, logging rather than failing the whole sync. */
+    private void pinConflictVersionQuietly(
+            @NonNull SyncBackend backend, @NonNull SyncRecord record) {
+        try {
+            pinConflictVersion(backend, record);
+        } catch (IOException unavailable) {
+            Log.w(
+                    TAG,
+                    "Could not pin a conflict version's attachments; it stays unresolvable: "
+                            + safeErrorMessage(unavailable));
+        }
+    }
+
+    /** Pins required conflict blobs into the store's durable content-addressed cache. */
+    private void pinConflictVersion(@NonNull SyncBackend backend, @NonNull SyncRecord record)
+            throws IOException {
+        if (record.isTombstone()) return;
+        SyncSnapshot snapshot = new SyncSnapshot(java.util.Collections.singletonList(record));
+        Map<String, Long> expectedSizes = attachmentSizes(snapshot);
+        synchronizeAttachments(backend, snapshot, expectedSizes);
+        for (String hash : store.getAttachmentHashes(snapshot)) {
+            Long expectedSize = expectedSizes.get(hash);
+            copyVerified(hash, expectedSize, store.readAttachment(hash), store::writeAttachment);
         }
     }
 
@@ -160,27 +445,31 @@ public final class SyncService {
         }
     }
 
+    /**
+     * Pipes one blob to the other endpoint, verifying it as the bytes go past.
+     *
+     * <p>This used to buffer the whole blob into a {@code ByteArrayOutputStream}, call {@code
+     * toByteArray()} and hand the destination a {@code ByteArrayInputStream}. With the 100 MB
+     * attachment ceiling that peaked at several hundred megabytes of heap for a single file — an
+     * {@code OutOfMemoryError} on any ordinary phone. Nothing is buffered now: {@link
+     * VerifyingInputStream} checks the digest at end of stream, which happens inside the
+     * destination's own read loop, so a corrupt blob still aborts the write before it is committed.
+     */
     private void copyVerified(
             String expectedHash,
             Long expectedSize,
             InputStream source,
             AttachmentWriter destination)
             throws IOException {
-        Objects.requireNonNull(source, "source");
-        byte[] verifiedBytes;
+        if (source == null) {
+            throw new IOException("Required attachment is unavailable: " + expectedHash);
+        }
         try (InputStream input = source;
                 VerifyingInputStream verified =
-                        new VerifyingInputStream(input, expectedHash, expectedSize);
-                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = verified.read(buffer)) != -1) {
-                output.write(buffer, 0, read);
-            }
+                        new VerifyingInputStream(input, expectedHash, expectedSize)) {
+            destination.write(expectedHash, expectedSize == null ? -1L : expectedSize, verified);
             verified.verifyEndOfStream();
-            verifiedBytes = output.toByteArray();
         }
-        destination.write(expectedHash, new ByteArrayInputStream(verifiedBytes));
     }
 
     private static Map<String, Long> attachmentSizes(SyncSnapshot snapshot) throws IOException {
@@ -247,7 +536,7 @@ public final class SyncService {
     }
 
     private interface AttachmentWriter {
-        void write(String hash, InputStream content) throws IOException;
+        void write(String hash, long sizeBytes, InputStream content) throws IOException;
     }
 
     /** Verifies the hash only after the receiving endpoint consumed every byte. */
@@ -256,7 +545,14 @@ public final class SyncService {
         private final String expectedHash;
         private final Long expectedSize;
         private long byteCount;
-        private boolean verified;
+        private VerificationState verificationState = VerificationState.UNVERIFIED;
+        private AttachmentIntegrityException integrityFailure;
+
+        private enum VerificationState {
+            UNVERIFIED,
+            VERIFIED,
+            FAILED
+        }
 
         VerifyingInputStream(InputStream input, String expectedHash, Long expectedSize) {
             super(input);
@@ -271,43 +567,87 @@ public final class SyncService {
 
         @Override
         public int read() throws IOException {
+            rethrowIntegrityFailure();
             int value = super.read();
             if (value >= 0) {
                 digest.update((byte) value);
                 byteCount++;
-                if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
-                    throw new IOException("Attachment exceeds the sync size limit");
-                }
+                enforceSizeLimit();
+            } else {
+                verifyEndOfStream();
             }
             return value;
         }
 
         @Override
         public int read(byte[] buffer, int offset, int length) throws IOException {
+            rethrowIntegrityFailure();
             int read = super.read(buffer, offset, length);
             if (read > 0) {
                 digest.update(buffer, offset, read);
                 byteCount += read;
-                if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
-                    throw new IOException("Attachment exceeds the sync size limit");
-                }
+                enforceSizeLimit();
+            } else if (read < 0) {
+                verifyEndOfStream();
             }
             return read;
         }
 
+        private void enforceSizeLimit() throws IOException {
+            if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
+                failIntegrity("Attachment exceeds the sync size limit");
+            }
+        }
+
+        /**
+         * Checks the digest, draining anything the destination left behind first.
+         *
+         * <p>Reached from {@link #read} at end of stream, so a destination that streams straight to
+         * its final location still learns about a mismatch before it commits.
+         */
         void verifyEndOfStream() throws IOException {
-            if (!verified) {
-                while (read(new byte[8192]) != -1) {
-                    // Drain an incorrectly implemented destination before declaring success.
-                }
+            if (verificationState == VerificationState.VERIFIED) {
+                return;
+            }
+            rethrowIntegrityFailure();
+            try {
+                drainRemaining();
                 String actualHash = toHex(digest.digest());
                 if (!expectedHash.equals(actualHash)) {
-                    throw new IOException("Attachment checksum does not match its declared hash");
+                    failIntegrity("Attachment checksum does not match its declared hash");
                 }
                 if (expectedSize != null && expectedSize.longValue() != byteCount) {
-                    throw new IOException("Attachment size does not match its declared size");
+                    failIntegrity("Attachment size does not match its declared size");
                 }
-                verified = true;
+                verificationState = VerificationState.VERIFIED;
+            } catch (AttachmentIntegrityException failure) {
+                integrityFailure = failure;
+                verificationState = VerificationState.FAILED;
+                throw failure;
+            }
+        }
+
+        private void failIntegrity(String message) throws AttachmentIntegrityException {
+            AttachmentIntegrityException failure = new AttachmentIntegrityException(message);
+            integrityFailure = failure;
+            verificationState = VerificationState.FAILED;
+            throw failure;
+        }
+
+        private void rethrowIntegrityFailure() throws AttachmentIntegrityException {
+            if (verificationState == VerificationState.FAILED && integrityFailure != null) {
+                throw integrityFailure;
+            }
+        }
+
+        /** Reads through {@code super} so the digest covers bytes the destination skipped. */
+        private void drainRemaining() throws IOException {
+            byte[] scratch = new byte[8192];
+            int read;
+            while ((read = super.read(scratch, 0, scratch.length)) != -1) {
+                digest.update(scratch, 0, read);
+                byteCount += read;
+                enforceSizeLimit();
             }
         }
 

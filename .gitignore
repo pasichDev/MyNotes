@@ -20,5 +20,8 @@ app/src/main/res/raw/*
 app/google-services.json
 gha-creds-*.json
 
-# Local design/plan notes, deliberately kept out of the repository
-docs/
+# Local design/plan notes, deliberately kept out of the repository.
+# Ignore the contents rather than the directory itself, so a single tracked file can be
+# re-included without exposing everything else under docs/.
+docs/*
+!docs/google-drive-sync-invariants.md

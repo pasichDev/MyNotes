@@ -21,6 +21,15 @@ public interface SyncStore {
     SyncSnapshot readSnapshot() throws IOException;
 
     /**
+     * Builds a local snapshot together with any integrity problems that make publication unsafe.
+     * Implementations that cannot identify such problems retain the legacy snapshot boundary.
+     */
+    @NonNull
+    default SnapshotBuildResult buildSnapshot() throws IOException {
+        return SnapshotBuildResult.publishable(readSnapshot());
+    }
+
+    /**
      * Applies the merged snapshot and conflict report atomically.
      *
      * <p>This is called only after every attachment required by the snapshot is available locally
@@ -44,6 +53,17 @@ public interface SyncStore {
         writeState(finalState);
     }
 
+    /**
+     * Version identities the user has already settled, so they are never offered again.
+     *
+     * <p>Published with the bundle: a resolution has to retire an alternative on every device, not
+     * only on the one where the user made the choice.
+     */
+    @NonNull
+    default java.util.Set<String> getResolvedAlternativeIds() throws IOException {
+        return java.util.Collections.emptySet();
+    }
+
     /** Returns every attachment content hash referenced by {@code snapshot}. */
     @NonNull
     Collection<String> getAttachmentHashes(@NonNull SyncSnapshot snapshot) throws IOException;
@@ -61,7 +81,14 @@ public interface SyncStore {
      * <p>The implementation must consume the stream before returning and must not expose a partial
      * file after an exception.
      */
-    void writeAttachment(@NonNull String sha256, @NonNull InputStream content) throws IOException;
+    /**
+     * Stores one immutable blob, streaming it rather than holding it in memory.
+     *
+     * @param sizeBytes the blob's declared size, or a negative value when it is unknown. A known
+     *     size lets an implementation avoid buffering the whole blob to compute a content length.
+     */
+    void writeAttachment(@NonNull String sha256, long sizeBytes, @NonNull InputStream content)
+            throws IOException;
 
     /** Returns the last durable state, or {@link SyncState#idle()} before the first sync. */
     @NonNull

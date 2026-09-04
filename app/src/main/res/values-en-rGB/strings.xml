@@ -465,14 +465,16 @@
     <string name="sync_review_conflicts">Review conflicts</string>
     <string name="sync_review_conflicts_count">Review conflicts (%1$d)</string>
     <string name="sync_conflict_title">Resolve sync conflicts (%1$d remaining)</string>
-    <string name="sync_conflict_keep_local">Keep local version</string>
-    <string name="sync_conflict_keep_drive">Keep Google Drive version</string>
+    <string name="sync_preferences_applied">Settings received from Google Drive applied</string>
     <string name="sync_conflict_later">Later</string>
+    <string name="sync_conflict_explain">Keep one version — the other will be discarded.</string>
+    <string name="sync_conflict_keep_selected">Keep selected</string>
+    <string name="sync_conflict_newer">newer</string>
     <string name="sync_conflict_resolved">Sync conflict resolved</string>
-    <string name="sync_conflict_version">%1$s • %2$s</string>
     <string name="sync_conflict_local_label">Local version</string>
     <string name="sync_conflict_drive_label">Google Drive version</string>
     <string name="sync_conflict_deleted">Deleted</string>
+    <string name="sync_conflict_untitled">Untitled</string>
     <string name="sync_first_sync_title">Set up Google Drive sync</string>
     <string name="sync_first_sync_message">This first sync will merge %1$d records and may upload about %2$s. Your local data stays available while the merge completes.</string>
     <string name="sync_first_sync_cancel">Not now</string>
@@ -507,6 +509,8 @@
     <string name="tab_account">Account</string>
     <string name="sync_signed_out_title">Not signed in</string>
     <string name="sync_signed_out_description">Sync and Google Drive backup become available after you sign in.</string>
+    <string name="sync_unavailable_title">Sync unavailable</string>
+    <string name="sync_unavailable_description">Sync and Google Drive backup need Google Play services, which this device does not have.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Synchronisation</string>
     <string name="help_sync_setup_title">Google Drive Sync</string>

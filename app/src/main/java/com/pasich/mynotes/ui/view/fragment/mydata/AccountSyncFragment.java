@@ -124,6 +124,9 @@ public class AccountSyncFragment extends Fragment {
             @NonNull CharSequence lastSyncText) {
         if (binding == null) return;
         boolean signedIn = profile.isSignedIn();
+        // The three groups are mutually exclusive; rendering real state always clears the
+        // unavailable notice so a recreated view cannot show both.
+        binding.syncUnavailableGroup.setVisibility(View.GONE);
         binding.signedInGroup.setVisibility(signedIn ? View.VISIBLE : View.GONE);
         binding.signedOutGroup.setVisibility(signedIn ? View.GONE : View.VISIBLE);
         if (!signedIn) {
@@ -152,5 +155,6 @@ public class AccountSyncFragment extends Fragment {
         if (binding == null) return;
         binding.signedInGroup.setVisibility(View.GONE);
         binding.signedOutGroup.setVisibility(View.GONE);
+        binding.syncUnavailableGroup.setVisibility(View.VISIBLE);
     }
 }

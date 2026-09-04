@@ -10,6 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
 import com.pasich.mynotes.data.database.dao.SyncConflictDao;
 import com.pasich.mynotes.data.database.dao.SyncMetadataDao;
+import com.pasich.mynotes.data.database.dao.SyncPendingPreferencesDao;
 import com.pasich.mynotes.data.database.dao.SyncStateDao;
 import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
@@ -17,6 +18,7 @@ import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
+import com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity;
 import com.pasich.mynotes.data.database.entities.SyncStateEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -36,6 +38,7 @@ import javax.inject.Singleton;
             Task.class,
             TaskCategory.class,
             SyncMetadataEntity.class,
+            SyncPendingPreferencesEntity.class,
             SyncConflictEntity.class,
             SyncStateEntity.class
         },
@@ -134,6 +137,103 @@ public abstract class AppDatabase extends RoomDatabase {
                                     + "`errorMessage` TEXT, "
                                     + "`conflictCount` INTEGER NOT NULL, "
                                     + "PRIMARY KEY(`id`))");
+                }
+            };
+
+    /** Preserves every unresolved version pair instead of replacing conflicts by logical record. */
+    public static final Migration MIGRATION_17_18 =
+            new Migration(17, 18) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` ADD COLUMN `versionPairHash` TEXT NOT NULL DEFAULT ''");
+                    // Version 17 could contain at most one row per logical record. Give each
+                    // legacy row a durable unique identity without trying to hash untrusted JSON
+                    // in SQLite during a migration.
+                    database.execSQL(
+                            "UPDATE `sync_conflicts` SET `versionPairHash` = 'legacy-' || `id` "
+                                    + "WHERE `versionPairHash` = ''");
+                    database.execSQL(
+                            "DROP INDEX IF EXISTS `index_sync_conflicts_recordType_stableId`");
+                    database.execSQL(
+                            "CREATE UNIQUE INDEX IF NOT EXISTS "
+                                    + "`index_sync_conflicts_recordType_stableId_versionPairHash` "
+                                    + "ON `sync_conflicts` (`recordType`, `stableId`, `versionPairHash`)");
+                }
+            };
+
+    /** Adds the Room journal that bridges snapshot transactions to SharedPreferences. */
+    public static final Migration MIGRATION_18_19 =
+            new Migration(18, 19) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "CREATE TABLE IF NOT EXISTS `sync_pending_preferences` ("
+                                    + "`id` INTEGER NOT NULL, `payloadJson` TEXT NOT NULL, "
+                                    + "PRIMARY KEY(`id`))");
+                }
+            };
+
+    /**
+     * Gives the pending-preferences journal enough identity to decide whether replay is still valid
+     * and a quarantine flag so an unreadable payload cannot disable sync forever, and gives each
+     * conflict side its own origin plus a deterministic version identity.
+     */
+    public static final Migration MIGRATION_19_20 =
+            new Migration(19, 20) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `targetHash` TEXT NOT NULL DEFAULT ''");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `baselineHash` TEXT NOT NULL DEFAULT ''");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `recordUpdatedAt` INTEGER NOT NULL DEFAULT 0");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `quarantined` INTEGER NOT NULL DEFAULT 0");
+
+                    // Conflict provenance is per side, and each version carries a deterministic
+                    // identity, so a resolution can name a version instead of an endpoint.
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` "
+                                    + "ADD COLUMN `loserSource` TEXT NOT NULL DEFAULT 'REMOTE'");
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` "
+                                    + "ADD COLUMN `winnerVersionId` TEXT NOT NULL DEFAULT ''");
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` "
+                                    + "ADD COLUMN `loserVersionId` TEXT NOT NULL DEFAULT ''");
+                    // Rows written before this column existed always had a local winner or a
+                    // local loser, never two remote sides.
+                    database.execSQL(
+                            "UPDATE `sync_conflicts` SET `loserSource` = "
+                                    + "CASE WHEN `winnerSource` = 'LOCAL' THEN 'REMOTE' "
+                                    + "ELSE 'LOCAL' END");
+                }
+            };
+
+    /**
+     * Lets recovery finish a conflict resolution whose preference write landed but whose
+     * bookkeeping did not, instead of leaving the user's choice applied yet unversioned and
+     * revertible by the next sync.
+     *
+     * <p>A separate version rather than an edit to 19→20: that schema has already been published on
+     * this branch, so a device running it would fail Room's identity check on next launch.
+     */
+    public static final Migration MIGRATION_20_21 =
+            new Migration(20, 21) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `conflictId` INTEGER NOT NULL DEFAULT 0");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `conflictResolution` TEXT NOT NULL DEFAULT ''");
                 }
             };
 
@@ -350,4 +450,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract SyncConflictDao syncConflictDao();
 
     public abstract SyncStateDao syncStateDao();
+
+    public abstract SyncPendingPreferencesDao syncPendingPreferencesDao();
 }

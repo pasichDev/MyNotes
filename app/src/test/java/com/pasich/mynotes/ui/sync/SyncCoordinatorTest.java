@@ -190,10 +190,52 @@ public class SyncCoordinatorTest {
     }
 
     @Test
-    public void syncNow_allowsUsersInTheHighestRolloutBucket() {
+    public void disconnect_clearsConsentAndStoredStateTogether() {
+        // The screen asks for first-sync consent when isFirstSyncConfirmed() is false, and
+        // syncNow() refuses while it is false. Both must flip together on a sign-out, and the
+        // durable state has to go with them: leaving a lastSuccessfulSyncAt behind is what used to
+        // make the next connection look already-synced, skipping a dialog that alone could restore
+        // the consent flag. Manual and background sync were then both dead until app data reset.
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.firstSyncConfirmed = true;
-        preferences.rolloutBucket = 100;
+        preferences.syncEnabled = true;
+        preferences.backgroundEnabled = true;
+        FakeConflictStore store = new FakeConflictStore();
+        store.state = SyncState.success("google-drive", Instant.parse("2026-09-01T12:00:00Z"), 0);
+        GoogleCredentialAuth credentialAuth = mock(GoogleCredentialAuth.class);
+        Mockito.doAnswer(
+                        invocation -> {
+                            GoogleCredentialAuth.SignOutCallback callback =
+                                    invocation.getArgument(0);
+                            callback.onSuccess();
+                            return null;
+                        })
+                .when(credentialAuth)
+                .signOut(Mockito.any(GoogleCredentialAuth.SignOutCallback.class));
+        FakeScheduler scheduler = new FakeScheduler();
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        credentialAuth,
+                        mock(GoogleDriveAuthorization.class),
+                        store,
+                        scheduler,
+                        directExecutor,
+                        directExecutor);
+
+        coordinator.disconnect(new CapturingCallback<>());
+
+        assertThat(coordinator.isFirstSyncConfirmed()).isFalse();
+        assertThat(store.clearCalls).isEqualTo(1);
+        assertThat(coordinator.getLastState().getLastSuccessfulSyncAt()).isNull();
+        assertThat(scheduler.disableCalls).isAtLeast(1);
+    }
+
+    @Test
+    public void syncNow_allowsAnExplicitlyEnabledUser() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        preferences.firstSyncConfirmed = true;
         GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
         Mockito.doAnswer(
                         invocation -> {
@@ -227,10 +269,9 @@ public class SyncCoordinatorTest {
     }
 
     @Test
-    public void syncNow_repairsAnInvalidStoredRolloutBucketBeforeSyncing() {
+    public void syncNow_doesNotRequireAFeatureRollout() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.firstSyncConfirmed = true;
-        preferences.rolloutBucket = 0;
         GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
         Mockito.doAnswer(
                         invocation -> {
@@ -258,7 +299,6 @@ public class SyncCoordinatorTest {
         CapturingCallback<SyncState> callback = new CapturingCallback<>();
         coordinator.syncNow(mock(Activity.class), callback);
 
-        assertThat(preferences.rolloutBucket >= 1 && preferences.rolloutBucket <= 100).isTrue();
         assertThat(store.lastToken).isEqualTo("access-token");
         assertThat(callback.error).isNull();
     }
@@ -271,7 +311,11 @@ public class SyncCoordinatorTest {
                 new SyncConflictEntity(
                         "note",
                         "550e8400-e29b-41d4-a716-446655440000",
+                        "test-version-pair",
                         "LOCAL",
+                        "REMOTE",
+                        "winner-version-id",
+                        "loser-version-id",
                         "{}",
                         "{}",
                         1L,
@@ -340,6 +384,7 @@ public class SyncCoordinatorTest {
         private final List<SyncConflictEntity> conflicts = new ArrayList<>();
         private final List<String> resolutions = new ArrayList<>();
         private String lastToken;
+        private int clearCalls;
 
         @NonNull
         @Override
@@ -367,6 +412,13 @@ public class SyncCoordinatorTest {
             lastToken = accessToken;
             return state;
         }
+
+        @Override
+        public void clearAfterDisconnect() {
+            clearCalls++;
+            state = SyncState.idle();
+            conflicts.clear();
+        }
     }
 
     private static final class CapturingCallback<T> implements SyncCoordinator.Callback<T> {
@@ -388,7 +440,6 @@ public class SyncCoordinatorTest {
         private boolean syncEnabled;
         private boolean backgroundEnabled;
         private boolean firstSyncConfirmed;
-        private int rolloutBucket = 1;
 
         @Override
         public int getFormatCount() {
@@ -431,6 +482,12 @@ public class SyncCoordinatorTest {
                 com.pasich.mynotes.utils.backup.models.PreferencesBackup preferences) {}
 
         @Override
+        public boolean commitListPreferences(
+                com.pasich.mynotes.utils.backup.models.PreferencesBackup preferences) {
+            return true;
+        }
+
+        @Override
         public String getLastKnownVersion() {
             return "";
         }
@@ -466,16 +523,6 @@ public class SyncCoordinatorTest {
         @Override
         public void setFirstSyncConfirmed(boolean confirmed) {
             firstSyncConfirmed = confirmed;
-        }
-
-        @Override
-        public int getSyncRolloutBucket() {
-            return rolloutBucket;
-        }
-
-        @Override
-        public void setSyncRolloutBucket(int bucket) {
-            rolloutBucket = bucket;
         }
     }
 }

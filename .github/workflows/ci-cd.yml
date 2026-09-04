@@ -73,6 +73,9 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.jks
 
+      - name: Run release safety gate
+        run: ./gradlew test lint assembleRelease --no-daemon --stacktrace
+
       - name: Build signed release APK & AAB
         env:
           KEYSTORE_PATH: /tmp/release.jks

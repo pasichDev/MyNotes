@@ -91,50 +91,59 @@ public class AppPreferencesHelper implements PreferenceHelper {
     /** Persists all fields from a backup and refreshes the caches. */
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
+        commitListPreferences(preferences);
+    }
 
-        if (preferences.isCreated()) {
-
-            // OLD FIELDS
-            prefs.putInt(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, preferences.getFormatCount());
-
-            prefs.putString(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE,
-                    preferences.getTypeFaceNoteActivity());
-
-            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_SORT, preferences.getSortParam());
-
-            prefs.putInt(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, preferences.getSizeTextNote());
-
-            prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, preferences.getThemeValue());
-
-            prefs.putBoolean(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR,
-                    preferences.isDynamicTheme());
-
-            prefs.putInt(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
-
-            prefs.putBoolean(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
-                    preferences.isImageOptimizationEnabled());
-
-            prefs.putBoolean(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
-                    preferences.isScreenProtection());
-
-            prefs.putBoolean(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR,
-                    preferences.isExtendedEditor());
-
-            prefs.putFloat(
-                    PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, preferences.getUiFontScale());
-
-            // Refresh caches
-            appCache.refresh();
-            themeCache.refresh();
+    /**
+     * Writes every backed-up preference as one durable edit.
+     *
+     * <p>This used to be eleven separate {@code apply()} calls. {@code apply()} is asynchronous and
+     * per key, so a process death part-way through left the user with a mixture of the old and the
+     * new settings, and left the sync journal that had "already committed" them cleared. One editor
+     * plus {@code commit()} makes the whole set atomic and tells the caller whether it is durable,
+     * which is what lets {@code RoomSyncStore} decide when the journal may be dropped.
+     *
+     * @return true when the values are durably stored, false when the write failed.
+     */
+    @Override
+    public boolean commitListPreferences(PreferencesBackup preferences) {
+        if (preferences == null || !preferences.isCreated()) {
+            return false;
         }
+        java.util.Map<String, Object> values = new java.util.LinkedHashMap<>();
+        values.put(PreferencesConfig.ARGUMENT_PREFERENCE_FORMAT, preferences.getFormatCount());
+        values.put(
+                PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_STYLE,
+                preferences.getTypeFaceNoteActivity());
+        values.put(PreferencesConfig.ARGUMENT_PREFERENCE_SORT, preferences.getSortParam());
+        values.put(PreferencesConfig.ARGUMENT_PREFERENCE_TEXT_SIZE, preferences.getSizeTextNote());
+        values.put(PreferencesConfig.ARGUMENT_PREFERENCE_THEME, preferences.getThemeValue());
+        values.put(
+                PreferencesConfig.ARGUMENT_PREFERENCE_DYNAMIC_COLOR, preferences.isDynamicTheme());
+        values.put(PreferencesConfig.ARGUMENT_PREFERENCE_THEME_MODE, preferences.getThemeMode());
+        values.put(
+                PreferencesConfig.ARGUMENT_PREFERENCE_IMAGEOPT,
+                preferences.isImageOptimizationEnabled());
+        values.put(
+                PreferencesConfig.ARGUMENT_PREFERENCE_SCREEN_PROTECTION,
+                preferences.isScreenProtection());
+        values.put(
+                PreferencesConfig.ARGUMENT_PREFERENCE_EXTENDED_EDITOR,
+                preferences.isExtendedEditor());
+        values.put(PreferencesConfig.ARGUMENT_PREFERENCE_UI_SCALING, preferences.getUiFontScale());
+
+        if (!prefs.commitAll(values)) {
+            return false;
+        }
+        appCache.refresh();
+        themeCache.refresh();
+        // Refreshing the caches only reloads the values. Light/dark is owned by
+        // AppCompatDelegate, which has to be told, or a theme arriving from another device sat
+        // in storage until the next activity was created. Posted to the main thread because this
+        // runs on a background thread for both a sync apply and a backup restore.
+        new android.os.Handler(android.os.Looper.getMainLooper())
+                .post(themeCache::applyCurrentThemeMode);
+        return true;
     }
 
     @Override
@@ -186,17 +195,5 @@ public class AppPreferencesHelper implements PreferenceHelper {
     @Override
     public void setFirstSyncConfirmed(boolean confirmed) {
         prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_FIRST_CONFIRMED, confirmed);
-    }
-
-    @Override
-    public int getSyncRolloutBucket() {
-        return prefs.getInt(
-                PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_ROLLOUT_BUCKET,
-                PreferencesConfig.ARGUMENT_DEFAULT_SYNC_ROLLOUT_BUCKET);
-    }
-
-    @Override
-    public void setSyncRolloutBucket(int bucket) {
-        prefs.putInt(PreferencesConfig.ARGUMENT_PREFERENCE_SYNC_ROLLOUT_BUCKET, bucket);
     }
 }

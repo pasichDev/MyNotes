@@ -225,7 +225,7 @@ public class SyncConvergenceTest {
         }
 
         @Override
-        public void writeAttachment(String sha256, InputStream content) {}
+        public void writeAttachment(String sha256, long sizeBytes, InputStream content) {}
 
         @Override
         public SyncState readState() {
@@ -270,7 +270,8 @@ public class SyncConvergenceTest {
         }
 
         @Override
-        public void writeAttachment(String sha256, InputStream content) throws IOException {
+        public void writeAttachment(String sha256, long sizeBytes, InputStream content)
+                throws IOException {
             attachments.put(sha256, new byte[0]);
             content.close();
         }

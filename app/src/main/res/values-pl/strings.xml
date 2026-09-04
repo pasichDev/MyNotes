@@ -422,14 +422,16 @@
     <string name="sync_review_conflicts">Przejrzyj konflikty</string>
     <string name="sync_review_conflicts_count">Przejrzyj konflikty (%1$d)</string>
     <string name="sync_conflict_title">Rozwiąż konflikty synchronizacji (%1$d pozostało)</string>
-    <string name="sync_conflict_keep_local">Zachowaj wersję lokalną</string>
-    <string name="sync_conflict_keep_drive">Zachowaj wersję z Google Drive</string>
+    <string name="sync_preferences_applied">Settings received from Google Drive applied</string>
     <string name="sync_conflict_later">Później</string>
+    <string name="sync_conflict_explain">Keep one version — the other will be discarded.</string>
+    <string name="sync_conflict_keep_selected">Keep selected</string>
+    <string name="sync_conflict_newer">newer</string>
     <string name="sync_conflict_resolved">Konflikt synchronizacji rozwiązany</string>
-    <string name="sync_conflict_version">%1$s • %2$s</string>
     <string name="sync_conflict_local_label">Wersja lokalna</string>
     <string name="sync_conflict_drive_label">Wersja z Google Drive</string>
     <string name="sync_conflict_deleted">Usunięto</string>
+    <string name="sync_conflict_untitled">Bez tytułu</string>
     <string name="sync_first_sync_title">Skonfiguruj synchronizację z Google Drive</string>
     <string name="sync_first_sync_message">Pierwsza synchronizacja połączy %1$d wpisów i może wysłać około %2$s. Lokalne dane pozostaną dostępne.</string>
     <string name="sync_first_sync_cancel">Nie teraz</string>
@@ -461,6 +463,8 @@
     <string name="tab_account">Konto</string>
     <string name="sync_signed_out_title">Nie zalogowano</string>
     <string name="sync_signed_out_description">Synchronizacja i kopia na Dysku Google są dostępne po zalogowaniu.</string>
+    <string name="sync_unavailable_title">Synchronizacja niedostępna</string>
+    <string name="sync_unavailable_description">Synchronizacja i kopia na Dysku Google wymagają usług Google Play, których nie ma na tym urządzeniu.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Synchronizacja</string>
     <string name="help_sync_setup_title">Synchronizacja z Google Drive</string>

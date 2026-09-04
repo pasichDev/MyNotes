@@ -21,7 +21,7 @@ apply from: "$projectDir/gradle/libs-task.gradle"
 apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
-def appVersionCode = 49
+def appVersionCode = 50
 def appVersionName = "2.6.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
@@ -115,6 +115,10 @@ android {
             minifyEnabled false
             shrinkResources false
             enableUnitTestCoverage true
+            // The Room store, the DAOs and the preference adapters are only reachable on a
+            // device, so without this they report 0% and the PR comment understates what is
+            // actually tested.
+            enableAndroidTestCoverage true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
@@ -128,7 +132,7 @@ android {
     }
     namespace = 'com.pasich.mynotes'
     lint {
-        abortOnError false
+        abortOnError true
     }
     testOptions {
         unitTests {

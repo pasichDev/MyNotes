@@ -23,7 +23,7 @@ public interface DbNotesHelper {
 
     Single<Note> getNoteForId(long idNote);
 
-    Single<Long> addNote(Note note, boolean copyNote);
+    Single<Long> addNote(Note note);
 
     Completable deleteNote(Note note);
 

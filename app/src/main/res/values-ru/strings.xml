@@ -426,14 +426,16 @@
     <string name="sync_review_conflicts">Просмотреть конфликты</string>
     <string name="sync_review_conflicts_count">Просмотреть конфликты (%1$d)</string>
     <string name="sync_conflict_title">Разрешить конфликты синхронизации (%1$d осталось)</string>
-    <string name="sync_conflict_keep_local">Оставить локальную версию</string>
-    <string name="sync_conflict_keep_drive">Оставить версию из Google Drive</string>
+    <string name="sync_preferences_applied">Settings received from Google Drive applied</string>
     <string name="sync_conflict_later">Позже</string>
+    <string name="sync_conflict_explain">Keep one version — the other will be discarded.</string>
+    <string name="sync_conflict_keep_selected">Keep selected</string>
+    <string name="sync_conflict_newer">newer</string>
     <string name="sync_conflict_resolved">Конфликт синхронизации разрешён</string>
-    <string name="sync_conflict_version">%1$s • %2$s</string>
     <string name="sync_conflict_local_label">Локальная версия</string>
     <string name="sync_conflict_drive_label">Версия из Google Drive</string>
     <string name="sync_conflict_deleted">Удалено</string>
+    <string name="sync_conflict_untitled">Без названия</string>
     <string name="sync_first_sync_title">Настроить синхронизацию с Google Диском</string>
     <string name="sync_first_sync_message">При первой синхронизации будут объединены записи: %1$d. Возможно, будет загружено около %2$s. Локальные данные останутся доступны.</string>
     <string name="sync_first_sync_cancel">Не сейчас</string>
@@ -465,6 +467,8 @@
     <string name="tab_account">Аккаунт</string>
     <string name="sync_signed_out_title">Вы не вошли</string>
     <string name="sync_signed_out_description">Синхронизация и копия на Google Диске доступны после входа.</string>
+    <string name="sync_unavailable_title">Синхронизация недоступна</string>
+    <string name="sync_unavailable_description">Синхронизация и копия на Google Диске требуют сервисов Google Play, которых нет на этом устройстве.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Синхронизация</string>
     <string name="help_sync_setup_title">Синхронизация с Google Drive</string>

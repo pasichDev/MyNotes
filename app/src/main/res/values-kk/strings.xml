@@ -418,14 +418,16 @@
     <string name="sync_review_conflicts">Қайшылықтарды қарау</string>
     <string name="sync_review_conflicts_count">Қайшылықтарды қарау (%1$d)</string>
     <string name="sync_conflict_title">Синхрондау қайшылықтарын шешу (%1$d қалды)</string>
-    <string name="sync_conflict_keep_local">Жергілікті нұсқаны сақтау</string>
-    <string name="sync_conflict_keep_drive">Google Drive нұсқасын сақтау</string>
+    <string name="sync_preferences_applied">Settings received from Google Drive applied</string>
     <string name="sync_conflict_later">Кейінірек</string>
+    <string name="sync_conflict_explain">Keep one version — the other will be discarded.</string>
+    <string name="sync_conflict_keep_selected">Keep selected</string>
+    <string name="sync_conflict_newer">newer</string>
     <string name="sync_conflict_resolved">Синхрондау қайшылығы шешілді</string>
-    <string name="sync_conflict_version">%1$s • %2$s</string>
     <string name="sync_conflict_local_label">Жергілікті нұсқа</string>
     <string name="sync_conflict_drive_label">Google Drive нұсқасы</string>
     <string name="sync_conflict_deleted">Жойылды</string>
+    <string name="sync_conflict_untitled">Атауы жоқ</string>
     <string name="sync_first_sync_title">Google Drive синхрондауды баптау</string>
     <string name="sync_first_sync_message">Алғашқы синхрондау %1$d жазбаны біріктіреді және шамамен %2$s жүктеуі мүмкін. Жергілікті деректер қолжетімді болып қалады.</string>
     <string name="sync_first_sync_cancel">Қазір емес</string>
@@ -457,6 +459,8 @@
     <string name="tab_account">Есептік жазба</string>
     <string name="sync_signed_out_title">Сіз кірмегенсіз</string>
     <string name="sync_signed_out_description">Синхрондау және Google Дискідегі көшірме кіргеннен кейін қолжетімді.</string>
+    <string name="sync_unavailable_title">Синхрондау қолжетімсіз</string>
+    <string name="sync_unavailable_description">Синхрондау және Google Дискідегі көшірме бұл құрылғыда жоқ Google Play қызметтерін қажет етеді.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Синхрондау</string>
     <string name="help_sync_setup_title">Google Drive-пен синхрондау</string>

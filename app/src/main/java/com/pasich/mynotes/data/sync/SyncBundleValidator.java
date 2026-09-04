@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -25,14 +26,20 @@ import java.util.zip.ZipInputStream;
 
 /** Validates schema-1 sync bundles before any remote data is exposed to the app. */
 public final class SyncBundleValidator {
+    static final long MAX_COMPRESSED_BUNDLE_BYTES = 32L * 1024L * 1024L;
     static final long MAX_RECORD_BYTES = 25L * 1024L * 1024L;
+    static final long MAX_RECORD_PAYLOAD_BYTES = 4L * 1024L * 1024L;
     static final long MAX_RECORD_COUNT = 10_000L;
     static final long MAX_ATTACHMENT_COUNT = 10_000L;
+    static final long MAX_ATTACHMENTS_PER_NOTE = 1_000L;
+    static final long MAX_PARENT_BUNDLE_COUNT = 1_000L;
     static final long MAX_ATTACHMENT_BYTES = 100L * 1024L * 1024L;
     static final long MAX_TOTAL_ATTACHMENT_BYTES = 500L * 1024L * 1024L;
     static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 1024L * 1024L * 1024L;
     static final long MAX_COMPRESSION_RATIO = 100L;
     private static final long MAX_MANIFEST_BYTES = 2L * 1024L * 1024L;
+    private static final int MAX_METADATA_STRING_CHARS = 1_048_576;
+    private static final int MAX_JSON_DEPTH = 64;
     private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
 
     @NonNull
@@ -47,7 +54,6 @@ public final class SyncBundleValidator {
                 new LinkedHashMap<>();
         Map<String, SyncBundleCodec.AttachmentManifestEntry> attachmentsByHash =
                 new LinkedHashMap<>();
-        Set<String> attachmentPaths = new LinkedHashSet<>();
         long totalAttachmentBytes = 0L;
         JsonArray attachments = manifest.getAsJsonArray("attachments");
         for (JsonElement element : attachments) {
@@ -56,11 +62,10 @@ public final class SyncBundleValidator {
             if (attachmentsById.put(attachment.id, attachment) != null) {
                 throw new IOException("Sync bundle contains duplicate attachment IDs");
             }
-            if (attachmentsByHash.put(attachment.sha256, attachment) != null) {
-                throw new IOException("Sync bundle contains duplicate attachment hashes");
-            }
-            if (!attachmentPaths.add(attachment.path)) {
-                throw new IOException("Sync bundle contains duplicate attachment paths");
+            SyncBundleCodec.AttachmentManifestEntry previous =
+                    attachmentsByHash.putIfAbsent(attachment.sha256, attachment);
+            if (previous != null && !previous.sameRemoteFile(attachment)) {
+                throw new IOException("Sync bundle contains conflicting attachment blob metadata");
             }
             if (attachment.size > MAX_ATTACHMENT_BYTES) {
                 throw new IOException("Sync bundle contains an oversized attachment");
@@ -115,6 +120,8 @@ public final class SyncBundleValidator {
                         attachmentsById,
                         referencedAttachmentIds);
         recordCount += validateTombstones(records, recordIdentities);
+        recordCount += validateAlternatives(records, attachmentsById, referencedAttachmentIds);
+        validateResolvedAlternatives(records);
         if (recordCount > MAX_RECORD_COUNT) {
             throw new IOException("Sync bundle exceeds the schema-1 record limit");
         }
@@ -147,6 +154,7 @@ public final class SyncBundleValidator {
             String id = requireString(item, "id");
             validateUuid(id);
             parseInstant(requireString(item, "updatedAt"), "updatedAt");
+            validatePayloadLimits(item);
             if (type == SyncRecord.Type.NOTE) {
                 validateAttachmentReferences(item, attachmentsById, referencedAttachmentIds);
             }
@@ -165,6 +173,9 @@ public final class SyncBundleValidator {
         JsonArray attachmentIds = note.getAsJsonArray("attachmentIds");
         if (attachmentIds == null) {
             return;
+        }
+        if (attachmentIds.size() > MAX_ATTACHMENTS_PER_NOTE) {
+            throw new IOException("Sync note exceeds the attachment limit");
         }
         JsonObject attachmentNames = note.getAsJsonObject("attachmentNames");
         for (JsonElement element : attachmentIds) {
@@ -185,6 +196,76 @@ public final class SyncBundleValidator {
                 validateDisplayName(attachmentNames.get(attachmentId).getAsString());
             }
             referencedAttachmentIds.add(attachmentId);
+        }
+    }
+
+    /**
+     * Validates the unresolved conflict versions a bundle carries.
+     *
+     * <p>Deliberately not folded into the live-record identity set: an alternative is another
+     * version of a record the bundle already contains, so it shares that record's identity by
+     * design. What it must not do is reference attachment metadata the manifest lacks, or exceed
+     * the same payload limits as any other record.
+     */
+    private static long validateAlternatives(
+            @NonNull JsonObject records,
+            @NonNull Map<String, SyncBundleCodec.AttachmentManifestEntry> attachmentsById,
+            @NonNull Set<String> referencedAttachmentIds)
+            throws IOException {
+        JsonArray array = records.getAsJsonArray("alternatives");
+        if (array == null) {
+            return 0L;
+        }
+        if (array.size() > MAX_RECORD_COUNT) {
+            throw new IOException("Sync bundle exceeds the schema-1 record limit");
+        }
+        Set<String> versions = new LinkedHashSet<>();
+        for (JsonElement element : array) {
+            JsonObject item = element.getAsJsonObject();
+            SyncRecord.Type type = SyncRecord.Type.fromWireValue(requireString(item, "type"));
+            String id = requireString(item, "id");
+            validateUuid(id);
+            Instant updatedAt = parseInstant(requireString(item, "updatedAt"), "updatedAt");
+            JsonElement deletedAt = item.get("deletedAt");
+            if (deletedAt != null && !deletedAt.isJsonNull()) {
+                Instant deleted = parseInstant(deletedAt.getAsString(), "deletedAt");
+                if (deleted.isBefore(updatedAt)) {
+                    throw new IOException(
+                            "Sync alternative deletedAt must not be before updatedAt");
+                }
+            }
+            validatePayloadLimits(item);
+            if (type == SyncRecord.Type.NOTE) {
+                validateAttachmentReferences(item, attachmentsById, referencedAttachmentIds);
+            }
+            if (!versions.add(type.getWireValue() + ":" + id + ":" + item.toString())) {
+                throw new IOException("Sync bundle contains duplicate conflict alternatives");
+            }
+        }
+        return array.size();
+    }
+
+    private static void validateResolvedAlternatives(@NonNull JsonObject records)
+            throws IOException {
+        JsonArray array = records.getAsJsonArray("resolvedAlternatives");
+        if (array == null) {
+            return;
+        }
+        if (array.size() > MAX_RECORD_COUNT) {
+            throw new IOException("Sync bundle exceeds the resolved-version limit");
+        }
+        Set<String> seen = new LinkedHashSet<>();
+        for (JsonElement element : array) {
+            if (element == null || !element.isJsonPrimitive()) {
+                throw new IOException("Sync bundle contains an invalid resolved version id");
+            }
+            String value = element.getAsString();
+            if (!SHA_256.matcher(value).matches()) {
+                throw new IOException("Sync bundle contains an invalid resolved version id");
+            }
+            if (!seen.add(value)) {
+                throw new IOException("Sync bundle contains duplicate resolved version ids");
+            }
         }
     }
 
@@ -215,6 +296,23 @@ public final class SyncBundleValidator {
             throw new IOException("Unsupported sync bundle schema version");
         }
         validateUuid(requireString(manifest, "bundleId"));
+        JsonArray parents = manifest.getAsJsonArray("parentBundleIds");
+        if (parents != null) {
+            if (parents.size() > MAX_PARENT_BUNDLE_COUNT) {
+                throw new IOException("Sync bundle exceeds the parent frontier limit");
+            }
+            Set<String> uniqueParents = new LinkedHashSet<>();
+            for (JsonElement parent : parents) {
+                if (parent == null || !parent.isJsonPrimitive()) {
+                    throw new IOException("Sync bundle parent ID is invalid");
+                }
+                String value = parent.getAsString();
+                validateUuid(value);
+                if (!uniqueParents.add(value)) {
+                    throw new IOException("Sync bundle contains duplicate parent IDs");
+                }
+            }
+        }
         parseInstant(requireString(manifest, "createdAt"), "createdAt");
         String recordsSha = requireString(manifest, "recordsSha256");
         if (!SHA_256.matcher(recordsSha).matches()) {
@@ -252,7 +350,10 @@ public final class SyncBundleValidator {
         byte[] records = null;
         long totalUncompressedBytes = 0L;
         Set<String> names = new LinkedHashSet<>();
-        try (ZipInputStream zip = new ZipInputStream(input, StandardCharsets.UTF_8)) {
+        try (ZipInputStream zip =
+                new ZipInputStream(
+                        new BoundedInputStream(input, MAX_COMPRESSED_BUNDLE_BYTES),
+                        StandardCharsets.UTF_8)) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
                 String name = entry.getName();
@@ -341,10 +442,17 @@ public final class SyncBundleValidator {
     static String requireString(@NonNull JsonObject object, @NonNull String field)
             throws IOException {
         JsonElement value = object.get(field);
-        if (value == null || value.isJsonNull() || !value.isJsonPrimitive()) {
+        if (value == null
+                || value.isJsonNull()
+                || !value.isJsonPrimitive()
+                || !value.getAsJsonPrimitive().isString()) {
             throw new IOException("Sync JSON field " + field + " is missing or invalid");
         }
-        return value.getAsString();
+        String result = value.getAsString();
+        if (result.length() > MAX_METADATA_STRING_CHARS) {
+            throw new IOException("Sync JSON field " + field + " exceeds the string limit");
+        }
+        return result;
     }
 
     private static void requireString(
@@ -364,6 +472,42 @@ public final class SyncBundleValidator {
             return value.getAsLong();
         } catch (RuntimeException error) {
             throw new IOException("Sync JSON field " + field + " is not a valid integer", error);
+        }
+    }
+
+    private static void validatePayloadLimits(@NonNull JsonObject record) throws IOException {
+        long serializedBytes = record.toString().getBytes(StandardCharsets.UTF_8).length;
+        if (serializedBytes > MAX_RECORD_PAYLOAD_BYTES) {
+            throw new IOException("Sync record exceeds the payload size limit");
+        }
+        validateJsonValue(record, 0);
+    }
+
+    private static void validateJsonValue(@NonNull JsonElement value, int depth)
+            throws IOException {
+        if (depth > MAX_JSON_DEPTH) {
+            throw new IOException("Sync JSON exceeds the nesting limit");
+        }
+        if (value.isJsonPrimitive()) {
+            if (value.getAsJsonPrimitive().isString()
+                    && value.getAsString().length() > MAX_METADATA_STRING_CHARS) {
+                throw new IOException("Sync JSON string exceeds the size limit");
+            }
+            return;
+        }
+        if (value.isJsonArray()) {
+            for (JsonElement element : value.getAsJsonArray()) {
+                validateJsonValue(element, depth + 1);
+            }
+            return;
+        }
+        if (value.isJsonObject()) {
+            for (Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                if (entry.getKey().length() > MAX_METADATA_STRING_CHARS) {
+                    throw new IOException("Sync JSON field name exceeds the size limit");
+                }
+                validateJsonValue(entry.getValue(), depth + 1);
+            }
         }
     }
 
@@ -407,6 +551,42 @@ public final class SyncBundleValidator {
             return value.toString();
         } catch (NoSuchAlgorithmException error) {
             throw new IOException("SHA-256 is unavailable", error);
+        }
+    }
+
+    /** Caps compressed input before ZIP parsing to make bundle-size limits independent of Drive. */
+    private static final class BoundedInputStream extends FilterInputStream {
+        private final long maxBytes;
+        private long bytesRead;
+
+        private BoundedInputStream(@NonNull InputStream input, long maxBytes) {
+            super(input);
+            this.maxBytes = maxBytes;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int value = super.read();
+            if (value != -1) {
+                count(1);
+            }
+            return value;
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+            int read = super.read(buffer, offset, length);
+            if (read > 0) {
+                count(read);
+            }
+            return read;
+        }
+
+        private void count(long read) throws IOException {
+            bytesRead += read;
+            if (bytesRead > maxBytes) {
+                throw new IOException("Sync bundle exceeds the compressed size limit");
+            }
         }
     }
 

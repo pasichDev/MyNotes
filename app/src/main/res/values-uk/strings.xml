@@ -463,14 +463,16 @@
     <string name="sync_review_conflicts">Переглянути конфлікти</string>
     <string name="sync_review_conflicts_count">Переглянути конфлікти (%1$d)</string>
     <string name="sync_conflict_title">Розв’язати конфлікти синхронізації (%1$d залишилось)</string>
-    <string name="sync_conflict_keep_local">Залишити локальну версію</string>
-    <string name="sync_conflict_keep_drive">Залишити версію з Google Drive</string>
+    <string name="sync_preferences_applied">Застосовано налаштування з Google Drive</string>
     <string name="sync_conflict_later">Пізніше</string>
+    <string name="sync_conflict_explain">Залиште одну версію — друга буде відкинута.</string>
+    <string name="sync_conflict_keep_selected">Залишити обрану</string>
+    <string name="sync_conflict_newer">новіша</string>
     <string name="sync_conflict_resolved">Конфлікт синхронізації розв’язано</string>
-    <string name="sync_conflict_version">%1$s • %2$s</string>
     <string name="sync_conflict_local_label">Локальна версія</string>
     <string name="sync_conflict_drive_label">Версія з Google Drive</string>
     <string name="sync_conflict_deleted">Видалено</string>
+    <string name="sync_conflict_untitled">Без назви</string>
 
 
     <!-- Help: tasks & reminders -->
@@ -481,4 +483,6 @@
     <string name="tab_account">Акаунт</string>
     <string name="sync_signed_out_title">Ви не увійшли</string>
     <string name="sync_signed_out_description">Синхронізація та копія на Google Диску доступні після входу.</string>
+    <string name="sync_unavailable_title">Синхронізація недоступна</string>
+    <string name="sync_unavailable_description">Синхронізація та копія на Google Диску потребують сервісів Google Play, яких немає на цьому пристрої.</string>
 </resources>

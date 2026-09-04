@@ -99,6 +99,135 @@ public class MigrationTest {
     }
 
     @Test
+    public void migrate17to18_preservesExistingConflictAndAllowsVersionPairsToCoexist()
+            throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 17);
+        db.execSQL(
+                "INSERT INTO sync_conflicts "
+                        + "(recordType, stableId, winnerSource, winnerJson, loserJson, winnerUpdatedAt, "
+                        + "loserUpdatedAt, winnerTombstone, loserTombstone, resolution, resolved, createdAt, resolvedAt) "
+                        + "VALUES ('note', 'stable', 'LOCAL', '{}', '{}', 1, 1, 0, 0, 'PENDING', 0, 1, 0)");
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 18, true, AppDatabase.MIGRATION_17_18);
+        try {
+            migrated.execSQL(
+                    "INSERT INTO sync_conflicts "
+                            + "(recordType, stableId, versionPairHash, winnerSource, winnerJson, loserJson, "
+                            + "winnerUpdatedAt, loserUpdatedAt, winnerTombstone, loserTombstone, resolution, "
+                            + "resolved, createdAt, resolvedAt) "
+                            + "VALUES ('note', 'stable', 'new-pair', 'REMOTE', '{}', '{}', 2, 2, 0, 0, "
+                            + "'PENDING', 0, 2, 0)");
+            try (android.database.Cursor cursor =
+                    migrated.query(
+                            "SELECT COUNT(*) FROM sync_conflicts WHERE recordType = 'note' AND stableId = 'stable'")) {
+                assertThat(cursor.moveToFirst()).isTrue();
+                assertThat(cursor.getInt(0)).isEqualTo(2);
+            }
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
+    public void migrate18to19_createsThePendingPreferencesJournal() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 18);
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 19, true, AppDatabase.MIGRATION_18_19);
+        try (android.database.Cursor cursor =
+                migrated.query(
+                        "SELECT name FROM sqlite_master WHERE type = 'table' "
+                                + "AND name = 'sync_pending_preferences'")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
+    public void migrate19to20_addsJournalIdentityAndPerSideConflictProvenance() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 19);
+        db.execSQL(
+                "INSERT INTO sync_conflicts "
+                        + "(recordType, stableId, versionPairHash, winnerSource, winnerJson, "
+                        + "loserJson, winnerUpdatedAt, loserUpdatedAt, winnerTombstone, "
+                        + "loserTombstone, resolution, resolved, createdAt, resolvedAt) "
+                        + "VALUES ('note', 'stable', 'pair', 'LOCAL', '{}', '{}', 1, 1, 0, 0, "
+                        + "'PENDING', 0, 1, 0)");
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 20, true, AppDatabase.MIGRATION_19_20);
+        try (android.database.Cursor cursor =
+                migrated.query(
+                        "SELECT loserSource, winnerVersionId, loserVersionId FROM sync_conflicts")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            // A row written before this column existed always had exactly one local side.
+            assertThat(cursor.getString(0)).isEqualTo("REMOTE");
+            assertThat(cursor.getString(1)).isEmpty();
+            assertThat(cursor.getString(2)).isEmpty();
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
+    public void migrate20to21_addsTheConflictBookkeepingToTheJournal() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 20);
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 21, true, AppDatabase.MIGRATION_20_21);
+        try {
+            migrated.execSQL(
+                    "INSERT INTO sync_pending_preferences "
+                            + "(id, payloadJson, targetHash, baselineHash, recordUpdatedAt, "
+                            + "quarantined, conflictId, conflictResolution) "
+                            + "VALUES (1, '{}', 't', 'b', 0, 0, 7, 'KEEP_WINNER')");
+            try (android.database.Cursor cursor =
+                    migrated.query(
+                            "SELECT conflictId, conflictResolution FROM sync_pending_preferences")) {
+                assertThat(cursor.moveToFirst()).isTrue();
+                assertThat(cursor.getLong(0)).isEqualTo(7L);
+                assertThat(cursor.getString(1)).isEqualTo("KEEP_WINNER");
+            }
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
+    public void migrateFromTheLastReleasedVersion_reachesTheCurrentSchema() throws IOException {
+        // 17 is what 2.6.48 shipped; 18, 19 and 20 all land in the same release after it.
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 17);
+        db.execSQL(
+                "INSERT INTO notes "
+                        + "(id, title, value, date, tag, valueJson, hasRichContent, attachments, "
+                        + "isTrash, reminderTime, isPinned, reminderRepeat, reminderIntervalMinutes) "
+                        + "VALUES (7, 'Note', 'Body', 10, '', '', 0, '', 0, NULL, 0, 'NONE', 0)");
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(
+                        TEST_DB,
+                        21,
+                        true,
+                        AppDatabase.MIGRATION_17_18,
+                        AppDatabase.MIGRATION_18_19,
+                        AppDatabase.MIGRATION_19_20,
+                        AppDatabase.MIGRATION_20_21);
+        try (android.database.Cursor cursor = migrated.query("SELECT COUNT(*) FROM notes")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            assertThat(cursor.getInt(0)).isEqualTo(1);
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
     public void migrate14to15_backfillsCategoryMetadata() throws IOException {
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 14);
         db.close();

@@ -98,12 +98,209 @@ public class SyncBundleCodecTest {
         throw new AssertionError("Expected an IOException");
     }
 
+    @Test
+    public void encode_preservesTwoLogicalAttachmentsThatShareOneBlob() throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        JsonObject first = notePayload("One", "image/png", 42L, "first.png");
+        JsonObject second = notePayload("Two", "image/png", 42L, "second.png");
+        second.getAsJsonArray("attachmentsManifest")
+                .get(0)
+                .getAsJsonObject()
+                .addProperty("id", "550e8400-e29b-41d4-a716-446655440099");
+        SyncSnapshot decoded =
+                codec.decode(
+                                new ByteArrayInputStream(
+                                        codec.encode(
+                                                new SyncSnapshot(
+                                                        Arrays.asList(
+                                                                SyncRecord.live(
+                                                                        SyncRecord.Type.NOTE,
+                                                                        NOTE_ID,
+                                                                        CREATED_AT,
+                                                                        first),
+                                                                SyncRecord.live(
+                                                                        SyncRecord.Type.NOTE,
+                                                                        "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
+                                                                        CREATED_AT,
+                                                                        second))),
+                                                CREATED_AT)))
+                        .getSnapshot();
+
+        assertThat(
+                        decoded.find(SyncRecord.Type.NOTE, NOTE_ID)
+                                .getPayload()
+                                .getAsJsonArray("attachmentsManifest"))
+                .hasSize(1);
+        assertThat(
+                        decoded.find(SyncRecord.Type.NOTE, "6ba7b812-9dad-11d1-80b4-00c04fd430c8")
+                                .getPayload()
+                                .getAsJsonArray("attachmentsManifest"))
+                .hasSize(1);
+    }
+
+    @Test
+    public void decode_keysAttachmentNamesByHashSoTheStoreCanResolveThem() throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle = codec.encode(new SyncSnapshot(Arrays.asList(note("Milk"))), CREATED_AT);
+
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+
+        // The name restoreAttachments actually reads is the one on the manifest entry.
+        JsonObject entry =
+                decoded.getPayload().getAsJsonArray("attachmentsManifest").get(0).getAsJsonObject();
+        assertThat(entry.get("displayName").getAsString()).isEqualTo("receipt.png");
+
+        // The map itself stays keyed by logical attachment id, the same shape RoomSyncStore
+        // builds, so a decoded record hashes equal to the identical local one.
+        JsonObject names = decoded.getPayload().getAsJsonObject("attachmentNames");
+        assertThat(names.has(HASH)).isFalse();
+        assertThat(names.get(ATTACHMENT_ID).getAsString()).isEqualTo("receipt.png");
+    }
+
+    @Test
+    public void decode_dropsDeviceLocalFieldsWrittenByOlderReleases() throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        JsonObject legacy = new JsonObject();
+        legacy.addProperty("title", "Buy milk");
+        legacy.addProperty("isDone", false);
+        legacy.addProperty("id", 7); // Room primary key, meaningless on any other device
+        legacy.addProperty("categoryId", 3);
+        SyncRecord task =
+                SyncRecord.live(
+                        SyncRecord.Type.TASK,
+                        TASK_ID,
+                        Instant.parse("2026-08-31T12:00:02Z"),
+                        legacy);
+
+        byte[] bundle = codec.encode(new SyncSnapshot(Arrays.asList(task)), CREATED_AT);
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.TASK, TASK_ID);
+
+        assertThat(decoded.getPayload().has("id")).isFalse();
+        assertThat(decoded.getPayload().has("categoryId")).isFalse();
+        assertThat(decoded.getPayload().get("title").getAsString()).isEqualTo("Buy milk");
+    }
+
+    @Test
+    public void decodedRecordMatchesLocalRecordThatNeverCarriedLocalKeys() throws Exception {
+        // Two devices hold the same logical task under different Room primary keys. Once the
+        // device-local fields are stripped on both sides the canonical hashes agree, so the
+        // equal-timestamp tiebreaker in SyncMerger no longer invents a conflict on every sync.
+        SyncBundleCodec codec = new SyncBundleCodec();
+        JsonObject remotePayload = new JsonObject();
+        remotePayload.addProperty("title", "Buy milk");
+        remotePayload.addProperty("isDone", false);
+        remotePayload.addProperty("id", 7);
+        Instant updatedAt = Instant.parse("2026-08-31T12:00:02Z");
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(
+                                Arrays.asList(
+                                        SyncRecord.live(
+                                                SyncRecord.Type.TASK,
+                                                TASK_ID,
+                                                updatedAt,
+                                                remotePayload))),
+                        CREATED_AT);
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.TASK, TASK_ID);
+
+        JsonObject localPayload = new JsonObject();
+        localPayload.addProperty("title", "Buy milk");
+        localPayload.addProperty("isDone", false);
+        localPayload.addProperty("id", 12);
+        SyncMetadata.stripDeviceLocalFields(SyncMetadata.RECORD_TYPE_TASK, localPayload);
+        SyncRecord local = SyncRecord.live(SyncRecord.Type.TASK, TASK_ID, updatedAt, localPayload);
+
+        assertThat(decoded.getCanonicalPayloadHash()).isEqualTo(local.getCanonicalPayloadHash());
+        assertThat(new SyncMerger().merge(snapshotOf(local), snapshotOf(decoded)).getConflicts())
+                .isEmpty();
+    }
+
+    private static SyncSnapshot snapshotOf(SyncRecord record) {
+        return new SyncSnapshot(Arrays.asList(record));
+    }
+
     private static SyncRecord note(String body) {
         return SyncRecord.live(
                 SyncRecord.Type.NOTE,
                 NOTE_ID,
                 Instant.parse("2026-08-31T12:00:01Z"),
                 notePayload(body, "image/png", 42L, "receipt.png"));
+    }
+
+    @Test
+    public void roundTrip_ofALocallyBuiltNoteWithAnAttachment_hashesIdentically() throws Exception {
+        // Exactly the payload shape RoomSyncStore.addAttachmentMetadata produces: a manifest,
+        // the hash list, and names keyed by logical attachment id.
+        JsonObject local = notePayload("Body", "image/png", 12L, "receipt.png");
+        JsonObject names = new JsonObject();
+        names.addProperty(ATTACHMENT_ID, "receipt.png");
+        local.add("attachmentNames", names);
+        SyncRecord localRecord =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:01Z"),
+                        local);
+
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(java.util.Collections.singletonList(localRecord)),
+                        Instant.parse("2026-08-31T12:00:00Z"));
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+
+        // The invariant the merge engine depends on: a record that made the round trip is the
+        // same version as the one that went in. While these differed, every note with an
+        // attachment conflicted with itself on every sync and republished a bundle each time.
+        assertThat(decoded.getCanonicalPayloadHash())
+                .isEqualTo(localRecord.getCanonicalPayloadHash());
+    }
+
+    @Test
+    public void encode_dropsEmptyAttachmentFieldsInsteadOfLeakingThemToTheWire() throws Exception {
+        // The shape an older client wrote for a note with no attachments.
+        JsonObject payload = new JsonObject();
+        payload.addProperty("title", "Shopping");
+        payload.addProperty("value", "Body");
+        payload.add("attachmentsManifest", new JsonArray());
+        payload.add("attachmentHashes", new JsonArray());
+        payload.add("attachmentNames", new JsonObject());
+        SyncRecord local =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:01Z"),
+                        payload);
+
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(java.util.Collections.singletonList(local)),
+                        Instant.parse("2026-08-31T12:00:00Z"));
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+
+        // None of the three may survive: a decoded record carries no attachment fields for a
+        // note without attachments, so leaving one behind makes the two shapes hash differently.
+        assertThat(decoded.getPayload().has("attachmentNames")).isFalse();
+        assertThat(decoded.getPayload().has("attachmentsManifest")).isFalse();
+        assertThat(decoded.getPayload().has("attachmentHashes")).isFalse();
+        assertThat(unzipToStrings(bundle).get(SyncBundleCodec.ENTRY_RECORDS))
+                .doesNotContain("attachmentNames");
     }
 
     private static SyncRecord task(String title) {

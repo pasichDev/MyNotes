@@ -25,6 +25,10 @@
         </intent>
 
         <package android:name="com.google.android.apps.translate" />
+
+        <!-- Read by PlayServicesAvailability. Without this the package table reports Play
+             services as absent on API 30+, and sync would hide itself on every device. -->
+        <package android:name="com.google.android.gms" />
     </queries>
 
     <application
@@ -41,7 +45,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.BackupActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".ui.view.activity.AboutActivity"
             android:exported="false" />
@@ -90,25 +94,25 @@
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
         </activity>
+        <!--
+            No intent filter: every launch site uses an explicit Intent
+            (NavigationController, SettingsFragment), so the ACTION_VIEW filter matched nothing
+            but the app's own implicit VIEW intents for web links, which Android 14 refuses to
+            deliver to a non-exported component.
+        -->
         <activity
             android:name=".ui.view.activity.TrashActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
         <activity
             android:name=".ui.view.activity.TagsActivity"
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.noteEditor.NoteActivity"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.view.activity.noteEditor.NoteExtendedEditorActivity"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.view.activity.ShareActivity"

@@ -22,6 +22,7 @@ import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.utils.auth.FirebaseGoogleAuth;
 import com.pasich.mynotes.utils.auth.GoogleCredentialAuth;
 import com.pasich.mynotes.utils.auth.GoogleDriveAuthorization;
+import com.pasich.mynotes.utils.auth.PlayServicesAvailability;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -43,9 +44,18 @@ public final class SyncCoordinatorFactory {
         // no instance
     }
 
-    /** True when the build carries a Firebase configuration and sync can be offered at all. */
+    /**
+     * True when sync can be offered at all: the build carries a Firebase configuration and the
+     * device has Google Play services.
+     *
+     * <p>Sign-in and the Drive scope both run through Play services, so on a device without them
+     * every control on the account tab would lead to a failure the user cannot act on. Returning
+     * false here makes {@link #create} yield null, which is the path that already shows the tab as
+     * unavailable.
+     */
     public static boolean isConfigured(@NonNull Activity activity) {
-        return !activity.getString(R.string.default_web_client_id).trim().isEmpty();
+        return !activity.getString(R.string.default_web_client_id).trim().isEmpty()
+                && PlayServicesAvailability.isAvailable(activity);
     }
 
     /** The authorization object has to be kept by the caller so it can forward activity results. */
@@ -137,6 +147,11 @@ public final class SyncCoordinatorFactory {
                                 return new SyncService(store)
                                         .sync(new GoogleDriveSyncBackend(accessToken));
                             }
+
+                            @Override
+                            public void clearAfterDisconnect() {
+                                store.clearAfterDisconnect();
+                            }
                         },
                         new SyncCoordinator.BackgroundScheduler() {
                             @Override
@@ -150,8 +165,33 @@ public final class SyncCoordinatorFactory {
                             }
                         },
                         backgroundExecutor,
-                        activity::runOnUiThread);
+                        mainExecutorFor(activity));
         return new Result(coordinator, authorization, store);
+    }
+
+    /**
+     * Main-thread delivery that really does drop work aimed at a screen that is gone.
+     *
+     * <p>{@code Activity::runOnUiThread} never throws {@link
+     * java.util.concurrent.RejectedExecutionException}: it posts to the activity's handler, and the
+     * task then runs against destroyed views. The rejection handling in {@link SyncCoordinator}
+     * therefore guarded nothing, and only BackupActivity's own {@code isDestroyed()} checks kept a
+     * late callback from crashing. The state is re-checked after the post as well, because the
+     * activity can be torn down while the task sits in the queue.
+     */
+    @NonNull
+    private static Executor mainExecutorFor(@NonNull Activity activity) {
+        return command -> {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return;
+            }
+            activity.runOnUiThread(
+                    () -> {
+                        if (!activity.isFinishing() && !activity.isDestroyed()) {
+                            command.run();
+                        }
+                    });
+        };
     }
 
     private static void enableBackgroundSync(Activity activity) {

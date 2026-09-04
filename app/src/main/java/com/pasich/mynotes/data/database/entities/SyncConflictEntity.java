@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey;
         tableName = "sync_conflicts",
         indices = {
             @Index(
-                    value = {"recordType", "stableId"},
+                    value = {"recordType", "stableId", "versionPairHash"},
                     unique = true),
             @Index(value = {"resolved"}),
             @Index(value = {"createdAt"})
@@ -22,7 +22,22 @@ public class SyncConflictEntity {
 
     @NonNull public String recordType;
     @NonNull public String stableId;
+
+    /** Stable digest of the exact winner/loser version pair; never use the mutable row id. */
+    @NonNull public String versionPairHash;
+
+    /** Origin of the winning version: LOCAL, REMOTE. */
     @NonNull public String winnerSource;
+
+    /** Origin of the losing version; both sides are REMOTE for a Drive-vs-Drive conflict. */
+    @NonNull public String loserSource;
+
+    /** Deterministic identity of the winning version, equal on every device. */
+    @NonNull public String winnerVersionId;
+
+    /** Deterministic identity of the losing version, equal on every device. */
+    @NonNull public String loserVersionId;
+
     @NonNull public String winnerJson;
     @NonNull public String loserJson;
     public long winnerUpdatedAt;
@@ -37,7 +52,11 @@ public class SyncConflictEntity {
     public SyncConflictEntity(
             @NonNull String recordType,
             @NonNull String stableId,
+            @NonNull String versionPairHash,
             @NonNull String winnerSource,
+            @NonNull String loserSource,
+            @NonNull String winnerVersionId,
+            @NonNull String loserVersionId,
             @NonNull String winnerJson,
             @NonNull String loserJson,
             long winnerUpdatedAt,
@@ -50,7 +69,11 @@ public class SyncConflictEntity {
             long resolvedAt) {
         this.recordType = recordType;
         this.stableId = stableId;
+        this.versionPairHash = versionPairHash;
         this.winnerSource = winnerSource;
+        this.loserSource = loserSource;
+        this.winnerVersionId = winnerVersionId;
+        this.loserVersionId = loserVersionId;
         this.winnerJson = winnerJson;
         this.loserJson = loserJson;
         this.winnerUpdatedAt = winnerUpdatedAt;

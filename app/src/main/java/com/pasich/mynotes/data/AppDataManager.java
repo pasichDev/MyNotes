@@ -85,6 +85,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public boolean commitListPreferences(PreferencesBackup preferences) {
+        return preferencesHelper.commitListPreferences(preferences);
+    }
+
+    @Override
     public String getLastKnownVersion() {
         return preferencesHelper.getLastKnownVersion();
     }
@@ -122,16 +127,6 @@ public class AppDataManager implements DataManager {
     @Override
     public void setFirstSyncConfirmed(boolean confirmed) {
         preferencesHelper.setFirstSyncConfirmed(confirmed);
-    }
-
-    @Override
-    public int getSyncRolloutBucket() {
-        return preferencesHelper.getSyncRolloutBucket();
-    }
-
-    @Override
-    public void setSyncRolloutBucket(int bucket) {
-        preferencesHelper.setSyncRolloutBucket(bucket);
     }
 
     @Override
@@ -276,8 +271,8 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public Single<Long> addNote(Note note, boolean copyNote) {
-        return dbHelper.addNote(note, copyNote);
+    public Single<Long> addNote(Note note) {
+        return dbHelper.addNote(note);
     }
 
     @Override

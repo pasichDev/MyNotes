@@ -77,6 +77,28 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_doesNotReadOrPublishRemoteDataWhenLocalSnapshotIsIncomplete() {
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local note")));
+        store.snapshotBuildResult =
+                SnapshotBuildResult.incomplete(
+                        store.snapshot,
+                        Collections.singletonList(
+                                new SnapshotProblem(
+                                        SnapshotProblem.Kind.MISSING_ATTACHMENT,
+                                        SyncMetadata.RECORD_TYPE_NOTE,
+                                        NOTE_ID)));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(state.getErrorMessage()).contains("MISSING_ATTACHMENT");
+        assertThat(backend.events).isEmpty();
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+        assertThat(store.applyCalls).isEqualTo(0);
+    }
+
+    @Test
     public void sync_downloadsRequiredRemoteAttachmentBeforeApplyingSnapshot() throws Exception {
         SyncRecord remote = note(TEN, "Remote with attachment");
         byte[] bytes = "attachment content".getBytes(StandardCharsets.UTF_8);
@@ -91,7 +113,7 @@ public class SyncServiceTest {
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         assertThat(store.attachments.get(hash)).isEqualTo(bytes);
         assertThat(store.events).containsExactly("writeAttachment", "applySnapshot").inOrder();
-        assertThat(backend.events).containsExactly("readAttachment");
+        assertThat(backend.events).containsExactly("readSnapshot", "readAttachment").inOrder();
     }
 
     @Test
@@ -108,7 +130,9 @@ public class SyncServiceTest {
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         assertThat(backend.attachments.get(hash)).isEqualTo(bytes);
-        assertThat(backend.events).containsExactly("writeAttachment", "writeSnapshot").inOrder();
+        assertThat(backend.events)
+                .containsExactly("readSnapshot", "writeAttachment", "writeSnapshot")
+                .inOrder();
     }
 
     @Test
@@ -125,7 +149,52 @@ public class SyncServiceTest {
         SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
-        assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot").inOrder();
+        // Drive is untrusted even for a content-addressed object, so the remote bytes are still
+        // verified before publication — but exactly once, not once per question asked about them.
+        assertThat(backend.events)
+                .containsExactly("readSnapshot", "readAttachment", "writeSnapshot")
+                .inOrder();
+    }
+
+    @Test
+    public void sync_repairsCorruptLocalAttachmentFromRemote() throws Exception {
+        SyncRecord local = note(TEN, "Local with corrupt attachment");
+        byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, "corrupted".getBytes(StandardCharsets.UTF_8));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, bytes);
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(store.attachments.get(hash)).isEqualTo(bytes);
+        assertThat(backend.events)
+                .containsExactly(
+                        "readSnapshot", "readAttachment", "readAttachment", "writeSnapshot")
+                .inOrder();
+    }
+
+    @Test
+    public void sync_repairsACorruptRemoteAttachmentFromTheValidLocalCopy() throws Exception {
+        byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local")));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, bytes);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, "corrupt remote".getBytes(StandardCharsets.UTF_8));
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        // Content-addressed blobs tolerate duplicates and the reader picks a verified candidate,
+        // so a corrupt remote object is repaired from the good local copy. Failing instead left
+        // every device stuck on every sync until the bad object was deleted from Drive by hand.
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.attachments.get(hash)).isEqualTo(bytes);
+        assertThat(store.attachments.get(hash)).isEqualTo(bytes);
     }
 
     @Test
@@ -146,7 +215,11 @@ public class SyncServiceTest {
         assertThat(state.getErrorMessage()).contains("checksum");
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
         assertThat(store.applyCalls).isEqualTo(0);
-        assertThat(store.events).isEmpty();
+        // The blob is streamed rather than buffered, so the write is entered before the digest can
+        // be checked — the mismatch surfaces at end of stream, inside the destination's own read
+        // loop. What still must hold is that nothing was committed: RoomSyncStore writes to a
+        // temporary file and only renames it once the stream completed cleanly.
+        assertThat(store.attachments).isEmpty();
     }
 
     @Test
@@ -209,7 +282,9 @@ public class SyncServiceTest {
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
         assertThat(state.getErrorMessage()).contains("size exceeds");
-        assertThat(backend.events).isEmpty();
+        // The remote is read before the manifest is inspected; nothing may be transferred or
+        // published after the oversized entry is found.
+        assertThat(backend.events).containsExactly("readSnapshot");
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
     }
 
@@ -261,8 +336,68 @@ public class SyncServiceTest {
         return value.toString();
     }
 
+    @Test
+    public void sync_convergesANoteWhoseAttachmentIsZeroBytes() throws Exception {
+        byte[] empty = new byte[0];
+        String hash = sha256(empty);
+        SyncRecord local = noteWithAttachment(TEN, "Note with an empty file", hash, 0L);
+
+        FakeStore uploader = new FakeStore(snapshot(local));
+        uploader.attachmentHashes = Collections.singletonList(hash);
+        uploader.attachments.put(hash, empty);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState published = new SyncService(uploader, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(published.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.attachments).containsKey(hash);
+        assertThat(backend.attachments.get(hash)).isEqualTo(empty);
+
+        // A second device starting empty must be able to pull the same blob back.
+        FakeStore downloader = new FakeStore(SyncSnapshot.empty());
+        downloader.attachmentHashes = Collections.singletonList(hash);
+
+        SyncState received = new SyncService(downloader, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(received.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(downloader.attachments.get(hash)).isEqualTo(empty);
+        assertThat(downloader.snapshot.getRecords()).containsExactly(local);
+    }
+
+    @Test
+    public void sync_refusesAZeroByteAttachmentThatIsMissingEverywhere() throws Exception {
+        String hash = sha256(new byte[0]);
+        SyncRecord local = noteWithAttachment(TEN, "Note with an empty file", hash, 0L);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+    }
+
+    private static SyncRecord noteWithAttachment(
+            java.time.Instant updatedAt, String value, String sha256, long size) {
+        com.google.gson.JsonObject payload = new com.google.gson.JsonObject();
+        payload.addProperty("title", "Shopping");
+        payload.addProperty("value", value);
+        com.google.gson.JsonObject entry = new com.google.gson.JsonObject();
+        entry.addProperty("id", "8f1d1b2c-2f3a-4c5d-8e9f-0a1b2c3d4e5f");
+        entry.addProperty("sha256", sha256);
+        entry.addProperty("mimeType", "application/octet-stream");
+        entry.addProperty("size", size);
+        entry.addProperty("path", "attachments/" + sha256);
+        com.google.gson.JsonArray manifest = new com.google.gson.JsonArray();
+        manifest.add(entry);
+        payload.add("attachmentsManifest", manifest);
+        return SyncRecord.live(SyncRecord.Type.NOTE, NOTE_ID, updatedAt, payload);
+    }
+
     private static final class FakeStore implements SyncStore {
         private SyncSnapshot snapshot;
+        private SnapshotBuildResult snapshotBuildResult;
         private SyncSnapshot appliedSnapshot;
         private List<SyncMergeResult.Conflict> appliedConflicts = Collections.emptyList();
         private SyncState state = SyncState.idle();
@@ -281,6 +416,13 @@ public class SyncServiceTest {
         @Override
         public SyncSnapshot readSnapshot() {
             return snapshot;
+        }
+
+        @Override
+        public SnapshotBuildResult buildSnapshot() {
+            return snapshotBuildResult == null
+                    ? SnapshotBuildResult.publishable(snapshot)
+                    : snapshotBuildResult;
         }
 
         @Override
@@ -312,7 +454,8 @@ public class SyncServiceTest {
         }
 
         @Override
-        public void writeAttachment(String sha256, InputStream content) throws IOException {
+        public void writeAttachment(String sha256, long sizeBytes, InputStream content)
+                throws IOException {
             events.add("writeAttachment");
             attachments.put(sha256, readAll(content));
         }
@@ -354,6 +497,8 @@ public class SyncServiceTest {
 
         @Override
         public SyncSnapshot readSnapshot() throws IOException {
+            // Recorded so a test asserting "the remote was never read" actually proves it.
+            events.add("readSnapshot");
             if (readFailure != null) {
                 throw readFailure;
             }
@@ -380,7 +525,8 @@ public class SyncServiceTest {
         }
 
         @Override
-        public void writeAttachment(String sha256, InputStream content) throws IOException {
+        public void writeAttachment(String sha256, long sizeBytes, InputStream content)
+                throws IOException {
             events.add("writeAttachment");
             attachments.put(sha256, readAll(content));
         }

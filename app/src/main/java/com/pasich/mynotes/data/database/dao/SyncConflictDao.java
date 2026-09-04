@@ -10,8 +10,9 @@ import java.util.List;
 @Dao
 public interface SyncConflictDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void replaceAll(List<SyncConflictEntity> conflicts);
+    /** Exact repeated observations are harmless; distinct version pairs must coexist. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void insertIgnoringDuplicates(List<SyncConflictEntity> conflicts);
 
     @Query("DELETE FROM sync_conflicts")
     void clearAll();
@@ -24,6 +25,13 @@ public interface SyncConflictDao {
 
     @Query("SELECT COUNT(*) FROM sync_conflicts WHERE resolved = 0")
     int getUnresolvedCount();
+
+    /** Both sides of every settled conflict; neither version may be offered again. */
+    @Query(
+            "SELECT winnerVersionId FROM sync_conflicts WHERE resolved = 1 AND winnerVersionId != ''"
+                    + " UNION SELECT loserVersionId FROM sync_conflicts WHERE resolved = 1 AND"
+                    + " loserVersionId != ''")
+    List<String> getResolvedVersionIds();
 
     @Query("SELECT * FROM sync_conflicts WHERE id = :id LIMIT 1")
     SyncConflictEntity getById(long id);

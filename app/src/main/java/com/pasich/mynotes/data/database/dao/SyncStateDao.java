@@ -15,4 +15,8 @@ public interface SyncStateDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void upsert(SyncStateEntity state);
+
+    /** Forgets the stored status, so a freshly connected account starts from idle. */
+    @Query("DELETE FROM sync_state")
+    void clear();
 }
