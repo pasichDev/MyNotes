@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.inject.Inject;
@@ -172,16 +173,34 @@ public class SyncMutationCoordinator {
                     long timestamp =
                             resolveBatchTimestamp(
                                     SyncMetadata.RECORD_TYPE_TAG, extractTagIds(tags));
-                    releaseTakenTagIds(tags);
-                    long[] insertedIds = tagsDao.addTags(tags);
-                    for (int i = 0; i < tags.size(); i++) {
-                        Tag tag = tags.get(i);
-                        long localId = resolveLongId(tag.getId(), insertedIds[i]);
-                        tag.id = localId;
-                        touchRecord(SyncMetadata.RECORD_TYPE_TAG, localId, timestamp);
+
+                    // Same REPLACE-insert collision as notes; see insertNotes.
+                    List<Tag> keepingId = new ArrayList<>();
+                    List<Tag> reassigned = new ArrayList<>();
+                    for (Tag tag : tags) {
+                        if (tag.getId() > 0 && tagsDao.getTagSync(tag.getId()) != null) {
+                            tag.id = 0;
+                            reassigned.add(tag);
+                        } else {
+                            keepingId.add(tag);
+                        }
                     }
+                    assignInsertedTagIds(keepingId, timestamp);
+                    assignInsertedTagIds(reassigned, timestamp);
                     return null;
                 });
+    }
+
+    /** Inserts one group of tags and settles each tag's final id and metadata. */
+    private void assignInsertedTagIds(@NonNull List<Tag> tags, long timestamp) {
+        if (tags.isEmpty()) return;
+        long[] insertedIds = tagsDao.addTags(tags);
+        for (int i = 0; i < tags.size(); i++) {
+            Tag tag = tags.get(i);
+            long localId = resolveLongId(tag.getId(), insertedIds[i]);
+            tag.id = localId;
+            touchRecord(SyncMetadata.RECORD_TYPE_TAG, localId, timestamp);
+        }
     }
 
     public void updateTag(@NonNull Tag tag) {
@@ -270,33 +289,56 @@ public class SyncMutationCoordinator {
                     long timestamp =
                             resolveBatchTimestamp(
                                     SyncMetadata.RECORD_TYPE_NOTE, extractNoteIds(notes));
-                    int[] previousIds = new int[notes.size()];
-                    for (int i = 0; i < notes.size(); i++) {
-                        previousIds[i] = notes.get(i).getId();
-                    }
-                    releaseTakenNoteIds(notes);
-                    long[] insertedIds = noteDao.addNotes(notes);
-                    for (int i = 0; i < notes.size(); i++) {
-                        Note note = notes.get(i);
-                        int localId = resolveIntId(note.getId(), insertedIds[i]);
-                        note.setId(localId);
-                        if (previousIds[i] > 0 && previousIds[i] != localId) {
-                            // Its attachments were extracted under the old id and would
-                            // otherwise share a folder with whichever note owns that id now.
-                            attachmentRelocation.relocate(note, previousIds[i]);
-                            noteDao.updateNoteContent(
-                                    localId,
-                                    note.getTitle(),
-                                    note.getValue(),
-                                    note.getValueJson(),
-                                    note.getDate(),
-                                    note.getTag(),
-                                    note.getAttachments());
+
+                    // Split by whether the row id is still free. Inserting the ones that keep
+                    // their id first leaves the autoincrement counter past all of them, which is
+                    // what stops a reassigned note being handed an id a later note in the same
+                    // batch is about to claim: addNotes is a REPLACE insert, so that collision
+                    // silently destroyed one of the two restored notes.
+                    List<Note> keepingId = new ArrayList<>();
+                    List<Note> reassigned = new ArrayList<>();
+                    Map<Note, Integer> previousIds = new java.util.IdentityHashMap<>();
+                    for (Note note : notes) {
+                        previousIds.put(note, note.getId());
+                        if (note.getId() > 0 && noteDao.getNoteSync(note.getId()) != null) {
+                            note.setId(0);
+                            reassigned.add(note);
+                        } else {
+                            keepingId.add(note);
                         }
-                        touchRecord(SyncMetadata.RECORD_TYPE_NOTE, localId, timestamp);
                     }
+
+                    assignInsertedNoteIds(keepingId, timestamp, previousIds);
+                    assignInsertedNoteIds(reassigned, timestamp, previousIds);
                     return null;
                 });
+    }
+
+    /** Inserts one group and settles each note's final id, metadata and attachment folder. */
+    private void assignInsertedNoteIds(
+            @NonNull List<Note> notes, long timestamp, @NonNull Map<Note, Integer> previousIds) {
+        if (notes.isEmpty()) return;
+        long[] insertedIds = noteDao.addNotes(notes);
+        for (int i = 0; i < notes.size(); i++) {
+            Note note = notes.get(i);
+            int previous = previousIds.get(note);
+            int localId = resolveIntId(note.getId(), insertedIds[i]);
+            note.setId(localId);
+            if (previous > 0 && previous != localId) {
+                // Its attachments were extracted under the old id and would otherwise share a
+                // folder with whichever note owns that id now.
+                attachmentRelocation.relocate(note, previous);
+                noteDao.updateNoteContent(
+                        localId,
+                        note.getTitle(),
+                        note.getValue(),
+                        note.getValueJson(),
+                        note.getDate(),
+                        note.getTag(),
+                        note.getAttachments());
+            }
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, localId, timestamp);
+        }
     }
 
     public void updateNoteContent(@NonNull Note note) {
@@ -634,36 +676,6 @@ public class SyncMutationCoordinator {
 
     private static boolean equalText(String first, String second) {
         return first == null ? second == null : first.equals(second);
-    }
-
-    /**
-     * Lets a restore keep its original IDs only where they are still free.
-     *
-     * <p>Backups carry the IDs the notes had when the backup was taken, and {@code addNotes} is a
-     * REPLACE insert. Restoring onto a device that already holds notes therefore destroyed every
-     * note whose ID happened to collide — silently, with no way back. Sync made that worse: the
-     * restored content inherited the destroyed note's stable ID through {@code ensureMetadataRow},
-     * {@code touch()} cleared its tombstone, and the replacement propagated to every other device,
-     * overwriting the cloud copy too.
-     *
-     * <p>A colliding note is now inserted as a new row instead. Restoring onto an empty library —
-     * the ordinary case, and the one after a reinstall — still preserves every ID exactly.
-     */
-    private void releaseTakenNoteIds(@NonNull List<Note> notes) {
-        for (Note note : notes) {
-            if (note.getId() > 0 && noteDao.getNoteSync(note.getId()) != null) {
-                note.setId(0);
-            }
-        }
-    }
-
-    /** Same protection for a restored tag list; see {@link #releaseTakenNoteIds}. */
-    private void releaseTakenTagIds(@NonNull List<Tag> tags) {
-        for (Tag tag : tags) {
-            if (tag.getId() > 0 && tagsDao.getTagSync(tag.getId()) != null) {
-                tag.id = 0;
-            }
-        }
     }
 
     private void touchRecords(@NonNull String recordType, List<Integer> localIds, long timestamp) {

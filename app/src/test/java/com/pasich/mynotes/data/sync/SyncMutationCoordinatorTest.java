@@ -65,6 +65,53 @@ public class SyncMutationCoordinatorTest {
     }
 
     @Test
+    public void insertNotes_insertsIdKeepingNotesBeforeReassignedOnes() {
+        // A restore where one incoming id is taken and another is free. addNotes is a REPLACE
+        // insert, so if the reassigned note is inserted first it takes the next autoincrement id
+        // — which is exactly the id the second note is about to claim — and one of the two is
+        // silently destroyed. Reproduced on a device before this ordering was introduced.
+        Note taken = new Note().create("Alpha", "body", 10L, "");
+        taken.setId(1);
+        Note free = new Note().create("Beta", "body", 20L, "");
+        free.setId(2);
+        when(noteDao.getNoteSync(1)).thenReturn(new Note().create("Occupant", "", 5L, ""));
+        when(noteDao.getNoteSync(2)).thenReturn(null);
+        when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList()))
+                .thenReturn(new long[] {2L})
+                .thenReturn(new long[] {3L});
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(taken, free)));
+
+        org.mockito.ArgumentCaptor<java.util.List> batches =
+                org.mockito.ArgumentCaptor.forClass(java.util.List.class);
+        verify(noteDao, org.mockito.Mockito.times(2)).addNotes(batches.capture());
+        java.util.List<java.util.List> captured = batches.getAllValues();
+        assertThat(((Note) captured.get(0).get(0)).getTitle()).isEqualTo("Beta");
+        assertThat(((Note) captured.get(1).get(0)).getTitle()).isEqualTo("Alpha");
+        // Both survive, with the reassigned one placed beyond the id the other kept.
+        assertThat(free.getId()).isEqualTo(2);
+        assertThat(taken.getId()).isEqualTo(3);
+    }
+
+    @Test
+    public void insertNotes_keepsEveryIdWhenNoneAreTaken() {
+        Note first = new Note().create("One", "body", 10L, "");
+        first.setId(4);
+        Note second = new Note().create("Two", "body", 20L, "");
+        second.setId(5);
+        when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList()))
+                .thenReturn(new long[] {4L, 5L});
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(first, second)));
+
+        // The ordinary restore onto an empty library must still preserve ids exactly.
+        verify(noteDao, org.mockito.Mockito.times(1))
+                .addNotes(org.mockito.ArgumentMatchers.anyList());
+        assertThat(first.getId()).isEqualTo(4);
+        assertThat(second.getId()).isEqualTo(5);
+    }
+
+    @Test
     public void insertNotes_skipsANoteThisDeviceAlreadyHasUnchanged() {
         // Restoring a backup onto the library it came from must stay a no-op: restore inserts
         // rather than replaces, so without this every note would be duplicated.
