@@ -11,7 +11,6 @@ import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.utils.file.ImageOptimizer;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.List;
 
 /**
  * Utility class for managing note attachments stored in the app's internal storage. Handles
@@ -184,41 +183,36 @@ public class AttachmentStorage {
     /**
      * Resolves EditorAttachment.url → real File path inside internal storage.
      *
-     * <p>Expected URL format: file://attachments/note_<id>/filename.ext
+     * <p>Canonical URL format: editorjs://attachments/note_<id>/filename.ext
+     *
+     * <p>Legacy file://attachments/... references are still accepted.
      *
      * @param ctx app context
      * @param att attachment model
      * @return File instance or null on error
      */
     public static File resolve(Context ctx, EditorAttachment att) {
-        return resolve(ctx, att.url);
+        return att == null ? null : resolve(ctx, att.url);
     }
 
     public static File resolve(Context ctx, String url) {
-        try {
-            Uri uri = Uri.parse(url);
-            if (!"file".equals(uri.getScheme()) || !ATTACHMENTS_BASE_DIR.equals(uri.getAuthority())) {
-                return null;
-            }
-            List<String> seg = uri.getPathSegments();
+        AttachmentUrl parsed = AttachmentUrl.parse(url);
+        return parsed == null ? null : parsed.resolveWithin(baseDirPath(ctx));
+    }
 
-            if (seg.size() != 2 || !seg.get(0).matches("note_[1-9][0-9]*")) return null;
+    /** The app-private attachment root, without creating it. */
+    public static File baseDirPath(Context ctx) {
+        return new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR);
+    }
 
-            String folder = seg.get(0);
-            String name = seg.get(1);
-            if (name.isEmpty() || name.indexOf('/') >= 0 || name.indexOf('\\') >= 0) return null;
-            for (int index = 0; index < name.length(); index++) {
-                if (Character.isISOControl(name.charAt(index))) return null;
-            }
-
-            File root = new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR).getCanonicalFile();
-            File resolved = new File(new File(root, folder), name).getCanonicalFile();
-            String rootPath = root.getPath() + File.separator;
-            return resolved.getPath().startsWith(rootPath) ? resolved : null;
-
-        } catch (Exception e) {
-            return null;
-        }
+    /**
+     * Builds the canonical URL for a file this app just wrote into a note's folder.
+     *
+     * <p>Every producer goes through here — the editor upload path and sync restore alike — so a
+     * reference can never be stored in a shape the WebView interceptor refuses to serve.
+     */
+    public static String urlFor(int noteId, String fileName) {
+        return AttachmentUrl.canonical(noteId, fileName);
     }
 
     /**

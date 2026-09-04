@@ -40,8 +40,55 @@ public interface SyncBackend {
     /** Publishes a complete remote snapshot. Implementations must not expose a partial snapshot. */
     void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException;
 
+    /**
+     * Publishes a snapshot together with the unresolved conflict versions it must keep alive and
+     * the read context it was derived from.
+     *
+     * <p>Backends that keep no causal history fall back to the plain snapshot write; the Drive
+     * backend overrides this so a publish cannot use stale causal parents and cannot drop an
+     * unresolved alternative on the floor.
+     */
+    default void publish(@NonNull SyncPublication publication) throws IOException {
+        writeSnapshot(publication.getSnapshot());
+    }
+
     /** Returns true when the immutable attachment blob already exists remotely. */
     boolean hasAttachment(@NonNull String sha256) throws IOException;
+
+    /**
+     * True only when the remote blob exists and its bytes really do hash to {@code sha256}.
+     *
+     * <p>Separate from {@link #hasAttachment} because a backend may index blobs by a claimed hash
+     * that has to be checked against the bytes before a bundle can depend on it. Implementations
+     * are expected to answer this at most once per blob per sync.
+     */
+    default boolean hasVerifiedAttachment(@NonNull String sha256, @Nullable Long expectedSize)
+            throws IOException {
+        InputStream content = readAttachment(sha256);
+        if (content == null) {
+            return false;
+        }
+        java.security.MessageDigest digest;
+        try {
+            digest = java.security.MessageDigest.getInstance("SHA-256");
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new IOException("SHA-256 is unavailable", error);
+        }
+        long size = 0L;
+        try (InputStream input = content) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+                size += read;
+            }
+        }
+        StringBuilder actual = new StringBuilder(64);
+        for (byte value : digest.digest()) {
+            actual.append(String.format(java.util.Locale.US, "%02x", value & 0xff));
+        }
+        return sha256.equals(actual.toString()) && (expectedSize == null || expectedSize == size);
+    }
 
     /**
      * Opens an attachment by its lowercase SHA-256 hash, or returns {@code null} when it is absent.

@@ -120,6 +120,8 @@ public final class SyncBundleValidator {
                         attachmentsById,
                         referencedAttachmentIds);
         recordCount += validateTombstones(records, recordIdentities);
+        recordCount += validateAlternatives(records, attachmentsById, referencedAttachmentIds);
+        validateResolvedAlternatives(records);
         if (recordCount > MAX_RECORD_COUNT) {
             throw new IOException("Sync bundle exceeds the schema-1 record limit");
         }
@@ -194,6 +196,76 @@ public final class SyncBundleValidator {
                 validateDisplayName(attachmentNames.get(attachmentId).getAsString());
             }
             referencedAttachmentIds.add(attachmentId);
+        }
+    }
+
+    /**
+     * Validates the unresolved conflict versions a bundle carries.
+     *
+     * <p>Deliberately not folded into the live-record identity set: an alternative is another
+     * version of a record the bundle already contains, so it shares that record's identity by
+     * design. What it must not do is reference attachment metadata the manifest lacks, or exceed
+     * the same payload limits as any other record.
+     */
+    private static long validateAlternatives(
+            @NonNull JsonObject records,
+            @NonNull Map<String, SyncBundleCodec.AttachmentManifestEntry> attachmentsById,
+            @NonNull Set<String> referencedAttachmentIds)
+            throws IOException {
+        JsonArray array = records.getAsJsonArray("alternatives");
+        if (array == null) {
+            return 0L;
+        }
+        if (array.size() > MAX_RECORD_COUNT) {
+            throw new IOException("Sync bundle exceeds the schema-1 record limit");
+        }
+        Set<String> versions = new LinkedHashSet<>();
+        for (JsonElement element : array) {
+            JsonObject item = element.getAsJsonObject();
+            SyncRecord.Type type = SyncRecord.Type.fromWireValue(requireString(item, "type"));
+            String id = requireString(item, "id");
+            validateUuid(id);
+            Instant updatedAt = parseInstant(requireString(item, "updatedAt"), "updatedAt");
+            JsonElement deletedAt = item.get("deletedAt");
+            if (deletedAt != null && !deletedAt.isJsonNull()) {
+                Instant deleted = parseInstant(deletedAt.getAsString(), "deletedAt");
+                if (deleted.isBefore(updatedAt)) {
+                    throw new IOException(
+                            "Sync alternative deletedAt must not be before updatedAt");
+                }
+            }
+            validatePayloadLimits(item);
+            if (type == SyncRecord.Type.NOTE) {
+                validateAttachmentReferences(item, attachmentsById, referencedAttachmentIds);
+            }
+            if (!versions.add(type.getWireValue() + ":" + id + ":" + item.toString())) {
+                throw new IOException("Sync bundle contains duplicate conflict alternatives");
+            }
+        }
+        return array.size();
+    }
+
+    private static void validateResolvedAlternatives(@NonNull JsonObject records)
+            throws IOException {
+        JsonArray array = records.getAsJsonArray("resolvedAlternatives");
+        if (array == null) {
+            return;
+        }
+        if (array.size() > MAX_RECORD_COUNT) {
+            throw new IOException("Sync bundle exceeds the resolved-version limit");
+        }
+        Set<String> seen = new LinkedHashSet<>();
+        for (JsonElement element : array) {
+            if (element == null || !element.isJsonPrimitive()) {
+                throw new IOException("Sync bundle contains an invalid resolved version id");
+            }
+            String value = element.getAsString();
+            if (!SHA_256.matcher(value).matches()) {
+                throw new IOException("Sync bundle contains an invalid resolved version id");
+            }
+            if (!seen.add(value)) {
+                throw new IOException("Sync bundle contains duplicate resolved version ids");
+            }
         }
     }
 

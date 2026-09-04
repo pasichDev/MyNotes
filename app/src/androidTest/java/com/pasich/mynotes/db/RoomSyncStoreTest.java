@@ -17,6 +17,7 @@ import com.pasich.mynotes.data.sync.SnapshotBuildResult;
 import com.pasich.mynotes.data.sync.SnapshotProblem;
 import com.pasich.mynotes.data.sync.SyncMetadata;
 import com.pasich.mynotes.data.sync.SyncRecord;
+import com.pasich.mynotes.data.sync.SyncResolution;
 import com.pasich.mynotes.data.sync.SyncSnapshot;
 import com.pasich.mynotes.data.sync.SyncState;
 import java.io.ByteArrayInputStream;
@@ -354,6 +355,232 @@ public class RoomSyncStoreTest {
         return id;
     }
 
+    @Test
+    public void readSnapshot_stillResolvesLegacyFileScheme() throws Exception {
+        int id = seedNote("Legacy", "body", null);
+        File folder = new File(context.getFilesDir(), "attachments/note_" + id);
+        assertThat(folder.mkdirs() || folder.isDirectory()).isTrue();
+        try (FileOutputStream out = new FileOutputStream(new File(folder, "old.png"))) {
+            out.write("legacy bytes".getBytes(StandardCharsets.UTF_8));
+        }
+        Note note = db.noteDao().getNoteSync(id);
+        note.setAttachments("[" + legacyAttachmentJson(id, "old.png") + "]");
+        db.noteDao().addNote(note);
+
+        SnapshotBuildResult result = store.buildSnapshot();
+
+        assertThat(result.isPublishable()).isTrue();
+    }
+
+    @Test
+    public void applySnapshot_dropsCachedBlobsNothingReferencesAndKeepsConflictBlobs()
+            throws Exception {
+        File cache = new File(context.getFilesDir(), "sync-attachments");
+        assertThat(cache.mkdirs() || cache.isDirectory()).isTrue();
+        String orphan = "1111111111111111111111111111111111111111111111111111111111111111";
+        try (FileOutputStream out = new FileOutputStream(new File(cache, orphan))) {
+            out.write("nobody references this".getBytes(StandardCharsets.UTF_8));
+        }
+
+        store.applySnapshot(SyncSnapshot.empty(), Collections.emptyList());
+
+        assertThat(new File(cache, orphan).exists()).isFalse();
+    }
+
+    @Test
+    public void applySnapshot_keepsCachedBlobsAnUnresolvedConflictStillNeeds() throws Exception {
+        File cache = new File(context.getFilesDir(), "sync-attachments");
+        assertThat(cache.mkdirs() || cache.isDirectory()).isTrue();
+        String pinned = "2222222222222222222222222222222222222222222222222222222222222222";
+        try (FileOutputStream out = new FileOutputStream(new File(cache, pinned))) {
+            out.write("needed by an unresolved conflict".getBytes(StandardCharsets.UTF_8));
+        }
+        db.syncConflictDao()
+                .insertIgnoringDuplicates(
+                        Collections.singletonList(
+                                new com.pasich.mynotes.data.database.entities.SyncConflictEntity(
+                                        "note",
+                                        "550e8400-e29b-41d4-a716-446655440000",
+                                        "pair",
+                                        "LOCAL",
+                                        "REMOTE",
+                                        "winner-id",
+                                        "loser-id",
+                                        "{\"payload\":{\"attachmentHashes\":[\"" + pinned + "\"]}}",
+                                        "{\"payload\":{}}",
+                                        1L,
+                                        2L,
+                                        false,
+                                        false,
+                                        "PENDING",
+                                        false,
+                                        3L,
+                                        0L)));
+
+        store.applySnapshot(SyncSnapshot.empty(), Collections.emptyList());
+
+        // Deleting this would make the losing version unrecoverable before the user has chosen.
+        assertThat(new File(cache, pinned).exists()).isTrue();
+    }
+
+    // ------------------------------------------------- preferences conflict resolution
+
+    @Test
+    public void resolveConflict_appliesTheChosenPreferencesVersionDurably() throws Exception {
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
+        preferencesStore.readState();
+        long conflictId = seedPreferencesConflict(9, 11);
+
+        preferencesStore.resolveConflict(conflictId, SyncResolution.KEEP_DRIVE);
+
+        assertThat(adapter.committed.get()).isNotNull();
+        assertThat(adapter.committed.get().getThemeValue()).isEqualTo(11);
+        assertThat(db.syncConflictDao().getById(conflictId).resolved).isTrue();
+        assertThat(db.syncPendingPreferencesDao().get()).isNull();
+    }
+
+    @Test
+    public void resolveConflict_leavesThePreferencesConflictOpenWhenTheCommitFails()
+            throws Exception {
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        adapter.succeeds.set(false);
+        RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
+        preferencesStore.readState();
+        long conflictId = seedPreferencesConflict(9, 11);
+
+        try {
+            preferencesStore.resolveConflict(conflictId, SyncResolution.KEEP_DRIVE);
+            throw new AssertionError("Expected a failed preferences commit to propagate");
+        } catch (IOException expected) {
+            // Nothing may be claimed as resolved.
+        }
+
+        assertThat(db.syncConflictDao().getById(conflictId).resolved).isFalse();
+        // The journal survives so the next attempt can finish the job.
+        assertThat(db.syncPendingPreferencesDao().get()).isNotNull();
+        // The record version must not move; otherwise the rejected value would win the next sync.
+        SyncMetadataEntity metadata =
+                db.syncMetadataDao()
+                        .getByStableId(
+                                SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                "00000000-0000-4000-8000-000000000000");
+        assertThat(metadata.updatedAt).isEqualTo(0L);
+    }
+
+    @Test
+    public void aRetryAfterAFailedCommit_completesTheResolution() throws Exception {
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        adapter.succeeds.set(false);
+        RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
+        preferencesStore.readState();
+        long conflictId = seedPreferencesConflict(9, 11);
+        try {
+            preferencesStore.resolveConflict(conflictId, SyncResolution.KEEP_DRIVE);
+        } catch (IOException expected) {
+            // First attempt fails.
+        }
+
+        adapter.succeeds.set(true);
+        preferencesStore.resolveConflict(conflictId, SyncResolution.KEEP_DRIVE);
+
+        assertThat(adapter.committed.get().getThemeValue()).isEqualTo(11);
+        assertThat(db.syncConflictDao().getById(conflictId).resolved).isTrue();
+        assertThat(db.syncPendingPreferencesDao().get()).isNull();
+    }
+
+    @Test
+    public void anUnreadableJournal_isQuarantinedInsteadOfDisablingSync() throws Exception {
+        db.syncPendingPreferencesDao()
+                .upsert(
+                        new com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity(
+                                1, "{not json", "target", "baseline", 0L, false));
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
+
+        // Must not throw: ensureSeeded gates both snapshot building and the status read.
+        SyncState state = preferencesStore.readState();
+
+        assertThat(state).isNotNull();
+        assertThat(db.syncPendingPreferencesDao().get()).isNull();
+        assertThat(db.syncPendingPreferencesDao().getIncludingQuarantined()).isNotNull();
+        assertThat(adapter.committed.get()).isNull();
+    }
+
+    /** A preferences adapter whose durability can be turned off. */
+    private static final class PreferencesAdapter {
+        private final PreferenceHelper helper = mock(PreferenceHelper.class);
+        private final java.util.concurrent.atomic.AtomicReference<
+                        com.pasich.mynotes.utils.backup.models.PreferencesBackup>
+                current =
+                        new java.util.concurrent.atomic.AtomicReference<>(preferencesWithTheme(1));
+        private final java.util.concurrent.atomic.AtomicReference<
+                        com.pasich.mynotes.utils.backup.models.PreferencesBackup>
+                committed = new java.util.concurrent.atomic.AtomicReference<>();
+        private final java.util.concurrent.atomic.AtomicBoolean succeeds =
+                new java.util.concurrent.atomic.AtomicBoolean(true);
+
+        PreferencesAdapter() {
+            org.mockito.Mockito.when(helper.getListPreferences())
+                    .thenAnswer(invocation -> current.get());
+            org.mockito.Mockito.when(
+                            helper.commitListPreferences(org.mockito.ArgumentMatchers.any()))
+                    .thenAnswer(
+                            invocation -> {
+                                if (!succeeds.get()) {
+                                    return false;
+                                }
+                                com.pasich.mynotes.utils.backup.models.PreferencesBackup value =
+                                        invocation.getArgument(0);
+                                committed.set(value);
+                                current.set(value);
+                                return true;
+                            });
+        }
+    }
+
+    private long seedPreferencesConflict(int localTheme, int remoteTheme) {
+        String winner = preferencesRecordJson(remoteTheme, "2026-08-31T12:00:20Z");
+        String loser = preferencesRecordJson(localTheme, "2026-08-31T12:00:10Z");
+        db.syncConflictDao()
+                .insertIgnoringDuplicates(
+                        Collections.singletonList(
+                                new com.pasich.mynotes.data.database.entities.SyncConflictEntity(
+                                        SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                        "00000000-0000-4000-8000-000000000000",
+                                        "pair-hash",
+                                        "REMOTE",
+                                        "LOCAL",
+                                        "winner-version-id",
+                                        "loser-version-id",
+                                        winner,
+                                        loser,
+                                        20L,
+                                        10L,
+                                        false,
+                                        false,
+                                        "PENDING",
+                                        false,
+                                        1L,
+                                        0L)));
+        return db.syncConflictDao().getAll().get(0).id;
+    }
+
+    private static String preferencesRecordJson(int themeValue, String updatedAt) {
+        return "{\"type\":\"preferences\",\"id\":\"00000000-0000-4000-8000-000000000000\","
+                + "\"updatedAt\":\""
+                + updatedAt
+                + "\",\"deletedAt\":null,\"payload\":"
+                + new com.google.gson.Gson().toJson(preferencesWithTheme(themeValue))
+                + "}";
+    }
+
+    private static com.pasich.mynotes.utils.backup.models.PreferencesBackup preferencesWithTheme(
+            int themeValue) {
+        return new com.pasich.mynotes.utils.backup.models.PreferencesBackup(
+                1, "sans", "date", 14, themeValue, false, 0, false, false, false, 1.0f);
+    }
+
     /** Writes a real file into the note's own attachment folder and links it from the note. */
     private int seedNoteWithAttachment(String fileName, byte[] bytes) throws IOException {
         int id = seedNote("With attachment", "body", null);
@@ -362,14 +589,8 @@ public class RoomSyncStoreTest {
         try (FileOutputStream out = new FileOutputStream(new File(folder, fileName))) {
             out.write(bytes);
         }
-        String json =
-                "[{\"url\":\"file://attachments/note_"
-                        + id
-                        + "/"
-                        + fileName
-                        + "\",\"name\":\""
-                        + fileName
-                        + "\"}]";
+        // Production shape: EditorJSInterface writes editorjs://attachments/note_<id>/<file>.
+        String json = "[" + attachmentJson(id, fileName) + "]";
         Note note = db.noteDao().getNoteSync(id);
         note.setAttachments(json);
         db.noteDao().addNote(note);
@@ -394,7 +615,17 @@ public class RoomSyncStoreTest {
         }
     }
 
+    /** The canonical reference the editor and sync restore both produce. */
     private static String attachmentJson(int noteId, String name) {
+        return "{\"url\":\""
+                + com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.urlFor(noteId, name)
+                + "\",\"name\":\""
+                + name
+                + "\"}";
+    }
+
+    /** The pre-2.6.49 reference shape, kept readable for already-stored notes. */
+    private static String legacyAttachmentJson(int noteId, String name) {
         return "{\"url\":\"file://attachments/note_"
                 + noteId
                 + "/"

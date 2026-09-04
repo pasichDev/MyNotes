@@ -108,9 +108,36 @@ public final class SyncService {
             warnAboutClockSkew(remote);
             SyncMergeResult mergeResult = merger.merge(local, remote);
             SyncSnapshot merged = mergeResult.getMergedSnapshot();
-            java.util.List<SyncMergeResult.Conflict> allConflicts =
-                    new java.util.ArrayList<>(remoteResult.getConflicts());
-            allConflicts.addAll(mergeResult.getConflicts());
+
+            // A choice the user already made must never be offered again, wherever it was made.
+            java.util.Set<String> settledVersionIds =
+                    new java.util.LinkedHashSet<>(remoteResult.getResolvedAlternativeIds());
+            settledVersionIds.addAll(store.getResolvedAlternativeIds());
+
+            java.util.List<SyncMergeResult.Conflict> allConflicts = new java.util.ArrayList<>();
+            for (SyncMergeResult.Conflict conflict : remoteResult.getConflicts()) {
+                if (!settledVersionIds.contains(conflict.getLoserVersionId())) {
+                    allConflicts.add(conflict);
+                }
+            }
+            for (SyncMergeResult.Conflict conflict : mergeResult.getConflicts()) {
+                if (!settledVersionIds.contains(conflict.getLoserVersionId())) {
+                    allConflicts.add(conflict);
+                }
+            }
+
+            // Every still-open alternative is republished, so a merged descendant can never be
+            // the thing that makes a losing version unreachable.
+            Map<String, SyncRecord> alternatives = new java.util.LinkedHashMap<>();
+            for (SyncMergeResult.Conflict conflict : allConflicts) {
+                alternatives.putIfAbsent(conflict.getLoserVersionId(), conflict.getLoser());
+            }
+            for (SyncRecord carried : remoteResult.getAlternatives()) {
+                String versionId = carried.getCanonicalPayloadHash();
+                if (!settledVersionIds.contains(versionId)) {
+                    alternatives.putIfAbsent(versionId, carried);
+                }
+            }
 
             Map<String, Long> expectedSizes = attachmentSizes(merged);
             // The merged snapshot contains only the deterministic winner. A conflict row is not
@@ -121,8 +148,15 @@ public final class SyncService {
                 pinConflictVersion(backend, conflict.getWinner());
                 pinConflictVersion(backend, conflict.getLoser());
             }
-            if (!snapshotsMatch(merged, remote)) {
-                backend.writeSnapshot(merged);
+
+            if (needsPublication(
+                    merged, remote, alternatives.keySet(), settledVersionIds, remoteResult)) {
+                backend.publish(
+                        new SyncPublication(
+                                merged,
+                                new java.util.ArrayList<>(alternatives.values()),
+                                settledVersionIds,
+                                remoteResult));
             }
             SyncState success =
                     SyncState.success(backendIdentifier, clock.instant(), allConflicts.size());
@@ -169,6 +203,30 @@ public final class SyncService {
         }
     }
 
+    /**
+     * Whether the remote state already says everything this sync would say.
+     *
+     * <p>Records alone are not enough: an unchanged record set with a newly discovered alternative,
+     * or with a conflict the user has just resolved, still has to be published or that information
+     * exists on one device only.
+     */
+    private static boolean needsPublication(
+            @NonNull SyncSnapshot merged,
+            @NonNull SyncSnapshot remote,
+            @NonNull Collection<String> alternativeVersionIds,
+            @NonNull java.util.Set<String> settledVersionIds,
+            @NonNull RemoteSnapshot remoteResult) {
+        if (!snapshotsMatch(merged, remote)) {
+            return true;
+        }
+        java.util.Set<String> publishedAlternatives = new java.util.LinkedHashSet<>();
+        for (SyncRecord alternative : remoteResult.getAlternatives()) {
+            publishedAlternatives.add(alternative.getCanonicalPayloadHash());
+        }
+        return !publishedAlternatives.equals(new java.util.LinkedHashSet<>(alternativeVersionIds))
+                || !remoteResult.getResolvedAlternativeIds().equals(settledVersionIds);
+    }
+
     private static boolean snapshotsMatch(
             @NonNull SyncSnapshot first, @NonNull SyncSnapshot second) {
         Collection<SyncRecord> firstRecords = first.getRecords();
@@ -200,24 +258,32 @@ public final class SyncService {
         for (String hash : hashes) {
             validateHash(hash);
             if (store.hasAttachment(hash)) {
-                if (backend.hasAttachment(hash)) {
+                Long expectedSize = expectedSizes.get(hash);
+                // Index lookup only; the bytes are checked once, below.
+                boolean remotePresent = backend.hasAttachment(hash);
+                if (remotePresent) {
                     try {
-                        verifyAttachment(hash, expectedSizes.get(hash), store.readAttachment(hash));
+                        verifyAttachment(hash, expectedSize, store.readAttachment(hash));
                     } catch (IOException localError) {
-                        // The local copy is missing or corrupt; repair it from the remote blob.
+                        // The local copy is missing or corrupt; repair it from the remote blob,
+                        // which copyVerified refuses to accept unless it hashes correctly.
                         copyVerified(
                                 hash,
-                                expectedSizes.get(hash),
+                                expectedSize,
                                 backend.readAttachment(hash),
                                 store::writeAttachment);
                     }
-                    // Drive is untrusted. A matching appProperty is only a claim, so verify the
-                    // actual remote bytes before a bundle can make that blob durable state.
-                    verifyAttachment(hash, expectedSizes.get(hash), backend.readAttachment(hash));
+                    // Drive is untrusted: a matching appProperty is only a claim. The blob is
+                    // read and hashed exactly once per sync, and the result is remembered, so
+                    // publishing it into the canonical root does not download it again.
+                    if (!backend.hasVerifiedAttachment(hash, expectedSize)) {
+                        throw new AttachmentIntegrityException(
+                                "Attachment checksum does not match its declared hash");
+                    }
                 } else {
                     copyVerified(
                             hash,
-                            expectedSizes.get(hash),
+                            expectedSize,
                             store.readAttachment(hash),
                             backend::writeAttachment);
                 }
@@ -241,14 +307,9 @@ public final class SyncService {
         synchronizeAttachments(backend, snapshot, expectedSizes);
         for (String hash : store.getAttachmentHashes(snapshot)) {
             Long expectedSize = expectedSizes.get(hash);
-            copyVerified(
-                    hash,
-                    expectedSize,
-                    store.readAttachment(hash),
-                    store::writeAttachment);
+            copyVerified(hash, expectedSize, store.readAttachment(hash), store::writeAttachment);
         }
     }
-
 
     private void verifyAttachment(String hash, Long expectedSize, InputStream source)
             throws IOException {
@@ -282,7 +343,9 @@ public final class SyncService {
             InputStream source,
             AttachmentWriter destination)
             throws IOException {
-        Objects.requireNonNull(source, "source");
+        if (source == null) {
+            throw new IOException("Required attachment is unavailable: " + expectedHash);
+        }
         try (InputStream input = source;
                 VerifyingInputStream verified =
                         new VerifyingInputStream(input, expectedHash, expectedSize)) {

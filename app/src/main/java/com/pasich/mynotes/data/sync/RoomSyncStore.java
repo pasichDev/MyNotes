@@ -48,6 +48,7 @@ public final class RoomSyncStore implements SyncStore {
     private static final String PREFS = "sync_state";
     private static final String LEGACY_STATE = "last_state";
     private static final String PREFERENCES_HASH = "preferences_hash";
+    private static final String PREFERENCES_STABLE_ID = "00000000-0000-4000-8000-000000000000";
     private final AppDatabase database;
     private final SharedPreferences preferences;
     private volatile boolean seeded;
@@ -129,7 +130,7 @@ public final class RoomSyncStore implements SyncStore {
                         new SyncMetadataEntity(
                                 SyncMetadata.RECORD_TYPE_PREFERENCES,
                                 0,
-                                "00000000-0000-4000-8000-000000000000",
+                                PREFERENCES_STABLE_ID,
                                 0L,
                                 null));
         recoverPendingPreferences();
@@ -207,63 +208,82 @@ public final class RoomSyncStore implements SyncStore {
         PreferencesBackup stagedPreferences = selectedPreferences(snapshot);
         String stagedPreferencesJson =
                 stagedPreferences == null ? null : gson.toJson(stagedPreferences);
+        String stagedPreferencesTarget =
+                stagedPreferences == null ? "" : preferencesDigest(stagedPreferences);
+        String preferencesBaseline = stagedPreferences == null ? "" : livePreferencesDigest();
+        SyncRecord preferencesRecord =
+                snapshot.find(SyncRecord.Type.PREFERENCES, PREFERENCES_STABLE_ID);
+        long stagedPreferencesUpdatedAt =
+                preferencesRecord == null ? 0L : preferencesRecord.getUpdatedAt().toEpochMilli();
         boolean deferFinalState = stagedPreferences != null && finalState != null;
         try {
             database.runInTransaction(
                     () -> {
                         try {
-                    Map<String, SyncMetadataEntity> byStableId = new HashMap<>();
-                    for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
-                        byStableId.put(metadata.recordType + ":" + metadata.stableId, metadata);
-                    }
-                    for (SyncRecord record : snapshot.getRecords()) {
-                        SyncMetadataEntity metadata =
-                                byStableId.get(
-                                        record.getType().getWireValue() + ":" + record.getId());
-                        if (metadata == null && !record.isTombstone()) {
-                            long localId = insertRemoteRecord(record);
-                            if (localId >= 0) {
-                                database.syncMetadataDao()
-                                        .insertIfAbsent(
-                                                new SyncMetadataEntity(
-                                                        record.getType().getWireValue(),
-                                                        localId,
-                                                        record.getId(),
-                                                        record.getUpdatedAt().toEpochMilli(),
-                                                        null));
+                            Map<String, SyncMetadataEntity> byStableId = new HashMap<>();
+                            for (SyncMetadataEntity metadata :
+                                    database.syncMetadataDao().getAll()) {
+                                byStableId.put(
+                                        metadata.recordType + ":" + metadata.stableId, metadata);
                             }
-                            transactionFailureInjector.afterRecordApplied(record);
-                            continue;
-                        }
-                        if (metadata == null) continue;
-                        if (record.isTombstone()) {
-                            markDeleted(metadata);
-                            database.syncMetadataDao()
-                                    .setVersion(
-                                            metadata.recordType,
-                                            metadata.localId,
-                                            record.getUpdatedAt().toEpochMilli(),
-                                            record.getDeletedAt().toEpochMilli());
-                            transactionFailureInjector.afterRecordApplied(record);
-                            continue;
-                        }
-                        applyPayload(metadata, record.getPayload());
-                        database.syncMetadataDao()
-                                .setVersion(
-                                        metadata.recordType,
-                                        metadata.localId,
-                                        record.getUpdatedAt().toEpochMilli(),
-                                        null);
-                        transactionFailureInjector.afterRecordApplied(record);
-                    }
-                    persistConflicts(conflicts);
-                    if (stagedPreferencesJson != null) {
-                        database.syncPendingPreferencesDao()
-                                .upsert(new SyncPendingPreferencesEntity(1, stagedPreferencesJson));
-                    }
-                    if (finalState != null && !deferFinalState) {
-                        database.syncStateDao().upsert(toEntity(finalState));
-                    }
+                            for (SyncRecord record : snapshot.getRecords()) {
+                                SyncMetadataEntity metadata =
+                                        byStableId.get(
+                                                record.getType().getWireValue()
+                                                        + ":"
+                                                        + record.getId());
+                                if (metadata == null && !record.isTombstone()) {
+                                    long localId = insertRemoteRecord(record);
+                                    if (localId >= 0) {
+                                        database.syncMetadataDao()
+                                                .insertIfAbsent(
+                                                        new SyncMetadataEntity(
+                                                                record.getType().getWireValue(),
+                                                                localId,
+                                                                record.getId(),
+                                                                record.getUpdatedAt()
+                                                                        .toEpochMilli(),
+                                                                null));
+                                    }
+                                    transactionFailureInjector.afterRecordApplied(record);
+                                    continue;
+                                }
+                                if (metadata == null) continue;
+                                if (record.isTombstone()) {
+                                    markDeleted(metadata);
+                                    database.syncMetadataDao()
+                                            .setVersion(
+                                                    metadata.recordType,
+                                                    metadata.localId,
+                                                    record.getUpdatedAt().toEpochMilli(),
+                                                    record.getDeletedAt().toEpochMilli());
+                                    transactionFailureInjector.afterRecordApplied(record);
+                                    continue;
+                                }
+                                applyPayload(metadata, record.getPayload());
+                                database.syncMetadataDao()
+                                        .setVersion(
+                                                metadata.recordType,
+                                                metadata.localId,
+                                                record.getUpdatedAt().toEpochMilli(),
+                                                null);
+                                transactionFailureInjector.afterRecordApplied(record);
+                            }
+                            persistConflicts(conflicts);
+                            if (stagedPreferencesJson != null) {
+                                database.syncPendingPreferencesDao()
+                                        .upsert(
+                                                new SyncPendingPreferencesEntity(
+                                                        1,
+                                                        stagedPreferencesJson,
+                                                        stagedPreferencesTarget,
+                                                        preferencesBaseline,
+                                                        stagedPreferencesUpdatedAt,
+                                                        false));
+                            }
+                            if (finalState != null && !deferFinalState) {
+                                database.syncStateDao().upsert(toEntity(finalState));
+                            }
                         } catch (IOException error) {
                             throw new SyncRuntimeException(error);
                         }
@@ -272,21 +292,93 @@ public final class RoomSyncStore implements SyncStore {
             throw error.ioException;
         }
         if (stagedPreferences != null) {
-            commitPendingPreferences(stagedPreferences);
+            // The journal is only dropped once the adapter reports a durable commit; a failure
+            // here leaves it in place for recoverPendingPreferences and keeps the sync state
+            // retryable rather than claiming success.
+            commitPendingPreferences(stagedPreferences, stagedPreferencesTarget);
             database.runInTransaction(
                     () -> {
                         database.syncPendingPreferencesDao().clear();
-                        if (finalState != null) database.syncStateDao().upsert(toEntity(finalState));
+                        if (finalState != null)
+                            database.syncStateDao().upsert(toEntity(finalState));
                     });
+        }
+        pruneAttachmentCache(snapshot);
+    }
+
+    /**
+     * Drops cached blobs nothing can still need.
+     *
+     * <p>Runs only after the snapshot, its conflicts and any preference journal have all been
+     * committed, so "still needed" is answered from durable state rather than from work in
+     * progress. A blob survives if the applied snapshot references it or if any unresolved conflict
+     * does — a losing version the user has not chosen between yet is exactly the case where
+     * deleting the bytes would be unrecoverable.
+     *
+     * <p>Best effort by design: this is a space optimization, and correctness must not depend on it
+     * running, or on it finishing.
+     */
+    private void pruneAttachmentCache(@NonNull SyncSnapshot applied) {
+        try {
+            LinkedHashSet<String> required = new LinkedHashSet<>(getAttachmentHashes(applied));
+            for (SyncConflictEntity conflict : database.syncConflictDao().getUnresolved()) {
+                collectConflictAttachmentHashes(conflict.winnerJson, required);
+                collectConflictAttachmentHashes(conflict.loserJson, required);
+            }
+            File dir = new File(context.getFilesDir(), "sync-attachments");
+            File[] cached = dir.listFiles();
+            if (cached == null) {
+                return;
+            }
+            for (File file : cached) {
+                String name = file.getName();
+                if (!file.isFile() || !name.matches("[0-9a-f]{64}") || required.contains(name)) {
+                    continue;
+                }
+                if (!file.delete()) {
+                    Log.w(TAG, "Could not remove the unreferenced cached blob " + name);
+                }
+            }
+        } catch (RuntimeException error) {
+            Log.w(TAG, "Skipping attachment cache cleanup", error);
+        }
+    }
+
+    /** Adds every content hash a stored conflict version references. */
+    private void collectConflictAttachmentHashes(
+            @Nullable String recordJson, @NonNull LinkedHashSet<String> into) {
+        if (recordJson == null || recordJson.isEmpty()) {
+            return;
+        }
+        try {
+            JsonObject root = JsonParser.parseString(recordJson).getAsJsonObject();
+            JsonObject payload = root.getAsJsonObject("payload");
+            if (payload == null) {
+                return;
+            }
+            JsonArray manifest = payload.getAsJsonArray("attachmentsManifest");
+            if (manifest != null) {
+                for (JsonElement element : manifest) {
+                    if (!element.isJsonObject()) continue;
+                    JsonObject entry = element.getAsJsonObject();
+                    if (entry.has("sha256")) into.add(entry.get("sha256").getAsString());
+                }
+            }
+            JsonArray hashes = payload.getAsJsonArray("attachmentHashes");
+            if (hashes != null) {
+                for (JsonElement element : hashes) into.add(element.getAsString());
+            }
+        } catch (RuntimeException unreadable) {
+            // An unreadable conflict row must never authorize a deletion, so fail closed by
+            // keeping everything: the caller only removes blobs nothing claimed.
+            throw unreadable;
         }
     }
 
     @Nullable
-    private PreferencesBackup selectedPreferences(@NonNull SyncSnapshot snapshot) throws IOException {
-        SyncRecord record =
-                snapshot.find(
-                        SyncRecord.Type.PREFERENCES,
-                        "00000000-0000-4000-8000-000000000000");
+    private PreferencesBackup selectedPreferences(@NonNull SyncSnapshot snapshot)
+            throws IOException {
+        SyncRecord record = snapshot.find(SyncRecord.Type.PREFERENCES, PREFERENCES_STABLE_ID);
         if (record == null || record.isTombstone()) return null;
         try {
             PreferencesBackup parsed = gson.fromJson(record.getPayload(), PreferencesBackup.class);
@@ -299,26 +391,145 @@ public final class RoomSyncStore implements SyncStore {
         }
     }
 
-    /** Completes a previously committed Room journal after process death or adapter failure. */
+    /**
+     * Completes, discards or quarantines a journal left behind by an earlier attempt.
+     *
+     * <p>Three outcomes, decided from the two digests rather than applied blindly:
+     *
+     * <ul>
+     *   <li>the live preferences already match the target — the write did land, clear the journal;
+     *   <li>they still match the baseline — nothing has changed since, so replay is safe;
+     *   <li>they match neither — the user has changed these settings since, and their newer choice
+     *       outranks a stale remote payload, so the journal is dropped without being applied.
+     * </ul>
+     *
+     * <p>An unreadable payload is quarantined instead of thrown: this runs from {@code
+     * ensureSeeded}, which gates snapshot building and the status read alike, so throwing made one
+     * bad row disable sync permanently.
+     */
     private void recoverPendingPreferences() throws IOException {
         SyncPendingPreferencesEntity pending = database.syncPendingPreferencesDao().get();
-        if (pending == null) return;
-        PreferencesBackup backup;
-        try {
-            backup = gson.fromJson(pending.payloadJson, PreferencesBackup.class);
-            if (backup == null || !backup.isCreated()) throw new IOException("Pending preferences are invalid");
-        } catch (RuntimeException error) {
-            throw new IOException("Pending preferences are invalid", error);
+
+        PreferencesBackup backup = null;
+        if (pending != null) {
+            try {
+                backup = gson.fromJson(pending.payloadJson, PreferencesBackup.class);
+            } catch (RuntimeException unreadable) {
+                backup = null;
+            }
+            if (backup != null && !backup.isCreated()) {
+                backup = null;
+            }
         }
-        commitPendingPreferences(backup);
-        database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
+
+        PendingPreferencesDecision.Action action =
+                PendingPreferencesDecision.decide(
+                        pending != null,
+                        backup != null,
+                        pending == null ? null : pending.targetHash,
+                        pending == null ? null : pending.baselineHash,
+                        livePreferencesDigest());
+
+        switch (action) {
+            case NOTHING:
+                return;
+            case QUARANTINE:
+                Log.w(TAG, "Quarantining an unreadable pending preferences journal");
+                database.runInTransaction(() -> database.syncPendingPreferencesDao().quarantine());
+                return;
+            case CLEAR_ALREADY_APPLIED:
+                database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
+                return;
+            case DISCARD_STALE:
+                Log.w(
+                        TAG,
+                        "Discarding a stale pending preferences journal; local settings changed");
+                database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
+                return;
+            case REPLAY:
+            default:
+                String target =
+                        pending.targetHash == null || pending.targetHash.isEmpty()
+                                ? preferencesDigest(backup)
+                                : pending.targetHash;
+                commitPendingPreferences(backup, target);
+                database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
+        }
     }
 
-    private void commitPendingPreferences(@NonNull PreferencesBackup backup) throws IOException {
+    /**
+     * Applies one journaled preferences payload, failing loudly when it is not durable.
+     *
+     * @param expectedDigest digest the live preferences must show afterwards.
+     */
+    private void commitPendingPreferences(
+            @NonNull PreferencesBackup backup, @NonNull String expectedDigest) throws IOException {
+        boolean committed;
         try {
-            preferenceHelper.setListPreferences(backup);
+            committed = preferenceHelper.commitListPreferences(backup);
         } catch (RuntimeException error) {
             throw new IOException("Could not commit synchronized preferences", error);
+        }
+        if (!committed) {
+            throw new IOException("Could not commit synchronized preferences");
+        }
+        // The digest doubles as the snapshot-build baseline, so recording it here keeps the next
+        // build from treating a freshly received version as a local edit.
+        preferences.edit().putString(PREFERENCES_HASH, expectedDigest).commit();
+    }
+
+    /**
+     * Records that the live preferences diverged from the last value sync knows about.
+     *
+     * <p>SharedPreferences has no mutation hook and the settings screens write it directly, so a
+     * local edit can only be noticed by comparing digests here. It now fires only for a genuine
+     * local change: the apply and conflict-resolution paths record the digest they committed, so a
+     * version received from another device is no longer mistaken for a local edit and cannot become
+     * artificially newer than the version it was received from.
+     */
+    private void noteLocalPreferenceEdit(
+            @NonNull SyncMetadataEntity metadata, @Nullable PreferencesBackup live) {
+        String digest = preferencesDigest(live);
+        String baseline = preferences.getString(PREFERENCES_HASH, null);
+        if (digest.equals(baseline)) {
+            return;
+        }
+        // No baseline at all means sync has never seen these settings; treating them as a local
+        // edit is the conservative reading, because the alternative silently loses a fresh
+        // install's configuration to an older version already on Drive.
+        database.syncMetadataDao()
+                .touch(metadata.recordType, metadata.localId, System.currentTimeMillis());
+        preferences.edit().putString(PREFERENCES_HASH, digest).commit();
+    }
+
+    /** Digest of the preferences currently visible to the app. */
+    @NonNull
+    private String livePreferencesDigest() {
+        return preferencesDigest(preferenceHelper.getListPreferences());
+    }
+
+    /** Stable digest of one preferences payload, used for the journal and the build baseline. */
+    @NonNull
+    private String preferencesDigest(@Nullable PreferencesBackup backup) {
+        String json = backup == null ? "" : gson.toJson(backup);
+        try {
+            return sha256(new java.io.ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        } catch (IOException impossible) {
+            throw new IllegalStateException("Could not digest preferences", impossible);
+        }
+    }
+
+    /** Reads a preferences payload, refusing anything that is not a usable settings snapshot. */
+    @NonNull
+    private PreferencesBackup requirePreferences(@NonNull JsonObject payload) throws IOException {
+        try {
+            PreferencesBackup parsed = gson.fromJson(payload, PreferencesBackup.class);
+            if (parsed == null || !parsed.isCreated()) {
+                throw new IOException("Sync preferences payload is invalid");
+            }
+            return parsed;
+        } catch (RuntimeException error) {
+            throw new IOException("Sync preferences payload is invalid", error);
         }
     }
 
@@ -340,13 +551,7 @@ public final class RoomSyncStore implements SyncStore {
         if (value == null) return null;
         JsonObject result = gson.toJsonTree(value).getAsJsonObject();
         if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
-            String hash = result.toString();
-            String previous = preferences.getString(PREFERENCES_HASH, null);
-            if (!hash.equals(previous)) {
-                database.syncMetadataDao()
-                        .touch(metadata.recordType, metadata.localId, System.currentTimeMillis());
-                preferences.edit().putString(PREFERENCES_HASH, hash).apply();
-            }
+            noteLocalPreferenceEdit(metadata, (PreferencesBackup) value);
         }
         if ("task".equals(metadata.recordType)) {
             JsonElement category = result.get("categoryId");
@@ -503,10 +708,19 @@ public final class RoomSyncStore implements SyncStore {
         if (resolution == SyncResolution.PENDING) return;
         SyncConflictEntity pending = database.syncConflictDao().getById(conflictId);
         if (pending == null || pending.resolved) return;
+
         // Resolution is a user-visible mutation. Verify and pin the selected version before its
-        // conflict row can be marked resolved; a missing blob must leave both the note and conflict
-        // untouched, including when the winner happens to already be visible in Room.
-        pinResolvedConflictAttachments(selectRecordForResolution(pending, resolution));
+        // conflict row can be marked resolved; a missing blob must leave both the note and the
+        // conflict untouched, including when the winner happens to already be visible in Room.
+        SyncRecord selected = selectRecordForResolution(pending, resolution);
+        pinResolvedConflictAttachments(selected);
+
+        if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(pending.recordType)
+                && !selected.isTombstone()) {
+            resolvePreferencesConflict(conflictId, resolution, selected);
+            return;
+        }
+
         try {
             database.runInTransaction(
                     () -> {
@@ -515,23 +729,83 @@ public final class RoomSyncStore implements SyncStore {
                         if (conflict == null || conflict.resolved) return;
 
                         long resolvedAt = System.currentTimeMillis();
-                        boolean keepWinner =
-                                (resolution == SyncResolution.KEEP_LOCAL
-                                                && "LOCAL".equals(conflict.winnerSource))
-                                        || (resolution == SyncResolution.KEEP_DRIVE
-                                                && "REMOTE".equals(conflict.winnerSource));
-                        if (!keepWinner) {
-                            try {
-                                applyResolvedRecord(conflict, resolution, resolvedAt);
-                            } catch (IOException error) {
-                                throw new SyncRuntimeException(error);
-                            }
+                        try {
+                            applyResolvedRecord(conflict, resolution, resolvedAt);
+                        } catch (IOException error) {
+                            throw new SyncRuntimeException(error);
                         }
                         database.syncConflictDao()
                                 .markResolved(conflictId, resolution.name(), resolvedAt);
                     });
         } catch (SyncRuntimeException error) {
             throw error.ioException;
+        }
+    }
+
+    /**
+     * Applies a chosen preferences version through the same journal a snapshot apply uses.
+     *
+     * <p>The old path called {@code applyPayload}, whose preferences branch is a no-op, then marked
+     * the conflict resolved and bumped the record's timestamp. Nothing was written, the conflict
+     * left the queue, and the untouched local values — now carrying the newest timestamp —
+     * overwrote the chosen version on every other device at the next sync.
+     *
+     * <p>The version bump is deliberately in the second phase. Bumping it before the adapter has
+     * committed would, on a failed write, publish the value the user rejected under a fresh
+     * timestamp; leaving it until after the commit means a failure changes nothing at all.
+     */
+    private void resolvePreferencesConflict(
+            long conflictId, @NonNull SyncResolution resolution, @NonNull SyncRecord selected)
+            throws IOException {
+        PreferencesBackup chosen = requirePreferences(selected.getPayload());
+        String target = preferencesDigest(chosen);
+        String baseline = livePreferencesDigest();
+        String payloadJson = gson.toJson(chosen);
+        long recordUpdatedAt = selected.getUpdatedAt().toEpochMilli();
+
+        database.runInTransaction(
+                () -> {
+                    SyncConflictEntity conflict = database.syncConflictDao().getById(conflictId);
+                    if (conflict == null || conflict.resolved) return;
+                    database.syncPendingPreferencesDao()
+                            .upsert(
+                                    new SyncPendingPreferencesEntity(
+                                            1,
+                                            payloadJson,
+                                            target,
+                                            baseline,
+                                            recordUpdatedAt,
+                                            false));
+                });
+
+        // Throws when the write is not durable, leaving the journal in place and the conflict
+        // unresolved so the user can try again.
+        commitPendingPreferences(chosen, target);
+
+        try {
+            database.runInTransaction(
+                    () -> {
+                        SyncConflictEntity conflict =
+                                database.syncConflictDao().getById(conflictId);
+                        if (conflict == null || conflict.resolved) return;
+                        database.syncPendingPreferencesDao().clear();
+                        long resolvedAt = System.currentTimeMillis();
+                        SyncMetadataEntity metadata =
+                                database.syncMetadataDao()
+                                        .getByStableId(conflict.recordType, conflict.stableId);
+                        if (metadata != null) {
+                            database.syncMetadataDao()
+                                    .setVersion(
+                                            conflict.recordType,
+                                            metadata.localId,
+                                            Math.max(resolvedAt, metadata.updatedAt + 1L),
+                                            null);
+                        }
+                        database.syncConflictDao()
+                                .markResolved(conflictId, resolution.name(), resolvedAt);
+                    });
+        } catch (RuntimeException error) {
+            throw new IOException("Could not finalize the resolved preferences conflict", error);
         }
     }
 
@@ -547,7 +821,8 @@ public final class RoomSyncStore implements SyncStore {
                     SyncBundleCodec.AttachmentManifestEntry.fromJson(element.getAsJsonObject());
             File source = resolveLocalAttachment(entry.sha256);
             if (source == null || !isVerifiedAttachmentFile(source, entry.sha256, entry.size)) {
-                throw new IOException("Required conflict attachment is unavailable: " + entry.sha256);
+                throw new IOException(
+                        "Required conflict attachment is unavailable: " + entry.sha256);
             }
             File cache = attachmentFile(entry.sha256);
             if (!isVerifiedAttachmentFile(cache, entry.sha256, entry.size)) {
@@ -568,6 +843,9 @@ public final class RoomSyncStore implements SyncStore {
                             conflict.getId(),
                             conflictVersionPairHash(conflict),
                             conflict.getWinnerSource().name(),
+                            conflict.getLoserSource().name(),
+                            conflict.getWinnerVersionId(),
+                            conflict.getLoserVersionId(),
                             conflict.getWinner().canonicalSerializedPayload(),
                             conflict.getLoser().canonicalSerializedPayload(),
                             conflict.getWinner().getUpdatedAt().toEpochMilli(),
@@ -598,6 +876,23 @@ public final class RoomSyncStore implements SyncStore {
         } catch (IOException impossible) {
             throw new IllegalStateException("Could not hash sync conflict identity", impossible);
         }
+    }
+
+    /** True when {@code resolution} names the version the merge selected. */
+    private static boolean keepsWinner(
+            @NonNull SyncConflictEntity conflict, @NonNull SyncResolution resolution) {
+        if (resolution == SyncResolution.KEEP_ALTERNATIVE) {
+            return false;
+        }
+        if (resolution == SyncResolution.KEEP_WINNER) {
+            return true;
+        }
+        String wanted = resolution == SyncResolution.KEEP_LOCAL ? "LOCAL" : "REMOTE";
+        if (wanted.equals(conflict.winnerSource)) {
+            return true;
+        }
+        // Only select the alternative when it genuinely is the endpoint the user named.
+        return !wanted.equals(conflict.loserSource);
     }
 
     private void applyResolvedRecord(
@@ -653,15 +948,20 @@ public final class RoomSyncStore implements SyncStore {
                 .setVersion(conflict.recordType, metadata.localId, updatedAt, null);
     }
 
+    /**
+     * Picks the version the user chose, addressing it by position rather than by origin.
+     *
+     * <p>The deprecated endpoint-addressed values are still mapped, because a stored row may carry
+     * one, but they can no longer silently select the wrong side: when neither version came from
+     * the named endpoint — the Drive-vs-Drive case — the deterministic winner is kept rather than
+     * the alternative, which is what the old expression did by accident.
+     */
     @NonNull
     private static SyncRecord selectRecordForResolution(
             @NonNull SyncConflictEntity conflict, @NonNull SyncResolution resolution)
             throws IOException {
-        boolean keepWinner =
-                (resolution == SyncResolution.KEEP_LOCAL && "LOCAL".equals(conflict.winnerSource))
-                        || (resolution == SyncResolution.KEEP_DRIVE
-                                && "REMOTE".equals(conflict.winnerSource));
-        String selectedJson = keepWinner ? conflict.winnerJson : conflict.loserJson;
+        String selectedJson =
+                keepsWinner(conflict, resolution) ? conflict.winnerJson : conflict.loserJson;
         JsonObject root = JsonParser.parseString(selectedJson).getAsJsonObject();
         SyncRecord.Type type = SyncRecord.Type.fromWireValue(root.get("type").getAsString());
         String id = root.get("id").getAsString();
@@ -682,6 +982,12 @@ public final class RoomSyncStore implements SyncStore {
             super(ioException);
             this.ioException = ioException;
         }
+    }
+
+    @NonNull
+    @Override
+    public java.util.Set<String> getResolvedAlternativeIds() {
+        return new LinkedHashSet<>(database.syncConflictDao().getResolvedVersionIds());
     }
 
     @NonNull
@@ -957,17 +1263,17 @@ public final class RoomSyncStore implements SyncStore {
                     target =
                             new File(
                                     folder,
-                                    entry.id
-                                            + "-"
-                                            + entry.sha256
-                                            + "-"
-                                            + UUID.randomUUID());
+                                    entry.id + "-" + entry.sha256 + "-" + UUID.randomUUID());
                 }
                 copyVerifiedAttachment(source, target, entry.sha256, entry.size);
             }
+            if (note.getId() <= 0) {
+                throw new IOException("Cannot restore attachments for an unsaved note");
+            }
             JsonObject attachment = new JsonObject();
-            attachment.addProperty(
-                    "url", "file://attachments/note_" + note.getId() + "/" + target.getName());
+            // Canonical editorjs:// form, the only shape EditorAttachmentsWebViewClient serves.
+            // Writing file:// here left every synced attachment unrenderable on the receiver.
+            attachment.addProperty("url", AttachmentStorage.urlFor(note.getId(), target.getName()));
             attachment.addProperty("name", displayName);
             attachment.addProperty("id", entry.id);
             restored.add(attachment);
@@ -976,10 +1282,9 @@ public final class RoomSyncStore implements SyncStore {
     }
 
     private static boolean isVerifiedAttachmentFile(
-            @NonNull File file, @NonNull String expectedHash, long expectedSize) throws IOException {
-        return file.isFile()
-                && file.length() == expectedSize
-                && expectedHash.equals(sha256(file));
+            @NonNull File file, @NonNull String expectedHash, long expectedSize)
+            throws IOException {
+        return file.isFile() && file.length() == expectedSize && expectedHash.equals(sha256(file));
     }
 
     private static void copyVerifiedAttachment(
@@ -1020,7 +1325,8 @@ public final class RoomSyncStore implements SyncStore {
         String actual = hash.toString();
         if (copied != expectedSize || !expectedHash.equals(actual)) {
             if (!temporary.delete()) Log.w(TAG, "Could not remove invalid staged attachment");
-            throw new AttachmentIntegrityException("Attachment checksum does not match sync metadata");
+            throw new AttachmentIntegrityException(
+                    "Attachment checksum does not match sync metadata");
         }
         if (!temporary.renameTo(target)) {
             if (!temporary.delete()) Log.w(TAG, "Could not remove uncommitted staged attachment");

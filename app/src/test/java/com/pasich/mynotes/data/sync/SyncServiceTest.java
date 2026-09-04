@@ -147,8 +147,8 @@ public class SyncServiceTest {
         SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
-        // Drive is untrusted even for a content-addressed object, so remote bytes are verified
-        // before publication.
+        // Drive is untrusted even for a content-addressed object, so the remote bytes are still
+        // verified before publication — but exactly once, not once per question asked about them.
         assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot");
     }
 
@@ -325,6 +325,65 @@ public class SyncServiceTest {
             value.append(String.format("%02x", byteValue & 0xff));
         }
         return value.toString();
+    }
+
+    @Test
+    public void sync_convergesANoteWhoseAttachmentIsZeroBytes() throws Exception {
+        byte[] empty = new byte[0];
+        String hash = sha256(empty);
+        SyncRecord local = noteWithAttachment(TEN, "Note with an empty file", hash, 0L);
+
+        FakeStore uploader = new FakeStore(snapshot(local));
+        uploader.attachmentHashes = Collections.singletonList(hash);
+        uploader.attachments.put(hash, empty);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState published = new SyncService(uploader, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(published.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.attachments).containsKey(hash);
+        assertThat(backend.attachments.get(hash)).isEqualTo(empty);
+
+        // A second device starting empty must be able to pull the same blob back.
+        FakeStore downloader = new FakeStore(SyncSnapshot.empty());
+        downloader.attachmentHashes = Collections.singletonList(hash);
+
+        SyncState received = new SyncService(downloader, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(received.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(downloader.attachments.get(hash)).isEqualTo(empty);
+        assertThat(downloader.snapshot.getRecords()).containsExactly(local);
+    }
+
+    @Test
+    public void sync_refusesAZeroByteAttachmentThatIsMissingEverywhere() throws Exception {
+        String hash = sha256(new byte[0]);
+        SyncRecord local = noteWithAttachment(TEN, "Note with an empty file", hash, 0L);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+    }
+
+    private static SyncRecord noteWithAttachment(
+            java.time.Instant updatedAt, String value, String sha256, long size) {
+        com.google.gson.JsonObject payload = new com.google.gson.JsonObject();
+        payload.addProperty("title", "Shopping");
+        payload.addProperty("value", value);
+        com.google.gson.JsonObject entry = new com.google.gson.JsonObject();
+        entry.addProperty("id", "8f1d1b2c-2f3a-4c5d-8e9f-0a1b2c3d4e5f");
+        entry.addProperty("sha256", sha256);
+        entry.addProperty("mimeType", "application/octet-stream");
+        entry.addProperty("size", size);
+        entry.addProperty("path", "attachments/" + sha256);
+        com.google.gson.JsonArray manifest = new com.google.gson.JsonArray();
+        manifest.add(entry);
+        payload.add("attachmentsManifest", manifest);
+        return SyncRecord.live(SyncRecord.Type.NOTE, NOTE_ID, updatedAt, payload);
     }
 
     private static final class FakeStore implements SyncStore {

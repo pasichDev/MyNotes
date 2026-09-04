@@ -423,6 +423,9 @@
     <string name="sync_conflict_title">Вырашыць канфлікты сінхранізацыі (%1$d засталося)</string>
     <string name="sync_conflict_keep_local">Пакінуць лакальную версію</string>
     <string name="sync_conflict_keep_drive">Пакінуць версію з Google Drive</string>
+    <string name="sync_conflict_keep_winner">Keep version 1</string>
+    <string name="sync_conflict_keep_alternative">Keep version 2</string>
+    <string name="sync_conflict_version_label">Version %1$d — %2$s</string>
     <string name="sync_conflict_later">Пазней</string>
     <string name="sync_conflict_resolved">Канфлікт сінхранізацыі вырашаны</string>
     <string name="sync_conflict_version">%1$s • %2$s</string>

@@ -538,11 +538,12 @@ public class BackupActivity extends BaseActivity
                 .setMessage(buildConflictMessage(conflict))
                 .setNegativeButton(R.string.sync_conflict_later, null)
                 .setNeutralButton(
-                        R.string.sync_conflict_keep_local,
-                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_LOCAL))
+                        R.string.sync_conflict_keep_winner,
+                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_WINNER))
                 .setPositiveButton(
-                        R.string.sync_conflict_keep_drive,
-                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_DRIVE))
+                        R.string.sync_conflict_keep_alternative,
+                        (dialog, which) ->
+                                resolveConflict(conflict.id, SyncResolution.KEEP_ALTERNATIVE))
                 .show();
     }
 
@@ -615,21 +616,29 @@ public class BackupActivity extends BaseActivity
     private String buildConflictMessage(@NonNull SyncConflictEntity conflict) {
         return getString(
                         R.string.sync_conflict_version,
-                        getString(R.string.sync_conflict_local_label),
-                        describeConflictPayload(
-                                conflict.recordType,
-                                conflict.winnerSource.equals("LOCAL")
-                                        ? conflict.winnerJson
-                                        : conflict.loserJson))
-                + "\n\n"
+                        versionLabel(1, conflict.winnerSource),
+                        describeConflictPayload(conflict.recordType, conflict.winnerJson))
+                + "\n"
                 + getString(
                         R.string.sync_conflict_version,
-                        getString(R.string.sync_conflict_drive_label),
-                        describeConflictPayload(
-                                conflict.recordType,
-                                conflict.winnerSource.equals("REMOTE")
-                                        ? conflict.winnerJson
-                                        : conflict.loserJson));
+                        versionLabel(2, conflict.loserSource),
+                        describeConflictPayload(conflict.recordType, conflict.loserJson));
+    }
+
+    /**
+     * Names one side of a conflict by its position and its true origin.
+     *
+     * <p>A conflict between two Drive bundle heads has no local side, so the two versions are
+     * numbered and each is labelled with where it actually came from. Calling an arbitrary remote
+     * version "this device" told the user something untrue about data they were about to discard.
+     */
+    @NonNull
+    private String versionLabel(int position, @NonNull String source) {
+        int origin =
+                "LOCAL".equals(source)
+                        ? R.string.sync_conflict_local_label
+                        : R.string.sync_conflict_drive_label;
+        return getString(R.string.sync_conflict_version_label, position, getString(origin));
     }
 
     @NonNull

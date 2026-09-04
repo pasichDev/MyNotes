@@ -22,6 +22,13 @@ public interface PreferenceHelper {
 
     void setListPreferences(PreferencesBackup preferences);
 
+    /**
+     * Writes every backed-up preference as one durable edit.
+     *
+     * @return true only when the whole set is durably stored.
+     */
+    boolean commitListPreferences(PreferencesBackup preferences);
+
     String getLastKnownVersion();
 
     void setLastKnownVersion(String version);

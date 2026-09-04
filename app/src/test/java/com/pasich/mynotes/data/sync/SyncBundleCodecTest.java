@@ -132,9 +132,7 @@ public class SyncBundleCodecTest {
                                 .getAsJsonArray("attachmentsManifest"))
                 .hasSize(1);
         assertThat(
-                        decoded.find(
-                                        SyncRecord.Type.NOTE,
-                                        "6ba7b812-9dad-11d1-80b4-00c04fd430c8")
+                        decoded.find(SyncRecord.Type.NOTE, "6ba7b812-9dad-11d1-80b4-00c04fd430c8")
                                 .getPayload()
                                 .getAsJsonArray("attachmentsManifest"))
                 .hasSize(1);

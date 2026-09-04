@@ -85,6 +85,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public boolean commitListPreferences(PreferencesBackup preferences) {
+        return preferencesHelper.commitListPreferences(preferences);
+    }
+
+    @Override
     public String getLastKnownVersion() {
         return preferencesHelper.getLastKnownVersion();
     }

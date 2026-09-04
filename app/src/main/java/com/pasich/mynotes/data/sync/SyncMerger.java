@@ -17,6 +17,22 @@ public final class SyncMerger {
 
     @NonNull
     public SyncMergeResult merge(@NonNull SyncSnapshot local, @NonNull SyncSnapshot remote) {
+        return merge(local, remote, SyncMergeResult.Source.LOCAL, SyncMergeResult.Source.REMOTE);
+    }
+
+    /**
+     * Merges two snapshots whose origins are named explicitly.
+     *
+     * <p>Folding several remote bundle heads together is a merge between two remote versions, and
+     * the conflicts it reports have to say so; the two-argument overload above would otherwise
+     * label whichever bundle happened to be the accumulator as local.
+     */
+    @NonNull
+    public SyncMergeResult merge(
+            @NonNull SyncSnapshot local,
+            @NonNull SyncSnapshot remote,
+            @NonNull SyncMergeResult.Source localSource,
+            @NonNull SyncMergeResult.Source remoteSource) {
         Objects.requireNonNull(local, "local");
         Objects.requireNonNull(remote, "remote");
 
@@ -41,7 +57,14 @@ public final class SyncMerger {
             } else if (remoteRecord == null) {
                 merged.put(key, localRecord);
             } else {
-                mergeVersions(localRecord, remoteRecord, merged, conflicts, key);
+                mergeVersions(
+                        localRecord,
+                        remoteRecord,
+                        merged,
+                        conflicts,
+                        key,
+                        localSource,
+                        remoteSource);
             }
         }
         return new SyncMergeResult(new SyncSnapshot(merged.values()), conflicts);
@@ -52,16 +75,18 @@ public final class SyncMerger {
             SyncRecord remote,
             Map<SyncSnapshot.RecordKey, SyncRecord> merged,
             ArrayList<SyncMergeResult.Conflict> conflicts,
-            SyncSnapshot.RecordKey key) {
+            SyncSnapshot.RecordKey key,
+            SyncMergeResult.Source localSource,
+            SyncMergeResult.Source remoteSource) {
         int timestampComparison = local.getUpdatedAt().compareTo(remote.getUpdatedAt());
         if (timestampComparison > 0) {
             merged.put(key, local);
-            addConflictWhenDifferent(local, remote, SyncMergeResult.Source.LOCAL, conflicts);
+            addConflictWhenDifferent(local, remote, localSource, remoteSource, conflicts);
             return;
         }
         if (timestampComparison < 0) {
             merged.put(key, remote);
-            addConflictWhenDifferent(remote, local, SyncMergeResult.Source.REMOTE, conflicts);
+            addConflictWhenDifferent(remote, local, remoteSource, localSource, conflicts);
             return;
         }
 
@@ -71,12 +96,10 @@ public final class SyncMerger {
             merged.put(key, local);
         } else if (localHash.compareTo(remoteHash) < 0) {
             merged.put(key, local);
-            conflicts.add(
-                    new SyncMergeResult.Conflict(local, remote, SyncMergeResult.Source.LOCAL));
+            conflicts.add(new SyncMergeResult.Conflict(local, remote, localSource, remoteSource));
         } else {
             merged.put(key, remote);
-            conflicts.add(
-                    new SyncMergeResult.Conflict(remote, local, SyncMergeResult.Source.REMOTE));
+            conflicts.add(new SyncMergeResult.Conflict(remote, local, remoteSource, localSource));
         }
     }
 
@@ -84,9 +107,10 @@ public final class SyncMerger {
             SyncRecord winner,
             SyncRecord loser,
             SyncMergeResult.Source winnerSource,
+            SyncMergeResult.Source loserSource,
             ArrayList<SyncMergeResult.Conflict> conflicts) {
         if (!winner.getCanonicalPayloadHash().equals(loser.getCanonicalPayloadHash())) {
-            conflicts.add(new SyncMergeResult.Conflict(winner, loser, winnerSource));
+            conflicts.add(new SyncMergeResult.Conflict(winner, loser, winnerSource, loserSource));
         }
     }
 }

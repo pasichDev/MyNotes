@@ -313,6 +313,9 @@ public class SyncCoordinatorTest {
                         "550e8400-e29b-41d4-a716-446655440000",
                         "test-version-pair",
                         "LOCAL",
+                        "REMOTE",
+                        "winner-version-id",
+                        "loser-version-id",
                         "{}",
                         "{}",
                         1L,
@@ -477,6 +480,12 @@ public class SyncCoordinatorTest {
         @Override
         public void setListPreferences(
                 com.pasich.mynotes.utils.backup.models.PreferencesBackup preferences) {}
+
+        @Override
+        public boolean commitListPreferences(
+                com.pasich.mynotes.utils.backup.models.PreferencesBackup preferences) {
+            return true;
+        }
 
         @Override
         public String getLastKnownVersion() {

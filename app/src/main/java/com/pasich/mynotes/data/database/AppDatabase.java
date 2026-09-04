@@ -153,7 +153,8 @@ public abstract class AppDatabase extends RoomDatabase {
                     database.execSQL(
                             "UPDATE `sync_conflicts` SET `versionPairHash` = 'legacy-' || `id` "
                                     + "WHERE `versionPairHash` = ''");
-                    database.execSQL("DROP INDEX IF EXISTS `index_sync_conflicts_recordType_stableId`");
+                    database.execSQL(
+                            "DROP INDEX IF EXISTS `index_sync_conflicts_recordType_stableId`");
                     database.execSQL(
                             "CREATE UNIQUE INDEX IF NOT EXISTS "
                                     + "`index_sync_conflicts_recordType_stableId_versionPairHash` "
@@ -170,6 +171,48 @@ public abstract class AppDatabase extends RoomDatabase {
                             "CREATE TABLE IF NOT EXISTS `sync_pending_preferences` ("
                                     + "`id` INTEGER NOT NULL, `payloadJson` TEXT NOT NULL, "
                                     + "PRIMARY KEY(`id`))");
+                }
+            };
+
+    /**
+     * Gives the pending-preferences journal enough identity to decide whether replay is still valid
+     * and a quarantine flag so an unreadable payload cannot disable sync forever, and gives each
+     * conflict side its own origin plus a deterministic version identity.
+     */
+    public static final Migration MIGRATION_19_20 =
+            new Migration(19, 20) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `targetHash` TEXT NOT NULL DEFAULT ''");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `baselineHash` TEXT NOT NULL DEFAULT ''");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `recordUpdatedAt` INTEGER NOT NULL DEFAULT 0");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `quarantined` INTEGER NOT NULL DEFAULT 0");
+
+                    // Conflict provenance is per side, and each version carries a deterministic
+                    // identity, so a resolution can name a version instead of an endpoint.
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` "
+                                    + "ADD COLUMN `loserSource` TEXT NOT NULL DEFAULT 'REMOTE'");
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` "
+                                    + "ADD COLUMN `winnerVersionId` TEXT NOT NULL DEFAULT ''");
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` "
+                                    + "ADD COLUMN `loserVersionId` TEXT NOT NULL DEFAULT ''");
+                    // Rows written before this column existed always had a local winner or a
+                    // local loser, never two remote sides.
+                    database.execSQL(
+                            "UPDATE `sync_conflicts` SET `loserSource` = "
+                                    + "CASE WHEN `winnerSource` = 'LOCAL' THEN 'REMOTE' "
+                                    + "ELSE 'LOCAL' END");
                 }
             };
 

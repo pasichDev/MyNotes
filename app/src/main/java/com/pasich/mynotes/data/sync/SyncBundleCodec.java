@@ -53,6 +53,35 @@ public final class SyncBundleCodec {
             @NonNull Instant createdAt,
             @NonNull Collection<String> parentBundleIds)
             throws IOException {
+        return encode(
+                snapshot,
+                createdAt,
+                parentBundleIds,
+                Collections.emptyList(),
+                Collections.emptySet());
+    }
+
+    /**
+     * Encodes one bundle, including the conflict versions that are still unresolved.
+     *
+     * <p>A merged descendant used to carry only the deterministic winner, so publishing it made
+     * every losing version unreachable: the bundles holding them stopped being frontier heads and
+     * nothing else referenced them. A device that had never seen the conflict could not discover
+     * it, and a device that had seen it held the only copy. Unresolved alternatives now travel in
+     * the bundle itself and are carried forward until some device records that the conflict was
+     * resolved, which makes them replicated durable state rather than one device's local queue.
+     *
+     * @param unresolvedAlternatives losing versions that must remain recoverable.
+     * @param resolvedAlternativeIds version identities a user has explicitly settled.
+     */
+    @NonNull
+    public byte[] encode(
+            @NonNull SyncSnapshot snapshot,
+            @NonNull Instant createdAt,
+            @NonNull Collection<String> parentBundleIds,
+            @NonNull Collection<SyncRecord> unresolvedAlternatives,
+            @NonNull Collection<String> resolvedAlternativeIds)
+            throws IOException {
         JsonObject recordsRoot = new JsonObject();
         recordsRoot.add("notes", liveArray(snapshot, SyncRecord.Type.NOTE));
         recordsRoot.add("tasks", liveArray(snapshot, SyncRecord.Type.TASK));
@@ -60,8 +89,18 @@ public final class SyncBundleCodec {
         recordsRoot.add("categories", liveArray(snapshot, SyncRecord.Type.CATEGORY));
         recordsRoot.add("preferences", liveArray(snapshot, SyncRecord.Type.PREFERENCES));
         recordsRoot.add("tombstones", tombstones(snapshot));
+        List<SyncRecord> alternatives = dedupeAlternatives(unresolvedAlternatives);
+        recordsRoot.add("alternatives", alternativeArray(alternatives));
+        JsonArray resolved = new JsonArray();
+        for (String versionId : new java.util.TreeSet<>(resolvedAlternativeIds)) {
+            if (!SHA_256.matcher(versionId).matches()) {
+                throw new IOException("Sync bundle contains an invalid resolved version id");
+            }
+            resolved.add(versionId);
+        }
+        recordsRoot.add("resolvedAlternatives", resolved);
 
-        JsonArray attachments = collectAttachments(snapshot);
+        JsonArray attachments = collectAttachments(snapshot, alternatives);
         byte[] recordBytes = GSON.toJson(recordsRoot).getBytes(StandardCharsets.UTF_8);
         if (recordBytes.length > SyncBundleValidator.MAX_RECORD_BYTES) {
             throw new IOException("Sync records exceed the schema-1 size limit");
@@ -125,6 +164,8 @@ public final class SyncBundleCodec {
                 identities,
                 result);
         parseTombstones(records, identities, result);
+        List<SyncRecord> alternatives = parseAlternatives(records, attachmentsById);
+        java.util.Set<String> resolvedAlternativeIds = parseResolvedAlternatives(records);
         JsonObject manifest = validated.getManifest();
         JsonArray parents = manifest.getAsJsonArray("parentBundleIds");
         List<String> parentBundleIds = new ArrayList<>();
@@ -135,7 +176,9 @@ public final class SyncBundleCodec {
                 new SyncSnapshot(result),
                 validated.getAttachmentsByHash(),
                 manifest.get("bundleId").getAsString(),
-                parentBundleIds);
+                parentBundleIds,
+                alternatives,
+                resolvedAlternativeIds);
     }
 
     private static void writeEntry(ZipOutputStream zip, String name, byte[] bytes)
@@ -187,6 +230,48 @@ public final class SyncBundleCodec {
         }
     }
 
+    /**
+     * Orders alternatives deterministically and drops exact duplicates.
+     *
+     * <p>Two devices publishing the same alternative must produce byte-identical bundles for the
+     * duplicate-copy check in the read path to keep working.
+     */
+    @NonNull
+    private static List<SyncRecord> dedupeAlternatives(
+            @NonNull Collection<SyncRecord> alternatives) {
+        Map<String, SyncRecord> byVersion = new java.util.TreeMap<>();
+        for (SyncRecord alternative : alternatives) {
+            byVersion.putIfAbsent(
+                    alternative.getType().getWireValue()
+                            + ":"
+                            + alternative.getId()
+                            + ":"
+                            + alternative.getCanonicalPayloadHash(),
+                    alternative);
+        }
+        return new ArrayList<>(byVersion.values());
+    }
+
+    @NonNull
+    private static JsonArray alternativeArray(@NonNull List<SyncRecord> alternatives)
+            throws IOException {
+        JsonArray array = new JsonArray();
+        for (SyncRecord alternative : alternatives) {
+            JsonObject item =
+                    alternative.isTombstone() ? new JsonObject() : alternative.getPayload();
+            item.addProperty("type", alternative.getType().getWireValue());
+            item.addProperty("id", alternative.getId());
+            item.addProperty("updatedAt", alternative.getUpdatedAt().toString());
+            if (alternative.isTombstone()) {
+                item.addProperty("deletedAt", alternative.getDeletedAt().toString());
+            } else if (alternative.getType() == SyncRecord.Type.NOTE) {
+                normalizeNoteAttachmentFields(item);
+            }
+            array.add(item);
+        }
+        return array;
+    }
+
     @NonNull
     private static JsonArray tombstones(@NonNull SyncSnapshot snapshot) {
         JsonArray array = new JsonArray();
@@ -202,20 +287,33 @@ public final class SyncBundleCodec {
     }
 
     @NonNull
-    private static JsonArray collectAttachments(@NonNull SyncSnapshot snapshot) throws IOException {
+    private static JsonArray collectAttachments(
+            @NonNull SyncSnapshot snapshot, @NonNull List<SyncRecord> alternatives)
+            throws IOException {
         JsonArray attachments = new JsonArray();
         Map<String, AttachmentManifestEntry> seenById = new LinkedHashMap<>();
         Map<String, AttachmentManifestEntry> seenByHash = new LinkedHashMap<>();
-        for (SyncRecord record : snapshot.getLiveRecords(SyncRecord.Type.NOTE)) {
+        List<SyncRecord> notes = new ArrayList<>(snapshot.getLiveRecords(SyncRecord.Type.NOTE));
+        // An unresolved alternative is only recoverable if its blobs are described here too.
+        for (SyncRecord alternative : alternatives) {
+            if (!alternative.isTombstone() && alternative.getType() == SyncRecord.Type.NOTE) {
+                notes.add(alternative);
+            }
+        }
+        for (SyncRecord record : notes) {
             JsonArray manifestEntries = record.getPayload().getAsJsonArray("attachmentsManifest");
             if (manifestEntries == null) continue;
             for (JsonElement element : manifestEntries) {
                 AttachmentManifestEntry attachment =
                         AttachmentManifestEntry.fromJson(element.getAsJsonObject());
-                if (seenById.putIfAbsent(attachment.id, attachment) != null) {
+                AttachmentManifestEntry sameId = seenById.putIfAbsent(attachment.id, attachment);
+                if (sameId != null && !sameId.sameRemoteFile(attachment)) {
+                    // The same logical attachment may appear in both a live note and one of its
+                    // unresolved alternatives; only differing content is a contradiction.
                     throw new IOException("Two notes reference conflicting attachment metadata");
                 }
-                AttachmentManifestEntry previous = seenByHash.putIfAbsent(attachment.sha256, attachment);
+                AttachmentManifestEntry previous =
+                        seenByHash.putIfAbsent(attachment.sha256, attachment);
                 if (previous != null && !previous.sameRemoteFile(attachment)) {
                     throw new IOException("Two notes reference conflicting attachment metadata");
                 }
@@ -293,6 +391,66 @@ public final class SyncBundleCodec {
         payload.add("attachmentNames", namesByHash);
     }
 
+    @NonNull
+    private static List<SyncRecord> parseAlternatives(
+            @NonNull JsonObject records,
+            @NonNull Map<String, AttachmentManifestEntry> attachmentsById)
+            throws IOException {
+        List<SyncRecord> alternatives = new ArrayList<>();
+        JsonArray array = records.getAsJsonArray("alternatives");
+        if (array == null) {
+            // Written by a client that predates durable alternatives.
+            return alternatives;
+        }
+        for (JsonElement element : array) {
+            JsonObject item = element.getAsJsonObject();
+            SyncRecord.Type type =
+                    SyncRecord.Type.fromWireValue(SyncBundleValidator.requireString(item, "type"));
+            String id = SyncBundleValidator.requireString(item, "id");
+            SyncBundleValidator.validateUuid(id);
+            Instant updatedAt = Instant.parse(SyncBundleValidator.requireString(item, "updatedAt"));
+            JsonElement deletedAt = item.get("deletedAt");
+            if (deletedAt != null && !deletedAt.isJsonNull()) {
+                alternatives.add(
+                        SyncRecord.tombstone(
+                                type, id, updatedAt, Instant.parse(deletedAt.getAsString())));
+                continue;
+            }
+            JsonObject payload = item.deepCopy();
+            payload.remove("type");
+            payload.remove("id");
+            payload.remove("updatedAt");
+            payload.remove("deletedAt");
+            SyncMetadata.stripDeviceLocalFields(type.getWireValue(), payload);
+            if (type == SyncRecord.Type.NOTE) {
+                hydrateNoteAttachments(payload, attachmentsById);
+            }
+            alternatives.add(SyncRecord.live(type, id, updatedAt, payload));
+        }
+        return alternatives;
+    }
+
+    @NonNull
+    private static java.util.Set<String> parseResolvedAlternatives(@NonNull JsonObject records)
+            throws IOException {
+        java.util.Set<String> resolved = new LinkedHashSet<>();
+        JsonArray array = records.getAsJsonArray("resolvedAlternatives");
+        if (array == null) {
+            return resolved;
+        }
+        for (JsonElement element : array) {
+            if (element == null || !element.isJsonPrimitive()) {
+                throw new IOException("Sync bundle contains an invalid resolved version id");
+            }
+            String versionId = element.getAsString();
+            if (!SHA_256.matcher(versionId).matches()) {
+                throw new IOException("Sync bundle contains an invalid resolved version id");
+            }
+            resolved.add(versionId);
+        }
+        return resolved;
+    }
+
     private static void parseTombstones(
             JsonObject records, LinkedHashSet<String> identities, Collection<SyncRecord> output)
             throws IOException {
@@ -333,16 +491,35 @@ public final class SyncBundleCodec {
         private final Map<String, AttachmentManifestEntry> attachmentsByHash;
         private final String bundleId;
         private final List<String> parentBundleIds;
+        private final List<SyncRecord> alternatives;
+        private final java.util.Set<String> resolvedAlternativeIds;
 
         DecodedBundle(
                 @NonNull SyncSnapshot snapshot,
                 @NonNull Map<String, AttachmentManifestEntry> attachmentsByHash,
                 @NonNull String bundleId,
-                @NonNull List<String> parentBundleIds) {
+                @NonNull List<String> parentBundleIds,
+                @NonNull List<SyncRecord> alternatives,
+                @NonNull java.util.Set<String> resolvedAlternativeIds) {
             this.snapshot = snapshot;
             this.attachmentsByHash = attachmentsByHash;
             this.bundleId = bundleId;
             this.parentBundleIds = Collections.unmodifiableList(new ArrayList<>(parentBundleIds));
+            this.alternatives = Collections.unmodifiableList(new ArrayList<>(alternatives));
+            this.resolvedAlternativeIds =
+                    Collections.unmodifiableSet(new LinkedHashSet<>(resolvedAlternativeIds));
+        }
+
+        /** Losing versions this bundle keeps recoverable. */
+        @NonNull
+        public List<SyncRecord> getAlternatives() {
+            return alternatives;
+        }
+
+        /** Version identities some device recorded as explicitly resolved. */
+        @NonNull
+        public java.util.Set<String> getResolvedAlternativeIds() {
+            return resolvedAlternativeIds;
         }
 
         @NonNull
@@ -355,8 +532,15 @@ public final class SyncBundleCodec {
             return attachmentsByHash;
         }
 
-        @NonNull public String getBundleId() { return bundleId; }
-        @NonNull public List<String> getParentBundleIds() { return parentBundleIds; }
+        @NonNull
+        public String getBundleId() {
+            return bundleId;
+        }
+
+        @NonNull
+        public List<String> getParentBundleIds() {
+            return parentBundleIds;
+        }
     }
 
     public static final class AttachmentManifestEntry {
@@ -438,9 +622,7 @@ public final class SyncBundleCodec {
         }
 
         boolean sameRemoteFile(@NonNull AttachmentManifestEntry other) {
-            return sha256.equals(other.sha256)
-                    && path.equals(other.path)
-                    && size == other.size;
+            return sha256.equals(other.sha256) && path.equals(other.path) && size == other.size;
         }
     }
 }
