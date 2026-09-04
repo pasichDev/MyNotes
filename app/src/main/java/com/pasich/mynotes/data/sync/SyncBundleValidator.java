@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -25,14 +26,19 @@ import java.util.zip.ZipInputStream;
 
 /** Validates schema-1 sync bundles before any remote data is exposed to the app. */
 public final class SyncBundleValidator {
+    static final long MAX_COMPRESSED_BUNDLE_BYTES = 32L * 1024L * 1024L;
     static final long MAX_RECORD_BYTES = 25L * 1024L * 1024L;
+    static final long MAX_RECORD_PAYLOAD_BYTES = 4L * 1024L * 1024L;
     static final long MAX_RECORD_COUNT = 10_000L;
     static final long MAX_ATTACHMENT_COUNT = 10_000L;
+    static final long MAX_ATTACHMENTS_PER_NOTE = 1_000L;
     static final long MAX_ATTACHMENT_BYTES = 100L * 1024L * 1024L;
     static final long MAX_TOTAL_ATTACHMENT_BYTES = 500L * 1024L * 1024L;
     static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 1024L * 1024L * 1024L;
     static final long MAX_COMPRESSION_RATIO = 100L;
     private static final long MAX_MANIFEST_BYTES = 2L * 1024L * 1024L;
+    private static final int MAX_METADATA_STRING_CHARS = 1_048_576;
+    private static final int MAX_JSON_DEPTH = 64;
     private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
 
     @NonNull
@@ -147,6 +153,7 @@ public final class SyncBundleValidator {
             String id = requireString(item, "id");
             validateUuid(id);
             parseInstant(requireString(item, "updatedAt"), "updatedAt");
+            validatePayloadLimits(item);
             if (type == SyncRecord.Type.NOTE) {
                 validateAttachmentReferences(item, attachmentsById, referencedAttachmentIds);
             }
@@ -165,6 +172,9 @@ public final class SyncBundleValidator {
         JsonArray attachmentIds = note.getAsJsonArray("attachmentIds");
         if (attachmentIds == null) {
             return;
+        }
+        if (attachmentIds.size() > MAX_ATTACHMENTS_PER_NOTE) {
+            throw new IOException("Sync note exceeds the attachment limit");
         }
         JsonObject attachmentNames = note.getAsJsonObject("attachmentNames");
         for (JsonElement element : attachmentIds) {
@@ -252,7 +262,10 @@ public final class SyncBundleValidator {
         byte[] records = null;
         long totalUncompressedBytes = 0L;
         Set<String> names = new LinkedHashSet<>();
-        try (ZipInputStream zip = new ZipInputStream(input, StandardCharsets.UTF_8)) {
+        try (ZipInputStream zip =
+                new ZipInputStream(
+                        new BoundedInputStream(input, MAX_COMPRESSED_BUNDLE_BYTES),
+                        StandardCharsets.UTF_8)) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
                 String name = entry.getName();
@@ -341,10 +354,17 @@ public final class SyncBundleValidator {
     static String requireString(@NonNull JsonObject object, @NonNull String field)
             throws IOException {
         JsonElement value = object.get(field);
-        if (value == null || value.isJsonNull() || !value.isJsonPrimitive()) {
+        if (value == null
+                || value.isJsonNull()
+                || !value.isJsonPrimitive()
+                || !value.getAsJsonPrimitive().isString()) {
             throw new IOException("Sync JSON field " + field + " is missing or invalid");
         }
-        return value.getAsString();
+        String result = value.getAsString();
+        if (result.length() > MAX_METADATA_STRING_CHARS) {
+            throw new IOException("Sync JSON field " + field + " exceeds the string limit");
+        }
+        return result;
     }
 
     private static void requireString(
@@ -364,6 +384,42 @@ public final class SyncBundleValidator {
             return value.getAsLong();
         } catch (RuntimeException error) {
             throw new IOException("Sync JSON field " + field + " is not a valid integer", error);
+        }
+    }
+
+    private static void validatePayloadLimits(@NonNull JsonObject record) throws IOException {
+        long serializedBytes = record.toString().getBytes(StandardCharsets.UTF_8).length;
+        if (serializedBytes > MAX_RECORD_PAYLOAD_BYTES) {
+            throw new IOException("Sync record exceeds the payload size limit");
+        }
+        validateJsonValue(record, 0);
+    }
+
+    private static void validateJsonValue(@NonNull JsonElement value, int depth)
+            throws IOException {
+        if (depth > MAX_JSON_DEPTH) {
+            throw new IOException("Sync JSON exceeds the nesting limit");
+        }
+        if (value.isJsonPrimitive()) {
+            if (value.getAsJsonPrimitive().isString()
+                    && value.getAsString().length() > MAX_METADATA_STRING_CHARS) {
+                throw new IOException("Sync JSON string exceeds the size limit");
+            }
+            return;
+        }
+        if (value.isJsonArray()) {
+            for (JsonElement element : value.getAsJsonArray()) {
+                validateJsonValue(element, depth + 1);
+            }
+            return;
+        }
+        if (value.isJsonObject()) {
+            for (Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                if (entry.getKey().length() > MAX_METADATA_STRING_CHARS) {
+                    throw new IOException("Sync JSON field name exceeds the size limit");
+                }
+                validateJsonValue(entry.getValue(), depth + 1);
+            }
         }
     }
 
@@ -407,6 +463,42 @@ public final class SyncBundleValidator {
             return value.toString();
         } catch (NoSuchAlgorithmException error) {
             throw new IOException("SHA-256 is unavailable", error);
+        }
+    }
+
+    /** Caps compressed input before ZIP parsing to make bundle-size limits independent of Drive. */
+    private static final class BoundedInputStream extends FilterInputStream {
+        private final long maxBytes;
+        private long bytesRead;
+
+        private BoundedInputStream(@NonNull InputStream input, long maxBytes) {
+            super(input);
+            this.maxBytes = maxBytes;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int value = super.read();
+            if (value != -1) {
+                count(1);
+            }
+            return value;
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+            int read = super.read(buffer, offset, length);
+            if (read > 0) {
+                count(read);
+            }
+            return read;
+        }
+
+        private void count(long read) throws IOException {
+            bytesRead += read;
+            if (bytesRead > maxBytes) {
+                throw new IOException("Sync bundle exceeds the compressed size limit");
+            }
         }
     }
 

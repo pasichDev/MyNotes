@@ -85,16 +85,12 @@ public final class GoogleDriveSyncWorker extends Worker {
     }
 
     /**
-     * The rollout gate applies here too.
-     *
-     * <p>It used to live only on the manual "Sync now" path, so lowering the percentage to pull a
-     * bad release back would have left this six-hourly job running for every user who had already
-     * turned sync on — the very population a rollback needs to stop.
+     * Backup is available to every user who explicitly enables it; no remote rollout gate is
+     * consulted here.
      */
     static boolean isBackgroundSyncAllowed(PreferenceHelper preferences) {
         return preferences.isSyncEnabled()
                 && preferences.isBackgroundSyncEnabled()
-                && preferences.isFirstSyncConfirmed()
-                && SyncRollout.isWithinRollout(preferences);
+                && preferences.isFirstSyncConfirmed();
     }
 }

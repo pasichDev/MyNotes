@@ -9,7 +9,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.data.sync.SyncResolution;
-import com.pasich.mynotes.data.sync.SyncRollout;
 import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.utils.auth.FirebaseGoogleAuth;
 import com.pasich.mynotes.utils.auth.GoogleCredential;
@@ -188,7 +187,6 @@ public final class SyncCoordinator {
                                 new FirebaseGoogleAuth.Callback() {
                                     @Override
                                     public void onSuccess(@NonNull FirebaseUser user) {
-                                        SyncRollout.ensureBucket(preferenceHelper);
                                         preferenceHelper.setSyncEnabled(true);
                                         if (preferenceHelper.isBackgroundSyncEnabled()
                                                 && preferenceHelper.isFirstSyncConfirmed()) {
@@ -255,11 +253,6 @@ public final class SyncCoordinator {
             deliverError(
                     callback,
                     new IllegalStateException("Confirm the first sync before continuing"));
-            return;
-        }
-        if (!SyncRollout.isWithinRollout(preferenceHelper)) {
-            deliverError(
-                    callback, new IllegalStateException("Sync is not available in this rollout"));
             return;
         }
         googleDriveAuthorization.authorize(

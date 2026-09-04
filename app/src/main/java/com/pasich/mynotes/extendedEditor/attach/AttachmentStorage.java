@@ -197,14 +197,24 @@ public class AttachmentStorage {
     public static File resolve(Context ctx, String url) {
         try {
             Uri uri = Uri.parse(url);
+            if (!"file".equals(uri.getScheme()) || !ATTACHMENTS_BASE_DIR.equals(uri.getAuthority())) {
+                return null;
+            }
             List<String> seg = uri.getPathSegments();
 
-            if (seg.size() < 2) return null;
+            if (seg.size() != 2 || !seg.get(0).matches("note_[1-9][0-9]*")) return null;
 
             String folder = seg.get(0);
             String name = seg.get(1);
+            if (name.isEmpty() || name.indexOf('/') >= 0 || name.indexOf('\\') >= 0) return null;
+            for (int index = 0; index < name.length(); index++) {
+                if (Character.isISOControl(name.charAt(index))) return null;
+            }
 
-            return new File(new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR), folder + "/" + name);
+            File root = new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR).getCanonicalFile();
+            File resolved = new File(new File(root, folder), name).getCanonicalFile();
+            String rootPath = root.getPath() + File.separator;
+            return resolved.getPath().startsWith(rootPath) ? resolved : null;
 
         } catch (Exception e) {
             return null;

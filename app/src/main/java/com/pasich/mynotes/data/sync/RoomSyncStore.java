@@ -53,6 +53,9 @@ public final class RoomSyncStore implements SyncStore {
     private final PreferenceHelper preferenceHelper;
     private final Context context;
     private final Gson gson = new Gson();
+    private final AttachmentResolver attachmentResolver;
+    private final AttachmentHasher attachmentHasher;
+    private final TransactionFailureInjector transactionFailureInjector;
 
     /**
      * Content hash to the note-folder file holding it, indexed while the snapshot is built so the
@@ -64,9 +67,47 @@ public final class RoomSyncStore implements SyncStore {
             @NonNull Context context,
             @NonNull AppDatabase database,
             @NonNull PreferenceHelper preferenceHelper) {
+        this(
+                context,
+                database,
+                preferenceHelper,
+                AttachmentStorage::resolve,
+                RoomSyncStore::sha256,
+                record -> {});
+    }
+
+    /**
+     * Test seam for storage failures that must prevent a publish rather than drop an attachment.
+     */
+    public RoomSyncStore(
+            @NonNull Context context,
+            @NonNull AppDatabase database,
+            @NonNull PreferenceHelper preferenceHelper,
+            @NonNull AttachmentResolver attachmentResolver,
+            @NonNull AttachmentHasher attachmentHasher) {
+        this(
+                context,
+                database,
+                preferenceHelper,
+                attachmentResolver,
+                attachmentHasher,
+                record -> {});
+    }
+
+    /** Test seam used to prove that Room rolls back a partially applied remote snapshot. */
+    public RoomSyncStore(
+            @NonNull Context context,
+            @NonNull AppDatabase database,
+            @NonNull PreferenceHelper preferenceHelper,
+            @NonNull AttachmentResolver attachmentResolver,
+            @NonNull AttachmentHasher attachmentHasher,
+            @NonNull TransactionFailureInjector transactionFailureInjector) {
         this.database = database;
         this.preferenceHelper = preferenceHelper;
         this.context = context.getApplicationContext();
+        this.attachmentResolver = attachmentResolver;
+        this.attachmentHasher = attachmentHasher;
+        this.transactionFailureInjector = transactionFailureInjector;
         this.preferences =
                 context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
@@ -96,8 +137,21 @@ public final class RoomSyncStore implements SyncStore {
     @NonNull
     @Override
     public SyncSnapshot readSnapshot() throws IOException {
+        return buildSnapshot().requireSnapshot();
+    }
+
+    /**
+     * Builds a local snapshot without ever treating an unresolved attachment as absent.
+     *
+     * <p>Returning an incomplete result leaves the database and the note attachment JSON exactly as
+     * they were. {@link SyncService} refuses to publish such a result before it talks to Drive.
+     */
+    @NonNull
+    @Override
+    public SnapshotBuildResult buildSnapshot() throws IOException {
         ensureSeeded();
         List<SyncRecord> records = new ArrayList<>();
+        List<SnapshotProblem> problems = new ArrayList<>();
         for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
             if (metadata.deletedAt != null) {
                 records.add(
@@ -108,7 +162,7 @@ public final class RoomSyncStore implements SyncStore {
                                 Instant.ofEpochMilli(metadata.deletedAt)));
                 continue;
             }
-            JsonObject payload = payload(metadata);
+            JsonObject payload = payload(metadata, problems);
             if (payload != null) {
                 SyncMetadataEntity current =
                         database.syncMetadataDao().get(metadata.recordType, metadata.localId);
@@ -121,7 +175,10 @@ public final class RoomSyncStore implements SyncStore {
                                 payload));
             }
         }
-        return new SyncSnapshot(records);
+        SyncSnapshot snapshot = new SyncSnapshot(records);
+        return problems.isEmpty()
+                ? SnapshotBuildResult.publishable(snapshot)
+                : SnapshotBuildResult.incomplete(snapshot, problems);
     }
 
     @Override
@@ -167,6 +224,7 @@ public final class RoomSyncStore implements SyncStore {
                                                         record.getUpdatedAt().toEpochMilli(),
                                                         null));
                             }
+                            transactionFailureInjector.afterRecordApplied(record);
                             continue;
                         }
                         if (metadata == null) continue;
@@ -178,6 +236,7 @@ public final class RoomSyncStore implements SyncStore {
                                             metadata.localId,
                                             record.getUpdatedAt().toEpochMilli(),
                                             record.getDeletedAt().toEpochMilli());
+                            transactionFailureInjector.afterRecordApplied(record);
                             continue;
                         }
                         applyPayload(metadata, record.getPayload());
@@ -187,6 +246,7 @@ public final class RoomSyncStore implements SyncStore {
                                         metadata.localId,
                                         record.getUpdatedAt().toEpochMilli(),
                                         null);
+                        transactionFailureInjector.afterRecordApplied(record);
                     }
                     persistConflicts(conflicts);
                     if (finalState != null) {
@@ -196,7 +256,8 @@ public final class RoomSyncStore implements SyncStore {
     }
 
     @Nullable
-    private JsonObject payload(SyncMetadataEntity metadata) {
+    private JsonObject payload(
+            SyncMetadataEntity metadata, @NonNull List<SnapshotProblem> snapshotProblems) {
         Object value = null;
         if ("note".equals(metadata.recordType))
             value = database.noteDao().getNoteSync((int) metadata.localId);
@@ -229,7 +290,10 @@ public final class RoomSyncStore implements SyncStore {
                     result.addProperty("categoryStableId", categoryMetadata.stableId);
             }
         }
-        if ("note".equals(metadata.recordType)) addAttachmentMetadata(result);
+        if ("note".equals(metadata.recordType)
+                && !addAttachmentMetadata(result, metadata, snapshotProblems)) {
+            return null;
+        }
         // Runs last: the blocks above still need the local categoryId and attachment paths.
         SyncMetadata.stripDeviceLocalFields(metadata.recordType, result);
         return result;
@@ -597,50 +661,117 @@ public final class RoomSyncStore implements SyncStore {
         return new File(dir, sha256);
     }
 
-    private void addAttachmentMetadata(JsonObject payload) {
+    private boolean addAttachmentMetadata(
+            JsonObject payload,
+            SyncMetadataEntity metadata,
+            @NonNull List<SnapshotProblem> snapshotProblems) {
         String json =
                 payload.has("h") && !payload.get("h").isJsonNull()
                         ? payload.get("h").getAsString()
                         : null;
-        if (json == null || json.trim().isEmpty()) return;
+        if (json == null || json.trim().isEmpty()) return true;
+        JsonArray attachments;
         try {
-            JsonArray attachments = JsonParser.parseString(json).getAsJsonArray();
-            JsonArray manifest = new JsonArray();
-            JsonArray hashes = new JsonArray();
-            JsonObject names = new JsonObject();
-            for (JsonElement element : attachments) {
-                EditorAttachment attachment = gson.fromJson(element, EditorAttachment.class);
-                File file = AttachmentStorage.resolve(context, attachment.url);
-                if (file == null || !file.isFile()) continue;
-                String hash = sha256(file);
-                localAttachments.put(hash, file);
-                String displayName =
-                        attachment.name == null || attachment.name.trim().isEmpty()
-                                ? file.getName()
-                                : attachment.name.trim();
-                hashes.add(hash);
-                names.addProperty(hash, displayName);
-
-                JsonObject manifestEntry = new JsonObject();
-                manifestEntry.addProperty("id", stableAttachmentId(hash));
-                manifestEntry.addProperty("sha256", hash);
-                manifestEntry.addProperty(
-                        "mimeType", detectMimeType(file, attachment, displayName));
-                manifestEntry.addProperty("size", file.length());
-                manifestEntry.addProperty("path", "attachments/" + hash);
-                manifestEntry.addProperty("displayName", displayName);
-                manifest.add(manifestEntry);
-            }
-            if (!hashes.isEmpty()) {
-                payload.add("attachmentsManifest", manifest);
-                payload.add("attachmentHashes", hashes);
-                payload.add("attachmentNames", names);
-            }
-        } catch (Exception error) {
-            // Swallowing this silently used to drop a note's attachments from the bundle with no
-            // trace; the sync itself still succeeds without them.
-            Log.w(TAG, "Could not collect attachment metadata", error);
+            attachments = JsonParser.parseString(json).getAsJsonArray();
+        } catch (RuntimeException error) {
+            addSnapshotProblem(
+                    snapshotProblems, SnapshotProblem.Kind.INVALID_ATTACHMENT_METADATA, metadata);
+            return false;
         }
+
+        JsonArray manifest = new JsonArray();
+        JsonArray hashes = new JsonArray();
+        JsonObject names = new JsonObject();
+        boolean complete = true;
+        for (JsonElement element : attachments) {
+            if (!element.isJsonObject()) {
+                addSnapshotProblem(
+                        snapshotProblems,
+                        SnapshotProblem.Kind.INVALID_ATTACHMENT_METADATA,
+                        metadata);
+                complete = false;
+                continue;
+            }
+            EditorAttachment attachment;
+            try {
+                attachment = gson.fromJson(element, EditorAttachment.class);
+            } catch (RuntimeException error) {
+                addSnapshotProblem(
+                        snapshotProblems,
+                        SnapshotProblem.Kind.INVALID_ATTACHMENT_METADATA,
+                        metadata);
+                complete = false;
+                continue;
+            }
+            if (attachment == null || attachment.url == null || attachment.url.trim().isEmpty()) {
+                addSnapshotProblem(
+                        snapshotProblems,
+                        SnapshotProblem.Kind.INVALID_ATTACHMENT_METADATA,
+                        metadata);
+                complete = false;
+                continue;
+            }
+            File file;
+            try {
+                file = attachmentResolver.resolve(context, attachment);
+            } catch (RuntimeException error) {
+                addSnapshotProblem(
+                        snapshotProblems,
+                        SnapshotProblem.Kind.INVALID_ATTACHMENT_METADATA,
+                        metadata);
+                complete = false;
+                continue;
+            }
+            if (file == null || !file.isFile()) {
+                addSnapshotProblem(
+                        snapshotProblems, SnapshotProblem.Kind.MISSING_ATTACHMENT, metadata);
+                complete = false;
+                continue;
+            }
+            if (!file.canRead()) {
+                addSnapshotProblem(
+                        snapshotProblems, SnapshotProblem.Kind.UNREADABLE_ATTACHMENT, metadata);
+                complete = false;
+                continue;
+            }
+            String hash;
+            try {
+                hash = attachmentHasher.sha256(file);
+            } catch (IOException error) {
+                addSnapshotProblem(
+                        snapshotProblems, SnapshotProblem.Kind.ATTACHMENT_HASH_FAILED, metadata);
+                complete = false;
+                continue;
+            }
+            localAttachments.put(hash, file);
+            String displayName =
+                    attachment.name == null || attachment.name.trim().isEmpty()
+                            ? file.getName()
+                            : attachment.name.trim();
+            hashes.add(hash);
+            names.addProperty(hash, displayName);
+
+            JsonObject manifestEntry = new JsonObject();
+            manifestEntry.addProperty("id", stableAttachmentId(hash));
+            manifestEntry.addProperty("sha256", hash);
+            manifestEntry.addProperty("mimeType", detectMimeType(file, attachment, displayName));
+            manifestEntry.addProperty("size", file.length());
+            manifestEntry.addProperty("path", "attachments/" + hash);
+            manifestEntry.addProperty("displayName", displayName);
+            manifest.add(manifestEntry);
+        }
+        if (!complete) return false;
+        payload.add("attachmentsManifest", manifest);
+        payload.add("attachmentHashes", hashes);
+        payload.add("attachmentNames", names);
+        return true;
+    }
+
+    private static void addSnapshotProblem(
+            @NonNull List<SnapshotProblem> problems,
+            @NonNull SnapshotProblem.Kind kind,
+            @NonNull SyncMetadataEntity metadata) {
+        problems.add(new SnapshotProblem(kind, metadata.recordType, metadata.stableId));
     }
 
     private void restoreAttachments(Note note, JsonObject payload) {
@@ -701,8 +832,13 @@ public final class RoomSyncStore implements SyncStore {
         return new File(value).getName().equals(value);
     }
 
-    private static String sha256(File file) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    private static String sha256(File file) throws IOException {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new IOException("SHA-256 is unavailable", error);
+        }
         try (InputStream in = new FileInputStream(file)) {
             byte[] buffer = new byte[8192];
             int read;
@@ -711,6 +847,23 @@ public final class RoomSyncStore implements SyncStore {
         StringBuilder hex = new StringBuilder(64);
         for (byte value : digest.digest()) hex.append(String.format("%02x", value & 0xff));
         return hex.toString();
+    }
+
+    /** Resolves a serialized note attachment to its app-private file. */
+    public interface AttachmentResolver {
+        @Nullable
+        File resolve(@NonNull Context context, @NonNull EditorAttachment attachment);
+    }
+
+    /** Hashes an attachment after it has passed basic filesystem checks. */
+    public interface AttachmentHasher {
+        @NonNull
+        String sha256(@NonNull File file) throws IOException;
+    }
+
+    /** Throws from tests after a Room mutation but before the enclosing transaction commits. */
+    public interface TransactionFailureInjector {
+        void afterRecordApplied(@NonNull SyncRecord record);
     }
 
     @NonNull

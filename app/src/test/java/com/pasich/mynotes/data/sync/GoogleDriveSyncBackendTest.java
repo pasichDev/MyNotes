@@ -26,6 +26,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.After;
@@ -84,6 +88,69 @@ public class GoogleDriveSyncBackendTest {
     }
 
     @Test
+    public void writeAttachment_resumesAcrossMultipleDriveChunksWithoutBufferingTheFile()
+            throws Exception {
+        GoogleDriveSyncBackend backend =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        CLOCK,
+                        new SyncBundleCodec());
+        byte[] bytes = new byte[600 * 1024];
+        for (int index = 0; index < bytes.length; index++) {
+            bytes[index] = (byte) (index % 251);
+        }
+        String hash = sha256(bytes);
+
+        backend.writeAttachment(hash, bytes.length, new ByteArrayInputStream(bytes));
+
+        assertThat(server.ownedAttachmentCount(hash)).isEqualTo(1);
+        assertThat(server.readAttachment(hash)).isEqualTo(bytes);
+    }
+
+    @Test
+    public void concurrentFirstSync_createsDuplicateRootsThenConvergesWithoutLosingEitherNote()
+            throws Exception {
+        server.pauseTheNextTwoEmptyRootListings();
+        GoogleDriveSyncBackend first = backend();
+        GoogleDriveSyncBackend second = backend();
+        SyncSnapshot firstSnapshot = snapshot(NOTE_ID, null);
+        SyncSnapshot secondSnapshot = snapshot(SECOND_NOTE_ID, null);
+        Thread firstThread = new Thread(() -> writeUnchecked(first, firstSnapshot));
+        Thread secondThread = new Thread(() -> writeUnchecked(second, secondSnapshot));
+
+        firstThread.start();
+        secondThread.start();
+        firstThread.join(5_000L);
+        secondThread.join(5_000L);
+        assertThat(firstThread.isAlive()).isFalse();
+        assertThat(secondThread.isAlive()).isFalse();
+        assertThat(server.ownedFolderCount()).isEqualTo(2);
+
+        SyncSnapshot reconciled = backend().readSnapshot();
+
+        assertThat(reconciled.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(reconciled.find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
+        first.writeSnapshot(reconciled);
+        assertThat(second.readSnapshot().find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(second.readSnapshot().find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
+    }
+
+    private GoogleDriveSyncBackend backend() {
+        return new GoogleDriveSyncBackend(
+                "token", server.apiBase(), server.uploadBase(), CLOCK, new SyncBundleCodec());
+    }
+
+    private static void writeUnchecked(GoogleDriveSyncBackend backend, SyncSnapshot snapshot) {
+        try {
+            backend.writeSnapshot(snapshot);
+        } catch (IOException error) {
+            throw new AssertionError(error);
+        }
+    }
+
+    @Test
     public void readSnapshot_ignoresUnownedFiles() throws Exception {
         server.seedUnownedBundle(
                 snapshot("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
@@ -96,6 +163,61 @@ public class GoogleDriveSyncBackendTest {
                         new SyncBundleCodec());
 
         assertThat(backend.readSnapshot().getRecords()).isEmpty();
+    }
+
+    @Test
+    public void readSnapshot_mergesEveryOwnedRootAfterAFirstSyncRace() throws Exception {
+        String firstHash = server.registerAttachment("first".getBytes(StandardCharsets.UTF_8));
+        String secondHash = server.registerAttachment("other".getBytes(StandardCharsets.UTF_8));
+        // These are the durable results of two devices that both listed Drive before either
+        // created its root folder. Choosing only the lowest folder ID would lose note B forever.
+        server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
+        server.seedOwnedBundle(snapshot(SECOND_NOTE_ID, secondHash));
+        GoogleDriveSyncBackend backend =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        CLOCK,
+                        new SyncBundleCodec());
+
+        SyncSnapshot merged = backend.readSnapshot();
+
+        assertThat(server.ownedFolderCount()).isEqualTo(2);
+        assertThat(merged.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(merged.find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
+    }
+
+    @Test
+    public void writeSnapshot_copiesDuplicateRootAttachmentsIntoTheCanonicalRoot()
+            throws Exception {
+        String firstHash = server.registerAttachment("first".getBytes(StandardCharsets.UTF_8));
+        String secondHash = server.registerAttachment("other".getBytes(StandardCharsets.UTF_8));
+        server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
+        server.seedOwnedBundle(snapshot(SECOND_NOTE_ID, secondHash));
+        GoogleDriveSyncBackend backend =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        CLOCK,
+                        new SyncBundleCodec());
+
+        SyncSnapshot merged = backend.readSnapshot();
+        backend.writeSnapshot(merged);
+
+        assertThat(server.ownedAttachmentCountInCanonicalRoot(firstHash)).isEqualTo(1);
+        assertThat(server.ownedAttachmentCountInCanonicalRoot(secondHash)).isEqualTo(1);
+        SyncSnapshot reread =
+                new GoogleDriveSyncBackend(
+                                "token",
+                                server.apiBase(),
+                                server.uploadBase(),
+                                CLOCK,
+                                new SyncBundleCodec())
+                        .readSnapshot();
+        assertThat(reread.find(SyncRecord.Type.NOTE, NOTE_ID)).isNotNull();
+        assertThat(reread.find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
     }
 
     @Test
@@ -157,19 +279,21 @@ public class GoogleDriveSyncBackendTest {
         note.addProperty("title", "Shopping");
         note.addProperty("value", "Milk");
         JsonArray hashes = new JsonArray();
-        hashes.add(hash);
+        if (hash != null) hashes.add(hash);
         note.add("attachmentHashes", hashes);
         JsonArray manifest = new JsonArray();
-        manifest.add(
-                new SyncBundleCodec.AttachmentManifestEntry(
-                                UUID.nameUUIDFromBytes(hash.getBytes(StandardCharsets.UTF_8))
-                                        .toString(),
-                                hash,
-                                "image/png",
-                                5L,
-                                "attachments/" + hash,
-                                "photo.png")
-                        .toJson(true));
+        if (hash != null) {
+            manifest.add(
+                    new SyncBundleCodec.AttachmentManifestEntry(
+                                    UUID.nameUUIDFromBytes(hash.getBytes(StandardCharsets.UTF_8))
+                                            .toString(),
+                                    hash,
+                                    "image/png",
+                                    5L,
+                                    "attachments/" + hash,
+                                    "photo.png")
+                            .toJson(true));
+        }
         note.add("attachmentsManifest", manifest);
         return new SyncSnapshot(
                 Collections.singletonList(
@@ -196,10 +320,13 @@ public class GoogleDriveSyncBackendTest {
 
         private final ServerSocket serverSocket;
         private final Thread thread;
-        private final Map<String, DriveFile> files = new LinkedHashMap<>();
+        private final Map<String, DriveFile> files = new ConcurrentHashMap<>();
+        private final Map<String, byte[]> seededAttachmentContent = new LinkedHashMap<>();
+        private final Map<String, UploadSession> uploadSessions = new ConcurrentHashMap<>();
         private volatile boolean running = true;
+        private volatile CyclicBarrier emptyRootListingBarrier;
         private SyncSnapshot updateBeforeNextPatch;
-        private int nextId = 1;
+        private final AtomicInteger nextId = new AtomicInteger(1);
 
         FakeDriveServer() throws IOException {
             serverSocket = new ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"));
@@ -209,7 +336,16 @@ public class GoogleDriveSyncBackendTest {
                                 while (running) {
                                     try {
                                         Socket socket = serverSocket.accept();
-                                        handle(socket);
+                                        new Thread(
+                                                        () -> {
+                                                            try {
+                                                                handle(socket);
+                                                            } catch (IOException ignored) {
+                                                                // Individual test connection
+                                                                // failed.
+                                                            }
+                                                        })
+                                                .start();
                                     } catch (IOException ignored) {
                                         if (running) {
                                             // Keep the fake server lightweight for tests.
@@ -227,6 +363,10 @@ public class GoogleDriveSyncBackendTest {
 
         String uploadBase() {
             return "http://127.0.0.1:" + serverSocket.getLocalPort() + "/upload/drive/v3/files";
+        }
+
+        void pauseTheNextTwoEmptyRootListings() {
+            emptyRootListingBarrier = new CyclicBarrier(2);
         }
 
         int ownedFolderCount() {
@@ -260,6 +400,25 @@ public class GoogleDriveSyncBackendTest {
             return count;
         }
 
+        int ownedAttachmentCountInCanonicalRoot(String hash) {
+            String canonical = null;
+            for (DriveFile file : files.values()) {
+                if ("application/vnd.google-apps.folder".equals(file.mimeType)
+                        && "1".equals(file.appProperties.get("mynotesOwner"))
+                        && (canonical == null || file.id.compareTo(canonical) < 0)) {
+                    canonical = file.id;
+                }
+            }
+            int count = 0;
+            for (DriveFile file : files.values()) {
+                if (hash.equals(file.appProperties.get("mynotesAttachmentSha256"))
+                        && file.parents.contains(canonical)) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
         byte[] readAttachment(String hash) {
             for (DriveFile file : files.values()) {
                 if (hash.equals(file.appProperties.get("mynotesAttachmentSha256"))) {
@@ -278,6 +437,12 @@ public class GoogleDriveSyncBackendTest {
             return null;
         }
 
+        String registerAttachment(byte[] bytes) throws Exception {
+            String hash = sha256(bytes);
+            seededAttachmentContent.put(hash, bytes);
+            return hash;
+        }
+
         void seedOwnedBundle(SyncSnapshot snapshot) throws IOException {
             DriveFile folder =
                     createFile("MyNotes Sync", "application/vnd.google-apps.folder", null);
@@ -285,6 +450,21 @@ public class GoogleDriveSyncBackendTest {
             DriveFile bundle = createFile("MyNotes.sync.v1.zip", "application/zip", folder.id);
             bundle.appProperties.put("mynotesBundle", "1");
             bundle.content = new SyncBundleCodec().encode(snapshot, CLOCK.instant());
+            for (SyncRecord record : snapshot.getLiveRecords(SyncRecord.Type.NOTE)) {
+                JsonArray manifest = record.getPayload().getAsJsonArray("attachmentsManifest");
+                if (manifest == null) {
+                    continue;
+                }
+                for (int index = 0; index < manifest.size(); index++) {
+                    JsonObject attachment = manifest.get(index).getAsJsonObject();
+                    String hash = attachment.get("sha256").getAsString();
+                    DriveFile blob = createFile(hash, "application/octet-stream", folder.id);
+                    blob.appProperties.put("mynotesAttachmentSha256", hash);
+                    blob.content =
+                            seededAttachmentContent.getOrDefault(
+                                    hash, new byte[attachment.get("size").getAsInt()]);
+                }
+            }
         }
 
         void seedUnownedBundle(SyncSnapshot snapshot) throws IOException {
@@ -334,7 +514,13 @@ public class GoogleDriveSyncBackendTest {
                 return handleFileRead(uri, path.substring("/drive/v3/files/".length()));
             }
             if ("/upload/drive/v3/files".equals(path) && "POST".equals(request.method)) {
+                if ("resumable".equals(parseQuery(uri).get("uploadType"))) {
+                    return handleResumableInitiation(request);
+                }
                 return handleUpload(request, null);
+            }
+            if (path.startsWith("/resumable/") && "PUT".equals(request.method)) {
+                return handleResumableChunk(request, path.substring("/resumable/".length()));
             }
             if (path.startsWith("/upload/drive/v3/files/")) {
                 return handleUpload(request, path.substring("/upload/drive/v3/files/".length()));
@@ -344,6 +530,18 @@ public class GoogleDriveSyncBackendTest {
 
         private Response handleList(URI uri) {
             String query = parseQuery(uri).get("q");
+            CyclicBarrier barrier = emptyRootListingBarrier;
+            if (barrier != null
+                    && query != null
+                    && query.contains("mynotesOwner")
+                    && ownedFolderCount() == 0) {
+                try {
+                    barrier.await(5L, TimeUnit.SECONDS);
+                    emptyRootListingBarrier = null;
+                } catch (Exception error) {
+                    return Response.json(500, "{}");
+                }
+            }
             JsonArray array = new JsonArray();
             for (DriveFile file : files.values()) {
                 if (matchesQuery(file, query)) {
@@ -409,6 +607,72 @@ public class GoogleDriveSyncBackendTest {
             return Response.json(200, fileMetadata(file).toString(), file.eTag());
         }
 
+        private Response handleResumableInitiation(Request request) throws IOException {
+            String length = request.headers.get("x-upload-content-length");
+            if (length == null) {
+                return Response.json(400, "{}");
+            }
+            String id = "session-" + uploadSessions.size();
+            uploadSessions.put(
+                    id,
+                    new UploadSession(
+                            readJson(request.body),
+                            Long.parseLong(length),
+                            request.headers.get("x-upload-content-type")));
+            Map<String, String> headers = new LinkedHashMap<>();
+            headers.put(
+                    "Location",
+                    "http://127.0.0.1:" + serverSocket.getLocalPort() + "/resumable/" + id);
+            return Response.json(200, "{}", headers);
+        }
+
+        private Response handleResumableChunk(Request request, String sessionId)
+                throws IOException {
+            UploadSession session = uploadSessions.get(sessionId);
+            if (session == null) {
+                return Response.json(404, "{}");
+            }
+            String range = request.headers.get("content-range");
+            if (range == null) {
+                return Response.json(400, "{}");
+            }
+            if (range.startsWith("bytes */")) {
+                return resumableProgress(session);
+            }
+            Matcher matcher = Pattern.compile("bytes (\\d+)-(\\d+)/(\\d+)").matcher(range);
+            if (!matcher.matches() || Long.parseLong(matcher.group(3)) != session.totalBytes) {
+                return Response.json(400, "{}");
+            }
+            long start = Long.parseLong(matcher.group(1));
+            long end = Long.parseLong(matcher.group(2));
+            if (start != session.data.size() || end - start + 1L != request.body.length) {
+                return Response.json(400, "{}");
+            }
+            session.data.write(request.body);
+            if (session.data.size() < session.totalBytes) {
+                return resumableProgress(session);
+            }
+            DriveFile file =
+                    createFile(
+                            session.metadata.get("name").getAsString(),
+                            session.mimeType == null
+                                    ? "application/octet-stream"
+                                    : session.mimeType,
+                            firstParent(session.metadata));
+            file.content = session.data.toByteArray();
+            applyMetadata(file, session.metadata);
+            uploadSessions.remove(sessionId);
+            return Response.json(200, fileMetadata(file).toString(), file.eTag());
+        }
+
+        private static Response resumableProgress(UploadSession session) {
+            Map<String, String> headers = new LinkedHashMap<>();
+            if (session.data.size() > 0) {
+                headers.put("Range", "bytes=0-" + (session.data.size() - 1));
+            }
+            return Response.json(308, "", headers);
+        }
+
         private void applyMetadata(DriveFile file, JsonObject metadata) {
             if (metadata.has("name")) {
                 file.name = metadata.get("name").getAsString();
@@ -434,7 +698,8 @@ public class GoogleDriveSyncBackendTest {
         }
 
         private DriveFile createFile(String name, String mimeType, String parentId) {
-            DriveFile file = new DriveFile(Integer.toString(nextId++), name, mimeType);
+            DriveFile file =
+                    new DriveFile(Integer.toString(nextId.getAndIncrement()), name, mimeType);
             if (parentId != null) {
                 file.parents.add(parentId);
             }
@@ -607,6 +872,12 @@ public class GoogleDriveSyncBackendTest {
             headers.append("Content-Length: ").append(response.body.length).append("\r\n");
             headers.append("Connection: close\r\n");
             headers.append("Content-Type: ").append(response.contentType).append("\r\n");
+            for (Map.Entry<String, String> header : response.headers.entrySet()) {
+                headers.append(header.getKey())
+                        .append(": ")
+                        .append(header.getValue())
+                        .append("\r\n");
+            }
             // Deliberately no ETag header. Drive API v3 dropped the ETags that v2 sent; a fake
             // that returns one lets code depending on the header pass its tests and fail against
             // the real API, which is exactly what happened before.
@@ -670,25 +941,55 @@ public class GoogleDriveSyncBackendTest {
         private final String contentType;
         private final byte[] body;
         private final String eTag;
+        private final Map<String, String> headers;
 
-        private Response(int code, String contentType, byte[] body, String eTag) {
+        private Response(
+                int code,
+                String contentType,
+                byte[] body,
+                String eTag,
+                Map<String, String> headers) {
             this.code = code;
             this.contentType = contentType;
             this.body = body;
             this.eTag = eTag;
+            this.headers = headers;
         }
 
         private static Response json(int code, String body) {
-            return json(code, body, null);
+            return json(code, body, (String) null);
         }
 
         private static Response json(int code, String body, String eTag) {
             return new Response(
-                    code, "application/json", body.getBytes(StandardCharsets.UTF_8), eTag);
+                    code,
+                    "application/json",
+                    body.getBytes(StandardCharsets.UTF_8),
+                    eTag,
+                    new LinkedHashMap<>());
+        }
+
+        private static Response json(int code, String body, Map<String, String> headers) {
+            return new Response(
+                    code, "application/json", body.getBytes(StandardCharsets.UTF_8), null, headers);
         }
 
         private static Response binary(int code, byte[] body, String eTag) {
-            return new Response(code, "application/octet-stream", body, eTag);
+            return new Response(
+                    code, "application/octet-stream", body, eTag, new LinkedHashMap<>());
+        }
+    }
+
+    private static final class UploadSession {
+        private final JsonObject metadata;
+        private final long totalBytes;
+        private final String mimeType;
+        private final ByteArrayOutputStream data = new ByteArrayOutputStream();
+
+        private UploadSession(JsonObject metadata, long totalBytes, String mimeType) {
+            this.metadata = metadata;
+            this.totalBytes = totalBytes;
+            this.mimeType = mimeType;
         }
     }
 

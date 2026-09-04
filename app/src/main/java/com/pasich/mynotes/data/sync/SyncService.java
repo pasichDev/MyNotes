@@ -96,7 +96,12 @@ public final class SyncService {
             persistState(
                     SyncState.syncing(
                             backendIdentifier, startedAt, previousState.getLastSuccessfulSyncAt()));
-            SyncSnapshot local = Objects.requireNonNull(store.readSnapshot(), "local snapshot");
+            SnapshotBuildResult localBuild =
+                    Objects.requireNonNull(store.buildSnapshot(), "local snapshot build");
+            // Do this before reading Drive or transferring blobs. Publishing a snapshot that
+            // merely skipped an unresolved local attachment turns a local storage fault into
+            // permanent remote data loss on the next successful sync from another device.
+            SyncSnapshot local = localBuild.requireSnapshot();
             SyncSnapshot remote = Objects.requireNonNull(backend.readSnapshot(), "remote snapshot");
             warnAboutClockSkew(remote);
             SyncMergeResult mergeResult = merger.merge(local, remote);
@@ -195,11 +200,9 @@ public final class SyncService {
                                 backend.readAttachment(hash),
                                 store::writeAttachment);
                     }
-                    // A remote re-verification used to run here on every sync, downloading each
-                    // attachment in full (up to 100 MB) purely to re-check a hash. Remote blobs are
-                    // content-addressed and immutable, so the check could never fail for a reason
-                    // the download itself would not already surface, and on the six-hourly worker
-                    // it re-transferred the user's entire attachment set four times a day.
+                    // Drive is untrusted. A matching appProperty is only a claim, so verify the
+                    // actual remote bytes before a bundle can make that blob durable state.
+                    verifyAttachment(hash, expectedSizes.get(hash), backend.readAttachment(hash));
                 } else {
                     copyVerified(
                             hash,

@@ -233,10 +233,9 @@ public class SyncCoordinatorTest {
     }
 
     @Test
-    public void syncNow_allowsUsersInTheHighestRolloutBucket() {
+    public void syncNow_allowsAnExplicitlyEnabledUser() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.firstSyncConfirmed = true;
-        preferences.rolloutBucket = 100;
         GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
         Mockito.doAnswer(
                         invocation -> {
@@ -270,10 +269,9 @@ public class SyncCoordinatorTest {
     }
 
     @Test
-    public void syncNow_repairsAnInvalidStoredRolloutBucketBeforeSyncing() {
+    public void syncNow_doesNotRequireAFeatureRollout() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.firstSyncConfirmed = true;
-        preferences.rolloutBucket = 0;
         GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
         Mockito.doAnswer(
                         invocation -> {
@@ -301,7 +299,6 @@ public class SyncCoordinatorTest {
         CapturingCallback<SyncState> callback = new CapturingCallback<>();
         coordinator.syncNow(mock(Activity.class), callback);
 
-        assertThat(preferences.rolloutBucket >= 1 && preferences.rolloutBucket <= 100).isTrue();
         assertThat(store.lastToken).isEqualTo("access-token");
         assertThat(callback.error).isNull();
     }
@@ -439,7 +436,6 @@ public class SyncCoordinatorTest {
         private boolean syncEnabled;
         private boolean backgroundEnabled;
         private boolean firstSyncConfirmed;
-        private int rolloutBucket = 1;
 
         @Override
         public int getFormatCount() {
@@ -517,16 +513,6 @@ public class SyncCoordinatorTest {
         @Override
         public void setFirstSyncConfirmed(boolean confirmed) {
             firstSyncConfirmed = confirmed;
-        }
-
-        @Override
-        public int getSyncRolloutBucket() {
-            return rolloutBucket;
-        }
-
-        @Override
-        public void setSyncRolloutBucket(int bucket) {
-            rolloutBucket = bucket;
         }
     }
 }

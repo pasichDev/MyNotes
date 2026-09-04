@@ -77,6 +77,28 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_doesNotReadOrPublishRemoteDataWhenLocalSnapshotIsIncomplete() {
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local note")));
+        store.snapshotBuildResult =
+                SnapshotBuildResult.incomplete(
+                        store.snapshot,
+                        Collections.singletonList(
+                                new SnapshotProblem(
+                                        SnapshotProblem.Kind.MISSING_ATTACHMENT,
+                                        SyncMetadata.RECORD_TYPE_NOTE,
+                                        NOTE_ID)));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(state.getErrorMessage()).contains("MISSING_ATTACHMENT");
+        assertThat(backend.events).isEmpty();
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+        assertThat(store.applyCalls).isEqualTo(0);
+    }
+
+    @Test
     public void sync_downloadsRequiredRemoteAttachmentBeforeApplyingSnapshot() throws Exception {
         SyncRecord remote = note(TEN, "Remote with attachment");
         byte[] bytes = "attachment content".getBytes(StandardCharsets.UTF_8);
@@ -125,10 +147,9 @@ public class SyncServiceTest {
         SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
-        // Neither endpoint transfers the blob: the local copy is verified from disk and the
-        // remote one is content-addressed and immutable, so re-downloading it on every sync only
-        // cost the user bandwidth.
-        assertThat(backend.events).containsExactly("writeSnapshot");
+        // Drive is untrusted even for a content-addressed object, so remote bytes are verified
+        // before publication.
+        assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot");
     }
 
     @Test
@@ -146,7 +167,27 @@ public class SyncServiceTest {
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         assertThat(store.attachments.get(hash)).isEqualTo(bytes);
-        assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot").inOrder();
+        assertThat(backend.events)
+                .containsExactly("readAttachment", "readAttachment", "writeSnapshot")
+                .inOrder();
+    }
+
+    @Test
+    public void sync_corruptRemoteAttachmentWithValidLocalCopyDoesNotPublish() throws Exception {
+        byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local")));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, bytes);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, "corrupt remote".getBytes(StandardCharsets.UTF_8));
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(state.getErrorMessage()).contains("checksum");
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+        assertThat(store.applyCalls).isEqualTo(0);
     }
 
     @Test
@@ -288,6 +329,7 @@ public class SyncServiceTest {
 
     private static final class FakeStore implements SyncStore {
         private SyncSnapshot snapshot;
+        private SnapshotBuildResult snapshotBuildResult;
         private SyncSnapshot appliedSnapshot;
         private List<SyncMergeResult.Conflict> appliedConflicts = Collections.emptyList();
         private SyncState state = SyncState.idle();
@@ -306,6 +348,13 @@ public class SyncServiceTest {
         @Override
         public SyncSnapshot readSnapshot() {
             return snapshot;
+        }
+
+        @Override
+        public SnapshotBuildResult buildSnapshot() {
+            return snapshotBuildResult == null
+                    ? SnapshotBuildResult.publishable(snapshot)
+                    : snapshotBuildResult;
         }
 
         @Override

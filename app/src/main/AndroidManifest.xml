@@ -41,7 +41,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.BackupActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".ui.view.activity.AboutActivity"
             android:exported="false" />
@@ -92,7 +92,7 @@
         </activity>
         <activity
             android:name=".ui.view.activity.TrashActivity"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -104,11 +104,11 @@
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.noteEditor.NoteActivity"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.view.activity.noteEditor.NoteExtendedEditorActivity"
-            android:exported="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.view.activity.ShareActivity"

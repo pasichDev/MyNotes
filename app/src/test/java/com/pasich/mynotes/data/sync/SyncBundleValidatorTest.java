@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Random;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Test;
@@ -117,6 +119,55 @@ public class SyncBundleValidatorTest {
             validator.validate(new ByteArrayInputStream(output.toByteArray()));
         } catch (IOException error) {
             assertThat(error).hasMessageThat().contains("invalid ZIP path");
+            return;
+        }
+        throw new AssertionError("Expected an IOException");
+    }
+
+    @Test
+    public void validate_rejectsNoteWithTooManyAttachmentReferences() throws Exception {
+        byte[] valid = codec.encode(snapshot(), Instant.parse("2026-08-31T12:00:00Z"));
+        JsonObject records = readJsonEntry(valid, SyncBundleCodec.ENTRY_RECORDS);
+        JsonArray attachmentIds =
+                records.getAsJsonArray("notes")
+                        .get(0)
+                        .getAsJsonObject()
+                        .getAsJsonArray("attachmentIds");
+        for (int index = 1; index <= SyncBundleValidator.MAX_ATTACHMENTS_PER_NOTE; index++) {
+            attachmentIds.add(UUID.randomUUID().toString());
+        }
+
+        try {
+            validator.validate(
+                    new ByteArrayInputStream(
+                            rewriteEntry(valid, SyncBundleCodec.ENTRY_RECORDS, records)));
+        } catch (IOException error) {
+            assertThat(error).hasMessageThat().contains("note exceeds the attachment limit");
+            return;
+        }
+        throw new AssertionError("Expected an IOException");
+    }
+
+    @Test
+    public void validate_rejectsOversizedRecordPayload() throws Exception {
+        byte[] valid = codec.encode(snapshot(), Instant.parse("2026-08-31T12:00:00Z"));
+        JsonObject records = readJsonEntry(valid, SyncBundleCodec.ENTRY_RECORDS);
+        StringBuilder oversized = new StringBuilder();
+        Random random = new Random(0L);
+        for (int index = 0; index <= SyncBundleValidator.MAX_RECORD_PAYLOAD_BYTES; index++) {
+            oversized.append((char) ('a' + random.nextInt(26)));
+        }
+        records.getAsJsonArray("notes")
+                .get(0)
+                .getAsJsonObject()
+                .addProperty("value", oversized.toString());
+
+        try {
+            validator.validate(
+                    new ByteArrayInputStream(
+                            rewriteEntry(valid, SyncBundleCodec.ENTRY_RECORDS, records)));
+        } catch (IOException error) {
+            assertThat(error).hasMessageThat().contains("payload size limit");
             return;
         }
         throw new AssertionError("Expected an IOException");

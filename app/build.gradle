@@ -128,7 +128,7 @@ android {
     }
     namespace = 'com.pasich.mynotes'
     lint {
-        abortOnError false
+        abortOnError true
     }
     testOptions {
         unitTests {

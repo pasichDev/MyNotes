@@ -21,6 +21,15 @@ public interface SyncStore {
     SyncSnapshot readSnapshot() throws IOException;
 
     /**
+     * Builds a local snapshot together with any integrity problems that make publication unsafe.
+     * Implementations that cannot identify such problems retain the legacy snapshot boundary.
+     */
+    @NonNull
+    default SnapshotBuildResult buildSnapshot() throws IOException {
+        return SnapshotBuildResult.publishable(readSnapshot());
+    }
+
+    /**
      * Applies the merged snapshot and conflict report atomically.
      *
      * <p>This is called only after every attachment required by the snapshot is available locally

@@ -13,6 +13,8 @@ import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.data.sync.RoomSyncStore;
+import com.pasich.mynotes.data.sync.SnapshotBuildResult;
+import com.pasich.mynotes.data.sync.SnapshotProblem;
 import com.pasich.mynotes.data.sync.SyncMetadata;
 import com.pasich.mynotes.data.sync.SyncRecord;
 import com.pasich.mynotes.data.sync.SyncSnapshot;
@@ -95,6 +97,109 @@ public class RoomSyncStoreTest {
             assertThat(readAll(in)).isEqualTo(bytes);
         }
         assertThat(noteId).isGreaterThan(0);
+    }
+
+    @Test
+    public void readSnapshot_failsClosedWhenAReferencedAttachmentIsMissing() {
+        int noteId =
+                seedNote("Missing attachment", "body", "[" + attachmentJson(1, "gone.png") + "]");
+        String original = db.noteDao().getNoteSync(noteId).getAttachments();
+
+        SnapshotBuildResult.SnapshotBuildException error = assertSnapshotBuildFails(store);
+
+        assertThat(error.getProblems().get(0).getKind())
+                .isEqualTo(SnapshotProblem.Kind.MISSING_ATTACHMENT);
+        assertThat(db.noteDao().getNoteSync(noteId).getAttachments()).isEqualTo(original);
+    }
+
+    @Test
+    public void readSnapshot_failsClosedWhenAnAttachmentCannotBeRead() throws Exception {
+        int noteId = seedNoteWithAttachment("locked.png", "bytes".getBytes(StandardCharsets.UTF_8));
+        File real = new File(context.getFilesDir(), "attachments/note_" + noteId + "/locked.png");
+        File unreadable =
+                new File(real.getAbsolutePath()) {
+                    @Override
+                    public boolean canRead() {
+                        return false;
+                    }
+                };
+        RoomSyncStore failingStore =
+                new RoomSyncStore(
+                        context,
+                        db,
+                        mock(PreferenceHelper.class),
+                        (ignoredContext, ignoredAttachment) -> unreadable,
+                        file -> sha256(readAll(new java.io.FileInputStream(file))));
+
+        SnapshotBuildResult.SnapshotBuildException error = assertSnapshotBuildFails(failingStore);
+
+        assertThat(error.getProblems().get(0).getKind())
+                .isEqualTo(SnapshotProblem.Kind.UNREADABLE_ATTACHMENT);
+    }
+
+    @Test
+    public void readSnapshot_failsClosedWhenAttachmentHashingFails() throws Exception {
+        int noteId = seedNoteWithAttachment("hash.png", "bytes".getBytes(StandardCharsets.UTF_8));
+        String original = db.noteDao().getNoteSync(noteId).getAttachments();
+        RoomSyncStore failingStore =
+                new RoomSyncStore(
+                        context,
+                        db,
+                        mock(PreferenceHelper.class),
+                        com.pasich.mynotes.extendedEditor.attach.AttachmentStorage::resolve,
+                        file -> {
+                            throw new IOException("cannot hash");
+                        });
+
+        SnapshotBuildResult.SnapshotBuildException error = assertSnapshotBuildFails(failingStore);
+
+        assertThat(error.getProblems().get(0).getKind())
+                .isEqualTo(SnapshotProblem.Kind.ATTACHMENT_HASH_FAILED);
+        assertThat(db.noteDao().getNoteSync(noteId).getAttachments()).isEqualTo(original);
+    }
+
+    @Test
+    public void readSnapshot_rejectsTheWholeSnapshotWhenOneOfFiveAttachmentsIsMissing()
+            throws Exception {
+        int noteId = seedNote("Five attachments", "body", null);
+        File folder = new File(context.getFilesDir(), "attachments/note_" + noteId);
+        assertThat(folder.mkdirs() || folder.isDirectory()).isTrue();
+        StringBuilder json = new StringBuilder("[");
+        for (int index = 0; index < 5; index++) {
+            String name = "item-" + index + ".png";
+            if (index > 0) json.append(',');
+            json.append(attachmentJson(noteId, name));
+            if (index < 4) {
+                try (FileOutputStream out = new FileOutputStream(new File(folder, name))) {
+                    out.write(("bytes-" + index).getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        }
+        json.append(']');
+        Note note = db.noteDao().getNoteSync(noteId);
+        note.setAttachments(json.toString());
+        db.noteDao().addNote(note);
+
+        SnapshotBuildResult.SnapshotBuildException error = assertSnapshotBuildFails(store);
+
+        assertThat(error.getProblems()).isNotEmpty();
+        assertThat(error.getProblems().get(0).getKind())
+                .isEqualTo(SnapshotProblem.Kind.MISSING_ATTACHMENT);
+        assertThat(db.noteDao().getNoteSync(noteId).getAttachments()).isEqualTo(json.toString());
+    }
+
+    @Test
+    public void readSnapshot_acceptsANoteWithNoAttachments() throws Exception {
+        seedNote("No attachments", "body", "[]");
+
+        SnapshotBuildResult result = store.buildSnapshot();
+
+        assertThat(result.isPublishable()).isTrue();
+        assertThat(
+                        onlyNote(result.requireSnapshot())
+                                .getPayload()
+                                .getAsJsonArray("attachmentHashes"))
+                .isEmpty();
     }
 
     @Test
@@ -189,6 +294,49 @@ public class RoomSyncStoreTest {
         assertThat(metadata.updatedAt).isEqualTo(200L);
     }
 
+    @Test
+    public void applySnapshot_rollsBackNotesMetadataAndStateWhenARecordMutationFails()
+            throws Exception {
+        int noteId = seedNote("Original", "body", null);
+        SyncRecord original = onlyNote(store.readSnapshot());
+        JsonObject changedPayload = original.getPayload();
+        changedPayload.addProperty("b", "Remote title");
+        SyncSnapshot remote =
+                new SyncSnapshot(
+                        Collections.singletonList(
+                                SyncRecord.live(
+                                        SyncRecord.Type.NOTE,
+                                        original.getId(),
+                                        java.time.Instant.ofEpochMilli(2_000L),
+                                        changedPayload)));
+        RoomSyncStore failingStore =
+                new RoomSyncStore(
+                        context,
+                        db,
+                        mock(PreferenceHelper.class),
+                        com.pasich.mynotes.extendedEditor.attach.AttachmentStorage::resolve,
+                        file -> sha256(readAll(new java.io.FileInputStream(file))),
+                        record -> {
+                            throw new IllegalStateException("injected apply failure");
+                        });
+
+        try {
+            failingStore.applySnapshot(
+                    remote,
+                    Collections.emptyList(),
+                    SyncState.success("google-drive", java.time.Instant.now(), 0));
+            throw new AssertionError("Expected injected transaction failure");
+        } catch (IllegalStateException expected) {
+            assertThat(expected).hasMessageThat().contains("injected apply failure");
+        }
+
+        assertThat(db.noteDao().getNoteSync(noteId).getTitle()).isEqualTo("Original");
+        SyncMetadataEntity metadata = db.syncMetadataDao().get("note", noteId);
+        assertThat(metadata.updatedAt).isEqualTo(1_000L);
+        assertThat(store.readState().getStatus()).isEqualTo(SyncState.Status.IDLE);
+        assertThat(store.getConflicts()).isEmpty();
+    }
+
     // ---- helpers ----
 
     private int seedNote(String title, String value, String attachmentsJson) {
@@ -232,6 +380,28 @@ public class RoomSyncStoreTest {
         List<SyncRecord> notes = snapshot.getLiveRecords(SyncRecord.Type.NOTE);
         assertThat(notes).hasSize(1);
         return notes.get(0);
+    }
+
+    private static SnapshotBuildResult.SnapshotBuildException assertSnapshotBuildFails(
+            RoomSyncStore store) {
+        try {
+            store.readSnapshot();
+            throw new AssertionError("Expected a local snapshot build failure");
+        } catch (SnapshotBuildResult.SnapshotBuildException expected) {
+            return expected;
+        } catch (IOException unexpected) {
+            throw new AssertionError(unexpected);
+        }
+    }
+
+    private static String attachmentJson(int noteId, String name) {
+        return "{\"url\":\"file://attachments/note_"
+                + noteId
+                + "/"
+                + name
+                + "\",\"name\":\""
+                + name
+                + "\"}";
     }
 
     private static byte[] readAll(InputStream input) throws IOException {

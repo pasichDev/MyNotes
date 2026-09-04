@@ -22,3 +22,5 @@ gha-creds-*.json
 
 # Local design/plan notes, deliberately kept out of the repository
 docs/
+!docs/
+!docs/google-drive-sync-invariants.md

@@ -125,16 +125,6 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public int getSyncRolloutBucket() {
-        return preferencesHelper.getSyncRolloutBucket();
-    }
-
-    @Override
-    public void setSyncRolloutBucket(int bucket) {
-        preferencesHelper.setSyncRolloutBucket(bucket);
-    }
-
-    @Override
     public String getTypeFaceNoteActivity() {
         return preferencesHelper.getTypeFaceNoteActivity();
     }
