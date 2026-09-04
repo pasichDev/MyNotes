@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey;
         tableName = "sync_conflicts",
         indices = {
             @Index(
-                    value = {"recordType", "stableId"},
+                    value = {"recordType", "stableId", "versionPairHash"},
                     unique = true),
             @Index(value = {"resolved"}),
             @Index(value = {"createdAt"})
@@ -22,6 +22,8 @@ public class SyncConflictEntity {
 
     @NonNull public String recordType;
     @NonNull public String stableId;
+    /** Stable digest of the exact winner/loser version pair; never use the mutable row id. */
+    @NonNull public String versionPairHash;
     @NonNull public String winnerSource;
     @NonNull public String winnerJson;
     @NonNull public String loserJson;
@@ -37,6 +39,7 @@ public class SyncConflictEntity {
     public SyncConflictEntity(
             @NonNull String recordType,
             @NonNull String stableId,
+            @NonNull String versionPairHash,
             @NonNull String winnerSource,
             @NonNull String winnerJson,
             @NonNull String loserJson,
@@ -50,6 +53,7 @@ public class SyncConflictEntity {
             long resolvedAt) {
         this.recordType = recordType;
         this.stableId = stableId;
+        this.versionPairHash = versionPairHash;
         this.winnerSource = winnerSource;
         this.winnerJson = winnerJson;
         this.loserJson = loserJson;

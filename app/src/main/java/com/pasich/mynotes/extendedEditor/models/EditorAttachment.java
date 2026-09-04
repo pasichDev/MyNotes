@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import org.json.JSONObject;
 
 public class EditorAttachment {
+    /** Immutable logical attachment identity; SHA-256 identifies only the shared blob bytes. */
+    public String id;
     public String url;
     public String name;
     public String extension;

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -131,7 +132,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     @Override
     public synchronized boolean hasAttachment(@NonNull String sha256) throws IOException {
         for (String folderId : findFolderIds()) {
-            if (findAttachment(folderId, sha256) != null) {
+            if (findVerifiedAttachment(folderId, sha256, null) != null) {
                 return true;
             }
         }
@@ -142,7 +143,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     @Override
     public synchronized InputStream readAttachment(@NonNull String sha256) throws IOException {
         for (String folderId : findFolderIds()) {
-            String attachmentId = findAttachment(folderId, sha256);
+            String attachmentId = findVerifiedAttachment(folderId, sha256, null);
             if (attachmentId == null) {
                 continue;
             }
@@ -171,7 +172,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             @NonNull String sha256, long sizeBytes, @NonNull InputStream content)
             throws IOException {
         String folderId = ensureCanonicalFolderId();
-        if (findAttachment(folderId, sha256) != null) {
+        if (findVerifiedAttachment(folderId, sha256, sizeBytes >= 0L ? sizeBytes : null) != null) {
             return;
         }
         if (sizeBytes >= 0L) {
@@ -248,7 +249,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         }
         for (Map.Entry<String, Long> attachment : sizes.entrySet()) {
             String hash = attachment.getKey();
-            if (findAttachment(canonicalRootId, hash) != null) {
+            if (findVerifiedAttachment(canonicalRootId, hash, attachment.getValue()) != null) {
                 continue;
             }
             InputStream source = readAttachment(hash);
@@ -322,6 +323,91 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         // same hash are byte-identical and either one will do. Rejecting them used to break every
         // subsequent sync permanently.
         return smallestId(files);
+    }
+
+    /**
+     * An app property is only an index. Read and verify every candidate before it may satisfy a
+     * content-addressed reference; corrupt candidates remain harmless Drive orphans.
+     */
+    @Nullable
+    private String findVerifiedAttachment(
+            @NonNull String folderId, @NonNull String sha256, @Nullable Long expectedSize)
+            throws IOException {
+        JsonArray files =
+                listFiles(
+                        "'"
+                                + folderId
+                                + "' in parents and trashed = false and "
+                                + appPropertyClause("mynotesAttachmentSha256", sha256),
+                        "files(id,name)");
+        List<String> candidateIds = new ArrayList<>(files.size());
+        for (int index = 0; index < files.size(); index++) {
+            candidateIds.add(files.get(index).getAsJsonObject().get("id").getAsString());
+        }
+        candidateIds.sort(Comparator.naturalOrder());
+        for (String candidateId : candidateIds) {
+            try (InputStream candidate = openAttachment(candidateId)) {
+                verifyAttachment(candidate, sha256, expectedSize);
+                return candidateId;
+            } catch (AttachmentIntegrityException corrupt) {
+                // A second content-addressed duplicate may be valid. Never accept the property
+                // alone and never delete this object during a correctness path.
+            }
+        }
+        return null;
+    }
+
+    @NonNull
+    private InputStream openAttachment(@NonNull String attachmentId) throws IOException {
+        HttpURLConnection connection =
+                requestExecutor.executeIdempotent(
+                        () ->
+                                openSuccessful(
+                                        "GET", apiBase + "/files/" + attachmentId + "?alt=media"));
+        try {
+            return new ConnectionInputStream(connection, MAX_ATTACHMENT_RESPONSE_BYTES);
+        } catch (IOException failure) {
+            connection.disconnect();
+            throw failure;
+        }
+    }
+
+    private static void verifyAttachment(
+            @NonNull InputStream input, @NonNull String expectedHash, @Nullable Long expectedSize)
+            throws IOException {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException error) {
+            throw new IOException("SHA-256 is unavailable", error);
+        }
+        long size = 0L;
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            digest.update(buffer, 0, read);
+            size += read;
+            if (size > MAX_ATTACHMENT_RESPONSE_BYTES) {
+                throw new AttachmentIntegrityException("Attachment exceeds the sync size limit");
+            }
+        }
+        String actual = toHex(digest.digest());
+        if (!expectedHash.equals(actual)) {
+            throw new AttachmentIntegrityException(
+                    "Attachment checksum does not match its declared hash");
+        }
+        if (expectedSize != null && expectedSize.longValue() != size) {
+            throw new AttachmentIntegrityException("Attachment size does not match its declared size");
+        }
+    }
+
+    @NonNull
+    private static String toHex(@NonNull byte[] bytes) {
+        StringBuilder value = new StringBuilder(bytes.length * 2);
+        for (byte byteValue : bytes) {
+            value.append(String.format(Locale.US, "%02x", byteValue & 0xff));
+        }
+        return value.toString();
     }
 
     @NonNull
@@ -585,7 +671,8 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         } catch (IOException uploadFailure) {
             // Attachment identity is its SHA-256. A successful request whose response was lost is
             // confirmed by discovery, not repeated with an already-consumed stream.
-            if (findAttachment(folderId, sha256) == null) {
+            if (!isAmbiguousTransportFailure(uploadFailure)
+                    || findVerifiedAttachment(folderId, sha256, sizeBytes) == null) {
                 throw uploadFailure;
             }
         }
@@ -597,10 +684,25 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         try {
             uploadFile(folderId, sha256, MIME_BINARY, content, false);
         } catch (IOException uploadFailure) {
-            if (findAttachment(folderId, sha256) == null) {
+            if (!isAmbiguousTransportFailure(uploadFailure)
+                    || findVerifiedAttachment(folderId, sha256, (long) content.length) == null) {
                 throw uploadFailure;
             }
         }
+    }
+
+    private static boolean isAmbiguousTransportFailure(@NonNull IOException failure) {
+        if (failure instanceof AttachmentIntegrityException
+                || failure instanceof java.io.InterruptedIOException) {
+            return false;
+        }
+        if (failure instanceof DriveRequestExecutor.DriveHttpException) {
+            int status = ((DriveRequestExecutor.DriveHttpException) failure).statusCode;
+            return status >= 500 && status <= 599;
+        }
+        return failure instanceof java.net.SocketException
+                || failure instanceof java.net.SocketTimeoutException
+                || failure instanceof java.net.ConnectException;
     }
 
     /**
@@ -991,14 +1093,14 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                 throw new IOException("Attachment upload ended before the source was verified");
             }
             if (size != expectedSize) {
-                throw new IOException("Attachment size does not match sync metadata");
+                throw new AttachmentIntegrityException("Attachment size does not match sync metadata");
             }
             StringBuilder actualHash = new StringBuilder(64);
             for (byte value : digest.digest()) {
                 actualHash.append(String.format(java.util.Locale.US, "%02x", value & 0xff));
             }
             if (!expectedHash.equals(actualHash.toString())) {
-                throw new IOException("Attachment checksum does not match sync metadata");
+                throw new AttachmentIntegrityException("Attachment checksum does not match sync metadata");
             }
         }
     }

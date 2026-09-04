@@ -53,7 +53,6 @@ public final class SyncBundleValidator {
                 new LinkedHashMap<>();
         Map<String, SyncBundleCodec.AttachmentManifestEntry> attachmentsByHash =
                 new LinkedHashMap<>();
-        Set<String> attachmentPaths = new LinkedHashSet<>();
         long totalAttachmentBytes = 0L;
         JsonArray attachments = manifest.getAsJsonArray("attachments");
         for (JsonElement element : attachments) {
@@ -62,11 +61,10 @@ public final class SyncBundleValidator {
             if (attachmentsById.put(attachment.id, attachment) != null) {
                 throw new IOException("Sync bundle contains duplicate attachment IDs");
             }
-            if (attachmentsByHash.put(attachment.sha256, attachment) != null) {
-                throw new IOException("Sync bundle contains duplicate attachment hashes");
-            }
-            if (!attachmentPaths.add(attachment.path)) {
-                throw new IOException("Sync bundle contains duplicate attachment paths");
+            SyncBundleCodec.AttachmentManifestEntry previous =
+                    attachmentsByHash.putIfAbsent(attachment.sha256, attachment);
+            if (previous != null && !previous.sameRemoteFile(attachment)) {
+                throw new IOException("Sync bundle contains conflicting attachment blob metadata");
             }
             if (attachment.size > MAX_ATTACHMENT_BYTES) {
                 throw new IOException("Sync bundle contains an oversized attachment");

@@ -174,6 +174,7 @@ public final class SyncBundleCodec {
     @NonNull
     private static JsonArray collectAttachments(@NonNull SyncSnapshot snapshot) throws IOException {
         JsonArray attachments = new JsonArray();
+        Map<String, AttachmentManifestEntry> seenById = new LinkedHashMap<>();
         Map<String, AttachmentManifestEntry> seenByHash = new LinkedHashMap<>();
         for (SyncRecord record : snapshot.getLiveRecords(SyncRecord.Type.NOTE)) {
             JsonArray manifestEntries = record.getPayload().getAsJsonArray("attachmentsManifest");
@@ -181,8 +182,10 @@ public final class SyncBundleCodec {
             for (JsonElement element : manifestEntries) {
                 AttachmentManifestEntry attachment =
                         AttachmentManifestEntry.fromJson(element.getAsJsonObject());
-                AttachmentManifestEntry previous =
-                        seenByHash.putIfAbsent(attachment.sha256, attachment);
+                if (seenById.putIfAbsent(attachment.id, attachment) != null) {
+                    throw new IOException("Two notes reference conflicting attachment metadata");
+                }
+                AttachmentManifestEntry previous = seenByHash.putIfAbsent(attachment.sha256, attachment);
                 if (previous != null && !previous.sameRemoteFile(attachment)) {
                     throw new IOException("Two notes reference conflicting attachment metadata");
                 }
@@ -191,7 +194,7 @@ public final class SyncBundleCodec {
         if (seenByHash.size() > SyncBundleValidator.MAX_ATTACHMENT_COUNT) {
             throw new IOException("Sync bundle exceeds the schema-1 attachment limit");
         }
-        for (AttachmentManifestEntry attachment : seenByHash.values()) {
+        for (AttachmentManifestEntry attachment : seenById.values()) {
             attachments.add(attachment.toJson(false));
         }
         return attachments;
@@ -398,7 +401,6 @@ public final class SyncBundleCodec {
         boolean sameRemoteFile(@NonNull AttachmentManifestEntry other) {
             return sha256.equals(other.sha256)
                     && path.equals(other.path)
-                    && mimeType.equals(other.mimeType)
                     && size == other.size;
         }
     }

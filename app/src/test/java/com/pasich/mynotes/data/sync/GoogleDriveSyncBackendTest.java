@@ -110,6 +110,20 @@ public class GoogleDriveSyncBackendTest {
     }
 
     @Test
+    public void writeAttachment_doesNotTrustCorruptObjectTaggedWithExpectedHash() throws Exception {
+        byte[] expected = "verified attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(expected);
+        server.seedCorruptAttachment(hash, "wrong bytes".getBytes(StandardCharsets.UTF_8));
+
+        backend().writeAttachment(hash, expected.length, new ByteArrayInputStream(expected));
+
+        assertThat(server.ownedAttachmentCount(hash)).isEqualTo(2);
+        try (java.io.InputStream restored = backend().readAttachment(hash)) {
+            assertThat(readAll(restored)).isEqualTo(expected);
+        }
+    }
+
+    @Test
     public void concurrentFirstSync_createsDuplicateRootsThenConvergesWithoutLosingEitherNote()
             throws Exception {
         server.pauseTheNextTwoEmptyRootListings();
@@ -222,8 +236,7 @@ public class GoogleDriveSyncBackendTest {
 
     @Test
     public void writeSnapshot_createsNewBundleWhenLegacyBundleChanges() throws Exception {
-        String hash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-        server.seedOwnedBundle(snapshot(hash));
+        server.seedOwnedBundle(snapshot(NOTE_ID, null));
         GoogleDriveSyncBackend backend =
                 new GoogleDriveSyncBackend(
                         "token",
@@ -236,16 +249,14 @@ public class GoogleDriveSyncBackendTest {
         server.forceConcurrentBundleUpdate(
                 snapshot("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"));
 
-        backend.writeSnapshot(snapshot(hash));
+        backend.writeSnapshot(snapshot(NOTE_ID, null));
 
         assertThat(server.bundleCount()).isEqualTo(2);
     }
 
     @Test
     public void writeSnapshot_preservesUpdateThatArrivesBetweenReadAndPublish() throws Exception {
-        String firstHash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-        String secondHash = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
-        server.seedOwnedBundle(snapshot(NOTE_ID, firstHash));
+        server.seedOwnedBundle(snapshot(NOTE_ID, null));
         GoogleDriveSyncBackend backend =
                 new GoogleDriveSyncBackend(
                         "token",
@@ -255,8 +266,8 @@ public class GoogleDriveSyncBackendTest {
                         new SyncBundleCodec());
 
         backend.readSnapshot();
-        server.updateBundleImmediatelyBeforeNextUpload(snapshot(SECOND_NOTE_ID, secondHash));
-        backend.writeSnapshot(snapshot(NOTE_ID, firstHash));
+        server.updateBundleImmediatelyBeforeNextUpload(snapshot(SECOND_NOTE_ID, null));
+        backend.writeSnapshot(snapshot(NOTE_ID, null));
 
         SyncSnapshot remote =
                 new GoogleDriveSyncBackend(
@@ -311,6 +322,16 @@ public class GoogleDriveSyncBackendTest {
             value.append(String.format("%02x", byteValue & 0xff));
         }
         return value.toString();
+    }
+
+    private static byte[] readAll(java.io.InputStream input) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            output.write(buffer, 0, read);
+        }
+        return output.toByteArray();
     }
 
     private static final class FakeDriveServer implements AutoCloseable {
@@ -441,6 +462,15 @@ public class GoogleDriveSyncBackendTest {
             String hash = sha256(bytes);
             seededAttachmentContent.put(hash, bytes);
             return hash;
+        }
+
+        void seedCorruptAttachment(String claimedHash, byte[] bytes) {
+            DriveFile folder =
+                    createFile("MyNotes Sync", "application/vnd.google-apps.folder", null);
+            folder.appProperties.put("mynotesOwner", "1");
+            DriveFile blob = createFile(claimedHash, "application/octet-stream", folder.id);
+            blob.appProperties.put("mynotesAttachmentSha256", claimedHash);
+            blob.content = bytes;
         }
 
         void seedOwnedBundle(SyncSnapshot snapshot) throws IOException {

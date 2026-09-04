@@ -108,7 +108,14 @@ public final class SyncService {
             SyncSnapshot merged = mergeResult.getMergedSnapshot();
 
             Map<String, Long> expectedSizes = attachmentSizes(merged);
+            // The merged snapshot contains only the deterministic winner. A conflict row is not
+            // durable unless the loser can later be restored as well, so preflight and pin each
+            // version independently; SyncSnapshot deliberately forbids two versions of one ID.
             synchronizeAttachments(backend, merged, expectedSizes);
+            for (SyncMergeResult.Conflict conflict : mergeResult.getConflicts()) {
+                pinConflictVersion(backend, conflict.getWinner());
+                pinConflictVersion(backend, conflict.getLoser());
+            }
             if (!snapshotsMatch(merged, remote)) {
                 backend.writeSnapshot(merged);
             }
@@ -220,6 +227,24 @@ public final class SyncService {
             }
         }
     }
+
+    /** Pins required conflict blobs into the store's durable content-addressed cache. */
+    private void pinConflictVersion(@NonNull SyncBackend backend, @NonNull SyncRecord record)
+            throws IOException {
+        if (record.isTombstone()) return;
+        SyncSnapshot snapshot = new SyncSnapshot(java.util.Collections.singletonList(record));
+        Map<String, Long> expectedSizes = attachmentSizes(snapshot);
+        synchronizeAttachments(backend, snapshot, expectedSizes);
+        for (String hash : store.getAttachmentHashes(snapshot)) {
+            Long expectedSize = expectedSizes.get(hash);
+            copyVerified(
+                    hash,
+                    expectedSize,
+                    store.readAttachment(hash),
+                    store::writeAttachment);
+        }
+    }
+
 
     private void verifyAttachment(String hash, Long expectedSize, InputStream source)
             throws IOException {
@@ -335,7 +360,14 @@ public final class SyncService {
         private final String expectedHash;
         private final Long expectedSize;
         private long byteCount;
-        private boolean verified;
+        private VerificationState verificationState = VerificationState.UNVERIFIED;
+        private AttachmentIntegrityException integrityFailure;
+
+        private enum VerificationState {
+            UNVERIFIED,
+            VERIFIED,
+            FAILED
+        }
 
         VerifyingInputStream(InputStream input, String expectedHash, Long expectedSize) {
             super(input);
@@ -350,6 +382,7 @@ public final class SyncService {
 
         @Override
         public int read() throws IOException {
+            rethrowIntegrityFailure();
             int value = super.read();
             if (value >= 0) {
                 digest.update((byte) value);
@@ -363,6 +396,7 @@ public final class SyncService {
 
         @Override
         public int read(byte[] buffer, int offset, int length) throws IOException {
+            rethrowIntegrityFailure();
             int read = super.read(buffer, offset, length);
             if (read > 0) {
                 digest.update(buffer, offset, read);
@@ -376,7 +410,7 @@ public final class SyncService {
 
         private void enforceSizeLimit() throws IOException {
             if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
-                throw new IOException("Attachment exceeds the sync size limit");
+                failIntegrity("Attachment exceeds the sync size limit");
             }
         }
 
@@ -387,19 +421,37 @@ public final class SyncService {
          * its final location still learns about a mismatch before it commits.
          */
         void verifyEndOfStream() throws IOException {
-            if (verified) {
+            if (verificationState == VerificationState.VERIFIED) {
                 return;
             }
-            // Set before draining: drainRemaining reads through super, but a caller reaching this
-            // from read() must not be able to re-enter.
-            verified = true;
-            drainRemaining();
-            String actualHash = toHex(digest.digest());
-            if (!expectedHash.equals(actualHash)) {
-                throw new IOException("Attachment checksum does not match its declared hash");
+            rethrowIntegrityFailure();
+            try {
+                drainRemaining();
+                String actualHash = toHex(digest.digest());
+                if (!expectedHash.equals(actualHash)) {
+                    failIntegrity("Attachment checksum does not match its declared hash");
+                }
+                if (expectedSize != null && expectedSize.longValue() != byteCount) {
+                    failIntegrity("Attachment size does not match its declared size");
+                }
+                verificationState = VerificationState.VERIFIED;
+            } catch (AttachmentIntegrityException failure) {
+                integrityFailure = failure;
+                verificationState = VerificationState.FAILED;
+                throw failure;
             }
-            if (expectedSize != null && expectedSize.longValue() != byteCount) {
-                throw new IOException("Attachment size does not match its declared size");
+        }
+
+        private void failIntegrity(String message) throws AttachmentIntegrityException {
+            AttachmentIntegrityException failure = new AttachmentIntegrityException(message);
+            integrityFailure = failure;
+            verificationState = VerificationState.FAILED;
+            throw failure;
+        }
+
+        private void rethrowIntegrityFailure() throws AttachmentIntegrityException {
+            if (verificationState == VerificationState.FAILED && integrityFailure != null) {
+                throw integrityFailure;
             }
         }
 

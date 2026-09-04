@@ -10,8 +10,9 @@ import java.util.List;
 @Dao
 public interface SyncConflictDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void replaceAll(List<SyncConflictEntity> conflicts);
+    /** Exact repeated observations are harmless; distinct version pairs must coexist. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void insertIgnoringDuplicates(List<SyncConflictEntity> conflicts);
 
     @Query("DELETE FROM sync_conflicts")
     void clearAll();

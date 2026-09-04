@@ -99,6 +99,38 @@ public class MigrationTest {
     }
 
     @Test
+    public void migrate17to18_preservesExistingConflictAndAllowsVersionPairsToCoexist()
+            throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 17);
+        db.execSQL(
+                "INSERT INTO sync_conflicts "
+                        + "(recordType, stableId, winnerSource, winnerJson, loserJson, winnerUpdatedAt, "
+                        + "loserUpdatedAt, winnerTombstone, loserTombstone, resolution, resolved, createdAt, resolvedAt) "
+                        + "VALUES ('note', 'stable', 'LOCAL', '{}', '{}', 1, 1, 0, 0, 'PENDING', 0, 1, 0)");
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 18, true, AppDatabase.MIGRATION_17_18);
+        try {
+            migrated.execSQL(
+                    "INSERT INTO sync_conflicts "
+                            + "(recordType, stableId, versionPairHash, winnerSource, winnerJson, loserJson, "
+                            + "winnerUpdatedAt, loserUpdatedAt, winnerTombstone, loserTombstone, resolution, "
+                            + "resolved, createdAt, resolvedAt) "
+                            + "VALUES ('note', 'stable', 'new-pair', 'REMOTE', '{}', '{}', 2, 2, 0, 0, "
+                            + "'PENDING', 0, 2, 0)");
+            try (android.database.Cursor cursor =
+                    migrated.query(
+                            "SELECT COUNT(*) FROM sync_conflicts WHERE recordType = 'note' AND stableId = 'stable'")) {
+                assertThat(cursor.moveToFirst()).isTrue();
+                assertThat(cursor.getInt(0)).isEqualTo(2);
+            }
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
     public void migrate14to15_backfillsCategoryMetadata() throws IOException {
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 14);
         db.close();

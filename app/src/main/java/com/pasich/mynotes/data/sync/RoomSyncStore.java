@@ -202,8 +202,10 @@ public final class RoomSyncStore implements SyncStore {
             @NonNull List<SyncMergeResult.Conflict> conflicts,
             @Nullable SyncState finalState)
             throws IOException {
-        database.runInTransaction(
-                () -> {
+        try {
+            database.runInTransaction(
+                    () -> {
+                        try {
                     Map<String, SyncMetadataEntity> byStableId = new HashMap<>();
                     for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
                         byStableId.put(metadata.recordType + ":" + metadata.stableId, metadata);
@@ -252,7 +254,13 @@ public final class RoomSyncStore implements SyncStore {
                     if (finalState != null) {
                         database.syncStateDao().upsert(toEntity(finalState));
                     }
-                });
+                        } catch (IOException error) {
+                            throw new SyncRuntimeException(error);
+                        }
+                    });
+        } catch (SyncRuntimeException error) {
+            throw error.ioException;
+        }
     }
 
     @Nullable
@@ -299,7 +307,7 @@ public final class RoomSyncStore implements SyncStore {
         return result;
     }
 
-    private void applyPayload(SyncMetadataEntity metadata, JsonObject payload) {
+    private void applyPayload(SyncMetadataEntity metadata, JsonObject payload) throws IOException {
         if ("note".equals(metadata.recordType)) {
             Note note = gson.fromJson(payload, Note.class);
             note.setId((int) metadata.localId);
@@ -330,7 +338,7 @@ public final class RoomSyncStore implements SyncStore {
         }
     }
 
-    private long insertRemoteRecord(SyncRecord record) {
+    private long insertRemoteRecord(SyncRecord record) throws IOException {
         if (record.getType() == SyncRecord.Type.NOTE) {
             Note note = gson.fromJson(record.getPayload(), Note.class);
             note.setId(0);
@@ -433,6 +441,12 @@ public final class RoomSyncStore implements SyncStore {
     public void resolveConflict(long conflictId, @NonNull SyncResolution resolution)
             throws IOException {
         if (resolution == SyncResolution.PENDING) return;
+        SyncConflictEntity pending = database.syncConflictDao().getById(conflictId);
+        if (pending == null || pending.resolved) return;
+        // Resolution is a user-visible mutation. Verify and pin the selected version before its
+        // conflict row can be marked resolved; a missing blob must leave both the note and conflict
+        // untouched, including when the winner happens to already be visible in Room.
+        pinResolvedConflictAttachments(selectRecordForResolution(pending, resolution));
         try {
             database.runInTransaction(
                     () -> {
@@ -461,6 +475,27 @@ public final class RoomSyncStore implements SyncStore {
         }
     }
 
+    private void pinResolvedConflictAttachments(@NonNull SyncRecord selected) throws IOException {
+        if (selected.isTombstone() || selected.getType() != SyncRecord.Type.NOTE) return;
+        JsonArray manifest = selected.getPayload().getAsJsonArray("attachmentsManifest");
+        if (manifest == null) return;
+        for (JsonElement element : manifest) {
+            if (!element.isJsonObject()) {
+                throw new IOException("Attachment manifest entry is invalid");
+            }
+            SyncBundleCodec.AttachmentManifestEntry entry =
+                    SyncBundleCodec.AttachmentManifestEntry.fromJson(element.getAsJsonObject());
+            File source = resolveLocalAttachment(entry.sha256);
+            if (source == null || !isVerifiedAttachmentFile(source, entry.sha256, entry.size)) {
+                throw new IOException("Required conflict attachment is unavailable: " + entry.sha256);
+            }
+            File cache = attachmentFile(entry.sha256);
+            if (!isVerifiedAttachmentFile(cache, entry.sha256, entry.size)) {
+                copyVerifiedAttachment(source, cache, entry.sha256, entry.size);
+            }
+        }
+    }
+
     private void persistConflicts(@NonNull List<SyncMergeResult.Conflict> conflicts) {
         if (conflicts.isEmpty()) return;
 
@@ -471,6 +506,7 @@ public final class RoomSyncStore implements SyncStore {
                     new SyncConflictEntity(
                             conflict.getType().getWireValue(),
                             conflict.getId(),
+                            conflictVersionPairHash(conflict),
                             conflict.getWinnerSource().name(),
                             conflict.getWinner().canonicalSerializedPayload(),
                             conflict.getLoser().canonicalSerializedPayload(),
@@ -483,7 +519,27 @@ public final class RoomSyncStore implements SyncStore {
                             createdAt,
                             0L));
         }
-        database.syncConflictDao().replaceAll(rows);
+        database.syncConflictDao().insertIgnoringDuplicates(rows);
+    }
+
+    @NonNull
+    private static String conflictVersionPairHash(@NonNull SyncMergeResult.Conflict conflict) {
+        String source =
+                conflict.getType().getWireValue()
+                        + "\n"
+                        + conflict.getId()
+                        + "\n"
+                        + conflict.getWinnerSource().name()
+                        + "\n"
+                        + conflict.getWinner().canonicalSerializedPayload()
+                        + "\n"
+                        + conflict.getLoser().canonicalSerializedPayload();
+        try {
+            return sha256(
+                    new java.io.ByteArrayInputStream(source.getBytes(StandardCharsets.UTF_8)));
+        } catch (IOException impossible) {
+            throw new IllegalStateException("Could not hash sync conflict identity", impossible);
+        }
     }
 
     private void applyResolvedRecord(
@@ -683,7 +739,8 @@ public final class RoomSyncStore implements SyncStore {
         JsonArray hashes = new JsonArray();
         JsonObject names = new JsonObject();
         boolean complete = true;
-        for (JsonElement element : attachments) {
+        for (int attachmentIndex = 0; attachmentIndex < attachments.size(); attachmentIndex++) {
+            JsonElement element = attachments.get(attachmentIndex);
             if (!element.isJsonObject()) {
                 addSnapshotProblem(
                         snapshotProblems,
@@ -748,11 +805,28 @@ public final class RoomSyncStore implements SyncStore {
                     attachment.name == null || attachment.name.trim().isEmpty()
                             ? file.getName()
                             : attachment.name.trim();
+            String logicalId = attachment.id;
+            if (logicalId == null || !logicalId.matches("[0-9a-fA-F-]{36}")) {
+                // Existing editor data predates logical attachment IDs. Deriving from the stable
+                // note, source URL and position keeps the migration deterministic while allowing
+                // equal-content references to remain distinct logical attachments.
+                logicalId =
+                        UUID.nameUUIDFromBytes(
+                                        (metadata.stableId
+                                                        + "\n"
+                                                        + attachmentIndex
+                                                        + "\n"
+                                                        + attachment.url
+                                                        + "\n"
+                                                        + displayName)
+                                                .getBytes(StandardCharsets.UTF_8))
+                                .toString();
+            }
             hashes.add(hash);
-            names.addProperty(hash, displayName);
+            names.addProperty(logicalId, displayName);
 
             JsonObject manifestEntry = new JsonObject();
-            manifestEntry.addProperty("id", stableAttachmentId(hash));
+            manifestEntry.addProperty("id", logicalId);
             manifestEntry.addProperty("sha256", hash);
             manifestEntry.addProperty("mimeType", detectMimeType(file, attachment, displayName));
             manifestEntry.addProperty("size", file.length());
@@ -774,50 +848,125 @@ public final class RoomSyncStore implements SyncStore {
         problems.add(new SnapshotProblem(kind, metadata.recordType, metadata.stableId));
     }
 
-    private void restoreAttachments(Note note, JsonObject payload) {
-        if (!payload.has("attachmentHashes") || !payload.has("attachmentNames")) return;
-        try {
-            JsonArray hashes = payload.getAsJsonArray("attachmentHashes");
-            JsonObject names = payload.getAsJsonObject("attachmentNames");
-            JsonArray attachments = new JsonArray();
-            File folder = AttachmentStorage.noteFolder(context, note.getId());
-            for (JsonElement item : hashes) {
-                String hash = item.getAsString();
-                // Not just the download cache: when the local version of a note wins the merge it
-                // is re-applied through this same path, and its blobs live in the note's own
-                // folder. Resolving only the cache silently rewrote such a note with an empty
-                // attachment list, destroying files that were never in conflict.
-                File source = resolveLocalAttachment(hash);
-                if (source == null) continue;
-                String name = names.has(hash) ? names.get(hash).getAsString() : hash;
-                if (!isSafeAttachmentName(name)) {
-                    continue;
-                }
-                File target = new File(folder, name);
-                if (!source.getAbsolutePath().equals(target.getAbsolutePath())) {
-                    // Scoped per file: one unreadable blob must not discard the note's other
-                    // attachments, which is what a single loop-wide catch used to do. Skipped
-                    // entirely when the file is already in place, because opening it for writing
-                    // would truncate the very file being read.
-                    try (InputStream in = new FileInputStream(source);
-                            OutputStream out = new FileOutputStream(target)) {
-                        byte[] buffer = new byte[8192];
-                        int read;
-                        while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
-                    } catch (IOException error) {
-                        Log.w(TAG, "Could not restore attachment " + hash, error);
-                        continue;
-                    }
-                }
-                JsonObject attachment = new JsonObject();
-                attachment.addProperty(
-                        "url", "file://attachments/note_" + note.getId() + "/" + name);
-                attachment.addProperty("name", name);
-                attachments.add(attachment);
+    /**
+     * Materializes every attachment before changing the Room row. Targets use the immutable
+     * logical-ID/content-ID pair rather than a display name, so a rollback can leave only harmless
+     * new files and can never alter bytes addressed by the pre-transaction note.
+     */
+    private void restoreAttachments(Note note, JsonObject payload) throws IOException {
+        JsonArray manifest = payload.getAsJsonArray("attachmentsManifest");
+        if (manifest == null) {
+            if (payload.has("attachmentHashes")) {
+                throw new IOException("Attachment manifest is missing");
             }
-            note.setAttachments(gson.toJson(attachments));
-        } catch (RuntimeException error) {
-            Log.w(TAG, "Malformed attachment metadata for note " + note.getId(), error);
+            return;
+        }
+        File folder = AttachmentStorage.noteFolder(context, note.getId());
+        if (!folder.isDirectory() && !folder.mkdirs()) {
+            throw new IOException("Could not create attachment folder");
+        }
+        JsonArray restored = new JsonArray();
+        for (JsonElement element : manifest) {
+            if (!element.isJsonObject()) {
+                throw new IOException("Attachment manifest entry is invalid");
+            }
+            SyncBundleCodec.AttachmentManifestEntry entry;
+            try {
+                entry = SyncBundleCodec.AttachmentManifestEntry.fromJson(element.getAsJsonObject());
+            } catch (RuntimeException error) {
+                throw new IOException("Attachment manifest entry is invalid", error);
+            }
+            if (entry.id == null
+                    || entry.sha256 == null
+                    || !entry.id.matches("[0-9a-fA-F-]{36}")
+                    || !entry.sha256.matches("[0-9a-f]{64}")
+                    || entry.size < 0L) {
+                throw new IOException("Attachment manifest entry is invalid");
+            }
+            String displayName = entry.displayName == null ? entry.id : entry.displayName;
+            if (!isSafeAttachmentName(displayName)) {
+                throw new IOException("Attachment display name is invalid");
+            }
+            File source = resolveLocalAttachment(entry.sha256);
+            if (source == null || !source.isFile() || !source.canRead()) {
+                throw new IOException("Required attachment is unavailable: " + entry.sha256);
+            }
+            File target = new File(folder, entry.id + "-" + entry.sha256);
+            if (!isVerifiedAttachmentFile(target, entry.sha256, entry.size)) {
+                // A corrupted old target may still be referenced by the pre-sync note. Preserve it
+                // and use a fresh opaque immutable name for this candidate state instead.
+                if (target.exists()) {
+                    target =
+                            new File(
+                                    folder,
+                                    entry.id
+                                            + "-"
+                                            + entry.sha256
+                                            + "-"
+                                            + UUID.randomUUID());
+                }
+                copyVerifiedAttachment(source, target, entry.sha256, entry.size);
+            }
+            JsonObject attachment = new JsonObject();
+            attachment.addProperty(
+                    "url", "file://attachments/note_" + note.getId() + "/" + target.getName());
+            attachment.addProperty("name", displayName);
+            attachment.addProperty("id", entry.id);
+            restored.add(attachment);
+        }
+        note.setAttachments(gson.toJson(restored));
+    }
+
+    private static boolean isVerifiedAttachmentFile(
+            @NonNull File file, @NonNull String expectedHash, long expectedSize) throws IOException {
+        return file.isFile()
+                && file.length() == expectedSize
+                && expectedHash.equals(sha256(file));
+    }
+
+    private static void copyVerifiedAttachment(
+            @NonNull File source,
+            @NonNull File target,
+            @NonNull String expectedHash,
+            long expectedSize)
+            throws IOException {
+        File temporary =
+                new File(target.getParentFile(), target.getName() + ".tmp-" + UUID.randomUUID());
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new IOException("SHA-256 is unavailable", error);
+        }
+        long copied = 0L;
+        try (InputStream in = new FileInputStream(source);
+                OutputStream out = new FileOutputStream(temporary)) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+                digest.update(buffer, 0, read);
+                copied += read;
+                if (copied > expectedSize) {
+                    throw new AttachmentIntegrityException("Attachment exceeds its declared size");
+                }
+            }
+        } catch (IOException failure) {
+            if (temporary.exists() && !temporary.delete()) {
+                Log.w(TAG, "Could not remove failed staged attachment");
+            }
+            throw failure;
+        }
+        StringBuilder hash = new StringBuilder(64);
+        for (byte value : digest.digest()) hash.append(String.format("%02x", value & 0xff));
+        String actual = hash.toString();
+        if (copied != expectedSize || !expectedHash.equals(actual)) {
+            if (!temporary.delete()) Log.w(TAG, "Could not remove invalid staged attachment");
+            throw new AttachmentIntegrityException("Attachment checksum does not match sync metadata");
+        }
+        if (!temporary.renameTo(target)) {
+            if (!temporary.delete()) Log.w(TAG, "Could not remove uncommitted staged attachment");
+            throw new IOException("Could not finalize staged attachment");
         }
     }
 
@@ -849,6 +998,26 @@ public final class RoomSyncStore implements SyncStore {
         return hex.toString();
     }
 
+    @NonNull
+    private static String sha256(@NonNull InputStream input) throws IOException {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (java.security.NoSuchAlgorithmException error) {
+            throw new IOException("SHA-256 is unavailable", error);
+        }
+        try (InputStream in = input) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+            }
+        }
+        StringBuilder hex = new StringBuilder(64);
+        for (byte value : digest.digest()) hex.append(String.format("%02x", value & 0xff));
+        return hex.toString();
+    }
+
     /** Resolves a serialized note attachment to its app-private file. */
     public interface AttachmentResolver {
         @Nullable
@@ -864,11 +1033,6 @@ public final class RoomSyncStore implements SyncStore {
     /** Throws from tests after a Room mutation but before the enclosing transaction commits. */
     public interface TransactionFailureInjector {
         void afterRecordApplied(@NonNull SyncRecord record);
-    }
-
-    @NonNull
-    private static String stableAttachmentId(@NonNull String hash) {
-        return UUID.nameUUIDFromBytes(hash.getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     @NonNull

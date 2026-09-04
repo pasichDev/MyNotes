@@ -99,6 +99,48 @@ public class SyncBundleCodecTest {
     }
 
     @Test
+    public void encode_preservesTwoLogicalAttachmentsThatShareOneBlob() throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        JsonObject first = notePayload("One", "image/png", 42L, "first.png");
+        JsonObject second = notePayload("Two", "image/png", 42L, "second.png");
+        second.getAsJsonArray("attachmentsManifest")
+                .get(0)
+                .getAsJsonObject()
+                .addProperty("id", "550e8400-e29b-41d4-a716-446655440099");
+        SyncSnapshot decoded =
+                codec.decode(
+                                new ByteArrayInputStream(
+                                        codec.encode(
+                                                new SyncSnapshot(
+                                                        Arrays.asList(
+                                                                SyncRecord.live(
+                                                                        SyncRecord.Type.NOTE,
+                                                                        NOTE_ID,
+                                                                        CREATED_AT,
+                                                                        first),
+                                                                SyncRecord.live(
+                                                                        SyncRecord.Type.NOTE,
+                                                                        "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
+                                                                        CREATED_AT,
+                                                                        second))),
+                                                CREATED_AT)))
+                        .getSnapshot();
+
+        assertThat(
+                        decoded.find(SyncRecord.Type.NOTE, NOTE_ID)
+                                .getPayload()
+                                .getAsJsonArray("attachmentsManifest"))
+                .hasSize(1);
+        assertThat(
+                        decoded.find(
+                                        SyncRecord.Type.NOTE,
+                                        "6ba7b812-9dad-11d1-80b4-00c04fd430c8")
+                                .getPayload()
+                                .getAsJsonArray("attachmentsManifest"))
+                .hasSize(1);
+    }
+
+    @Test
     public void decode_keysAttachmentNamesByHashSoTheStoreCanResolveThem() throws Exception {
         SyncBundleCodec codec = new SyncBundleCodec();
         byte[] bundle = codec.encode(new SyncSnapshot(Arrays.asList(note("Milk"))), CREATED_AT);

@@ -137,6 +137,27 @@ public abstract class AppDatabase extends RoomDatabase {
                 }
             };
 
+    /** Preserves every unresolved version pair instead of replacing conflicts by logical record. */
+    public static final Migration MIGRATION_17_18 =
+            new Migration(17, 18) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "ALTER TABLE `sync_conflicts` ADD COLUMN `versionPairHash` TEXT NOT NULL DEFAULT ''");
+                    // Version 17 could contain at most one row per logical record. Give each
+                    // legacy row a durable unique identity without trying to hash untrusted JSON
+                    // in SQLite during a migration.
+                    database.execSQL(
+                            "UPDATE `sync_conflicts` SET `versionPairHash` = 'legacy-' || `id` "
+                                    + "WHERE `versionPairHash` = ''");
+                    database.execSQL("DROP INDEX IF EXISTS `index_sync_conflicts_recordType_stableId`");
+                    database.execSQL(
+                            "CREATE UNIQUE INDEX IF NOT EXISTS "
+                                    + "`index_sync_conflicts_recordType_stableId_versionPairHash` "
+                                    + "ON `sync_conflicts` (`recordType`, `stableId`, `versionPairHash`)");
+                }
+            };
+
     private static void insertMetadataForExistingRecords(
             SupportSQLiteDatabase database,
             String recordType,
