@@ -115,6 +115,10 @@ android {
             minifyEnabled false
             shrinkResources false
             enableUnitTestCoverage true
+            // The Room store, the DAOs and the preference adapters are only reachable on a
+            // device, so without this they report 0% and the PR comment understates what is
+            // actually tested.
+            enableAndroidTestCoverage true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 

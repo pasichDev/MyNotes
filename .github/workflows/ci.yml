@@ -4,6 +4,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+# The coverage step comments on the pull request; everything else only reads.
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   editor:
     name: Build notes editor and audit dependencies
@@ -98,8 +103,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-unit-test-coverage
-          path: app/build/reports/coverage/
+          name: coverage-unit
+          path: app/build/reports/coverage/test/debug/report.xml
           if-no-files-found: error
 
       - name: Run lint
@@ -127,10 +132,69 @@ jobs:
         with:
           log-accepted-android-sdk-licenses: 'false'
 
+      # Without this the x86_64 emulator runs unaccelerated on GitHub-hosted Linux runners
+      # and boot times out before any test runs. Required by reactivecircus/android-emulator-runner.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Run sync integration and migration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           target: google_apis
           arch: x86_64
-          script: ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
+          # The coverage variant also runs the tests, and the Room store, the DAOs and the
+          # preference adapters are only reachable here — without this report they look untested.
+          script: ./gradlew :app:createDebugAndroidTestCoverageReport --no-daemon --stacktrace
+
+      - name: Upload instrumentation coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-instrumentation
+          path: app/build/reports/coverage/androidTest/debug/connected/report.xml
+          if-no-files-found: error
+
+  coverage:
+    name: Report test coverage on the pull request
+    runs-on: ubuntu-latest
+    needs: [build, instrumentation]
+    # Report whatever exists even if a test job failed, so a coverage drop is still visible.
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download unit-test coverage
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: coverage-unit
+          path: coverage/unit
+
+      - name: Download instrumentation coverage
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: coverage-instrumentation
+          path: coverage/instrumentation
+
+      # Posts, and on later pushes updates, a single comment showing overall coverage and the
+      # coverage of the files this PR actually changed. Both reports are passed together so the
+      # numbers reflect the unit and on-device suites combined.
+      - name: Comment coverage
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: |
+            ${{ github.workspace }}/coverage/unit/report.xml
+            ${{ github.workspace }}/coverage/instrumentation/report.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Test coverage (unit + instrumentation)
+          update-comment: true
+          min-coverage-overall: 0
+          min-coverage-changed-files: 0
