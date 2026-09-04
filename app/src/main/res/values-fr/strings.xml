@@ -425,6 +425,7 @@
     <string name="sync_conflict_local_label">Version locale</string>
     <string name="sync_conflict_drive_label">Version Google Drive</string>
     <string name="sync_conflict_deleted">Supprimé</string>
+    <string name="sync_conflict_untitled">Sans titre</string>
     <string name="sync_first_sync_title">Configurer la synchronisation Google Drive</string>
     <string name="sync_first_sync_message">Cette première synchronisation fusionnera %1$d éléments et pourra envoyer environ %2$s. Vos données locales restent disponibles.</string>
     <string name="sync_first_sync_cancel">Pas maintenant</string>

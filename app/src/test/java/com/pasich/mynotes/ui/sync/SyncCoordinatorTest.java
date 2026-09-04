@@ -190,6 +190,49 @@ public class SyncCoordinatorTest {
     }
 
     @Test
+    public void disconnect_clearsConsentAndStoredStateTogether() {
+        // The screen asks for first-sync consent when isFirstSyncConfirmed() is false, and
+        // syncNow() refuses while it is false. Both must flip together on a sign-out, and the
+        // durable state has to go with them: leaving a lastSuccessfulSyncAt behind is what used to
+        // make the next connection look already-synced, skipping a dialog that alone could restore
+        // the consent flag. Manual and background sync were then both dead until app data reset.
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        preferences.firstSyncConfirmed = true;
+        preferences.syncEnabled = true;
+        preferences.backgroundEnabled = true;
+        FakeConflictStore store = new FakeConflictStore();
+        store.state = SyncState.success("google-drive", Instant.parse("2026-09-01T12:00:00Z"), 0);
+        GoogleCredentialAuth credentialAuth = mock(GoogleCredentialAuth.class);
+        Mockito.doAnswer(
+                        invocation -> {
+                            GoogleCredentialAuth.SignOutCallback callback =
+                                    invocation.getArgument(0);
+                            callback.onSuccess();
+                            return null;
+                        })
+                .when(credentialAuth)
+                .signOut(Mockito.any(GoogleCredentialAuth.SignOutCallback.class));
+        FakeScheduler scheduler = new FakeScheduler();
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        credentialAuth,
+                        mock(GoogleDriveAuthorization.class),
+                        store,
+                        scheduler,
+                        directExecutor,
+                        directExecutor);
+
+        coordinator.disconnect(new CapturingCallback<>());
+
+        assertThat(coordinator.isFirstSyncConfirmed()).isFalse();
+        assertThat(store.clearCalls).isEqualTo(1);
+        assertThat(coordinator.getLastState().getLastSuccessfulSyncAt()).isNull();
+        assertThat(scheduler.disableCalls).isAtLeast(1);
+    }
+
+    @Test
     public void syncNow_allowsUsersInTheHighestRolloutBucket() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.firstSyncConfirmed = true;
@@ -340,6 +383,7 @@ public class SyncCoordinatorTest {
         private final List<SyncConflictEntity> conflicts = new ArrayList<>();
         private final List<String> resolutions = new ArrayList<>();
         private String lastToken;
+        private int clearCalls;
 
         @NonNull
         @Override
@@ -366,6 +410,13 @@ public class SyncCoordinatorTest {
         public SyncState sync(@NonNull String accessToken) {
             lastToken = accessToken;
             return state;
+        }
+
+        @Override
+        public void clearAfterDisconnect() {
+            clearCalls++;
+            state = SyncState.idle();
+            conflicts.clear();
         }
     }
 

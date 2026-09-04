@@ -426,6 +426,7 @@
     <string name="sync_conflict_local_label">Жергілікті нұсқа</string>
     <string name="sync_conflict_drive_label">Google Drive нұсқасы</string>
     <string name="sync_conflict_deleted">Жойылды</string>
+    <string name="sync_conflict_untitled">Атауы жоқ</string>
     <string name="sync_first_sync_title">Google Drive синхрондауды баптау</string>
     <string name="sync_first_sync_message">Алғашқы синхрондау %1$d жазбаны біріктіреді және шамамен %2$s жүктеуі мүмкін. Жергілікті деректер қолжетімді болып қалады.</string>
     <string name="sync_first_sync_cancel">Қазір емес</string>

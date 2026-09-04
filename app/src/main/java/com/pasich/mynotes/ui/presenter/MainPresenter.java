@@ -323,7 +323,7 @@ public class MainPresenter extends BasePresenter<MainContract.view>
         getCompositeDisposable()
                 .add(
                         getDataManager()
-                                .addNote(newNote, false)
+                                .addNote(newNote)
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(

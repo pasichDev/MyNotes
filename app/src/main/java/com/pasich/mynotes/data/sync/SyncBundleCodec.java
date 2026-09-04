@@ -214,6 +214,8 @@ public final class SyncBundleCodec {
             JsonObject payload = item.deepCopy();
             payload.remove("id");
             payload.remove("updatedAt");
+            // Bundles written before the device-local fields were stripped still carry them.
+            SyncMetadata.stripDeviceLocalFields(type.getWireValue(), payload);
             if (type == SyncRecord.Type.NOTE) {
                 hydrateNoteAttachments(payload, attachmentsById);
             }
@@ -233,6 +235,8 @@ public final class SyncBundleCodec {
         if (attachmentIds == null) return;
         JsonArray attachmentHashes = new JsonArray();
         JsonArray manifest = new JsonArray();
+        // The wire keys names by attachment UUID; the local store looks them up by content hash.
+        JsonObject namesByHash = new JsonObject();
         for (JsonElement element : attachmentIds) {
             String attachmentId = element.getAsString();
             AttachmentManifestEntry attachment = attachmentsById.get(attachmentId);
@@ -245,9 +249,15 @@ public final class SyncBundleCodec {
             }
             manifest.add(value);
             attachmentHashes.add(attachment.sha256);
+            if (value.has("displayName") && !value.get("displayName").isJsonNull()) {
+                namesByHash.addProperty(attachment.sha256, value.get("displayName").getAsString());
+            }
         }
         payload.add("attachmentsManifest", manifest);
         payload.add("attachmentHashes", attachmentHashes);
+        // Rekeyed by hash; leaving the UUID-keyed map made every restored file land on disk
+        // named after its bare SHA-256, with no extension.
+        payload.add("attachmentNames", namesByHash);
     }
 
     private static void parseTombstones(

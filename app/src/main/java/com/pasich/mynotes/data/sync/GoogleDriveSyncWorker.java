@@ -37,6 +37,14 @@ public final class GoogleDriveSyncWorker extends Worker {
         FirebaseUser user = FirebaseAuth.getInstance(app).getCurrentUser();
         if (user == null || user.getEmail() == null) return Result.success();
         try {
+            SyncDependencies dependencies =
+                    EntryPointAccessors.fromApplication(
+                            getApplicationContext(), SyncDependencies.class);
+            // Checked before authorizing: asking Google Play services for a token only to discard
+            // it is a pointless network round trip on every scheduled run.
+            if (!isBackgroundSyncAllowed(dependencies.preferenceHelper())) {
+                return Result.success();
+            }
             AuthorizationRequest request =
                     new AuthorizationRequest.Builder()
                             .setRequestedScopes(Collections.singletonList(DRIVE_FILE))
@@ -48,12 +56,6 @@ public final class GoogleDriveSyncWorker extends Worker {
                                     .authorize(request));
             if (authorization.hasResolution() || authorization.getAccessToken() == null) {
                 return Result.failure();
-            }
-            SyncDependencies dependencies =
-                    EntryPointAccessors.fromApplication(
-                            getApplicationContext(), SyncDependencies.class);
-            if (!isBackgroundSyncAllowed(dependencies.preferenceHelper())) {
-                return Result.success();
             }
             SyncState state =
                     new SyncService(
@@ -82,9 +84,17 @@ public final class GoogleDriveSyncWorker extends Worker {
                 || value.contains("temporar");
     }
 
+    /**
+     * The rollout gate applies here too.
+     *
+     * <p>It used to live only on the manual "Sync now" path, so lowering the percentage to pull a
+     * bad release back would have left this six-hourly job running for every user who had already
+     * turned sync on — the very population a rollback needs to stop.
+     */
     static boolean isBackgroundSyncAllowed(PreferenceHelper preferences) {
         return preferences.isSyncEnabled()
                 && preferences.isBackgroundSyncEnabled()
-                && preferences.isFirstSyncConfirmed();
+                && preferences.isFirstSyncConfirmed()
+                && SyncRollout.isWithinRollout(preferences);
     }
 }

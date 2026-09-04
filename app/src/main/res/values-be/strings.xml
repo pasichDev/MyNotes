@@ -429,6 +429,7 @@
     <string name="sync_conflict_local_label">Лакальная версія</string>
     <string name="sync_conflict_drive_label">Версія з Google Drive</string>
     <string name="sync_conflict_deleted">Выдалена</string>
+    <string name="sync_conflict_untitled">Без назвы</string>
     <string name="sync_first_sync_title">Наладзіць сінхранізацыю з Google Дыскам</string>
     <string name="sync_first_sync_message">Падчас першай сінхранізацыі будзе аб’яднана запісаў: %1$d. Можа быць загружана каля %2$s. Лакальныя даныя застануцца даступнымі.</string>
     <string name="sync_first_sync_cancel">Не цяпер</string>

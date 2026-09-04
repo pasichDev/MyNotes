@@ -434,6 +434,7 @@
     <string name="sync_conflict_local_label">Локальная версия</string>
     <string name="sync_conflict_drive_label">Версия из Google Drive</string>
     <string name="sync_conflict_deleted">Удалено</string>
+    <string name="sync_conflict_untitled">Без названия</string>
     <string name="sync_first_sync_title">Настроить синхронизацию с Google Диском</string>
     <string name="sync_first_sync_message">При первой синхронизации будут объединены записи: %1$d. Возможно, будет загружено около %2$s. Локальные данные останутся доступны.</string>
     <string name="sync_first_sync_cancel">Не сейчас</string>

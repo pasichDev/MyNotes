@@ -137,6 +137,11 @@ public final class SyncCoordinatorFactory {
                                 return new SyncService(store)
                                         .sync(new GoogleDriveSyncBackend(accessToken));
                             }
+
+                            @Override
+                            public void clearAfterDisconnect() {
+                                store.clearAfterDisconnect();
+                            }
                         },
                         new SyncCoordinator.BackgroundScheduler() {
                             @Override
@@ -150,8 +155,33 @@ public final class SyncCoordinatorFactory {
                             }
                         },
                         backgroundExecutor,
-                        activity::runOnUiThread);
+                        mainExecutorFor(activity));
         return new Result(coordinator, authorization, store);
+    }
+
+    /**
+     * Main-thread delivery that really does drop work aimed at a screen that is gone.
+     *
+     * <p>{@code Activity::runOnUiThread} never throws {@link
+     * java.util.concurrent.RejectedExecutionException}: it posts to the activity's handler, and the
+     * task then runs against destroyed views. The rejection handling in {@link SyncCoordinator}
+     * therefore guarded nothing, and only BackupActivity's own {@code isDestroyed()} checks kept a
+     * late callback from crashing. The state is re-checked after the post as well, because the
+     * activity can be torn down while the task sits in the queue.
+     */
+    @NonNull
+    private static Executor mainExecutorFor(@NonNull Activity activity) {
+        return command -> {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return;
+            }
+            activity.runOnUiThread(
+                    () -> {
+                        if (!activity.isFinishing() && !activity.isDestroyed()) {
+                            command.run();
+                        }
+                    });
+        };
     }
 
     private static void enableBackgroundSync(Activity activity) {

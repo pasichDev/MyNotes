@@ -1,11 +1,10 @@
 package com.pasich.mynotes.data.sync;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +16,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 /**
@@ -29,7 +30,9 @@ import java.util.regex.Pattern;
  */
 public final class SyncService {
 
+    private static final String TAG = "SyncService";
     private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
+    private static final long MAX_TOLERATED_CLOCK_SKEW_MILLIS = 24L * 60L * 60L * 1000L;
 
     private final SyncStore store;
     private final SyncMerger merger;
@@ -45,9 +48,44 @@ public final class SyncService {
         this.clock = Objects.requireNonNull(clock, "clock");
     }
 
+    /**
+     * Serializes every sync attempt in the process.
+     *
+     * <p>This method used to rely on {@code synchronized}, but a fresh {@code SyncService} is
+     * constructed for each attempt — once by the Backup screen and once by {@code
+     * GoogleDriveSyncWorker} — so the monitor was per-instance and guarded nothing. A manual sync
+     * and the six-hourly worker could interleave their Room writes and both publish a bundle.
+     */
+    private static final ReentrantLock SYNC_LOCK = new ReentrantLock();
+
+    private static final long LOCK_WAIT_SECONDS = 5L;
+
     /** Runs one serialized manual synchronization attempt and returns its durable final state. */
     @NonNull
-    public synchronized SyncState sync(@NonNull SyncBackend backend) {
+    public SyncState sync(@NonNull SyncBackend backend) {
+        boolean acquired = false;
+        try {
+            acquired = SYNC_LOCK.tryLock(LOCK_WAIT_SECONDS, TimeUnit.SECONDS);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+        }
+        if (!acquired) {
+            // Deliberately not persisted: the sync that holds the lock owns the stored state.
+            // The wording keeps GoogleDriveSyncWorker.isRetryable() treating this as retryable.
+            return SyncState.error(
+                    "google-drive",
+                    safeReadState().getLastSuccessfulSyncAt(),
+                    "Another sync is already running; this attempt was temporarily skipped");
+        }
+        try {
+            return syncExclusively(backend);
+        } finally {
+            SYNC_LOCK.unlock();
+        }
+    }
+
+    @NonNull
+    private SyncState syncExclusively(@NonNull SyncBackend backend) {
         SyncState previousState = safeReadState();
         String backendIdentifier = "unknown";
 
@@ -60,6 +98,7 @@ public final class SyncService {
                             backendIdentifier, startedAt, previousState.getLastSuccessfulSyncAt()));
             SyncSnapshot local = Objects.requireNonNull(store.readSnapshot(), "local snapshot");
             SyncSnapshot remote = Objects.requireNonNull(backend.readSnapshot(), "remote snapshot");
+            warnAboutClockSkew(remote);
             SyncMergeResult mergeResult = merger.merge(local, remote);
             SyncSnapshot merged = mergeResult.getMergedSnapshot();
 
@@ -81,6 +120,36 @@ public final class SyncService {
                             safeErrorMessage(exception));
             persistState(failure);
             return failure;
+        }
+    }
+
+    /**
+     * Flags a device clock that disagrees badly with the rest of the account.
+     *
+     * <p>Merging is last-write-wins on wall-clock time. Per record that self-corrects: {@code
+     * SyncMetadataDao.touch} assigns {@code max(now, storedUpdatedAt + 1)}, so once a device has
+     * seen a newer remote version its own next edit outranks it however far behind its clock runs.
+     * What stays exposed is the first divergent edit to a record neither side has synced since,
+     * where the raw clocks decide and the slower device loses silently. A wrong device clock is
+     * therefore worth a line in the log when support has to explain a "lost" edit.
+     */
+    private void warnAboutClockSkew(@NonNull SyncSnapshot remote) {
+        Instant newest = null;
+        for (SyncRecord record : remote.getRecords()) {
+            if (newest == null || record.getUpdatedAt().isAfter(newest)) {
+                newest = record.getUpdatedAt();
+            }
+        }
+        if (newest == null) {
+            return;
+        }
+        long skewMillis = newest.toEpochMilli() - clock.millis();
+        if (skewMillis > MAX_TOLERATED_CLOCK_SKEW_MILLIS) {
+            Log.w(
+                    TAG,
+                    "Remote records are "
+                            + (skewMillis / 3_600_000L)
+                            + "h ahead of this device's clock; merge order may be wrong");
         }
     }
 
@@ -119,13 +188,18 @@ public final class SyncService {
                     try {
                         verifyAttachment(hash, expectedSizes.get(hash), store.readAttachment(hash));
                     } catch (IOException localError) {
+                        // The local copy is missing or corrupt; repair it from the remote blob.
                         copyVerified(
                                 hash,
                                 expectedSizes.get(hash),
                                 backend.readAttachment(hash),
                                 store::writeAttachment);
                     }
-                    verifyAttachment(hash, expectedSizes.get(hash), backend.readAttachment(hash));
+                    // A remote re-verification used to run here on every sync, downloading each
+                    // attachment in full (up to 100 MB) purely to re-check a hash. Remote blobs are
+                    // content-addressed and immutable, so the check could never fail for a reason
+                    // the download itself would not already surface, and on the six-hourly worker
+                    // it re-transferred the user's entire attachment set four times a day.
                 } else {
                     copyVerified(
                             hash,
@@ -160,6 +234,16 @@ public final class SyncService {
         }
     }
 
+    /**
+     * Pipes one blob to the other endpoint, verifying it as the bytes go past.
+     *
+     * <p>This used to buffer the whole blob into a {@code ByteArrayOutputStream}, call {@code
+     * toByteArray()} and hand the destination a {@code ByteArrayInputStream}. With the 100 MB
+     * attachment ceiling that peaked at several hundred megabytes of heap for a single file — an
+     * {@code OutOfMemoryError} on any ordinary phone. Nothing is buffered now: {@link
+     * VerifyingInputStream} checks the digest at end of stream, which happens inside the
+     * destination's own read loop, so a corrupt blob still aborts the write before it is committed.
+     */
     private void copyVerified(
             String expectedHash,
             Long expectedSize,
@@ -167,20 +251,12 @@ public final class SyncService {
             AttachmentWriter destination)
             throws IOException {
         Objects.requireNonNull(source, "source");
-        byte[] verifiedBytes;
         try (InputStream input = source;
                 VerifyingInputStream verified =
-                        new VerifyingInputStream(input, expectedHash, expectedSize);
-                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = verified.read(buffer)) != -1) {
-                output.write(buffer, 0, read);
-            }
+                        new VerifyingInputStream(input, expectedHash, expectedSize)) {
+            destination.write(expectedHash, expectedSize == null ? -1L : expectedSize, verified);
             verified.verifyEndOfStream();
-            verifiedBytes = output.toByteArray();
         }
-        destination.write(expectedHash, new ByteArrayInputStream(verifiedBytes));
     }
 
     private static Map<String, Long> attachmentSizes(SyncSnapshot snapshot) throws IOException {
@@ -247,7 +323,7 @@ public final class SyncService {
     }
 
     private interface AttachmentWriter {
-        void write(String hash, InputStream content) throws IOException;
+        void write(String hash, long sizeBytes, InputStream content) throws IOException;
     }
 
     /** Verifies the hash only after the receiving endpoint consumed every byte. */
@@ -275,9 +351,9 @@ public final class SyncService {
             if (value >= 0) {
                 digest.update((byte) value);
                 byteCount++;
-                if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
-                    throw new IOException("Attachment exceeds the sync size limit");
-                }
+                enforceSizeLimit();
+            } else {
+                verifyEndOfStream();
             }
             return value;
         }
@@ -288,26 +364,50 @@ public final class SyncService {
             if (read > 0) {
                 digest.update(buffer, offset, read);
                 byteCount += read;
-                if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
-                    throw new IOException("Attachment exceeds the sync size limit");
-                }
+                enforceSizeLimit();
+            } else if (read < 0) {
+                verifyEndOfStream();
             }
             return read;
         }
 
+        private void enforceSizeLimit() throws IOException {
+            if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
+                throw new IOException("Attachment exceeds the sync size limit");
+            }
+        }
+
+        /**
+         * Checks the digest, draining anything the destination left behind first.
+         *
+         * <p>Reached from {@link #read} at end of stream, so a destination that streams straight to
+         * its final location still learns about a mismatch before it commits.
+         */
         void verifyEndOfStream() throws IOException {
-            if (!verified) {
-                while (read(new byte[8192]) != -1) {
-                    // Drain an incorrectly implemented destination before declaring success.
-                }
-                String actualHash = toHex(digest.digest());
-                if (!expectedHash.equals(actualHash)) {
-                    throw new IOException("Attachment checksum does not match its declared hash");
-                }
-                if (expectedSize != null && expectedSize.longValue() != byteCount) {
-                    throw new IOException("Attachment size does not match its declared size");
-                }
-                verified = true;
+            if (verified) {
+                return;
+            }
+            // Set before draining: drainRemaining reads through super, but a caller reaching this
+            // from read() must not be able to re-enter.
+            verified = true;
+            drainRemaining();
+            String actualHash = toHex(digest.digest());
+            if (!expectedHash.equals(actualHash)) {
+                throw new IOException("Attachment checksum does not match its declared hash");
+            }
+            if (expectedSize != null && expectedSize.longValue() != byteCount) {
+                throw new IOException("Attachment size does not match its declared size");
+            }
+        }
+
+        /** Reads through {@code super} so the digest covers bytes the destination skipped. */
+        private void drainRemaining() throws IOException {
+            byte[] scratch = new byte[8192];
+            int read;
+            while ((read = super.read(scratch, 0, scratch.length)) != -1) {
+                digest.update(scratch, 0, read);
+                byteCount += read;
+                enforceSizeLimit();
             }
         }
 

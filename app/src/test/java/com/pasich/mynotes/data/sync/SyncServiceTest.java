@@ -125,6 +125,27 @@ public class SyncServiceTest {
         SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        // Neither endpoint transfers the blob: the local copy is verified from disk and the
+        // remote one is content-addressed and immutable, so re-downloading it on every sync only
+        // cost the user bandwidth.
+        assertThat(backend.events).containsExactly("writeSnapshot");
+    }
+
+    @Test
+    public void sync_repairsCorruptLocalAttachmentFromRemote() throws Exception {
+        SyncRecord local = note(TEN, "Local with corrupt attachment");
+        byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, "corrupted".getBytes(StandardCharsets.UTF_8));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, bytes);
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(store.attachments.get(hash)).isEqualTo(bytes);
         assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot").inOrder();
     }
 
@@ -146,7 +167,11 @@ public class SyncServiceTest {
         assertThat(state.getErrorMessage()).contains("checksum");
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
         assertThat(store.applyCalls).isEqualTo(0);
-        assertThat(store.events).isEmpty();
+        // The blob is streamed rather than buffered, so the write is entered before the digest can
+        // be checked — the mismatch surfaces at end of stream, inside the destination's own read
+        // loop. What still must hold is that nothing was committed: RoomSyncStore writes to a
+        // temporary file and only renames it once the stream completed cleanly.
+        assertThat(store.attachments).isEmpty();
     }
 
     @Test
@@ -312,7 +337,8 @@ public class SyncServiceTest {
         }
 
         @Override
-        public void writeAttachment(String sha256, InputStream content) throws IOException {
+        public void writeAttachment(String sha256, long sizeBytes, InputStream content)
+                throws IOException {
             events.add("writeAttachment");
             attachments.put(sha256, readAll(content));
         }
@@ -380,7 +406,8 @@ public class SyncServiceTest {
         }
 
         @Override
-        public void writeAttachment(String sha256, InputStream content) throws IOException {
+        public void writeAttachment(String sha256, long sizeBytes, InputStream content)
+                throws IOException {
             events.add("writeAttachment");
             attachments.put(sha256, readAll(content));
         }

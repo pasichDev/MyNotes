@@ -121,6 +121,7 @@ public class SyncMutationCoordinator {
                     long timestamp =
                             resolveBatchTimestamp(
                                     SyncMetadata.RECORD_TYPE_TAG, extractTagIds(tags));
+                    releaseTakenTagIds(tags);
                     long[] insertedIds = tagsDao.addTags(tags);
                     for (int i = 0; i < tags.size(); i++) {
                         Tag tag = tags.get(i);
@@ -216,6 +217,7 @@ public class SyncMutationCoordinator {
                     long timestamp =
                             resolveBatchTimestamp(
                                     SyncMetadata.RECORD_TYPE_NOTE, extractNoteIds(notes));
+                    releaseTakenNoteIds(notes);
                     long[] insertedIds = noteDao.addNotes(notes);
                     for (int i = 0; i < notes.size(); i++) {
                         Note note = notes.get(i);
@@ -502,6 +504,36 @@ public class SyncMutationCoordinator {
         note.setId(localId);
         touchRecord(SyncMetadata.RECORD_TYPE_NOTE, localId, timestamp);
         return insertedId;
+    }
+
+    /**
+     * Lets a restore keep its original IDs only where they are still free.
+     *
+     * <p>Backups carry the IDs the notes had when the backup was taken, and {@code addNotes} is a
+     * REPLACE insert. Restoring onto a device that already holds notes therefore destroyed every
+     * note whose ID happened to collide — silently, with no way back. Sync made that worse: the
+     * restored content inherited the destroyed note's stable ID through {@code ensureMetadataRow},
+     * {@code touch()} cleared its tombstone, and the replacement propagated to every other device,
+     * overwriting the cloud copy too.
+     *
+     * <p>A colliding note is now inserted as a new row instead. Restoring onto an empty library —
+     * the ordinary case, and the one after a reinstall — still preserves every ID exactly.
+     */
+    private void releaseTakenNoteIds(@NonNull List<Note> notes) {
+        for (Note note : notes) {
+            if (note.getId() > 0 && noteDao.getNoteSync(note.getId()) != null) {
+                note.setId(0);
+            }
+        }
+    }
+
+    /** Same protection for a restored tag list; see {@link #releaseTakenNoteIds}. */
+    private void releaseTakenTagIds(@NonNull List<Tag> tags) {
+        for (Tag tag : tags) {
+            if (tag.getId() > 0 && tagsDao.getTagSync(tag.getId()) != null) {
+                tag.id = 0;
+            }
+        }
     }
 
     private void touchRecords(@NonNull String recordType, List<Integer> localIds, long timestamp) {

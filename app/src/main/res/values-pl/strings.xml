@@ -430,6 +430,7 @@
     <string name="sync_conflict_local_label">Wersja lokalna</string>
     <string name="sync_conflict_drive_label">Wersja z Google Drive</string>
     <string name="sync_conflict_deleted">Usunięto</string>
+    <string name="sync_conflict_untitled">Bez tytułu</string>
     <string name="sync_first_sync_title">Skonfiguruj synchronizację z Google Drive</string>
     <string name="sync_first_sync_message">Pierwsza synchronizacja połączy %1$d wpisów i może wysłać około %2$s. Lokalne dane pozostaną dostępne.</string>
     <string name="sync_first_sync_cancel">Nie teraz</string>

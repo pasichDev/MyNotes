@@ -20,7 +20,7 @@ public class SharedNoteCreator {
     public void create(String text, Callback callback) {
         disposables.add(
                 dataManager
-                        .addNote(new Note().create("", text, System.currentTimeMillis(), ""), false)
+                        .addNote(new Note().create("", text, System.currentTimeMillis(), ""))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(callback::onCreated, callback::onError));

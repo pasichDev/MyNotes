@@ -47,5 +47,12 @@ public interface SyncBackend {
      * <p>The implementation must consume the stream before returning and must not expose a partial
      * file after an exception.
      */
-    void writeAttachment(@NonNull String sha256, @NonNull InputStream content) throws IOException;
+    /**
+     * Stores one immutable blob, streaming it rather than holding it in memory.
+     *
+     * @param sizeBytes the blob's declared size, or a negative value when it is unknown. A known
+     *     size lets an implementation avoid buffering the whole blob to compute a content length.
+     */
+    void writeAttachment(@NonNull String sha256, long sizeBytes, @NonNull InputStream content)
+            throws IOException;
 }

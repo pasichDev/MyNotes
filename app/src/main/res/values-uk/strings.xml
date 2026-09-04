@@ -471,6 +471,7 @@
     <string name="sync_conflict_local_label">Локальна версія</string>
     <string name="sync_conflict_drive_label">Версія з Google Drive</string>
     <string name="sync_conflict_deleted">Видалено</string>
+    <string name="sync_conflict_untitled">Без назви</string>
 
 
     <!-- Help: tasks & reminders -->

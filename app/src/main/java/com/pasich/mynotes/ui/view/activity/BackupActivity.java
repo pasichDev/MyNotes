@@ -20,12 +20,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.work.BackoffPolicy;
-import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -41,6 +35,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.data.sync.RoomSyncStore;
 import com.pasich.mynotes.data.sync.SyncBundleCodec;
+import com.pasich.mynotes.data.sync.SyncMetadata;
 import com.pasich.mynotes.data.sync.SyncResolution;
 import com.pasich.mynotes.data.sync.SyncSnapshot;
 import com.pasich.mynotes.data.sync.SyncState;
@@ -74,7 +69,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 /** Activity for creating and restoring app data backups. */
@@ -83,7 +77,6 @@ public class BackupActivity extends BaseActivity
         implements BackupContract.view, AccountSyncFragment.Host {
 
     private static final String TAG = "BackupActivity";
-    private static final String BACKGROUND_SYNC_WORK_NAME = "mynotes-drive-sync";
 
     @Inject public BackupContract.presenter presenter;
     @Inject AppDatabase appDatabase;
@@ -182,7 +175,6 @@ public class BackupActivity extends BaseActivity
     private SyncCoordinator syncCoordinator;
     private final ExecutorService syncExecutor = Executors.newSingleThreadExecutor();
     @Inject FirebaseGoogleAuth firebaseGoogleAuth;
-    private boolean updatingSyncControls;
 
     @Override
     public void onRestoreSuccessFlag() {
@@ -200,13 +192,9 @@ public class BackupActivity extends BaseActivity
         syncSetup =
                 SyncCoordinatorFactory.create(
                         this, appDatabase, preferenceHelper, firebaseGoogleAuth, syncExecutor);
-        if (syncSetup == null) {
-            // No Firebase configuration in this build; GoogleCredentialAuth rejects a blank client
-            // ID, so the sync controls are hidden instead of crashing the screen.
-            if (accountTab != null) {
-                accountTab.showUnavailable();
-            }
-        }
+        // A build with no Firebase configuration gets a null setup; GoogleCredentialAuth rejects
+        // a blank client ID. The account tab hides its controls from onAccountTabAttached, which
+        // is the only point where the fragment actually exists.
         if (syncSetup != null) {
             syncCoordinator = syncSetup.getCoordinator();
             roomSyncStore = syncSetup.getStore();
@@ -301,27 +289,22 @@ public class BackupActivity extends BaseActivity
     }
 
     private void startSync() {
+        if (syncCoordinator == null) return;
         if (!syncCoordinator.getProfile().isSignedIn()) {
             onInfoSnack(
                     R.string.google_sign_in_failed, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
             return;
         }
-        runInBackground(
-                () -> {
-                    boolean neverSynced =
-                            syncCoordinator.getLastState().getLastSuccessfulSyncAt() == null;
-                    runOnUiThread(
-                            () -> {
-                                if (isFinishing() || isDestroyed()) {
-                                    return;
-                                }
-                                if (neverSynced) {
-                                    prepareFirstSyncConfirmation();
-                                } else {
-                                    runSync();
-                                }
-                            });
-                });
+        // Asked from the same flag SyncCoordinator.syncNow() gates on. Deciding from the stored
+        // lastSuccessfulSyncAt instead let the two disagree after a sign-out: the timestamp is
+        // durable, the consent preference is not, so the dialog was skipped and every sync was
+        // then refused with no way left to give consent.
+        boolean needsConsent = !syncCoordinator.isFirstSyncConfirmed();
+        if (needsConsent) {
+            prepareFirstSyncConfirmation();
+        } else {
+            runSync();
+        }
     }
 
     private void prepareFirstSyncConfirmation() {
@@ -364,6 +347,12 @@ public class BackupActivity extends BaseActivity
                         long estimatedBytes = bundle.length + attachmentBytes;
                         runOnUiThread(
                                 () -> {
+                                    // Reading the snapshot hashes every attachment on disk, so
+                                    // seconds can pass here. Showing a dialog on a window that is
+                                    // already gone throws BadTokenException.
+                                    if (isFinishing() || isDestroyed()) {
+                                        return;
+                                    }
                                     syncRunning = false;
                                     if (accountTab != null) accountTab.setSyncing(false);
                                     new MaterialAlertDialogBuilder(this)
@@ -423,6 +412,7 @@ public class BackupActivity extends BaseActivity
     }
 
     private void onGoogleSignInClicked() {
+        if (syncCoordinator == null) return;
         if (syncCoordinator.getProfile().isSignedIn()) {
             syncCoordinator.disconnect(
                     new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
@@ -481,30 +471,6 @@ public class BackupActivity extends BaseActivity
         }
     }
 
-    private void enableBackgroundSyncWork() {
-        Constraints constraints =
-                new Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.UNMETERED)
-                        .setRequiresBatteryNotLow(true)
-                        .build();
-        PeriodicWorkRequest request =
-                new PeriodicWorkRequest.Builder(
-                                com.pasich.mynotes.data.sync.GoogleDriveSyncWorker.class,
-                                6,
-                                TimeUnit.HOURS)
-                        .setConstraints(constraints)
-                        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
-                        .build();
-        WorkManager.getInstance(getApplicationContext())
-                .enqueueUniquePeriodicWork(
-                        BACKGROUND_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request);
-    }
-
-    private void disableBackgroundSyncWork() {
-        WorkManager.getInstance(getApplicationContext())
-                .cancelUniqueWork(BACKGROUND_SYNC_WORK_NAME);
-    }
-
     private void finishSyncError(Exception error) {
         if (isFinishing() || isDestroyed()) {
             return;
@@ -531,7 +497,7 @@ public class BackupActivity extends BaseActivity
     }
 
     private void onBackgroundSyncToggled(boolean enabled) {
-        if (updatingSyncControls) return;
+        if (syncCoordinator == null) return;
         if (!syncCoordinator.getProfile().isSignedIn()) {
             updateSyncUi();
             onInfoSnack(
@@ -651,6 +617,7 @@ public class BackupActivity extends BaseActivity
                         R.string.sync_conflict_version,
                         getString(R.string.sync_conflict_local_label),
                         describeConflictPayload(
+                                conflict.recordType,
                                 conflict.winnerSource.equals("LOCAL")
                                         ? conflict.winnerJson
                                         : conflict.loserJson))
@@ -659,13 +626,17 @@ public class BackupActivity extends BaseActivity
                         R.string.sync_conflict_version,
                         getString(R.string.sync_conflict_drive_label),
                         describeConflictPayload(
+                                conflict.recordType,
                                 conflict.winnerSource.equals("REMOTE")
                                         ? conflict.winnerJson
                                         : conflict.loserJson));
     }
 
     @NonNull
-    private String describeConflictPayload(@NonNull String recordJson) {
+    private String describeConflictPayload(@NonNull String recordType, @NonNull String recordJson) {
+        if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(recordType)) {
+            return getString(R.string.settings);
+        }
         try {
             JsonObject root = JsonParser.parseString(recordJson).getAsJsonObject();
             JsonElement deletedAt = root.get("deletedAt");
@@ -674,23 +645,39 @@ public class BackupActivity extends BaseActivity
             }
             JsonObject payload = root.getAsJsonObject("payload");
             if (payload == null) return getString(R.string.sync_conflict_deleted);
-            if (payload.has("title") && !payload.get("title").isJsonNull()) {
-                String title = payload.get("title").getAsString();
-                if (!title.trim().isEmpty()) return title.trim();
-            }
-            if (payload.has("name") && !payload.get("name").isJsonNull()) {
-                String name = payload.get("name").getAsString();
-                if (!name.trim().isEmpty()) return name.trim();
-            }
-            if (payload.has("value") && !payload.get("value").isJsonNull()) {
-                String value = payload.get("value").getAsString().trim();
-                if (!value.isEmpty()) {
-                    return value.length() > 120 ? value.substring(0, 120) + "…" : value;
-                }
+            for (String key : conflictLabelKeys(recordType)) {
+                if (!payload.has(key) || payload.get(key).isJsonNull()) continue;
+                String value = payload.get(key).getAsString().trim();
+                if (value.isEmpty()) continue;
+                return value.length() > 120 ? value.substring(0, 120) + "…" : value;
             }
         } catch (Exception ignored) {
         }
-        return getString(R.string.sync_status_ready);
+        return getString(R.string.sync_conflict_untitled);
+    }
+
+    /**
+     * Payload keys that carry a human-readable label, most specific first.
+     *
+     * <p>Note and Tag are serialized through Gson's short field aliases, so probing "title" and
+     * "name" never matched them: every note and tag conflict showed the same placeholder for both
+     * the local and the Drive version, leaving no way to tell them apart before choosing one.
+     */
+    @NonNull
+    private static String[] conflictLabelKeys(@NonNull String recordType) {
+        if (SyncMetadata.RECORD_TYPE_NOTE.equals(recordType)) {
+            return new String[] {"b", "c"}; // Note.title, Note.value
+        }
+        if (SyncMetadata.RECORD_TYPE_TAG.equals(recordType)) {
+            return new String[] {"b"}; // Tag.nameTag
+        }
+        if (SyncMetadata.RECORD_TYPE_TASK.equals(recordType)) {
+            return new String[] {"title", "description"};
+        }
+        if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(recordType)) {
+            return new String[] {"name"};
+        }
+        return new String[0];
     }
 
     private int unresolvedConflictCount(@NonNull List<SyncConflictEntity> conflicts) {
@@ -805,11 +792,15 @@ public class BackupActivity extends BaseActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // onDestroy also runs on rotation, and a sync started here delivers its callback later.
-        // Killing the executor then made that callback throw RejectedExecutionException.
-        if (isFinishing()) {
-            syncExecutor.shutdown();
-        }
+        // The executor belongs to this instance, so it has to die with it. Sparing it on rotation
+        // leaked both its live core thread and, through the queued tasks, this activity — once per
+        // rotation, for the lifetime of the process.
+        //
+        // shutdown(), not shutdownNow(): a sync already running is left to finish rather than
+        // interrupted mid-transaction, and the thread then exits on its own. New submissions are
+        // refused, which runInBackground already handles, and every delivery re-checks
+        // isFinishing()/isDestroyed() before touching a view.
+        syncExecutor.shutdown();
         if (isDestroyed()) {
             presenter.detachView();
         }

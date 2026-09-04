@@ -170,6 +170,65 @@ public class SyncMutationCoordinatorTest {
     }
 
     @Test
+    public void updateNote_onADeviceWithABackwardsClockStillOutranksWhatItSynced() {
+        // Merging is last-write-wins on wall-clock time, which reads like "the device whose clock
+        // runs slow always loses". It does not: applySnapshot copies the winner's timestamp into
+        // local metadata, and touch() then assigns max(now, stored + 1). So an edit made after
+        // seeing a newer remote version wins even when this device's clock is hours behind.
+        // This device's clock reads 1_000; the record it synced carries 5_000 from a device whose
+        // clock runs ahead.
+        long remoteTimestamp = 5_000L;
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(
+                        SyncMetadata.RECORD_TYPE_NOTE, 1L, "stable-a", remoteTimestamp, null));
+
+        Note note = new Note().create("Edited here", "text", 1L, "");
+        note.setId(1);
+        coordinator.updateNoteContent(note);
+
+        SyncMetadataEntity metadata = syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 1L);
+        assertThat(metadata.updatedAt).isGreaterThan(remoteTimestamp);
+    }
+
+    @Test
+    public void insertNotes_keepsBackupIdsWhenNothingOccupiesThem() {
+        // The ordinary restore, and the one after a reinstall: an empty library, so every note
+        // keeps the ID it had when the backup was taken.
+        List<Note> notes = new ArrayList<>();
+        Note restored = new Note().create("One", "1", 1L, "");
+        restored.setId(7);
+        notes.add(restored);
+        when(noteDao.getNoteSync(7)).thenReturn(null);
+        when(noteDao.addNotes(anyList())).thenReturn(new long[] {7L});
+
+        coordinator.insertNotes(notes);
+
+        assertThat(notes.get(0).getId()).isEqualTo(7);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 7L)).isNotNull();
+    }
+
+    @Test
+    public void insertNotes_doesNotOverwriteAnExistingNoteThatHoldsTheSameId() {
+        // addNotes is a REPLACE insert and backups carry their original IDs, so restoring onto a
+        // device that already has notes used to destroy every colliding one — and hand its stable
+        // ID to the replacement, propagating the loss to every other device. The restored note is
+        // inserted as a new row instead; nothing existing is touched.
+        List<Note> notes = new ArrayList<>();
+        Note restored = new Note().create("Restored", "r", 1L, "");
+        restored.setId(7);
+        notes.add(restored);
+        Note occupant = new Note().create("Already here", "x", 2L, "");
+        occupant.setId(7);
+        when(noteDao.getNoteSync(7)).thenReturn(occupant);
+        when(noteDao.addNotes(anyList())).thenReturn(new long[] {42L});
+
+        coordinator.insertNotes(notes);
+
+        assertThat(notes.get(0).getId()).isEqualTo(42);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 42L)).isNotNull();
+    }
+
+    @Test
     public void deleteTask_keepsTombstoneAndMarksDeletionTimestamp() {
         syncMetadataDao.insertIfAbsent(
                 new SyncMetadataEntity(

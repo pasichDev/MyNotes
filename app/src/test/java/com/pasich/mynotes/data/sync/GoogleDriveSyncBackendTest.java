@@ -64,8 +64,10 @@ public class GoogleDriveSyncBackendTest {
 
         assertThat(backend.readSnapshot().getRecords()).isEmpty();
 
-        backend.writeAttachment(hash, new ByteArrayInputStream(attachmentBytes));
-        backend.writeAttachment(hash, new ByteArrayInputStream(attachmentBytes));
+        backend.writeAttachment(
+                hash, attachmentBytes.length, new ByteArrayInputStream(attachmentBytes));
+        backend.writeAttachment(
+                hash, attachmentBytes.length, new ByteArrayInputStream(attachmentBytes));
         backend.writeSnapshot(snapshot(hash));
 
         assertThat(server.ownedFolderCount()).isEqualTo(1);

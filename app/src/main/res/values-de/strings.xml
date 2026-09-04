@@ -429,6 +429,7 @@
     <string name="sync_conflict_local_label">Lokale Version</string>
     <string name="sync_conflict_drive_label">Google-Drive-Version</string>
     <string name="sync_conflict_deleted">Gelöscht</string>
+    <string name="sync_conflict_untitled">Ohne Titel</string>
     <string name="sync_first_sync_title">Google-Drive-Synchronisierung einrichten</string>
     <string name="sync_first_sync_message">Beim ersten Sync werden %1$d Einträge zusammengeführt und möglicherweise etwa %2$s hochgeladen. Deine lokalen Daten bleiben verfügbar.</string>
     <string name="sync_first_sync_cancel">Nicht jetzt</string>

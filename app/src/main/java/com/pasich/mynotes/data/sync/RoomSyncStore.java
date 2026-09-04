@@ -2,6 +2,7 @@ package com.pasich.mynotes.data.sync;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.gson.Gson;
@@ -38,9 +39,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Room-backed sync store. Stable sync IDs remain separate from local integer primary keys. */
 public final class RoomSyncStore implements SyncStore {
+    private static final String TAG = "RoomSyncStore";
     private static final String PREFS = "sync_state";
     private static final String LEGACY_STATE = "last_state";
     private static final String PREFERENCES_HASH = "preferences_hash";
@@ -50,6 +53,12 @@ public final class RoomSyncStore implements SyncStore {
     private final PreferenceHelper preferenceHelper;
     private final Context context;
     private final Gson gson = new Gson();
+
+    /**
+     * Content hash to the note-folder file holding it, indexed while the snapshot is built so the
+     * upload path can find blobs this device owns without duplicating them into the sync cache.
+     */
+    private final Map<String, File> localAttachments = new ConcurrentHashMap<>();
 
     public RoomSyncStore(
             @NonNull Context context,
@@ -221,6 +230,8 @@ public final class RoomSyncStore implements SyncStore {
             }
         }
         if ("note".equals(metadata.recordType)) addAttachmentMetadata(result);
+        // Runs last: the blocks above still need the local categoryId and attachment paths.
+        SyncMetadata.stripDeviceLocalFields(metadata.recordType, result);
         return result;
     }
 
@@ -312,6 +323,43 @@ public final class RoomSyncStore implements SyncStore {
 
     public List<SyncConflictEntity> getConflicts() {
         return database.syncConflictDao().getAll();
+    }
+
+    /**
+     * Drops every trace of the account being disconnected.
+     *
+     * <p>Record identity in {@code sync_metadata} is deliberately kept: it is local, and discarding
+     * it would make the whole library look brand new to the next account. What goes is the sync
+     * status, the conflict queue and the blobs downloaded from the disconnected account's Drive.
+     *
+     * <p>Clearing the status also repairs a dead end: the Backup screen decided whether to ask for
+     * first-sync consent from {@code lastSuccessfulSyncAt}, which survived a sign-out, while {@code
+     * SyncCoordinator} gated the sync on a preference the sign-out reset. The dialog was skipped
+     * and the sync refused, with no way to reach the consent again.
+     */
+    public void clearAfterDisconnect() {
+        database.runInTransaction(
+                () -> {
+                    database.syncStateDao().clear();
+                    database.syncConflictDao().clearAll();
+                });
+        preferences.edit().remove(PREFERENCES_HASH).remove(LEGACY_STATE).apply();
+        localAttachments.clear();
+        deleteAttachmentCache();
+    }
+
+    /** Removes the download cache only; the notes' own attachment folders are untouched. */
+    private void deleteAttachmentCache() {
+        File dir = new File(context.getFilesDir(), "sync-attachments");
+        File[] cached = dir.listFiles();
+        if (cached == null) {
+            return;
+        }
+        for (File file : cached) {
+            if (file.isFile() && !file.delete()) {
+                Log.w(TAG, "Could not remove cached attachment " + file.getName());
+            }
+        }
     }
 
     public List<SyncConflictEntity> getUnresolvedConflicts() {
@@ -485,25 +533,60 @@ public final class RoomSyncStore implements SyncStore {
 
     @Override
     public boolean hasAttachment(@NonNull String sha256) {
-        return attachmentFile(sha256).isFile();
+        return resolveLocalAttachment(sha256) != null;
     }
 
     @NonNull
     @Override
     public InputStream readAttachment(@NonNull String sha256) throws IOException {
-        return new FileInputStream(attachmentFile(sha256));
+        File source = resolveLocalAttachment(sha256);
+        if (source == null) {
+            throw new java.io.FileNotFoundException("No local attachment for " + sha256);
+        }
+        return new FileInputStream(source);
+    }
+
+    /**
+     * Finds a blob this device already holds, in the download cache or in a note's own folder.
+     *
+     * <p>Only the cache directory used to be consulted, and nothing but the download path ever
+     * wrote to it. On the device that owns an attachment the lookup therefore returned false,
+     * {@code SyncService} asked the backend for a blob nobody had uploaded yet, and the sync failed
+     * with "Required attachment is unavailable". Since the upload branch is reachable only when
+     * this returns true, that failure was permanent for any account holding a single attachment.
+     *
+     * <p>The note folders are indexed while the snapshot is built rather than copied into the
+     * cache, so a large attachment set is not stored twice.
+     */
+    @Nullable
+    private File resolveLocalAttachment(@NonNull String sha256) {
+        File cached = attachmentFile(sha256);
+        if (cached.isFile()) {
+            return cached;
+        }
+        File owned = localAttachments.get(sha256);
+        return owned != null && owned.isFile() ? owned : null;
     }
 
     @Override
-    public void writeAttachment(@NonNull String sha256, @NonNull InputStream content)
+    public void writeAttachment(
+            @NonNull String sha256, long sizeBytes, @NonNull InputStream content)
             throws IOException {
         File target = attachmentFile(sha256);
         File temp = new File(target.getParentFile(), sha256 + ".tmp");
+        // Written to a temporary file and only then renamed, so a stream that fails part-way —
+        // including a checksum mismatch, which SyncService raises at end of stream, inside this
+        // very loop — never leaves a half-written blob under the hash's name.
         try (InputStream in = content;
                 FileOutputStream out = new FileOutputStream(temp)) {
             byte[] buffer = new byte[8192];
             int read;
             while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
+        } catch (IOException error) {
+            if (temp.exists() && !temp.delete()) {
+                Log.w(TAG, "Could not remove the partial attachment " + temp.getName());
+            }
+            throw error;
         }
         if (!temp.renameTo(target)) throw new IOException("Cannot store attachment");
     }
@@ -530,6 +613,7 @@ public final class RoomSyncStore implements SyncStore {
                 File file = AttachmentStorage.resolve(context, attachment.url);
                 if (file == null || !file.isFile()) continue;
                 String hash = sha256(file);
+                localAttachments.put(hash, file);
                 String displayName =
                         attachment.name == null || attachment.name.trim().isEmpty()
                                 ? file.getName()
@@ -552,7 +636,10 @@ public final class RoomSyncStore implements SyncStore {
                 payload.add("attachmentHashes", hashes);
                 payload.add("attachmentNames", names);
             }
-        } catch (Exception ignored) {
+        } catch (Exception error) {
+            // Swallowing this silently used to drop a note's attachments from the bundle with no
+            // trace; the sync itself still succeeds without them.
+            Log.w(TAG, "Could not collect attachment metadata", error);
         }
     }
 
@@ -565,18 +652,31 @@ public final class RoomSyncStore implements SyncStore {
             File folder = AttachmentStorage.noteFolder(context, note.getId());
             for (JsonElement item : hashes) {
                 String hash = item.getAsString();
-                File source = attachmentFile(hash);
-                if (!source.isFile()) continue;
+                // Not just the download cache: when the local version of a note wins the merge it
+                // is re-applied through this same path, and its blobs live in the note's own
+                // folder. Resolving only the cache silently rewrote such a note with an empty
+                // attachment list, destroying files that were never in conflict.
+                File source = resolveLocalAttachment(hash);
+                if (source == null) continue;
                 String name = names.has(hash) ? names.get(hash).getAsString() : hash;
                 if (!isSafeAttachmentName(name)) {
                     continue;
                 }
                 File target = new File(folder, name);
-                try (InputStream in = new FileInputStream(source);
-                        OutputStream out = new FileOutputStream(target)) {
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
+                if (!source.getAbsolutePath().equals(target.getAbsolutePath())) {
+                    // Scoped per file: one unreadable blob must not discard the note's other
+                    // attachments, which is what a single loop-wide catch used to do. Skipped
+                    // entirely when the file is already in place, because opening it for writing
+                    // would truncate the very file being read.
+                    try (InputStream in = new FileInputStream(source);
+                            OutputStream out = new FileOutputStream(target)) {
+                        byte[] buffer = new byte[8192];
+                        int read;
+                        while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
+                    } catch (IOException error) {
+                        Log.w(TAG, "Could not restore attachment " + hash, error);
+                        continue;
+                    }
                 }
                 JsonObject attachment = new JsonObject();
                 attachment.addProperty(
@@ -585,7 +685,8 @@ public final class RoomSyncStore implements SyncStore {
                 attachments.add(attachment);
             }
             note.setAttachments(gson.toJson(attachments));
-        } catch (Exception ignored) {
+        } catch (RuntimeException error) {
+            Log.w(TAG, "Malformed attachment metadata for note " + note.getId(), error);
         }
     }
 

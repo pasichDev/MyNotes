@@ -157,12 +157,12 @@ public class AppDbHelper implements DbHelper {
     }
 
     @Override
-    public Single<Long> addNote(Note note, boolean copyNote) {
+    public Single<Long> addNote(Note note) {
         return Single.fromCallable(() -> syncMutationCoordinator.insertNote(note));
     }
 
     public Single<Long> copyNote(Note original) {
-        return addNote(original.duplicate(), true);
+        return addNote(original.duplicate());
     }
 
     @Override

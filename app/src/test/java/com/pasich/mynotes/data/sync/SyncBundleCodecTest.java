@@ -98,6 +98,92 @@ public class SyncBundleCodecTest {
         throw new AssertionError("Expected an IOException");
     }
 
+    @Test
+    public void decode_keysAttachmentNamesByHashSoTheStoreCanResolveThem() throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle = codec.encode(new SyncSnapshot(Arrays.asList(note("Milk"))), CREATED_AT);
+
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+
+        // RoomSyncStore.restoreAttachments looks names up by content hash. While the decoded map
+        // stayed keyed by attachment UUID it always missed, and every restored file landed on disk
+        // named after its bare SHA-256 with no extension.
+        JsonObject names = decoded.getPayload().getAsJsonObject("attachmentNames");
+        assertThat(names.has(HASH)).isTrue();
+        assertThat(names.get(HASH).getAsString()).isEqualTo("receipt.png");
+    }
+
+    @Test
+    public void decode_dropsDeviceLocalFieldsWrittenByOlderReleases() throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        JsonObject legacy = new JsonObject();
+        legacy.addProperty("title", "Buy milk");
+        legacy.addProperty("isDone", false);
+        legacy.addProperty("id", 7); // Room primary key, meaningless on any other device
+        legacy.addProperty("categoryId", 3);
+        SyncRecord task =
+                SyncRecord.live(
+                        SyncRecord.Type.TASK,
+                        TASK_ID,
+                        Instant.parse("2026-08-31T12:00:02Z"),
+                        legacy);
+
+        byte[] bundle = codec.encode(new SyncSnapshot(Arrays.asList(task)), CREATED_AT);
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.TASK, TASK_ID);
+
+        assertThat(decoded.getPayload().has("id")).isFalse();
+        assertThat(decoded.getPayload().has("categoryId")).isFalse();
+        assertThat(decoded.getPayload().get("title").getAsString()).isEqualTo("Buy milk");
+    }
+
+    @Test
+    public void decodedRecordMatchesLocalRecordThatNeverCarriedLocalKeys() throws Exception {
+        // Two devices hold the same logical task under different Room primary keys. Once the
+        // device-local fields are stripped on both sides the canonical hashes agree, so the
+        // equal-timestamp tiebreaker in SyncMerger no longer invents a conflict on every sync.
+        SyncBundleCodec codec = new SyncBundleCodec();
+        JsonObject remotePayload = new JsonObject();
+        remotePayload.addProperty("title", "Buy milk");
+        remotePayload.addProperty("isDone", false);
+        remotePayload.addProperty("id", 7);
+        Instant updatedAt = Instant.parse("2026-08-31T12:00:02Z");
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(
+                                Arrays.asList(
+                                        SyncRecord.live(
+                                                SyncRecord.Type.TASK,
+                                                TASK_ID,
+                                                updatedAt,
+                                                remotePayload))),
+                        CREATED_AT);
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.TASK, TASK_ID);
+
+        JsonObject localPayload = new JsonObject();
+        localPayload.addProperty("title", "Buy milk");
+        localPayload.addProperty("isDone", false);
+        localPayload.addProperty("id", 12);
+        SyncMetadata.stripDeviceLocalFields(SyncMetadata.RECORD_TYPE_TASK, localPayload);
+        SyncRecord local = SyncRecord.live(SyncRecord.Type.TASK, TASK_ID, updatedAt, localPayload);
+
+        assertThat(decoded.getCanonicalPayloadHash()).isEqualTo(local.getCanonicalPayloadHash());
+        assertThat(new SyncMerger().merge(snapshotOf(local), snapshotOf(decoded)).getConflicts())
+                .isEmpty();
+    }
+
+    private static SyncSnapshot snapshotOf(SyncRecord record) {
+        return new SyncSnapshot(Arrays.asList(record));
+    }
+
     private static SyncRecord note(String body) {
         return SyncRecord.live(
                 SyncRecord.Type.NOTE,

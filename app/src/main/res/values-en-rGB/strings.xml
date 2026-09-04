@@ -473,6 +473,7 @@
     <string name="sync_conflict_local_label">Local version</string>
     <string name="sync_conflict_drive_label">Google Drive version</string>
     <string name="sync_conflict_deleted">Deleted</string>
+    <string name="sync_conflict_untitled">Untitled</string>
     <string name="sync_first_sync_title">Set up Google Drive sync</string>
     <string name="sync_first_sync_message">This first sync will merge %1$d records and may upload about %2$s. Your local data stays available while the merge completes.</string>
     <string name="sync_first_sync_cancel">Not now</string>

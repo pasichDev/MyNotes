@@ -116,8 +116,7 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
                                                         mNote.getTitle() + " (copy)",
                                                         mNote.getValue() + " ",
                                                         new Date().getTime(),
-                                                        mNote.getTag()),
-                                        true)
+                                                        mNote.getTag()))
                                 .subscribeOn(getSchedulerProvider().io())
                                 .subscribe(
                                         aLong -> getView().callableCopyNote(aLong),
