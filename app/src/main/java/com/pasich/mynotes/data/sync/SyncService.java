@@ -34,6 +34,9 @@ public final class SyncService {
     private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
     private static final long MAX_TOLERATED_CLOCK_SKEW_MILLIS = 24L * 60L * 60L * 1000L;
 
+    /** Well under the schema record limit, so a bundle can always still be published. */
+    private static final int MAX_PUBLISHED_SETTLED_IDS = 2_000;
+
     private final SyncStore store;
     private final SyncMerger merger;
     private final Clock clock;
@@ -111,8 +114,9 @@ public final class SyncService {
 
             // A choice the user already made must never be offered again, wherever it was made.
             java.util.Set<String> settledVersionIds =
-                    new java.util.LinkedHashSet<>(remoteResult.getResolvedAlternativeIds());
-            settledVersionIds.addAll(store.getResolvedAlternativeIds());
+                    new java.util.LinkedHashSet<>(store.getResolvedAlternativeIds());
+            settledVersionIds.addAll(remoteResult.getResolvedAlternativeIds());
+            settledVersionIds = capSettledVersionIds(settledVersionIds);
 
             java.util.List<SyncMergeResult.Conflict> allConflicts = new java.util.ArrayList<>();
             for (SyncMergeResult.Conflict conflict : remoteResult.getConflicts()) {
@@ -125,6 +129,11 @@ public final class SyncService {
                     allConflicts.add(conflict);
                 }
             }
+
+            // A conflict reported by the backend names the winner of the *remote* fold, which
+            // is not necessarily the version this sync ends up applying. Persisting it unchanged
+            // made "keep the version the merge selected" write a stale version over the live one.
+            allConflicts = realignWinners(allConflicts, merged, local);
 
             // Every still-open alternative is republished, so a merged descendant can never be
             // the thing that makes a losing version unreachable.
@@ -145,8 +154,15 @@ public final class SyncService {
             // version independently; SyncSnapshot deliberately forbids two versions of one ID.
             synchronizeAttachments(backend, merged, expectedSizes);
             for (SyncMergeResult.Conflict conflict : allConflicts) {
-                pinConflictVersion(backend, conflict.getWinner());
-                pinConflictVersion(backend, conflict.getLoser());
+                // Best effort. The merged snapshot's own blobs are mandatory and were just
+                // transferred above; these are the extra copies that let a conflict be resolved
+                // later. An alternative whose bytes have gone from Drive is already beyond
+                // recovery, and failing here made that one missing blob stop every device from
+                // syncing anything at all, including the devices that could never resolve it.
+                // Resolution still verifies before it applies, so a version that cannot be
+                // materialized simply cannot be chosen.
+                pinConflictVersionQuietly(backend, conflict.getWinner());
+                pinConflictVersionQuietly(backend, conflict.getLoser());
             }
 
             if (needsPublication(
@@ -201,6 +217,81 @@ public final class SyncService {
                             + (skewMillis / 3_600_000L)
                             + "h ahead of this device's clock; merge order may be wrong");
         }
+    }
+
+    /**
+     * Bounds the set of settled versions a bundle carries.
+     *
+     * <p>Every resolution adds its two version identities and they were never dropped, so the array
+     * grew for the life of the account. Past the schema's record limit {@code encode} refuses the
+     * bundle and every publish fails permanently, with nothing the user can do about it. Trimming
+     * preserves the identities this device settled most recently; the worst case for a dropped one
+     * is that an already-settled conflict is offered again, which is recoverable, whereas a bundle
+     * that cannot be published is not.
+     */
+    @NonNull
+    private static java.util.Set<String> capSettledVersionIds(
+            @NonNull java.util.Set<String> settled) {
+        if (settled.size() <= MAX_PUBLISHED_SETTLED_IDS) {
+            return settled;
+        }
+        Log.w(
+                TAG,
+                "Trimming "
+                        + settled.size()
+                        + " settled conflict versions to the publishable limit");
+        java.util.Set<String> trimmed = new java.util.LinkedHashSet<>();
+        for (String versionId : settled) {
+            if (trimmed.size() >= MAX_PUBLISHED_SETTLED_IDS) {
+                break;
+            }
+            trimmed.add(versionId);
+        }
+        return trimmed;
+    }
+
+    /**
+     * Re-points every conflict at the version this sync actually applies.
+     *
+     * <p>{@code KEEP_WINNER} promises the version the deterministic merge selected. The remote
+     * backend reports conflicts from folding Drive's heads together, before local state is
+     * considered, so its "winner" can be a version the final merge rejected. Left alone, choosing
+     * "keep winner" reverted the record to that rejected version and republished it everywhere.
+     *
+     * <p>A conflict whose winner and alternative collapse to the same version is dropped: there is
+     * nothing left for the user to choose between.
+     */
+    @NonNull
+    private static java.util.List<SyncMergeResult.Conflict> realignWinners(
+            @NonNull java.util.List<SyncMergeResult.Conflict> conflicts,
+            @NonNull SyncSnapshot merged,
+            @NonNull SyncSnapshot local) {
+        java.util.List<SyncMergeResult.Conflict> aligned = new java.util.ArrayList<>();
+        for (SyncMergeResult.Conflict conflict : conflicts) {
+            SyncRecord winner = merged.find(conflict.getType(), conflict.getId());
+            if (winner == null) {
+                aligned.add(conflict);
+                continue;
+            }
+            String winnerVersion = winner.getCanonicalPayloadHash();
+            if (winnerVersion.equals(conflict.getLoserVersionId())) {
+                continue;
+            }
+            if (winnerVersion.equals(conflict.getWinnerVersionId())) {
+                aligned.add(conflict);
+                continue;
+            }
+            SyncRecord localRecord = local.find(conflict.getType(), conflict.getId());
+            SyncMergeResult.Source winnerSource =
+                    localRecord != null
+                                    && localRecord.getCanonicalPayloadHash().equals(winnerVersion)
+                            ? SyncMergeResult.Source.LOCAL
+                            : SyncMergeResult.Source.REMOTE;
+            aligned.add(
+                    new SyncMergeResult.Conflict(
+                            winner, conflict.getLoser(), winnerSource, conflict.getLoserSource()));
+        }
+        return aligned;
     }
 
     /**
@@ -261,31 +352,45 @@ public final class SyncService {
                 Long expectedSize = expectedSizes.get(hash);
                 // Index lookup only; the bytes are checked once, below.
                 boolean remotePresent = backend.hasAttachment(hash);
-                if (remotePresent) {
-                    try {
-                        verifyAttachment(hash, expectedSize, store.readAttachment(hash));
-                    } catch (IOException localError) {
-                        // The local copy is missing or corrupt; repair it from the remote blob,
-                        // which copyVerified refuses to accept unless it hashes correctly.
-                        copyVerified(
-                                hash,
-                                expectedSize,
-                                backend.readAttachment(hash),
-                                store::writeAttachment);
+                try {
+                    verifyAttachment(hash, expectedSize, store.readAttachment(hash));
+                } catch (IOException localError) {
+                    if (!remotePresent) {
+                        throw localError;
                     }
-                    // Drive is untrusted: a matching appProperty is only a claim. The blob is
-                    // read and hashed exactly once per sync, and the result is remembered, so
-                    // publishing it into the canonical root does not download it again.
-                    if (!backend.hasVerifiedAttachment(hash, expectedSize)) {
-                        throw new AttachmentIntegrityException(
-                                "Attachment checksum does not match its declared hash");
-                    }
-                } else {
+                    // The local copy is missing or corrupt; repair it from the remote blob,
+                    // which copyVerified refuses to accept unless it hashes correctly.
+                    copyVerified(
+                            hash,
+                            expectedSize,
+                            backend.readAttachment(hash),
+                            store::writeAttachment);
+                }
+                // Drive is untrusted: a matching appProperty is only a claim. The blob is read
+                // and hashed exactly once per sync, and the result is remembered, so publishing
+                // it into the canonical root does not download it again.
+                if (!remotePresent) {
                     copyVerified(
                             hash,
                             expectedSize,
                             store.readAttachment(hash),
                             backend::writeAttachment);
+                } else if (!backend.hasVerifiedAttachment(hash, expectedSize)) {
+                    // Present but corrupt. Blobs are content-addressed and duplicates are
+                    // tolerated — the reader picks a verified candidate — so publishing a fresh
+                    // copy of the known-good local bytes repairs the account. Throwing here
+                    // instead left every device failing every sync until someone deleted the bad
+                    // object from Drive by hand. The replacement is confirmed before the bundle
+                    // is allowed to depend on it.
+                    copyVerified(
+                            hash,
+                            expectedSize,
+                            store.readAttachment(hash),
+                            backend::writeAttachment);
+                    if (!backend.hasVerifiedAttachment(hash, expectedSize)) {
+                        throw new AttachmentIntegrityException(
+                                "Attachment checksum does not match its declared hash");
+                    }
                 }
             } else {
                 InputStream remoteAttachment = backend.readAttachment(hash);
@@ -295,6 +400,19 @@ public final class SyncService {
                 copyVerified(
                         hash, expectedSizes.get(hash), remoteAttachment, store::writeAttachment);
             }
+        }
+    }
+
+    /** Pins a conflict version's blobs, logging rather than failing the whole sync. */
+    private void pinConflictVersionQuietly(
+            @NonNull SyncBackend backend, @NonNull SyncRecord record) {
+        try {
+            pinConflictVersion(backend, record);
+        } catch (IOException unavailable) {
+            Log.w(
+                    TAG,
+                    "Could not pin a conflict version's attachments; it stays unresolvable: "
+                            + safeErrorMessage(unavailable));
         }
     }
 

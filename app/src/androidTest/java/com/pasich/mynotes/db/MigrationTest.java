@@ -175,6 +175,31 @@ public class MigrationTest {
     }
 
     @Test
+    public void migrate20to21_addsTheConflictBookkeepingToTheJournal() throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 20);
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 21, true, AppDatabase.MIGRATION_20_21);
+        try {
+            migrated.execSQL(
+                    "INSERT INTO sync_pending_preferences "
+                            + "(id, payloadJson, targetHash, baselineHash, recordUpdatedAt, "
+                            + "quarantined, conflictId, conflictResolution) "
+                            + "VALUES (1, '{}', 't', 'b', 0, 0, 7, 'KEEP_WINNER')");
+            try (android.database.Cursor cursor =
+                    migrated.query(
+                            "SELECT conflictId, conflictResolution FROM sync_pending_preferences")) {
+                assertThat(cursor.moveToFirst()).isTrue();
+                assertThat(cursor.getLong(0)).isEqualTo(7L);
+                assertThat(cursor.getString(1)).isEqualTo("KEEP_WINNER");
+            }
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
     public void migrateFromTheLastReleasedVersion_reachesTheCurrentSchema() throws IOException {
         // 17 is what 2.6.48 shipped; 18, 19 and 20 all land in the same release after it.
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 17);
@@ -188,11 +213,12 @@ public class MigrationTest {
         SupportSQLiteDatabase migrated =
                 helper.runMigrationsAndValidate(
                         TEST_DB,
-                        20,
+                        21,
                         true,
                         AppDatabase.MIGRATION_17_18,
                         AppDatabase.MIGRATION_18_19,
-                        AppDatabase.MIGRATION_19_20);
+                        AppDatabase.MIGRATION_19_20,
+                        AppDatabase.MIGRATION_20_21);
         try (android.database.Cursor cursor = migrated.query("SELECT COUNT(*) FROM notes")) {
             assertThat(cursor.moveToFirst()).isTrue();
             assertThat(cursor.getInt(0)).isEqualTo(1);

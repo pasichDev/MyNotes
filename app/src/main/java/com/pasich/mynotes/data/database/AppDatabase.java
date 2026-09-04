@@ -216,6 +216,27 @@ public abstract class AppDatabase extends RoomDatabase {
                 }
             };
 
+    /**
+     * Lets recovery finish a conflict resolution whose preference write landed but whose
+     * bookkeeping did not, instead of leaving the user's choice applied yet unversioned and
+     * revertible by the next sync.
+     *
+     * <p>A separate version rather than an edit to 19→20: that schema has already been published on
+     * this branch, so a device running it would fail Room's identity check on next launch.
+     */
+    public static final Migration MIGRATION_20_21 =
+            new Migration(20, 21) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `conflictId` INTEGER NOT NULL DEFAULT 0");
+                    database.execSQL(
+                            "ALTER TABLE `sync_pending_preferences` "
+                                    + "ADD COLUMN `conflictResolution` TEXT NOT NULL DEFAULT ''");
+                }
+            };
+
     private static void insertMetadataForExistingRecords(
             SupportSQLiteDatabase database,
             String recordType,

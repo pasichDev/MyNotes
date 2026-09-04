@@ -249,6 +249,24 @@ public final class RoomSyncStore implements SyncStore {
                                     continue;
                                 }
                                 if (metadata == null) continue;
+                                // The snapshot was built before Drive was read and every blob
+                                // transferred, which
+                                // can take minutes, and the six-hourly worker does it while the
+                                // user is in the
+                                // editor. If the record moved on locally since then, the merge
+                                // chose between
+                                // versions one of which no longer exists, so applying its result
+                                // would silently
+                                // drop the newer edit. Leave it; the next sync merges the real
+                                // current version.
+                                if (metadata.updatedAt > record.getUpdatedAt().toEpochMilli()) {
+                                    Log.w(
+                                            TAG,
+                                            "Skipping a stale sync result for "
+                                                    + metadata.recordType
+                                                    + "; it was edited during this sync");
+                                    continue;
+                                }
                                 if (record.isTombstone()) {
                                     markDeleted(metadata);
                                     database.syncMetadataDao()
@@ -279,7 +297,9 @@ public final class RoomSyncStore implements SyncStore {
                                                         stagedPreferencesTarget,
                                                         preferencesBaseline,
                                                         stagedPreferencesUpdatedAt,
-                                                        false));
+                                                        false,
+                                                        0L,
+                                                        ""));
                             }
                             if (finalState != null && !deferFinalState) {
                                 database.syncStateDao().upsert(toEntity(finalState));
@@ -430,6 +450,11 @@ public final class RoomSyncStore implements SyncStore {
                         pending == null ? null : pending.baselineHash,
                         livePreferencesDigest());
 
+        String target =
+                pending == null || pending.targetHash == null || pending.targetHash.isEmpty()
+                        ? preferencesDigest(backup)
+                        : pending.targetHash;
+
         switch (action) {
             case NOTHING:
                 return;
@@ -438,7 +463,12 @@ public final class RoomSyncStore implements SyncStore {
                 database.runInTransaction(() -> database.syncPendingPreferencesDao().quarantine());
                 return;
             case CLEAR_ALREADY_APPLIED:
-                database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
+                // The values landed but the digest may not have: commitPendingPreferences writes
+                // it after the adapter returns. Without it the next snapshot build reads the
+                // stale baseline, calls this a local edit and touches the record to now, which
+                // lets an unchanged copy outrank a genuine edit made on another device.
+                preferences.edit().putString(PREFERENCES_HASH, target).commit();
+                finishJournal(pending);
                 return;
             case DISCARD_STALE:
                 Log.w(
@@ -448,13 +478,18 @@ public final class RoomSyncStore implements SyncStore {
                 return;
             case REPLAY:
             default:
-                String target =
-                        pending.targetHash == null || pending.targetHash.isEmpty()
-                                ? preferencesDigest(backup)
-                                : pending.targetHash;
                 commitPendingPreferences(backup, target);
-                database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
+                finishJournal(pending);
         }
+    }
+
+    /** Clears the journal, completing the conflict bookkeeping when it names one. */
+    private void finishJournal(@NonNull SyncPendingPreferencesEntity pending) {
+        if (pending.conflictId > 0) {
+            finalizeResolvedPreferencesConflict(pending.conflictId, pending.conflictResolution);
+            return;
+        }
+        database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
     }
 
     /**
@@ -775,7 +810,9 @@ public final class RoomSyncStore implements SyncStore {
                                             target,
                                             baseline,
                                             recordUpdatedAt,
-                                            false));
+                                            false,
+                                            conflictId,
+                                            resolution.name()));
                 });
 
         // Throws when the write is not durable, leaving the journal in place and the conflict
@@ -783,30 +820,39 @@ public final class RoomSyncStore implements SyncStore {
         commitPendingPreferences(chosen, target);
 
         try {
-            database.runInTransaction(
-                    () -> {
-                        SyncConflictEntity conflict =
-                                database.syncConflictDao().getById(conflictId);
-                        if (conflict == null || conflict.resolved) return;
-                        database.syncPendingPreferencesDao().clear();
-                        long resolvedAt = System.currentTimeMillis();
-                        SyncMetadataEntity metadata =
-                                database.syncMetadataDao()
-                                        .getByStableId(conflict.recordType, conflict.stableId);
-                        if (metadata != null) {
-                            database.syncMetadataDao()
-                                    .setVersion(
-                                            conflict.recordType,
-                                            metadata.localId,
-                                            Math.max(resolvedAt, metadata.updatedAt + 1L),
-                                            null);
-                        }
-                        database.syncConflictDao()
-                                .markResolved(conflictId, resolution.name(), resolvedAt);
-                    });
+            finalizeResolvedPreferencesConflict(conflictId, resolution.name());
         } catch (RuntimeException error) {
             throw new IOException("Could not finalize the resolved preferences conflict", error);
         }
+    }
+
+    /**
+     * Records that a preferences conflict is settled, once its value is durably applied.
+     *
+     * <p>Also reached from recovery: a crash between the adapter commit and this step used to leave
+     * the chosen value in place but unversioned and the conflict still pending, so the next sync
+     * could quietly put the rejected version back.
+     */
+    private void finalizeResolvedPreferencesConflict(long conflictId, @NonNull String resolution) {
+        database.runInTransaction(
+                () -> {
+                    SyncConflictEntity conflict = database.syncConflictDao().getById(conflictId);
+                    database.syncPendingPreferencesDao().clear();
+                    if (conflict == null || conflict.resolved) return;
+                    long resolvedAt = System.currentTimeMillis();
+                    SyncMetadataEntity metadata =
+                            database.syncMetadataDao()
+                                    .getByStableId(conflict.recordType, conflict.stableId);
+                    if (metadata != null) {
+                        database.syncMetadataDao()
+                                .setVersion(
+                                        conflict.recordType,
+                                        metadata.localId,
+                                        Math.max(resolvedAt, metadata.updatedAt + 1L),
+                                        null);
+                    }
+                    database.syncConflictDao().markResolved(conflictId, resolution, resolvedAt);
+                });
     }
 
     private void pinResolvedConflictAttachments(@NonNull SyncRecord selected) throws IOException {
@@ -1170,10 +1216,15 @@ public final class RoomSyncStore implements SyncStore {
                             ? file.getName()
                             : attachment.name.trim();
             String logicalId = attachment.id;
-            if (logicalId == null || !logicalId.matches("[0-9a-fA-F-]{36}")) {
+            if (!isCanonicalUuid(logicalId)) {
                 // Existing editor data predates logical attachment IDs. Deriving from the stable
                 // note, source URL and position keeps the migration deterministic while allowing
                 // equal-content references to remain distinct logical attachments.
+                //
+                // The check is canonical-UUID rather than a loose 36-character pattern: the
+                // bundle manifest only accepts canonical lowercase UUIDs, so an uppercase or
+                // otherwise non-canonical id used to pass here and then throw during encode,
+                // failing every publish for the whole account while that note existed.
                 logicalId =
                         UUID.nameUUIDFromBytes(
                                         (metadata.stableId
@@ -1203,6 +1254,18 @@ public final class RoomSyncStore implements SyncStore {
         payload.add("attachmentHashes", hashes);
         payload.add("attachmentNames", names);
         return true;
+    }
+
+    /** True only for a lowercase canonical UUID, which is all the bundle manifest accepts. */
+    private static boolean isCanonicalUuid(@Nullable String value) {
+        if (value == null) {
+            return false;
+        }
+        try {
+            return UUID.fromString(value).toString().equals(value);
+        } catch (IllegalArgumentException notAUuid) {
+            return false;
+        }
     }
 
     private static void addSnapshotProblem(
@@ -1279,6 +1342,59 @@ public final class RoomSyncStore implements SyncStore {
             restored.add(attachment);
         }
         note.setAttachments(gson.toJson(restored));
+        note.setValueJson(rewriteEditorAttachmentUrls(note.getValueJson(), restored));
+    }
+
+    /**
+     * Points the editor's own blocks at the files this device just wrote.
+     *
+     * <p>Restoring rebuilt the note's {@code attachments} column but left {@code valueJson}
+     * verbatim, so every attachment and image block still named the sending device's {@code
+     * note_<senderId>/<senderFile>}. The column is what the file list reads; the blocks are what
+     * the editor renders, so a received rich note showed its attachments as broken.
+     *
+     * <p>The mapping is positional, which is exactly how the manifest was built: the sender's
+     * attachments column comes from {@code EditorJsonUtils} walking these same blocks in document
+     * order, and {@code addAttachmentMetadata} walks that column in the same order. If the two do
+     * not line up the JSON is returned untouched rather than guessed at — a note that renders the
+     * old broken URL is recoverable, one whose content was rewritten wrongly is not.
+     */
+    @Nullable
+    private String rewriteEditorAttachmentUrls(
+            @Nullable String valueJson, @NonNull JsonArray restored) {
+        if (valueJson == null || valueJson.trim().isEmpty() || restored.size() == 0) {
+            return valueJson;
+        }
+        try {
+            JsonArray blocks = JsonParser.parseString(valueJson).getAsJsonArray();
+            List<JsonObject> files = new ArrayList<>();
+            for (JsonElement element : blocks) {
+                if (!element.isJsonObject()) continue;
+                JsonObject block = element.getAsJsonObject();
+                String type =
+                        block.has("type") && block.get("type").isJsonPrimitive()
+                                ? block.get("type").getAsString()
+                                : "";
+                if (!"attaches".equals(type) && !"image".equals(type)) continue;
+                JsonObject data = block.getAsJsonObject("data");
+                if (data == null) continue;
+                JsonObject file = data.getAsJsonObject("file");
+                if (file != null) files.add(file);
+            }
+            if (files.size() != restored.size()) {
+                Log.w(TAG, "Editor blocks do not match the restored attachments; leaving them");
+                return valueJson;
+            }
+            for (int index = 0; index < files.size(); index++) {
+                JsonObject target = restored.get(index).getAsJsonObject();
+                files.get(index).addProperty("url", target.get("url").getAsString());
+                files.get(index).addProperty("name", target.get("name").getAsString());
+            }
+            return gson.toJson(blocks);
+        } catch (RuntimeException malformed) {
+            Log.w(TAG, "Could not rewrite editor attachment URLs; leaving them untouched");
+            return valueJson;
+        }
     }
 
     private static boolean isVerifiedAttachmentFile(

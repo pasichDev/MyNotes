@@ -33,18 +33,28 @@ public final class SyncPendingPreferencesEntity {
     /** Set when the payload could not be read; retained for support, skipped by recovery. */
     public boolean quarantined;
 
+    /** The conflict this write settles, or 0 when it comes from an ordinary snapshot apply. */
+    public long conflictId;
+
+    /** The resolution to record once the write is durable; empty when there is no conflict. */
+    @NonNull public String conflictResolution;
+
     public SyncPendingPreferencesEntity(
             int id,
             @NonNull String payloadJson,
             @NonNull String targetHash,
             @NonNull String baselineHash,
             long recordUpdatedAt,
-            boolean quarantined) {
+            boolean quarantined,
+            long conflictId,
+            @NonNull String conflictResolution) {
         this.id = id;
         this.payloadJson = payloadJson;
         this.targetHash = targetHash;
         this.baselineHash = baselineHash;
         this.recordUpdatedAt = recordUpdatedAt;
         this.quarantined = quarantined;
+        this.conflictId = conflictId;
+        this.conflictResolution = conflictResolution;
     }
 }

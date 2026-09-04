@@ -102,8 +102,12 @@ public class RoomSyncStoreTest {
 
     @Test
     public void readSnapshot_failsClosedWhenAReferencedAttachmentIsMissing() {
-        int noteId =
-                seedNote("Missing attachment", "body", "[" + attachmentJson(1, "gone.png") + "]");
+        int noteId = seedNote("Missing attachment", "body", null);
+        // The reference has to name this note's own folder, or the test would pass simply
+        // because nothing resolves rather than because the file is gone.
+        Note seeded = db.noteDao().getNoteSync(noteId);
+        seeded.setAttachments("[" + attachmentJson(noteId, "gone.png") + "]");
+        db.noteDao().addNote(seeded);
         String original = db.noteDao().getNoteSync(noteId).getAttachments();
 
         SnapshotBuildResult.SnapshotBuildException error = assertSnapshotBuildFails(store);
@@ -240,11 +244,85 @@ public class RoomSyncStoreTest {
         Note reloaded = db.noteDao().getNoteSync(noteId);
         assertThat(reloaded.getAttachments()).isNotNull();
         assertThat(reloaded.getAttachments()).contains("photo.png");
+        // The display name appearing in the JSON proves nothing about the stored reference, so
+        // resolve it the way the editor and the file list do.
+        assertThat(resolveFirstAttachment(reloaded.getAttachments()).isFile()).isTrue();
         File restored =
                 new File(
                         new File(context.getFilesDir(), "attachments/note_" + noteId), "photo.png");
         assertThat(restored.isFile()).isTrue();
         assertThat(readAll(new java.io.FileInputStream(restored))).isEqualTo(bytes);
+    }
+
+    @Test
+    public void applySnapshot_repointsEditorBlocksAtTheFilesThisDeviceWrote() throws Exception {
+        byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
+        int noteId = seedNoteWithAttachment("photo.png", bytes);
+        String senderUrl =
+                com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.urlFor(
+                        noteId, "photo.png");
+        Note seeded = db.noteDao().getNoteSync(noteId);
+        seeded.setValueJson(
+                "[{\"id\":\"blk1\",\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + senderUrl
+                        + "\",\"name\":\"photo.png\"}}}]");
+        db.noteDao().addNote(seeded);
+
+        store.applySnapshot(store.readSnapshot(), Collections.emptyList());
+
+        // The attachments column is what the file list reads; valueJson is what the editor
+        // renders. Rebuilding only the column left every received rich note showing a broken
+        // attachment, because the block still named the sending device's file.
+        Note reloaded = db.noteDao().getNoteSync(noteId);
+        String blockUrl =
+                com.google.gson.JsonParser.parseString(reloaded.getValueJson())
+                        .getAsJsonArray()
+                        .get(0)
+                        .getAsJsonObject()
+                        .getAsJsonObject("data")
+                        .getAsJsonObject("file")
+                        .get("url")
+                        .getAsString();
+        File rendered =
+                com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.resolve(
+                        context, blockUrl);
+        assertThat(rendered).isNotNull();
+        assertThat(rendered.isFile()).isTrue();
+        assertThat(readAll(new java.io.FileInputStream(rendered))).isEqualTo(bytes);
+    }
+
+    @Test
+    public void applySnapshot_leavesEditorBlocksAloneWhenTheyDoNotLineUp() throws Exception {
+        byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
+        int noteId = seedNoteWithAttachment("photo.png", bytes);
+        // Two blocks, one attachment: the positional mapping cannot be trusted.
+        String twoBlocks =
+                "[{\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\"editorjs://attachments/note_"
+                        + noteId
+                        + "/photo.png\"}}},"
+                        + "{\"type\":\"image\",\"data\":{\"file\":{\"url\":\"editorjs://attachments/note_"
+                        + noteId
+                        + "/other.png\"}}}]";
+        Note seeded = db.noteDao().getNoteSync(noteId);
+        seeded.setValueJson(twoBlocks);
+        db.noteDao().addNote(seeded);
+
+        store.applySnapshot(store.readSnapshot(), Collections.emptyList());
+
+        // Rewriting on a guess could point a block at the wrong file; leaving it is recoverable.
+        assertThat(db.noteDao().getNoteSync(noteId).getValueJson()).isEqualTo(twoBlocks);
+    }
+
+    /** Resolves the first entry of an attachments JSON the way the app's consumers do. */
+    private File resolveFirstAttachment(String attachmentsJson) {
+        String url =
+                com.google.gson.JsonParser.parseString(attachmentsJson)
+                        .getAsJsonArray()
+                        .get(0)
+                        .getAsJsonObject()
+                        .get("url")
+                        .getAsString();
+        return com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.resolve(context, url);
     }
 
     @Test
@@ -494,7 +572,7 @@ public class RoomSyncStoreTest {
         db.syncPendingPreferencesDao()
                 .upsert(
                         new com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity(
-                                1, "{not json", "target", "baseline", 0L, false));
+                                1, "{not json", "target", "baseline", 0L, false, 0L, ""));
         PreferencesAdapter adapter = new PreferencesAdapter();
         RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
 
@@ -505,6 +583,47 @@ public class RoomSyncStoreTest {
         assertThat(db.syncPendingPreferencesDao().get()).isNull();
         assertThat(db.syncPendingPreferencesDao().getIncludingQuarantined()).isNotNull();
         assertThat(adapter.committed.get()).isNull();
+    }
+
+    @Test
+    public void recoveryFinishesAConflictWhosePreferenceWriteLandedBeforeTheCrash()
+            throws Exception {
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        RoomSyncStore first = new RoomSyncStore(context, db, adapter.helper);
+        first.readState();
+        long conflictId = seedPreferencesConflict(9, 11);
+        // Simulates a process death between the durable preference write and the bookkeeping:
+        // the journal is present and the live values already match its target.
+        adapter.helper.commitListPreferences(preferencesWithTheme(11));
+        String chosenJson = new com.google.gson.Gson().toJson(preferencesWithTheme(11));
+        // The target digest has to be the real one, or recovery reads the journal as stale and
+        // discards it instead of finishing what it started.
+        String target = sha256(chosenJson.getBytes(StandardCharsets.UTF_8));
+        db.syncPendingPreferencesDao()
+                .upsert(
+                        new com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity(
+                                1,
+                                chosenJson,
+                                target,
+                                "digest-before-the-write",
+                                0L,
+                                false,
+                                conflictId,
+                                SyncResolution.KEEP_DRIVE.name()));
+
+        // A fresh store seeds, which is where recovery runs.
+        new RoomSyncStore(context, db, adapter.helper).readState();
+
+        // Without this the choice stayed applied but unversioned and pending, so the next sync
+        // could put the rejected version back.
+        assertThat(db.syncPendingPreferencesDao().get()).isNull();
+        assertThat(db.syncConflictDao().getById(conflictId).resolved).isTrue();
+        SyncMetadataEntity metadata =
+                db.syncMetadataDao()
+                        .getByStableId(
+                                SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                "00000000-0000-4000-8000-000000000000");
+        assertThat(metadata.updatedAt).isGreaterThan(0L);
     }
 
     /** A preferences adapter whose durability can be turned off. */

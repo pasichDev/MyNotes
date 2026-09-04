@@ -148,12 +148,16 @@ public class SyncBundleCodecTest {
                         .getSnapshot()
                         .find(SyncRecord.Type.NOTE, NOTE_ID);
 
-        // RoomSyncStore.restoreAttachments looks names up by content hash. While the decoded map
-        // stayed keyed by attachment UUID it always missed, and every restored file landed on disk
-        // named after its bare SHA-256 with no extension.
+        // The name restoreAttachments actually reads is the one on the manifest entry.
+        JsonObject entry =
+                decoded.getPayload().getAsJsonArray("attachmentsManifest").get(0).getAsJsonObject();
+        assertThat(entry.get("displayName").getAsString()).isEqualTo("receipt.png");
+
+        // The map itself stays keyed by logical attachment id, the same shape RoomSyncStore
+        // builds, so a decoded record hashes equal to the identical local one.
         JsonObject names = decoded.getPayload().getAsJsonObject("attachmentNames");
-        assertThat(names.has(HASH)).isTrue();
-        assertThat(names.get(HASH).getAsString()).isEqualTo("receipt.png");
+        assertThat(names.has(HASH)).isFalse();
+        assertThat(names.get(ATTACHMENT_ID).getAsString()).isEqualTo("receipt.png");
     }
 
     @Test
@@ -230,6 +234,38 @@ public class SyncBundleCodecTest {
                 NOTE_ID,
                 Instant.parse("2026-08-31T12:00:01Z"),
                 notePayload(body, "image/png", 42L, "receipt.png"));
+    }
+
+    @Test
+    public void roundTrip_ofALocallyBuiltNoteWithAnAttachment_hashesIdentically() throws Exception {
+        // Exactly the payload shape RoomSyncStore.addAttachmentMetadata produces: a manifest,
+        // the hash list, and names keyed by logical attachment id.
+        JsonObject local = notePayload("Body", "image/png", 12L, "receipt.png");
+        JsonObject names = new JsonObject();
+        names.addProperty(ATTACHMENT_ID, "receipt.png");
+        local.add("attachmentNames", names);
+        SyncRecord localRecord =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:01Z"),
+                        local);
+
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(java.util.Collections.singletonList(localRecord)),
+                        Instant.parse("2026-08-31T12:00:00Z"));
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+
+        // The invariant the merge engine depends on: a record that made the round trip is the
+        // same version as the one that went in. While these differed, every note with an
+        // attachment conflicted with itself on every sync and republished a bundle each time.
+        assertThat(decoded.getCanonicalPayloadHash())
+                .isEqualTo(localRecord.getCanonicalPayloadHash());
     }
 
     private static SyncRecord task(String title) {

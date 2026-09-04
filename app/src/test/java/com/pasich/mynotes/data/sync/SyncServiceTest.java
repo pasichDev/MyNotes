@@ -113,7 +113,7 @@ public class SyncServiceTest {
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         assertThat(store.attachments.get(hash)).isEqualTo(bytes);
         assertThat(store.events).containsExactly("writeAttachment", "applySnapshot").inOrder();
-        assertThat(backend.events).containsExactly("readAttachment");
+        assertThat(backend.events).containsExactly("readSnapshot", "readAttachment").inOrder();
     }
 
     @Test
@@ -130,7 +130,9 @@ public class SyncServiceTest {
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         assertThat(backend.attachments.get(hash)).isEqualTo(bytes);
-        assertThat(backend.events).containsExactly("writeAttachment", "writeSnapshot").inOrder();
+        assertThat(backend.events)
+                .containsExactly("readSnapshot", "writeAttachment", "writeSnapshot")
+                .inOrder();
     }
 
     @Test
@@ -149,7 +151,9 @@ public class SyncServiceTest {
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         // Drive is untrusted even for a content-addressed object, so the remote bytes are still
         // verified before publication — but exactly once, not once per question asked about them.
-        assertThat(backend.events).containsExactly("readAttachment", "writeSnapshot");
+        assertThat(backend.events)
+                .containsExactly("readSnapshot", "readAttachment", "writeSnapshot")
+                .inOrder();
     }
 
     @Test
@@ -168,12 +172,13 @@ public class SyncServiceTest {
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
         assertThat(store.attachments.get(hash)).isEqualTo(bytes);
         assertThat(backend.events)
-                .containsExactly("readAttachment", "readAttachment", "writeSnapshot")
+                .containsExactly(
+                        "readSnapshot", "readAttachment", "readAttachment", "writeSnapshot")
                 .inOrder();
     }
 
     @Test
-    public void sync_corruptRemoteAttachmentWithValidLocalCopyDoesNotPublish() throws Exception {
+    public void sync_repairsACorruptRemoteAttachmentFromTheValidLocalCopy() throws Exception {
         byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
         String hash = sha256(bytes);
         FakeStore store = new FakeStore(snapshot(note(TEN, "Local")));
@@ -184,10 +189,12 @@ public class SyncServiceTest {
 
         SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
 
-        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
-        assertThat(state.getErrorMessage()).contains("checksum");
-        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
-        assertThat(store.applyCalls).isEqualTo(0);
+        // Content-addressed blobs tolerate duplicates and the reader picks a verified candidate,
+        // so a corrupt remote object is repaired from the good local copy. Failing instead left
+        // every device stuck on every sync until the bad object was deleted from Drive by hand.
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.attachments.get(hash)).isEqualTo(bytes);
+        assertThat(store.attachments.get(hash)).isEqualTo(bytes);
     }
 
     @Test
@@ -275,7 +282,9 @@ public class SyncServiceTest {
 
         assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
         assertThat(state.getErrorMessage()).contains("size exceeds");
-        assertThat(backend.events).isEmpty();
+        // The remote is read before the manifest is inspected; nothing may be transferred or
+        // published after the oversized entry is found.
+        assertThat(backend.events).containsExactly("readSnapshot");
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
     }
 
@@ -488,6 +497,8 @@ public class SyncServiceTest {
 
         @Override
         public SyncSnapshot readSnapshot() throws IOException {
+            // Recorded so a test asserting "the remote was never read" actually proves it.
+            events.add("readSnapshot");
             if (readFailure != null) {
                 throw readFailure;
             }

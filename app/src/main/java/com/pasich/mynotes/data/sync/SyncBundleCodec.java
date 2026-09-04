@@ -366,8 +366,11 @@ public final class SyncBundleCodec {
         if (attachmentIds == null) return;
         JsonArray attachmentHashes = new JsonArray();
         JsonArray manifest = new JsonArray();
-        // The wire keys names by attachment UUID; the local store looks them up by content hash.
-        JsonObject namesByHash = new JsonObject();
+        // Keyed by logical attachment UUID, exactly as the wire carries it and exactly as
+        // RoomSyncStore builds it locally. Rekeying this map by content hash made a decoded
+        // record hash differently from the identical locally built one, so every note with an
+        // attachment reported a conflict against itself on every sync, forever.
+        JsonObject namesById = new JsonObject();
         for (JsonElement element : attachmentIds) {
             String attachmentId = element.getAsString();
             AttachmentManifestEntry attachment = attachmentsById.get(attachmentId);
@@ -381,14 +384,17 @@ public final class SyncBundleCodec {
             manifest.add(value);
             attachmentHashes.add(attachment.sha256);
             if (value.has("displayName") && !value.get("displayName").isJsonNull()) {
-                namesByHash.addProperty(attachment.sha256, value.get("displayName").getAsString());
+                namesById.addProperty(attachmentId, value.get("displayName").getAsString());
             }
         }
         payload.add("attachmentsManifest", manifest);
         payload.add("attachmentHashes", attachmentHashes);
-        // Rekeyed by hash; leaving the UUID-keyed map made every restored file land on disk
-        // named after its bare SHA-256, with no extension.
-        payload.add("attachmentNames", namesByHash);
+        // The display name restoreAttachments actually uses travels on the manifest entry above;
+        // this map exists only so the payload matches the one the local store builds.
+        payload.add("attachmentNames", namesById);
+        // Wire-only: the local store never produces it, and leaving it behind made a decoded
+        // record hash differently from the identical local one.
+        payload.remove("attachmentIds");
     }
 
     @NonNull
