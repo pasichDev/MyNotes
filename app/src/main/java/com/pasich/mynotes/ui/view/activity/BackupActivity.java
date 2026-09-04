@@ -517,7 +517,18 @@ public class BackupActivity extends BaseActivity
         binding.getRoot()
                 .postDelayed(
                         () -> {
-                            if (!isFinishing() && !isDestroyed() && !syncRunning) {
+                            if (isFinishing() || isDestroyed() || syncRunning) {
+                                return;
+                            }
+                            // The stored mode is pushed to AppCompat only here, once the sync
+                            // result is in hand; pushing it from inside the apply recreated this
+                            // screen mid-sync and dropped the result. A changed mode recreates
+                            // the screen by itself; otherwise the rebuild is done here.
+                            int before =
+                                    androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode();
+                            themePreferencesCache.applyCurrentThemeMode();
+                            if (androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode()
+                                    == before) {
                                 recreate();
                             }
                         },

@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,6 +73,13 @@ public final class RoomSyncStore implements SyncStore {
 
     /** Whether every note folder has been indexed into {@link #localAttachments}. */
     private volatile boolean noteFoldersIndexed;
+
+    /**
+     * Attachments the last build described from the column alone because their file is gone, keyed
+     * by hash, so the service can name the note when no endpoint holds the blob either.
+     */
+    private final Map<String, SnapshotProblem> rememberedOnlyAttachments =
+            new ConcurrentHashMap<>();
 
     /**
      * Set when an apply actually changed the visible settings, so the screen can redraw.
@@ -180,6 +186,7 @@ public final class RoomSyncStore implements SyncStore {
         ensureSeeded();
         List<SyncRecord> records = new ArrayList<>();
         List<SnapshotProblem> problems = new ArrayList<>();
+        rememberedOnlyAttachments.clear();
         try {
             for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
                 if (metadata.deletedAt != null) {
@@ -237,27 +244,18 @@ public final class RoomSyncStore implements SyncStore {
             @Nullable SyncState finalState)
             throws IOException {
         PreferencesBackup stagedPreferences = selectedPreferences(snapshot);
-        if (stagedPreferences != null && preferencesChangedSinceBuild()) {
-            // The settings screens write SharedPreferences directly and nothing touches the sync
-            // record for them, so the stale-record guard below cannot protect a setting changed
-            // while the sync was in flight. Committing the merged version would overwrite it and
-            // record its digest as the baseline, hiding the loss from the next build. Leaving the
-            // live values alone means the next build sees them differ from the baseline and
-            // publishes them as the local edit they are.
-            Log.w(TAG, "Skipping synchronized preferences; they were edited during this sync");
-            stagedPreferences = null;
-        }
         String stagedPreferencesJson =
                 stagedPreferences == null ? null : gson.toJson(stagedPreferences);
         String stagedPreferencesTarget =
                 stagedPreferences == null ? "" : preferencesDigest(stagedPreferences);
-        String preferencesBaseline = stagedPreferences == null ? "" : livePreferencesDigest();
         SyncRecord preferencesRecord =
                 snapshot.find(SyncRecord.Type.PREFERENCES, PREFERENCES_STABLE_ID);
         long stagedPreferencesUpdatedAt =
                 preferencesRecord == null ? 0L : preferencesRecord.getUpdatedAt().toEpochMilli();
         boolean deferFinalState = stagedPreferences != null && finalState != null;
-        boolean applyPreferences = stagedPreferences != null;
+        // The live digest at the moment the journal is written, decided inside the transaction
+        // below; the commit afterwards refuses to run if the settings moved again since.
+        String[] preferencesBaseline = {null};
         try {
             database.runInTransaction(
                     () -> {
@@ -271,6 +269,7 @@ public final class RoomSyncStore implements SyncStore {
                             // conflict for one of them names versions that no longer describe
                             // the local record, so it must not be stored for the user to apply.
                             Set<String> skippedKeys = new HashSet<>();
+                            SyncMetadataEntity[] preferencesMetadata = {null};
                             for (SyncRecord record : snapshot.getRecords()) {
                                 String key = recordKey(record);
                                 SyncMetadataEntity metadata = byStableId.get(key);
@@ -292,12 +291,15 @@ public final class RoomSyncStore implements SyncStore {
                                 }
                                 if (metadata == null) continue;
                                 if (record.getType() == SyncRecord.Type.PREFERENCES
-                                        && !record.isTombstone()
-                                        && !applyPreferences) {
-                                    // Invalid payload or edited mid-sync: the version is not
-                                    // going to be committed, so it must not be recorded as the
-                                    // one this device holds either.
-                                    skippedKeys.add(key);
+                                        && !record.isTombstone()) {
+                                    // Decided last, once every other record has been applied:
+                                    // the settings screens write SharedPreferences directly and
+                                    // nothing touches the sync record for them, so the
+                                    // stale-record guard below cannot see a setting changed while
+                                    // this transaction ran. Committing the merged version anyway
+                                    // overwrote such an edit and recorded its digest as the
+                                    // baseline, hiding the loss from the next build.
+                                    preferencesMetadata[0] = metadata;
                                     continue;
                                 }
                                 // The snapshot was built before Drive was read and every blob
@@ -327,7 +329,10 @@ public final class RoomSyncStore implements SyncStore {
                                     transactionFailureInjector.afterRecordApplied(record);
                                     continue;
                                 }
-                                applyPayload(metadata, record.getPayload());
+                                if (!applyPayload(metadata, record.getPayload())) {
+                                    skippedKeys.add(key);
+                                    continue;
+                                }
                                 database.syncMetadataDao()
                                         .setVersion(
                                                 metadata.recordType,
@@ -336,20 +341,49 @@ public final class RoomSyncStore implements SyncStore {
                                                 null);
                                 transactionFailureInjector.afterRecordApplied(record);
                             }
-                            persistConflicts(conflicts, skippedKeys);
-                            if (stagedPreferencesJson != null) {
-                                database.syncPendingPreferencesDao()
-                                        .upsert(
-                                                new SyncPendingPreferencesEntity(
-                                                        1,
-                                                        stagedPreferencesJson,
-                                                        stagedPreferencesTarget,
-                                                        preferencesBaseline,
-                                                        stagedPreferencesUpdatedAt,
-                                                        false,
-                                                        0L,
-                                                        ""));
+                            if (preferencesMetadata[0] != null) {
+                                String preferencesKey = recordKey(preferencesMetadata[0]);
+                                String live = livePreferencesDigest();
+                                String baseline = preferences.getString(PREFERENCES_HASH, null);
+                                boolean edited = baseline != null && !baseline.equals(live);
+                                boolean stale =
+                                        preferencesMetadata[0].updatedAt
+                                                > stagedPreferencesUpdatedAt;
+                                if (stagedPreferencesJson == null || edited || stale) {
+                                    // Unusable payload, or edited since the build: the version
+                                    // is not going to be committed, so it is not recorded as
+                                    // the one this device holds either. The next build sees the
+                                    // live values differ from the baseline and publishes them
+                                    // as the local edit they are.
+                                    if (edited) {
+                                        Log.w(
+                                                TAG,
+                                                "Skipping synchronized preferences; they were"
+                                                        + " edited during this sync");
+                                    }
+                                    skippedKeys.add(preferencesKey);
+                                } else {
+                                    preferencesBaseline[0] = live;
+                                    database.syncMetadataDao()
+                                            .setVersion(
+                                                    preferencesMetadata[0].recordType,
+                                                    preferencesMetadata[0].localId,
+                                                    stagedPreferencesUpdatedAt,
+                                                    null);
+                                    database.syncPendingPreferencesDao()
+                                            .upsert(
+                                                    new SyncPendingPreferencesEntity(
+                                                            1,
+                                                            stagedPreferencesJson,
+                                                            stagedPreferencesTarget,
+                                                            live,
+                                                            stagedPreferencesUpdatedAt,
+                                                            false,
+                                                            0L,
+                                                            ""));
+                                }
                             }
+                            persistConflicts(conflicts, skippedKeys);
                             if (finalState != null && !deferFinalState) {
                                 database.syncStateDao().upsert(toEntity(finalState));
                             }
@@ -360,11 +394,16 @@ public final class RoomSyncStore implements SyncStore {
         } catch (SyncRuntimeException error) {
             throw error.ioException;
         }
-        if (stagedPreferences != null) {
-            // The journal is only dropped once the adapter reports a durable commit; a failure
-            // here leaves it in place for recoverPendingPreferences and keeps the sync state
-            // retryable rather than claiming success.
-            commitPendingPreferences(stagedPreferences, stagedPreferencesTarget);
+        if (deferFinalState || preferencesBaseline[0] != null) {
+            if (preferencesBaseline[0] != null) {
+                // The journal is only dropped once the adapter reports a durable commit; a
+                // failure here leaves it in place for recoverPendingPreferences and keeps the
+                // sync state retryable rather than claiming success. A commit refused because
+                // the settings moved in the meantime is not a failure: the journal is dropped
+                // and the edit is published by the next build.
+                commitPendingPreferences(
+                        stagedPreferences, stagedPreferencesTarget, preferencesBaseline[0]);
+            }
             database.runInTransaction(
                     () -> {
                         database.syncPendingPreferencesDao().clear();
@@ -383,17 +422,6 @@ public final class RoomSyncStore implements SyncStore {
     @NonNull
     private static String recordKey(@NonNull SyncRecord record) {
         return record.getType().getWireValue() + ":" + record.getId();
-    }
-
-    /**
-     * Whether the live settings differ from what the snapshot was built from.
-     *
-     * <p>Every build records the live digest as the baseline, so a baseline that no longer matches
-     * means the user changed a setting after the build and before this apply.
-     */
-    private boolean preferencesChangedSinceBuild() {
-        String baseline = preferences.getString(PREFERENCES_HASH, null);
-        return baseline != null && !baseline.equals(livePreferencesDigest());
     }
 
     /**
@@ -548,7 +576,8 @@ public final class RoomSyncStore implements SyncStore {
                 return;
             case REPLAY:
             default:
-                commitPendingPreferences(backup, target);
+                // Replay was decided because the live values still match the baseline.
+                commitPendingPreferences(backup, target, pending.baselineHash);
                 finishJournal(pending);
         }
     }
@@ -566,10 +595,20 @@ public final class RoomSyncStore implements SyncStore {
      * Applies one journaled preferences payload, failing loudly when it is not durable.
      *
      * @param expectedDigest digest the live preferences must show afterwards.
+     * @param baselineDigest digest the live preferences showed when the write was decided; if they
+     *     no longer match, the user changed a setting in between and the write is refused.
+     * @return true when the values were written, false when the write was refused as superseded.
      */
-    private void commitPendingPreferences(
-            @NonNull PreferencesBackup backup, @NonNull String expectedDigest) throws IOException {
+    private boolean commitPendingPreferences(
+            @NonNull PreferencesBackup backup,
+            @NonNull String expectedDigest,
+            @NonNull String baselineDigest)
+            throws IOException {
         String before = livePreferencesDigest();
+        if (!before.equals(baselineDigest) && !before.equals(expectedDigest)) {
+            Log.w(TAG, "Refusing to commit synchronized preferences; they changed meanwhile");
+            return false;
+        }
         boolean committed;
         try {
             committed = preferenceHelper.commitListPreferences(backup);
@@ -585,6 +624,7 @@ public final class RoomSyncStore implements SyncStore {
         // The digest doubles as the snapshot-build baseline, so recording it here keeps the next
         // build from treating a freshly received version as a local edit.
         preferences.edit().putString(PREFERENCES_HASH, expectedDigest).commit();
+        return true;
     }
 
     /**
@@ -691,7 +731,14 @@ public final class RoomSyncStore implements SyncStore {
         return result;
     }
 
-    private void applyPayload(SyncMetadataEntity metadata, JsonObject payload) throws IOException {
+    /**
+     * Writes one live version over the local row.
+     *
+     * @return false when the version was deliberately not applied and the record's local version
+     *     must therefore not be advanced to it.
+     */
+    private boolean applyPayload(SyncMetadataEntity metadata, JsonObject payload)
+            throws IOException {
         // A record that was deleted here and then edited on another device has no row left to
         // update; @Update on a missing row is a silent no-op, and the tombstone was cleared
         // regardless, so tasks, categories and tags marked live never came back. The REPLACE
@@ -730,14 +777,53 @@ public final class RoomSyncStore implements SyncStore {
             Tag tag = gson.fromJson(payload, Tag.class);
             tag.id = metadata.localId;
             if (revive || database.tagsDao().getTagSync(tag.id) == null) {
-                database.tagsDao().addTag(tag);
-            } else {
-                database.tagsDao().updateTag(tag);
+                return reviveTag(metadata, tag);
             }
+            database.tagsDao().updateTag(tag);
         } else if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
             // SharedPreferences is outside Room. applySnapshotInternal journals and commits this
             // payload only after the Room transaction succeeds.
         }
+        return true;
+    }
+
+    /**
+     * Puts a deleted tag's row back, unless a tag of that name has since been created here.
+     *
+     * <p>A tag is identified by its name: a note stores the name and the table has no unique index
+     * on it, so putting the row back beside a same-named one shows the user the same tag twice. The
+     * same rule as {@link #insertRemoteTag} settles which identity survives: the smaller stable id.
+     * When the local tag holds it, the reviving identity is tombstoned afresh so that the
+     * tombstone, now newer than the remote edit, retires it everywhere at the next sync — and the
+     * record is reported as not applied, so its version is not advanced.
+     */
+    private boolean reviveTag(@NonNull SyncMetadataEntity metadata, @NonNull Tag tag) {
+        String name = tag.getNameTag();
+        Tag existing =
+                name == null || name.isEmpty() ? null : database.tagsDao().getTagByNameSync(name);
+        if (existing != null && existing.getId() != tag.id) {
+            SyncMetadataEntity existingMetadata =
+                    database.syncMetadataDao().get(SyncMetadata.RECORD_TYPE_TAG, existing.getId());
+            if (existingMetadata != null
+                    && existingMetadata.stableId.compareTo(metadata.stableId) < 0) {
+                database.syncMetadataDao()
+                        .markDeleted(
+                                SyncMetadata.RECORD_TYPE_TAG,
+                                metadata.localId,
+                                System.currentTimeMillis());
+                return false;
+            }
+            database.tagsDao().deleteById(existing.getId());
+            if (existingMetadata != null) {
+                database.syncMetadataDao()
+                        .markDeleted(
+                                SyncMetadata.RECORD_TYPE_TAG,
+                                existing.getId(),
+                                System.currentTimeMillis());
+            }
+        }
+        database.tagsDao().addTag(tag);
+        return true;
     }
 
     private long insertRemoteRecord(SyncRecord record) throws IOException {
@@ -995,8 +1081,11 @@ public final class RoomSyncStore implements SyncStore {
                 });
 
         // Throws when the write is not durable, leaving the journal in place and the conflict
-        // unresolved so the user can try again.
-        commitPendingPreferences(chosen, target);
+        // unresolved so the user can try again. A setting changed while the choice was being
+        // applied is treated the same way; recovery then discards the journal as stale.
+        if (!commitPendingPreferences(chosen, target, baseline)) {
+            throw new IOException("Settings changed while the conflict was being resolved");
+        }
 
         try {
             finalizeResolvedPreferencesConflict(conflictId, resolution.name());
@@ -1273,6 +1362,12 @@ public final class RoomSyncStore implements SyncStore {
         return resolveLocalAttachment(sha256) != null;
     }
 
+    @Nullable
+    @Override
+    public SnapshotProblem describeMissingAttachment(@NonNull String sha256) {
+        return rememberedOnlyAttachments.get(sha256);
+    }
+
     @Override
     public boolean hasDurableAttachment(@NonNull String sha256, long sizeBytes) {
         File cached = attachmentFile(sha256);
@@ -1472,6 +1567,13 @@ public final class RoomSyncStore implements SyncStore {
                 file = null;
                 hash = rememberedHash;
                 size = rememberedSize;
+                rememberedOnlyAttachments.put(
+                        hash,
+                        new SnapshotProblem(
+                                SnapshotProblem.Kind.MISSING_ATTACHMENT,
+                                metadata.recordType,
+                                metadata.stableId,
+                                noteTitle));
             } else {
                 if (!file.canRead()) {
                     addSnapshotProblem(
@@ -1511,18 +1613,12 @@ public final class RoomSyncStore implements SyncStore {
                 // otherwise non-canonical id used to pass here and then throw during encode,
                 // failing every publish for the whole account while that note existed.
                 logicalId =
-                        UUID.nameUUIDFromBytes(
-                                        (metadata.stableId
-                                                        + "\n"
-                                                        + attachmentIndex
-                                                        + "\n"
-                                                        + attachment.url
-                                                        + "\n"
-                                                        + displayName
-                                                        + "\n"
-                                                        + hash)
-                                                .getBytes(StandardCharsets.UTF_8))
-                                .toString();
+                        AttachmentLogicalIds.derive(
+                                metadata.stableId,
+                                attachmentIndex,
+                                attachment.url,
+                                displayName,
+                                hash);
             }
             hashes.add(hash);
             names.addProperty(logicalId, displayName);

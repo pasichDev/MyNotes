@@ -123,6 +123,35 @@ public class NoteAttachmentRelocatorTest {
     }
 
     @Test
+    public void columnAndBlocksAgreeOnTheAdoptedNameWhenAFileCollides() throws Exception {
+        // The mover runs once for the column and once for the same URL in the blocks. Picking a
+        // fresh name on each call made two copies and pointed column and blocks at different
+        // files; the cleaner then deleted the one the column did not list.
+        seed(7, "photo.jpg", "mine");
+        File staging = temporaryFolder.newFolder("staging");
+        stage(staging, 7, "photo.jpg", "foreign");
+        String blocks =
+                "[{\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + AttachmentStorage.urlFor(7, "photo.jpg")
+                        + "\",\"name\":\"photo.jpg\"}}}]";
+
+        NoteAttachmentRelocator.Result result =
+                NoteAttachmentRelocator.adoptStaged(
+                        staging, root, 7, 7, attachmentsJson(7, "photo.jpg"), blocks);
+
+        String columnUrl =
+                com.google.gson.JsonParser.parseString(result.attachmentsJson)
+                        .getAsJsonArray()
+                        .get(0)
+                        .getAsJsonObject()
+                        .get("url")
+                        .getAsString();
+        assertThat(EditorAttachmentBlocks.fileUrls(result.valueJson)).containsExactly(columnUrl);
+        // Exactly two files: the one that was there and the one adopted, no second copy.
+        assertThat(new File(root, "note_7").listFiles()).hasLength(2);
+    }
+
+    @Test
     public void reusesAnIdenticalFileInsteadOfDuplicatingIt() throws Exception {
         seed(7, "photo.jpg", "same bytes");
         File staging = temporaryFolder.newFolder("staging");

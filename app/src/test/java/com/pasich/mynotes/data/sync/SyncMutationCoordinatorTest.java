@@ -491,6 +491,100 @@ public class SyncMutationCoordinatorTest {
                         eq("[moved]"));
     }
 
+    @Test
+    public void insertNotes_adoptsStagedFilesForANoteThisDeviceAlreadyHas() {
+        // A row can exist with its files gone — restored from a JSON backup, or a cleared
+        // attachment folder. The archive is the only place the files are, and skipping the note
+        // as already present used to skip its files too; the staged copies were then thrown away
+        // at the next restore, after a "restore OK".
+        List<Integer> relocatedFrom = new ArrayList<>();
+        SyncMutationCoordinator staging =
+                new SyncMutationCoordinator(
+                        new SyncMutationCoordinator.TransactionExecutor() {
+                            @Override
+                            public <T> T run(
+                                    SyncMutationCoordinator.TransactionCallable<T> callable) {
+                                return callable.call();
+                            }
+                        },
+                        noteDao,
+                        taskDao,
+                        tagsDao,
+                        taskCategoryDao,
+                        transactions,
+                        syncMetadataDao,
+                        new FixedTimeProvider(1_000L),
+                        new QueueStableIdGenerator("stable-a"),
+                        (note, previousId) -> {
+                            relocatedFrom.add(previousId);
+                            return false;
+                        });
+        Note existing = new Note().create("Title", "Body", 10L, "work");
+        existing.setId(5);
+        Note fromBackup = new Note().create("Title", "Body", 10L, "work");
+        fromBackup.setId(5);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of(existing));
+
+        staging.insertNotes(new ArrayList<>(List.of(fromBackup)));
+
+        verify(noteDao, never()).addNotes(anyList());
+        assertThat(relocatedFrom).containsExactly(5);
+        // Nothing was rewritten, so the row is left exactly as it was.
+        verify(noteDao, never())
+                .updateNoteContent(
+                        org.mockito.ArgumentMatchers.anyInt(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.anyLong(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    public void insertNotes_storesAPresentNoteAgainWhenAdoptionRewroteAReference() {
+        SyncMutationCoordinator staging =
+                new SyncMutationCoordinator(
+                        new SyncMutationCoordinator.TransactionExecutor() {
+                            @Override
+                            public <T> T run(
+                                    SyncMutationCoordinator.TransactionCallable<T> callable) {
+                                return callable.call();
+                            }
+                        },
+                        noteDao,
+                        taskDao,
+                        tagsDao,
+                        taskCategoryDao,
+                        transactions,
+                        syncMetadataDao,
+                        new FixedTimeProvider(1_000L),
+                        new QueueStableIdGenerator("stable-a"),
+                        (note, previousId) -> {
+                            note.setAttachments("[renamed]");
+                            return true;
+                        });
+        Note existing = new Note().create("Title", "Body", 10L, "work");
+        existing.setId(5);
+        Note fromBackup = new Note().create("Title", "Body", 10L, "work");
+        fromBackup.setId(5);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of(existing));
+
+        staging.insertNotes(new ArrayList<>(List.of(fromBackup)));
+
+        verify(noteDao)
+                .updateNoteContent(
+                        eq(5),
+                        eq("Title"),
+                        eq("Body"),
+                        org.mockito.ArgumentMatchers.any(),
+                        eq(10L),
+                        eq("work"),
+                        eq("[renamed]"));
+        // The row changed, so sync has to publish it.
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 5L)).isNotNull();
+    }
+
     private static final class FixedTimeProvider implements SyncMutationCoordinator.TimeProvider {
         private final long value;
 

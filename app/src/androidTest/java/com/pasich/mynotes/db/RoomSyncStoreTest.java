@@ -418,6 +418,161 @@ public class RoomSyncStoreTest {
         }
     }
 
+    // ------------------------------------------------- notes published by 2.6.50
+
+    @Test
+    public void aNoteSyncedBy2650HashesIdenticallyAfterTheUpgrade() throws Exception {
+        // The device that published the note under 2.6.50 upgrades. Its unchanged note, rebuilt
+        // by the upgraded store, has to be the same version as the one on Drive, or the merge
+        // reports a conflict against the note itself — and, when the old version won, again on
+        // every sync until the user edited the note.
+        byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
+        int noteId = seedNoteWithAttachment("1700000000000_123.png", "photo.png", bytes);
+        String localUrl =
+                com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.urlFor(
+                        noteId, "1700000000000_123.png");
+        String blocks =
+                "[{\"id\":\"blk1\",\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + localUrl
+                        + "\",\"name\":\"photo.png\"}}}]";
+        Note seeded = db.noteDao().getNoteSync(noteId);
+        seeded.setValueJson(blocks);
+        db.noteDao().addNote(seeded);
+        SyncRecord onDrive =
+                published2650(seeded, localUrl, "photo.png", sha256(bytes), bytes.length);
+
+        SyncRecord rebuilt = onlyNote(store.readSnapshot());
+        com.pasich.mynotes.data.sync.SyncMergeResult merge =
+                new com.pasich.mynotes.data.sync.SyncMerger()
+                        .merge(
+                                new SyncSnapshot(Collections.singletonList(rebuilt)),
+                                new SyncSnapshot(Collections.singletonList(onDrive)));
+
+        assertThat(rebuilt.getCanonicalPayloadHash()).isEqualTo(onDrive.getCanonicalPayloadHash());
+        assertThat(merge.getConflicts()).isEmpty();
+    }
+
+    @Test
+    public void aNoteReceivedUnder2650ConflictsOnceAfterTheUpgradeAndThenSyncsCleanly()
+            throws Exception {
+        // The other device: it received the note under 2.6.50, whose restore wrote the sender's
+        // hash-less id into its column and its own file name into the blocks. Its rebuilt
+        // version cannot equal the upgraded remote one, so one conflict is expected; what must
+        // not happen is the same conflict on every sync afterwards.
+        byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        String senderUrl = "editorjs://attachments/note_77/1700000000000_123.png";
+        String stableId = "11111111-1111-4111-8111-111111111111";
+        String legacyId =
+                java.util
+                        .UUID
+                        .nameUUIDFromBytes(
+                                (stableId + "\n0\n" + senderUrl + "\nphoto.png")
+                                        .getBytes(StandardCharsets.UTF_8))
+                        .toString();
+        int noteId = seedNote("Shopping", "Milk", null);
+        File folder = new File(context.getFilesDir(), "attachments/note_" + noteId);
+        assertThat(folder.mkdirs() || folder.isDirectory()).isTrue();
+        try (FileOutputStream out = new FileOutputStream(new File(folder, legacyId + "-" + hash))) {
+            out.write(bytes);
+        }
+        String receiverUrl =
+                com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.urlFor(
+                        noteId, legacyId + "-" + hash);
+        Note received = db.noteDao().getNoteSync(noteId);
+        received.setAttachments(
+                "[{\"url\":\""
+                        + receiverUrl
+                        + "\",\"name\":\"photo.png\",\"id\":\""
+                        + legacyId
+                        + "\"}]");
+        received.setValueJson(
+                "[{\"id\":\"blk1\",\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + receiverUrl
+                        + "\",\"name\":\"photo.png\"}}}]");
+        db.noteDao().addNote(received);
+        Note sender = new Note().create("Shopping", "Milk", 1_000L, "");
+        sender.setValueJson(
+                "[{\"id\":\"blk1\",\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + senderUrl
+                        + "\",\"name\":\"photo.png\"}}}]");
+        SyncRecord onDrive = published2650(sender, senderUrl, "photo.png", hash, bytes.length);
+
+        SyncRecord rebuilt = onlyNote(store.readSnapshot());
+        com.pasich.mynotes.data.sync.SyncMergeResult first =
+                new com.pasich.mynotes.data.sync.SyncMerger()
+                        .merge(
+                                new SyncSnapshot(Collections.singletonList(rebuilt)),
+                                new SyncSnapshot(Collections.singletonList(onDrive)));
+        assertThat(first.getConflicts()).hasSize(1);
+        store.applySnapshot(first.getMergedSnapshot(), first.getConflicts());
+
+        SyncRecord afterApply = onlyNote(store.readSnapshot());
+        com.pasich.mynotes.data.sync.SyncMergeResult second =
+                new com.pasich.mynotes.data.sync.SyncMerger()
+                        .merge(
+                                new SyncSnapshot(Collections.singletonList(afterApply)),
+                                first.getMergedSnapshot());
+
+        assertThat(second.getConflicts()).isEmpty();
+        assertThat(afterApply.getCanonicalPayloadHash())
+                .isEqualTo(first.getMergedSnapshot().getRecords().get(0).getCanonicalPayloadHash());
+    }
+
+    /**
+     * The record 2.6.50 published for {@code note}, read back through today's decoder: blocks
+     * naming the sender's own file, the id derived without the content hash, and the MIME type
+     * 2.6.50 detected from the display name. Built by hand because that code is gone.
+     */
+    private static SyncRecord published2650(
+            Note note, String blockUrl, String displayName, String hash, long size)
+            throws IOException {
+        String stableId = "11111111-1111-4111-8111-111111111111";
+        String legacyId =
+                java.util
+                        .UUID
+                        .nameUUIDFromBytes(
+                                (stableId + "\n0\n" + blockUrl + "\n" + displayName)
+                                        .getBytes(StandardCharsets.UTF_8))
+                        .toString();
+        JsonObject payload = new com.google.gson.Gson().toJsonTree(note).getAsJsonObject();
+        payload.remove("a");
+        payload.remove("h");
+        JsonObject entry = new JsonObject();
+        entry.addProperty("id", legacyId);
+        entry.addProperty("sha256", hash);
+        entry.addProperty("mimeType", "image/png");
+        entry.addProperty("size", size);
+        entry.addProperty("path", "attachments/" + hash);
+        entry.addProperty("displayName", displayName);
+        com.google.gson.JsonArray manifest = new com.google.gson.JsonArray();
+        manifest.add(entry);
+        payload.add("attachmentsManifest", manifest);
+        com.google.gson.JsonArray hashes = new com.google.gson.JsonArray();
+        hashes.add(hash);
+        payload.add("attachmentHashes", hashes);
+        JsonObject names = new JsonObject();
+        names.addProperty(legacyId, displayName);
+        payload.add("attachmentNames", names);
+        SyncRecord asPublished =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        stableId,
+                        java.time.Instant.ofEpochMilli(1_000L),
+                        payload);
+        // Through the bundle codec, which is where an old payload meets today's decoder.
+        com.pasich.mynotes.data.sync.SyncBundleCodec codec =
+                new com.pasich.mynotes.data.sync.SyncBundleCodec();
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(Collections.singletonList(asPublished)),
+                        java.time.Instant.now());
+        return codec.decode(new ByteArrayInputStream(bundle))
+                .getSnapshot()
+                .find(SyncRecord.Type.NOTE, stableId);
+    }
+
+    // ------------------------------------------------- conflicts and records that moved on
     // ------------------------------------------------- conflicts and records that moved on
 
     @Test
@@ -586,6 +741,75 @@ public class RoomSyncStoreTest {
     }
 
     @Test
+    public void applySnapshot_leavesSettingsChangedInsideTheApplyTransactionAlone()
+            throws Exception {
+        // The guard used to run once before the transaction. Applying many notes takes seconds;
+        // a setting toggled in that window was still overwritten and its digest recorded as the
+        // baseline, so the next build saw nothing to publish.
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        RoomSyncStore preferencesStore =
+                new RoomSyncStore(
+                        context,
+                        db,
+                        adapter.helper,
+                        com.pasich.mynotes.extendedEditor.attach.AttachmentStorage::resolve,
+                        file -> sha256(readAll(new java.io.FileInputStream(file))),
+                        record -> {
+                            if (record.getType() == SyncRecord.Type.NOTE) {
+                                // The user flips a setting while the notes are being applied.
+                                adapter.current.set(preferencesWithTheme(2));
+                            }
+                        });
+        preferencesStore.readState();
+        adapter.current.set(preferencesWithTheme(1));
+        int noteId = seedNote("Applied first", "body", null);
+        SyncRecord note = onlyNote(preferencesStore.readSnapshot());
+        db.syncMetadataDao().setVersion(SyncMetadata.RECORD_TYPE_PREFERENCES, 0, 1_000L, null);
+        JsonObject changed = note.getPayload();
+        changed.addProperty("b", "Remote title");
+        SyncRecord remoteNote =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        note.getId(),
+                        java.time.Instant.ofEpochMilli(2_000L),
+                        changed);
+        SyncRecord remotePreferences =
+                SyncRecord.live(
+                        SyncRecord.Type.PREFERENCES,
+                        "00000000-0000-4000-8000-000000000000",
+                        java.time.Instant.ofEpochMilli(2_000L),
+                        new com.google.gson.Gson()
+                                .toJsonTree(preferencesWithTheme(3))
+                                .getAsJsonObject());
+
+        preferencesStore.applySnapshot(
+                new SyncSnapshot(java.util.Arrays.asList(remoteNote, remotePreferences)),
+                Collections.emptyList(),
+                SyncState.success("google-drive", java.time.Instant.now(), 0));
+
+        assertThat(db.noteDao().getNoteSync(noteId).getTitle()).isEqualTo("Remote title");
+        assertThat(adapter.committed.get()).isNull();
+        assertThat(adapter.current.get().getThemeValue()).isEqualTo(2);
+        // Not recorded as holding the remote version, and the final state still lands.
+        assertThat(
+                        db.syncMetadataDao()
+                                .getByStableId(
+                                        SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                        "00000000-0000-4000-8000-000000000000")
+                                .updatedAt)
+                .isEqualTo(1_000L);
+        assertThat(preferencesStore.readState().getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        preferencesStore.buildSnapshot();
+        assertThat(
+                        db.syncMetadataDao()
+                                .getByStableId(
+                                        SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                        "00000000-0000-4000-8000-000000000000")
+                                .updatedAt)
+                .isGreaterThan(2_000L);
+    }
+
+    @Test
     public void applySnapshot_skipsAnUnusablePreferencesPayloadInsteadOfFailingEverySync()
             throws Exception {
         PreferencesAdapter adapter = new PreferencesAdapter();
@@ -741,6 +965,92 @@ public class RoomSyncStoreTest {
                 .isNull();
     }
 
+    @Test
+    public void applySnapshot_doesNotReviveADeletedTagBesideItsSameNamedSuccessor()
+            throws Exception {
+        // Device A deleted "Work" and created a new "Work"; device B edited the old one later.
+        // Reviving the old row put a second "Work" beside the new one. The local identity holds
+        // the smaller id, so the old one is tombstoned afresh and retires everywhere next sync.
+        long newId = db.tagsDao().addTag(new com.pasich.mynotes.data.model.Tag().create("Work"));
+        db.syncMetadataDao()
+                .insertIfAbsent(
+                        new SyncMetadataEntity(
+                                SyncMetadata.RECORD_TYPE_TAG,
+                                newId,
+                                "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                                2_000L,
+                                null));
+        long oldId = db.tagsDao().addTag(new com.pasich.mynotes.data.model.Tag().create("Work"));
+        db.syncMetadataDao()
+                .insertIfAbsent(
+                        new SyncMetadataEntity(
+                                SyncMetadata.RECORD_TYPE_TAG,
+                                oldId,
+                                "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                                1_000L,
+                                null));
+        db.tagsDao().deleteById(oldId);
+        db.syncMetadataDao().markDeleted(SyncMetadata.RECORD_TYPE_TAG, oldId, 1_500L);
+        SyncRecord editedElsewhere =
+                SyncRecord.live(
+                        SyncRecord.Type.TAG,
+                        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                        java.time.Instant.ofEpochMilli(3_000L),
+                        remoteTag("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "Work").getPayload());
+
+        store.applySnapshot(
+                new SyncSnapshot(Collections.singletonList(editedElsewhere)),
+                Collections.emptyList());
+
+        assertThat(tagsNamed("Work")).isEqualTo(1);
+        assertThat(db.tagsDao().getTagSync(newId)).isNotNull();
+        SyncMetadataEntity old = db.syncMetadataDao().get(SyncMetadata.RECORD_TYPE_TAG, oldId);
+        assertThat(old.deletedAt).isNotNull();
+        assertThat(old.updatedAt).isGreaterThan(3_000L);
+    }
+
+    @Test
+    public void applySnapshot_revivesADeletedTagAndRetiresItsSameNamedSuccessorWhenItWins()
+            throws Exception {
+        long newId = db.tagsDao().addTag(new com.pasich.mynotes.data.model.Tag().create("Work"));
+        db.syncMetadataDao()
+                .insertIfAbsent(
+                        new SyncMetadataEntity(
+                                SyncMetadata.RECORD_TYPE_TAG,
+                                newId,
+                                "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                                2_000L,
+                                null));
+        long oldId = db.tagsDao().addTag(new com.pasich.mynotes.data.model.Tag().create("Work"));
+        db.syncMetadataDao()
+                .insertIfAbsent(
+                        new SyncMetadataEntity(
+                                SyncMetadata.RECORD_TYPE_TAG,
+                                oldId,
+                                "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                                1_000L,
+                                null));
+        db.tagsDao().deleteById(oldId);
+        db.syncMetadataDao().markDeleted(SyncMetadata.RECORD_TYPE_TAG, oldId, 1_500L);
+        SyncRecord editedElsewhere =
+                SyncRecord.live(
+                        SyncRecord.Type.TAG,
+                        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                        java.time.Instant.ofEpochMilli(3_000L),
+                        remoteTag("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "Work").getPayload());
+
+        store.applySnapshot(
+                new SyncSnapshot(Collections.singletonList(editedElsewhere)),
+                Collections.emptyList());
+
+        assertThat(tagsNamed("Work")).isEqualTo(1);
+        assertThat(db.tagsDao().getTagSync(oldId)).isNotNull();
+        assertThat(db.syncMetadataDao().get(SyncMetadata.RECORD_TYPE_TAG, oldId).deletedAt)
+                .isNull();
+        assertThat(db.syncMetadataDao().get(SyncMetadata.RECORD_TYPE_TAG, newId).deletedAt)
+                .isNotNull();
+    }
+
     private static SyncRecord remoteTag(String stableId, String name) {
         JsonObject payload = new JsonObject();
         payload.addProperty("b", name);
@@ -821,6 +1131,40 @@ public class RoomSyncStoreTest {
         File repaired = resolveFirstAttachment(db.noteDao().getNoteSync(noteId).getAttachments());
         assertThat(repaired.isFile()).isTrue();
         assertThat(readAll(new java.io.FileInputStream(repaired))).isEqualTo(bytes);
+    }
+
+    @Test
+    public void buildSnapshot_stillNamesTheNoteWhenARememberedBlobIsNowhereToBeFound()
+            throws Exception {
+        // Published from the remembered hash and size, the note is fine as long as the cache or
+        // Drive holds the bytes. When neither does — a different account, say — the service has
+        // to be able to name the note, not fail forever on a hash.
+        byte[] bytes = "gone everywhere".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        String logicalId = "7d444840-9dc0-11d1-b245-5ffdce74fad2";
+        int noteId = seedNote("Shopping list", "body", null);
+        Note note = db.noteDao().getNoteSync(noteId);
+        note.setAttachments(
+                "[{\"url\":\""
+                        + com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.urlFor(
+                                noteId, logicalId + "-" + hash)
+                        + "\",\"name\":\"photo.png\",\"id\":\""
+                        + logicalId
+                        + "\",\"sha256\":\""
+                        + hash
+                        + "\",\"size\":"
+                        + bytes.length
+                        + ",\"mimeType\":\"image/png\"}]");
+        db.noteDao().addNote(note);
+
+        SnapshotBuildResult result = store.buildSnapshot();
+
+        assertThat(result.isPublishable()).isTrue();
+        assertThat(store.hasAttachment(hash)).isFalse();
+        SnapshotProblem problem = store.describeMissingAttachment(hash);
+        assertThat(problem).isNotNull();
+        assertThat(problem.getKind()).isEqualTo(SnapshotProblem.Kind.MISSING_ATTACHMENT);
+        assertThat(problem.getLabel()).isEqualTo("Shopping list");
     }
 
     @Test

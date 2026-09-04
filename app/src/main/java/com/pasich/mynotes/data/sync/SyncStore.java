@@ -1,6 +1,7 @@
 package com.pasich.mynotes.data.sync;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -70,6 +71,18 @@ public interface SyncStore {
 
     /** True when the complete attachment is locally available. */
     boolean hasAttachment(@NonNull String sha256) throws IOException;
+
+    /**
+     * Names the record a blob belongs to when the store published it without holding the bytes.
+     *
+     * <p>A store may describe an attachment from remembered metadata after its file has gone,
+     * expecting the bytes to come back from the remote. When no endpoint has them either, the
+     * failure has to name the note to fix, not a hash; a store that never does this answers null.
+     */
+    @Nullable
+    default SnapshotProblem describeMissingAttachment(@NonNull String sha256) {
+        return null;
+    }
 
     /**
      * True when the blob already sits in the store's own durable cache, as written by {@link

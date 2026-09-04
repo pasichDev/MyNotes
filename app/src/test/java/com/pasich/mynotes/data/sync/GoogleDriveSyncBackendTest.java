@@ -707,7 +707,7 @@ public class GoogleDriveSyncBackendTest {
     @Test
     public void publish_retiresTheBundlesTheNewOneSupersedes() throws Exception {
         // Nothing ever deleted a bundle, so every sync downloaded and decoded the whole history
-        // to find one or two heads. Seeded bundles carry no publication time, which counts as old.
+        // to find one or two heads. Age is Drive's creation time, not a device's clock.
         SyncBundleCodec codec = new SyncBundleCodec();
         byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
         String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
@@ -723,6 +723,7 @@ public class GoogleDriveSyncBackendTest {
         server.seedOwnedBundleBytes(base);
         server.seedOwnedBundleBytes(first);
         server.seedOwnedBundleBytes(second);
+        server.ageBundles(2L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
 
         publish(backend(), snapshotWithTitle("Third"));
 
@@ -763,6 +764,47 @@ public class GoogleDriveSyncBackendTest {
         // head this publish descended from and stays for one more round.
         assertThat(server.bundleCount()).isEqualTo(2);
         assertThat(server.deletedFileIds()).hasSize(1);
+    }
+
+    @Test
+    public void publish_neverPrunesABundleWhoseAgeDriveDoesNotReport() throws Exception {
+        // A device's own publication stamp used to stand in for the age, and a missing stamp
+        // counted as old — so a bundle another device was still fetching could be deleted under
+        // it. Only Drive's creation time is trusted now, and its absence means "keep".
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
+        String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
+        byte[] head =
+                codec.encode(
+                        snapshotWithTitle("Head"), CLOCK.instant(), Collections.singleton(baseId));
+        server.seedOwnedBundleBytes(base);
+        server.seedOwnedBundleBytes(head);
+        server.ageBundles(2L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
+        server.withholdCreatedTime();
+
+        publish(backend(), snapshotWithTitle("Next"));
+
+        assertThat(server.deletedFileIds()).isEmpty();
+        assertThat(server.bundleCount()).isEqualTo(3);
+    }
+
+    @Test
+    public void readAttachment_fallsBackToTheGoodCopyInAnotherRoot() throws Exception {
+        // Duplicate roots are a supported state. With Drive's checksums withheld the bytes must
+        // be read to tell the copies apart; handing over the first root's only candidate unread
+        // let a corrupt copy there shadow the good one in the other root on every sync.
+        byte[] good = "good bytes".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(good);
+        server.seedCorruptAttachment(hash, "corrupt".getBytes(StandardCharsets.UTF_8));
+        server.registerAttachment(good);
+        server.seedOwnedBundle(snapshot(NOTE_ID, hash));
+        server.withholdChecksums();
+        assertThat(server.ownedFolderCount()).isEqualTo(2);
+
+        try (java.io.InputStream restored = backend().readAttachment(hash)) {
+            assertThat(restored).isNotNull();
+            assertThat(readAll(restored)).isEqualTo(good);
+        }
     }
 
     // ------------------------------------------------- attachment transfer cost
@@ -1165,6 +1207,7 @@ public class GoogleDriveSyncBackendTest {
         private final List<String> deletedFileIds =
                 java.util.Collections.synchronizedList(new ArrayList<>());
         private volatile boolean withholdChecksums;
+        private volatile boolean withholdCreatedTime;
         private SyncSnapshot updateBeforeNextPatch;
         private final AtomicInteger nextId = new AtomicInteger(1);
 
@@ -1251,11 +1294,11 @@ public class GoogleDriveSyncBackendTest {
             return new ArrayList<>(deletedFileIds);
         }
 
-        /** Marks every stored bundle as published {@code millis} ago relative to {@code now}. */
-        void ageBundles(long now, long millis) {
+        /** Moves every stored bundle's Drive-side creation time {@code millis} into the past. */
+        void ageBundles(long millis) {
             for (DriveFile file : files.values()) {
                 if ("1".equals(file.appProperties.get("mynotesBundle"))) {
-                    file.appProperties.put("mynotesBundlePublishedAt", Long.toString(now - millis));
+                    file.createdAtMillis -= millis;
                 }
             }
         }
@@ -1370,6 +1413,11 @@ public class GoogleDriveSyncBackendTest {
         /** Models objects Drive has not (yet) checksummed: listings carry no digest or size. */
         void withholdChecksums() {
             withholdChecksums = true;
+        }
+
+        /** Models a listing that reports no creation time for its files. */
+        void withholdCreatedTime() {
+            withholdCreatedTime = true;
         }
 
         String registerAttachment(byte[] bytes) throws Exception {
@@ -1524,6 +1572,12 @@ public class GoogleDriveSyncBackendTest {
                         appProperties.addProperty(entry.getKey(), entry.getValue());
                     }
                     value.add("appProperties", appProperties);
+                    if (!withholdCreatedTime) {
+                        // Drive's own clock, RFC 3339, as the real listing reports it.
+                        value.addProperty(
+                                "createdTime",
+                                Instant.ofEpochMilli(file.createdAtMillis).toString());
+                    }
                     array.add(value);
                 }
             }
@@ -1924,6 +1978,10 @@ public class GoogleDriveSyncBackendTest {
 
     private static final class DriveFile {
         private final String id;
+
+        /** Drive's creation time; the fake's server clock is the tests' fixed CLOCK. */
+        private long createdAtMillis = CLOCK.millis();
+
         private byte[] content = new byte[0];
         private String name;
         private String mimeType;

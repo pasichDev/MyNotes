@@ -307,8 +307,12 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private void pruneSupersededBundles(@NonNull Collection<String> frontierBundleIds) {
         long cutoff = clock.millis() - BUNDLE_PRUNE_GRACE_MILLIS;
         for (BundleFile bundle : lastReadBundles) {
+            // The age comes from Drive's own creation time, never from a property the publishing
+            // device stamped with its clock; a bundle whose age Drive does not report is left
+            // alone rather than assumed old.
             if (frontierBundleIds.contains(bundle.logicalId)
-                    || (bundle.publishedAtMillis != null && bundle.publishedAtMillis > cutoff)) {
+                    || bundle.createdAtMillis == null
+                    || bundle.createdAtMillis > cutoff) {
                 continue;
             }
             try {
@@ -347,26 +351,33 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     @Nullable
     @Override
     public synchronized InputStream readAttachment(@NonNull String sha256) throws IOException {
-        for (String folderId : findFolderIds()) {
+        List<String> roots = findFolderIds();
+        Map<String, List<AttachmentCandidate>> candidatesByRoot = new java.util.LinkedHashMap<>();
+        int total = 0;
+        for (String folderId : roots) {
             List<AttachmentCandidate> candidates = listAttachmentCandidates(folderId, sha256);
-            if (candidates.isEmpty()) {
-                continue;
-            }
-            String chosen = null;
+            candidatesByRoot.put(folderId, candidates);
+            total += candidates.size();
             for (AttachmentCandidate candidate : candidates) {
                 if (isVerifiedWithoutReading(candidate, sha256, null)) {
-                    chosen = candidate.id;
-                    break;
+                    return openAttachment(candidate.id);
                 }
             }
-            if (chosen == null && candidates.size() == 1) {
-                // A single corrupt copy fails the caller's verifier exactly as it would fail
-                // one here; the difference is one download instead of two.
-                chosen = candidates.get(0).id;
+        }
+        if (total == 1) {
+            // The only copy in the whole account: a corrupt one fails the caller's verifier
+            // exactly as it would fail one here, and there is nothing else to fall back to. The
+            // difference is one download instead of two.
+            for (List<AttachmentCandidate> candidates : candidatesByRoot.values()) {
+                if (!candidates.isEmpty()) {
+                    return openAttachment(candidates.get(0).id);
+                }
             }
-            if (chosen == null) {
-                chosen = findVerifiedAttachment(folderId, sha256, null);
-            }
+        }
+        // Several unverified copies, across duplicate roots or within one: read ahead of time so
+        // a corrupt copy in one root cannot shadow the good copy in another.
+        for (String folderId : roots) {
+            String chosen = findVerifiedAttachment(folderId, sha256, null);
             if (chosen != null) {
                 return openAttachment(chosen);
             }
@@ -626,20 +637,20 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private static final class BundleFile {
         private final String fileId;
         @Nullable private final String logicalId;
-        @Nullable private final Long publishedAtMillis;
+        @Nullable private final Long createdAtMillis;
 
         private BundleFile(
                 @NonNull String fileId,
                 @Nullable String logicalId,
-                @Nullable Long publishedAtMillis) {
+                @Nullable Long createdAtMillis) {
             this.fileId = fileId;
             this.logicalId = logicalId;
-            this.publishedAtMillis = publishedAtMillis;
+            this.createdAtMillis = createdAtMillis;
         }
 
         @NonNull
         private BundleFile withLogicalId(@NonNull String id) {
-            return new BundleFile(fileId, id, publishedAtMillis);
+            return new BundleFile(fileId, id, createdAtMillis);
         }
     }
 
@@ -648,7 +659,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         JsonArray bundles =
                 listFiles(
                         ownedFilesQuery(folderId, PROPERTY_BUNDLE, "1"),
-                        "files(id,name,appProperties)");
+                        "files(id,name,createdTime)");
         List<BundleFile> result = new ArrayList<>(bundles.size());
         for (int index = 0; index < bundles.size(); index++) {
             JsonObject file = bundles.get(index).getAsJsonObject();
@@ -656,19 +667,20 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                     new BundleFile(
                             file.get("id").getAsString(),
                             null,
-                            publishedAtOf(file.getAsJsonObject("appProperties"))));
+                            createdAtOf(optionalString(file, "createdTime"))));
         }
         result.sort(Comparator.comparing(file -> file.fileId));
         return result;
     }
 
+    /** Drive reports {@code createdTime} as RFC 3339; anything else counts as unknown. */
     @Nullable
-    private static Long publishedAtOf(@Nullable JsonObject appProperties) {
-        if (appProperties == null || !appProperties.has(PROPERTY_BUNDLE_PUBLISHED_AT)) {
+    private static Long createdAtOf(@Nullable String createdTime) {
+        if (createdTime == null) {
             return null;
         }
         try {
-            return Long.parseLong(appProperties.get(PROPERTY_BUNDLE_PUBLISHED_AT).getAsString());
+            return java.time.Instant.parse(createdTime).toEpochMilli();
         } catch (RuntimeException malformed) {
             return null;
         }
@@ -763,7 +775,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
 
     @NonNull
     private static String memoKey(@NonNull String candidateId, @NonNull String sha256) {
-        return candidateId + " " + sha256;
+        return candidateId + " " + sha256;
     }
 
     /**

@@ -305,6 +305,7 @@ public class SyncMutationCoordinator {
                     // sat on the restore dialog for tens of seconds doing nothing else.
                     Map<Integer, Note> existingById = notesByIds(extractNoteIds(incoming));
                     List<Note> notes = withoutNotesAlreadyPresent(incoming, existingById);
+                    adoptAttachmentsOfNotesAlreadyPresent(incoming, notes);
                     if (notes.isEmpty()) return null;
                     long timestamp =
                             resolveBatchTimestamp(
@@ -337,6 +338,35 @@ public class SyncMutationCoordinator {
                     assignInsertedNoteIds(reassigned, timestamp, previousIds);
                     return null;
                 });
+    }
+
+    /**
+     * Gives a note this device already holds the files the archive carries for it.
+     *
+     * <p>A note skipped as already present may still be missing its files — a row restored from a
+     * JSON backup, or a library whose attachment folder was cleared — and the archive is the only
+     * place they are. Its staged files are adopted into its own folder like any other restored
+     * note's; the row is stored again only if a colliding file forced a reference to be rewritten.
+     */
+    private void adoptAttachmentsOfNotesAlreadyPresent(
+            @NonNull List<Note> incoming, @NonNull List<Note> inserted) {
+        Set<Note> kept = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        kept.addAll(inserted);
+        long now = timeProvider.now();
+        for (Note note : incoming) {
+            if (kept.contains(note) || note.getId() <= 0) continue;
+            if (attachmentRelocation.relocate(note, note.getId())) {
+                noteDao.updateNoteContent(
+                        note.getId(),
+                        note.getTitle(),
+                        note.getValue(),
+                        note.getValueJson(),
+                        note.getDate(),
+                        note.getTag(),
+                        note.getAttachments());
+                touchRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), now);
+            }
+        }
     }
 
     /** Inserts one group and settles each note's final id, metadata and attachment folder. */

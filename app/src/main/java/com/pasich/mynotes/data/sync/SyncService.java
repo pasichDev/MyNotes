@@ -76,9 +76,26 @@ public final class SyncService {
         }
     }
 
-    /** Runs one serialized manual synchronization attempt and returns its durable final state. */
+    /** Runs one serialized synchronization attempt and returns its durable final state. */
     @NonNull
     public SyncState sync(@NonNull SyncBackend backend) {
+        return sync(backend, () -> true);
+    }
+
+    /**
+     * Runs one serialized synchronization attempt, unless {@code stillEnabled} says otherwise once
+     * the lock is held.
+     *
+     * <p>Disconnect turns sync off and then wipes the account's state under the lock. A worker that
+     * had already passed its own checks and was waiting for a token could still take the lock after
+     * that wipe and write the old account's state and conflicts back. The predicate is evaluated
+     * under the lock, after the wipe has either finished or not yet begun, so a disabled sync never
+     * gets to write anything.
+     */
+    @NonNull
+    public SyncState sync(
+            @NonNull SyncBackend backend,
+            @NonNull java.util.function.BooleanSupplier stillEnabled) {
         boolean acquired = false;
         try {
             acquired = SYNC_LOCK.tryLock(LOCK_WAIT_SECONDS, TimeUnit.SECONDS);
@@ -94,6 +111,13 @@ public final class SyncService {
                     "Another sync is already running; this attempt was temporarily skipped");
         }
         try {
+            if (!stillEnabled.getAsBoolean()) {
+                // Deliberately not persisted: there is no account left to record it for.
+                return SyncState.error(
+                        "google-drive",
+                        safeReadState().getLastSuccessfulSyncAt(),
+                        "Sync was turned off before this attempt could start");
+            }
             return syncExclusively(backend);
         } finally {
             SYNC_LOCK.unlock();
@@ -423,7 +447,7 @@ public final class SyncService {
             } else {
                 InputStream remoteAttachment = backend.readAttachment(hash);
                 if (remoteAttachment == null) {
-                    throw new IOException("Required attachment is unavailable: " + hash);
+                    throw unavailableAttachment(hash);
                 }
                 copyVerified(
                         hash, expectedSizes.get(hash), remoteAttachment, store::writeAttachment);
@@ -470,10 +494,30 @@ public final class SyncService {
         }
     }
 
+    /**
+     * The failure for a blob neither endpoint holds.
+     *
+     * <p>When the store published the attachment from remembered metadata — its file gone, the
+     * bytes expected back from the remote — the message names the note, as a build failure would
+     * have; a hash alone left the user with a permanently failing sync and no way to find the note.
+     */
+    @NonNull
+    private IOException unavailableAttachment(@NonNull String hash) {
+        SnapshotProblem problem = null;
+        try {
+            problem = store.describeMissingAttachment(hash);
+        } catch (RuntimeException ignored) {
+            // The description is a courtesy; the failure below stands without it.
+        }
+        return problem != null
+                ? SnapshotBuildResult.incompleteBecause(problem)
+                : new IOException("Required attachment is unavailable: " + hash);
+    }
+
     private void verifyAttachment(String hash, Long expectedSize, InputStream source)
             throws IOException {
         if (source == null) {
-            throw new IOException("Required attachment is unavailable: " + hash);
+            throw unavailableAttachment(hash);
         }
         // Consume the complete blob before accepting an existing attachment.
         try (InputStream input = source) {

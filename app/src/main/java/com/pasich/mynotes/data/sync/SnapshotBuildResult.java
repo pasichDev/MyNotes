@@ -56,6 +56,16 @@ public final class SnapshotBuildResult {
         return snapshot;
     }
 
+    /**
+     * The failure for a problem discovered after the build — a blob the build described from
+     * remembered metadata that no endpoint turned out to hold — worded like a build failure so the
+     * user reads the same "which note" message.
+     */
+    @NonNull
+    public static SnapshotBuildException incompleteBecause(@NonNull SnapshotProblem problem) {
+        return new SnapshotBuildException(Collections.singletonList(problem));
+    }
+
     /** Typed, coarse error suitable for persisted sync state and telemetry. */
     public static final class SnapshotBuildException extends IOException {
         @NonNull private final List<SnapshotProblem> problems;

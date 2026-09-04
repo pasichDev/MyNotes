@@ -70,7 +70,11 @@ public final class GoogleDriveSyncWorker extends Worker {
                                             getApplicationContext(),
                                             dependencies.database(),
                                             dependencies.preferenceHelper()))
-                            .sync(new GoogleDriveSyncBackend(authorization.getAccessToken()));
+                            .sync(
+                                    new GoogleDriveSyncBackend(authorization.getAccessToken()),
+                                    // Re-checked under the sync lock: a disconnect during the
+                                    // token round trip must not be followed by a write.
+                                    () -> dependencies.preferenceHelper().isSyncEnabled());
             if (state.getStatus() == SyncState.Status.SUCCESS) return Result.success();
             return isRetryable(state.getErrorMessage()) ? Result.retry() : Result.failure();
         } catch (Exception error) {

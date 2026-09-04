@@ -361,6 +361,51 @@ public class SyncServiceTest {
         assertThat(java.util.Collections.frequency(store.events, "writeAttachment")).isEqualTo(1);
     }
 
+    @Test
+    public void sync_refusesToStartOnceSyncWasTurnedOffEvenWithTheLockInHand() {
+        // Disconnect turns sync off and wipes the account's state under the lock; a worker that
+        // took the lock afterwards wrote the old account's state back. Nothing may be persisted.
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local")));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state =
+                new SyncService(store, new SyncMerger(), CLOCK).sync(backend, () -> false);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(state.getErrorMessage()).contains("turned off");
+        assertThat(store.states).isEmpty();
+        assertThat(store.applyCalls).isEqualTo(0);
+        assertThat(backend.events).isEmpty();
+    }
+
+    @Test
+    public void sync_namesTheNoteWhenABlobNoEndpointHoldsWasPublishedFromMemory() throws Exception {
+        // The store described the attachment from the hash and size its column remembered,
+        // expecting the bytes back from Drive. When Drive has nothing either — a different
+        // account, say — the failure has to name the note, as the build failure it replaced did,
+        // not leave the user with a hash and a sync that fails forever.
+        byte[] bytes = "gone everywhere".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store =
+                new FakeStore(snapshot(noteWithAttachment(TEN, "Body", hash, bytes.length)));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.rememberedOnly =
+                new SnapshotProblem(
+                        SnapshotProblem.Kind.MISSING_ATTACHMENT,
+                        SyncMetadata.RECORD_TYPE_NOTE,
+                        NOTE_ID,
+                        "Shopping list");
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.ERROR);
+        assertThat(state.getErrorMessage())
+                .isEqualTo(
+                        "Local snapshot is incomplete: MISSING_ATTACHMENT in note \"Shopping list\"");
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+    }
+
     private static SyncSnapshot snapshot(SyncRecord... records) {
         return new SyncSnapshot(Arrays.asList(records));
     }
@@ -524,6 +569,14 @@ public class SyncServiceTest {
         @Override
         public boolean hasDurableAttachment(String sha256, long sizeBytes) {
             return durable.contains(sha256);
+        }
+
+        /** Set when the store described an attachment from remembered metadata only. */
+        private SnapshotProblem rememberedOnly;
+
+        @Override
+        public SnapshotProblem describeMissingAttachment(String sha256) {
+            return rememberedOnly;
         }
 
         @Override

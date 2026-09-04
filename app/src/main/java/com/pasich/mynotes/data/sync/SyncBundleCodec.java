@@ -36,7 +36,14 @@ public final class SyncBundleCodec {
     public static final String BUNDLE_FORMAT = "mynotes-sync";
     public static final int SCHEMA_VERSION = 1;
 
-    /** Wire field mapping a re-keyed manifest id back to the record's own attachment id. */
+    /**
+     * Wire field mapping a re-keyed manifest id back to the record's own attachment id.
+     *
+     * <p>Unknown to 2.6.50, which reads the re-keyed id as the attachment's own; on such a client
+     * the alternative's attachment identity is lost until it upgrades. Accepted: the field only
+     * appears when one note's versions disagree about an id's content, and the alternative is still
+     * restorable there, under the re-keyed id.
+     */
     static final String FIELD_ATTACHMENT_ID_ALIASES = "attachmentIdAliases";
 
     private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
@@ -431,7 +438,7 @@ public final class SyncBundleCodec {
             // Bundles written before the device-local fields were stripped still carry them.
             SyncMetadata.stripDeviceLocalFields(type.getWireValue(), payload);
             if (type == SyncRecord.Type.NOTE) {
-                hydrateNoteAttachments(payload, attachmentsById);
+                hydrateNoteAttachments(id, payload, attachmentsById);
             }
             String identity = type.getWireValue() + ":" + id;
             if (!identities.add(identity)) {
@@ -441,8 +448,17 @@ public final class SyncBundleCodec {
         }
     }
 
+    /**
+     * Rebuilds the local attachment fields from the wire references.
+     *
+     * <p>A payload written by 2.6.50 comes out in the current shape as well, so an unchanged note
+     * synced before the upgrade hashes exactly as the upgraded store rebuilds it; see {@link
+     * LegacyNotePayload}.
+     */
     private static void hydrateNoteAttachments(
-            JsonObject payload, Map<String, AttachmentManifestEntry> attachmentsById)
+            String noteStableId,
+            JsonObject payload,
+            Map<String, AttachmentManifestEntry> attachmentsById)
             throws IOException {
         JsonArray attachmentIds = payload.getAsJsonArray("attachmentIds");
         JsonObject attachmentNames = payload.getAsJsonObject("attachmentNames");
@@ -476,7 +492,9 @@ public final class SyncBundleCodec {
                             : wireId;
             JsonObject value = attachment.withId(attachmentId).toJson(true);
             if (attachmentNames != null && attachmentNames.has(wireId)) {
-                value.addProperty("displayName", attachmentNames.get(wireId).getAsString());
+                // Trimmed here as everywhere else: the validator judged the trimmed name, and
+                // this is the copy the store hashes and shows.
+                value.addProperty("displayName", attachmentNames.get(wireId).getAsString().trim());
             }
             manifest.add(value);
             attachmentHashes.add(attachment.sha256);
@@ -489,6 +507,7 @@ public final class SyncBundleCodec {
         // The display name restoreAttachments actually uses travels on the manifest entry above;
         // this map exists only so the payload matches the one the local store builds.
         payload.add("attachmentNames", namesById);
+        LegacyNotePayload.upgrade(noteStableId, payload);
     }
 
     @NonNull
@@ -523,7 +542,7 @@ public final class SyncBundleCodec {
             payload.remove("deletedAt");
             SyncMetadata.stripDeviceLocalFields(type.getWireValue(), payload);
             if (type == SyncRecord.Type.NOTE) {
-                hydrateNoteAttachments(payload, attachmentsById);
+                hydrateNoteAttachments(id, payload, attachmentsById);
             }
             alternatives.add(SyncRecord.live(type, id, updatedAt, payload));
         }

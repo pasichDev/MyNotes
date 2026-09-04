@@ -30,6 +30,15 @@ public class ZipBackupHelper {
 
     private static final String TAG = "ZipBackupHelper";
 
+    /**
+     * The most an archive may unpack to, all entries together.
+     *
+     * <p>An archive is untrusted input, and ZIP compresses a run of zeros a thousandfold; without a
+     * ceiling a small file could fill the device. Generous for a real library, far below what a
+     * bomb wants.
+     */
+    static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 4L * 1024L * 1024L * 1024L;
+
     /** The only entry shape an archive may place a file under: one note folder, one file name. */
     private static final Pattern ATTACHMENT_ENTRY =
             Pattern.compile(Pattern.quote(ATTACHMENTS_BASE_DIR) + "/(note_[1-9][0-9]*)/([^/]+)");
@@ -113,7 +122,15 @@ public class ZipBackupHelper {
     @NonNull
     static JsonBackup readZipBackup(@NonNull ZipInputStream zis, @NonNull File stagingRoot)
             throws IOException {
+        return readZipBackup(zis, stagingRoot, MAX_TOTAL_UNCOMPRESSED_BYTES);
+    }
+
+    @NonNull
+    static JsonBackup readZipBackup(
+            @NonNull ZipInputStream zis, @NonNull File stagingRoot, long maxTotalBytes)
+            throws IOException {
         JsonBackup backup = null;
+        long[] total = {0L};
         ZipEntry entry;
         while ((entry = zis.getNextEntry()) != null) {
             if (entry.getName().equals(FILE_NAME_BACKUP)) {
@@ -121,6 +138,9 @@ public class ZipBackupHelper {
                 byte[] tmp = new byte[4096];
                 int n;
                 while ((n = zis.read(tmp)) != -1) {
+                    if (!account(total, n, maxTotalBytes)) {
+                        return new JsonBackup().error();
+                    }
                     buffer.write(tmp, 0, n);
                 }
                 try {
@@ -150,6 +170,10 @@ public class ZipBackupHelper {
                     byte[] data = new byte[4096];
                     int n;
                     while ((n = zis.read(data)) != -1) {
+                        if (!account(total, n, maxTotalBytes)) {
+                            Log.w(TAG, "The backup unpacks to more than the restore allows");
+                            return new JsonBackup().error();
+                        }
                         fos.write(data, 0, n);
                     }
                 }
@@ -157,6 +181,12 @@ public class ZipBackupHelper {
             zis.closeEntry();
         }
         return backup != null ? backup : new JsonBackup().error();
+    }
+
+    /** Adds to the running total; false once the ceiling is passed. */
+    private static boolean account(long[] total, int read, long maxTotalBytes) {
+        total[0] += read;
+        return total[0] <= maxTotalBytes;
     }
 
     /**

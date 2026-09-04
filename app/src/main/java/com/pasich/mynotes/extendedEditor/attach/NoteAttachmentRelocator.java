@@ -120,7 +120,16 @@ public final class NoteAttachmentRelocator {
     /** Rewrites the column first and, only when it changed, the blocks that mirror it. */
     @NonNull
     private static Result rewrite(
-            @Nullable String attachmentsJson, @Nullable String valueJson, ReferenceMover mover) {
+            @Nullable String attachmentsJson, @Nullable String valueJson, ReferenceMover decide) {
+        // One answer per URL: the column and the blocks name the same files, and a mover that
+        // picked a fresh name on a collision gave each of them a different copy — the cleaner
+        // then deleted the one the column did not know and the block rendered a missing file.
+        java.util.Map<String, java.util.Optional<String>> decided = new java.util.HashMap<>();
+        ReferenceMover mover =
+                url ->
+                        decided.computeIfAbsent(
+                                        url, key -> java.util.Optional.ofNullable(decide.move(key)))
+                                .orElse(null);
         String movedAttachments = attachmentsJson;
         boolean changed = false;
 
@@ -197,11 +206,43 @@ public final class NoteAttachmentRelocator {
         }
     }
 
+    /** Streams both files; a restore has no attachment size ceiling to load them whole under. */
     private static boolean sameContent(@NonNull File first, @NonNull File second)
             throws IOException {
-        return first.length() == second.length()
-                && java.util.Arrays.equals(
-                        Files.readAllBytes(first.toPath()), Files.readAllBytes(second.toPath()));
+        if (first.length() != second.length()) {
+            return false;
+        }
+        try (java.io.InputStream left =
+                        new java.io.BufferedInputStream(new java.io.FileInputStream(first));
+                java.io.InputStream right =
+                        new java.io.BufferedInputStream(new java.io.FileInputStream(second))) {
+            byte[] leftBuffer = new byte[8192];
+            byte[] rightBuffer = new byte[8192];
+            while (true) {
+                int leftRead = readFully(left, leftBuffer);
+                int rightRead = readFully(right, rightBuffer);
+                if (leftRead != rightRead
+                        || !java.util.Arrays.equals(
+                                java.util.Arrays.copyOf(leftBuffer, leftRead),
+                                java.util.Arrays.copyOf(rightBuffer, rightRead))) {
+                    return false;
+                }
+                if (leftRead < leftBuffer.length) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    private static int readFully(@NonNull java.io.InputStream input, @NonNull byte[] buffer)
+            throws IOException {
+        int filled = 0;
+        while (filled < buffer.length) {
+            int read = input.read(buffer, filled, buffer.length - filled);
+            if (read == -1) break;
+            filled += read;
+        }
+        return filled;
     }
 
     /** {@code name.ext} becomes {@code name-<uuid>.ext}, still a safe single segment. */

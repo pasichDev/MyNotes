@@ -145,7 +145,9 @@ public final class SyncCoordinatorFactory {
                             @Override
                             public SyncState sync(@NonNull String accessToken) {
                                 return new SyncService(store)
-                                        .sync(new GoogleDriveSyncBackend(accessToken));
+                                        .sync(
+                                                new GoogleDriveSyncBackend(accessToken),
+                                                preferenceHelper::isSyncEnabled);
                             }
 
                             @Override

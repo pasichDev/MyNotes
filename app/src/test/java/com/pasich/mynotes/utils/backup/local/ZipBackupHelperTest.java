@@ -89,6 +89,22 @@ public class ZipBackupHelperTest {
         assertThat(ZipBackupHelper.readZipBackup(zip(entries), staging).isError()).isTrue();
     }
 
+    @Test
+    public void refusesAnArchiveThatUnpacksPastTheCeiling() throws Exception {
+        // ZIP compresses a run of zeros a thousandfold; an archive is untrusted input and a
+        // small one could fill the device.
+        File staging = new File(temporaryFolder.getRoot(), "staging/attachments");
+        Map<String, byte[]> entries = new LinkedHashMap<>();
+        entries.put(
+                Backup.FILE_NAME_BACKUP,
+                new Gson().toJson(new JsonBackup()).getBytes(StandardCharsets.UTF_8));
+        entries.put("attachments/note_5/zeros.bin", new byte[64 * 1024]);
+
+        JsonBackup backup = ZipBackupHelper.readZipBackup(zip(entries), staging, 16 * 1024);
+
+        assertThat(backup.isError()).isTrue();
+    }
+
     private static ZipInputStream zip(Map<String, byte[]> entries) throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
