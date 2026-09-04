@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,6 +44,15 @@ public final class SyncBundleCodec {
     @NonNull
     public byte[] encode(@NonNull SyncSnapshot snapshot, @NonNull Instant createdAt)
             throws IOException {
+        return encode(snapshot, createdAt, Collections.emptyList());
+    }
+
+    @NonNull
+    public byte[] encode(
+            @NonNull SyncSnapshot snapshot,
+            @NonNull Instant createdAt,
+            @NonNull Collection<String> parentBundleIds)
+            throws IOException {
         JsonObject recordsRoot = new JsonObject();
         recordsRoot.add("notes", liveArray(snapshot, SyncRecord.Type.NOTE));
         recordsRoot.add("tasks", liveArray(snapshot, SyncRecord.Type.TASK));
@@ -61,6 +71,16 @@ public final class SyncBundleCodec {
         manifest.addProperty("format", BUNDLE_FORMAT);
         manifest.addProperty("schemaVersion", SCHEMA_VERSION);
         manifest.addProperty("bundleId", UUID.randomUUID().toString());
+        JsonArray parents = new JsonArray();
+        LinkedHashSet<String> uniqueParents = new LinkedHashSet<>(parentBundleIds);
+        if (uniqueParents.size() > SyncBundleValidator.MAX_PARENT_BUNDLE_COUNT) {
+            throw new IOException("Sync bundle exceeds the parent frontier limit");
+        }
+        for (String parent : uniqueParents) {
+            SyncBundleValidator.validateUuid(parent);
+            parents.add(parent);
+        }
+        manifest.add("parentBundleIds", parents);
         manifest.addProperty("createdAt", createdAt.toString());
         manifest.addProperty("recordsSha256", sha256(recordBytes));
         manifest.addProperty("recordsBytes", recordBytes.length);
@@ -105,7 +125,17 @@ public final class SyncBundleCodec {
                 identities,
                 result);
         parseTombstones(records, identities, result);
-        return new DecodedBundle(new SyncSnapshot(result), validated.getAttachmentsByHash());
+        JsonObject manifest = validated.getManifest();
+        JsonArray parents = manifest.getAsJsonArray("parentBundleIds");
+        List<String> parentBundleIds = new ArrayList<>();
+        if (parents != null) {
+            for (JsonElement parent : parents) parentBundleIds.add(parent.getAsString());
+        }
+        return new DecodedBundle(
+                new SyncSnapshot(result),
+                validated.getAttachmentsByHash(),
+                manifest.get("bundleId").getAsString(),
+                parentBundleIds);
     }
 
     private static void writeEntry(ZipOutputStream zip, String name, byte[] bytes)
@@ -301,12 +331,18 @@ public final class SyncBundleCodec {
     public static final class DecodedBundle {
         private final SyncSnapshot snapshot;
         private final Map<String, AttachmentManifestEntry> attachmentsByHash;
+        private final String bundleId;
+        private final List<String> parentBundleIds;
 
         DecodedBundle(
                 @NonNull SyncSnapshot snapshot,
-                @NonNull Map<String, AttachmentManifestEntry> attachmentsByHash) {
+                @NonNull Map<String, AttachmentManifestEntry> attachmentsByHash,
+                @NonNull String bundleId,
+                @NonNull List<String> parentBundleIds) {
             this.snapshot = snapshot;
             this.attachmentsByHash = attachmentsByHash;
+            this.bundleId = bundleId;
+            this.parentBundleIds = Collections.unmodifiableList(new ArrayList<>(parentBundleIds));
         }
 
         @NonNull
@@ -318,6 +354,9 @@ public final class SyncBundleCodec {
         public Map<String, AttachmentManifestEntry> getAttachmentsByHash() {
             return attachmentsByHash;
         }
+
+        @NonNull public String getBundleId() { return bundleId; }
+        @NonNull public List<String> getParentBundleIds() { return parentBundleIds; }
     }
 
     public static final class AttachmentManifestEntry {

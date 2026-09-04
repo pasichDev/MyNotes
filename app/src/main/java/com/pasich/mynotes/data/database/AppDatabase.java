@@ -10,6 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
 import com.pasich.mynotes.data.database.dao.SyncConflictDao;
 import com.pasich.mynotes.data.database.dao.SyncMetadataDao;
+import com.pasich.mynotes.data.database.dao.SyncPendingPreferencesDao;
 import com.pasich.mynotes.data.database.dao.SyncStateDao;
 import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
@@ -17,6 +18,7 @@ import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
+import com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity;
 import com.pasich.mynotes.data.database.entities.SyncStateEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -36,6 +38,7 @@ import javax.inject.Singleton;
             Task.class,
             TaskCategory.class,
             SyncMetadataEntity.class,
+            SyncPendingPreferencesEntity.class,
             SyncConflictEntity.class,
             SyncStateEntity.class
         },
@@ -155,6 +158,18 @@ public abstract class AppDatabase extends RoomDatabase {
                             "CREATE UNIQUE INDEX IF NOT EXISTS "
                                     + "`index_sync_conflicts_recordType_stableId_versionPairHash` "
                                     + "ON `sync_conflicts` (`recordType`, `stableId`, `versionPairHash`)");
+                }
+            };
+
+    /** Adds the Room journal that bridges snapshot transactions to SharedPreferences. */
+    public static final Migration MIGRATION_18_19 =
+            new Migration(18, 19) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "CREATE TABLE IF NOT EXISTS `sync_pending_preferences` ("
+                                    + "`id` INTEGER NOT NULL, `payloadJson` TEXT NOT NULL, "
+                                    + "PRIMARY KEY(`id`))");
                 }
             };
 
@@ -371,4 +386,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract SyncConflictDao syncConflictDao();
 
     public abstract SyncStateDao syncStateDao();
+
+    public abstract SyncPendingPreferencesDao syncPendingPreferencesDao();
 }

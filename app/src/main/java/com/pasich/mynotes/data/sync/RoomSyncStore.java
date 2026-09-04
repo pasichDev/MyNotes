@@ -13,6 +13,7 @@ import com.google.gson.JsonParser;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
+import com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity;
 import com.pasich.mynotes.data.database.entities.SyncStateEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -119,7 +120,7 @@ public final class RoomSyncStore implements SyncStore {
      * thread it happened to construct the store on; on the main thread Room throws. Seeding is now
      * deferred to the operations that already run in the background.
      */
-    private void ensureSeeded() {
+    private void ensureSeeded() throws IOException {
         if (seeded) {
             return;
         }
@@ -131,6 +132,7 @@ public final class RoomSyncStore implements SyncStore {
                                 "00000000-0000-4000-8000-000000000000",
                                 0L,
                                 null));
+        recoverPendingPreferences();
         seeded = true;
     }
 
@@ -202,6 +204,10 @@ public final class RoomSyncStore implements SyncStore {
             @NonNull List<SyncMergeResult.Conflict> conflicts,
             @Nullable SyncState finalState)
             throws IOException {
+        PreferencesBackup stagedPreferences = selectedPreferences(snapshot);
+        String stagedPreferencesJson =
+                stagedPreferences == null ? null : gson.toJson(stagedPreferences);
+        boolean deferFinalState = stagedPreferences != null && finalState != null;
         try {
             database.runInTransaction(
                     () -> {
@@ -251,7 +257,11 @@ public final class RoomSyncStore implements SyncStore {
                         transactionFailureInjector.afterRecordApplied(record);
                     }
                     persistConflicts(conflicts);
-                    if (finalState != null) {
+                    if (stagedPreferencesJson != null) {
+                        database.syncPendingPreferencesDao()
+                                .upsert(new SyncPendingPreferencesEntity(1, stagedPreferencesJson));
+                    }
+                    if (finalState != null && !deferFinalState) {
                         database.syncStateDao().upsert(toEntity(finalState));
                     }
                         } catch (IOException error) {
@@ -260,6 +270,55 @@ public final class RoomSyncStore implements SyncStore {
                     });
         } catch (SyncRuntimeException error) {
             throw error.ioException;
+        }
+        if (stagedPreferences != null) {
+            commitPendingPreferences(stagedPreferences);
+            database.runInTransaction(
+                    () -> {
+                        database.syncPendingPreferencesDao().clear();
+                        if (finalState != null) database.syncStateDao().upsert(toEntity(finalState));
+                    });
+        }
+    }
+
+    @Nullable
+    private PreferencesBackup selectedPreferences(@NonNull SyncSnapshot snapshot) throws IOException {
+        SyncRecord record =
+                snapshot.find(
+                        SyncRecord.Type.PREFERENCES,
+                        "00000000-0000-4000-8000-000000000000");
+        if (record == null || record.isTombstone()) return null;
+        try {
+            PreferencesBackup parsed = gson.fromJson(record.getPayload(), PreferencesBackup.class);
+            if (parsed == null || !parsed.isCreated()) {
+                throw new IOException("Sync preferences payload is invalid");
+            }
+            return parsed;
+        } catch (RuntimeException error) {
+            throw new IOException("Sync preferences payload is invalid", error);
+        }
+    }
+
+    /** Completes a previously committed Room journal after process death or adapter failure. */
+    private void recoverPendingPreferences() throws IOException {
+        SyncPendingPreferencesEntity pending = database.syncPendingPreferencesDao().get();
+        if (pending == null) return;
+        PreferencesBackup backup;
+        try {
+            backup = gson.fromJson(pending.payloadJson, PreferencesBackup.class);
+            if (backup == null || !backup.isCreated()) throw new IOException("Pending preferences are invalid");
+        } catch (RuntimeException error) {
+            throw new IOException("Pending preferences are invalid", error);
+        }
+        commitPendingPreferences(backup);
+        database.runInTransaction(() -> database.syncPendingPreferencesDao().clear());
+    }
+
+    private void commitPendingPreferences(@NonNull PreferencesBackup backup) throws IOException {
+        try {
+            preferenceHelper.setListPreferences(backup);
+        } catch (RuntimeException error) {
+            throw new IOException("Could not commit synchronized preferences", error);
         }
     }
 
@@ -334,7 +393,8 @@ public final class RoomSyncStore implements SyncStore {
             tag.id = metadata.localId;
             database.tagsDao().updateTag(tag);
         } else if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
-            preferenceHelper.setListPreferences(gson.fromJson(payload, PreferencesBackup.class));
+            // SharedPreferences is outside Room. applySnapshotInternal journals and commits this
+            // payload only after the Room transaction succeeds.
         }
     }
 
@@ -528,8 +588,6 @@ public final class RoomSyncStore implements SyncStore {
                 conflict.getType().getWireValue()
                         + "\n"
                         + conflict.getId()
-                        + "\n"
-                        + conflict.getWinnerSource().name()
                         + "\n"
                         + conflict.getWinner().canonicalSerializedPayload()
                         + "\n"

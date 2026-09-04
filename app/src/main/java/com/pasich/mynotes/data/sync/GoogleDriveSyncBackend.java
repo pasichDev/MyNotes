@@ -19,11 +19,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 
 /** Google Drive REST backend for the provider-independent sync protocol. */
@@ -51,6 +54,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private final SyncBundleCodec bundleCodec;
     private final DriveRequestExecutor requestExecutor;
     private final SyncMerger merger = new SyncMerger();
+    private List<String> lastReadFrontierBundleIds = Collections.emptyList();
 
     public GoogleDriveSyncBackend(@NonNull String accessToken) {
         this(accessToken, DEFAULT_API, DEFAULT_UPLOAD, Clock.systemUTC(), new SyncBundleCodec());
@@ -82,12 +86,19 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     @NonNull
     @Override
     public synchronized SyncSnapshot readSnapshot() throws IOException {
+        return readSnapshotResult().getSnapshot();
+    }
+
+    @Override
+    public synchronized RemoteSnapshot readSnapshotResult() throws IOException {
         List<String> folderIds = findFolderIds();
         if (folderIds.isEmpty()) {
-            return SyncSnapshot.empty();
+            lastReadFrontierBundleIds = Collections.emptyList();
+            return RemoteSnapshot.of(SyncSnapshot.empty());
         }
 
-        SyncSnapshot merged = SyncSnapshot.empty();
+        Map<String, SyncBundleCodec.DecodedBundle> bundlesByLogicalId = new HashMap<>();
+        Map<String, byte[]> bytesByLogicalId = new HashMap<>();
         for (String folderId : folderIds) {
             for (String bundleId : findBundles(folderId)) {
                 byte[] bytes =
@@ -95,12 +106,29 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                                 "GET",
                                 apiBase + "/files/" + bundleId + "?alt=media",
                                 MAX_BUNDLE_RESPONSE_BYTES);
-                SyncSnapshot decoded =
-                        bundleCodec.decode(new ByteArrayInputStream(bytes)).getSnapshot();
-                merged = merger.merge(merged, decoded).getMergedSnapshot();
+                SyncBundleCodec.DecodedBundle decoded =
+                        bundleCodec.decode(new ByteArrayInputStream(bytes));
+                byte[] previousBytes = bytesByLogicalId.putIfAbsent(decoded.getBundleId(), bytes);
+                if (previousBytes != null) {
+                    if (!java.util.Arrays.equals(previousBytes, bytes)) {
+                        throw new IOException("Drive contains conflicting physical copies of one bundle");
+                    }
+                    continue;
+                }
+                bundlesByLogicalId.put(decoded.getBundleId(), decoded);
             }
         }
-        return merged;
+        validateBundleDag(bundlesByLogicalId);
+        List<String> frontier = computeFrontier(bundlesByLogicalId);
+        SyncSnapshot merged = SyncSnapshot.empty();
+        List<SyncMergeResult.Conflict> conflicts = new ArrayList<>();
+        for (String bundleId : frontier) {
+            SyncMergeResult result = merger.merge(merged, bundlesByLogicalId.get(bundleId).getSnapshot());
+            merged = result.getMergedSnapshot();
+            conflicts.addAll(result.getConflicts());
+        }
+        lastReadFrontierBundleIds = Collections.unmodifiableList(new ArrayList<>(frontier));
+        return new RemoteSnapshot(merged, conflicts, frontier);
     }
 
     @Override
@@ -111,7 +139,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         // referenced blob in the canonical root as well, so no future cleanup decision can make
         // the canonical bundle point at an object that exists only in a duplicate root.
         ensureCanonicalAttachments(folderId, snapshot);
-        byte[] bundle = bundleCodec.encode(snapshot, clock.instant());
+        byte[] bundle = bundleCodec.encode(snapshot, clock.instant(), lastReadFrontierBundleIds);
         // Every bundle is immutable. Drive offers no conditional update based on its version
         // counter, so replacing one file leaves a race where another device can be overwritten.
         // Publishing a distinct file makes each successful upload independently durable; readers
@@ -290,6 +318,52 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             }
         }
         return sizes;
+    }
+
+    private static void validateBundleDag(
+            @NonNull Map<String, SyncBundleCodec.DecodedBundle> bundles) throws IOException {
+        for (SyncBundleCodec.DecodedBundle bundle : bundles.values()) {
+            for (String parent : bundle.getParentBundleIds()) {
+                if (!bundles.containsKey(parent)) {
+                    throw new IOException("Drive bundle references an unavailable ancestor");
+                }
+            }
+        }
+        Set<String> visiting = new HashSet<>();
+        Set<String> visited = new HashSet<>();
+        for (String bundleId : bundles.keySet()) {
+            validateAcyclic(bundleId, bundles, visiting, visited);
+        }
+    }
+
+    private static void validateAcyclic(
+            @NonNull String bundleId,
+            @NonNull Map<String, SyncBundleCodec.DecodedBundle> bundles,
+            @NonNull Set<String> visiting,
+            @NonNull Set<String> visited)
+            throws IOException {
+        if (visited.contains(bundleId)) return;
+        if (!visiting.add(bundleId)) throw new IOException("Drive bundle ancestry contains a cycle");
+        for (String parent : bundles.get(bundleId).getParentBundleIds()) {
+            validateAcyclic(parent, bundles, visiting, visited);
+        }
+        visiting.remove(bundleId);
+        visited.add(bundleId);
+    }
+
+    @NonNull
+    private static List<String> computeFrontier(
+            @NonNull Map<String, SyncBundleCodec.DecodedBundle> bundles) {
+        Set<String> ancestors = new HashSet<>();
+        for (SyncBundleCodec.DecodedBundle bundle : bundles.values()) {
+            ancestors.addAll(bundle.getParentBundleIds());
+        }
+        List<String> frontier = new ArrayList<>();
+        for (String bundleId : bundles.keySet()) {
+            if (!ancestors.contains(bundleId)) frontier.add(bundleId);
+        }
+        frontier.sort(Comparator.naturalOrder());
+        return frontier;
     }
 
     @NonNull

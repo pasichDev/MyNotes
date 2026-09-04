@@ -28,6 +28,15 @@ public interface SyncBackend {
     @NonNull
     SyncSnapshot readSnapshot() throws IOException;
 
+    /**
+     * Reads the remote causal frontier. Legacy adapters expose one snapshot and no remote
+     * conflicts; Drive overrides this so concurrent immutable bundle heads remain recoverable.
+     */
+    @NonNull
+    default RemoteSnapshot readSnapshotResult() throws IOException {
+        return RemoteSnapshot.of(readSnapshot());
+    }
+
     /** Publishes a complete remote snapshot. Implementations must not expose a partial snapshot. */
     void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException;
 

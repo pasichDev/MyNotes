@@ -32,6 +32,7 @@ public final class SyncBundleValidator {
     static final long MAX_RECORD_COUNT = 10_000L;
     static final long MAX_ATTACHMENT_COUNT = 10_000L;
     static final long MAX_ATTACHMENTS_PER_NOTE = 1_000L;
+    static final long MAX_PARENT_BUNDLE_COUNT = 1_000L;
     static final long MAX_ATTACHMENT_BYTES = 100L * 1024L * 1024L;
     static final long MAX_TOTAL_ATTACHMENT_BYTES = 500L * 1024L * 1024L;
     static final long MAX_TOTAL_UNCOMPRESSED_BYTES = 1024L * 1024L * 1024L;
@@ -223,6 +224,23 @@ public final class SyncBundleValidator {
             throw new IOException("Unsupported sync bundle schema version");
         }
         validateUuid(requireString(manifest, "bundleId"));
+        JsonArray parents = manifest.getAsJsonArray("parentBundleIds");
+        if (parents != null) {
+            if (parents.size() > MAX_PARENT_BUNDLE_COUNT) {
+                throw new IOException("Sync bundle exceeds the parent frontier limit");
+            }
+            Set<String> uniqueParents = new LinkedHashSet<>();
+            for (JsonElement parent : parents) {
+                if (parent == null || !parent.isJsonPrimitive()) {
+                    throw new IOException("Sync bundle parent ID is invalid");
+                }
+                String value = parent.getAsString();
+                validateUuid(value);
+                if (!uniqueParents.add(value)) {
+                    throw new IOException("Sync bundle contains duplicate parent IDs");
+                }
+            }
+        }
         parseInstant(requireString(manifest, "createdAt"), "createdAt");
         String recordsSha = requireString(manifest, "recordsSha256");
         if (!SHA_256.matcher(recordsSha).matches()) {

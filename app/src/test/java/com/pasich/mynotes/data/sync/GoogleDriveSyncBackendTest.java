@@ -21,6 +21,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -151,6 +152,54 @@ public class GoogleDriveSyncBackendTest {
         assertThat(second.readSnapshot().find(SyncRecord.Type.NOTE, SECOND_NOTE_ID)).isNotNull();
     }
 
+    @Test
+    public void readSnapshotResult_preservesConflictBetweenConcurrentCausalHeads() throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
+        String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
+        byte[] first =
+                codec.encode(snapshotWithTitle("First offline edit"), CLOCK.instant(), Collections.singleton(baseId));
+        byte[] second =
+                codec.encode(snapshotWithTitle("Second offline edit"), CLOCK.instant(), Collections.singleton(baseId));
+        server.seedOwnedBundleBytes(base);
+        server.seedOwnedBundleBytes(first);
+        server.seedOwnedBundleBytes(second);
+
+        RemoteSnapshot remote = backend().readSnapshotResult();
+
+        assertThat(remote.getFrontierBundleIds()).hasSize(2);
+        assertThat(remote.getConflicts()).hasSize(1);
+        assertThat(remote.getConflicts().get(0).getLoser().getPayload().get("title").getAsString())
+                .isAnyOf("First offline edit", "Second offline edit");
+    }
+
+    @Test
+    public void readSnapshotResult_descendantSupersedesSiblingHeadsWithoutRepeatingConflict()
+            throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
+        String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
+        byte[] first = codec.encode(snapshotWithTitle("First"), CLOCK.instant(), Collections.singleton(baseId));
+        String firstId = codec.decode(new ByteArrayInputStream(first)).getBundleId();
+        byte[] second = codec.encode(snapshotWithTitle("Second"), CLOCK.instant(), Collections.singleton(baseId));
+        String secondId = codec.decode(new ByteArrayInputStream(second)).getBundleId();
+        byte[] descendant =
+                codec.encode(
+                        snapshotWithTitle("Resolved"), CLOCK.instant(), Arrays.asList(firstId, secondId));
+        server.seedOwnedBundleBytes(base);
+        server.seedOwnedBundleBytes(first);
+        server.seedOwnedBundleBytes(second);
+        server.seedOwnedBundleBytes(descendant);
+
+        RemoteSnapshot remote = backend().readSnapshotResult();
+
+        assertThat(remote.getFrontierBundleIds()).containsExactly(
+                codec.decode(new ByteArrayInputStream(descendant)).getBundleId());
+        assertThat(remote.getConflicts()).isEmpty();
+        assertThat(remote.getSnapshot().find(SyncRecord.Type.NOTE, NOTE_ID).getPayload().get("title").getAsString())
+                .isEqualTo("Resolved");
+    }
+
     private GoogleDriveSyncBackend backend() {
         return new GoogleDriveSyncBackend(
                 "token", server.apiBase(), server.uploadBase(), CLOCK, new SyncBundleCodec());
@@ -251,7 +300,7 @@ public class GoogleDriveSyncBackendTest {
 
         backend.writeSnapshot(snapshot(NOTE_ID, null));
 
-        assertThat(server.bundleCount()).isEqualTo(2);
+        assertThat(server.bundleCount()).isEqualTo(3);
     }
 
     @Test
@@ -283,6 +332,15 @@ public class GoogleDriveSyncBackendTest {
 
     private static SyncSnapshot snapshot(String hash) throws IOException {
         return snapshot(NOTE_ID, hash);
+    }
+
+    private static SyncSnapshot snapshotWithTitle(String title) {
+        JsonObject note = new JsonObject();
+        note.addProperty("title", title);
+        note.addProperty("value", "body");
+        return new SyncSnapshot(
+                Collections.singletonList(
+                        SyncRecord.live(SyncRecord.Type.NOTE, NOTE_ID, CLOCK.instant(), note)));
     }
 
     private static SyncSnapshot snapshot(String noteId, String hash) throws IOException {
@@ -497,6 +555,15 @@ public class GoogleDriveSyncBackendTest {
             }
         }
 
+        void seedOwnedBundleBytes(byte[] bytes) {
+            DriveFile folder =
+                    createFile("MyNotes Sync", "application/vnd.google-apps.folder", null);
+            folder.appProperties.put("mynotesOwner", "1");
+            DriveFile bundle = createFile("MyNotes.sync.v1.zip", "application/zip", folder.id);
+            bundle.appProperties.put("mynotesBundle", "1");
+            bundle.content = bytes;
+        }
+
         void seedUnownedBundle(SyncSnapshot snapshot) throws IOException {
             DriveFile folder = createFile("Elsewhere", "application/vnd.google-apps.folder", null);
             DriveFile bundle = createFile("MyNotes.sync.v1.zip", "application/zip", folder.id);
@@ -506,8 +573,12 @@ public class GoogleDriveSyncBackendTest {
         void forceConcurrentBundleUpdate(SyncSnapshot snapshot) throws IOException {
             for (DriveFile file : files.values()) {
                 if ("1".equals(file.appProperties.get("mynotesBundle"))) {
-                    file.content = new SyncBundleCodec().encode(snapshot, CLOCK.instant());
-                    file.version++;
+                    // Bundles are immutable. Model another device's publication as a sibling,
+                    // never as replacement of a durable history object.
+                    String parent = file.parents.isEmpty() ? null : file.parents.get(0);
+                    DriveFile sibling = createFile("MyNotes.sync.v1.zip", "application/zip", parent);
+                    sibling.appProperties.put("mynotesBundle", "1");
+                    sibling.content = new SyncBundleCodec().encode(snapshot, CLOCK.instant());
                     return;
                 }
             }

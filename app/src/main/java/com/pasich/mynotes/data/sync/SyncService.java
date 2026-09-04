@@ -102,17 +102,22 @@ public final class SyncService {
             // merely skipped an unresolved local attachment turns a local storage fault into
             // permanent remote data loss on the next successful sync from another device.
             SyncSnapshot local = localBuild.requireSnapshot();
-            SyncSnapshot remote = Objects.requireNonNull(backend.readSnapshot(), "remote snapshot");
+            RemoteSnapshot remoteResult =
+                    Objects.requireNonNull(backend.readSnapshotResult(), "remote snapshot");
+            SyncSnapshot remote = remoteResult.getSnapshot();
             warnAboutClockSkew(remote);
             SyncMergeResult mergeResult = merger.merge(local, remote);
             SyncSnapshot merged = mergeResult.getMergedSnapshot();
+            java.util.List<SyncMergeResult.Conflict> allConflicts =
+                    new java.util.ArrayList<>(remoteResult.getConflicts());
+            allConflicts.addAll(mergeResult.getConflicts());
 
             Map<String, Long> expectedSizes = attachmentSizes(merged);
             // The merged snapshot contains only the deterministic winner. A conflict row is not
             // durable unless the loser can later be restored as well, so preflight and pin each
             // version independently; SyncSnapshot deliberately forbids two versions of one ID.
             synchronizeAttachments(backend, merged, expectedSizes);
-            for (SyncMergeResult.Conflict conflict : mergeResult.getConflicts()) {
+            for (SyncMergeResult.Conflict conflict : allConflicts) {
                 pinConflictVersion(backend, conflict.getWinner());
                 pinConflictVersion(backend, conflict.getLoser());
             }
@@ -120,9 +125,8 @@ public final class SyncService {
                 backend.writeSnapshot(merged);
             }
             SyncState success =
-                    SyncState.success(
-                            backendIdentifier, clock.instant(), mergeResult.getConflicts().size());
-            store.applySnapshot(merged, mergeResult.getConflicts(), success);
+                    SyncState.success(backendIdentifier, clock.instant(), allConflicts.size());
+            store.applySnapshot(merged, allConflicts, success);
             return success;
         } catch (Exception exception) {
             SyncState failure =
