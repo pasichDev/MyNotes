@@ -14,6 +14,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
+import com.pasich.mynotes.utils.auth.PlayServicesAvailability;
 import dagger.hilt.android.EntryPointAccessors;
 import java.util.Collections;
 
@@ -28,15 +29,21 @@ public final class GoogleDriveSyncWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        // A build without google-services.json has no default FirebaseApp; there is nothing to
-        // sync rather than a crash.
-        FirebaseApp app = FirebaseApp.initializeApp(getApplicationContext());
-        if (app == null) {
-            return Result.success();
-        }
-        FirebaseUser user = FirebaseAuth.getInstance(app).getCurrentUser();
-        if (user == null || user.getEmail() == null) return Result.success();
+        // Everything below needs Play services, and WorkManager reruns a worker that throws. The
+        // Firebase calls are inside the try for the same reason: a scheduled job must not be able
+        // to take the process down in the background, where nobody can see why.
         try {
+            if (!PlayServicesAvailability.isAvailable(getApplicationContext())) {
+                return Result.success();
+            }
+            // A build without google-services.json has no default FirebaseApp; there is nothing to
+            // sync rather than a crash.
+            FirebaseApp app = FirebaseApp.initializeApp(getApplicationContext());
+            if (app == null) {
+                return Result.success();
+            }
+            FirebaseUser user = FirebaseAuth.getInstance(app).getCurrentUser();
+            if (user == null || user.getEmail() == null) return Result.success();
             SyncDependencies dependencies =
                     EntryPointAccessors.fromApplication(
                             getApplicationContext(), SyncDependencies.class);

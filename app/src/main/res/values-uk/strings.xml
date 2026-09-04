@@ -483,4 +483,6 @@
     <string name="tab_account">Акаунт</string>
     <string name="sync_signed_out_title">Ви не увійшли</string>
     <string name="sync_signed_out_description">Синхронізація та копія на Google Диску доступні після входу.</string>
+    <string name="sync_unavailable_title">Синхронізація недоступна</string>
+    <string name="sync_unavailable_description">Синхронізація та копія на Google Диску потребують сервісів Google Play, яких немає на цьому пристрої.</string>
 </resources>

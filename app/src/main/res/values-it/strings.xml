@@ -460,6 +460,8 @@
     <string name="tab_account">Account</string>
     <string name="sync_signed_out_title">Non hai eseguito l’accesso</string>
     <string name="sync_signed_out_description">Sincronizzazione e backup su Google Drive sono disponibili dopo l’accesso.</string>
+    <string name="sync_unavailable_title">Sincronizzazione non disponibile</string>
+    <string name="sync_unavailable_description">Sincronizzazione e backup su Google Drive richiedono i servizi Google Play, assenti su questo dispositivo.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Sincronizzazione</string>
     <string name="help_sync_setup_title">Sincronizzazione con Google Drive</string>

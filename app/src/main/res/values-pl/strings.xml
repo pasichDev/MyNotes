@@ -463,6 +463,8 @@
     <string name="tab_account">Konto</string>
     <string name="sync_signed_out_title">Nie zalogowano</string>
     <string name="sync_signed_out_description">Synchronizacja i kopia na Dysku Google są dostępne po zalogowaniu.</string>
+    <string name="sync_unavailable_title">Synchronizacja niedostępna</string>
+    <string name="sync_unavailable_description">Synchronizacja i kopia na Dysku Google wymagają usług Google Play, których nie ma na tym urządzeniu.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Synchronizacja</string>
     <string name="help_sync_setup_title">Synchronizacja z Google Drive</string>

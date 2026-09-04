@@ -22,6 +22,7 @@ import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.utils.auth.FirebaseGoogleAuth;
 import com.pasich.mynotes.utils.auth.GoogleCredentialAuth;
 import com.pasich.mynotes.utils.auth.GoogleDriveAuthorization;
+import com.pasich.mynotes.utils.auth.PlayServicesAvailability;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -43,9 +44,18 @@ public final class SyncCoordinatorFactory {
         // no instance
     }
 
-    /** True when the build carries a Firebase configuration and sync can be offered at all. */
+    /**
+     * True when sync can be offered at all: the build carries a Firebase configuration and the
+     * device has Google Play services.
+     *
+     * <p>Sign-in and the Drive scope both run through Play services, so on a device without them
+     * every control on the account tab would lead to a failure the user cannot act on. Returning
+     * false here makes {@link #create} yield null, which is the path that already shows the tab as
+     * unavailable.
+     */
     public static boolean isConfigured(@NonNull Activity activity) {
-        return !activity.getString(R.string.default_web_client_id).trim().isEmpty();
+        return !activity.getString(R.string.default_web_client_id).trim().isEmpty()
+                && PlayServicesAvailability.isAvailable(activity);
     }
 
     /** The authorization object has to be kept by the caller so it can forward activity results. */

@@ -459,6 +459,8 @@
     <string name="tab_account">Есептік жазба</string>
     <string name="sync_signed_out_title">Сіз кірмегенсіз</string>
     <string name="sync_signed_out_description">Синхрондау және Google Дискідегі көшірме кіргеннен кейін қолжетімді.</string>
+    <string name="sync_unavailable_title">Синхрондау қолжетімсіз</string>
+    <string name="sync_unavailable_description">Синхрондау және Google Дискідегі көшірме бұл құрылғыда жоқ Google Play қызметтерін қажет етеді.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Синхрондау</string>
     <string name="help_sync_setup_title">Google Drive-пен синхрондау</string>

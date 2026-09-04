@@ -463,6 +463,8 @@
     <string name="tab_account">Cuenta</string>
     <string name="sync_signed_out_title">No has iniciado sesión</string>
     <string name="sync_signed_out_description">La sincronización y la copia en Google Drive están disponibles tras iniciar sesión.</string>
+    <string name="sync_unavailable_title">Sincronización no disponible</string>
+    <string name="sync_unavailable_description">La sincronización y la copia en Google Drive necesitan los servicios de Google Play, que no están en este dispositivo.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Sincronización</string>
     <string name="help_sync_setup_title">Sincronización con Google Drive</string>

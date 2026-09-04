@@ -25,6 +25,10 @@
         </intent>
 
         <package android:name="com.google.android.apps.translate" />
+
+        <!-- Read by PlayServicesAvailability. Without this the package table reports Play
+             services as absent on API 30+, and sync would hide itself on every device. -->
+        <package android:name="com.google.android.gms" />
     </queries>
 
     <application

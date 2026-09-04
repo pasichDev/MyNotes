@@ -467,6 +467,8 @@
     <string name="tab_account">Аккаунт</string>
     <string name="sync_signed_out_title">Вы не вошли</string>
     <string name="sync_signed_out_description">Синхронизация и копия на Google Диске доступны после входа.</string>
+    <string name="sync_unavailable_title">Синхронизация недоступна</string>
+    <string name="sync_unavailable_description">Синхронизация и копия на Google Диске требуют сервисов Google Play, которых нет на этом устройстве.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Синхронизация</string>
     <string name="help_sync_setup_title">Синхронизация с Google Drive</string>

@@ -509,6 +509,8 @@
     <string name="tab_account">Account</string>
     <string name="sync_signed_out_title">Not signed in</string>
     <string name="sync_signed_out_description">Sync and Google Drive backup become available after you sign in.</string>
+    <string name="sync_unavailable_title">Sync unavailable</string>
+    <string name="sync_unavailable_description">Sync and Google Drive backup need Google Play services, which this device does not have.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Synchronisation</string>
     <string name="help_sync_setup_title">Google Drive Sync</string>

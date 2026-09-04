@@ -458,6 +458,8 @@
     <string name="tab_account">Compte</string>
     <string name="sync_signed_out_title">Non connecté</string>
     <string name="sync_signed_out_description">La synchronisation et la sauvegarde Google Drive sont disponibles après connexion.</string>
+    <string name="sync_unavailable_title">Synchronisation indisponible</string>
+    <string name="sync_unavailable_description">La synchronisation et la sauvegarde Google Drive nécessitent les services Google Play, absents de cet appareil.</string>
     <!-- Sync Help Section -->
     <string name="help_sync_title">Synchronisation</string>
     <string name="help_sync_setup_title">Synchronisation Google Drive</string>
