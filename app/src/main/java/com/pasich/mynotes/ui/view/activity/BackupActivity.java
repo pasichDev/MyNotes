@@ -463,12 +463,44 @@ public class BackupActivity extends BaseActivity
                     null,
                     SnackBarInfo.Success,
                     Snackbar.LENGTH_LONG);
+            boolean settingsArrived =
+                    roomSyncStore != null && roomSyncStore.consumeAppliedPreferencesChange();
             if (conflicts > 0) {
                 showNextConflictDialog();
+            } else if (settingsArrived) {
+                // Theme, dynamic colour and UI scale are read when an activity is created, so a
+                // settings version received from another device was stored but stayed invisible
+                // until the user navigated away and back.
+                //
+                // Only with no conflicts: redrawing while the user is choosing between versions
+                // would dismiss that dialog. The values are stored either way, so they still
+                // take effect on the next screen.
+                applyReceivedPreferences();
             }
         } else {
             finishSyncError(new IllegalStateException(state.getErrorMessage()));
         }
+    }
+
+    /**
+     * Redraws the screen so settings that arrived with a sync take effect immediately.
+     *
+     * <p>Delayed so the sync result stays readable for a moment before the screen rebuilds.
+     */
+    private void applyReceivedPreferences() {
+        onInfoSnack(
+                getString(R.string.sync_preferences_applied),
+                null,
+                SnackBarInfo.Success,
+                Snackbar.LENGTH_LONG);
+        binding.getRoot()
+                .postDelayed(
+                        () -> {
+                            if (!isFinishing() && !isDestroyed()) {
+                                recreate();
+                            }
+                        },
+                        1500L);
     }
 
     private void finishSyncError(Exception error) {

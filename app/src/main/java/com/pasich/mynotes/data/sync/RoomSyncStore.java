@@ -65,6 +65,16 @@ public final class RoomSyncStore implements SyncStore {
      */
     private final Map<String, File> localAttachments = new ConcurrentHashMap<>();
 
+    /**
+     * Set when an apply actually changed the visible settings, so the screen can redraw.
+     *
+     * <p>Theme, dynamic colour and UI scale are read when an activity is created, so a version
+     * arriving from another device was stored correctly but only became visible after the user
+     * navigated away and back.
+     */
+    private final java.util.concurrent.atomic.AtomicBoolean appliedPreferencesChange =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+
     public RoomSyncStore(
             @NonNull Context context,
             @NonNull AppDatabase database,
@@ -499,6 +509,7 @@ public final class RoomSyncStore implements SyncStore {
      */
     private void commitPendingPreferences(
             @NonNull PreferencesBackup backup, @NonNull String expectedDigest) throws IOException {
+        String before = livePreferencesDigest();
         boolean committed;
         try {
             committed = preferenceHelper.commitListPreferences(backup);
@@ -507,6 +518,9 @@ public final class RoomSyncStore implements SyncStore {
         }
         if (!committed) {
             throw new IOException("Could not commit synchronized preferences");
+        }
+        if (!expectedDigest.equals(before)) {
+            appliedPreferencesChange.set(true);
         }
         // The digest doubles as the snapshot-build baseline, so recording it here keeps the next
         // build from treating a freshly received version as a local edit.
@@ -691,6 +705,16 @@ public final class RoomSyncStore implements SyncStore {
         else if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(metadata.recordType))
             database.taskCategoryDao().deleteById((int) metadata.localId);
         else if ("tag".equals(metadata.recordType)) database.tagsDao().deleteById(metadata.localId);
+    }
+
+    /**
+     * Whether the last apply changed the settings, clearing the flag as it reports.
+     *
+     * <p>The caller is the visible screen, which redraws itself so a received theme takes effect at
+     * once rather than at the next activity creation.
+     */
+    public boolean consumeAppliedPreferencesChange() {
+        return appliedPreferencesChange.getAndSet(false);
     }
 
     public List<SyncConflictEntity> getConflicts() {

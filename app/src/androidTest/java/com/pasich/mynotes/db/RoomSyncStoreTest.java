@@ -626,6 +626,38 @@ public class RoomSyncStoreTest {
         assertThat(metadata.updatedAt).isGreaterThan(0L);
     }
 
+    @Test
+    public void applyingChangedPreferences_reportsThatTheScreenMustRedraw() throws Exception {
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
+        preferencesStore.readState();
+        long conflictId = seedPreferencesConflict(9, 11);
+
+        preferencesStore.resolveConflict(conflictId, SyncResolution.KEEP_DRIVE);
+
+        // Theme and UI scale are read when an activity is created, so the visible screen has to
+        // be told; without this a theme from another device stayed invisible until the user
+        // navigated away and back.
+        assertThat(preferencesStore.consumeAppliedPreferencesChange()).isTrue();
+        // The flag is consumed, so a later sync that changes nothing does not redraw.
+        assertThat(preferencesStore.consumeAppliedPreferencesChange()).isFalse();
+    }
+
+    @Test
+    public void applyingIdenticalPreferences_doesNotAskForARedraw() throws Exception {
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        adapter.current.set(preferencesWithTheme(11));
+        RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
+        preferencesStore.readState();
+        long conflictId = seedPreferencesConflict(9, 11);
+
+        preferencesStore.resolveConflict(conflictId, SyncResolution.KEEP_DRIVE);
+
+        // Same values in, same values out: recreating the screen would be a visible flicker for
+        // no reason.
+        assertThat(preferencesStore.consumeAppliedPreferencesChange()).isFalse();
+    }
+
     /** A preferences adapter whose durability can be turned off. */
     private static final class PreferencesAdapter {
         private final PreferenceHelper helper = mock(PreferenceHelper.class);

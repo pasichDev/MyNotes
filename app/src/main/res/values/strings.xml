@@ -345,6 +345,7 @@
     <string name="sync_conflict_title">Resolve sync conflicts (%1$d remaining)</string>
     <string name="sync_conflict_keep_local">Keep local</string>
     <string name="sync_conflict_keep_drive">Keep Drive</string>
+    <string name="sync_preferences_applied">Settings received from Google Drive applied</string>
     <string name="sync_conflict_keep_winner">Keep version 1</string>
     <string name="sync_conflict_keep_alternative">Keep version 2</string>
     <string name="sync_conflict_version_label">Version %1$d — %2$s</string>

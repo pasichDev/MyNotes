@@ -137,6 +137,12 @@ public class AppPreferencesHelper implements PreferenceHelper {
         }
         appCache.refresh();
         themeCache.refresh();
+        // Refreshing the caches only reloads the values. Light/dark is owned by
+        // AppCompatDelegate, which has to be told, or a theme arriving from another device sat
+        // in storage until the next activity was created. Posted to the main thread because this
+        // runs on a background thread for both a sync apply and a backup restore.
+        new android.os.Handler(android.os.Looper.getMainLooper())
+                .post(themeCache::applyCurrentThemeMode);
         return true;
     }
 

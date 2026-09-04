@@ -421,6 +421,7 @@
     <string name="sync_conflict_title">Risolvi i conflitti di sincronizzazione (%1$d rimanenti)</string>
     <string name="sync_conflict_keep_local">Mantieni la versione locale</string>
     <string name="sync_conflict_keep_drive">Mantieni la versione Google Drive</string>
+    <string name="sync_preferences_applied">Settings received from Google Drive applied</string>
     <string name="sync_conflict_keep_winner">Keep version 1</string>
     <string name="sync_conflict_keep_alternative">Keep version 2</string>
     <string name="sync_conflict_version_label">Version %1$d — %2$s</string>
