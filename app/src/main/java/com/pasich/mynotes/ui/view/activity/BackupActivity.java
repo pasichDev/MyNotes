@@ -10,22 +10,30 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.RadioButton;
+import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.base.view.BackupOptionsCallback;
@@ -35,13 +43,13 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.data.sync.RoomSyncStore;
 import com.pasich.mynotes.data.sync.SyncBundleCodec;
-import com.pasich.mynotes.data.sync.SyncMetadata;
 import com.pasich.mynotes.data.sync.SyncResolution;
 import com.pasich.mynotes.data.sync.SyncSnapshot;
 import com.pasich.mynotes.data.sync.SyncState;
 import com.pasich.mynotes.databinding.ActivityBackupBinding;
 import com.pasich.mynotes.ui.contract.BackupContract;
 import com.pasich.mynotes.ui.presenter.BackupPresenter;
+import com.pasich.mynotes.ui.sync.SyncConflictPresentation;
 import com.pasich.mynotes.ui.sync.SyncCoordinator;
 import com.pasich.mynotes.ui.sync.SyncCoordinatorFactory;
 import com.pasich.mynotes.ui.view.dialogs.BackupOptionsDialog;
@@ -565,18 +573,131 @@ public class BackupActivity extends BaseActivity
             return;
         }
         SyncConflictEntity conflict = unresolved.get(0);
+        SyncConflictPresentation presentation = SyncConflictPresentation.of(conflict);
+
+        View body = getLayoutInflater().inflate(R.layout.dialog_sync_conflict, null, false);
+        ((TextView) body.findViewById(R.id.conflict_summary))
+                .setText(R.string.sync_conflict_explain);
+
+        MaterialCardView firstCard = body.findViewById(R.id.version_one_card);
+        MaterialCardView secondCard = body.findViewById(R.id.version_two_card);
+        RadioButton firstRadio = body.findViewById(R.id.version_one_radio);
+        RadioButton secondRadio = body.findViewById(R.id.version_two_radio);
+
+        bindConflictVersion(
+                body,
+                presentation.winner,
+                R.id.version_one_origin,
+                R.id.version_one_newer,
+                R.id.version_one_time,
+                R.id.version_one_preview);
+        bindConflictVersion(
+                body,
+                presentation.alternative,
+                R.id.version_two_origin,
+                R.id.version_two_newer,
+                R.id.version_two_time,
+                R.id.version_two_preview);
+
+        // The deterministic winner is what a sync already applied, so it starts selected: a user
+        // who taps through without reading changes nothing.
+        boolean[] keepWinner = {true};
+        Runnable paint =
+                () -> {
+                    firstCard.setChecked(keepWinner[0]);
+                    secondCard.setChecked(!keepWinner[0]);
+                    firstRadio.setChecked(keepWinner[0]);
+                    secondRadio.setChecked(!keepWinner[0]);
+                };
+        firstCard.setOnClickListener(
+                view -> {
+                    keepWinner[0] = true;
+                    paint.run();
+                });
+        secondCard.setOnClickListener(
+                view -> {
+                    keepWinner[0] = false;
+                    paint.run();
+                });
+        paint.run();
+
         new MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.sync_conflict_title, unresolved.size()))
-                .setMessage(buildConflictMessage(conflict))
+                .setView(body)
                 .setNegativeButton(R.string.sync_conflict_later, null)
-                .setNeutralButton(
-                        R.string.sync_conflict_keep_winner,
-                        (dialog, which) -> resolveConflict(conflict.id, SyncResolution.KEEP_WINNER))
                 .setPositiveButton(
-                        R.string.sync_conflict_keep_alternative,
+                        R.string.sync_conflict_keep_selected,
                         (dialog, which) ->
-                                resolveConflict(conflict.id, SyncResolution.KEEP_ALTERNATIVE))
+                                resolveConflict(
+                                        conflict.id,
+                                        keepWinner[0]
+                                                ? SyncResolution.KEEP_WINNER
+                                                : SyncResolution.KEEP_ALTERNATIVE))
                 .show();
+    }
+
+    /** Fills one version card, highlighting the part that differs from the other version. */
+    private void bindConflictVersion(
+            @NonNull View body,
+            @NonNull SyncConflictPresentation.Version version,
+            int originId,
+            int newerId,
+            int timeId,
+            int previewId) {
+        ((TextView) body.findViewById(originId))
+                .setText(
+                        version.local
+                                ? R.string.sync_conflict_local_label
+                                : R.string.sync_conflict_drive_label);
+
+        TextView newer = body.findViewById(newerId);
+        newer.setText(R.string.sync_conflict_newer);
+        newer.setVisibility(version.newer ? View.VISIBLE : View.GONE);
+
+        ((TextView) body.findViewById(timeId))
+                .setText(
+                        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                                .format(new Date(version.updatedAt)));
+
+        TextView preview = body.findViewById(previewId);
+        preview.setText(conflictPreview(version));
+    }
+
+    /**
+     * Renders a version's preview, marking the differing span.
+     *
+     * <p>The difference is emphasised rather than the whole text restyled, because the point of the
+     * card is to answer "what changed" at a glance.
+     */
+    @NonNull
+    private CharSequence conflictPreview(@NonNull SyncConflictPresentation.Version version) {
+        switch (version.kind) {
+            case DELETED:
+                return getString(R.string.sync_conflict_deleted);
+            case SETTINGS:
+                return getString(R.string.settings);
+            case UNTITLED:
+                return getString(R.string.sync_conflict_untitled);
+            default:
+                break;
+        }
+        if (!version.hasHighlight()) {
+            return version.preview;
+        }
+        SpannableString text = new SpannableString(version.preview);
+        int accent =
+                MaterialColors.getColor(this, androidx.appcompat.R.attr.colorPrimary, Color.GRAY);
+        text.setSpan(
+                new ForegroundColorSpan(accent),
+                version.highlightStart,
+                version.highlightEnd,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(
+                new StyleSpan(android.graphics.Typeface.BOLD),
+                version.highlightStart,
+                version.highlightEnd,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return text;
     }
 
     private void resolveConflict(long conflictId, SyncResolution resolution) {
@@ -642,83 +763,6 @@ public class BackupActivity extends BaseActivity
                 DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
                         .format(Date.from(state.getLastSuccessfulSyncAt()));
         return getString(R.string.sync_last_sync_value, value);
-    }
-
-    @NonNull
-    private String buildConflictMessage(@NonNull SyncConflictEntity conflict) {
-        return getString(
-                        R.string.sync_conflict_version,
-                        versionLabel(1, conflict.winnerSource),
-                        describeConflictPayload(conflict.recordType, conflict.winnerJson))
-                + "\n"
-                + getString(
-                        R.string.sync_conflict_version,
-                        versionLabel(2, conflict.loserSource),
-                        describeConflictPayload(conflict.recordType, conflict.loserJson));
-    }
-
-    /**
-     * Names one side of a conflict by its position and its true origin.
-     *
-     * <p>A conflict between two Drive bundle heads has no local side, so the two versions are
-     * numbered and each is labelled with where it actually came from. Calling an arbitrary remote
-     * version "this device" told the user something untrue about data they were about to discard.
-     */
-    @NonNull
-    private String versionLabel(int position, @NonNull String source) {
-        int origin =
-                "LOCAL".equals(source)
-                        ? R.string.sync_conflict_local_label
-                        : R.string.sync_conflict_drive_label;
-        return getString(R.string.sync_conflict_version_label, position, getString(origin));
-    }
-
-    @NonNull
-    private String describeConflictPayload(@NonNull String recordType, @NonNull String recordJson) {
-        if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(recordType)) {
-            return getString(R.string.settings);
-        }
-        try {
-            JsonObject root = JsonParser.parseString(recordJson).getAsJsonObject();
-            JsonElement deletedAt = root.get("deletedAt");
-            if (deletedAt != null && !deletedAt.isJsonNull()) {
-                return getString(R.string.sync_conflict_deleted);
-            }
-            JsonObject payload = root.getAsJsonObject("payload");
-            if (payload == null) return getString(R.string.sync_conflict_deleted);
-            for (String key : conflictLabelKeys(recordType)) {
-                if (!payload.has(key) || payload.get(key).isJsonNull()) continue;
-                String value = payload.get(key).getAsString().trim();
-                if (value.isEmpty()) continue;
-                return value.length() > 120 ? value.substring(0, 120) + "…" : value;
-            }
-        } catch (Exception ignored) {
-        }
-        return getString(R.string.sync_conflict_untitled);
-    }
-
-    /**
-     * Payload keys that carry a human-readable label, most specific first.
-     *
-     * <p>Note and Tag are serialized through Gson's short field aliases, so probing "title" and
-     * "name" never matched them: every note and tag conflict showed the same placeholder for both
-     * the local and the Drive version, leaving no way to tell them apart before choosing one.
-     */
-    @NonNull
-    private static String[] conflictLabelKeys(@NonNull String recordType) {
-        if (SyncMetadata.RECORD_TYPE_NOTE.equals(recordType)) {
-            return new String[] {"b", "c"}; // Note.title, Note.value
-        }
-        if (SyncMetadata.RECORD_TYPE_TAG.equals(recordType)) {
-            return new String[] {"b"}; // Tag.nameTag
-        }
-        if (SyncMetadata.RECORD_TYPE_TASK.equals(recordType)) {
-            return new String[] {"title", "description"};
-        }
-        if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(recordType)) {
-            return new String[] {"name"};
-        }
-        return new String[0];
     }
 
     private int unresolvedConflictCount(@NonNull List<SyncConflictEntity> conflicts) {
