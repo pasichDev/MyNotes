@@ -303,6 +303,112 @@ public class SyncBundleCodecTest {
                 .doesNotContain("attachmentNames");
     }
 
+    @Test
+    public void encode_carriesAnAlternativeWhoseAttachmentIdMapsToDifferentContent()
+            throws Exception {
+        // A live note and one of its unresolved alternatives can describe different bytes under
+        // one logical attachment id — the file was replaced in place, or two devices derived the
+        // same id. Refusing to encode that failed every publish for the account, before the
+        // conflict could even be stored for the user to settle.
+        String otherHash = "0000000000000000000000000000000000000000000000000000000000000001";
+        // Both payloads in the shape RoomSyncStore builds, names included.
+        JsonObject livePayload = notePayload("Live", "image/png", 42L, "receipt.png");
+        JsonObject names = new JsonObject();
+        names.addProperty(ATTACHMENT_ID, "receipt.png");
+        livePayload.add("attachmentNames", names.deepCopy());
+        SyncRecord live =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:05Z"),
+                        livePayload);
+        JsonObject alternativePayload = notePayload("Older", "image/png", 77L, "receipt.png");
+        alternativePayload.add("attachmentNames", names.deepCopy());
+        alternativePayload
+                .getAsJsonArray("attachmentsManifest")
+                .get(0)
+                .getAsJsonObject()
+                .addProperty("sha256", otherHash);
+        alternativePayload
+                .getAsJsonArray("attachmentsManifest")
+                .get(0)
+                .getAsJsonObject()
+                .addProperty("path", "attachments/" + otherHash);
+        alternativePayload
+                .getAsJsonArray("attachmentHashes")
+                .set(0, new com.google.gson.JsonPrimitive(otherHash));
+        SyncRecord alternative =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:04Z"),
+                        alternativePayload);
+
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(java.util.Collections.singletonList(live)),
+                        CREATED_AT,
+                        java.util.Collections.emptyList(),
+                        java.util.Collections.singletonList(alternative),
+                        java.util.Collections.emptySet());
+        SyncBundleCodec.DecodedBundle decoded = codec.decode(new ByteArrayInputStream(bundle));
+
+        // Both blobs are described, and the decoded alternative is the version that went in:
+        // same logical id, same content, same identity for the resolution bookkeeping.
+        assertThat(decoded.getAttachmentsByHash().keySet()).containsExactly(HASH, otherHash);
+        SyncRecord decodedAlternative = decoded.getAlternatives().get(0);
+        JsonObject entry =
+                decodedAlternative
+                        .getPayload()
+                        .getAsJsonArray("attachmentsManifest")
+                        .get(0)
+                        .getAsJsonObject();
+        assertThat(entry.get("id").getAsString()).isEqualTo(ATTACHMENT_ID);
+        assertThat(entry.get("sha256").getAsString()).isEqualTo(otherHash);
+        assertThat(decodedAlternative.getCanonicalPayloadHash())
+                .isEqualTo(alternative.getCanonicalPayloadHash());
+        assertThat(
+                        decoded.getSnapshot()
+                                .find(SyncRecord.Type.NOTE, NOTE_ID)
+                                .getCanonicalPayloadHash())
+                .isEqualTo(live.getCanonicalPayloadHash());
+    }
+
+    @Test
+    public void decode_trimsADisplayNameSoEveryConsumerSeesTheNameThatWasValidated()
+            throws Exception {
+        SyncBundleCodec codec = new SyncBundleCodec();
+        SyncRecord local =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:01Z"),
+                        notePayload("Body", "application/pdf", 12L, "report.pdf "));
+
+        SyncRecord decoded =
+                codec.decode(
+                                new ByteArrayInputStream(
+                                        codec.encode(
+                                                new SyncSnapshot(
+                                                        java.util.Collections.singletonList(local)),
+                                                CREATED_AT)))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+
+        // The validator judged the trimmed name; a consumer building a file name from the
+        // untrimmed one would have been refused by the URL parser.
+        JsonObject entry =
+                decoded.getPayload().getAsJsonArray("attachmentsManifest").get(0).getAsJsonObject();
+        assertThat(entry.get("displayName").getAsString()).isEqualTo("report.pdf");
+        assertThat(
+                        decoded.getPayload()
+                                .getAsJsonObject("attachmentNames")
+                                .get(ATTACHMENT_ID)
+                                .getAsString())
+                .isEqualTo("report.pdf");
+    }
+
     private static SyncRecord task(String title) {
         JsonObject payload = new JsonObject();
         payload.addProperty("title", title);

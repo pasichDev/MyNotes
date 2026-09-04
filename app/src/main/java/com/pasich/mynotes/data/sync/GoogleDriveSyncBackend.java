@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,17 +16,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -40,13 +41,28 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private static final String MIME_JSON = "application/json; charset=UTF-8";
     private static final String MIME_ZIP = "application/zip";
     private static final String MIME_BINARY = "application/octet-stream";
+    private static final String PROPERTY_OWNER = "mynotesOwner";
+    private static final String PROPERTY_BUNDLE = "mynotesBundle";
+    private static final String PROPERTY_BUNDLE_PUBLISHED_AT = "mynotesBundlePublishedAt";
+    private static final String PROPERTY_ATTACHMENT_SHA256 = "mynotesAttachmentSha256";
     private static final int MAX_BUNDLE_RESPONSE_BYTES = 32 * 1024 * 1024;
-    private static final int MAX_ATTACHMENT_RESPONSE_BYTES = 100 * 1024 * 1024;
+    private static final long MAX_ATTACHMENT_RESPONSE_BYTES =
+            SyncBundleValidator.MAX_ATTACHMENT_BYTES;
     private static final int RESUMABLE_CHUNK_BYTES = 256 * 1024;
     private static final int HTTP_RESUME_INCOMPLETE = 308;
     private static final int MAX_STALLED_CHUNK_ATTEMPTS = 3;
     private static final int MAX_ERROR_DETAIL_BYTES = 1024;
     private static final int MAX_ERROR_DETAIL_CHARS = 200;
+
+    /**
+     * How long a superseded bundle stays after its successor appears.
+     *
+     * <p>A device that listed the folder just before the successor was published may still be
+     * fetching the old bundle; an hour outlives any read, including the six-hourly worker's, which
+     * WorkManager stops after ten minutes.
+     */
+    static final long BUNDLE_PRUNE_GRACE_MILLIS = 60L * 60L * 1000L;
+
     private static final Gson GSON = new Gson();
 
     private final String accessToken;
@@ -56,17 +72,31 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private final SyncBundleCodec bundleCodec;
     private final DriveRequestExecutor requestExecutor;
     private final SyncMerger merger = new SyncMerger();
-    private List<String> lastReadFrontierBundleIds = Collections.emptyList();
+    private final long maxAttachmentBytes;
     private String lastReadToken = "";
 
+    /** Every bundle file the last read saw, so a publish can retire the ones it supersedes. */
+    private List<BundleFile> lastReadBundles = Collections.emptyList();
+
     /**
-     * Blobs already read and hashed during this sync, keyed by root, hash and expected size.
+     * The owned root folders, listed once per sync.
+     *
+     * <p>Every attachment question used to re-list them, so an account with N attachments issued
+     * several times N folder listings per sync before moving a byte — which is what surfaced as
+     * Drive rate-limit errors on larger libraries. A backend instance lives for one sync; a root
+     * created concurrently by another device is the duplicate-root case the read path merges on the
+     * next sync anyway.
+     */
+    @Nullable private List<String> folderIds;
+
+    /**
+     * Blobs already verified during this sync, keyed by candidate and hash, with their size.
      *
      * <p>One attachment used to be downloaded in full two or three times per sync: once by
      * hasAttachment, once by the service re-verifying it, and once more while materializing it in
      * the canonical root. The verification itself is the point, so it still happens — once.
      */
-    private final Set<String> verifiedAttachments = new HashSet<>();
+    private final Map<String, Long> verifiedAttachments = new HashMap<>();
 
     public GoogleDriveSyncBackend(@NonNull String accessToken) {
         this(accessToken, DEFAULT_API, DEFAULT_UPLOAD, Clock.systemUTC(), new SyncBundleCodec());
@@ -78,6 +108,17 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             @NonNull String uploadBase,
             @NonNull Clock clock,
             @NonNull SyncBundleCodec bundleCodec) {
+        this(accessToken, apiBase, uploadBase, clock, bundleCodec, MAX_ATTACHMENT_RESPONSE_BYTES);
+    }
+
+    /** Test seam: a small attachment ceiling makes the oversize paths reachable in a test. */
+    GoogleDriveSyncBackend(
+            @NonNull String accessToken,
+            @NonNull String apiBase,
+            @NonNull String uploadBase,
+            @NonNull Clock clock,
+            @NonNull SyncBundleCodec bundleCodec,
+            long maxAttachmentBytes) {
         if (accessToken.trim().isEmpty()) {
             throw new IllegalArgumentException("accessToken is empty");
         }
@@ -86,6 +127,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         this.uploadBase = uploadBase;
         this.clock = clock;
         this.bundleCodec = bundleCodec;
+        this.maxAttachmentBytes = maxAttachmentBytes;
         this.requestExecutor = new DriveRequestExecutor();
     }
 
@@ -95,17 +137,21 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         return "google-drive";
     }
 
+    /** The merged remote records alone; a convenience for tests, not part of the protocol. */
     @NonNull
-    @Override
-    public synchronized SyncSnapshot readSnapshot() throws IOException {
+    synchronized SyncSnapshot readSnapshot() throws IOException {
         return readSnapshotResult().getSnapshot();
     }
 
+    @NonNull
     @Override
     public synchronized RemoteSnapshot readSnapshotResult() throws IOException {
-        List<String> folderIds = findFolderIds();
-        if (folderIds.isEmpty()) {
-            lastReadFrontierBundleIds = Collections.emptyList();
+        // A read begins a sync, so it sees the roots as they are now; the listing then serves
+        // every attachment question until the next read.
+        folderIds = listFolderIds();
+        List<String> roots = folderIds;
+        if (roots.isEmpty()) {
+            lastReadBundles = Collections.emptyList();
             lastReadToken = UUID.randomUUID().toString();
             return new RemoteSnapshot(
                     SyncSnapshot.empty(),
@@ -117,19 +163,25 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         }
 
         Map<String, SyncBundleCodec.DecodedBundle> bundlesByLogicalId = new HashMap<>();
-        Map<String, byte[]> bytesByLogicalId = new HashMap<>();
-        for (String folderId : folderIds) {
-            for (String bundleId : findBundles(folderId)) {
+        // Only a digest per logical bundle is retained for the duplicate-copy check; holding
+        // every bundle's bytes for the whole read grew with the account's history.
+        Map<String, String> digestByLogicalId = new HashMap<>();
+        List<BundleFile> bundleFiles = new ArrayList<>();
+        for (String folderId : roots) {
+            for (BundleFile file : findBundles(folderId)) {
                 byte[] bytes =
                         requestBytes(
                                 "GET",
-                                apiBase + "/files/" + bundleId + "?alt=media",
+                                apiBase + "/files/" + file.fileId + "?alt=media",
                                 MAX_BUNDLE_RESPONSE_BYTES);
                 SyncBundleCodec.DecodedBundle decoded =
                         bundleCodec.decode(new ByteArrayInputStream(bytes));
-                byte[] previousBytes = bytesByLogicalId.putIfAbsent(decoded.getBundleId(), bytes);
-                if (previousBytes != null) {
-                    if (!java.util.Arrays.equals(previousBytes, bytes)) {
+                String digest = Sha256.of(bytes);
+                bundleFiles.add(file.withLogicalId(decoded.getBundleId()));
+                String previousDigest =
+                        digestByLogicalId.putIfAbsent(decoded.getBundleId(), digest);
+                if (previousDigest != null) {
+                    if (!previousDigest.equals(digest)) {
                         throw new IOException(
                                 "Drive contains conflicting physical copies of one bundle");
                     }
@@ -187,24 +239,20 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                             SyncMergeResult.Source.REMOTE));
         }
 
-        lastReadFrontierBundleIds = Collections.unmodifiableList(new ArrayList<>(frontier));
+        lastReadBundles = Collections.unmodifiableList(bundleFiles);
         lastReadToken = UUID.randomUUID().toString();
         return new RemoteSnapshot(
                 merged, conflicts, frontier, alternatives, resolvedAlternativeIds, lastReadToken);
     }
 
     @Override
-    public synchronized void writeSnapshot(@NonNull SyncSnapshot snapshot) throws IOException {
-        throw new IOException(
-                "A Drive publish requires the read context it was derived from; use publish()");
-    }
-
-    @Override
     public synchronized void publish(@NonNull SyncPublication publication) throws IOException {
         // Causal parents used to come from a mutable field, so a write with no preceding read
         // published a parentless root that permanently forked the DAG. The read that produced
-        // this publication has to be this backend's most recent one.
-        String token = publication.getReadContext().getReadToken();
+        // this publication has to be this backend's most recent one, and it is that read — not a
+        // second copy of its frontier kept on this object — that names the parents.
+        RemoteSnapshot readContext = publication.getReadContext();
+        String token = readContext.getReadToken();
         if (token.isEmpty() || !token.equals(lastReadToken)) {
             throw new IOException(
                     "Drive publish is not derived from this backend's latest remote read");
@@ -221,7 +269,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                 bundleCodec.encode(
                         snapshot,
                         clock.instant(),
-                        lastReadFrontierBundleIds,
+                        readContext.getFrontierBundleIds(),
                         publication.getUnresolvedAlternatives(),
                         publication.getResolvedAlternativeIds());
         // Every bundle is immutable. Drive offers no conditional update based on its version
@@ -235,8 +283,38 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             // POST is deliberately not blindly retried. The server may have accepted the upload
             // before the client lost its response; rediscovering the unique name makes that
             // outcome successful without publishing a second logical bundle.
-            if (!hasBundleNamed(folderId, bundleName)) {
+            if (!mayHaveCommitted(uploadFailure) || !hasBundleNamed(folderId, bundleName)) {
                 throw uploadFailure;
+            }
+        }
+        pruneSupersededBundles(readContext.getFrontierBundleIds());
+    }
+
+    /**
+     * Retires the bundles the one just published makes redundant.
+     *
+     * <p>Nothing ever deleted a bundle, so an account accumulated one full snapshot per changed
+     * sync, and every later sync downloaded, unzipped and validated all of them to compute a
+     * frontier of one or two heads. A bundle is a complete snapshot, so everything a superseded
+     * bundle held — records, tombstones, unresolved alternatives — lives on in its descendants, and
+     * the read path already tolerates a missing ancestor. The heads this publish descended from are
+     * kept for now: they are what a concurrent publisher is about to name as parents. They go at
+     * the next sync, once the grace period has passed.
+     *
+     * <p>Best effort by design: a bundle that cannot be removed costs a download next time, never
+     * correctness.
+     */
+    private void pruneSupersededBundles(@NonNull Collection<String> frontierBundleIds) {
+        long cutoff = clock.millis() - BUNDLE_PRUNE_GRACE_MILLIS;
+        for (BundleFile bundle : lastReadBundles) {
+            if (frontierBundleIds.contains(bundle.logicalId)
+                    || (bundle.publishedAtMillis != null && bundle.publishedAtMillis > cutoff)) {
+                continue;
+            }
+            try {
+                deleteFile(bundle.fileId);
+            } catch (IOException ignored) {
+                // Still there next time; the read path copes with it either way.
             }
         }
     }
@@ -251,36 +329,46 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     @Override
     public synchronized boolean hasAttachment(@NonNull String sha256) throws IOException {
         for (String folderId : findFolderIds()) {
-            if (findAttachment(folderId, sha256) != null) {
+            if (!listAttachmentCandidates(folderId, sha256).isEmpty()) {
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Opens one copy of the blob, choosing a verified candidate where one is known.
+     *
+     * <p>The stream is not verified here: every caller wraps it in its own verifier, and doing it
+     * here as well meant downloading the blob twice — once to check it and once to hand it over.
+     * Only when several unverified copies exist is one read ahead of time, so that a corrupt
+     * duplicate cannot be the one handed to the caller.
+     */
     @Nullable
     @Override
     public synchronized InputStream readAttachment(@NonNull String sha256) throws IOException {
         for (String folderId : findFolderIds()) {
-            String attachmentId = findVerifiedAttachment(folderId, sha256, null);
-            if (attachmentId == null) {
+            List<AttachmentCandidate> candidates = listAttachmentCandidates(folderId, sha256);
+            if (candidates.isEmpty()) {
                 continue;
             }
-            // Streamed, not buffered: reading a 100 MB attachment into a byte[] (which the growing
-            // ByteArrayOutputStream first doubled, then copied) was the largest single allocation
-            // in
-            // the sync and an OutOfMemoryError on an ordinary phone.
-            HttpURLConnection connection =
-                    requestExecutor.executeIdempotent(
-                            () ->
-                                    openSuccessful(
-                                            "GET",
-                                            apiBase + "/files/" + attachmentId + "?alt=media"));
-            try {
-                return new ConnectionInputStream(connection, MAX_ATTACHMENT_RESPONSE_BYTES);
-            } catch (IOException failure) {
-                connection.disconnect();
-                throw failure;
+            String chosen = null;
+            for (AttachmentCandidate candidate : candidates) {
+                if (isVerifiedWithoutReading(candidate, sha256, null)) {
+                    chosen = candidate.id;
+                    break;
+                }
+            }
+            if (chosen == null && candidates.size() == 1) {
+                // A single corrupt copy fails the caller's verifier exactly as it would fail
+                // one here; the difference is one download instead of two.
+                chosen = candidates.get(0).id;
+            }
+            if (chosen == null) {
+                chosen = findVerifiedAttachment(folderId, sha256, null);
+            }
+            if (chosen != null) {
+                return openAttachment(chosen);
             }
         }
         return null;
@@ -294,67 +382,77 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         if (findVerifiedAttachment(folderId, sha256, sizeBytes >= 0L ? sizeBytes : null) != null) {
             return;
         }
-        if (sizeBytes >= 0L) {
-            if (sizeBytes > MAX_ATTACHMENT_RESPONSE_BYTES) {
-                throw new IOException("Attachment exceeds the 100 MiB sync upload limit");
-            }
-            uploadAttachmentOrConfirm(folderId, sha256, content, sizeBytes);
+        if (sizeBytes < 0L) {
+            // No declared size, so the content length cannot be computed up front. Rare: sizes
+            // come from the bundle manifest, which also supplies the hashes being uploaded.
+            byte[] buffered =
+                    readBounded(
+                            content,
+                            maxAttachmentBytes,
+                            "Attachment exceeds the 100 MiB sync upload limit");
+            uploadAttachmentOrConfirm(
+                    folderId, sha256, new ByteArrayInputStream(buffered), buffered.length);
             return;
         }
-        // No declared size, so the multipart content length cannot be computed up front. Rare:
-        // sizes come from the bundle manifest, which also supplies the hashes being uploaded.
-        uploadAttachmentOrConfirm(
-                folderId, sha256, readFullyLimited(content, MAX_ATTACHMENT_RESPONSE_BYTES));
+        if (sizeBytes > maxAttachmentBytes) {
+            throw new IOException("Attachment exceeds the 100 MiB sync upload limit");
+        }
+        uploadAttachmentOrConfirm(folderId, sha256, content, sizeBytes);
     }
 
+    @NonNull
     private List<String> findFolderIds() throws IOException {
+        if (folderIds == null) {
+            folderIds = listFolderIds();
+        }
+        return folderIds;
+    }
+
+    @NonNull
+    private List<String> listFolderIds() throws IOException {
         JsonArray folders =
                 listFiles(
                         "mimeType = '"
                                 + MIME_FOLDER
                                 + "' and trashed = false and "
-                                + appPropertyClause("mynotesOwner", "1"),
+                                + appPropertyClause(PROPERTY_OWNER, "1"),
                         "files(id,name)");
         List<String> result = new ArrayList<>(folders.size());
         for (int index = 0; index < folders.size(); index++) {
             result.add(folders.get(index).getAsJsonObject().get("id").getAsString());
         }
         result.sort(Comparator.naturalOrder());
-        return result;
-    }
-
-    /** Deterministically selects one byte-identical content-addressed attachment duplicate. */
-    @Nullable
-    private static String smallestId(@NonNull JsonArray files) {
-        String selected = null;
-        for (int index = 0; index < files.size(); index++) {
-            String id = files.get(index).getAsJsonObject().get("id").getAsString();
-            if (selected == null || id.compareTo(selected) < 0) {
-                selected = id;
-            }
-        }
-        return selected;
+        return Collections.unmodifiableList(result);
     }
 
     @NonNull
     private String ensureCanonicalFolderId() throws IOException {
-        List<String> folderIds = findFolderIds();
-        if (!folderIds.isEmpty()) {
-            return folderIds.get(0);
+        List<String> roots = findFolderIds();
+        if (roots.isEmpty()) {
+            // The cached answer may predate another device's first sync; only a fresh listing
+            // may justify creating a root.
+            roots = listFolderIds();
+            folderIds = roots;
+        }
+        if (!roots.isEmpty()) {
+            return roots.get(0);
         }
 
         JsonObject metadata = new JsonObject();
         metadata.addProperty("name", FOLDER_NAME);
         metadata.addProperty("mimeType", MIME_FOLDER);
-        metadata.add("appProperties", appProperties("mynotesOwner", "1"));
+        metadata.add("appProperties", appProperties(PROPERTY_OWNER, "1"));
         try {
-            return uploadMetadata(metadata);
+            String created = uploadMetadata(metadata);
+            folderIds = Collections.singletonList(created);
+            return created;
         } catch (IOException createFailure) {
             // Folder POST can have committed before a lost response. Duplicate roots are a
             // supported read state; rediscovery avoids a blind retry creating another one.
-            folderIds = findFolderIds();
-            if (!folderIds.isEmpty()) {
-                return folderIds.get(0);
+            roots = listFolderIds();
+            folderIds = roots;
+            if (!roots.isEmpty()) {
+                return roots.get(0);
             }
             throw createFailure;
         }
@@ -380,8 +478,8 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             if (source == null) {
                 throw new IOException("Required attachment is unavailable in any Drive root");
             }
-            try (VerifiedAttachmentInputStream input =
-                    new VerifiedAttachmentInputStream(source, hash, attachment.getValue())) {
+            try (VerifyingInputStream input =
+                    new VerifyingInputStream(source, hash, attachment.getValue())) {
                 uploadAttachmentOrConfirm(canonicalRootId, hash, input, attachment.getValue());
                 input.verifyEndOfStream();
             }
@@ -411,7 +509,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     }
 
     @NonNull
-    private static Map<String, Long> attachmentSizes(@NonNull Collection<SyncRecord> notes)
+    private Map<String, Long> attachmentSizes(@NonNull Collection<SyncRecord> notes)
             throws IOException {
         Map<String, Long> sizes = new HashMap<>();
         for (SyncRecord record : notes) {
@@ -426,7 +524,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                 }
                 String hash = entry.get("sha256").getAsString();
                 long size = entry.get("size").getAsLong();
-                if (size < 0L || size > MAX_ATTACHMENT_RESPONSE_BYTES) {
+                if (size < 0L || size > maxAttachmentBytes) {
                     throw new IOException("Attachment size exceeds the sync limit");
                 }
                 Long previous = sizes.putIfAbsent(hash, size);
@@ -451,32 +549,62 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
      */
     private static void validateBundleDag(
             @NonNull Map<String, SyncBundleCodec.DecodedBundle> bundles) throws IOException {
-        Set<String> visiting = new HashSet<>();
+        Map<String, List<String>> parentsById = new HashMap<>();
+        for (Map.Entry<String, SyncBundleCodec.DecodedBundle> entry : bundles.entrySet()) {
+            parentsById.put(entry.getKey(), entry.getValue().getParentBundleIds());
+        }
+        validateAncestry(parentsById);
+    }
+
+    /**
+     * Rejects a cycle in the parent graph.
+     *
+     * <p>Iterative on purpose: the recursive walk went one frame deeper per ancestor, so a long
+     * linear history — exactly what an account that syncs after every edit accumulates — could
+     * overflow the worker's stack, and a {@code StackOverflowError} is not an {@code IOException}
+     * the sync knows how to report.
+     */
+    static void validateAncestry(@NonNull Map<String, ? extends Collection<String>> parentsById)
+            throws IOException {
         Set<String> visited = new HashSet<>();
-        for (String bundleId : bundles.keySet()) {
-            validateAcyclic(bundleId, bundles, visiting, visited);
+        Set<String> visiting = new HashSet<>();
+        Deque<Frame> stack = new ArrayDeque<>();
+        for (String root : parentsById.keySet()) {
+            if (visited.contains(root)) {
+                continue;
+            }
+            visiting.add(root);
+            stack.push(new Frame(root, parentsById.get(root).iterator()));
+            while (!stack.isEmpty()) {
+                Frame frame = stack.peek();
+                if (!frame.parents.hasNext()) {
+                    stack.pop();
+                    visiting.remove(frame.bundleId);
+                    visited.add(frame.bundleId);
+                    continue;
+                }
+                String parent = frame.parents.next();
+                Collection<String> grandparents = parentsById.get(parent);
+                if (grandparents == null || visited.contains(parent)) {
+                    // An ancestor that is no longer stored, or one already walked.
+                    continue;
+                }
+                if (!visiting.add(parent)) {
+                    throw new IOException("Drive bundle ancestry contains a cycle");
+                }
+                stack.push(new Frame(parent, grandparents.iterator()));
+            }
         }
     }
 
-    private static void validateAcyclic(
-            @NonNull String bundleId,
-            @NonNull Map<String, SyncBundleCodec.DecodedBundle> bundles,
-            @NonNull Set<String> visiting,
-            @NonNull Set<String> visited)
-            throws IOException {
-        if (visited.contains(bundleId)) return;
-        SyncBundleCodec.DecodedBundle bundle = bundles.get(bundleId);
-        if (bundle == null) {
-            // An ancestor that is no longer stored. Nothing to walk and nothing to lose.
-            return;
+    private static final class Frame {
+        private final String bundleId;
+        private final Iterator<String> parents;
+
+        private Frame(String bundleId, Iterator<String> parents) {
+            this.bundleId = bundleId;
+            this.parents = parents;
         }
-        if (!visiting.add(bundleId))
-            throw new IOException("Drive bundle ancestry contains a cycle");
-        for (String parent : bundle.getParentBundleIds()) {
-            validateAcyclic(parent, bundles, visiting, visited);
-        }
-        visiting.remove(bundleId);
-        visited.add(bundleId);
     }
 
     @NonNull
@@ -494,68 +622,121 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         return frontier;
     }
 
+    /** One physical bundle file in a root; the logical id is known once it has been decoded. */
+    private static final class BundleFile {
+        private final String fileId;
+        @Nullable private final String logicalId;
+        @Nullable private final Long publishedAtMillis;
+
+        private BundleFile(
+                @NonNull String fileId,
+                @Nullable String logicalId,
+                @Nullable Long publishedAtMillis) {
+            this.fileId = fileId;
+            this.logicalId = logicalId;
+            this.publishedAtMillis = publishedAtMillis;
+        }
+
+        @NonNull
+        private BundleFile withLogicalId(@NonNull String id) {
+            return new BundleFile(fileId, id, publishedAtMillis);
+        }
+    }
+
     @NonNull
-    private List<String> findBundles(@NonNull String folderId) throws IOException {
+    private List<BundleFile> findBundles(@NonNull String folderId) throws IOException {
         JsonArray bundles =
                 listFiles(
-                        "'"
-                                + folderId
-                                + "' in parents and trashed = false and "
-                                + appPropertyClause("mynotesBundle", "1"),
-                        "files(id,name)");
-        List<String> result = new ArrayList<>(bundles.size());
+                        ownedFilesQuery(folderId, PROPERTY_BUNDLE, "1"),
+                        "files(id,name,appProperties)");
+        List<BundleFile> result = new ArrayList<>(bundles.size());
         for (int index = 0; index < bundles.size(); index++) {
-            result.add(bundles.get(index).getAsJsonObject().get("id").getAsString());
+            JsonObject file = bundles.get(index).getAsJsonObject();
+            result.add(
+                    new BundleFile(
+                            file.get("id").getAsString(),
+                            null,
+                            publishedAtOf(file.getAsJsonObject("appProperties"))));
         }
-        result.sort(Comparator.naturalOrder());
+        result.sort(Comparator.comparing(file -> file.fileId));
         return result;
     }
 
     @Nullable
-    private String findAttachment(@NonNull String folderId, @NonNull String sha256)
-            throws IOException {
+    private static Long publishedAtOf(@Nullable JsonObject appProperties) {
+        if (appProperties == null || !appProperties.has(PROPERTY_BUNDLE_PUBLISHED_AT)) {
+            return null;
+        }
+        try {
+            return Long.parseLong(appProperties.get(PROPERTY_BUNDLE_PUBLISHED_AT).getAsString());
+        } catch (RuntimeException malformed) {
+            return null;
+        }
+    }
+
+    /** One Drive object indexed under a hash, with what Drive itself says about its bytes. */
+    private static final class AttachmentCandidate {
+        private final String id;
+        @Nullable private final Long size;
+        @Nullable private final String sha256Checksum;
+
+        private AttachmentCandidate(
+                @NonNull String id, @Nullable Long size, @Nullable String sha256Checksum) {
+            this.id = id;
+            this.size = size;
+            this.sha256Checksum = sha256Checksum;
+        }
+    }
+
+    /** Every object in the root indexed under {@code sha256}, smallest id first. */
+    @NonNull
+    private List<AttachmentCandidate> listAttachmentCandidates(
+            @NonNull String folderId, @NonNull String sha256) throws IOException {
         JsonArray files =
                 listFiles(
-                        "'"
-                                + folderId
-                                + "' in parents and trashed = false and "
-                                + appPropertyClause("mynotesAttachmentSha256", sha256),
-                        "files(id,name)");
+                        ownedFilesQuery(folderId, PROPERTY_ATTACHMENT_SHA256, sha256),
+                        "files(id,name,size,sha256Checksum)");
+        List<AttachmentCandidate> candidates = new ArrayList<>(files.size());
+        for (int index = 0; index < files.size(); index++) {
+            JsonObject file = files.get(index).getAsJsonObject();
+            candidates.add(
+                    new AttachmentCandidate(
+                            file.get("id").getAsString(),
+                            optionalLong(file, "size"),
+                            optionalString(file, "sha256Checksum")));
+        }
         // Attachments are content-addressed, so duplicates uploaded by two devices racing on the
         // same hash are byte-identical and either one will do. Rejecting them used to break every
         // subsequent sync permanently.
-        return smallestId(files);
+        candidates.sort(Comparator.comparing(candidate -> candidate.id));
+        return candidates;
     }
 
     /**
-     * An app property is only an index. Read and verify every candidate before it may satisfy a
+     * An app property is only an index. Every candidate is verified before it may satisfy a
      * content-addressed reference; corrupt candidates remain harmless Drive orphans.
+     *
+     * <p>Drive computes a checksum over the bytes it stores and reports it with the listing, so a
+     * candidate is usually verified without a download; only an object Drive has not checksummed is
+     * read. The old version read every candidate in full on every sync, which for a library of a
+     * few hundred megabytes meant re-downloading all of it on every six-hourly run.
      */
     @Nullable
     private String findVerifiedAttachment(
             @NonNull String folderId, @NonNull String sha256, @Nullable Long expectedSize)
             throws IOException {
-        JsonArray files =
-                listFiles(
-                        "'"
-                                + folderId
-                                + "' in parents and trashed = false and "
-                                + appPropertyClause("mynotesAttachmentSha256", sha256),
-                        "files(id,name)");
-        List<String> candidateIds = new ArrayList<>(files.size());
-        for (int index = 0; index < files.size(); index++) {
-            candidateIds.add(files.get(index).getAsJsonObject().get("id").getAsString());
-        }
-        candidateIds.sort(Comparator.naturalOrder());
-        for (String candidateId : candidateIds) {
-            String cacheKey = candidateId + "\u0000" + sha256 + "\u0000" + expectedSize;
-            if (verifiedAttachments.contains(cacheKey)) {
-                return candidateId;
+        for (AttachmentCandidate candidate : listAttachmentCandidates(folderId, sha256)) {
+            if (isVerifiedWithoutReading(candidate, sha256, expectedSize)) {
+                return candidate.id;
             }
-            try (InputStream candidate = openAttachment(candidateId)) {
-                verifyAttachment(candidate, sha256, expectedSize);
-                verifiedAttachments.add(cacheKey);
-                return candidateId;
+            if (candidate.sha256Checksum != null) {
+                // Drive's own digest disagrees with the index; reading would only confirm it.
+                continue;
+            }
+            try (InputStream content = openAttachment(candidate.id)) {
+                long size = VerifyingInputStream.verify(content, sha256, expectedSize);
+                verifiedAttachments.put(memoKey(candidate.id, sha256), size);
+                return candidate.id;
             } catch (AttachmentIntegrityException corrupt) {
                 // A second content-addressed duplicate may be valid. Never accept the property
                 // alone and never delete this object during a correctness path.
@@ -564,10 +745,31 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         return null;
     }
 
+    /** True when this sync, or Drive's own checksum, already vouches for the candidate's bytes. */
+    private boolean isVerifiedWithoutReading(
+            @NonNull AttachmentCandidate candidate,
+            @NonNull String sha256,
+            @Nullable Long expectedSize) {
+        Long verifiedSize = verifiedAttachments.get(memoKey(candidate.id, sha256));
+        if (verifiedSize == null
+                && sha256.equals(candidate.sha256Checksum)
+                && candidate.size != null
+                && candidate.size <= maxAttachmentBytes) {
+            verifiedSize = candidate.size;
+            verifiedAttachments.put(memoKey(candidate.id, sha256), verifiedSize);
+        }
+        return verifiedSize != null && (expectedSize == null || expectedSize.equals(verifiedSize));
+    }
+
+    @NonNull
+    private static String memoKey(@NonNull String candidateId, @NonNull String sha256) {
+        return candidateId + " " + sha256;
+    }
+
     /**
      * True only when a remote blob exists and its actual bytes hash to {@code sha256}.
      *
-     * <p>Drive's {@code appProperties} index is a claim, not proof, so the bytes are read. The
+     * <p>Drive's {@code appProperties} index is a claim, not proof, so the bytes are checked. The
      * result is remembered for this sync so the caller does not have to download the blob again
      * purely to repeat the same check.
      */
@@ -584,56 +786,20 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
 
     @NonNull
     private InputStream openAttachment(@NonNull String attachmentId) throws IOException {
+        // Streamed, not buffered: reading a 100 MB attachment into a byte[] (which the growing
+        // ByteArrayOutputStream first doubled, then copied) was the largest single allocation in
+        // the sync and an OutOfMemoryError on an ordinary phone.
         HttpURLConnection connection =
                 requestExecutor.executeIdempotent(
                         () ->
                                 openSuccessful(
                                         "GET", apiBase + "/files/" + attachmentId + "?alt=media"));
         try {
-            return new ConnectionInputStream(connection, MAX_ATTACHMENT_RESPONSE_BYTES);
+            return new ConnectionInputStream(connection, maxAttachmentBytes);
         } catch (IOException failure) {
             connection.disconnect();
             throw failure;
         }
-    }
-
-    private static void verifyAttachment(
-            @NonNull InputStream input, @NonNull String expectedHash, @Nullable Long expectedSize)
-            throws IOException {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException error) {
-            throw new IOException("SHA-256 is unavailable", error);
-        }
-        long size = 0L;
-        byte[] buffer = new byte[8192];
-        int read;
-        while ((read = input.read(buffer)) != -1) {
-            digest.update(buffer, 0, read);
-            size += read;
-            if (size > MAX_ATTACHMENT_RESPONSE_BYTES) {
-                throw new AttachmentIntegrityException("Attachment exceeds the sync size limit");
-            }
-        }
-        String actual = toHex(digest.digest());
-        if (!expectedHash.equals(actual)) {
-            throw new AttachmentIntegrityException(
-                    "Attachment checksum does not match its declared hash");
-        }
-        if (expectedSize != null && expectedSize.longValue() != size) {
-            throw new AttachmentIntegrityException(
-                    "Attachment size does not match its declared size");
-        }
-    }
-
-    @NonNull
-    private static String toHex(@NonNull byte[] bytes) {
-        StringBuilder value = new StringBuilder(bytes.length * 2);
-        for (byte byteValue : bytes) {
-            value.append(String.format(Locale.US, "%02x", byteValue & 0xff));
-        }
-        return value.toString();
     }
 
     @NonNull
@@ -677,6 +843,20 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         return created.get("id").getAsString();
     }
 
+    /** Permanently removes one file this app created; bundles are complete, so nothing is lost. */
+    private void deleteFile(@NonNull String fileId) throws IOException {
+        HttpURLConnection connection = open("DELETE", apiBase + "/files/" + fileId);
+        try {
+            int code = connection.getResponseCode();
+            if (code == HttpURLConnection.HTTP_NOT_FOUND) {
+                return;
+            }
+            ensureSuccess(connection);
+        } finally {
+            connection.disconnect();
+        }
+    }
+
     private boolean hasBundleNamed(@NonNull String folderId, @NonNull String name)
             throws IOException {
         JsonArray bundles =
@@ -686,9 +866,19 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                                 + "' in parents and trashed = false and name = '"
                                 + escapeQuery(name)
                                 + "' and "
-                                + appPropertyClause("mynotesBundle", "1"),
+                                + appPropertyClause(PROPERTY_BUNDLE, "1"),
                         "files(id)");
         return bundles.size() > 0;
+    }
+
+    /** The one spelling of "our file, in this root, indexed under this property". */
+    @NonNull
+    private static String ownedFilesQuery(
+            @NonNull String folderId, @NonNull String key, @NonNull String value) {
+        return "'"
+                + folderId
+                + "' in parents and trashed = false and "
+                + appPropertyClause(key, value);
     }
 
     private void uploadFile(
@@ -729,7 +919,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             @NonNull InputStream content)
             throws IOException {
         if (content.read() != -1) {
-            throw new IOException("Attachment exceeds its declared size");
+            throw new AttachmentIntegrityException("Attachment exceeds its declared size");
         }
         uploadMultipart(folderId, name, mimeType, new ByteArrayInputStream(new byte[0]), 0L, false);
     }
@@ -744,6 +934,12 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
      * never terminated, and it replayed the buffer under offsets past the end of the file. Nothing
      * here is derived — the buffer window is recomputed from absolute offsets on every pass, so a
      * byte can only ever be sent under the one offset it occupies in the source.
+     *
+     * <p>Every request but the last carries a whole 256 KiB window, which is what Drive's resumable
+     * protocol requires. After a partial acknowledgement the window therefore slides: the
+     * unacknowledged tail moves to the front of the buffer and the window is refilled from the
+     * source. Sending only the tail — a short chunk that is not the last — was answered with a 400
+     * that nothing retries.
      */
     private void uploadResumableAttachment(
             @NonNull String folderId,
@@ -762,31 +958,36 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
 
         while (acknowledgedExclusive < sizeBytes) {
             throwIfInterrupted();
-            if (acknowledgedExclusive >= bufferStart + bufferLength) {
-                // Everything buffered is durable; read the next window from the source.
+            if (acknowledgedExclusive > bufferStart) {
+                // Everything before the acknowledged offset is durable; keep only the tail.
+                int consumed = (int) (acknowledgedExclusive - bufferStart);
+                if (consumed >= bufferLength) {
+                    bufferLength = 0;
+                } else {
+                    System.arraycopy(buffer, consumed, buffer, 0, bufferLength - consumed);
+                    bufferLength -= consumed;
+                }
                 bufferStart = acknowledgedExclusive;
-                bufferLength =
-                        readChunk(
-                                content,
-                                buffer,
-                                (int) Math.min(buffer.length, sizeBytes - bufferStart));
-                if (bufferLength <= 0) {
-                    throw new IOException("Attachment ended before its declared size");
+            }
+            int wanted = (int) Math.min(buffer.length, sizeBytes - bufferStart);
+            if (bufferLength < wanted) {
+                bufferLength += readChunk(content, buffer, bufferLength, wanted - bufferLength);
+                if (bufferLength < wanted) {
+                    // The source disagrees with its own manifest: an integrity failure, so it
+                    // is never mistaken for a lost response worth confirming by discovery.
+                    throw new AttachmentIntegrityException(
+                            "Attachment ended before its declared size");
                 }
             }
 
-            int offsetInBuffer = (int) (acknowledgedExclusive - bufferStart);
-            int length = bufferLength - offsetInBuffer;
-            long chunkStart = acknowledgedExclusive;
+            int length = bufferLength;
+            long chunkStart = bufferStart;
             long chunkEndExclusive = chunkStart + length;
 
             // A chunk PUT is idempotent: it is addressed by an absolute Content-Range, so a
             // replay of the identical range either lands at the same offset or is already
             // committed. Retrying is therefore safe, and it keeps one transient 5xx between
             // chunks from discarding a large upload that is nearly complete.
-            final int retryOffset = offsetInBuffer;
-            final int retryLength = length;
-            final long retryStart = chunkStart;
             long reported =
                     requestExecutor.executeIdempotent(
                             () ->
@@ -794,9 +995,9 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                                             sessionUrl,
                                             mimeType,
                                             buffer,
-                                            retryOffset,
-                                            retryLength,
-                                            retryStart,
+                                            0,
+                                            length,
+                                            chunkStart,
                                             sizeBytes));
 
             if (reported < acknowledgedExclusive) {
@@ -822,7 +1023,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         }
 
         if (content.read() != -1) {
-            throw new IOException("Attachment exceeds its declared size");
+            throw new AttachmentIntegrityException("Attachment exceeds its declared size");
         }
     }
 
@@ -925,17 +1126,21 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         }
     }
 
-    private static int readChunk(@NonNull InputStream input, @NonNull byte[] buffer, int maximum)
+    /**
+     * Fills {@code buffer} from {@code offset} with up to {@code count} bytes, or to end of input.
+     */
+    private static int readChunk(
+            @NonNull InputStream input, @NonNull byte[] buffer, int offset, int count)
             throws IOException {
-        int offset = 0;
-        while (offset < maximum) {
-            int read = input.read(buffer, offset, maximum - offset);
+        int filled = 0;
+        while (filled < count) {
+            int read = input.read(buffer, offset + filled, count - filled);
             if (read == -1) {
                 break;
             }
-            offset += read;
+            filled += read;
         }
-        return offset;
+        return filled;
     }
 
     private static void throwIfInterrupted() throws IOException {
@@ -954,7 +1159,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         parents.add(folderId);
         metadata.add("parents", parents);
         JsonObject properties = new JsonObject();
-        properties.addProperty("mynotesAttachmentSha256", sha256);
+        properties.addProperty(PROPERTY_ATTACHMENT_SHA256, sha256);
         metadata.add("appProperties", properties);
         return metadata;
     }
@@ -965,47 +1170,53 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             @NonNull InputStream content,
             long sizeBytes)
             throws IOException {
+        if (sizeBytes < 0L) {
+            throw new IllegalArgumentException("An attachment upload needs a declared size");
+        }
         try {
-            if (sizeBytes >= 0L) {
-                uploadStream(folderId, sha256, MIME_BINARY, content, sizeBytes);
-            } else {
-                uploadFile(folderId, sha256, MIME_BINARY, readFully(content), false);
-            }
+            uploadStream(folderId, sha256, MIME_BINARY, content, sizeBytes);
         } catch (IOException uploadFailure) {
             // Attachment identity is its SHA-256. A successful request whose response was lost is
             // confirmed by discovery, not repeated with an already-consumed stream.
-            if (!isAmbiguousTransportFailure(uploadFailure)
+            if (!mayHaveCommitted(uploadFailure)
                     || findVerifiedAttachment(folderId, sha256, sizeBytes) == null) {
                 throw uploadFailure;
             }
         }
     }
 
-    private void uploadAttachmentOrConfirm(
-            @NonNull String folderId, @NonNull String sha256, @NonNull byte[] content)
-            throws IOException {
-        try {
-            uploadFile(folderId, sha256, MIME_BINARY, content, false);
-        } catch (IOException uploadFailure) {
-            if (!isAmbiguousTransportFailure(uploadFailure)
-                    || findVerifiedAttachment(folderId, sha256, (long) content.length) == null) {
-                throw uploadFailure;
-            }
+    /**
+     * Whether a failed create may nonetheless have been committed by Drive.
+     *
+     * <p>The one answer for bundle and attachment uploads alike; they used to classify differently,
+     * so a 429 on the bundle POST was followed by rediscovery while the same 429 on an attachment
+     * POST failed the sync outright. A response Drive definitely never acted on — a rejected
+     * request, a bad token, a blob that failed its own checksum — is a plain failure. Everything
+     * else, including a read timeout that arrived after the whole body was sent, is worth one
+     * listing to find out.
+     */
+    static boolean mayHaveCommitted(@NonNull IOException failure) {
+        if (failure instanceof AttachmentIntegrityException) {
+            return false;
         }
-    }
-
-    private static boolean isAmbiguousTransportFailure(@NonNull IOException failure) {
-        if (failure instanceof AttachmentIntegrityException
-                || failure instanceof java.io.InterruptedIOException) {
+        // A subclass of InterruptedIOException, so it has to be asked about first: a timeout
+        // waiting for the response is precisely the case where the upload may have landed.
+        if (failure instanceof java.net.SocketTimeoutException) {
+            return true;
+        }
+        if (failure instanceof java.io.InterruptedIOException) {
             return false;
         }
         if (failure instanceof DriveRequestExecutor.DriveHttpException) {
-            int status = ((DriveRequestExecutor.DriveHttpException) failure).statusCode;
-            return status >= 500 && status <= 599;
+            DriveRequestExecutor.DriveHttpException http =
+                    (DriveRequestExecutor.DriveHttpException) failure;
+            int status = http.statusCode;
+            if (status >= 500 || status == 408 || status == 429) {
+                return true;
+            }
+            return status == 403 && http.isRateLimit();
         }
-        return failure instanceof java.net.SocketException
-                || failure instanceof java.net.SocketTimeoutException
-                || failure instanceof java.net.ConnectException;
+        return true;
     }
 
     /**
@@ -1033,10 +1244,10 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
 
         JsonObject appProperties = new JsonObject();
         if (bundleFile) {
-            appProperties.addProperty("mynotesBundle", "1");
-            appProperties.addProperty("mynotesBundlePublishedAt", Long.toString(clock.millis()));
+            appProperties.addProperty(PROPERTY_BUNDLE, "1");
+            appProperties.addProperty(PROPERTY_BUNDLE_PUBLISHED_AT, Long.toString(clock.millis()));
         } else {
-            appProperties.addProperty("mynotesAttachmentSha256", name);
+            appProperties.addProperty(PROPERTY_ATTACHMENT_SHA256, name);
         }
         metadata.add("appProperties", appProperties);
 
@@ -1137,7 +1348,13 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         ensureSuccess(connection);
         try (InputStream input = connection.getInputStream()) {
             return GSON.fromJson(
-                    new String(readFully(input), StandardCharsets.UTF_8), JsonObject.class);
+                    new String(
+                            readBounded(
+                                    input,
+                                    MAX_BUNDLE_RESPONSE_BYTES,
+                                    "Drive response exceeds the sync size limit"),
+                            StandardCharsets.UTF_8),
+                    JsonObject.class);
         }
     }
 
@@ -1154,16 +1371,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         try {
             ensureSuccess(connection);
             try (InputStream input = connection.getInputStream()) {
-                ByteArrayOutputStream output = new ByteArrayOutputStream();
-                byte[] buffer = new byte[8192];
-                int read;
-                while ((read = input.read(buffer)) != -1) {
-                    if (output.size() > maxBytes - read) {
-                        throw new IOException("Drive response exceeds the sync size limit");
-                    }
-                    output.write(buffer, 0, read);
-                }
-                return output.toByteArray();
+                return readBounded(input, maxBytes, "Drive response exceeds the sync size limit");
             }
         } finally {
             connection.disconnect();
@@ -1237,34 +1445,21 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         }
     }
 
+    /** Reads to end of stream, refusing anything past {@code maxBytes}; never closes the input. */
     @NonNull
-    private static byte[] readFully(@NonNull InputStream input) throws IOException {
-        try (InputStream stream = input;
-                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = stream.read(buffer)) != -1) {
-                output.write(buffer, 0, read);
-            }
-            return output.toByteArray();
-        }
-    }
-
-    @NonNull
-    private static byte[] readFullyLimited(@NonNull InputStream input, int maxBytes)
+    private static byte[] readBounded(
+            @NonNull InputStream input, long maxBytes, @NonNull String limitMessage)
             throws IOException {
-        try (InputStream stream = input;
-                ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = stream.read(buffer)) != -1) {
-                if (output.size() > maxBytes - read) {
-                    throw new IOException("Attachment exceeds the 100 MiB sync upload limit");
-                }
-                output.write(buffer, 0, read);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            if (output.size() > maxBytes - read) {
+                throw new IOException(limitMessage);
             }
-            return output.toByteArray();
+            output.write(buffer, 0, read);
         }
+        return output.toByteArray();
     }
 
     @NonNull
@@ -1293,11 +1488,34 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         return value.replace("\\", "\\\\").replace("'", "\\'");
     }
 
+    @Nullable
+    private static String optionalString(@NonNull JsonObject object, @NonNull String field) {
+        JsonElement value = object.get(field);
+        return value == null || value.isJsonNull() || !value.isJsonPrimitive()
+                ? null
+                : value.getAsString();
+    }
+
+    @Nullable
+    private static Long optionalLong(@NonNull JsonObject object, @NonNull String field) {
+        String value = optionalString(object, field);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException malformed) {
+            return null;
+        }
+    }
+
     /**
      * A response body that stays attached to its connection until the reader is done.
      *
      * <p>Lets an attachment be piped straight from the socket to disk while still enforcing the
-     * response ceiling, and releases the connection on close.
+     * response ceiling, and releases the connection on close. Exceeding the ceiling is an integrity
+     * failure like any other: a candidate that grows past it is skipped in favour of the next copy
+     * rather than failing the sync, as a plain I/O error used to.
      */
     private static final class ConnectionInputStream extends FilterInputStream {
         private final HttpURLConnection connection;
@@ -1332,7 +1550,7 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         private void count(int read) throws IOException {
             byteCount += read;
             if (byteCount > maxBytes) {
-                throw new IOException("Drive response exceeds the sync size limit");
+                throw new AttachmentIntegrityException("Attachment exceeds the sync size limit");
             }
         }
 
@@ -1342,70 +1560,6 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                 super.close();
             } finally {
                 connection.disconnect();
-            }
-        }
-    }
-
-    /** Verifies an untrusted remote blob before it may support canonical bundle publication. */
-    private static final class VerifiedAttachmentInputStream extends FilterInputStream {
-        private final String expectedHash;
-        private final long expectedSize;
-        private final MessageDigest digest;
-        private long size;
-        private boolean reachedEnd;
-
-        private VerifiedAttachmentInputStream(
-                @NonNull InputStream source, @NonNull String expectedHash, long expectedSize)
-                throws IOException {
-            super(source);
-            this.expectedHash = expectedHash;
-            this.expectedSize = expectedSize;
-            try {
-                digest = MessageDigest.getInstance("SHA-256");
-            } catch (NoSuchAlgorithmException error) {
-                throw new IOException("SHA-256 is unavailable", error);
-            }
-        }
-
-        @Override
-        public int read() throws IOException {
-            int value = super.read();
-            if (value == -1) {
-                reachedEnd = true;
-            } else {
-                digest.update((byte) value);
-                size++;
-            }
-            return value;
-        }
-
-        @Override
-        public int read(byte[] buffer, int offset, int length) throws IOException {
-            int read = super.read(buffer, offset, length);
-            if (read == -1) {
-                reachedEnd = true;
-            } else if (read > 0) {
-                digest.update(buffer, offset, read);
-                size += read;
-            }
-            return read;
-        }
-
-        private void verifyEndOfStream() throws IOException {
-            if (!reachedEnd) {
-                throw new IOException("Attachment upload ended before the source was verified");
-            }
-            if (size != expectedSize) {
-                throw new AttachmentIntegrityException(
-                        "Attachment size does not match sync metadata");
-            }
-            StringBuilder actualHash = new StringBuilder(64);
-            for (byte value : digest.digest()) {
-                actualHash.append(String.format(java.util.Locale.US, "%02x", value & 0xff));
-            }
-            if (!expectedHash.equals(actualHash.toString())) {
-                throw new AttachmentIntegrityException(
-                        "Attachment checksum does not match sync metadata");
             }
         }
     }

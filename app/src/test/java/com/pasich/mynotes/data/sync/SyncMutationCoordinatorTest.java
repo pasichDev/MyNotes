@@ -74,8 +74,9 @@ public class SyncMutationCoordinatorTest {
         taken.setId(1);
         Note free = new Note().create("Beta", "body", 20L, "");
         free.setId(2);
-        when(noteDao.getNoteSync(1)).thenReturn(new Note().create("Occupant", "", 5L, ""));
-        when(noteDao.getNoteSync(2)).thenReturn(null);
+        Note occupant = new Note().create("Occupant", "", 5L, "");
+        occupant.setId(1);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of(occupant));
         when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList()))
                 .thenReturn(new long[] {2L})
                 .thenReturn(new long[] {3L});
@@ -119,7 +120,7 @@ public class SyncMutationCoordinatorTest {
         existing.setId(5);
         Note fromBackup = new Note().create("Title", "Body", 10L, "work");
         fromBackup.setId(5);
-        when(noteDao.getNoteSync(5)).thenReturn(existing);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of(existing));
 
         coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
 
@@ -134,7 +135,7 @@ public class SyncMutationCoordinatorTest {
         existing.setId(5);
         Note fromBackup = new Note().create("Other", "Other body", 20L, "");
         fromBackup.setId(5);
-        when(noteDao.getNoteSync(5)).thenReturn(existing);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of(existing));
         when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList())).thenReturn(new long[] {77L});
 
         coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
@@ -303,7 +304,7 @@ public class SyncMutationCoordinatorTest {
         Note restored = new Note().create("One", "1", 1L, "");
         restored.setId(7);
         notes.add(restored);
-        when(noteDao.getNoteSync(7)).thenReturn(null);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of());
         when(noteDao.addNotes(anyList())).thenReturn(new long[] {7L});
 
         coordinator.insertNotes(notes);
@@ -324,7 +325,7 @@ public class SyncMutationCoordinatorTest {
         notes.add(restored);
         Note occupant = new Note().create("Already here", "x", 2L, "");
         occupant.setId(7);
-        when(noteDao.getNoteSync(7)).thenReturn(occupant);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of(occupant));
         when(noteDao.addNotes(anyList())).thenReturn(new long[] {42L});
 
         coordinator.insertNotes(notes);
@@ -388,6 +389,108 @@ public class SyncMutationCoordinatorTest {
                 .isEqualTo(1_000L);
     }
 
+    @Test
+    public void insertNotes_looksUpEveryIncomingIdInOneBatchInsteadOfOnePerNote() {
+        // Restoring a few thousand notes ran four point queries per note inside the transaction
+        // and sat on the restore dialog for tens of seconds. One IN (...) query per batch, and
+        // no lookup at all before the INSERT OR IGNORE of the metadata row.
+        List<Note> notes = new ArrayList<>();
+        for (int id = 1; id <= 3; id++) {
+            Note note = new Note().create("Note " + id, "body", id, "");
+            note.setId(id);
+            notes.add(note);
+        }
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of());
+        when(noteDao.addNotes(anyList())).thenReturn(new long[] {1L, 2L, 3L});
+
+        coordinator.insertNotes(notes);
+
+        verify(noteDao, org.mockito.Mockito.times(1)).getNotesByIdsSync(anyList());
+        verify(noteDao, never()).getNoteSync(org.mockito.ArgumentMatchers.anyInt());
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 3L)).isNotNull();
+    }
+
+    @Test
+    public void insertNotes_keepsBothNotesWhenTheBackupItselfRepeatsAnId() {
+        // A backup made by concatenating two exports can carry one id twice. addNotes is a
+        // REPLACE insert, so the second note used to overwrite the first inside the same call
+        // — no error, no duplicate, one note gone.
+        Note first = new Note().create("First", "body", 10L, "");
+        first.setId(12);
+        Note second = new Note().create("Second", "body", 20L, "");
+        second.setId(12);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of());
+        when(noteDao.addNotes(anyList())).thenReturn(new long[] {12L}).thenReturn(new long[] {13L});
+
+        coordinator.insertNotes(new ArrayList<>(List.of(first, second)));
+
+        verify(noteDao, org.mockito.Mockito.times(2)).addNotes(anyList());
+        assertThat(first.getId()).isEqualTo(12);
+        assertThat(second.getId()).isEqualTo(13);
+    }
+
+    @Test
+    public void insertTags_keepsBothTagsWhenTheBackupItselfRepeatsAnId() {
+        Tag first = new Tag().create("work");
+        first.id = 4;
+        Tag second = new Tag().create("home");
+        second.id = 4;
+        when(tagsDao.getTagsByIdsSync(anyList())).thenReturn(List.of());
+        when(tagsDao.addTags(anyList())).thenReturn(new long[] {4L}).thenReturn(new long[] {5L});
+
+        coordinator.insertTags(new ArrayList<>(List.of(first, second)));
+
+        assertThat(first.getId()).isEqualTo(4L);
+        assertThat(second.getId()).isEqualTo(5L);
+    }
+
+    @Test
+    public void insertNotes_adoptsStagedAttachmentsEvenWhenTheIdIsKept() {
+        // The archive's files wait in a staging directory until the row exists; a note that
+        // keeps its id still has to have them moved into its folder, so the relocation runs for
+        // every restored note and the content is stored again only when it rewrote something.
+        List<Integer> relocatedFrom = new ArrayList<>();
+        SyncMutationCoordinator staging =
+                new SyncMutationCoordinator(
+                        new SyncMutationCoordinator.TransactionExecutor() {
+                            @Override
+                            public <T> T run(
+                                    SyncMutationCoordinator.TransactionCallable<T> callable) {
+                                return callable.call();
+                            }
+                        },
+                        noteDao,
+                        taskDao,
+                        tagsDao,
+                        taskCategoryDao,
+                        transactions,
+                        syncMetadataDao,
+                        new FixedTimeProvider(1_000L),
+                        new QueueStableIdGenerator("stable-a"),
+                        (note, previousId) -> {
+                            relocatedFrom.add(previousId);
+                            note.setAttachments("[moved]");
+                            return true;
+                        });
+        Note restored = new Note().create("Kept", "body", 1L, "");
+        restored.setId(7);
+        when(noteDao.getNotesByIdsSync(anyList())).thenReturn(List.of());
+        when(noteDao.addNotes(anyList())).thenReturn(new long[] {7L});
+
+        staging.insertNotes(new ArrayList<>(List.of(restored)));
+
+        assertThat(relocatedFrom).containsExactly(7);
+        verify(noteDao)
+                .updateNoteContent(
+                        eq(7),
+                        eq("Kept"),
+                        eq("body"),
+                        org.mockito.ArgumentMatchers.any(),
+                        eq(1L),
+                        eq(""),
+                        eq("[moved]"));
+    }
+
     private static final class FixedTimeProvider implements SyncMutationCoordinator.TimeProvider {
         private final long value;
 
@@ -444,6 +547,15 @@ public class SyncMutationCoordinatorTest {
         @Override
         public boolean exists(String recordType, long localId) {
             return rows.containsKey(key(recordType, localId));
+        }
+
+        @Override
+        public List<Long> getExistingLocalIds(String recordType, List<Long> localIds) {
+            List<Long> existing = new ArrayList<>();
+            for (Long localId : localIds) {
+                if (exists(recordType, localId)) existing.add(localId);
+            }
+            return existing;
         }
 
         @Override

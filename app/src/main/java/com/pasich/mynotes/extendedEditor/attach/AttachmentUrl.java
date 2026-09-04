@@ -149,8 +149,14 @@ public final class AttachmentUrl {
         return -1;
     }
 
-    /** True only for a name that is exactly one ordinary path segment. */
-    static boolean isSafeSegment(@Nullable String name) {
+    /**
+     * True only for a name that is exactly one ordinary path segment.
+     *
+     * <p>The single rule for attachment names: the sync store and the bundle validator both defer
+     * to it, so a name one of them accepted can never be one the other refuses to build a path
+     * from.
+     */
+    public static boolean isSafeSegment(@Nullable String name) {
         if (name == null) {
             return false;
         }

@@ -249,13 +249,13 @@ public class SyncConvergenceTest {
         }
 
         @Override
-        public SyncSnapshot readSnapshot() {
-            return snapshot;
+        public RemoteSnapshot readSnapshotResult() {
+            return RemoteSnapshot.of(snapshot);
         }
 
         @Override
-        public void writeSnapshot(SyncSnapshot snapshot) {
-            this.snapshot = snapshot;
+        public void publish(SyncPublication publication) {
+            this.snapshot = publication.getSnapshot();
         }
 
         @Override

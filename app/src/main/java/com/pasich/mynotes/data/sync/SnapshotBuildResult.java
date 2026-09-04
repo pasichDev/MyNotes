@@ -61,7 +61,9 @@ public final class SnapshotBuildResult {
         @NonNull private final List<SnapshotProblem> problems;
 
         private SnapshotBuildException(@NonNull List<SnapshotProblem> problems) {
-            super("Local snapshot is incomplete: " + problems.get(0).getKind().name());
+            // The first problem names its record: a user who reads this on the account screen
+            // has to know which note to open, not only that some attachment somewhere is gone.
+            super("Local snapshot is incomplete: " + problems.get(0).describe());
             this.problems = Collections.unmodifiableList(new ArrayList<>(problems));
         }
 

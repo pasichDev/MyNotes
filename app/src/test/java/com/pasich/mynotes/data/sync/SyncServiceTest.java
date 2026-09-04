@@ -305,6 +305,62 @@ public class SyncServiceTest {
         assertThat(backend.writeSnapshotCalls).isEqualTo(1);
     }
 
+    @Test
+    public void runWhileNoSyncRuns_waitsForTheSyncInFlightToFinish() throws Exception {
+        // Disconnect wipes state, conflicts and the blob cache. Done concurrently with the
+        // six-hourly worker it deleted the cache under the worker, which then wrote the old
+        // account's state and conflicts back after the wipe.
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local")));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.readStarted = new java.util.concurrent.CountDownLatch(1);
+        backend.readReleased = new java.util.concurrent.CountDownLatch(1);
+        List<String> order = Collections.synchronizedList(new ArrayList<>());
+        Thread syncing =
+                new Thread(
+                        () -> {
+                            new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+                            order.add("sync finished");
+                        });
+        syncing.start();
+        assertThat(backend.readStarted.await(5, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+
+        Thread clearing =
+                new Thread(() -> SyncService.runWhileNoSyncRuns(() -> order.add("cleared")));
+        clearing.start();
+        Thread.sleep(200L);
+
+        // The sync still holds the lock, so the wipe has not run.
+        assertThat(order).isEmpty();
+        backend.readReleased.countDown();
+        syncing.join(5_000L);
+        clearing.join(5_000L);
+        assertThat(order).containsExactly("sync finished", "cleared").inOrder();
+        assertThat(store.appliedSnapshot).isNotNull();
+    }
+
+    @Test
+    public void sync_pinsConflictBlobsWithoutTransferringOrVerifyingThemAgain() throws Exception {
+        byte[] bytes = "shared attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        SyncRecord local = noteWithAttachment(TEN, "Local wording", hash, bytes.length);
+        SyncRecord remote = noteWithAttachment(TWENTY, "Remote wording", hash, bytes.length);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, bytes);
+        FakeBackend backend = new FakeBackend(snapshot(remote));
+        backend.attachments.put(hash, bytes);
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(state.getConflictCount()).isEqualTo(1);
+        // The blob was verified once for the merged snapshot. Pinning the winner and the loser
+        // used to run the whole transfer again for each and copy the cached blob onto itself,
+        // so an open conflict on a large note cost hundreds of megabytes per sync.
+        assertThat(java.util.Collections.frequency(backend.events, "readAttachment")).isEqualTo(1);
+        assertThat(java.util.Collections.frequency(store.events, "writeAttachment")).isEqualTo(1);
+    }
+
     private static SyncSnapshot snapshot(SyncRecord... records) {
         return new SyncSnapshot(Arrays.asList(records));
     }
@@ -402,6 +458,10 @@ public class SyncServiceTest {
         private List<SyncMergeResult.Conflict> appliedConflicts = Collections.emptyList();
         private SyncState state = SyncState.idle();
         private final Map<String, byte[]> attachments = new HashMap<>();
+
+        /** Blobs written through writeAttachment: the durable cache RoomSyncStore keeps. */
+        private final java.util.Set<String> durable = new java.util.HashSet<>();
+
         private Collection<String> attachmentHashes = Collections.emptyList();
         private final List<SyncState.Status> states = new ArrayList<>();
         private final List<String> events = new ArrayList<>();
@@ -458,6 +518,12 @@ public class SyncServiceTest {
                 throws IOException {
             events.add("writeAttachment");
             attachments.put(sha256, readAll(content));
+            durable.add(sha256);
+        }
+
+        @Override
+        public boolean hasDurableAttachment(String sha256, long sizeBytes) {
+            return durable.contains(sha256);
         }
 
         @Override
@@ -486,6 +552,11 @@ public class SyncServiceTest {
         private IOException readFailure;
         private int writeSnapshotCalls;
 
+        /** When set, the remote read announces itself and then waits to be released. */
+        private java.util.concurrent.CountDownLatch readStarted;
+
+        private java.util.concurrent.CountDownLatch readReleased;
+
         FakeBackend(SyncSnapshot snapshot) {
             this.snapshot = snapshot;
         }
@@ -496,19 +567,28 @@ public class SyncServiceTest {
         }
 
         @Override
-        public SyncSnapshot readSnapshot() throws IOException {
+        public RemoteSnapshot readSnapshotResult() throws IOException {
             // Recorded so a test asserting "the remote was never read" actually proves it.
             events.add("readSnapshot");
             if (readFailure != null) {
                 throw readFailure;
             }
-            return snapshot;
+            if (readStarted != null) {
+                readStarted.countDown();
+                try {
+                    readReleased.await();
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new java.io.InterruptedIOException();
+                }
+            }
+            return RemoteSnapshot.of(snapshot);
         }
 
         @Override
-        public void writeSnapshot(SyncSnapshot snapshot) {
+        public void publish(SyncPublication publication) {
             events.add("writeSnapshot");
-            this.snapshot = snapshot;
+            this.snapshot = publication.getSnapshot();
             writeSnapshotCalls++;
         }
 

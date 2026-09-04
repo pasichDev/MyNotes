@@ -71,18 +71,29 @@ public interface SyncStore {
     /** True when the complete attachment is locally available. */
     boolean hasAttachment(@NonNull String sha256) throws IOException;
 
+    /**
+     * True when the blob already sits in the store's own durable cache, as written by {@link
+     * #writeAttachment}, rather than only in a note's folder that a later edit may empty.
+     *
+     * <p>Lets the service pin a conflict version's blobs without copying a cached blob onto itself;
+     * a store without such a cache answers false and is simply written to again.
+     *
+     * @param sizeBytes the declared size, or a negative value to accept any.
+     */
+    default boolean hasDurableAttachment(@NonNull String sha256, long sizeBytes)
+            throws IOException {
+        return false;
+    }
+
     /** Opens one complete local attachment. The caller closes the returned stream. */
     @NonNull
     InputStream readAttachment(@NonNull String sha256) throws IOException;
 
     /**
-     * Stores one complete attachment locally.
+     * Stores one immutable blob, streaming it rather than holding it in memory.
      *
      * <p>The implementation must consume the stream before returning and must not expose a partial
      * file after an exception.
-     */
-    /**
-     * Stores one immutable blob, streaming it rather than holding it in memory.
      *
      * @param sizeBytes the blob's declared size, or a negative value when it is unknown. A known
      *     size lets an implementation avoid buffering the whole blob to compute a content length.

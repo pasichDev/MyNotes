@@ -45,10 +45,17 @@ public class SyncMutationCoordinator {
         String nextStableId();
     }
 
-    /** Repoints a restored note's attachments when its row id had to change. */
+    /**
+     * Moves a restored note's attachments to where its final row id expects them.
+     *
+     * @return true when the note's attachment or block JSON was rewritten and must be stored.
+     */
     interface AttachmentRelocation {
-        void relocate(@NonNull Note note, int previousId);
+        boolean relocate(@NonNull Note note, int previousId);
     }
+
+    /** Keeps every {@code IN (...)} clause under SQLite's bound-variable limit. */
+    private static final int QUERY_CHUNK = 500;
 
     private final TransactionExecutor transactionExecutor;
     private final NoteDao noteDao;
@@ -93,7 +100,9 @@ public class SyncMutationCoordinator {
                 (note, previousId) -> {
                     com.pasich.mynotes.extendedEditor.attach.NoteAttachmentRelocator.Result moved =
                             com.pasich.mynotes.extendedEditor.attach.NoteAttachmentRelocator
-                                    .relocate(
+                                    .adoptStaged(
+                                            com.pasich.mynotes.extendedEditor.attach
+                                                    .AttachmentStorage.restoreStagingDir(context),
                                             com.pasich.mynotes.extendedEditor.attach
                                                     .AttachmentStorage.baseDirPath(context),
                                             previousId,
@@ -104,6 +113,7 @@ public class SyncMutationCoordinator {
                         note.setAttachments(moved.attachmentsJson);
                         note.setValueJson(moved.valueJson);
                     }
+                    return moved.changed;
                 });
     }
 
@@ -127,7 +137,7 @@ public class SyncMutationCoordinator {
                 syncMetadataDao,
                 timeProvider,
                 stableIdGenerator,
-                (note, previousId) -> {});
+                (note, previousId) -> false);
     }
 
     SyncMutationCoordinator(
@@ -175,10 +185,16 @@ public class SyncMutationCoordinator {
                                     SyncMetadata.RECORD_TYPE_TAG, extractTagIds(tags));
 
                     // Same REPLACE-insert collision as notes; see insertNotes.
+                    Set<Long> taken = new LinkedHashSet<>();
+                    for (Tag existing : tagsByIds(extractTagIds(tags))) {
+                        taken.add(existing.getId());
+                    }
                     List<Tag> keepingId = new ArrayList<>();
                     List<Tag> reassigned = new ArrayList<>();
+                    Set<Long> claimed = new LinkedHashSet<>();
                     for (Tag tag : tags) {
-                        if (tag.getId() > 0 && tagsDao.getTagSync(tag.getId()) != null) {
+                        if (tag.getId() > 0
+                                && (taken.contains(tag.getId()) || !claimed.add(tag.getId()))) {
                             tag.id = 0;
                             reassigned.add(tag);
                         } else {
@@ -284,7 +300,11 @@ public class SyncMutationCoordinator {
         if (incoming == null || incoming.isEmpty()) return;
         transactionExecutor.run(
                 () -> {
-                    List<Note> notes = withoutNotesAlreadyPresent(incoming);
+                    // One query for every incoming id rather than one per note per pass: a
+                    // large restore ran four point lookups per note inside the transaction and
+                    // sat on the restore dialog for tens of seconds doing nothing else.
+                    Map<Integer, Note> existingById = notesByIds(extractNoteIds(incoming));
+                    List<Note> notes = withoutNotesAlreadyPresent(incoming, existingById);
                     if (notes.isEmpty()) return null;
                     long timestamp =
                             resolveBatchTimestamp(
@@ -294,13 +314,18 @@ public class SyncMutationCoordinator {
                     // their id first leaves the autoincrement counter past all of them, which is
                     // what stops a reassigned note being handed an id a later note in the same
                     // batch is about to claim: addNotes is a REPLACE insert, so that collision
-                    // silently destroyed one of the two restored notes.
+                    // silently destroyed one of the two restored notes. An id claimed twice
+                    // within the batch itself is the same collision: the second note would
+                    // REPLACE the first, so only the first may keep it.
                     List<Note> keepingId = new ArrayList<>();
                     List<Note> reassigned = new ArrayList<>();
                     Map<Note, Integer> previousIds = new java.util.IdentityHashMap<>();
+                    Set<Integer> claimed = new LinkedHashSet<>();
                     for (Note note : notes) {
                         previousIds.put(note, note.getId());
-                        if (note.getId() > 0 && noteDao.getNoteSync(note.getId()) != null) {
+                        if (note.getId() > 0
+                                && (existingById.containsKey(note.getId())
+                                        || !claimed.add(note.getId()))) {
                             note.setId(0);
                             reassigned.add(note);
                         } else {
@@ -324,10 +349,9 @@ public class SyncMutationCoordinator {
             int previous = previousIds.get(note);
             int localId = resolveIntId(note.getId(), insertedIds[i]);
             note.setId(localId);
-            if (previous > 0 && previous != localId) {
-                // Its attachments were extracted under the old id and would otherwise share a
-                // folder with whichever note owns that id now.
-                attachmentRelocation.relocate(note, previous);
+            // Its attachments were staged under the id the archive knew; they move into the
+            // folder of the id it has now, whether or not the two differ.
+            if (previous > 0 && attachmentRelocation.relocate(note, previous)) {
                 noteDao.updateNoteContent(
                         localId,
                         note.getTitle(),
@@ -629,13 +653,52 @@ public class SyncMutationCoordinator {
      * the existing one instead of overwriting it.
      */
     @NonNull
-    private List<Note> withoutNotesAlreadyPresent(@NonNull List<Note> incoming) {
+    private static List<Note> withoutNotesAlreadyPresent(
+            @NonNull List<Note> incoming, @NonNull Map<Integer, Note> existingById) {
         List<Note> result = new ArrayList<>(incoming.size());
         for (Note note : incoming) {
-            Note existing = note.getId() > 0 ? noteDao.getNoteSync(note.getId()) : null;
+            Note existing = note.getId() > 0 ? existingById.get(note.getId()) : null;
             if (existing == null || !isSameNoteContent(existing, note)) {
                 result.add(note);
             }
+        }
+        return result;
+    }
+
+    /** The existing rows for these ids, fetched in bounded batches. */
+    @NonNull
+    private Map<Integer, Note> notesByIds(@NonNull List<Long> ids) {
+        Map<Integer, Note> result = new java.util.HashMap<>();
+        List<Integer> positive = new ArrayList<>();
+        for (Long id : ids) {
+            if (id != null && id > 0L) positive.add(id.intValue());
+        }
+        for (List<Integer> chunk : chunks(positive)) {
+            for (Note note : noteDao.getNotesByIdsSync(chunk)) {
+                result.put(note.getId(), note);
+            }
+        }
+        return result;
+    }
+
+    @NonNull
+    private List<Tag> tagsByIds(@NonNull List<Long> ids) {
+        List<Tag> result = new ArrayList<>();
+        List<Long> positive = new ArrayList<>();
+        for (Long id : ids) {
+            if (id != null && id > 0L) positive.add(id);
+        }
+        for (List<Long> chunk : chunks(positive)) {
+            result.addAll(tagsDao.getTagsByIdsSync(chunk));
+        }
+        return result;
+    }
+
+    @NonNull
+    private static <T> List<List<T>> chunks(@NonNull List<T> values) {
+        List<List<T>> result = new ArrayList<>();
+        for (int start = 0; start < values.size(); start += QUERY_CHUNK) {
+            result.add(values.subList(start, Math.min(values.size(), start + QUERY_CHUNK)));
         }
         return result;
     }
@@ -704,7 +767,7 @@ public class SyncMutationCoordinator {
     }
 
     private void ensureMetadataRow(@NonNull String recordType, long localId) {
-        if (syncMetadataDao.exists(recordType, localId)) return;
+        // INSERT OR IGNORE: a row that exists is left alone without a lookup first.
         syncMetadataDao.insertIfAbsent(
                 new SyncMetadataEntity(
                         recordType, localId, stableIdGenerator.nextStableId(), 0L, null));
@@ -725,11 +788,15 @@ public class SyncMutationCoordinator {
     }
 
     private boolean isLegacyImportBatch(@NonNull String recordType, @NonNull List<Long> localIds) {
+        List<Long> positive = new ArrayList<>();
         for (Long localId : localIds) {
-            if (localId == null || localId <= 0L) continue;
-            if (!syncMetadataDao.exists(recordType, localId)) return true;
+            if (localId != null && localId > 0L) positive.add(localId);
         }
-        return false;
+        Set<Long> known = new LinkedHashSet<>();
+        for (List<Long> chunk : chunks(positive)) {
+            known.addAll(syncMetadataDao.getExistingLocalIds(recordType, chunk));
+        }
+        return !known.containsAll(positive);
     }
 
     private static List<Long> extractNoteIds(List<Note> notes) {

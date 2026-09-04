@@ -5,11 +5,8 @@ import androidx.annotation.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
@@ -62,6 +59,22 @@ public final class SyncService {
     private static final ReentrantLock SYNC_LOCK = new ReentrantLock();
 
     private static final long LOCK_WAIT_SECONDS = 5L;
+
+    /**
+     * Runs {@code action} while no sync is in flight, waiting for a running one to finish first.
+     *
+     * <p>For work that tears down what a sync writes — the disconnect wipe of state, conflicts and
+     * cached blobs. Done concurrently, that wipe raced the six-hourly worker: the worker's cache
+     * directory vanished under it and its final state and conflict rows landed after the wipe.
+     */
+    public static void runWhileNoSyncRuns(@NonNull Runnable action) {
+        SYNC_LOCK.lock();
+        try {
+            action.run();
+        } finally {
+            SYNC_LOCK.unlock();
+        }
+    }
 
     /** Runs one serialized manual synchronization attempt and returns its durable final state. */
     @NonNull
@@ -152,7 +165,8 @@ public final class SyncService {
             // The merged snapshot contains only the deterministic winner. A conflict row is not
             // durable unless the loser can later be restored as well, so preflight and pin each
             // version independently; SyncSnapshot deliberately forbids two versions of one ID.
-            synchronizeAttachments(backend, merged, expectedSizes);
+            java.util.Set<String> synchronizedHashes = new java.util.HashSet<>();
+            synchronizeAttachments(backend, merged, expectedSizes, synchronizedHashes);
             for (SyncMergeResult.Conflict conflict : allConflicts) {
                 // Best effort. The merged snapshot's own blobs are mandatory and were just
                 // transferred above; these are the extra copies that let a conflict be resolved
@@ -161,8 +175,8 @@ public final class SyncService {
                 // syncing anything at all, including the devices that could never resolve it.
                 // Resolution still verifies before it applies, so a version that cannot be
                 // materialized simply cannot be chosen.
-                pinConflictVersionQuietly(backend, conflict.getWinner());
-                pinConflictVersionQuietly(backend, conflict.getLoser());
+                pinConflictVersionQuietly(backend, conflict.getWinner(), synchronizedHashes);
+                pinConflictVersionQuietly(backend, conflict.getLoser(), synchronizedHashes);
             }
 
             if (needsPublication(
@@ -341,13 +355,27 @@ public final class SyncService {
         return true;
     }
 
+    /**
+     * Makes every blob {@code merged} references available, verified, at both endpoints.
+     *
+     * @param synchronizedHashes blobs already settled by an earlier call this sync, skipped here
+     *     and extended with the ones settled now. A conflict version shares most of its blobs with
+     *     the merged snapshot, and re-verifying each one meant re-hashing and re-downloading it
+     *     once per version while the conflict stayed open.
+     */
     private void synchronizeAttachments(
-            SyncBackend backend, SyncSnapshot merged, Map<String, Long> expectedSizes)
+            SyncBackend backend,
+            SyncSnapshot merged,
+            Map<String, Long> expectedSizes,
+            java.util.Set<String> synchronizedHashes)
             throws IOException {
         Collection<String> hashes =
                 Objects.requireNonNull(store.getAttachmentHashes(merged), "hashes");
         for (String hash : hashes) {
             validateHash(hash);
+            if (!synchronizedHashes.add(hash)) {
+                continue;
+            }
             if (store.hasAttachment(hash)) {
                 Long expectedSize = expectedSizes.get(hash);
                 // Index lookup only; the bytes are checked once, below.
@@ -405,9 +433,11 @@ public final class SyncService {
 
     /** Pins a conflict version's blobs, logging rather than failing the whole sync. */
     private void pinConflictVersionQuietly(
-            @NonNull SyncBackend backend, @NonNull SyncRecord record) {
+            @NonNull SyncBackend backend,
+            @NonNull SyncRecord record,
+            @NonNull java.util.Set<String> synchronizedHashes) {
         try {
-            pinConflictVersion(backend, record);
+            pinConflictVersion(backend, record, synchronizedHashes);
         } catch (IOException unavailable) {
             Log.w(
                     TAG,
@@ -416,15 +446,26 @@ public final class SyncService {
         }
     }
 
-    /** Pins required conflict blobs into the store's durable content-addressed cache. */
-    private void pinConflictVersion(@NonNull SyncBackend backend, @NonNull SyncRecord record)
+    /**
+     * Pins required conflict blobs into the store's durable content-addressed cache.
+     *
+     * <p>A blob already in that cache is left alone: copying it onto itself rewrote hundreds of
+     * megabytes per sync for as long as a conflict on a large note stayed open.
+     */
+    private void pinConflictVersion(
+            @NonNull SyncBackend backend,
+            @NonNull SyncRecord record,
+            @NonNull java.util.Set<String> synchronizedHashes)
             throws IOException {
         if (record.isTombstone()) return;
         SyncSnapshot snapshot = new SyncSnapshot(java.util.Collections.singletonList(record));
         Map<String, Long> expectedSizes = attachmentSizes(snapshot);
-        synchronizeAttachments(backend, snapshot, expectedSizes);
+        synchronizeAttachments(backend, snapshot, expectedSizes, synchronizedHashes);
         for (String hash : store.getAttachmentHashes(snapshot)) {
             Long expectedSize = expectedSizes.get(hash);
+            if (store.hasDurableAttachment(hash, expectedSize == null ? -1L : expectedSize)) {
+                continue;
+            }
             copyVerified(hash, expectedSize, store.readAttachment(hash), store::writeAttachment);
         }
     }
@@ -434,14 +475,9 @@ public final class SyncService {
         if (source == null) {
             throw new IOException("Required attachment is unavailable: " + hash);
         }
-        try (InputStream input = source;
-                VerifyingInputStream verified =
-                        new VerifyingInputStream(input, hash, expectedSize)) {
-            byte[] buffer = new byte[8192];
-            while (verified.read(buffer) != -1) {
-                // Consume the complete blob before accepting an existing remote attachment.
-            }
-            verified.verifyEndOfStream();
+        // Consume the complete blob before accepting an existing attachment.
+        try (InputStream input = source) {
+            VerifyingInputStream.verify(input, hash, expectedSize);
         }
     }
 
@@ -537,127 +573,5 @@ public final class SyncService {
 
     private interface AttachmentWriter {
         void write(String hash, long sizeBytes, InputStream content) throws IOException;
-    }
-
-    /** Verifies the hash only after the receiving endpoint consumed every byte. */
-    private static final class VerifyingInputStream extends FilterInputStream {
-        private final MessageDigest digest;
-        private final String expectedHash;
-        private final Long expectedSize;
-        private long byteCount;
-        private VerificationState verificationState = VerificationState.UNVERIFIED;
-        private AttachmentIntegrityException integrityFailure;
-
-        private enum VerificationState {
-            UNVERIFIED,
-            VERIFIED,
-            FAILED
-        }
-
-        VerifyingInputStream(InputStream input, String expectedHash, Long expectedSize) {
-            super(input);
-            this.expectedHash = expectedHash;
-            this.expectedSize = expectedSize;
-            try {
-                digest = MessageDigest.getInstance("SHA-256");
-            } catch (NoSuchAlgorithmException exception) {
-                throw new IllegalStateException("SHA-256 is unavailable", exception);
-            }
-        }
-
-        @Override
-        public int read() throws IOException {
-            rethrowIntegrityFailure();
-            int value = super.read();
-            if (value >= 0) {
-                digest.update((byte) value);
-                byteCount++;
-                enforceSizeLimit();
-            } else {
-                verifyEndOfStream();
-            }
-            return value;
-        }
-
-        @Override
-        public int read(byte[] buffer, int offset, int length) throws IOException {
-            rethrowIntegrityFailure();
-            int read = super.read(buffer, offset, length);
-            if (read > 0) {
-                digest.update(buffer, offset, read);
-                byteCount += read;
-                enforceSizeLimit();
-            } else if (read < 0) {
-                verifyEndOfStream();
-            }
-            return read;
-        }
-
-        private void enforceSizeLimit() throws IOException {
-            if (byteCount > SyncBundleValidator.MAX_ATTACHMENT_BYTES) {
-                failIntegrity("Attachment exceeds the sync size limit");
-            }
-        }
-
-        /**
-         * Checks the digest, draining anything the destination left behind first.
-         *
-         * <p>Reached from {@link #read} at end of stream, so a destination that streams straight to
-         * its final location still learns about a mismatch before it commits.
-         */
-        void verifyEndOfStream() throws IOException {
-            if (verificationState == VerificationState.VERIFIED) {
-                return;
-            }
-            rethrowIntegrityFailure();
-            try {
-                drainRemaining();
-                String actualHash = toHex(digest.digest());
-                if (!expectedHash.equals(actualHash)) {
-                    failIntegrity("Attachment checksum does not match its declared hash");
-                }
-                if (expectedSize != null && expectedSize.longValue() != byteCount) {
-                    failIntegrity("Attachment size does not match its declared size");
-                }
-                verificationState = VerificationState.VERIFIED;
-            } catch (AttachmentIntegrityException failure) {
-                integrityFailure = failure;
-                verificationState = VerificationState.FAILED;
-                throw failure;
-            }
-        }
-
-        private void failIntegrity(String message) throws AttachmentIntegrityException {
-            AttachmentIntegrityException failure = new AttachmentIntegrityException(message);
-            integrityFailure = failure;
-            verificationState = VerificationState.FAILED;
-            throw failure;
-        }
-
-        private void rethrowIntegrityFailure() throws AttachmentIntegrityException {
-            if (verificationState == VerificationState.FAILED && integrityFailure != null) {
-                throw integrityFailure;
-            }
-        }
-
-        /** Reads through {@code super} so the digest covers bytes the destination skipped. */
-        private void drainRemaining() throws IOException {
-            byte[] scratch = new byte[8192];
-            int read;
-            while ((read = super.read(scratch, 0, scratch.length)) != -1) {
-                digest.update(scratch, 0, read);
-                byteCount += read;
-                enforceSizeLimit();
-            }
-        }
-
-        @NonNull
-        private static String toHex(byte[] bytes) {
-            StringBuilder result = new StringBuilder(bytes.length * 2);
-            for (byte value : bytes) {
-                result.append(String.format("%02x", value & 0xff));
-            }
-            return result.toString();
-        }
     }
 }

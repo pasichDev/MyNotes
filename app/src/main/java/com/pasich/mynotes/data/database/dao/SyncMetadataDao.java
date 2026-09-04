@@ -28,6 +28,12 @@ public interface SyncMetadataDao {
                     + "WHERE recordType = :recordType AND localId = :localId)")
     boolean exists(String recordType, long localId);
 
+    /** The subset of {@code localIds} that already has a row; the caller chunks the list. */
+    @Query(
+            "SELECT localId FROM sync_metadata "
+                    + "WHERE recordType = :recordType AND localId IN (:localIds)")
+    List<Long> getExistingLocalIds(String recordType, List<Long> localIds);
+
     @Query(
             "SELECT * FROM sync_metadata WHERE recordType = :recordType AND stableId = :stableId LIMIT 1")
     SyncMetadataEntity getByStableId(String recordType, String stableId);

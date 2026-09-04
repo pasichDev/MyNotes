@@ -20,6 +20,9 @@ public interface TagsDao {
     @Query("SELECT * FROM tags WHERE id = :id LIMIT 1")
     Tag getTagSync(long id);
 
+    @Query("SELECT * FROM tags WHERE id IN (:ids)")
+    List<Tag> getTagsByIdsSync(List<Long> ids);
+
     /** Tags are referenced by name from a note, so the name is their real identity. */
     @Query("SELECT * FROM tags WHERE name = :name LIMIT 1")
     Tag getTagByNameSync(String name);

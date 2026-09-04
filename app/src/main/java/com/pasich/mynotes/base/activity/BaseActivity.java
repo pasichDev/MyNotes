@@ -31,7 +31,7 @@ import javax.inject.Inject;
 
 public abstract class BaseActivity extends AppCompatActivity implements BaseView {
 
-    @Inject ThemePreferencesCache themePreferencesCache;
+    @Inject protected ThemePreferencesCache themePreferencesCache;
 
     @Override
     public void selectTheme() {
