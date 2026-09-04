@@ -89,3 +89,11 @@
     public static *** w(...);
     public static *** e(...);
 }
+# Gson maps these by field name, and only the classes under data.model are kept above.
+# Everything below is parsed from data the app itself wrote earlier — note attachments, local
+# backups, Google Keep imports — so a renamed field silently deserializes to null rather than
+# failing loudly: attachments stop resolving and a restore produces empty notes.
+-keep class com.pasich.mynotes.extendedEditor.models.** { *; }
+-keep class com.pasich.mynotes.utils.backup.models.** { *; }
+-keepclassmembers class com.pasich.mynotes.extendedEditor.models.** { *; }
+-keepclassmembers class com.pasich.mynotes.utils.backup.models.** { *; }

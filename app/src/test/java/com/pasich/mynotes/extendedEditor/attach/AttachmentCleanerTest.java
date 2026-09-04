@@ -149,6 +149,47 @@ public class AttachmentCleanerTest {
         assertThat(orphan.exists()).isFalse();
     }
 
+    @Test
+    public void reportsNoFolderWhenTheNoteHasNoAttachmentDirectory() {
+        AttachmentCleaner.Result result = AttachmentCleaner.cleanup(attachmentsRoot, 99, "[]");
+
+        assertThat(result).isEqualTo(AttachmentCleaner.Result.NO_FOLDER);
+    }
+
+    @Test
+    public void abortsOnANullEntryInTheAttachmentList() throws Exception {
+        File kept = write("1731000000000_882134.jpg", "keep");
+
+        AttachmentCleaner.Result result = AttachmentCleaner.cleanup(attachmentsRoot, 42, "[null]");
+
+        assertThat(result).isEqualTo(AttachmentCleaner.Result.ABORTED_UNRESOLVED_REFERENCE);
+        assertThat(kept.exists()).isTrue();
+    }
+
+    @Test
+    public void treatsMissingMetadataAsNothingToClean() throws Exception {
+        File orphan = write("1731000000009_000001.tmp", "drop");
+
+        // A note that has never had an attachment stores null here.
+        AttachmentCleaner.Result result = AttachmentCleaner.cleanup(attachmentsRoot, 42, null);
+
+        assertThat(result).isEqualTo(AttachmentCleaner.Result.CLEANED);
+        assertThat(orphan.exists()).isFalse();
+    }
+
+    @Test
+    public void aReferenceToAnotherNotesFolderDoesNotProtectThisOne() throws Exception {
+        // The reference resolves, so cleanup proceeds; it simply protects nothing here.
+        File orphan = write("1731000000009_000001.tmp", "drop");
+
+        AttachmentCleaner.Result result =
+                AttachmentCleaner.cleanup(
+                        attachmentsRoot, 42, json("editorjs://attachments/note_7/other.png"));
+
+        assertThat(result).isEqualTo(AttachmentCleaner.Result.CLEANED);
+        assertThat(orphan.exists()).isFalse();
+    }
+
     private File write(String name, String content) throws Exception {
         File file = new File(noteFolder, name);
         Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));

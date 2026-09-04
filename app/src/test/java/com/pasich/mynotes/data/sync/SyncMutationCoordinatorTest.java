@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +62,63 @@ public class SyncMutationCoordinatorTest {
                         syncMetadataDao,
                         new FixedTimeProvider(1_000L),
                         new QueueStableIdGenerator("stable-a", "stable-b", "stable-c"));
+    }
+
+    @Test
+    public void insertNotes_skipsANoteThisDeviceAlreadyHasUnchanged() {
+        // Restoring a backup onto the library it came from must stay a no-op: restore inserts
+        // rather than replaces, so without this every note would be duplicated.
+        Note existing = new Note().create("Title", "Body", 10L, "work");
+        existing.setId(5);
+        Note fromBackup = new Note().create("Title", "Body", 10L, "work");
+        fromBackup.setId(5);
+        when(noteDao.getNoteSync(5)).thenReturn(existing);
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
+
+        verify(noteDao, never()).addNotes(org.mockito.ArgumentMatchers.anyList());
+    }
+
+    @Test
+    public void insertNotes_keepsADifferentNoteThatHappensToShareARowId() {
+        // A backup from another device can reuse an id for entirely different content; that note
+        // has to survive alongside the local one rather than overwrite it.
+        Note existing = new Note().create("Local", "Local body", 10L, "");
+        existing.setId(5);
+        Note fromBackup = new Note().create("Other", "Other body", 20L, "");
+        fromBackup.setId(5);
+        when(noteDao.getNoteSync(5)).thenReturn(existing);
+        when(noteDao.addNotes(org.mockito.ArgumentMatchers.anyList())).thenReturn(new long[] {77L});
+
+        coordinator.insertNotes(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
+
+        assertThat(fromBackup.getId()).isEqualTo(77);
+    }
+
+    @Test
+    public void insertTags_skipsATagNameThisDeviceAlreadyHas() {
+        Tag existing = new Tag().create("work");
+        existing.id = 3;
+        when(tagsDao.getTagByNameSync("work")).thenReturn(existing);
+        Tag fromBackup = new Tag().create("work");
+        fromBackup.id = 9;
+
+        coordinator.insertTags(new java.util.ArrayList<>(java.util.List.of(fromBackup)));
+
+        // A note references its tag by name, so a second row with the same name is the same tag
+        // shown twice with no way to tell them apart.
+        verify(tagsDao, never()).addTags(org.mockito.ArgumentMatchers.anyList());
+    }
+
+    @Test
+    public void insertTags_dropsRepeatsWithinOneRestoreBatch() {
+        Tag first = new Tag().create("work");
+        Tag duplicate = new Tag().create("work");
+        when(tagsDao.addTags(org.mockito.ArgumentMatchers.anyList())).thenReturn(new long[] {4L});
+
+        coordinator.insertTags(new java.util.ArrayList<>(java.util.List.of(first, duplicate)));
+
+        assertThat(first.getId()).isEqualTo(4L);
     }
 
     @Test

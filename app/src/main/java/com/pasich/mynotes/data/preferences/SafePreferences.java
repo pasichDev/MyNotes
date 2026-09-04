@@ -63,7 +63,12 @@ public class SafePreferences {
         SharedPreferences.Editor editor = prefs.edit();
         for (java.util.Map.Entry<String, Object> entry : values.entrySet()) {
             Object value = entry.getValue();
-            if (value instanceof Integer) {
+            if (value == null) {
+                // Matches putString(key, null), which removes the key and lets the default
+                // apply. A backup whose JSON carries an explicit null for a string preference
+                // must restore to defaults, not abort the whole restore.
+                editor.remove(entry.getKey());
+            } else if (value instanceof Integer) {
                 editor.putInt(entry.getKey(), (Integer) value);
             } else if (value instanceof Boolean) {
                 editor.putBoolean(entry.getKey(), (Boolean) value);

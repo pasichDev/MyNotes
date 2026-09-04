@@ -116,6 +116,50 @@ public class AttachmentUrlTest {
     }
 
     @Test
+    public void ignoresAQueryOrFragmentAfterThePath() {
+        AttachmentUrl withQuery =
+                AttachmentUrl.parse("editorjs://attachments/note_4/photo.png?v=2");
+        AttachmentUrl withFragment =
+                AttachmentUrl.parse("editorjs://attachments/note_4/photo.png#top");
+
+        assertThat(withQuery).isNotNull();
+        assertThat(withQuery.getFileName()).isEqualTo("photo.png");
+        assertThat(withFragment).isNotNull();
+        assertThat(withFragment.getFileName()).isEqualTo("photo.png");
+    }
+
+    @Test
+    public void acceptsAnUppercaseScheme() {
+        AttachmentUrl parsed = AttachmentUrl.parse("EDITORJS://attachments/note_4/photo.png");
+
+        assertThat(parsed).isNotNull();
+        assertThat(parsed.canonical()).isEqualTo("editorjs://attachments/note_4/photo.png");
+    }
+
+    @Test
+    public void twoReferencesToTheSameFileAreEqual() {
+        AttachmentUrl fromCanonical = AttachmentUrl.parse("editorjs://attachments/note_4/a.png");
+        AttachmentUrl fromLegacy = AttachmentUrl.parse("file://attachments/note_4/a.png");
+
+        assertThat(fromCanonical).isEqualTo(fromLegacy);
+        assertThat(fromCanonical.hashCode()).isEqualTo(fromLegacy.hashCode());
+        assertThat(fromCanonical.toString()).isEqualTo("editorjs://attachments/note_4/a.png");
+        assertThat(fromCanonical)
+                .isNotEqualTo(AttachmentUrl.parse("editorjs://attachments/note_4/b.png"));
+    }
+
+    @Test
+    public void resolvingAgainstAMissingRootStillStaysInsideIt() throws Exception {
+        File root = new File(temporaryFolder.getRoot(), "not-created-yet");
+        AttachmentUrl parsed = AttachmentUrl.parse("editorjs://attachments/note_9/photo.png");
+
+        assertThat(parsed).isNotNull();
+        File resolved = parsed.resolveWithin(root);
+        assertThat(resolved).isNotNull();
+        assertThat(resolved.getPath()).startsWith(root.getCanonicalPath() + File.separator);
+    }
+
+    @Test
     public void canonicalRefusesToBuildAnUnsafeReference() {
         try {
             AttachmentUrl.canonical(1, "../escape.png");

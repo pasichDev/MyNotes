@@ -6,11 +6,13 @@ import static com.pasich.mynotes.utils.constants.Backup.FILE_NAME_BACKUP_MNBKN;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import com.google.gson.Gson;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,6 +22,8 @@ import java.util.zip.ZipOutputStream;
 
 /** New ZIP-based backup format. Structure: My_Notes_Backup.json attachments/note_<id>/file.ext */
 public class ZipBackupHelper {
+
+    private static final String TAG = "ZipBackupHelper";
 
     /** Detect ZIP by magic header "PK" */
     public static boolean isZip(byte[] data) {
@@ -102,10 +106,22 @@ public class ZipBackupHelper {
                 // ================== attachments/... ==================
                 else if (entry.getName().startsWith(ATTACHMENTS_BASE_DIR)) {
 
-                    File out = new File(ctx.getFilesDir(), entry.getName());
+                    // A backup file is untrusted input: it can be edited, or come from
+                    // somewhere else entirely. "attachments/../../databases/notes" also starts
+                    // with the prefix above, so without resolving the path first an archive
+                    // could write anywhere the app can write.
+                    File out = safeAttachmentTarget(ctx, entry.getName());
+                    if (out == null || entry.isDirectory()) {
+                        Log.w(TAG, "Skipping a backup entry outside the attachment directory");
+                        zis.closeEntry();
+                        continue;
+                    }
                     File parent = out.getParentFile();
-                    assert parent != null;
-                    if (!parent.exists()) parent.mkdirs();
+                    if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                        Log.w(TAG, "Could not create the attachment directory for a backup entry");
+                        zis.closeEntry();
+                        continue;
+                    }
 
                     try (FileOutputStream fos = new FileOutputStream(out)) {
                         byte[] data = new byte[4096];
@@ -122,5 +138,17 @@ public class ZipBackupHelper {
         }
 
         return backup != null ? backup : new JsonBackup().error();
+    }
+
+    /**
+     * Resolves one archive entry inside the attachment directory, or {@code null} if it escapes.
+     *
+     * @param entryName the raw name from the archive, which is attacker-controlled.
+     */
+    private static File safeAttachmentTarget(Context ctx, String entryName) throws IOException {
+        File root = new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR).getCanonicalFile();
+        File resolved = new File(ctx.getFilesDir(), entryName).getCanonicalFile();
+        String prefix = root.getPath() + File.separator;
+        return resolved.getPath().startsWith(prefix) ? resolved : null;
     }
 }

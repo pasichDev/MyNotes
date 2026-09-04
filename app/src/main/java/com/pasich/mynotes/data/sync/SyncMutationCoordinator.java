@@ -44,6 +44,11 @@ public class SyncMutationCoordinator {
         String nextStableId();
     }
 
+    /** Repoints a restored note's attachments when its row id had to change. */
+    interface AttachmentRelocation {
+        void relocate(@NonNull Note note, int previousId);
+    }
+
     private final TransactionExecutor transactionExecutor;
     private final NoteDao noteDao;
     private final TaskDao taskDao;
@@ -53,12 +58,16 @@ public class SyncMutationCoordinator {
     private final SyncMetadataDao syncMetadataDao;
     private final TimeProvider timeProvider;
     private final StableIdGenerator stableIdGenerator;
+    private final AttachmentRelocation attachmentRelocation;
     private final Object legacyImportLock = new Object();
     private long legacyImportTimestamp = -1L;
     private long legacyImportExpiresAt = -1L;
 
     @Inject
-    public SyncMutationCoordinator(@NonNull AppDatabase database) {
+    public SyncMutationCoordinator(
+            @dagger.hilt.android.qualifiers.ApplicationContext @NonNull
+                    android.content.Context context,
+            @NonNull AppDatabase database) {
         this(
                 new TransactionExecutor() {
                     @Override
@@ -79,7 +88,22 @@ public class SyncMutationCoordinator {
                 database.transactionsNote(),
                 database.syncMetadataDao(),
                 System::currentTimeMillis,
-                SyncMetadata::newStableId);
+                SyncMetadata::newStableId,
+                (note, previousId) -> {
+                    com.pasich.mynotes.extendedEditor.attach.NoteAttachmentRelocator.Result moved =
+                            com.pasich.mynotes.extendedEditor.attach.NoteAttachmentRelocator
+                                    .relocate(
+                                            com.pasich.mynotes.extendedEditor.attach
+                                                    .AttachmentStorage.baseDirPath(context),
+                                            previousId,
+                                            note.getId(),
+                                            note.getAttachments(),
+                                            note.getValueJson());
+                    if (moved.changed) {
+                        note.setAttachments(moved.attachmentsJson);
+                        note.setValueJson(moved.valueJson);
+                    }
+                });
     }
 
     SyncMutationCoordinator(
@@ -92,6 +116,31 @@ public class SyncMutationCoordinator {
             @NonNull SyncMetadataDao syncMetadataDao,
             @NonNull TimeProvider timeProvider,
             @NonNull StableIdGenerator stableIdGenerator) {
+        this(
+                transactionExecutor,
+                noteDao,
+                taskDao,
+                tagsDao,
+                taskCategoryDao,
+                transactions,
+                syncMetadataDao,
+                timeProvider,
+                stableIdGenerator,
+                (note, previousId) -> {});
+    }
+
+    SyncMutationCoordinator(
+            @NonNull TransactionExecutor transactionExecutor,
+            @NonNull NoteDao noteDao,
+            @NonNull TaskDao taskDao,
+            @NonNull TagsDao tagsDao,
+            @NonNull TaskCategoryDao taskCategoryDao,
+            @NonNull Transactions transactions,
+            @NonNull SyncMetadataDao syncMetadataDao,
+            @NonNull TimeProvider timeProvider,
+            @NonNull StableIdGenerator stableIdGenerator,
+            @NonNull AttachmentRelocation attachmentRelocation) {
+        this.attachmentRelocation = attachmentRelocation;
         this.transactionExecutor = transactionExecutor;
         this.noteDao = noteDao;
         this.taskDao = taskDao;
@@ -114,10 +163,12 @@ public class SyncMutationCoordinator {
                 });
     }
 
-    public void insertTags(List<Tag> tags) {
-        if (tags == null || tags.isEmpty()) return;
+    public void insertTags(List<Tag> incoming) {
+        if (incoming == null || incoming.isEmpty()) return;
         transactionExecutor.run(
                 () -> {
+                    List<Tag> tags = withoutTagsAlreadyPresent(incoming);
+                    if (tags.isEmpty()) return null;
                     long timestamp =
                             resolveBatchTimestamp(
                                     SyncMetadata.RECORD_TYPE_TAG, extractTagIds(tags));
@@ -210,19 +261,38 @@ public class SyncMutationCoordinator {
         return transactionExecutor.run(() -> insertNoteInternal(note, timeProvider.now()));
     }
 
-    public void insertNotes(List<Note> notes) {
-        if (notes == null || notes.isEmpty()) return;
+    public void insertNotes(List<Note> incoming) {
+        if (incoming == null || incoming.isEmpty()) return;
         transactionExecutor.run(
                 () -> {
+                    List<Note> notes = withoutNotesAlreadyPresent(incoming);
+                    if (notes.isEmpty()) return null;
                     long timestamp =
                             resolveBatchTimestamp(
                                     SyncMetadata.RECORD_TYPE_NOTE, extractNoteIds(notes));
+                    int[] previousIds = new int[notes.size()];
+                    for (int i = 0; i < notes.size(); i++) {
+                        previousIds[i] = notes.get(i).getId();
+                    }
                     releaseTakenNoteIds(notes);
                     long[] insertedIds = noteDao.addNotes(notes);
                     for (int i = 0; i < notes.size(); i++) {
                         Note note = notes.get(i);
                         int localId = resolveIntId(note.getId(), insertedIds[i]);
                         note.setId(localId);
+                        if (previousIds[i] > 0 && previousIds[i] != localId) {
+                            // Its attachments were extracted under the old id and would
+                            // otherwise share a folder with whichever note owns that id now.
+                            attachmentRelocation.relocate(note, previousIds[i]);
+                            noteDao.updateNoteContent(
+                                    localId,
+                                    note.getTitle(),
+                                    note.getValue(),
+                                    note.getValueJson(),
+                                    note.getDate(),
+                                    note.getTag(),
+                                    note.getAttachments());
+                        }
                         touchRecord(SyncMetadata.RECORD_TYPE_NOTE, localId, timestamp);
                     }
                     return null;
@@ -504,6 +574,66 @@ public class SyncMutationCoordinator {
         note.setId(localId);
         touchRecord(SyncMetadata.RECORD_TYPE_NOTE, localId, timestamp);
         return insertedId;
+    }
+
+    /**
+     * Drops incoming notes that this device already holds.
+     *
+     * <p>Restore inserts rather than replaces, so that a backup taken on another device cannot
+     * destroy an unrelated note that happens to share a row id. The cost is that restoring a backup
+     * onto the library it came from would duplicate every note — and the restore dialog promises
+     * the opposite. A row whose id is taken by an identical note is therefore skipped: re-restoring
+     * is a no-op again, while a genuinely different note under the same id is still kept alongside
+     * the existing one instead of overwriting it.
+     */
+    @NonNull
+    private List<Note> withoutNotesAlreadyPresent(@NonNull List<Note> incoming) {
+        List<Note> result = new ArrayList<>(incoming.size());
+        for (Note note : incoming) {
+            Note existing = note.getId() > 0 ? noteDao.getNoteSync(note.getId()) : null;
+            if (existing == null || !isSameNoteContent(existing, note)) {
+                result.add(note);
+            }
+        }
+        return result;
+    }
+
+    /** True when two rows carry the same user-visible note. */
+    private static boolean isSameNoteContent(@NonNull Note existing, @NonNull Note incoming) {
+        return equalText(existing.getTitle(), incoming.getTitle())
+                && equalText(existing.getValue(), incoming.getValue())
+                && equalText(existing.getValueJson(), incoming.getValueJson())
+                && equalText(existing.getTag(), incoming.getTag())
+                && equalText(existing.getAttachments(), incoming.getAttachments())
+                && existing.getDate() == incoming.getDate()
+                && existing.isTrash() == incoming.isTrash();
+    }
+
+    /**
+     * Drops incoming tags this device already has under the same name.
+     *
+     * <p>A note stores its tag by name, and the table has no unique index on it, so inserting a
+     * second row with an existing name shows the user the same tag twice with no way to tell them
+     * apart.
+     */
+    @NonNull
+    private List<Tag> withoutTagsAlreadyPresent(@NonNull List<Tag> incoming) {
+        List<Tag> result = new ArrayList<>(incoming.size());
+        Set<String> seen = new LinkedHashSet<>();
+        for (Tag tag : incoming) {
+            String name = tag.getNameTag();
+            if (name != null && !name.isEmpty()) {
+                if (!seen.add(name) || tagsDao.getTagByNameSync(name) != null) {
+                    continue;
+                }
+            }
+            result.add(tag);
+        }
+        return result;
+    }
+
+    private static boolean equalText(String first, String second) {
+        return first == null ? second == null : first.equals(second);
     }
 
     /**
