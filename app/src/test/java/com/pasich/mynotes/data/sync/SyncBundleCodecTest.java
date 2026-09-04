@@ -268,6 +268,41 @@ public class SyncBundleCodecTest {
                 .isEqualTo(localRecord.getCanonicalPayloadHash());
     }
 
+    @Test
+    public void encode_dropsEmptyAttachmentFieldsInsteadOfLeakingThemToTheWire() throws Exception {
+        // The shape an older client wrote for a note with no attachments.
+        JsonObject payload = new JsonObject();
+        payload.addProperty("title", "Shopping");
+        payload.addProperty("value", "Body");
+        payload.add("attachmentsManifest", new JsonArray());
+        payload.add("attachmentHashes", new JsonArray());
+        payload.add("attachmentNames", new JsonObject());
+        SyncRecord local =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:01Z"),
+                        payload);
+
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(java.util.Collections.singletonList(local)),
+                        Instant.parse("2026-08-31T12:00:00Z"));
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+
+        // None of the three may survive: a decoded record carries no attachment fields for a
+        // note without attachments, so leaving one behind makes the two shapes hash differently.
+        assertThat(decoded.getPayload().has("attachmentNames")).isFalse();
+        assertThat(decoded.getPayload().has("attachmentsManifest")).isFalse();
+        assertThat(decoded.getPayload().has("attachmentHashes")).isFalse();
+        assertThat(unzipToStrings(bundle).get(SyncBundleCodec.ENTRY_RECORDS))
+                .doesNotContain("attachmentNames");
+    }
+
     private static SyncRecord task(String title) {
         JsonObject payload = new JsonObject();
         payload.addProperty("title", title);

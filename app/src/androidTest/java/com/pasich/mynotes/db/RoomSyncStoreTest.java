@@ -200,11 +200,13 @@ public class RoomSyncStoreTest {
         SnapshotBuildResult result = store.buildSnapshot();
 
         assertThat(result.isPublishable()).isTrue();
-        assertThat(
-                        onlyNote(result.requireSnapshot())
-                                .getPayload()
-                                .getAsJsonArray("attachmentHashes"))
-                .isEmpty();
+        // Absent, not an empty array: a decoded remote record carries no attachment fields at
+        // all, so emitting empty ones here made the two shapes hash differently and every
+        // attachment-free note conflicted with itself on every sync.
+        com.google.gson.JsonObject payload = onlyNote(result.requireSnapshot()).getPayload();
+        assertThat(payload.has("attachmentHashes")).isFalse();
+        assertThat(payload.has("attachmentsManifest")).isFalse();
+        assertThat(payload.has("attachmentNames")).isFalse();
     }
 
     @Test
@@ -323,6 +325,45 @@ public class RoomSyncStoreTest {
                         .get("url")
                         .getAsString();
         return com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.resolve(context, url);
+    }
+
+    @Test
+    public void aLocallyBuiltNoteSurvivesABundleRoundTripUnchanged() throws Exception {
+        // The editor stores "[]" for a note that simply has no attachments.
+        int noteId = seedNote("Alpha note", "milk bread coffee", "[]");
+        assertThat(noteId).isGreaterThan(0);
+
+        SyncRecord local = onlyNote(store.readSnapshot());
+        com.pasich.mynotes.data.sync.SyncBundleCodec codec =
+                new com.pasich.mynotes.data.sync.SyncBundleCodec();
+        byte[] bundle = codec.encode(store.readSnapshot(), java.time.Instant.now());
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, local.getId());
+
+        // Empty attachment arrays were written locally but never survive the wire, so the two
+        // shapes hashed differently and every attachment-free note conflicted with itself on
+        // every sync — reproduced on a device before this was fixed.
+        assertThat(decoded).isNotNull();
+        assertThat(decoded.getCanonicalPayloadHash()).isEqualTo(local.getCanonicalPayloadHash());
+    }
+
+    @Test
+    public void aNoteWithAnAttachmentAlsoSurvivesTheRoundTripUnchanged() throws Exception {
+        seedNoteWithAttachment("photo.png", "photo bytes".getBytes(StandardCharsets.UTF_8));
+
+        SyncRecord local = onlyNote(store.readSnapshot());
+        com.pasich.mynotes.data.sync.SyncBundleCodec codec =
+                new com.pasich.mynotes.data.sync.SyncBundleCodec();
+        byte[] bundle = codec.encode(store.readSnapshot(), java.time.Instant.now());
+        SyncRecord decoded =
+                codec.decode(new ByteArrayInputStream(bundle))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, local.getId());
+
+        assertThat(decoded).isNotNull();
+        assertThat(decoded.getCanonicalPayloadHash()).isEqualTo(local.getCanonicalPayloadHash());
     }
 
     @Test

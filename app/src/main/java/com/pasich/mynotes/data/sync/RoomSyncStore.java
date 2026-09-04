@@ -1274,6 +1274,14 @@ public final class RoomSyncStore implements SyncStore {
             manifest.add(manifestEntry);
         }
         if (!complete) return false;
+        if (manifest.size() == 0) {
+            // A note whose attachments column is "[]" — which is what the editor stores for a
+            // note that simply has none — used to get three empty arrays here, while a decoded
+            // remote record carries no attachment fields at all. The two shapes hashed
+            // differently, so every attachment-free note reported a conflict against itself on
+            // every sync and republished a bundle each time.
+            return true;
+        }
         payload.add("attachmentsManifest", manifest);
         payload.add("attachmentHashes", hashes);
         payload.add("attachmentNames", names);

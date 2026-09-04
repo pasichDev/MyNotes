@@ -222,6 +222,11 @@ public final class SyncBundleCodec {
         }
         note.remove("attachmentsManifest");
         note.remove("attachmentHashes");
+        // Cleared as well as rebuilt. Only the two above were removed, so a payload that already
+        // carried an attachmentNames key kept it on the wire even when the rebuilt map was
+        // empty, and a decoded record then hashed differently from the local one that produced
+        // it — a conflict against itself on every sync.
+        note.remove("attachmentNames");
         if (attachmentIds.size() > 0) {
             note.add("attachmentIds", attachmentIds);
         }
