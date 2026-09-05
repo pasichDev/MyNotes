@@ -763,7 +763,9 @@ public class GoogleDriveSyncBackendTest {
     }
 
     @Test
-    public void publish_neverPrunesABundleWhoseSupersessionDriveDoesNotDate() throws Exception {
+    public void publish_measuresTheGraceOnDrivesClockNotThePhones() throws Exception {
+        // A phone running two hours fast used to see every fresh mark as two hours old and
+        // delete a bundle another device was still reading; Drive's Date header is the clock now.
         SyncBundleCodec codec = new SyncBundleCodec();
         byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
         String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
@@ -772,8 +774,38 @@ public class GoogleDriveSyncBackendTest {
                         snapshotWithTitle("Head"), CLOCK.instant(), Collections.singleton(baseId));
         server.seedOwnedBundleBytes(base);
         server.seedOwnedBundleBytes(head);
-        server.withholdModifiedTime();
         publish(backend(), snapshotWithTitle("Next"));
+        assertThat(server.supersededBundleCount()).isEqualTo(1);
+
+        GoogleDriveSyncBackend fastPhone =
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        Clock.offset(CLOCK, java.time.Duration.ofHours(2)),
+                        new SyncBundleCodec());
+        publish(fastPhone, snapshotWithTitle("Later"));
+
+        // Drive's clock has not moved, so nothing has been superseded for the grace period.
+        assertThat(server.deletedFileIds()).isEmpty();
+        assertThat(server.bundleCount()).isEqualTo(4);
+    }
+
+    @Test
+    public void publish_neverPrunesABundleWhoseSupersessionCarriesNoUsableTime() throws Exception {
+        // A bare marker written without server time, and Drive reporting no modifiedTime for
+        // the file: nothing can be proven old enough, so nothing goes.
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
+        String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
+        byte[] head =
+                codec.encode(
+                        snapshotWithTitle("Head"), CLOCK.instant(), Collections.singleton(baseId));
+        server.seedOwnedBundleBytes(base);
+        server.seedOwnedBundleBytes(head);
+        publish(backend(), snapshotWithTitle("Next"));
+        server.stripSupersessionTimes();
+        server.withholdModifiedTime();
         server.advanceClock(2L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
 
         publish(
@@ -785,9 +817,27 @@ public class GoogleDriveSyncBackendTest {
                         new SyncBundleCodec()),
                 snapshotWithTitle("Later"));
 
-        // Marked, but Drive reports no time for the mark: nothing can be proven old enough.
         assertThat(server.deletedFileIds()).isEmpty();
         assertThat(server.bundleCount()).isEqualTo(4);
+    }
+
+    @Test
+    public void readAttachment_fallsBackToTheGoodCopyInAnotherRoot() throws Exception {
+        // Duplicate roots are a supported state. With Drive's checksums withheld the bytes must
+        // be read to tell the copies apart; handing over the first root's only candidate unread
+        // let a corrupt copy there shadow the good one in the other root on every sync.
+        byte[] good = "good bytes".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(good);
+        server.seedCorruptAttachment(hash, "corrupt".getBytes(StandardCharsets.UTF_8));
+        server.registerAttachment(good);
+        server.seedOwnedBundle(snapshot(NOTE_ID, hash));
+        server.withholdChecksums();
+        assertThat(server.ownedFolderCount()).isEqualTo(2);
+
+        try (java.io.InputStream restored = backend().readAttachment(hash)) {
+            assertThat(restored).isNotNull();
+            assertThat(readAll(restored)).isEqualTo(good);
+        }
     }
 
     // ------------------------------------------------- attachment transfer cost
@@ -1437,6 +1487,17 @@ public class GoogleDriveSyncBackendTest {
             serverNowMillis += millis;
         }
 
+        /**
+         * Turns every supersession mark into a bare marker, as a client without server time writes.
+         */
+        void stripSupersessionTimes() {
+            for (DriveFile file : files.values()) {
+                if (file.appProperties.containsKey("mynotesBundleSuperseded")) {
+                    file.appProperties.put("mynotesBundleSuperseded", "1");
+                }
+            }
+        }
+
         /** Whether the client has marked the newest {@code count} bundles as superseded. */
         int supersededBundleCount() {
             int count = 0;
@@ -1987,13 +2048,19 @@ public class GoogleDriveSyncBackendTest {
             return output.toString(StandardCharsets.ISO_8859_1.name());
         }
 
-        private static void writeResponse(OutputStream output, Response response)
-                throws IOException {
+        private void writeResponse(OutputStream output, Response response) throws IOException {
+            long serverNow = serverNowMillis;
             StringBuilder headers = new StringBuilder();
             headers.append("HTTP/1.1 ").append(response.code).append(" OK\r\n");
             headers.append("Content-Length: ").append(response.body.length).append("\r\n");
             headers.append("Connection: close\r\n");
             headers.append("Content-Type: ").append(response.contentType).append("\r\n");
+            // Drive's own clock, as every Google response reports it.
+            headers.append("Date: ")
+                    .append(
+                            java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME.format(
+                                    Instant.ofEpochMilli(serverNow).atZone(ZoneOffset.UTC)))
+                    .append("\r\n");
             for (Map.Entry<String, String> header : response.headers.entrySet()) {
                 headers.append(header.getKey())
                         .append(": ")

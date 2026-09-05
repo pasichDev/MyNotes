@@ -176,17 +176,19 @@ public final class SyncBundleValidator {
         }
         JsonObject attachmentNames = note.getAsJsonObject("attachmentNames");
         validateAttachmentIdAliases(note, attachmentsById);
+        JsonObject aliases = note.getAsJsonObject(SyncBundleCodec.FIELD_ATTACHMENT_ID_ALIASES);
         Set<String> withinNote = new LinkedHashSet<>();
         for (JsonElement element : attachmentIds) {
             if (element == null || !element.isJsonPrimitive()) {
                 throw new IOException("Sync note attachmentIds entry is invalid");
             }
             String attachmentId = element.getAsString();
-            if (!withinNote.add(attachmentId)) {
-                // Two references to one manifest entry can only mean two attachments were
-                // collapsed into one on the way out; accepting it made every receiver write
-                // one blob's bytes for both.
-                throw new IOException("Sync note references one attachment twice");
+            if (!withinNote.add(attachmentId) && aliases != null && aliases.has(attachmentId)) {
+                // A plain id repeated is what 2.6.50 published for a duplicated block: two
+                // references, one blob, harmless, and it has to keep decoding. A re-keyed id
+                // repeated is something else: the record's two attachments were collapsed into
+                // one on the way out, and accepting it wrote one blob's bytes for both.
+                throw new IOException("Sync note collapses two attachments into one reference");
             }
             SyncBundleCodec.AttachmentManifestEntry attachment = attachmentsById.get(attachmentId);
             if (attachment == null) {

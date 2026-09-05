@@ -360,20 +360,29 @@ public final class SyncBundleCodec {
             for (JsonElement element : manifestEntries) {
                 AttachmentManifestEntry attachment =
                         AttachmentManifestEntry.fromJson(element.getAsJsonObject());
+                List<String> recordWireIds = plan.wireIdsFor(record);
                 String wireId = attachment.id;
                 AttachmentManifestEntry sameId = plan.byWireId.get(wireId);
                 if (sameId != null && !sameId.sameRemoteFile(attachment)) {
-                    wireId = aliasFor(attachment);
+                    wireId = aliasFor(attachment, 0);
                     sameId = plan.byWireId.get(wireId);
                     if (sameId != null && !sameId.sameRemoteFile(attachment)) {
                         throw new IOException(
                                 "Two notes reference conflicting attachment metadata");
                     }
                 }
+                // One record may repeat an entry — 2.6.50 published a duplicated block that way,
+                // and its receivers hold such manifests as conflict alternatives. Each repeat gets
+                // a wire id of its own, so a note never references one entry twice on the wire
+                // and every repeat maps back to the record's own id on the way in.
+                for (int occurrence = 1; recordWireIds.contains(wireId); occurrence++) {
+                    wireId = aliasFor(attachment, occurrence);
+                    sameId = plan.byWireId.get(wireId);
+                }
                 if (sameId == null) {
                     plan.byWireId.put(wireId, attachment.withId(wireId));
                 }
-                plan.wireIdsFor(record).add(wireId);
+                recordWireIds.add(wireId);
                 AttachmentManifestEntry previous =
                         seenByHash.putIfAbsent(attachment.sha256, attachment);
                 if (previous != null && !previous.sameRemoteFile(attachment)) {
@@ -389,11 +398,12 @@ public final class SyncBundleCodec {
 
     /** Deterministic, so two devices publishing the same collision write the same bundle. */
     @NonNull
-    private static String aliasFor(@NonNull AttachmentManifestEntry attachment) {
-        return UUID.nameUUIDFromBytes(
-                        ("attachment-alias\n" + attachment.id + "\n" + attachment.sha256)
-                                .getBytes(StandardCharsets.UTF_8))
-                .toString();
+    private static String aliasFor(@NonNull AttachmentManifestEntry attachment, int occurrence) {
+        String source = "attachment-alias\n" + attachment.id + "\n" + attachment.sha256;
+        if (occurrence > 0) {
+            source += "\n" + occurrence;
+        }
+        return UUID.nameUUIDFromBytes(source.getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     /** The manifest entries by wire id, and each record's wire ids in manifest order. */

@@ -111,25 +111,7 @@ public class BackupActivity extends BaseActivity
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             if (result.getData() != null && result.getData().getData() != null) {
                                 Uri uri = result.getData().getData();
-
-                                BackupFileValidator.isValidBackupFile(
-                                        this,
-                                        uri,
-                                        new BackupFileValidator.BackupValidatorCallback() {
-                                            @Override
-                                            public void onValid(String fileName) {
-                                                presenter.readFileBackupLocal(uri);
-                                            }
-
-                                            @Override
-                                            public void onInvalid(String errorMessage) {
-                                                onInfoSnack(
-                                                        errorMessage,
-                                                        null,
-                                                        SnackBarInfo.Error,
-                                                        Snackbar.LENGTH_LONG);
-                                            }
-                                        });
+                                validatePickedBackup(uri);
                             }
                         }
                     });
@@ -234,6 +216,46 @@ public class BackupActivity extends BaseActivity
                                 setEnabled(finishActivity());
                             }
                         });
+    }
+
+    /**
+     * Decides off the main thread whether the picked document is a backup.
+     *
+     * <p>When the name does not settle it the document is opened and inspected through the document
+     * provider, which on a wrong pick can mean inflating a large archive; on the main thread that
+     * froze the screen. The verdict is delivered back to the main thread.
+     */
+    private void validatePickedBackup(@NonNull Uri uri) {
+        runInBackground(
+                () ->
+                        BackupFileValidator.isValidBackupFile(
+                                this,
+                                uri,
+                                new BackupFileValidator.BackupValidatorCallback() {
+                                    @Override
+                                    public void onValid(String fileName) {
+                                        runOnUiThread(
+                                                () -> {
+                                                    if (!isFinishing() && !isDestroyed()) {
+                                                        presenter.readFileBackupLocal(uri);
+                                                    }
+                                                });
+                                    }
+
+                                    @Override
+                                    public void onInvalid(String errorMessage) {
+                                        runOnUiThread(
+                                                () -> {
+                                                    if (!isFinishing() && !isDestroyed()) {
+                                                        onInfoSnack(
+                                                                errorMessage,
+                                                                null,
+                                                                SnackBarInfo.Error,
+                                                                Snackbar.LENGTH_LONG);
+                                                    }
+                                                });
+                                    }
+                                }));
     }
 
     /** The account tab draws itself from the state the next updateSyncUi() pushes. */

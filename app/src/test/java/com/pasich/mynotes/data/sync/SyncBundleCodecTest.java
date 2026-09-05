@@ -427,10 +427,12 @@ public class SyncBundleCodecTest {
     }
 
     @Test
-    public void encode_refusesANoteThatReferencesOneManifestEntryTwice() throws Exception {
-        // The same id with the same content twice in one record cannot be told apart on the wire;
-        // the validator refuses it on the way out, as it now does on the way in, rather than let
-        // a receiver collapse two attachments into one.
+    public void encode_republishesANoteThatRepeatsOneAttachmentWithoutCollapsingIt()
+            throws Exception {
+        // 2.6.50 receivers hold manifests with one entry repeated — a duplicated block whose file
+        // was not replaced — and republish them as conflict alternatives after the upgrade.
+        // Refusing the shape at encode failed every publish until the conflict was resolved;
+        // collapsing it changed the version's hash. Each repeat travels under its own wire id.
         JsonObject payload = notePayload("Body", "image/png", 42L, "first.png");
         payload.getAsJsonArray("attachmentsManifest")
                 .add(
@@ -439,22 +441,146 @@ public class SyncBundleCodecTest {
                                 .getAsJsonObject()
                                 .deepCopy());
         payload.getAsJsonArray("attachmentHashes").add(HASH);
-        SyncRecord local =
+        JsonObject names = new JsonObject();
+        names.addProperty(ATTACHMENT_ID, "first.png");
+        payload.add("attachmentNames", names);
+        SyncRecord repeated =
                 SyncRecord.live(
                         SyncRecord.Type.NOTE,
                         NOTE_ID,
                         Instant.parse("2026-08-31T12:00:01Z"),
                         payload);
+        SyncRecord live =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:05Z"),
+                        notePayload("Newer", "image/png", 42L, "first.png"));
+
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] bundle =
+                codec.encode(
+                        new SyncSnapshot(java.util.Collections.singletonList(live)),
+                        CREATED_AT,
+                        java.util.Collections.emptyList(),
+                        java.util.Collections.singletonList(repeated),
+                        java.util.Collections.emptySet());
+        SyncBundleCodec.DecodedBundle decoded = codec.decode(new ByteArrayInputStream(bundle));
+
+        SyncRecord alternative = decoded.getAlternatives().get(0);
+        JsonArray manifest = alternative.getPayload().getAsJsonArray("attachmentsManifest");
+        assertThat(manifest).hasSize(2);
+        assertThat(manifest.get(1).getAsJsonObject().get("id").getAsString())
+                .isEqualTo(ATTACHMENT_ID);
+        assertThat(alternative.getCanonicalPayloadHash())
+                .isEqualTo(repeated.getCanonicalPayloadHash());
+        // Never the shape the validator has to refuse: one wire id, two references.
+        JsonObject records =
+                com.google.gson.JsonParser.parseString(
+                                unzipToStrings(bundle).get(SyncBundleCodec.ENTRY_RECORDS))
+                        .getAsJsonObject();
+        JsonArray wireIds =
+                records.getAsJsonArray("alternatives")
+                        .get(0)
+                        .getAsJsonObject()
+                        .getAsJsonArray("attachmentIds");
+        assertThat(wireIds.get(0).getAsString()).isNotEqualTo(wireIds.get(1).getAsString());
+    }
+
+    @Test
+    public void decode_acceptsA2650BundleThatReferencesOneAttachmentTwice() throws Exception {
+        // 2.6.50 published attachmentIds [X, X] for a duplicated block with unchanged content, and
+        // such bundles sit on Drive in closed-testing accounts. A read decodes every bundle in
+        // every root, so refusing this shape failed every sync forever with no way to publish a
+        // successor that would let the bundle be pruned.
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] valid = codec.encode(new SyncSnapshot(Arrays.asList(note("Milk"))), CREATED_AT);
+        JsonObject records = readRecords(valid);
+        JsonObject wireNote = records.getAsJsonArray("notes").get(0).getAsJsonObject();
+        wireNote.getAsJsonArray("attachmentIds").add(ATTACHMENT_ID);
+
+        SyncBundleCodec.DecodedBundle decoded =
+                codec.decode(new ByteArrayInputStream(rebuild(valid, records)));
+
+        SyncRecord decodedNote = decoded.getSnapshot().find(SyncRecord.Type.NOTE, NOTE_ID);
+        JsonArray manifest = decodedNote.getPayload().getAsJsonArray("attachmentsManifest");
+        assertThat(manifest).hasSize(2);
+        assertThat(manifest.get(1).getAsJsonObject().get("sha256").getAsString()).isEqualTo(HASH);
+        // And it round-trips as the same version, so it never conflicts with itself.
+        SyncRecord again =
+                codec.decode(
+                                new ByteArrayInputStream(
+                                        codec.encode(
+                                                new SyncSnapshot(
+                                                        java.util.Collections.singletonList(
+                                                                decodedNote)),
+                                                CREATED_AT)))
+                        .getSnapshot()
+                        .find(SyncRecord.Type.NOTE, NOTE_ID);
+        assertThat(again.getCanonicalPayloadHash())
+                .isEqualTo(decodedNote.getCanonicalPayloadHash());
+    }
+
+    @Test
+    public void decode_refusesANoteWhoseRepeatedReferenceIsARekeyedOne() throws Exception {
+        // The shape an encoder produced when it collapsed two different blobs under one alias:
+        // the same re-keyed id twice. Only one blob is described, so the receiver cannot restore
+        // the note as it was; refusing is the only safe answer.
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] valid = codec.encode(new SyncSnapshot(Arrays.asList(note("Milk"))), CREATED_AT);
+        JsonObject records = readRecords(valid);
+        JsonObject wireNote = records.getAsJsonArray("notes").get(0).getAsJsonObject();
+        String alias = "550e8400-e29b-41d4-a716-446655440077";
+        JsonArray ids = new JsonArray();
+        ids.add(alias);
+        ids.add(alias);
+        wireNote.add("attachmentIds", ids);
+        JsonObject aliases = new JsonObject();
+        aliases.addProperty(alias, ATTACHMENT_ID);
+        wireNote.add(SyncBundleCodec.FIELD_ATTACHMENT_ID_ALIASES, aliases);
+        JsonObject manifest = readManifest(valid);
+        manifest.getAsJsonArray("attachments").get(0).getAsJsonObject().addProperty("id", alias);
 
         try {
-            new SyncBundleCodec()
-                    .encode(
-                            new SyncSnapshot(java.util.Collections.singletonList(local)),
-                            CREATED_AT);
-            throw new AssertionError("Expected the duplicate reference to be refused");
+            codec.decode(new ByteArrayInputStream(rebuild(manifest, records)));
+            throw new AssertionError("Expected the collapsed shape to be refused");
         } catch (IOException expected) {
-            assertThat(expected).hasMessageThat().contains("references one attachment twice");
+            assertThat(expected).hasMessageThat().contains("collapses two attachments");
         }
+    }
+
+    private static JsonObject readRecords(byte[] bundle) throws IOException {
+        return com.google.gson.JsonParser.parseString(
+                        unzipToStrings(bundle).get(SyncBundleCodec.ENTRY_RECORDS))
+                .getAsJsonObject();
+    }
+
+    private static JsonObject readManifest(byte[] bundle) throws IOException {
+        return com.google.gson.JsonParser.parseString(
+                        unzipToStrings(bundle).get(SyncBundleCodec.ENTRY_MANIFEST))
+                .getAsJsonObject();
+    }
+
+    /** Re-zips a bundle around edited records, refreshing the manifest checksum and length. */
+    private static byte[] rebuild(byte[] bundle, JsonObject records) throws IOException {
+        return rebuild(readManifest(bundle), records);
+    }
+
+    private static byte[] rebuild(JsonObject manifest, JsonObject records) throws IOException {
+        byte[] recordBytes = records.toString().getBytes(StandardCharsets.UTF_8);
+        manifest.addProperty("recordsSha256", SyncBundleValidator.sha256(recordBytes));
+        manifest.addProperty("recordsBytes", recordBytes.length);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try (java.util.zip.ZipOutputStream zip =
+                new java.util.zip.ZipOutputStream(output, StandardCharsets.UTF_8)) {
+            zip.putNextEntry(new ZipEntry(SyncBundleCodec.ENTRY_MANIFEST));
+            zip.write(manifest.toString().getBytes(StandardCharsets.UTF_8));
+            zip.closeEntry();
+            zip.putNextEntry(new ZipEntry(SyncBundleCodec.ENTRY_RECORDS));
+            zip.write(recordBytes);
+            zip.closeEntry();
+        }
+        return output.toByteArray();
     }
 
     @Test

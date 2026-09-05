@@ -64,6 +64,30 @@ public class BackupFileValidatorTest {
         assertThat(BackupFileValidator.isAcceptable("missing (2)", () -> null)).isFalse();
     }
 
+    @Test
+    public void givesUpOnALargeContainerInsteadOfInflatingItToTheEnd() throws Exception {
+        // A wrong pick that happens to be a big ZIP container was inflated entry by entry, on the
+        // main thread, looking for the JSON; the check now stops once it has inflated its budget.
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            zip.putNextEntry(new ZipEntry("assets/big.bin"));
+            zip.write(new byte[512 * 1024]);
+            zip.closeEntry();
+            zip.putNextEntry(new ZipEntry(Backup.FILE_NAME_BACKUP));
+            zip.write("{}".getBytes(StandardCharsets.UTF_8));
+            zip.closeEntry();
+        }
+
+        assertThat(
+                        BackupFileValidator.isBackupArchive(
+                                new ByteArrayInputStream(bytes.toByteArray()), 64 * 1024))
+                .isFalse();
+        assertThat(
+                        BackupFileValidator.isBackupArchive(
+                                new ByteArrayInputStream(bytes.toByteArray())))
+                .isTrue();
+    }
+
     private static byte[] archiveWith(String entryName) throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bytes)) {

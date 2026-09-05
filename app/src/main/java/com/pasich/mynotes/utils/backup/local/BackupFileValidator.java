@@ -32,6 +32,15 @@ public class BackupFileValidator {
     private static final String EXT_ZIP = ".zip";
     private static final String EXT_MNBK = ".mnbkn";
 
+    /**
+     * How much of a picked archive is inflated looking for the backup JSON before giving up.
+     *
+     * <p>This app writes the JSON as the first entry, so the intended case costs a few kilobytes. A
+     * wrong pick that happens to be a large ZIP container — an APK, a document — would otherwise be
+     * inflated entry by entry to its end.
+     */
+    static final long MAX_INSPECTED_BYTES = 8L * 1024L * 1024L;
+
     /** Opens the picked document, so the content can be inspected. */
     public interface ContentOpener {
         @Nullable
@@ -40,6 +49,9 @@ public class BackupFileValidator {
 
     /**
      * Validate a picked backup file.
+     *
+     * <p>Reads the document when its name does not settle the question, so call it off the main
+     * thread; the callback is invoked on the calling thread.
      *
      * <p>- If user cancels selection → return silently (no errors shown). - If filename cannot be
      * determined → callback.onInvalid(...) - If neither name nor content is a backup →
@@ -85,13 +97,32 @@ public class BackupFileValidator {
 
     /** True when the bytes are a ZIP archive holding the backup JSON entry. */
     static boolean isBackupArchive(@NonNull InputStream input) throws IOException {
+        return isBackupArchive(input, MAX_INSPECTED_BYTES);
+    }
+
+    /**
+     * @param maxInflatedBytes how much entry data may be inflated before the archive is judged not
+     *     to be a backup; bounds the cost of a wrong pick.
+     */
+    static boolean isBackupArchive(@NonNull InputStream input, long maxInflatedBytes)
+            throws IOException {
         try (ZipInputStream zip = new ZipInputStream(input)) {
+            byte[] scratch = new byte[8192];
+            long inflated = 0L;
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
                 if (Backup.FILE_NAME_BACKUP.equals(entry.getName())) {
                     return true;
                 }
-                zip.closeEntry();
+                // Skipping an entry inflates it; count what that costs and stop rather than
+                // read a large container to its end.
+                int read;
+                while ((read = zip.read(scratch)) != -1) {
+                    inflated += read;
+                    if (inflated > maxInflatedBytes) {
+                        return false;
+                    }
+                }
             }
         } catch (RuntimeException notAnArchive) {
             // A ZipInputStream over arbitrary bytes throws on a malformed entry header.

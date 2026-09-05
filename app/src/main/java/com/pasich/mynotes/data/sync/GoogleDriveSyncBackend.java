@@ -47,9 +47,11 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private static final String PROPERTY_ATTACHMENT_SHA256 = "mynotesAttachmentSha256";
 
     /**
-     * Set on a bundle the first time a read finds it outside the frontier. Drive stamps the update
-     * with its own {@code modifiedTime}, which is therefore the moment the bundle was seen to be
-     * superseded — measured by Drive's clock, not by whichever device happened to publish.
+     * Set on a bundle the first time a read finds it outside the frontier. Its value is Drive's own
+     * time at that moment, taken from the {@code Date} header of the listing that found it, so the
+     * grace period is measured on Drive's clock at both ends: the mark here, the current time from
+     * the latest response. Drive also stamps the update with {@code modifiedTime}, which serves as
+     * the fallback when a marking device had no server time to record.
      */
     private static final String PROPERTY_BUNDLE_SUPERSEDED = "mynotesBundleSuperseded";
 
@@ -69,7 +71,8 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
      * fetching the old bundle; an hour outlives any read, including the six-hourly worker's, which
      * WorkManager stops after ten minutes. Measured from the supersession mark, not from the
      * bundle's creation: a head created days ago and superseded seconds ago is exactly the file
-     * another device is most likely to be reading right now.
+     * another device is most likely to be reading right now. Both ends of the measurement are
+     * Drive's clock, see {@link #PROPERTY_BUNDLE_SUPERSEDED}.
      */
     static final long BUNDLE_PRUNE_GRACE_MILLIS = 60L * 60L * 1000L;
 
@@ -87,6 +90,15 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
 
     /** Every bundle file the last read saw, so a publish can retire the ones it supersedes. */
     private List<BundleFile> lastReadBundles = Collections.emptyList();
+
+    /**
+     * Drive's clock, as last reported in a response's {@code Date} header; zero until one arrives.
+     *
+     * <p>The one clock the prune grace is measured on. A phone running an hour fast would otherwise
+     * see every fresh supersession mark as an hour old and delete a bundle another device was still
+     * reading.
+     */
+    private long lastDriveTimeMillis;
 
     /**
      * The owned root folders, listed once per sync.
@@ -270,7 +282,13 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             }
             try {
                 JsonObject patch = new JsonObject();
-                patch.add("appProperties", appProperties(PROPERTY_BUNDLE_SUPERSEDED, "1"));
+                patch.add(
+                        "appProperties",
+                        appProperties(
+                                PROPERTY_BUNDLE_SUPERSEDED,
+                                lastDriveTimeMillis > 0L
+                                        ? Long.toString(lastDriveTimeMillis)
+                                        : "1"));
                 // HttpURLConnection has no PATCH; Google's APIs honour the override header.
                 HttpURLConnection connection =
                         open("POST", apiBase + "/files/" + bundle.fileId + "?fields=id");
@@ -351,11 +369,14 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
      * correctness.
      */
     private void pruneSupersededBundles(@NonNull Collection<String> frontierBundleIds) {
-        long cutoff = clock.millis() - BUNDLE_PRUNE_GRACE_MILLIS;
+        // Drive's clock against Drive's clock; the device clock is only the fallback when no
+        // response carried a Date header, which none of Google's do.
+        long now = lastDriveTimeMillis > 0L ? lastDriveTimeMillis : clock.millis();
+        long cutoff = now - BUNDLE_PRUNE_GRACE_MILLIS;
         for (BundleFile bundle : lastReadBundles) {
             // Only a bundle that was already marked superseded when this sync read it, with the
             // mark's Drive-side timestamp older than the grace, may go. A bundle marked during
-            // this very read, or one whose mark Drive does not date, stays.
+            // this very read, or one whose mark carries no usable time, stays.
             if (frontierBundleIds.contains(bundle.logicalId)
                     || bundle.supersededAtMillis == null
                     || bundle.supersededAtMillis > cutoff) {
@@ -711,16 +732,39 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         List<BundleFile> result = new ArrayList<>(bundles.size());
         for (int index = 0; index < bundles.size(); index++) {
             JsonObject file = bundles.get(index).getAsJsonObject();
-            JsonObject properties = file.getAsJsonObject("appProperties");
-            boolean marked = properties != null && properties.has(PROPERTY_BUNDLE_SUPERSEDED);
             result.add(
                     new BundleFile(
                             file.get("id").getAsString(),
                             null,
-                            marked ? instantOf(optionalString(file, "modifiedTime")) : null));
+                            supersededAtOf(
+                                    file.getAsJsonObject("appProperties"),
+                                    optionalString(file, "modifiedTime"))));
         }
         result.sort(Comparator.comparing(file -> file.fileId));
         return result;
+    }
+
+    /**
+     * When the bundle was marked superseded, on Drive's clock: the server time the marking device
+     * recorded in the property, else Drive's {@code modifiedTime} of that update; null when
+     * unmarked or when neither is usable.
+     */
+    @Nullable
+    private static Long supersededAtOf(
+            @Nullable JsonObject appProperties, @Nullable String modifiedTime) {
+        if (appProperties == null || !appProperties.has(PROPERTY_BUNDLE_SUPERSEDED)) {
+            return null;
+        }
+        try {
+            long recorded =
+                    Long.parseLong(appProperties.get(PROPERTY_BUNDLE_SUPERSEDED).getAsString());
+            if (recorded > 1L) {
+                return recorded;
+            }
+        } catch (RuntimeException notATimestamp) {
+            // A marker without a time; Drive's own stamp of the update stands in.
+        }
+        return instantOf(modifiedTime);
     }
 
     /** Drive reports times as RFC 3339; anything else counts as unknown. */
@@ -1411,6 +1455,10 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     @NonNull
     private JsonObject readJsonResponse(@NonNull HttpURLConnection connection) throws IOException {
         ensureSuccess(connection);
+        long serverTime = connection.getHeaderFieldDate("Date", 0L);
+        if (serverTime > 0L) {
+            lastDriveTimeMillis = serverTime;
+        }
         try (InputStream input = connection.getInputStream()) {
             return GSON.fromJson(
                     new String(
