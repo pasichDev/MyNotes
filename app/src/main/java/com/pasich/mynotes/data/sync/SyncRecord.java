@@ -63,12 +63,22 @@ public final class SyncRecord {
     @Nullable private final Instant deletedAt;
     private final JsonObject payload;
 
+    /**
+     * Version id of the remote version this record's device last synchronized, or null.
+     *
+     * <p>Not part of the payload or the hash: it is what the local store knows about the remote,
+     * carried alongside the record so the merge can tell "only this side moved" from "both moved".
+     */
+    @Nullable private final String baseVersionId;
+
     private SyncRecord(
             @NonNull Type type,
             @NonNull String id,
             @NonNull Instant updatedAt,
             @Nullable Instant deletedAt,
-            @NonNull JsonObject payload) {
+            @NonNull JsonObject payload,
+            @Nullable String baseVersionId) {
+        this.baseVersionId = baseVersionId;
         this.type = Objects.requireNonNull(type, "type");
         validateCanonicalUuid(id);
         this.id = id;
@@ -120,7 +130,7 @@ public final class SyncRecord {
             @NonNull String id,
             @NonNull Instant updatedAt,
             @NonNull JsonObject payload) {
-        return new SyncRecord(type, id, updatedAt, null, payload);
+        return new SyncRecord(type, id, updatedAt, null, payload, null);
     }
 
     @NonNull
@@ -129,7 +139,23 @@ public final class SyncRecord {
             @NonNull String id,
             @NonNull Instant updatedAt,
             @NonNull Instant deletedAt) {
-        return new SyncRecord(type, id, updatedAt, deletedAt, new JsonObject());
+        return new SyncRecord(type, id, updatedAt, deletedAt, new JsonObject(), null);
+    }
+
+    /**
+     * The same version, annotated with the remote version its device last synchronized.
+     *
+     * @param baseVersionId canonical hash of that version, or null when nothing was ever synced.
+     */
+    @NonNull
+    public SyncRecord withBaseVersion(@Nullable String baseVersionId) {
+        return new SyncRecord(type, id, updatedAt, deletedAt, payload, baseVersionId);
+    }
+
+    /** The remote version this record's device last synchronized, or null when unknown. */
+    @Nullable
+    public String getBaseVersionId() {
+        return baseVersionId;
     }
 
     @NonNull

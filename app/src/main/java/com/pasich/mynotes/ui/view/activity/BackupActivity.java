@@ -156,6 +156,16 @@ public class BackupActivity extends BaseActivity
                         }
                     });
     private boolean restoreSuccess = false;
+
+    /**
+     * The backup document being judged, kept across a rotation.
+     *
+     * <p>The verdict is delivered to the instance that asked; when that instance has been destroyed
+     * meanwhile the pick used to be dropped without a word. The recreated instance asks again.
+     */
+    @Nullable private Uri pendingRestorePick;
+
+    private static final String STATE_PENDING_RESTORE_PICK = "pendingRestorePick";
     private OtherAppImportDialog importDialog;
     private Dialog progressDialog;
     private RoomSyncStore roomSyncStore;
@@ -208,6 +218,13 @@ public class BackupActivity extends BaseActivity
 
         setupTabs();
 
+        if (savedInstanceState != null) {
+            Uri pick = savedInstanceState.getParcelable(STATE_PENDING_RESTORE_PICK);
+            if (pick != null) {
+                validatePickedBackup(pick);
+            }
+        }
+
         getOnBackPressedDispatcher()
                 .addCallback(
                         new OnBackPressedCallback(true) {
@@ -226,36 +243,61 @@ public class BackupActivity extends BaseActivity
      * froze the screen. The verdict is delivered back to the main thread.
      */
     private void validatePickedBackup(@NonNull Uri uri) {
-        runInBackground(
-                () ->
-                        BackupFileValidator.isValidBackupFile(
-                                this,
-                                uri,
-                                new BackupFileValidator.BackupValidatorCallback() {
-                                    @Override
-                                    public void onValid(String fileName) {
-                                        runOnUiThread(
-                                                () -> {
-                                                    if (!isFinishing() && !isDestroyed()) {
-                                                        presenter.readFileBackupLocal(uri);
-                                                    }
-                                                });
-                                    }
+        if (pendingRestorePick != null) {
+            // One pick at a time: a second one queued behind the first restored everything twice.
+            return;
+        }
+        pendingRestorePick = uri;
+        // Up before the verdict, not after: it is what stops the user from starting a second
+        // restore while this one is being judged, and it is the only feedback during the wait.
+        showProcessRestoreDialog();
+        // A thread of its own rather than the sync executor: queued behind a running Drive sync
+        // the verdict waited minutes behind a modal dialog with nothing happening.
+        new Thread(
+                        () ->
+                                BackupFileValidator.isValidBackupFile(
+                                        this,
+                                        uri,
+                                        new BackupFileValidator.BackupValidatorCallback() {
+                                            @Override
+                                            public void onValid(String fileName) {
+                                                runOnUiThread(
+                                                        () -> {
+                                                            if (isFinishing() || isDestroyed()) {
+                                                                return;
+                                                            }
+                                                            pendingRestorePick = null;
+                                                            dismissProgressDialog();
+                                                            presenter.readFileBackupLocal(uri);
+                                                        });
+                                            }
 
-                                    @Override
-                                    public void onInvalid(String errorMessage) {
-                                        runOnUiThread(
-                                                () -> {
-                                                    if (!isFinishing() && !isDestroyed()) {
-                                                        onInfoSnack(
-                                                                errorMessage,
-                                                                null,
-                                                                SnackBarInfo.Error,
-                                                                Snackbar.LENGTH_LONG);
-                                                    }
-                                                });
-                                    }
-                                }));
+                                            @Override
+                                            public void onInvalid(String errorMessage) {
+                                                runOnUiThread(
+                                                        () -> {
+                                                            if (isFinishing() || isDestroyed()) {
+                                                                return;
+                                                            }
+                                                            pendingRestorePick = null;
+                                                            dismissProgressDialog();
+                                                            onInfoSnack(
+                                                                    errorMessage,
+                                                                    null,
+                                                                    SnackBarInfo.Error,
+                                                                    Snackbar.LENGTH_LONG);
+                                                        });
+                                            }
+                                        }),
+                        "backup-pick-validation")
+                .start();
+    }
+
+    private void dismissProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
     }
 
     /** The account tab draws itself from the state the next updateSyncUi() pushes. */
@@ -937,6 +979,14 @@ public class BackupActivity extends BaseActivity
 
         supportFinishAfterTransition();
         return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (pendingRestorePick != null) {
+            outState.putParcelable(STATE_PENDING_RESTORE_PICK, pendingRestorePick);
+        }
     }
 
     @Override

@@ -28,6 +28,60 @@ public class SyncMergerTest {
     }
 
     @Test
+    public void merge_publishesALocalEditWithoutAConflictWhileTheRemoteIsWhatWasLastSynced() {
+        // What every user does every day: edit a note after a clean sync. The remote still holds
+        // the version this device last published, so nobody else has moved — yet the merge asked
+        // the user to choose between their edit and the text they had just replaced.
+        SyncRecord synced = note(NOTE_ID, TEN, "Milk");
+        SyncRecord edited =
+                note(NOTE_ID, TWENTY, "Milk and bread")
+                        .withBaseVersion(synced.getCanonicalPayloadHash());
+
+        SyncMergeResult result = merger.merge(snapshot(edited), snapshot(synced));
+
+        assertThat(result.getMergedSnapshot().getRecords()).containsExactly(edited);
+        assertThat(result.getConflicts()).isEmpty();
+    }
+
+    @Test
+    public void merge_takesTheRemoteWithoutAConflictWhenOnlyTheOtherSideMoved() {
+        SyncRecord synced = note(NOTE_ID, TEN, "Milk");
+        SyncRecord unchanged = synced.withBaseVersion(synced.getCanonicalPayloadHash());
+        SyncRecord editedElsewhere = note(NOTE_ID, TWENTY, "Milk and eggs");
+
+        SyncMergeResult result = merger.merge(snapshot(unchanged), snapshot(editedElsewhere));
+
+        assertThat(result.getMergedSnapshot().getRecords()).containsExactly(editedElsewhere);
+        assertThat(result.getConflicts()).isEmpty();
+    }
+
+    @Test
+    public void merge_stillReportsAConflictWhenBothSidesMovedFromTheSameBase() {
+        SyncRecord synced = note(NOTE_ID, TEN, "Milk");
+        SyncRecord editedHere =
+                note(NOTE_ID, TWENTY, "Milk and bread")
+                        .withBaseVersion(synced.getCanonicalPayloadHash());
+        SyncRecord editedElsewhere = note(NOTE_ID, TWENTY.plusSeconds(1), "Milk and eggs");
+
+        SyncMergeResult result = merger.merge(snapshot(editedHere), snapshot(editedElsewhere));
+
+        assertThat(result.getConflicts()).hasSize(1);
+        assertThat(result.getMergedSnapshot().getRecords()).containsExactly(editedElsewhere);
+    }
+
+    @Test
+    public void merge_withoutAKnownBaseBehavesAsBefore() {
+        // A fresh install, or a record last synced by a build that did not record the base.
+        SyncRecord local = note(NOTE_ID, TWENTY, "Local");
+        SyncRecord remote = note(NOTE_ID, TEN, "Remote");
+
+        SyncMergeResult result = merger.merge(snapshot(local), snapshot(remote));
+
+        assertThat(result.getMergedSnapshot().getRecords()).containsExactly(local);
+        assertThat(result.getConflicts()).hasSize(1);
+    }
+
+    @Test
     public void merge_keepsLocalOnlyAndRemoteOnlyRecords() {
         SyncRecord localNote = note(NOTE_ID, TEN, "Local");
         SyncRecord remoteTask = task(TASK_ID, TEN, "Remote");

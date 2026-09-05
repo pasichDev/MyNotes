@@ -67,18 +67,35 @@ public class LegacyNotePayloadTest {
     }
 
     @Test
-    public void leavesAPayloadWhoseIdsWereNotDerivedTheOldWayAlone() {
-        // An id a receiving device restored, or one already derived with the hash: not provably
-        // the old shape, so it is not touched.
+    public void keepsACanonicalIdButStillPutsTheBlocksIntoWireForm() {
+        // An id a receiving 2.6.50 device restored, repeated because the block was duplicated. The
+        // upgraded store keeps such ids as they are and maps the blocks by position; the decoded
+        // note has to come out the same way, or the two hash differently at the same timestamp
+        // and the note conflicts with itself on every sync.
+        String restoredId = "7d444840-9dc0-11d1-b245-5ffdce74fad2";
         JsonObject payload = legacyPayload(LOCAL_URL, "photo.png");
-        payload.getAsJsonArray("attachmentsManifest")
-                .get(0)
-                .getAsJsonObject()
-                .addProperty("id", "7d444840-9dc0-11d1-b245-5ffdce74fad2");
-        String before = payload.toString();
+        JsonObject entry = payload.getAsJsonArray("attachmentsManifest").get(0).getAsJsonObject();
+        entry.addProperty("id", restoredId);
+        payload.getAsJsonArray("attachmentsManifest").add(entry.deepCopy());
+        payload.getAsJsonArray("attachmentHashes").add(HASH);
+        payload.addProperty(
+                "f",
+                "[{\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + LOCAL_URL
+                        + "\"}}},{\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + LOCAL_URL
+                        + "\"}}}]");
 
-        assertThat(LegacyNotePayload.upgrade(NOTE_ID, payload)).isFalse();
-        assertThat(payload.toString()).isEqualTo(before);
+        assertThat(LegacyNotePayload.upgrade(NOTE_ID, payload)).isTrue();
+
+        JsonArray manifest = payload.getAsJsonArray("attachmentsManifest");
+        assertThat(manifest.get(0).getAsJsonObject().get("id").getAsString()).isEqualTo(restoredId);
+        assertThat(manifest.get(1).getAsJsonObject().get("id").getAsString()).isEqualTo(restoredId);
+        assertThat(EditorAttachmentBlocks.fileUrls(payload.get("f").getAsString()))
+                .containsExactly(
+                        AttachmentWireUrl.forLogicalId(restoredId),
+                        AttachmentWireUrl.forLogicalId(restoredId));
+        assertThat(payload.getAsJsonObject("attachmentNames").entrySet()).hasSize(1);
     }
 
     @Test

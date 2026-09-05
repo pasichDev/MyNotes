@@ -12,6 +12,12 @@ import java.util.TreeMap;
  * <p>A missing version never means deletion. For a record present at both endpoints, newest {@code
  * updatedAt} wins. Equal but different versions use the lexicographically smaller canonical SHA-256
  * as a stable tiebreaker, so every device reaches the same result regardless of merge order.
+ *
+ * <p>A conflict is reported only when both sides moved. The local record may carry the version its
+ * device last synchronized; while the remote still equals it, only the local side has changed and
+ * the local version is published without asking — and the other way round. Without that, every
+ * ordinary local edit was offered to the user as a conflict against the text they had just
+ * replaced, after every single edit, with the wrong tap discarding their work.
  */
 public final class SyncMerger {
 
@@ -78,6 +84,19 @@ public final class SyncMerger {
             SyncSnapshot.RecordKey key,
             SyncMergeResult.Source localSource,
             SyncMergeResult.Source remoteSource) {
+        String base = local.getBaseVersionId();
+        if (base != null) {
+            if (base.equals(remote.getCanonicalPayloadHash())) {
+                // The remote is exactly what this device last synchronized: nobody else moved.
+                merged.put(key, local);
+                return;
+            }
+            if (base.equals(local.getCanonicalPayloadHash())) {
+                // This device has not moved since it last synchronized; the remote has.
+                merged.put(key, remote);
+                return;
+            }
+        }
         int timestampComparison = local.getUpdatedAt().compareTo(remote.getUpdatedAt());
         if (timestampComparison > 0) {
             merged.put(key, local);

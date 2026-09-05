@@ -427,8 +427,7 @@ public class SyncBundleCodecTest {
     }
 
     @Test
-    public void encode_republishesANoteThatRepeatsOneAttachmentWithoutCollapsingIt()
-            throws Exception {
+    public void encode_republishesANoteThatRepeatsOneAttachmentTheWay2650Did() throws Exception {
         // 2.6.50 receivers hold manifests with one entry repeated — a duplicated block whose file
         // was not replaced — and republish them as conflict alternatives after the upgrade.
         // Refusing the shape at encode failed every publish until the conflict was resolved;
@@ -474,17 +473,19 @@ public class SyncBundleCodecTest {
                 .isEqualTo(ATTACHMENT_ID);
         assertThat(alternative.getCanonicalPayloadHash())
                 .isEqualTo(repeated.getCanonicalPayloadHash());
-        // Never the shape the validator has to refuse: one wire id, two references.
+        // On the wire exactly as 2.6.50 published it — two references to the one entry and no
+        // alias field — so a device still on 2.6.50 reads it without stumbling over a field it
+        // does not know.
         JsonObject records =
                 com.google.gson.JsonParser.parseString(
                                 unzipToStrings(bundle).get(SyncBundleCodec.ENTRY_RECORDS))
                         .getAsJsonObject();
-        JsonArray wireIds =
-                records.getAsJsonArray("alternatives")
-                        .get(0)
-                        .getAsJsonObject()
-                        .getAsJsonArray("attachmentIds");
-        assertThat(wireIds.get(0).getAsString()).isNotEqualTo(wireIds.get(1).getAsString());
+        JsonObject wireAlternative =
+                records.getAsJsonArray("alternatives").get(0).getAsJsonObject();
+        JsonArray wireIds = wireAlternative.getAsJsonArray("attachmentIds");
+        assertThat(wireIds.get(0).getAsString()).isEqualTo(ATTACHMENT_ID);
+        assertThat(wireIds.get(1).getAsString()).isEqualTo(ATTACHMENT_ID);
+        assertThat(wireAlternative.has(SyncBundleCodec.FIELD_ATTACHMENT_ID_ALIASES)).isFalse();
     }
 
     @Test

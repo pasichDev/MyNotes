@@ -624,6 +624,12 @@ public class SyncMutationCoordinatorTest {
         }
 
         @Override
+        public void setSyncedVersion(String recordType, long localId, String versionId) {
+            SyncMetadataEntity current = rows.get(key(recordType, localId));
+            if (current != null) current.syncedVersionId = versionId;
+        }
+
+        @Override
         public void setVersion(String recordType, long localId, long updatedAt, Long deletedAt) {
             SyncMetadataEntity current = get(recordType, localId);
             rows.put(
