@@ -308,10 +308,21 @@ public final class RoomSyncStore implements SyncStore {
                                                         localId,
                                                         record.getCanonicalPayloadHash());
                                     }
+                                    // A row stored here before this device held the record — a
+                                    // conflict replicated from elsewhere — may name a winner
+                                    // that is no longer the live version. Left open, it was
+                                    // offered pre-selected on that winner, and when the winner
+                                    // was a deletion one tap deleted the record everywhere.
+                                    retireConflictsSupersededBy(record);
                                     transactionFailureInjector.afterRecordApplied(record);
                                     continue;
                                 }
-                                if (metadata == null) continue;
+                                if (metadata == null) {
+                                    // A deletion of a record this device never held: nothing to
+                                    // apply, but an open row for it must still follow the version.
+                                    retireConflictsSupersededBy(record);
+                                    continue;
+                                }
                                 if (record.getType() == SyncRecord.Type.PREFERENCES
                                         && !record.isTombstone()) {
                                     // Decided last, once every other record has been applied:
@@ -414,14 +425,11 @@ public final class RoomSyncStore implements SyncStore {
                                                     preferencesMetadata[0].localId,
                                                     stagedPreferencesUpdatedAt,
                                                     null);
-                                    if (preferencesRecord != null) {
-                                        database.syncMetadataDao()
-                                                .setSyncedVersion(
-                                                        preferencesMetadata[0].recordType,
-                                                        preferencesMetadata[0].localId,
-                                                        preferencesRecord
-                                                                .getCanonicalPayloadHash());
-                                    }
+                                    // The synced version is recorded only once the commit below
+                                    // has succeeded: recorded here, a refused or failed commit
+                                    // left the base naming a version that was never applied, and
+                                    // the next build then published the local settings over the
+                                    // other device's change with no conflict.
                                     database.syncPendingPreferencesDao()
                                             .upsert(
                                                     new SyncPendingPreferencesEntity(
@@ -447,18 +455,35 @@ public final class RoomSyncStore implements SyncStore {
             throw error.ioException;
         }
         if (deferFinalState || preferencesBaseline[0] != null) {
+            boolean committed = false;
             if (preferencesBaseline[0] != null) {
                 // The journal is only dropped once the adapter reports a durable commit; a
                 // failure here leaves it in place for recoverPendingPreferences and keeps the
                 // sync state retryable rather than claiming success. A commit refused because
                 // the settings moved in the meantime is not a failure: the journal is dropped
                 // and the edit is published by the next build.
-                commitPendingPreferences(
-                        stagedPreferences, stagedPreferencesTarget, preferencesBaseline[0]);
+                committed =
+                        commitPendingPreferences(
+                                stagedPreferences, stagedPreferencesTarget, preferencesBaseline[0]);
             }
+            boolean recordBase = committed && preferencesRecord != null;
             database.runInTransaction(
                     () -> {
                         database.syncPendingPreferencesDao().clear();
+                        if (recordBase) {
+                            SyncMetadataEntity metadata =
+                                    database.syncMetadataDao()
+                                            .getByStableId(
+                                                    SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                                    PREFERENCES_STABLE_ID);
+                            if (metadata != null) {
+                                database.syncMetadataDao()
+                                        .setSyncedVersion(
+                                                metadata.recordType,
+                                                metadata.localId,
+                                                preferencesRecord.getCanonicalPayloadHash());
+                            }
+                        }
                         if (finalState != null)
                             database.syncStateDao().upsert(toEntity(finalState));
                     });
@@ -1095,6 +1120,11 @@ public final class RoomSyncStore implements SyncStore {
      * was dropped unsettled instead of offered. Its alternative came back at the next sync as a
      * fresh conflict, was dropped again after the next resolution, and the account never settled.
      * Only content the user actually changed since the conflict was recorded counts.
+     *
+     * <p>The one content that keeps a row alive is the row's own winner. A record that now equals
+     * the row's alternative was switched to it — by a resolution here or on another device — so the
+     * pre-selected winner is a version the record has left behind; offered anyway, and when that
+     * winner was a deletion, one tap deleted the record everywhere.
      */
     private boolean isSuperseded(@NonNull SyncConflictEntity conflict) throws IOException {
         SyncMetadataEntity metadata =
@@ -1104,9 +1134,8 @@ public final class RoomSyncStore implements SyncStore {
                         <= Math.max(conflict.winnerUpdatedAt, conflict.loserUpdatedAt)) {
             return false;
         }
-        String current = contentDigest(metadata);
-        return !current.equals(contentDigest(conflict.recordType, conflict.winnerJson))
-                && !current.equals(contentDigest(conflict.recordType, conflict.loserJson));
+        return !contentDigest(metadata)
+                .equals(contentDigest(conflict.recordType, conflict.winnerJson));
     }
 
     /** A digest of what the local record says, independent of when it last changed. */

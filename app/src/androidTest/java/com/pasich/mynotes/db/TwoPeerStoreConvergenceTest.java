@@ -61,6 +61,66 @@ public class TwoPeerStoreConvergenceTest {
     public void tearDown() {
         a.db.close();
         b.db.close();
+        if (c != null) c.db.close();
+    }
+
+    private Peer c;
+
+    @Test
+    public void aRecordRevivedElsewhereLeavesNoPhantomDeletionOnAPeerThatNeverHeldIt()
+            throws Exception {
+        // B edits, C deletes, B keeps the edit. A — a fresh install that never held the record —
+        // received the deletion-versus-edit conflict along the way. Once the edit arrives on A the
+        // row is meaningless: offered anyway, pre-selected on the deletion, one tap deleted the
+        // record on every device with no conflict raised anywhere.
+        RecordKind kind = new TaskRecord();
+        c = new Peer();
+        kind.create(b, "TaskX");
+        clock.advance();
+        assertClean(b.sync());
+        clock.advance();
+        assertClean(c.sync());
+        clock.advance();
+        assertClean(b.sync());
+
+        kind.edit(b, "TaskX-B");
+        clock.advance();
+        kind.delete(c);
+        clock.advance();
+        assertClean(c.sync());
+        clock.advance();
+        assertThat(b.sync().getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(b.store.getUnresolvedConflicts()).hasSize(1);
+        clock.advance();
+        assertThat(a.sync().getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+
+        // B keeps its edit: the winner was the deletion, so it is the alternative that stays.
+        clock.advance();
+        for (SyncConflictEntity conflict : b.store.getUnresolvedConflicts()) {
+            b.store.resolveConflict(
+                    conflict.id,
+                    conflict.winnerTombstone
+                            ? SyncResolution.KEEP_ALTERNATIVE
+                            : SyncResolution.KEEP_WINNER);
+        }
+        clock.advance();
+        assertClean(b.sync());
+        clock.advance();
+        assertClean(a.sync());
+
+        // The record arrived on A; nothing is left there to tap, and it lives on everywhere.
+        assertThat(a.store.getUnresolvedConflicts()).isEmpty();
+        assertThat(kind.title(a)).isEqualTo("TaskX-B");
+        clock.advance();
+        assertClean(c.sync());
+        assertThat(kind.title(c)).isEqualTo("TaskX-B");
+        clock.advance();
+        assertClean(a.sync());
+        clock.advance();
+        assertClean(b.sync());
+        assertThat(kind.title(b)).isEqualTo("TaskX-B");
+        assertThat(b.store.getUnresolvedConflicts()).isEmpty();
+        assertThat(c.store.getUnresolvedConflicts()).isEmpty();
     }
 
     @Test

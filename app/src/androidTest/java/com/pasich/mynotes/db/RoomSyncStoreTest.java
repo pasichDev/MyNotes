@@ -789,6 +789,83 @@ public class RoomSyncStoreTest {
                 .isEqualTo(5_000L);
     }
 
+    @Test
+    public void resolveConflict_dropsARowWhoseWinnerTheRecordHasAlreadyLeftBehind()
+            throws Exception {
+        // The record now equals the row's alternative — another device kept it — so the
+        // pre-selected winner is a version the record has moved past. Offered anyway, it was
+        // applied on a tap; here the winner is a deletion.
+        int noteId = seedNote("loser", "body", null);
+        db.syncMetadataDao().touch(SyncMetadata.RECORD_TYPE_NOTE, noteId, 5_000L);
+        com.pasich.mynotes.data.database.entities.SyncConflictEntity row =
+                noteConflictRow(
+                        "11111111-1111-4111-8111-111111111111", "deleted-winner", 3_000L, 2_000L);
+        row.winnerJson =
+                "{\"type\":\"note\",\"id\":\"11111111-1111-4111-8111-111111111111\","
+                        + "\"updatedAt\":\"1970-01-01T00:00:03Z\",\"deletedAt\":\"1970-01-01T00:00:03Z\","
+                        + "\"payload\":{}}";
+        row.winnerTombstone = true;
+        db.syncConflictDao().insertIgnoringDuplicates(Collections.singletonList(row));
+        long conflictId = db.syncConflictDao().getAll().get(0).id;
+
+        store.resolveConflict(conflictId, SyncResolution.KEEP_WINNER);
+
+        assertThat(db.noteDao().getNoteSync(noteId)).isNotNull();
+        assertThat(db.noteDao().getNoteSync(noteId).getTitle()).isEqualTo("loser");
+        assertThat(db.syncConflictDao().getById(conflictId)).isNull();
+    }
+
+    @Test
+    public void applySnapshot_doesNotRecordThePreferencesBaseUntilTheCommitSucceeded()
+            throws Exception {
+        // Recorded inside the transaction, a base for a version that was then never committed
+        // made the next build publish the local settings over the other device's change with
+        // no conflict.
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        RoomSyncStore preferencesStore = new RoomSyncStore(context, db, adapter.helper);
+        preferencesStore.readState();
+        // A build first, as every sync does: it records the live digest as the baseline, so the
+        // apply below sees unchanged settings rather than a leftover baseline from another test.
+        preferencesStore.buildSnapshot();
+        adapter.succeeds.set(false);
+        db.syncMetadataDao().setVersion(SyncMetadata.RECORD_TYPE_PREFERENCES, 0, 1_000L, null);
+        SyncRecord remote =
+                SyncRecord.live(
+                        SyncRecord.Type.PREFERENCES,
+                        "00000000-0000-4000-8000-000000000000",
+                        java.time.Instant.ofEpochMilli(2_000L),
+                        new com.google.gson.Gson()
+                                .toJsonTree(preferencesWithTheme(3))
+                                .getAsJsonObject());
+
+        try {
+            preferencesStore.applySnapshot(
+                    new SyncSnapshot(Collections.singletonList(remote)), Collections.emptyList());
+            throw new AssertionError("Expected the failed commit to propagate");
+        } catch (IOException expected) {
+            // The journal stays for recovery; the base must not claim the version landed.
+        }
+
+        assertThat(
+                        db.syncMetadataDao()
+                                .getByStableId(
+                                        SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                        "00000000-0000-4000-8000-000000000000")
+                                .syncedVersionId)
+                .isNull();
+
+        adapter.succeeds.set(true);
+        preferencesStore.applySnapshot(
+                new SyncSnapshot(Collections.singletonList(remote)), Collections.emptyList());
+        assertThat(
+                        db.syncMetadataDao()
+                                .getByStableId(
+                                        SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                        "00000000-0000-4000-8000-000000000000")
+                                .syncedVersionId)
+                .isEqualTo(remote.getCanonicalPayloadHash());
+    }
+
     /** A stored note conflict whose winner is titled after its version id. */
     private com.pasich.mynotes.data.database.entities.SyncConflictEntity noteConflictRow(
             String stableId, String winnerVersionId, long winnerUpdatedAt, long loserUpdatedAt) {
