@@ -418,6 +418,122 @@ public class RoomSyncStoreTest {
         }
     }
 
+    // ------------------------------------------------- an ordinary edit after a clean sync
+
+    @Test
+    public void aLocalEditAfterACleanSyncIsPublishedWithoutAConflict() throws Exception {
+        // Reproduced on a Pixel: fully synced, edit a note, sync — the conflict dialog offered
+        // the edit against the text it had replaced, after every single edit.
+        int noteId = seedNote("Original", "body", null);
+        SyncRecord published = onlyNote(store.readSnapshot());
+        // What a clean sync does with the merged snapshot: apply it, which records the version
+        // the remote now holds.
+        store.applySnapshot(
+                new SyncSnapshot(Collections.singletonList(published)), Collections.emptyList());
+        Note note = db.noteDao().getNoteSync(noteId);
+        note.setTitle("Edited here");
+        db.noteDao().addNote(note);
+        db.syncMetadataDao().touch(SyncMetadata.RECORD_TYPE_NOTE, noteId, 5_000L);
+
+        SyncRecord edited = onlyNote(store.readSnapshot());
+        com.pasich.mynotes.data.sync.SyncMergeResult merge =
+                new com.pasich.mynotes.data.sync.SyncMerger()
+                        .merge(
+                                new SyncSnapshot(Collections.singletonList(edited)),
+                                new SyncSnapshot(Collections.singletonList(published)));
+
+        assertThat(edited.getBaseVersionId()).isEqualTo(published.getCanonicalPayloadHash());
+        assertThat(merge.getConflicts()).isEmpty();
+        assertThat(
+                        merge.getMergedSnapshot()
+                                .getRecords()
+                                .get(0)
+                                .getPayload()
+                                .get("b")
+                                .getAsString())
+                .isEqualTo("Edited here");
+    }
+
+    @Test
+    public void anEditOnBothSidesAfterACleanSyncIsStillAConflict() throws Exception {
+        int noteId = seedNote("Original", "body", null);
+        SyncRecord published = onlyNote(store.readSnapshot());
+        store.applySnapshot(
+                new SyncSnapshot(Collections.singletonList(published)), Collections.emptyList());
+        Note note = db.noteDao().getNoteSync(noteId);
+        note.setTitle("Edited here");
+        db.noteDao().addNote(note);
+        db.syncMetadataDao().touch(SyncMetadata.RECORD_TYPE_NOTE, noteId, 5_000L);
+        JsonObject elsewhere = published.getPayload();
+        elsewhere.addProperty("b", "Edited elsewhere");
+        SyncRecord remote =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        published.getId(),
+                        java.time.Instant.ofEpochMilli(6_000L),
+                        elsewhere);
+
+        com.pasich.mynotes.data.sync.SyncMergeResult merge =
+                new com.pasich.mynotes.data.sync.SyncMerger()
+                        .merge(
+                                new SyncSnapshot(
+                                        Collections.singletonList(onlyNote(store.readSnapshot()))),
+                                new SyncSnapshot(Collections.singletonList(remote)));
+
+        assertThat(merge.getConflicts()).hasSize(1);
+    }
+
+    @Test
+    public void aNoteWithADuplicatedBlockReceivedUnder2650RebuildsToWhatTheDecoderProduces()
+            throws Exception {
+        // 2.6.50 published such a note with one attachment id referenced twice, and its receivers
+        // restored one column entry per reference under that id. The decoder keeps the id; the
+        // store used to re-key the repeat, so the two versions hashed differently at the same
+        // timestamp and the note conflicted with itself on every sync.
+        byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        String restoredId = "7d444840-9dc0-11d1-b245-5ffdce74fad2";
+        int noteId = seedNote("Shopping", "Milk", null);
+        File folder = new File(context.getFilesDir(), "attachments/note_" + noteId);
+        assertThat(folder.mkdirs() || folder.isDirectory()).isTrue();
+        try (FileOutputStream out =
+                new FileOutputStream(new File(folder, restoredId + "-" + hash))) {
+            out.write(bytes);
+        }
+        String receiverUrl =
+                com.pasich.mynotes.extendedEditor.attach.AttachmentStorage.urlFor(
+                        noteId, restoredId + "-" + hash);
+        String entry =
+                "{\"url\":\""
+                        + receiverUrl
+                        + "\",\"name\":\"photo.png\",\"id\":\""
+                        + restoredId
+                        + "\"}";
+        String block =
+                "{\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + receiverUrl
+                        + "\",\"name\":\"photo.png\"}}}";
+        Note received = db.noteDao().getNoteSync(noteId);
+        received.setAttachments("[" + entry + "," + entry + "]");
+        received.setValueJson("[" + block + "," + block + "]");
+        db.noteDao().addNote(received);
+        // The same note as 2.6.50 put it on the wire: the sender's own URLs, [X, X].
+        String senderUrl = "editorjs://attachments/note_77/photo.png";
+        String senderBlock =
+                "{\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + senderUrl
+                        + "\",\"name\":\"photo.png\"}}}";
+        Note sender = new Note().create("Shopping", "Milk", 1_000L, "");
+        sender.setValueJson("[" + senderBlock + "," + senderBlock + "]");
+        SyncRecord onDrive =
+                published2650WithIds(
+                        sender, "photo.png", hash, bytes.length, restoredId, restoredId);
+
+        SyncRecord rebuilt = onlyNote(store.readSnapshot());
+
+        assertThat(rebuilt.getCanonicalPayloadHash()).isEqualTo(onDrive.getCanonicalPayloadHash());
+    }
+
     // ------------------------------------------------- notes published by 2.6.50
 
     @Test
@@ -535,24 +651,34 @@ public class RoomSyncStoreTest {
                                 (stableId + "\n0\n" + blockUrl + "\n" + displayName)
                                         .getBytes(StandardCharsets.UTF_8))
                         .toString();
+        return published2650WithIds(note, displayName, hash, size, legacyId);
+    }
+
+    /** As above, with the manifest ids given: one entry per id, repeats included. */
+    private static SyncRecord published2650WithIds(
+            Note note, String displayName, String hash, long size, String... ids)
+            throws IOException {
+        String stableId = "11111111-1111-4111-8111-111111111111";
         JsonObject payload = new com.google.gson.Gson().toJsonTree(note).getAsJsonObject();
         payload.remove("a");
         payload.remove("h");
-        JsonObject entry = new JsonObject();
-        entry.addProperty("id", legacyId);
-        entry.addProperty("sha256", hash);
-        entry.addProperty("mimeType", "image/png");
-        entry.addProperty("size", size);
-        entry.addProperty("path", "attachments/" + hash);
-        entry.addProperty("displayName", displayName);
         com.google.gson.JsonArray manifest = new com.google.gson.JsonArray();
-        manifest.add(entry);
-        payload.add("attachmentsManifest", manifest);
         com.google.gson.JsonArray hashes = new com.google.gson.JsonArray();
-        hashes.add(hash);
-        payload.add("attachmentHashes", hashes);
         JsonObject names = new JsonObject();
-        names.addProperty(legacyId, displayName);
+        for (String id : ids) {
+            JsonObject entry = new JsonObject();
+            entry.addProperty("id", id);
+            entry.addProperty("sha256", hash);
+            entry.addProperty("mimeType", "image/png");
+            entry.addProperty("size", size);
+            entry.addProperty("path", "attachments/" + hash);
+            entry.addProperty("displayName", displayName);
+            manifest.add(entry);
+            hashes.add(hash);
+            names.addProperty(id, displayName);
+        }
+        payload.add("attachmentsManifest", manifest);
+        payload.add("attachmentHashes", hashes);
         payload.add("attachmentNames", names);
         SyncRecord asPublished =
                 SyncRecord.live(

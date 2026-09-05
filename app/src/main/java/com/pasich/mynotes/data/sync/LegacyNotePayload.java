@@ -34,6 +34,13 @@ final class LegacyNotePayload {
     /**
      * Rewrites {@code payload} in place when it is a 2.6.50-shaped note.
      *
+     * <p>Two kinds of id occur in such a note. One 2.6.50 derived itself, recognisable as exactly
+     * the old derivation of the block URL, name and position; it becomes the current derivation,
+     * which is what the upgraded store computes for the same column. One it restored from another
+     * device is a canonical id the store keeps as it is — repeated or not. Either way the blocks
+     * are put into wire form by position, which is how the store maps them when the column and the
+     * blocks line up.
+     *
      * @return true when the payload was upgraded.
      */
     static boolean upgrade(@NonNull String noteStableId, @NonNull JsonObject payload) {
@@ -50,7 +57,7 @@ final class LegacyNotePayload {
         if (urls.size() != manifest.size()) {
             return false;
         }
-        List<String> newIds = new ArrayList<>(manifest.size());
+        List<String> ids = new ArrayList<>(manifest.size());
         for (int index = 0; index < manifest.size(); index++) {
             JsonElement element = manifest.get(index);
             if (!element.isJsonObject()) {
@@ -58,34 +65,34 @@ final class LegacyNotePayload {
             }
             JsonObject entry = element.getAsJsonObject();
             String url = urls.get(index);
+            // A block already in wire form, or naming something that is not a local file, is
+            // not 2.6.50's shape.
             if (AttachmentUrl.parse(url) == null
                     || !isString(entry.get("id"))
                     || !isString(entry.get("sha256"))
                     || !isString(entry.get("displayName"))) {
                 return false;
             }
+            String id = entry.get("id").getAsString();
             String displayName = entry.get("displayName").getAsString();
-            if (!entry.get("id")
-                    .getAsString()
-                    .equals(
-                            AttachmentLogicalIds.deriveLegacy(
-                                    noteStableId, index, url, displayName))) {
-                return false;
-            }
-            newIds.add(
-                    AttachmentLogicalIds.derive(
-                            noteStableId,
-                            index,
-                            url,
-                            displayName,
-                            entry.get("sha256").getAsString()));
+            ids.add(
+                    id.equals(
+                                    AttachmentLogicalIds.deriveLegacy(
+                                            noteStableId, index, url, displayName))
+                            ? AttachmentLogicalIds.derive(
+                                    noteStableId,
+                                    index,
+                                    url,
+                                    displayName,
+                                    entry.get("sha256").getAsString())
+                            : id);
         }
 
         JsonObject names = new JsonObject();
         for (int index = 0; index < manifest.size(); index++) {
             JsonObject entry = manifest.get(index).getAsJsonObject();
-            entry.addProperty("id", newIds.get(index));
-            names.addProperty(newIds.get(index), entry.get("displayName").getAsString());
+            entry.addProperty("id", ids.get(index));
+            names.addProperty(ids.get(index), entry.get("displayName").getAsString());
         }
         payload.add("attachmentNames", names);
         int[] position = {0};
@@ -93,7 +100,7 @@ final class LegacyNotePayload {
                 "f",
                 EditorAttachmentBlocks.rewriteUrls(
                         blocks.getAsString(),
-                        url -> AttachmentWireUrl.forLogicalId(newIds.get(position[0]++))));
+                        url -> AttachmentWireUrl.forLogicalId(ids.get(position[0]++))));
         return true;
     }
 

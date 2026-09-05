@@ -200,8 +200,29 @@ public class MigrationTest {
     }
 
     @Test
+    public void migrate21to22_addsTheSyncedVersionAndLeavesItUnknownForExistingRows()
+            throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 21);
+        db.execSQL(
+                "INSERT INTO sync_metadata (recordType, localId, stableId, updatedAt, deletedAt) "
+                        + "VALUES ('note', 1, 'stable', 1000, NULL)");
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 22, true, AppDatabase.MIGRATION_21_22);
+        try (android.database.Cursor cursor =
+                migrated.query("SELECT syncedVersionId FROM sync_metadata WHERE localId = 1")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            // Unknown until the next sync fills it in; the merge then behaves as before for it.
+            assertThat(cursor.isNull(0)).isTrue();
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
     public void migrateFromTheLastReleasedVersion_reachesTheCurrentSchema() throws IOException {
-        // 17 is what 2.6.48 shipped; 18, 19 and 20 all land in the same release after it.
+        // 17 is what 2.6.48 shipped; everything after it lands in later releases of this line.
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 17);
         db.execSQL(
                 "INSERT INTO notes "
@@ -213,12 +234,13 @@ public class MigrationTest {
         SupportSQLiteDatabase migrated =
                 helper.runMigrationsAndValidate(
                         TEST_DB,
-                        21,
+                        22,
                         true,
                         AppDatabase.MIGRATION_17_18,
                         AppDatabase.MIGRATION_18_19,
                         AppDatabase.MIGRATION_19_20,
-                        AppDatabase.MIGRATION_20_21);
+                        AppDatabase.MIGRATION_20_21,
+                        AppDatabase.MIGRATION_21_22);
         try (android.database.Cursor cursor = migrated.query("SELECT COUNT(*) FROM notes")) {
             assertThat(cursor.moveToFirst()).isTrue();
             assertThat(cursor.getInt(0)).isEqualTo(1);

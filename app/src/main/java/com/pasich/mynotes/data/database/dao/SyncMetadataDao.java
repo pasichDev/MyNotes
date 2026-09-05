@@ -18,6 +18,12 @@ public interface SyncMetadataDao {
             "UPDATE sync_metadata SET updatedAt = :updatedAt, deletedAt = :deletedAt WHERE recordType = :recordType AND localId = :localId")
     void setVersion(String recordType, long localId, long updatedAt, Long deletedAt);
 
+    /** Records the version the remote is known to hold; see {@code syncedVersionId}. */
+    @Query(
+            "UPDATE sync_metadata SET syncedVersionId = :versionId "
+                    + "WHERE recordType = :recordType AND localId = :localId")
+    void setSyncedVersion(String recordType, long localId, String versionId);
+
     @Query(
             "SELECT * FROM sync_metadata "
                     + "WHERE recordType = :recordType AND localId = :localId LIMIT 1")

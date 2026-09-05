@@ -237,6 +237,23 @@ public abstract class AppDatabase extends RoomDatabase {
                 }
             };
 
+    /**
+     * Remembers, per record, the version the remote is known to hold.
+     *
+     * <p>The merge had no notion of a common ancestor, so a record edited on this device alone was
+     * offered to the user as a conflict against the version they had just replaced — after every
+     * edit. Null for existing rows: the next sync fills it in, and until then the merge behaves as
+     * before.
+     */
+    public static final Migration MIGRATION_21_22 =
+            new Migration(21, 22) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "ALTER TABLE `sync_metadata` ADD COLUMN `syncedVersionId` TEXT");
+                }
+            };
+
     private static void insertMetadataForExistingRecords(
             SupportSQLiteDatabase database,
             String recordType,

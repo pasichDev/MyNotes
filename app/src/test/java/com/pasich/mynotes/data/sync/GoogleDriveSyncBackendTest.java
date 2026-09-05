@@ -650,7 +650,7 @@ public class GoogleDriveSyncBackendTest {
                         null,
                         () -> {
                             try {
-                                GoogleDriveSyncBackend.validateAncestry(parents);
+                                BundleHistory.validateAncestry(parents);
                             } catch (Throwable error) {
                                 failure[0] = error;
                             }
@@ -672,7 +672,7 @@ public class GoogleDriveSyncBackendTest {
         parents.put("c", List.of("a", "missing"));
 
         try {
-            GoogleDriveSyncBackend.validateAncestry(parents);
+            BundleHistory.validateAncestry(parents);
             throw new AssertionError("Expected the cycle to be refused");
         } catch (IOException expected) {
             assertThat(expected).hasMessageThat().contains("cycle");
@@ -760,6 +760,29 @@ public class GoogleDriveSyncBackendTest {
                                 .get("title")
                                 .getAsString())
                 .isEqualTo("Fourth");
+    }
+
+    @Test
+    public void theSupersessionMarkCarriesDrivesTimeAtTheMarkNotAtTheListing() throws Exception {
+        // The mark is written after every bundle has been downloaded; stamping it with the time
+        // of the listing that preceded the downloads shortened the grace by the whole read.
+        SyncBundleCodec codec = new SyncBundleCodec();
+        byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
+        String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
+        byte[] head =
+                codec.encode(
+                        snapshotWithTitle("Head"), CLOCK.instant(), Collections.singleton(baseId));
+        server.seedOwnedBundleBytes(base);
+        server.seedOwnedBundleBytes(head);
+        long tenMinutes = 10L * 60L * 1000L;
+        server.advanceClockOnEachDownload(tenMinutes);
+
+        backend().readSnapshotResult();
+
+        // Two downloads happened before the mark, so Drive's clock had moved twenty minutes.
+        assertThat(server.supersessionMarkTimes()).hasSize(1);
+        assertThat(server.supersessionMarkTimes().get(0))
+                .isAtLeast(CLOCK.millis() + 2L * tenMinutes);
     }
 
     @Test
@@ -1264,6 +1287,8 @@ public class GoogleDriveSyncBackendTest {
         /** Drive's clock, as the fake stamps files with it; starts at the tests' fixed CLOCK. */
         private volatile long serverNowMillis = CLOCK.millis();
 
+        private volatile long clockStepPerDownload;
+
         private SyncSnapshot updateBeforeNextPatch;
         private final AtomicInteger nextId = new AtomicInteger(1);
 
@@ -1485,6 +1510,21 @@ public class GoogleDriveSyncBackendTest {
         /** Moves Drive's clock forward; later stamps are dated from the new time. */
         void advanceClock(long millis) {
             serverNowMillis += millis;
+        }
+
+        /** Models slow downloads: Drive's clock moves by {@code millis} on each media read. */
+        void advanceClockOnEachDownload(long millis) {
+            clockStepPerDownload = millis;
+        }
+
+        /** The times recorded in the clients' supersession marks, in file order. */
+        List<Long> supersessionMarkTimes() {
+            List<Long> times = new ArrayList<>();
+            for (DriveFile file : files.values()) {
+                String mark = file.appProperties.get("mynotesBundleSuperseded");
+                if (mark != null) times.add(Long.parseLong(mark));
+            }
+            return times;
         }
 
         /**
@@ -1724,6 +1764,7 @@ public class GoogleDriveSyncBackendTest {
             }
             if ("media".equals(parseQuery(uri).get("alt"))) {
                 mediaReads.merge(id, 1, Integer::sum);
+                serverNowMillis += clockStepPerDownload;
                 return Response.binary(200, file.content, file.eTag());
             }
             return Response.json(200, fileMetadata(file).toString(), file.eTag());

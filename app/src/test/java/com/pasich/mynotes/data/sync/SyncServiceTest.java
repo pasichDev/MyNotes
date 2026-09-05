@@ -306,6 +306,32 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_publishesAnOrdinaryLocalEditWithoutAskingTheUser() {
+        // Reproduced on a Pixel: fully synced, edit one note, sync — the conflict dialog offered
+        // the edit against the text it replaced, after every edit, with the wrong tap discarding
+        // the work. The remote still holds what this device last published, so only this side
+        // moved.
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Milk")));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        assertThat(new SyncService(store, new SyncMerger(), CLOCK).sync(backend).getStatus())
+                .isEqualTo(SyncState.Status.SUCCESS);
+        store.snapshot = snapshot(note(TWENTY, "Milk and bread"));
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(state.getConflictCount()).isEqualTo(0);
+        assertThat(store.appliedConflicts).isEmpty();
+        assertThat(
+                        backend.snapshot
+                                .find(SyncRecord.Type.NOTE, NOTE_ID)
+                                .getPayload()
+                                .get("value")
+                                .getAsString())
+                .isEqualTo("Milk and bread");
+    }
+
+    @Test
     public void runWhileNoSyncRuns_waitsForTheSyncInFlightToFinish() throws Exception {
         // Disconnect wipes state, conflicts and the blob cache. Done concurrently with the
         // six-hourly worker it deleted the cache under the worker, which then wrote the old
@@ -518,15 +544,24 @@ public class SyncServiceTest {
             this.snapshot = snapshot;
         }
 
+        /** The version the remote is known to hold, per record, as RoomSyncStore remembers it. */
+        private final Map<String, String> syncedVersions = new HashMap<>();
+
         @Override
         public SyncSnapshot readSnapshot() {
-            return snapshot;
+            List<SyncRecord> withBases = new ArrayList<>();
+            for (SyncRecord record : snapshot.getRecords()) {
+                String base = syncedVersions.get(record.getType() + ":" + record.getId());
+                // Same instance when nothing is known, so identity-based assertions still hold.
+                withBases.add(base == null ? record : record.withBaseVersion(base));
+            }
+            return new SyncSnapshot(withBases);
         }
 
         @Override
         public SnapshotBuildResult buildSnapshot() {
             return snapshotBuildResult == null
-                    ? SnapshotBuildResult.publishable(snapshot)
+                    ? SnapshotBuildResult.publishable(readSnapshot())
                     : snapshotBuildResult;
         }
 
@@ -537,6 +572,10 @@ public class SyncServiceTest {
             appliedSnapshot = snapshot;
             appliedConflicts = new ArrayList<>(conflicts);
             applyCalls++;
+            for (SyncRecord record : snapshot.getRecords()) {
+                syncedVersions.put(
+                        record.getType() + ":" + record.getId(), record.getCanonicalPayloadHash());
+            }
         }
 
         @Override

@@ -75,6 +75,15 @@ public final class RoomSyncStore implements SyncStore {
     private volatile boolean noteFoldersIndexed;
 
     /**
+     * Version hash of every record the last build produced, by record key.
+     *
+     * <p>When the apply skips a record because it was edited during the sync, the version that was
+     * nonetheless published may be this device's own; remembering it as the synced version keeps
+     * the next merge from calling the follow-up edit a conflict.
+     */
+    private final Map<String, String> builtVersionIds = new ConcurrentHashMap<>();
+
+    /**
      * Attachments the last build described from the column alone because their file is gone, keyed
      * by hash, so the service can name the note when no endpoint holds the blob either.
      */
@@ -187,15 +196,19 @@ public final class RoomSyncStore implements SyncStore {
         List<SyncRecord> records = new ArrayList<>();
         List<SnapshotProblem> problems = new ArrayList<>();
         rememberedOnlyAttachments.clear();
+        builtVersionIds.clear();
         try {
             for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
+                // Every record carries the version the remote is known to hold, so the merge can
+                // tell an edit made here alone from one made on both sides.
                 if (metadata.deletedAt != null) {
                     records.add(
                             SyncRecord.tombstone(
-                                    SyncRecord.Type.fromWireValue(metadata.recordType),
-                                    metadata.stableId,
-                                    Instant.ofEpochMilli(metadata.updatedAt),
-                                    Instant.ofEpochMilli(metadata.deletedAt)));
+                                            SyncRecord.Type.fromWireValue(metadata.recordType),
+                                            metadata.stableId,
+                                            Instant.ofEpochMilli(metadata.updatedAt),
+                                            Instant.ofEpochMilli(metadata.deletedAt))
+                                    .withBaseVersion(metadata.syncedVersionId));
                     continue;
                 }
                 JsonObject payload = payload(metadata, problems);
@@ -204,14 +217,18 @@ public final class RoomSyncStore implements SyncStore {
                             database.syncMetadataDao().get(metadata.recordType, metadata.localId);
                     records.add(
                             SyncRecord.live(
-                                    SyncRecord.Type.fromWireValue(metadata.recordType),
-                                    metadata.stableId,
-                                    Instant.ofEpochMilli(
-                                            current == null
-                                                    ? metadata.updatedAt
-                                                    : current.updatedAt),
-                                    payload));
+                                            SyncRecord.Type.fromWireValue(metadata.recordType),
+                                            metadata.stableId,
+                                            Instant.ofEpochMilli(
+                                                    current == null
+                                                            ? metadata.updatedAt
+                                                            : current.updatedAt),
+                                            payload)
+                                    .withBaseVersion(metadata.syncedVersionId));
                 }
+            }
+            for (SyncRecord record : records) {
+                builtVersionIds.put(recordKey(record), record.getCanonicalPayloadHash());
             }
         } finally {
             hashCache.flush();
@@ -285,6 +302,11 @@ public final class RoomSyncStore implements SyncStore {
                                                                 record.getUpdatedAt()
                                                                         .toEpochMilli(),
                                                                 null));
+                                        database.syncMetadataDao()
+                                                .setSyncedVersion(
+                                                        record.getType().getWireValue(),
+                                                        localId,
+                                                        record.getCanonicalPayloadHash());
                                     }
                                     transactionFailureInjector.afterRecordApplied(record);
                                     continue;
@@ -316,6 +338,16 @@ public final class RoomSyncStore implements SyncStore {
                                                     + metadata.recordType
                                                     + "; it was edited during this sync");
                                     skippedKeys.add(key);
+                                    if (record.getCanonicalPayloadHash()
+                                            .equals(builtVersionIds.get(key))) {
+                                        // The version just published is this device's own; the
+                                        // edit made meanwhile is a step past it, not a conflict.
+                                        database.syncMetadataDao()
+                                                .setSyncedVersion(
+                                                        metadata.recordType,
+                                                        metadata.localId,
+                                                        record.getCanonicalPayloadHash());
+                                    }
                                     continue;
                                 }
                                 if (record.isTombstone()) {
@@ -326,6 +358,12 @@ public final class RoomSyncStore implements SyncStore {
                                                     metadata.localId,
                                                     record.getUpdatedAt().toEpochMilli(),
                                                     record.getDeletedAt().toEpochMilli());
+                                    database.syncMetadataDao()
+                                            .setSyncedVersion(
+                                                    metadata.recordType,
+                                                    metadata.localId,
+                                                    record.getCanonicalPayloadHash());
+                                    retireConflictsSupersededBy(record);
                                     transactionFailureInjector.afterRecordApplied(record);
                                     continue;
                                 }
@@ -339,6 +377,12 @@ public final class RoomSyncStore implements SyncStore {
                                                 metadata.localId,
                                                 record.getUpdatedAt().toEpochMilli(),
                                                 null);
+                                database.syncMetadataDao()
+                                        .setSyncedVersion(
+                                                metadata.recordType,
+                                                metadata.localId,
+                                                record.getCanonicalPayloadHash());
+                                retireConflictsSupersededBy(record);
                                 transactionFailureInjector.afterRecordApplied(record);
                             }
                             if (preferencesMetadata[0] != null) {
@@ -370,6 +414,14 @@ public final class RoomSyncStore implements SyncStore {
                                                     preferencesMetadata[0].localId,
                                                     stagedPreferencesUpdatedAt,
                                                     null);
+                                    if (preferencesRecord != null) {
+                                        database.syncMetadataDao()
+                                                .setSyncedVersion(
+                                                        preferencesMetadata[0].recordType,
+                                                        preferencesMetadata[0].localId,
+                                                        preferencesRecord
+                                                                .getCanonicalPayloadHash());
+                                    }
                                     database.syncPendingPreferencesDao()
                                             .upsert(
                                                     new SyncPendingPreferencesEntity(
@@ -991,9 +1043,9 @@ public final class RoomSyncStore implements SyncStore {
         if (pending == null || pending.resolved) return;
 
         if (isSuperseded(pending)) {
-            // The record moved on after this conflict was recorded — an edit here, or a newer
-            // version applied from another device — so both stored versions are older than what
-            // the user now has. Applying either would overwrite the newer edit with a version
+            // The record's content changed after this conflict was recorded — an edit here, or a
+            // newer version applied from another device — so both stored versions are older than
+            // what the user now has. Applying either would overwrite the newer edit with a version
             // that was never offered against it. The alternative still travels with the bundle
             // and comes back as a fresh conflict against the current version at the next sync.
             Log.w(TAG, "Dropping a conflict that the record's newer version has superseded");
@@ -1034,12 +1086,65 @@ public final class RoomSyncStore implements SyncStore {
         }
     }
 
-    /** True when the local record is newer than both versions the conflict offers. */
-    private boolean isSuperseded(@NonNull SyncConflictEntity conflict) {
+    /**
+     * True when the local record has moved on from both versions the conflict offers.
+     *
+     * <p>Newer by timestamp is not enough. Resolving one conflict re-times the record without
+     * changing it, and a record with two open conflicts — a live edit against a deletion and
+     * against an older version, say — was then judged to have moved past its second conflict, which
+     * was dropped unsettled instead of offered. Its alternative came back at the next sync as a
+     * fresh conflict, was dropped again after the next resolution, and the account never settled.
+     * Only content the user actually changed since the conflict was recorded counts.
+     */
+    private boolean isSuperseded(@NonNull SyncConflictEntity conflict) throws IOException {
         SyncMetadataEntity metadata =
                 database.syncMetadataDao().getByStableId(conflict.recordType, conflict.stableId);
-        return metadata != null
-                && metadata.updatedAt > Math.max(conflict.winnerUpdatedAt, conflict.loserUpdatedAt);
+        if (metadata == null
+                || metadata.updatedAt
+                        <= Math.max(conflict.winnerUpdatedAt, conflict.loserUpdatedAt)) {
+            return false;
+        }
+        String current = contentDigest(metadata);
+        return !current.equals(contentDigest(conflict.recordType, conflict.winnerJson))
+                && !current.equals(contentDigest(conflict.recordType, conflict.loserJson));
+    }
+
+    /** A digest of what the local record says, independent of when it last changed. */
+    @NonNull
+    private String contentDigest(@NonNull SyncMetadataEntity metadata) {
+        if (metadata.deletedAt != null) {
+            return "tombstone";
+        }
+        JsonObject payload;
+        if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
+            // Not through payload(): that path records a local edit as a side effect.
+            payload = gson.toJsonTree(preferenceHelper.getListPreferences()).getAsJsonObject();
+        } else {
+            payload = payload(metadata, new ArrayList<>());
+        }
+        return payload == null ? "absent" : contentDigest(metadata.recordType, payload);
+    }
+
+    @NonNull
+    private static String contentDigest(@NonNull String recordType, @NonNull String recordJson) {
+        JsonObject root = JsonParser.parseString(recordJson).getAsJsonObject();
+        JsonElement deletedAt = root.get("deletedAt");
+        if (deletedAt != null && !deletedAt.isJsonNull()) {
+            return "tombstone";
+        }
+        JsonObject payload = root.getAsJsonObject("payload");
+        return contentDigest(recordType, payload == null ? new JsonObject() : payload);
+    }
+
+    /** The version hash at a fixed timestamp, so only the content takes part. */
+    @NonNull
+    private static String contentDigest(@NonNull String recordType, @NonNull JsonObject payload) {
+        return SyncRecord.live(
+                        SyncRecord.Type.fromWireValue(recordType),
+                        PREFERENCES_STABLE_ID,
+                        Instant.EPOCH,
+                        payload)
+                .getCanonicalPayloadHash();
     }
 
     /**
@@ -1143,6 +1248,22 @@ public final class RoomSyncStore implements SyncStore {
                 copyVerifiedAttachment(source, cache, entry.sha256, entry.size);
             }
         }
+    }
+
+    /**
+     * Drops open conflicts for a record whose winner is not the version just applied.
+     *
+     * <p>Such a row offers, pre-selected, a version that is no longer the live one; kept, it showed
+     * as a phantom conflict until the user tapped it, at which point it was dropped anyway. Its
+     * alternative is not lost: if it is still unsettled it travels with the bundle and comes back
+     * against the current version at the next sync.
+     */
+    private void retireConflictsSupersededBy(@NonNull SyncRecord applied) {
+        database.syncConflictDao()
+                .deleteSupersededUnresolved(
+                        applied.getType().getWireValue(),
+                        applied.getId(),
+                        applied.getCanonicalPayloadHash());
     }
 
     /**
@@ -1511,7 +1632,7 @@ public final class RoomSyncStore implements SyncStore {
         JsonArray hashes = new JsonArray();
         JsonObject names = new JsonObject();
         Map<String, String> logicalIdByUrl = new HashMap<>();
-        Set<String> logicalIdsInNote = new HashSet<>();
+        List<String> logicalIdsInOrder = new ArrayList<>();
         boolean complete = true;
         for (int attachmentIndex = 0; attachmentIndex < attachments.size(); attachmentIndex++) {
             JsonElement element = attachments.get(attachmentIndex);
@@ -1601,9 +1722,10 @@ public final class RoomSyncStore implements SyncStore {
             }
             String displayName = displayNameFor(attachment, file, hash);
             String logicalId = attachment.id;
-            // A column entry may repeat an id — a duplicated block whose file was later replaced.
-            // The manifest is keyed by id, so the repeat is given its own, as if it had none.
-            if (!isCanonicalUuid(logicalId) || logicalIdsInNote.contains(logicalId)) {
+            // A repeated canonical id — a duplicated block — is kept as it is: 2.6.50 published
+            // such notes that way, and re-keying the repeat here made the decoded and the
+            // rebuilt version disagree forever.
+            if (!isCanonicalUuid(logicalId)) {
                 // Existing editor data predates logical attachment IDs. Deriving from the stable
                 // note, source URL, position and content keeps the migration deterministic while
                 // allowing equal-content references to remain distinct logical attachments. The
@@ -1623,7 +1745,7 @@ public final class RoomSyncStore implements SyncStore {
                                 displayName,
                                 hash);
             }
-            logicalIdsInNote.add(logicalId);
+            logicalIdsInOrder.add(logicalId);
             hashes.add(hash);
             names.addProperty(logicalId, displayName);
             logicalIdByUrl.put(comparableUrl(attachment.url), logicalId);
@@ -1653,15 +1775,25 @@ public final class RoomSyncStore implements SyncStore {
         JsonElement valueJson = payload.get("f");
         if (valueJson != null && valueJson.isJsonPrimitive()) {
             String local = valueJson.getAsString();
-            String wire =
-                    EditorAttachmentBlocks.rewriteUrls(
-                            local,
-                            url -> {
-                                String logicalId = logicalIdByUrl.get(comparableUrl(url));
-                                return logicalId == null
-                                        ? null
-                                        : AttachmentWireUrl.forLogicalId(logicalId);
-                            });
+            // The column is the blocks' file list in document order, so when the two line up
+            // the mapping is positional — the only mapping a decoder of another device's bundle
+            // can reproduce, and the only one that survives two blocks naming one file. The
+            // URL match is the fallback for a column that no longer lines up with its blocks.
+            EditorAttachmentBlocks.UrlMapper mapper;
+            if (EditorAttachmentBlocks.fileUrls(local).size() == logicalIdsInOrder.size()) {
+                int[] position = {0};
+                mapper =
+                        url -> AttachmentWireUrl.forLogicalId(logicalIdsInOrder.get(position[0]++));
+            } else {
+                mapper =
+                        url -> {
+                            String logicalId = logicalIdByUrl.get(comparableUrl(url));
+                            return logicalId == null
+                                    ? null
+                                    : AttachmentWireUrl.forLogicalId(logicalId);
+                        };
+            }
+            String wire = EditorAttachmentBlocks.rewriteUrls(local, mapper);
             if (wire != null && !wire.equals(local)) {
                 payload.addProperty("f", wire);
             }

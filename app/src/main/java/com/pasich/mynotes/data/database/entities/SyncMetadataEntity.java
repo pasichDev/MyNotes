@@ -33,6 +33,15 @@ public class SyncMetadataEntity {
 
     public Long deletedAt;
 
+    /**
+     * Canonical hash of the version this device last published or applied for the record — the
+     * version the remote is known to hold. A merge that finds the remote still equal to it knows
+     * that only this device has moved and publishes without asking; without it every ordinary local
+     * edit was offered to the user as a conflict against the text they had just replaced. Null
+     * until the record has been through a sync on this build.
+     */
+    public String syncedVersionId;
+
     public SyncMetadataEntity(
             @NonNull String recordType,
             long localId,
