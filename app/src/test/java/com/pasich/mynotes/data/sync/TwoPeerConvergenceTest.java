@@ -97,6 +97,13 @@ public class TwoPeerConvergenceTest {
 
         assertThat(a.store.pendingConflicts()).isEmpty();
         assertThat(a.store.titleOf(type, RECORD_ID)).isEqualTo("TaskX-B");
+        // The tap that did the damage: accepting whatever the dialog pre-selects. With the row
+        // gone there is nothing to accept; with it present, this deleted the task on A.
+        clock.advance();
+        a.store.resolveAllKeepingWinner(clock.instant());
+        assertThat(a.store.titleOf(type, RECORD_ID)).isEqualTo("TaskX-B");
+        clock.advance();
+        assertThat(a.sync().getConflictCount()).isEqualTo(0);
         clock.advance();
         assertThat(c.sync().getConflictCount()).isEqualTo(0);
         assertThat(c.store.titleOf(type, RECORD_ID)).isEqualTo("TaskX-B");
@@ -220,6 +227,7 @@ public class TwoPeerConvergenceTest {
         private final Map<String, SyncRecord> records = new LinkedHashMap<>();
         private final Map<String, String> bases = new LinkedHashMap<>();
         private final List<ConflictRow> conflicts = new ArrayList<>();
+        private final Map<String, String> built = new LinkedHashMap<>();
         private SyncState state = SyncState.idle();
 
         PeerStore(Clock clock) {
@@ -276,74 +284,136 @@ public class TwoPeerConvergenceTest {
         /** The dialog loop: every open conflict, one after another, keeping the live version. */
         void resolveAllKeepingLive(Instant resolvedAt) {
             for (ConflictRow row : new ArrayList<>(pendingConflicts())) {
-                resolveKeepingLive(row, resolvedAt);
+                resolve(
+                        row,
+                        row.conflict.getWinner().isTombstone()
+                                ? SyncResolution.KEEP_ALTERNATIVE
+                                : SyncResolution.KEEP_WINNER,
+                        resolvedAt);
+            }
+        }
+
+        /** The dialog loop with the pre-selected choice accepted every time, deletions included. */
+        void resolveAllKeepingWinner(Instant resolvedAt) {
+            for (ConflictRow row : new ArrayList<>(pendingConflicts())) {
+                resolve(row, SyncResolution.KEEP_WINNER, resolvedAt);
             }
         }
 
         /**
-         * What resolveConflict does: drop a row whose record's content has moved on, otherwise
-         * re-time the chosen version and mark the row settled.
+         * What resolveConflict does: drop a row the record has moved past, otherwise apply the
+         * chosen version — a deletion included — re-timed and with the base left alone, and mark
+         * the row settled.
          */
-        void resolveKeepingLive(ConflictRow row, Instant resolvedAt) {
-            SyncRecord chosen =
-                    row.conflict.getWinner().isTombstone()
-                            ? row.conflict.getLoser()
-                            : row.conflict.getWinner();
-            String key = key(chosen);
-            SyncRecord current = records.get(key);
-            if (current != null
-                    && current.getUpdatedAt()
-                            .isAfter(
-                                    row.conflict
-                                                    .getWinner()
-                                                    .getUpdatedAt()
-                                                    .isAfter(row.conflict.getLoser().getUpdatedAt())
-                                            ? row.conflict.getWinner().getUpdatedAt()
-                                            : row.conflict.getLoser().getUpdatedAt())
-                    && !contentDigest(current).equals(contentDigest(row.conflict.getWinner()))) {
+        void resolve(ConflictRow row, SyncResolution resolution, Instant resolvedAt) {
+            if (isSuperseded(row.conflict)) {
                 conflicts.remove(row);
                 return;
             }
+            SyncRecord chosen =
+                    resolution == SyncResolution.KEEP_WINNER
+                            ? row.conflict.getWinner()
+                            : row.conflict.getLoser();
+            String key = key(chosen);
+            SyncRecord current = records.get(key);
             Instant updatedAt =
                     current != null && !resolvedAt.isAfter(current.getUpdatedAt())
                             ? current.getUpdatedAt().plusMillis(1)
                             : resolvedAt;
-            records.put(
-                    key,
-                    SyncRecord.live(
-                            chosen.getType(), chosen.getId(), updatedAt, chosen.getPayload()));
+            if (chosen.isTombstone()) {
+                // A record never held here has nothing to delete; the store leaves it alone.
+                if (current != null) {
+                    records.put(
+                            key,
+                            SyncRecord.tombstone(
+                                    chosen.getType(), chosen.getId(), updatedAt, updatedAt));
+                }
+            } else {
+                records.put(
+                        key,
+                        SyncRecord.live(
+                                chosen.getType(), chosen.getId(), updatedAt, chosen.getPayload()));
+            }
             row.resolved = true;
+        }
+
+        /**
+         * RoomSyncStore.isSuperseded: a record this peer does not hold is never superseded; one
+         * that is newer than both offers is, unless it still equals the row's winner.
+         */
+        private boolean isSuperseded(SyncMergeResult.Conflict conflict) {
+            SyncRecord current = records.get(conflict.getType() + ":" + conflict.getId());
+            if (current == null) return false;
+            Instant newest =
+                    conflict.getWinner().getUpdatedAt().isAfter(conflict.getLoser().getUpdatedAt())
+                            ? conflict.getWinner().getUpdatedAt()
+                            : conflict.getLoser().getUpdatedAt();
+            if (!current.getUpdatedAt().isAfter(newest)) return false;
+            return !contentDigest(current).equals(contentDigest(conflict.getWinner()));
+        }
+
+        /**
+         * RoomSyncStore.retireConflictsSupersededBy: open rows whose winner is not this version.
+         */
+        private void retireConflictsSupersededBy(SyncRecord applied) {
+            String key = key(applied);
+            conflicts.removeIf(
+                    row ->
+                            !row.resolved
+                                    && key.equals(
+                                            row.conflict.getType() + ":" + row.conflict.getId())
+                                    && !row.conflict
+                                            .getWinnerVersionId()
+                                            .equals(applied.getCanonicalPayloadHash()));
         }
 
         @Override
         public SyncSnapshot readSnapshot() {
             List<SyncRecord> withBases = new ArrayList<>();
+            built.clear();
             for (Map.Entry<String, SyncRecord> entry : records.entrySet()) {
+                built.put(entry.getKey(), entry.getValue().getCanonicalPayloadHash());
                 withBases.add(entry.getValue().withBaseVersion(bases.get(entry.getKey())));
             }
             return new SyncSnapshot(withBases);
         }
 
+        /**
+         * The four paths of RoomSyncStore.applySnapshot, kept distinct on purpose: which of them
+         * retire open rows is exactly what the phantom-deletion scenario depends on.
+         */
         @Override
         public void applySnapshot(SyncSnapshot snapshot, List<SyncMergeResult.Conflict> incoming) {
             Set<String> skipped = new LinkedHashSet<>();
             for (SyncRecord record : snapshot.getRecords()) {
                 String key = key(record);
                 SyncRecord current = records.get(key);
-                if (current != null && current.getUpdatedAt().isAfter(record.getUpdatedAt())) {
-                    skipped.add(key);
+                if (current == null && !record.isTombstone()) {
+                    // Insert: a record this peer never held.
+                    records.put(key, record.withBaseVersion(null));
+                    bases.put(key, record.getCanonicalPayloadHash());
+                    retireConflictsSupersededBy(record);
                     continue;
                 }
+                if (current == null) {
+                    // A deletion of a record never held: the store creates no metadata for it,
+                    // so nothing is stored and nothing is published later; only open rows follow.
+                    retireConflictsSupersededBy(record);
+                    continue;
+                }
+                if (current.getUpdatedAt().isAfter(record.getUpdatedAt())) {
+                    // Edited during the sync: left alone, except that this peer's own published
+                    // version becomes the base the edit is measured against.
+                    skipped.add(key);
+                    if (record.getCanonicalPayloadHash().equals(built.get(key))) {
+                        bases.put(key, record.getCanonicalPayloadHash());
+                    }
+                    continue;
+                }
+                // Tombstone or live update of a held record.
                 records.put(key, record.withBaseVersion(null));
                 bases.put(key, record.getCanonicalPayloadHash());
-                conflicts.removeIf(
-                        row ->
-                                !row.resolved
-                                        && key.equals(
-                                                row.conflict.getType() + ":" + row.conflict.getId())
-                                        && !row.conflict
-                                                .getWinnerVersionId()
-                                                .equals(record.getCanonicalPayloadHash()));
+                retireConflictsSupersededBy(record);
             }
             for (SyncMergeResult.Conflict conflict : incoming) {
                 String key = conflict.getType() + ":" + conflict.getId();

@@ -643,6 +643,7 @@ public final class RoomSyncStore implements SyncStore {
                 // stale baseline, calls this a local edit and touches the record to now, which
                 // lets an unchanged copy outrank a genuine edit made on another device.
                 preferences.edit().putString(PREFERENCES_HASH, target).commit();
+                recordRecoveredPreferencesBase(pending, backup);
                 finishJournal(pending);
                 return;
             case DISCARD_STALE:
@@ -655,8 +656,41 @@ public final class RoomSyncStore implements SyncStore {
             default:
                 // Replay was decided because the live values still match the baseline.
                 commitPendingPreferences(backup, target, pending.baselineHash);
+                recordRecoveredPreferencesBase(pending, backup);
                 finishJournal(pending);
         }
+    }
+
+    /**
+     * Records, on recovery, the base the interrupted apply would have recorded after its commit.
+     *
+     * <p>The apply transaction stamps the record with the remote version's time and journals its
+     * payload; the base is recorded only once the commit has succeeded. Dying in between left the
+     * live settings at the remote version with the base still naming the one before it, so the next
+     * merge saw a local edit nobody made. The version id is rebuilt from the journal: the same
+     * timestamp and the same payload, serialised by the same class, hash to the same id. A journal
+     * written by a conflict resolution is left alone; a resolution re-times the record without
+     * touching its base.
+     */
+    private void recordRecoveredPreferencesBase(
+            @NonNull SyncPendingPreferencesEntity pending, @NonNull PreferencesBackup backup) {
+        if (pending.conflictId > 0 || pending.recordUpdatedAt <= 0L) return;
+        SyncMetadataEntity metadata =
+                database.syncMetadataDao()
+                        .getByStableId(SyncMetadata.RECORD_TYPE_PREFERENCES, PREFERENCES_STABLE_ID);
+        if (metadata == null || metadata.updatedAt != pending.recordUpdatedAt) return;
+        String versionId =
+                SyncRecord.live(
+                                SyncRecord.Type.PREFERENCES,
+                                PREFERENCES_STABLE_ID,
+                                Instant.ofEpochMilli(pending.recordUpdatedAt),
+                                gson.toJsonTree(backup).getAsJsonObject())
+                        .getCanonicalPayloadHash();
+        database.runInTransaction(
+                () ->
+                        database.syncMetadataDao()
+                                .setSyncedVersion(
+                                        metadata.recordType, metadata.localId, versionId));
     }
 
     /** Clears the journal, completing the conflict bookkeeping when it names one. */

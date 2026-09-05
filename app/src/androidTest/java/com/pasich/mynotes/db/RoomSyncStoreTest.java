@@ -796,10 +796,21 @@ public class RoomSyncStoreTest {
         // pre-selected winner is a version the record has moved past. Offered anyway, it was
         // applied on a tap; here the winner is a deletion.
         int noteId = seedNote("loser", "body", null);
+        // The alternative is the note exactly as this store serialises it, so the record's
+        // content genuinely equals the loser: a rule that only drops rows equal to neither
+        // offer keeps this one and applies the deletion.
+        SyncRecord local = onlyNote(store.buildSnapshot().requireSnapshot());
         db.syncMetadataDao().touch(SyncMetadata.RECORD_TYPE_NOTE, noteId, 5_000L);
         com.pasich.mynotes.data.database.entities.SyncConflictEntity row =
                 noteConflictRow(
                         "11111111-1111-4111-8111-111111111111", "deleted-winner", 3_000L, 2_000L);
+        row.loserVersionId = local.getCanonicalPayloadHash();
+        row.loserJson =
+                "{\"type\":\"note\",\"id\":\"11111111-1111-4111-8111-111111111111\","
+                        + "\"updatedAt\":\"1970-01-01T00:00:02Z\",\"deletedAt\":null,"
+                        + "\"payload\":"
+                        + new com.google.gson.Gson().toJson(local.getPayload())
+                        + "}";
         row.winnerJson =
                 "{\"type\":\"note\",\"id\":\"11111111-1111-4111-8111-111111111111\","
                         + "\"updatedAt\":\"1970-01-01T00:00:03Z\",\"deletedAt\":\"1970-01-01T00:00:03Z\","
@@ -857,6 +868,52 @@ public class RoomSyncStoreTest {
         adapter.succeeds.set(true);
         preferencesStore.applySnapshot(
                 new SyncSnapshot(Collections.singletonList(remote)), Collections.emptyList());
+        assertThat(
+                        db.syncMetadataDao()
+                                .getByStableId(
+                                        SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                        "00000000-0000-4000-8000-000000000000")
+                                .syncedVersionId)
+                .isEqualTo(remote.getCanonicalPayloadHash());
+    }
+
+    @Test
+    public void recoveryRecordsTheBaseOfAnApplyThatDiedBeforeItsBookkeeping() throws Exception {
+        PreferencesAdapter adapter = new PreferencesAdapter();
+        new RoomSyncStore(context, db, adapter.helper).readState();
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        SyncRecord remote =
+                SyncRecord.live(
+                        SyncRecord.Type.PREFERENCES,
+                        "00000000-0000-4000-8000-000000000000",
+                        java.time.Instant.ofEpochMilli(2_000L),
+                        gson.toJsonTree(preferencesWithTheme(3)).getAsJsonObject());
+        // What the apply transaction leaves when the process dies right after it: the record
+        // timestamped at the remote version, its payload journaled against the live digest, the
+        // base not yet recorded.
+        String stagedJson = gson.toJson(preferencesWithTheme(3));
+        String liveDigest =
+                sha256(gson.toJson(preferencesWithTheme(1)).getBytes(StandardCharsets.UTF_8));
+        db.syncMetadataDao().setVersion(SyncMetadata.RECORD_TYPE_PREFERENCES, 0, 2_000L, null);
+        db.syncPendingPreferencesDao()
+                .upsert(
+                        new com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity(
+                                1,
+                                stagedJson,
+                                sha256(stagedJson.getBytes(StandardCharsets.UTF_8)),
+                                liveDigest,
+                                2_000L,
+                                false,
+                                0L,
+                                ""));
+
+        // A fresh store seeds, which is where recovery replays the journal.
+        new RoomSyncStore(context, db, adapter.helper).readState();
+
+        assertThat(adapter.committed.get().getThemeValue()).isEqualTo(3);
+        assertThat(db.syncPendingPreferencesDao().get()).isNull();
+        // Replayed but left with the base naming the version before it, the next merge saw a
+        // local edit that nobody made.
         assertThat(
                         db.syncMetadataDao()
                                 .getByStableId(
