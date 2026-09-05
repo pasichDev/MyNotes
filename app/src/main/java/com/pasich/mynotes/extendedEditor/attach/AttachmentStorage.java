@@ -206,6 +206,19 @@ public class AttachmentStorage {
     }
 
     /**
+     * Where a backup's attachments are unpacked before any note has been inserted.
+     *
+     * <p>Extracting straight into {@link #baseDirPath} overwrote the files of whatever local note
+     * happened to share a row id with a note in the archive, before the restore had decided whether
+     * that note would even keep its id. Files wait here until the row exists, then move into the
+     * folder of the id the note actually received. Under the cache directory so a restore that
+     * never finishes leaves only something the system may reclaim.
+     */
+    public static File restoreStagingDir(Context ctx) {
+        return new File(new File(ctx.getCacheDir(), "restore-staging"), ATTACHMENTS_BASE_DIR);
+    }
+
+    /**
      * Builds the canonical URL for a file this app just wrote into a note's folder.
      *
      * <p>Every producer goes through here — the editor upload path and sync restore alike — so a

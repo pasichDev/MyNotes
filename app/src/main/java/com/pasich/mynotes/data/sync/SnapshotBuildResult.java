@@ -56,12 +56,24 @@ public final class SnapshotBuildResult {
         return snapshot;
     }
 
+    /**
+     * The failure for a problem discovered after the build — a blob the build described from
+     * remembered metadata that no endpoint turned out to hold — worded like a build failure so the
+     * user reads the same "which note" message.
+     */
+    @NonNull
+    public static SnapshotBuildException incompleteBecause(@NonNull SnapshotProblem problem) {
+        return new SnapshotBuildException(Collections.singletonList(problem));
+    }
+
     /** Typed, coarse error suitable for persisted sync state and telemetry. */
     public static final class SnapshotBuildException extends IOException {
         @NonNull private final List<SnapshotProblem> problems;
 
         private SnapshotBuildException(@NonNull List<SnapshotProblem> problems) {
-            super("Local snapshot is incomplete: " + problems.get(0).getKind().name());
+            // The first problem names its record: a user who reads this on the account screen
+            // has to know which note to open, not only that some attachment somewhere is gone.
+            super("Local snapshot is incomplete: " + problems.get(0).describe());
             this.problems = Collections.unmodifiableList(new ArrayList<>(problems));
         }
 

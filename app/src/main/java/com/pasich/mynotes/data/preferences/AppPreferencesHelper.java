@@ -15,13 +15,28 @@ public class AppPreferencesHelper implements PreferenceHelper {
 
     private final ThemePreferencesCache themeCache;
     private final SafePreferences prefs;
+    private final java.util.concurrent.Executor mainThread;
 
     @Inject
     AppPreferencesHelper(
             AppPreferencesCache appCache, ThemePreferencesCache themeCache, SafePreferences prefs) {
+        this(
+                appCache,
+                themeCache,
+                prefs,
+                new android.os.Handler(android.os.Looper.getMainLooper())::post);
+    }
+
+    /** Test seam: where the theme application is posted to. */
+    AppPreferencesHelper(
+            AppPreferencesCache appCache,
+            ThemePreferencesCache themeCache,
+            SafePreferences prefs,
+            java.util.concurrent.Executor mainThread) {
         this.prefs = prefs;
         this.appCache = appCache;
         this.themeCache = themeCache;
+        this.mainThread = mainThread;
         this.appCache.initialize();
         this.themeCache.initialize();
     }
@@ -88,10 +103,19 @@ public class AppPreferencesHelper implements PreferenceHelper {
                         PreferencesConfig.ARGUMENT_DEFAULT_UI_SCALING_VALUE));
     }
 
-    /** Persists all fields from a backup and refreshes the caches. */
+    /**
+     * Persists all fields from a backup and refreshes the caches.
+     *
+     * <p>The restore path. The theme is deliberately not applied here: {@code
+     * AppCompatDelegate.setDefaultNightMode} recreates every started activity when the mode
+     * changes, and this runs at the start of a restore whose note and tag inserts are still in
+     * flight on the Backup screen — recreating it disposed those inserts and left the database half
+     * restored with no message. The stored mode takes effect at the next activity creation, and the
+     * screen applies it itself once the restore has finished.
+     */
     @Override
     public void setListPreferences(PreferencesBackup preferences) {
-        commitListPreferences(preferences);
+        commitListPreferences(preferences, false);
     }
 
     /**
@@ -103,10 +127,16 @@ public class AppPreferencesHelper implements PreferenceHelper {
      * plus {@code commit()} makes the whole set atomic and tells the caller whether it is durable,
      * which is what lets {@code RoomSyncStore} decide when the journal may be dropped.
      *
+     * <p>The sync path: a theme arriving from another device is applied at once.
+     *
      * @return true when the values are durably stored, false when the write failed.
      */
     @Override
     public boolean commitListPreferences(PreferencesBackup preferences) {
+        return commitListPreferences(preferences, true);
+    }
+
+    private boolean commitListPreferences(PreferencesBackup preferences, boolean applyThemeNow) {
         if (preferences == null || !preferences.isCreated()) {
             return false;
         }
@@ -137,12 +167,13 @@ public class AppPreferencesHelper implements PreferenceHelper {
         }
         appCache.refresh();
         themeCache.refresh();
-        // Refreshing the caches only reloads the values. Light/dark is owned by
-        // AppCompatDelegate, which has to be told, or a theme arriving from another device sat
-        // in storage until the next activity was created. Posted to the main thread because this
-        // runs on a background thread for both a sync apply and a backup restore.
-        new android.os.Handler(android.os.Looper.getMainLooper())
-                .post(themeCache::applyCurrentThemeMode);
+        if (applyThemeNow) {
+            // Refreshing the caches only reloads the values. Light/dark is owned by
+            // AppCompatDelegate, which has to be told, or a theme arriving from another device
+            // sat in storage until the next activity was created. Posted to the main thread
+            // because a sync apply runs on a background thread.
+            mainThread.execute(themeCache::applyCurrentThemeMode);
+        }
         return true;
     }
 

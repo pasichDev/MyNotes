@@ -29,6 +29,10 @@ public interface NoteDao {
     @Query("SELECT * FROM notes WHERE id = :id LIMIT 1")
     Note getNoteSync(int id);
 
+    /** One round trip for a whole restore batch; the caller keeps the list under the bind limit. */
+    @Query("SELECT * FROM notes WHERE id IN (:ids)")
+    List<Note> getNotesByIdsSync(List<Integer> ids);
+
     @Query("DELETE FROM notes WHERE id = :id")
     void deleteById(int id);
 

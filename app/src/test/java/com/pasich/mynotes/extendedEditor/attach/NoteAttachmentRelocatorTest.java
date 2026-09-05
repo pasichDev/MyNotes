@@ -66,6 +66,130 @@ public class NoteAttachmentRelocatorTest {
     }
 
     @Test
+    public void adoptsStagedFilesIntoTheFolderOfTheIdTheNoteKept() throws Exception {
+        File staging = temporaryFolder.newFolder("staging");
+        File staged = stage(staging, 5, "photo.jpg", "from the archive");
+
+        NoteAttachmentRelocator.Result result =
+                NoteAttachmentRelocator.adoptStaged(
+                        staging, root, 5, 5, attachmentsJson(5, "photo.jpg"), null);
+
+        // Same id, same name: the reference is already right, only the bytes had to move.
+        assertThat(result.changed).isFalse();
+        File adopted = new File(new File(root, "note_5"), "photo.jpg");
+        assertThat(contentOf(adopted)).isEqualTo("from the archive");
+        assertThat(staged.exists()).isFalse();
+    }
+
+    @Test
+    public void adoptsStagedFilesIntoTheFolderOfAReassignedId() throws Exception {
+        File staging = temporaryFolder.newFolder("staging");
+        stage(staging, 5, "photo.jpg", "from the archive");
+
+        NoteAttachmentRelocator.Result result =
+                NoteAttachmentRelocator.adoptStaged(
+                        staging, root, 5, 12, attachmentsJson(5, "photo.jpg"), null);
+
+        assertThat(result.changed).isTrue();
+        assertThat(result.attachmentsJson).contains("note_12");
+        assertThat(contentOf(new File(new File(root, "note_12"), "photo.jpg")))
+                .isEqualTo("from the archive");
+        assertThat(new File(root, "note_5").exists()).isFalse();
+    }
+
+    @Test
+    public void neverOverwritesAFileAnotherNoteAlreadyShows() throws Exception {
+        // Extraction used to land straight in the live folder, so a foreign archive replaced the
+        // bytes of whichever local note shared the row id. The existing file stays; the staged
+        // one is adopted under a fresh name and the reference follows it.
+        File mine = seed(7, "photo.jpg", "mine");
+        File staging = temporaryFolder.newFolder("staging");
+        stage(staging, 7, "photo.jpg", "foreign");
+
+        NoteAttachmentRelocator.Result result =
+                NoteAttachmentRelocator.adoptStaged(
+                        staging, root, 7, 7, attachmentsJson(7, "photo.jpg"), null);
+
+        assertThat(contentOf(mine)).isEqualTo("mine");
+        assertThat(result.changed).isTrue();
+        assertThat(result.attachmentsJson).doesNotContain("note_7/photo.jpg");
+        File[] files = new File(root, "note_7").listFiles();
+        assertThat(files).hasLength(2);
+        String adoptedName =
+                files[0].getName().equals("photo.jpg") ? files[1].getName() : files[0].getName();
+        assertThat(adoptedName).startsWith("photo-");
+        assertThat(adoptedName).endsWith(".jpg");
+        assertThat(result.attachmentsJson).contains("note_7/" + adoptedName);
+    }
+
+    @Test
+    public void columnAndBlocksAgreeOnTheAdoptedNameWhenAFileCollides() throws Exception {
+        // The mover runs once for the column and once for the same URL in the blocks. Picking a
+        // fresh name on each call made two copies and pointed column and blocks at different
+        // files; the cleaner then deleted the one the column did not list.
+        seed(7, "photo.jpg", "mine");
+        File staging = temporaryFolder.newFolder("staging");
+        stage(staging, 7, "photo.jpg", "foreign");
+        String blocks =
+                "[{\"type\":\"attaches\",\"data\":{\"file\":{\"url\":\""
+                        + AttachmentStorage.urlFor(7, "photo.jpg")
+                        + "\",\"name\":\"photo.jpg\"}}}]";
+
+        NoteAttachmentRelocator.Result result =
+                NoteAttachmentRelocator.adoptStaged(
+                        staging, root, 7, 7, attachmentsJson(7, "photo.jpg"), blocks);
+
+        String columnUrl =
+                com.google.gson.JsonParser.parseString(result.attachmentsJson)
+                        .getAsJsonArray()
+                        .get(0)
+                        .getAsJsonObject()
+                        .get("url")
+                        .getAsString();
+        assertThat(EditorAttachmentBlocks.fileUrls(result.valueJson)).containsExactly(columnUrl);
+        // Exactly two files: the one that was there and the one adopted, no second copy.
+        assertThat(new File(root, "note_7").listFiles()).hasLength(2);
+    }
+
+    @Test
+    public void reusesAnIdenticalFileInsteadOfDuplicatingIt() throws Exception {
+        seed(7, "photo.jpg", "same bytes");
+        File staging = temporaryFolder.newFolder("staging");
+        stage(staging, 7, "photo.jpg", "same bytes");
+
+        NoteAttachmentRelocator.Result result =
+                NoteAttachmentRelocator.adoptStaged(
+                        staging, root, 7, 7, attachmentsJson(7, "photo.jpg"), null);
+
+        assertThat(result.changed).isFalse();
+        assertThat(new File(root, "note_7").listFiles()).hasLength(1);
+    }
+
+    @Test
+    public void fallsBackToTheLiveFolderWhenNothingWasStaged() throws Exception {
+        // A note restored by a release that extracted into the live folders still relocates.
+        seed(5, "photo.jpg", "already live");
+        File staging = temporaryFolder.newFolder("staging");
+
+        NoteAttachmentRelocator.Result result =
+                NoteAttachmentRelocator.adoptStaged(
+                        staging, root, 5, 12, attachmentsJson(5, "photo.jpg"), null);
+
+        assertThat(result.changed).isTrue();
+        assertThat(contentOf(new File(new File(root, "note_12"), "photo.jpg")))
+                .isEqualTo("already live");
+    }
+
+    private static File stage(File staging, int noteId, String name, String content)
+            throws Exception {
+        File folder = new File(staging, "note_" + noteId);
+        assertThat(folder.mkdirs() || folder.isDirectory()).isTrue();
+        File file = new File(folder, name);
+        Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8));
+        return file;
+    }
+
+    @Test
     public void leavesReferencesThatBelongToAnotherNoteAlone() throws Exception {
         seed(7, "other.png", "not mine");
 

@@ -10,13 +10,10 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -178,11 +175,21 @@ public final class SyncBundleValidator {
             throw new IOException("Sync note exceeds the attachment limit");
         }
         JsonObject attachmentNames = note.getAsJsonObject("attachmentNames");
+        validateAttachmentIdAliases(note, attachmentsById);
+        JsonObject aliases = note.getAsJsonObject(SyncBundleCodec.FIELD_ATTACHMENT_ID_ALIASES);
+        Set<String> withinNote = new LinkedHashSet<>();
         for (JsonElement element : attachmentIds) {
             if (element == null || !element.isJsonPrimitive()) {
                 throw new IOException("Sync note attachmentIds entry is invalid");
             }
             String attachmentId = element.getAsString();
+            if (!withinNote.add(attachmentId) && aliases != null && aliases.has(attachmentId)) {
+                // A plain id repeated is what 2.6.50 published for a duplicated block: two
+                // references, one blob, harmless, and it has to keep decoding. A re-keyed id
+                // repeated is something else: the record's two attachments were collapsed into
+                // one on the way out, and accepting it wrote one blob's bytes for both.
+                throw new IOException("Sync note collapses two attachments into one reference");
+            }
             SyncBundleCodec.AttachmentManifestEntry attachment = attachmentsById.get(attachmentId);
             if (attachment == null) {
                 throw new IOException("Note references an unknown attachment manifest entry");
@@ -196,6 +203,33 @@ public final class SyncBundleValidator {
                 validateDisplayName(attachmentNames.get(attachmentId).getAsString());
             }
             referencedAttachmentIds.add(attachmentId);
+        }
+    }
+
+    /**
+     * Checks the map that lets two versions of one note carry different content under one logical
+     * attachment id; see {@code SyncBundleCodec.collectAttachments}.
+     */
+    private static void validateAttachmentIdAliases(
+            @NonNull JsonObject note,
+            @NonNull Map<String, SyncBundleCodec.AttachmentManifestEntry> attachmentsById)
+            throws IOException {
+        JsonElement aliases = note.get(SyncBundleCodec.FIELD_ATTACHMENT_ID_ALIASES);
+        if (aliases == null || aliases.isJsonNull()) {
+            return;
+        }
+        if (!aliases.isJsonObject()) {
+            throw new IOException("Sync note attachmentIdAliases is invalid");
+        }
+        for (Map.Entry<String, JsonElement> alias : aliases.getAsJsonObject().entrySet()) {
+            validateUuid(alias.getKey());
+            if (!alias.getValue().isJsonPrimitive()) {
+                throw new IOException("Sync note attachmentIdAliases entry is invalid");
+            }
+            validateUuid(alias.getValue().getAsString());
+            if (!attachmentsById.containsKey(alias.getKey())) {
+                throw new IOException("Note aliases an unknown attachment manifest entry");
+            }
         }
     }
 
@@ -511,22 +545,17 @@ public final class SyncBundleValidator {
         }
     }
 
+    /**
+     * Accepts a display name only in the form every consumer will see it: trimmed, then held to the
+     * one path-segment rule the attachment code shares.
+     *
+     * <p>Three validators used to exist with three answers for a name with trailing whitespace; the
+     * day any path built a file name from the display name, the bundle validator's answer and the
+     * URL parser's would have disagreed and the cleaner would have refused the note.
+     */
     static void validateDisplayName(@NonNull String name) throws IOException {
-        String value = name.trim();
-        if (value.isEmpty()
-                || value.equals(".")
-                || value.equals("..")
-                || value.length() > 255
-                || value.contains("..")
-                || value.contains("/")
-                || value.contains("\\")
-                || new java.io.File(value).getName().equals(value) == false) {
+        if (!com.pasich.mynotes.extendedEditor.attach.AttachmentUrl.isSafeSegment(name.trim())) {
             throw new IOException("Sync attachment name is not a safe file name");
-        }
-        for (int i = 0; i < value.length(); i++) {
-            if (Character.isISOControl(value.charAt(i))) {
-                throw new IOException("Sync attachment name contains a control character");
-            }
         }
     }
 
@@ -541,17 +570,8 @@ public final class SyncBundleValidator {
     }
 
     @NonNull
-    static String sha256(@NonNull byte[] bytes) throws IOException {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(bytes);
-            StringBuilder value = new StringBuilder(digest.length * 2);
-            for (byte byteValue : digest) {
-                value.append(String.format(Locale.US, "%02x", byteValue & 0xff));
-            }
-            return value.toString();
-        } catch (NoSuchAlgorithmException error) {
-            throw new IOException("SHA-256 is unavailable", error);
-        }
+    static String sha256(@NonNull byte[] bytes) {
+        return Sha256.of(bytes);
     }
 
     /** Caps compressed input before ZIP parsing to make bundle-size limits independent of Drive. */

@@ -8,9 +8,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +77,41 @@ public final class SyncRecord {
             throw new IllegalArgumentException("deletedAt must not be before updatedAt");
         }
         this.deletedAt = deletedAt;
-        this.payload = Objects.requireNonNull(payload, "payload").deepCopy();
+        this.payload = normalize(type, Objects.requireNonNull(payload, "payload").deepCopy());
+    }
+
+    /**
+     * Puts a payload into the one shape its version hash is taken from.
+     *
+     * <p>A note's attachment fields are present exactly when it has attachments. The local build,
+     * the bundle encoder and the bundle decoder each used to enforce that separately, and every
+     * time one of them drifted — an empty {@code attachmentNames} left on the wire, three empty
+     * arrays emitted for a note with none — a decoded record hashed differently from the identical
+     * local one and every affected note conflicted with itself on every sync. Every record passes
+     * through here, whichever side built it, so the three sites can no longer disagree.
+     */
+    @NonNull
+    private static JsonObject normalize(@NonNull Type type, @NonNull JsonObject payload) {
+        if (type != Type.NOTE) {
+            return payload;
+        }
+        for (String field : new String[] {"attachmentsManifest", "attachmentHashes"}) {
+            JsonElement value = payload.get(field);
+            if (value != null
+                    && (value.isJsonNull()
+                            || !value.isJsonArray()
+                            || value.getAsJsonArray().size() == 0)) {
+                payload.remove(field);
+            }
+        }
+        JsonElement names = payload.get("attachmentNames");
+        if (names != null
+                && (names.isJsonNull()
+                        || !names.isJsonObject()
+                        || names.getAsJsonObject().size() == 0)) {
+            payload.remove("attachmentNames");
+        }
+        return payload;
     }
 
     @NonNull
@@ -171,18 +202,7 @@ public final class SyncRecord {
 
     @NonNull
     private static String sha256(String value) {
-        try {
-            byte[] digest =
-                    MessageDigest.getInstance("SHA-256")
-                            .digest(value.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder(digest.length * 2);
-            for (byte byteValue : digest) {
-                hex.append(String.format("%02x", byteValue & 0xff));
-            }
-            return hex.toString();
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is unavailable", exception);
-        }
+        return Sha256.of(value);
     }
 
     @NonNull

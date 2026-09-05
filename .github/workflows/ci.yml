@@ -187,7 +187,12 @@ jobs:
       # Posts, and on later pushes updates, a single comment showing overall coverage and the
       # coverage of the files this PR actually changed. Both reports are passed together so the
       # numbers reflect the unit and on-device suites combined.
+      #
+      # Skipped for a pull request from a fork: its GITHUB_TOKEN is read-only whatever the
+      # workflow asks for, so the comment call would fail with a 403 and turn the whole job red for
+      # a reason unrelated to the change.
       - name: Comment coverage
+        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: madrapps/jacoco-report@v1.7.1
         with:
           paths: |

@@ -35,6 +35,17 @@ public final class SyncBundleCodec {
     public static final String ENTRY_RECORDS = "records.json";
     public static final String BUNDLE_FORMAT = "mynotes-sync";
     public static final int SCHEMA_VERSION = 1;
+
+    /**
+     * Wire field mapping a re-keyed manifest id back to the record's own attachment id.
+     *
+     * <p>Unknown to 2.6.50, which reads the re-keyed id as the attachment's own; on such a client
+     * the alternative's attachment identity is lost until it upgrades. Accepted: the field only
+     * appears when one note's versions disagree about an id's content, and the alternative is still
+     * restorable there, under the re-keyed id.
+     */
+    static final String FIELD_ATTACHMENT_ID_ALIASES = "attachmentIdAliases";
+
     private static final Pattern SHA_256 = Pattern.compile("[0-9a-f]{64}");
     private static final Pattern MIME_TYPE =
             Pattern.compile("^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$");
@@ -82,15 +93,18 @@ public final class SyncBundleCodec {
             @NonNull Collection<SyncRecord> unresolvedAlternatives,
             @NonNull Collection<String> resolvedAlternativeIds)
             throws IOException {
-        JsonObject recordsRoot = new JsonObject();
-        recordsRoot.add("notes", liveArray(snapshot, SyncRecord.Type.NOTE));
-        recordsRoot.add("tasks", liveArray(snapshot, SyncRecord.Type.TASK));
-        recordsRoot.add("tags", liveArray(snapshot, SyncRecord.Type.TAG));
-        recordsRoot.add("categories", liveArray(snapshot, SyncRecord.Type.CATEGORY));
-        recordsRoot.add("preferences", liveArray(snapshot, SyncRecord.Type.PREFERENCES));
-        recordsRoot.add("tombstones", tombstones(snapshot));
         List<SyncRecord> alternatives = dedupeAlternatives(unresolvedAlternatives);
-        recordsRoot.add("alternatives", alternativeArray(alternatives));
+        AttachmentPlan attachmentPlan = planAttachments(snapshot, alternatives);
+        JsonObject recordsRoot = new JsonObject();
+        recordsRoot.add("notes", liveArray(snapshot, SyncRecord.Type.NOTE, attachmentPlan));
+        recordsRoot.add("tasks", liveArray(snapshot, SyncRecord.Type.TASK, attachmentPlan));
+        recordsRoot.add("tags", liveArray(snapshot, SyncRecord.Type.TAG, attachmentPlan));
+        recordsRoot.add(
+                "categories", liveArray(snapshot, SyncRecord.Type.CATEGORY, attachmentPlan));
+        recordsRoot.add(
+                "preferences", liveArray(snapshot, SyncRecord.Type.PREFERENCES, attachmentPlan));
+        recordsRoot.add("tombstones", tombstones(snapshot));
+        recordsRoot.add("alternatives", alternativeArray(alternatives, attachmentPlan));
         JsonArray resolved = new JsonArray();
         for (String versionId : new java.util.TreeSet<>(resolvedAlternativeIds)) {
             if (!SHA_256.matcher(versionId).matches()) {
@@ -100,7 +114,7 @@ public final class SyncBundleCodec {
         }
         recordsRoot.add("resolvedAlternatives", resolved);
 
-        JsonArray attachments = collectAttachments(snapshot, alternatives);
+        JsonArray attachments = attachmentPlan.manifest();
         byte[] recordBytes = GSON.toJson(recordsRoot).getBytes(StandardCharsets.UTF_8);
         if (recordBytes.length > SyncBundleValidator.MAX_RECORD_BYTES) {
             throw new IOException("Sync records exceed the schema-1 size limit");
@@ -192,31 +206,50 @@ public final class SyncBundleCodec {
 
     @NonNull
     private static JsonArray liveArray(
-            @NonNull SyncSnapshot snapshot, @NonNull SyncRecord.Type type) throws IOException {
+            @NonNull SyncSnapshot snapshot,
+            @NonNull SyncRecord.Type type,
+            @NonNull AttachmentPlan attachmentPlan)
+            throws IOException {
         JsonArray array = new JsonArray();
         for (SyncRecord record : snapshot.getLiveRecords(type)) {
             JsonObject item = record.getPayload();
             item.addProperty("id", record.getId());
             item.addProperty("updatedAt", record.getUpdatedAt().toString());
             if (type == SyncRecord.Type.NOTE) {
-                normalizeNoteAttachmentFields(item);
+                normalizeNoteAttachmentFields(item, attachmentPlan.wireIdsFor(record));
             }
             array.add(item);
         }
         return array;
     }
 
-    private static void normalizeNoteAttachmentFields(JsonObject note) throws IOException {
+    /**
+     * Replaces the local attachment fields with the wire references.
+     *
+     * @param wireIds the manifest id each of this record's attachments travels under, by manifest
+     *     position; identical to the logical id except for a re-keyed collision.
+     */
+    private static void normalizeNoteAttachmentFields(
+            JsonObject note, @NonNull List<String> wireIds) throws IOException {
         JsonArray manifestEntries = note.getAsJsonArray("attachmentsManifest");
         JsonArray attachmentIds = new JsonArray();
         JsonObject attachmentNames = new JsonObject();
+        JsonObject aliases = new JsonObject();
         if (manifestEntries != null) {
-            for (JsonElement element : manifestEntries) {
+            for (int index = 0; index < manifestEntries.size(); index++) {
                 AttachmentManifestEntry attachment =
-                        AttachmentManifestEntry.fromJson(element.getAsJsonObject());
-                attachmentIds.add(attachment.id);
+                        AttachmentManifestEntry.fromJson(
+                                manifestEntries.get(index).getAsJsonObject());
+                // By position, not by logical id: one record can carry the same id twice with
+                // different content, and a map keyed by id sent both references to the second
+                // blob, so every receiver lost the first one's bytes.
+                String wireId = index < wireIds.size() ? wireIds.get(index) : attachment.id;
+                attachmentIds.add(wireId);
+                if (!wireId.equals(attachment.id)) {
+                    aliases.addProperty(wireId, attachment.id);
+                }
                 if (attachment.displayName != null && !attachment.displayName.isEmpty()) {
-                    attachmentNames.addProperty(attachment.id, attachment.displayName);
+                    attachmentNames.addProperty(wireId, attachment.displayName);
                 }
             }
         }
@@ -227,11 +260,15 @@ public final class SyncBundleCodec {
         // empty, and a decoded record then hashed differently from the local one that produced
         // it — a conflict against itself on every sync.
         note.remove("attachmentNames");
+        note.remove(FIELD_ATTACHMENT_ID_ALIASES);
         if (attachmentIds.size() > 0) {
             note.add("attachmentIds", attachmentIds);
         }
         if (attachmentNames.size() > 0) {
             note.add("attachmentNames", attachmentNames);
+        }
+        if (aliases.size() > 0) {
+            note.add(FIELD_ATTACHMENT_ID_ALIASES, aliases);
         }
     }
 
@@ -258,7 +295,8 @@ public final class SyncBundleCodec {
     }
 
     @NonNull
-    private static JsonArray alternativeArray(@NonNull List<SyncRecord> alternatives)
+    private static JsonArray alternativeArray(
+            @NonNull List<SyncRecord> alternatives, @NonNull AttachmentPlan attachmentPlan)
             throws IOException {
         JsonArray array = new JsonArray();
         for (SyncRecord alternative : alternatives) {
@@ -270,7 +308,7 @@ public final class SyncBundleCodec {
             if (alternative.isTombstone()) {
                 item.addProperty("deletedAt", alternative.getDeletedAt().toString());
             } else if (alternative.getType() == SyncRecord.Type.NOTE) {
-                normalizeNoteAttachmentFields(item);
+                normalizeNoteAttachmentFields(item, attachmentPlan.wireIdsFor(alternative));
             }
             array.add(item);
         }
@@ -291,12 +329,23 @@ public final class SyncBundleCodec {
         return array;
     }
 
+    /**
+     * Lays out the bundle's attachment manifest for every version it carries.
+     *
+     * <p>The manifest is keyed by logical attachment id and a note references its entries by that
+     * id, so one id can describe only one blob per bundle. A live note and one of its unresolved
+     * alternatives may nonetheless carry different content under one id — the file was replaced in
+     * place, or two devices derived the same id — and refusing to encode that used to fail every
+     * publish for the account, before the conflict could even be stored for the user to settle. The
+     * later version's entry now travels under a derived id and the record carries the mapping back,
+     * so the decoded version is byte-for-byte the one that was published and keeps the identity
+     * every device's resolution bookkeeping refers to.
+     */
     @NonNull
-    private static JsonArray collectAttachments(
+    private static AttachmentPlan planAttachments(
             @NonNull SyncSnapshot snapshot, @NonNull List<SyncRecord> alternatives)
             throws IOException {
-        JsonArray attachments = new JsonArray();
-        Map<String, AttachmentManifestEntry> seenById = new LinkedHashMap<>();
+        AttachmentPlan plan = new AttachmentPlan();
         Map<String, AttachmentManifestEntry> seenByHash = new LinkedHashMap<>();
         List<SyncRecord> notes = new ArrayList<>(snapshot.getLiveRecords(SyncRecord.Type.NOTE));
         // An unresolved alternative is only recoverable if its blobs are described here too.
@@ -311,12 +360,29 @@ public final class SyncBundleCodec {
             for (JsonElement element : manifestEntries) {
                 AttachmentManifestEntry attachment =
                         AttachmentManifestEntry.fromJson(element.getAsJsonObject());
-                AttachmentManifestEntry sameId = seenById.putIfAbsent(attachment.id, attachment);
+                List<String> recordWireIds = plan.wireIdsFor(record);
+                String wireId = attachment.id;
+                AttachmentManifestEntry sameId = plan.byWireId.get(wireId);
                 if (sameId != null && !sameId.sameRemoteFile(attachment)) {
-                    // The same logical attachment may appear in both a live note and one of its
-                    // unresolved alternatives; only differing content is a contradiction.
-                    throw new IOException("Two notes reference conflicting attachment metadata");
+                    wireId = aliasFor(attachment, 0);
+                    sameId = plan.byWireId.get(wireId);
+                    if (sameId != null && !sameId.sameRemoteFile(attachment)) {
+                        throw new IOException(
+                                "Two notes reference conflicting attachment metadata");
+                    }
                 }
+                // One record may repeat an entry — 2.6.50 published a duplicated block that way,
+                // and its receivers hold such manifests as conflict alternatives. Each repeat gets
+                // a wire id of its own, so a note never references one entry twice on the wire
+                // and every repeat maps back to the record's own id on the way in.
+                for (int occurrence = 1; recordWireIds.contains(wireId); occurrence++) {
+                    wireId = aliasFor(attachment, occurrence);
+                    sameId = plan.byWireId.get(wireId);
+                }
+                if (sameId == null) {
+                    plan.byWireId.put(wireId, attachment.withId(wireId));
+                }
+                recordWireIds.add(wireId);
                 AttachmentManifestEntry previous =
                         seenByHash.putIfAbsent(attachment.sha256, attachment);
                 if (previous != null && !previous.sameRemoteFile(attachment)) {
@@ -327,10 +393,43 @@ public final class SyncBundleCodec {
         if (seenByHash.size() > SyncBundleValidator.MAX_ATTACHMENT_COUNT) {
             throw new IOException("Sync bundle exceeds the schema-1 attachment limit");
         }
-        for (AttachmentManifestEntry attachment : seenById.values()) {
-            attachments.add(attachment.toJson(false));
+        return plan;
+    }
+
+    /** Deterministic, so two devices publishing the same collision write the same bundle. */
+    @NonNull
+    private static String aliasFor(@NonNull AttachmentManifestEntry attachment, int occurrence) {
+        String source = "attachment-alias\n" + attachment.id + "\n" + attachment.sha256;
+        if (occurrence > 0) {
+            source += "\n" + occurrence;
         }
-        return attachments;
+        return UUID.nameUUIDFromBytes(source.getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
+    /** The manifest entries by wire id, and each record's wire ids in manifest order. */
+    private static final class AttachmentPlan {
+        private final Map<String, AttachmentManifestEntry> byWireId = new LinkedHashMap<>();
+        private final Map<SyncRecord, List<String>> wireIdsByRecord =
+                new java.util.IdentityHashMap<>();
+
+        @NonNull
+        List<String> wireIdsFor(@NonNull SyncRecord record) {
+            List<String> wireIds = wireIdsByRecord.get(record);
+            if (wireIds == null) {
+                wireIds = new ArrayList<>();
+                wireIdsByRecord.put(record, wireIds);
+            }
+            return wireIds;
+        }
+
+        @NonNull
+        JsonArray manifest() {
+            JsonArray attachments = new JsonArray();
+            for (AttachmentManifestEntry attachment : byWireId.values()) {
+                attachments.add(attachment.toJson(false));
+            }
+            return attachments;
+        }
     }
 
     private static void parseLiveRecords(
@@ -353,7 +452,7 @@ public final class SyncBundleCodec {
             // Bundles written before the device-local fields were stripped still carry them.
             SyncMetadata.stripDeviceLocalFields(type.getWireValue(), payload);
             if (type == SyncRecord.Type.NOTE) {
-                hydrateNoteAttachments(payload, attachmentsById);
+                hydrateNoteAttachments(id, payload, attachmentsById);
             }
             String identity = type.getWireValue() + ":" + id;
             if (!identities.add(identity)) {
@@ -363,12 +462,29 @@ public final class SyncBundleCodec {
         }
     }
 
+    /**
+     * Rebuilds the local attachment fields from the wire references.
+     *
+     * <p>A payload written by 2.6.50 comes out in the current shape as well, so an unchanged note
+     * synced before the upgrade hashes exactly as the upgraded store rebuilds it; see {@link
+     * LegacyNotePayload}.
+     */
     private static void hydrateNoteAttachments(
-            JsonObject payload, Map<String, AttachmentManifestEntry> attachmentsById)
+            String noteStableId,
+            JsonObject payload,
+            Map<String, AttachmentManifestEntry> attachmentsById)
             throws IOException {
         JsonArray attachmentIds = payload.getAsJsonArray("attachmentIds");
         JsonObject attachmentNames = payload.getAsJsonObject("attachmentNames");
-        if (attachmentIds == null) return;
+        JsonObject aliases = payload.getAsJsonObject(FIELD_ATTACHMENT_ID_ALIASES);
+        // Wire-only, all three: the local store never produces them, and leaving one behind made
+        // a decoded record hash differently from the identical local one.
+        payload.remove("attachmentIds");
+        payload.remove(FIELD_ATTACHMENT_ID_ALIASES);
+        if (attachmentIds == null) {
+            payload.remove("attachmentNames");
+            return;
+        }
         JsonArray attachmentHashes = new JsonArray();
         JsonArray manifest = new JsonArray();
         // Keyed by logical attachment UUID, exactly as the wire carries it and exactly as
@@ -377,14 +493,22 @@ public final class SyncBundleCodec {
         // attachment reported a conflict against itself on every sync, forever.
         JsonObject namesById = new JsonObject();
         for (JsonElement element : attachmentIds) {
-            String attachmentId = element.getAsString();
-            AttachmentManifestEntry attachment = attachmentsById.get(attachmentId);
+            String wireId = element.getAsString();
+            AttachmentManifestEntry attachment = attachmentsById.get(wireId);
             if (attachment == null) {
                 throw new IOException("Note references an unknown attachment manifest entry");
             }
-            JsonObject value = attachment.toJson(true);
-            if (attachmentNames != null && attachmentNames.has(attachmentId)) {
-                value.addProperty("displayName", attachmentNames.get(attachmentId).getAsString());
+            // A re-keyed collision travels under a derived id; the record's own id is restored
+            // so the decoded version is the one that was published.
+            String attachmentId =
+                    aliases != null && aliases.has(wireId)
+                            ? aliases.get(wireId).getAsString()
+                            : wireId;
+            JsonObject value = attachment.withId(attachmentId).toJson(true);
+            if (attachmentNames != null && attachmentNames.has(wireId)) {
+                // Trimmed here as everywhere else: the validator judged the trimmed name, and
+                // this is the copy the store hashes and shows.
+                value.addProperty("displayName", attachmentNames.get(wireId).getAsString().trim());
             }
             manifest.add(value);
             attachmentHashes.add(attachment.sha256);
@@ -397,9 +521,7 @@ public final class SyncBundleCodec {
         // The display name restoreAttachments actually uses travels on the manifest entry above;
         // this map exists only so the payload matches the one the local store builds.
         payload.add("attachmentNames", namesById);
-        // Wire-only: the local store never produces it, and leaving it behind made a decoded
-        // record hash differently from the identical local one.
-        payload.remove("attachmentIds");
+        LegacyNotePayload.upgrade(noteStableId, payload);
     }
 
     @NonNull
@@ -434,7 +556,7 @@ public final class SyncBundleCodec {
             payload.remove("deletedAt");
             SyncMetadata.stripDeviceLocalFields(type.getWireValue(), payload);
             if (type == SyncRecord.Type.NOTE) {
-                hydrateNoteAttachments(payload, attachmentsById);
+                hydrateNoteAttachments(id, payload, attachmentsById);
             }
             alternatives.add(SyncRecord.live(type, id, updatedAt, payload));
         }
@@ -493,8 +615,8 @@ public final class SyncBundleCodec {
     }
 
     @NonNull
-    private static String sha256(byte[] bytes) throws IOException {
-        return SyncBundleValidator.sha256(bytes);
+    private static String sha256(byte[] bytes) {
+        return Sha256.of(bytes);
     }
 
     public static final class DecodedBundle {
@@ -601,11 +723,12 @@ public final class SyncBundleCodec {
             if (!path.equals("attachments/" + sha256)) {
                 throw new IOException("Sync bundle contains an invalid attachment path");
             }
+            // Trimmed here, once, so every consumer sees the name the validator judged.
             String displayName =
                     value.has("displayName")
                                     && !value.get("displayName").isJsonNull()
                                     && value.get("displayName").isJsonPrimitive()
-                            ? value.get("displayName").getAsString()
+                            ? value.get("displayName").getAsString().trim()
                             : null;
             if (value.has("displayName")
                     && !value.get("displayName").isJsonNull()
@@ -634,6 +757,14 @@ public final class SyncBundleCodec {
 
         boolean sameRemoteFile(@NonNull AttachmentManifestEntry other) {
             return sha256.equals(other.sha256) && path.equals(other.path) && size == other.size;
+        }
+
+        /** The same blob under another logical id. */
+        @NonNull
+        AttachmentManifestEntry withId(@NonNull String newId) {
+            return newId.equals(id)
+                    ? this
+                    : new AttachmentManifestEntry(newId, sha256, mimeType, size, path, displayName);
         }
     }
 }

@@ -17,39 +17,16 @@ public class EditorJsonUtils {
      * data.file - data.files[]
      */
     public static EditorAttachment findAttachmentByBlockId(Note note, String blockId) {
+        if (note == null) return null;
         try {
-            if (note == null || blockId == null || blockId.isEmpty()) return null;
-
-            String json = note.getValueJson();
-            if (json == null || json.isEmpty()) return null;
-
-            JSONArray blocks = new JSONArray(json);
-
-            for (int i = 0; i < blocks.length(); i++) {
-                JSONObject block = blocks.optJSONObject(i);
-                if (block == null) continue;
-
-                if (!blockId.equals(block.optString("id"))) continue;
-
-                JSONObject data = block.optJSONObject("data");
-                if (data == null) return null;
-
-                //  data.file
-                JSONObject fileObj = data.optJSONObject("file");
-                if (fileObj != null) {
-                    return EditorAttachment.fromJsonObject(fileObj);
-                }
-
-                //  data.files[]
-                JSONArray filesArr = data.optJSONArray("files");
-                if (filesArr != null && filesArr.length() > 0) {
-                    JSONObject f = filesArr.optJSONObject(0);
-                    if (f != null) return EditorAttachment.fromJsonObject(f);
-                }
-
-                return null;
-            }
-
+            // The same walk sync and restore use, so a block one of them can see is a block
+            // the editor can open.
+            com.google.gson.JsonObject file =
+                    com.pasich.mynotes.extendedEditor.attach.EditorAttachmentBlocks.findFile(
+                            note.getValueJson(), blockId);
+            return file == null
+                    ? null
+                    : EditorAttachment.fromJsonObject(new JSONObject(file.toString()));
         } catch (Exception e) {
             Log.e(TAG, "findAttachmentByBlockId() failed", e);
         }

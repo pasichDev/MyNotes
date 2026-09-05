@@ -111,25 +111,7 @@ public class BackupActivity extends BaseActivity
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             if (result.getData() != null && result.getData().getData() != null) {
                                 Uri uri = result.getData().getData();
-
-                                BackupFileValidator.isValidBackupFile(
-                                        this,
-                                        uri,
-                                        new BackupFileValidator.BackupValidatorCallback() {
-                                            @Override
-                                            public void onValid(String fileName) {
-                                                presenter.readFileBackupLocal(uri);
-                                            }
-
-                                            @Override
-                                            public void onInvalid(String errorMessage) {
-                                                onInfoSnack(
-                                                        errorMessage,
-                                                        null,
-                                                        SnackBarInfo.Error,
-                                                        Snackbar.LENGTH_LONG);
-                                            }
-                                        });
+                                validatePickedBackup(uri);
                             }
                         }
                     });
@@ -180,6 +162,16 @@ public class BackupActivity extends BaseActivity
     private SyncCoordinatorFactory.Result syncSetup;
     @Nullable private AccountSyncFragment accountTab;
     private boolean syncRunning;
+
+    /**
+     * Set once a received settings version has scheduled this screen's recreation.
+     *
+     * <p>The controls stay usable for the moment the sync result is shown, and anything started in
+     * that moment — a sync, a sign-out, a conflict dialog — was torn down with the old instance,
+     * its callback dropped and the new instance showing "ready" while the sync still ran.
+     */
+    private boolean recreatePending;
+
     private SyncCoordinator syncCoordinator;
     private final ExecutorService syncExecutor = Executors.newSingleThreadExecutor();
     @Inject FirebaseGoogleAuth firebaseGoogleAuth;
@@ -224,6 +216,46 @@ public class BackupActivity extends BaseActivity
                                 setEnabled(finishActivity());
                             }
                         });
+    }
+
+    /**
+     * Decides off the main thread whether the picked document is a backup.
+     *
+     * <p>When the name does not settle it the document is opened and inspected through the document
+     * provider, which on a wrong pick can mean inflating a large archive; on the main thread that
+     * froze the screen. The verdict is delivered back to the main thread.
+     */
+    private void validatePickedBackup(@NonNull Uri uri) {
+        runInBackground(
+                () ->
+                        BackupFileValidator.isValidBackupFile(
+                                this,
+                                uri,
+                                new BackupFileValidator.BackupValidatorCallback() {
+                                    @Override
+                                    public void onValid(String fileName) {
+                                        runOnUiThread(
+                                                () -> {
+                                                    if (!isFinishing() && !isDestroyed()) {
+                                                        presenter.readFileBackupLocal(uri);
+                                                    }
+                                                });
+                                    }
+
+                                    @Override
+                                    public void onInvalid(String errorMessage) {
+                                        runOnUiThread(
+                                                () -> {
+                                                    if (!isFinishing() && !isDestroyed()) {
+                                                        onInfoSnack(
+                                                                errorMessage,
+                                                                null,
+                                                                SnackBarInfo.Error,
+                                                                Snackbar.LENGTH_LONG);
+                                                    }
+                                                });
+                                    }
+                                }));
     }
 
     /** The account tab draws itself from the state the next updateSyncUi() pushes. */
@@ -297,7 +329,7 @@ public class BackupActivity extends BaseActivity
     }
 
     private void startSync() {
-        if (syncCoordinator == null) return;
+        if (syncCoordinator == null || recreatePending) return;
         if (!syncCoordinator.getProfile().isSignedIn()) {
             onInfoSnack(
                     R.string.google_sign_in_failed, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
@@ -420,7 +452,7 @@ public class BackupActivity extends BaseActivity
     }
 
     private void onGoogleSignInClicked() {
-        if (syncCoordinator == null) return;
+        if (syncCoordinator == null || recreatePending) return;
         if (syncCoordinator.getProfile().isSignedIn()) {
             syncCoordinator.disconnect(
                     new SyncCoordinator.Callback<SyncCoordinator.Profile>() {
@@ -501,11 +533,43 @@ public class BackupActivity extends BaseActivity
                 null,
                 SnackBarInfo.Success,
                 Snackbar.LENGTH_LONG);
+        // Nothing may start while the rebuild is pending; see recreatePending.
+        recreatePending = true;
+        if (accountTab != null) accountTab.setSyncing(true);
+        binding.getRoot()
+                .postDelayed(
+                        () -> {
+                            if (isFinishing() || isDestroyed() || syncRunning) {
+                                return;
+                            }
+                            // The stored mode is pushed to AppCompat only here, once the sync
+                            // result is in hand; pushing it from inside the apply recreated this
+                            // screen mid-sync and dropped the result. A changed mode recreates
+                            // the screen by itself; otherwise the rebuild is done here.
+                            int before =
+                                    androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode();
+                            themePreferencesCache.applyCurrentThemeMode();
+                            if (androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode()
+                                    == before) {
+                                recreate();
+                            }
+                        },
+                        1500L);
+    }
+
+    /**
+     * Applies a restored theme once the restore has finished.
+     *
+     * <p>Applying it while the inserts were running recreated this screen and disposed them.
+     * Delayed so the result stays readable for a moment before the screen rebuilds, and only a mode
+     * that actually changed causes a rebuild at all.
+     */
+    private void applyRestoredTheme() {
         binding.getRoot()
                 .postDelayed(
                         () -> {
                             if (!isFinishing() && !isDestroyed()) {
-                                recreate();
+                                themePreferencesCache.applyCurrentThemeMode();
                             }
                         },
                         1500L);
@@ -554,6 +618,7 @@ public class BackupActivity extends BaseActivity
     }
 
     private void showNextConflictDialog() {
+        if (recreatePending) return;
         runInBackground(
                 () -> {
                     List<SyncConflictEntity> unresolved =
@@ -1035,12 +1100,11 @@ public class BackupActivity extends BaseActivity
             progressDialog.dismiss();
         }
         switch (infoCode) {
-            case CloudErrors.OKAY_RESTORE ->
-                    onInfoSnack(
-                            R.string.restoreDataOkay,
-                            null,
-                            SnackBarInfo.Success,
-                            Snackbar.LENGTH_LONG);
+            case CloudErrors.OKAY_RESTORE -> {
+                onInfoSnack(
+                        R.string.restoreDataOkay, null, SnackBarInfo.Success, Snackbar.LENGTH_LONG);
+                applyRestoredTheme();
+            }
             case CloudErrors.BACKUP_DESTROY ->
                     onInfoSnack(
                             R.string.restoreDataFall,
