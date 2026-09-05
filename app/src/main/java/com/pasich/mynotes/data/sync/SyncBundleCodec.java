@@ -226,20 +226,24 @@ public final class SyncBundleCodec {
     /**
      * Replaces the local attachment fields with the wire references.
      *
-     * @param wireIds the manifest id each of this record's logical attachment ids travels under;
-     *     identical to the logical id except for a re-keyed collision.
+     * @param wireIds the manifest id each of this record's attachments travels under, by manifest
+     *     position; identical to the logical id except for a re-keyed collision.
      */
     private static void normalizeNoteAttachmentFields(
-            JsonObject note, @NonNull Map<String, String> wireIds) throws IOException {
+            JsonObject note, @NonNull List<String> wireIds) throws IOException {
         JsonArray manifestEntries = note.getAsJsonArray("attachmentsManifest");
         JsonArray attachmentIds = new JsonArray();
         JsonObject attachmentNames = new JsonObject();
         JsonObject aliases = new JsonObject();
         if (manifestEntries != null) {
-            for (JsonElement element : manifestEntries) {
+            for (int index = 0; index < manifestEntries.size(); index++) {
                 AttachmentManifestEntry attachment =
-                        AttachmentManifestEntry.fromJson(element.getAsJsonObject());
-                String wireId = wireIds.getOrDefault(attachment.id, attachment.id);
+                        AttachmentManifestEntry.fromJson(
+                                manifestEntries.get(index).getAsJsonObject());
+                // By position, not by logical id: one record can carry the same id twice with
+                // different content, and a map keyed by id sent both references to the second
+                // blob, so every receiver lost the first one's bytes.
+                String wireId = index < wireIds.size() ? wireIds.get(index) : attachment.id;
                 attachmentIds.add(wireId);
                 if (!wireId.equals(attachment.id)) {
                     aliases.addProperty(wireId, attachment.id);
@@ -365,11 +369,11 @@ public final class SyncBundleCodec {
                         throw new IOException(
                                 "Two notes reference conflicting attachment metadata");
                     }
-                    plan.wireIdsFor(record).put(attachment.id, wireId);
                 }
                 if (sameId == null) {
                     plan.byWireId.put(wireId, attachment.withId(wireId));
                 }
+                plan.wireIdsFor(record).add(wireId);
                 AttachmentManifestEntry previous =
                         seenByHash.putIfAbsent(attachment.sha256, attachment);
                 if (previous != null && !previous.sameRemoteFile(attachment)) {
@@ -392,17 +396,17 @@ public final class SyncBundleCodec {
                 .toString();
     }
 
-    /** The manifest entries by wire id, and each record's logical-to-wire id mapping. */
+    /** The manifest entries by wire id, and each record's wire ids in manifest order. */
     private static final class AttachmentPlan {
         private final Map<String, AttachmentManifestEntry> byWireId = new LinkedHashMap<>();
-        private final Map<SyncRecord, Map<String, String>> wireIdsByRecord =
+        private final Map<SyncRecord, List<String>> wireIdsByRecord =
                 new java.util.IdentityHashMap<>();
 
         @NonNull
-        Map<String, String> wireIdsFor(@NonNull SyncRecord record) {
-            Map<String, String> wireIds = wireIdsByRecord.get(record);
+        List<String> wireIdsFor(@NonNull SyncRecord record) {
+            List<String> wireIds = wireIdsByRecord.get(record);
             if (wireIds == null) {
-                wireIds = new LinkedHashMap<>();
+                wireIds = new ArrayList<>();
                 wireIdsByRecord.put(record, wireIds);
             }
             return wireIds;

@@ -376,6 +376,88 @@ public class SyncBundleCodecTest {
     }
 
     @Test
+    public void encode_keepsBothBlobsWhenOneNoteCarriesOneIdWithTwoContents() throws Exception {
+        // A duplicated block whose file was later replaced: one logical id, two hashes, in ONE
+        // record. Keying the re-keying by id sent both references to the second blob, so every
+        // receiver wrote its bytes for both and the first attachment's content was lost.
+        String otherHash = "0000000000000000000000000000000000000000000000000000000000000002";
+        JsonObject payload = notePayload("Body", "image/png", 42L, "first.png");
+        JsonObject second =
+                new SyncBundleCodec.AttachmentManifestEntry(
+                                ATTACHMENT_ID,
+                                otherHash,
+                                "image/png",
+                                43L,
+                                "attachments/" + otherHash,
+                                "second.png")
+                        .toJson(true);
+        payload.getAsJsonArray("attachmentsManifest").add(second);
+        payload.getAsJsonArray("attachmentHashes").add(otherHash);
+        JsonObject names = new JsonObject();
+        names.addProperty(ATTACHMENT_ID, "second.png");
+        payload.add("attachmentNames", names);
+        SyncRecord local =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:01Z"),
+                        payload);
+
+        SyncBundleCodec codec = new SyncBundleCodec();
+        SyncBundleCodec.DecodedBundle decoded =
+                codec.decode(
+                        new ByteArrayInputStream(
+                                codec.encode(
+                                        new SyncSnapshot(
+                                                java.util.Collections.singletonList(local)),
+                                        CREATED_AT)));
+
+        assertThat(decoded.getAttachmentsByHash().keySet()).containsExactly(HASH, otherHash);
+        SyncRecord note = decoded.getSnapshot().find(SyncRecord.Type.NOTE, NOTE_ID);
+        JsonArray manifest = note.getPayload().getAsJsonArray("attachmentsManifest");
+        assertThat(manifest).hasSize(2);
+        assertThat(manifest.get(0).getAsJsonObject().get("sha256").getAsString()).isEqualTo(HASH);
+        assertThat(manifest.get(1).getAsJsonObject().get("sha256").getAsString())
+                .isEqualTo(otherHash);
+        assertThat(manifest.get(0).getAsJsonObject().get("id").getAsString())
+                .isEqualTo(ATTACHMENT_ID);
+        assertThat(manifest.get(1).getAsJsonObject().get("id").getAsString())
+                .isEqualTo(ATTACHMENT_ID);
+        assertThat(note.getCanonicalPayloadHash()).isEqualTo(local.getCanonicalPayloadHash());
+    }
+
+    @Test
+    public void encode_refusesANoteThatReferencesOneManifestEntryTwice() throws Exception {
+        // The same id with the same content twice in one record cannot be told apart on the wire;
+        // the validator refuses it on the way out, as it now does on the way in, rather than let
+        // a receiver collapse two attachments into one.
+        JsonObject payload = notePayload("Body", "image/png", 42L, "first.png");
+        payload.getAsJsonArray("attachmentsManifest")
+                .add(
+                        payload.getAsJsonArray("attachmentsManifest")
+                                .get(0)
+                                .getAsJsonObject()
+                                .deepCopy());
+        payload.getAsJsonArray("attachmentHashes").add(HASH);
+        SyncRecord local =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        NOTE_ID,
+                        Instant.parse("2026-08-31T12:00:01Z"),
+                        payload);
+
+        try {
+            new SyncBundleCodec()
+                    .encode(
+                            new SyncSnapshot(java.util.Collections.singletonList(local)),
+                            CREATED_AT);
+            throw new AssertionError("Expected the duplicate reference to be refused");
+        } catch (IOException expected) {
+            assertThat(expected).hasMessageThat().contains("references one attachment twice");
+        }
+    }
+
+    @Test
     public void decode_trimsADisplayNameSoEveryConsumerSeesTheNameThatWasValidated()
             throws Exception {
         SyncBundleCodec codec = new SyncBundleCodec();

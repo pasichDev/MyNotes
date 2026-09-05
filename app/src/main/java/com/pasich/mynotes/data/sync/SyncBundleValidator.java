@@ -176,11 +176,18 @@ public final class SyncBundleValidator {
         }
         JsonObject attachmentNames = note.getAsJsonObject("attachmentNames");
         validateAttachmentIdAliases(note, attachmentsById);
+        Set<String> withinNote = new LinkedHashSet<>();
         for (JsonElement element : attachmentIds) {
             if (element == null || !element.isJsonPrimitive()) {
                 throw new IOException("Sync note attachmentIds entry is invalid");
             }
             String attachmentId = element.getAsString();
+            if (!withinNote.add(attachmentId)) {
+                // Two references to one manifest entry can only mean two attachments were
+                // collapsed into one on the way out; accepting it made every receiver write
+                // one blob's bytes for both.
+                throw new IOException("Sync note references one attachment twice");
+            }
             SyncBundleCodec.AttachmentManifestEntry attachment = attachmentsById.get(attachmentId);
             if (attachment == null) {
                 throw new IOException("Note references an unknown attachment manifest entry");

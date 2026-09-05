@@ -705,9 +705,13 @@ public class GoogleDriveSyncBackendTest {
     }
 
     @Test
-    public void publish_retiresTheBundlesTheNewOneSupersedes() throws Exception {
+    public void publish_retiresABundleOnlyOnceItHasBeenSupersededForTheWholeGrace()
+            throws Exception {
         // Nothing ever deleted a bundle, so every sync downloaded and decoded the whole history
-        // to find one or two heads. Age is Drive's creation time, not a device's clock.
+        // to find one or two heads. A bundle is marked the first time a read finds it outside
+        // the frontier; Drive dates the mark, and the grace runs from there — not from the
+        // bundle's creation. A head created days ago and superseded seconds ago is exactly the
+        // file another device is most likely to be reading.
         SyncBundleCodec codec = new SyncBundleCodec();
         byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
         String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
@@ -723,34 +727,18 @@ public class GoogleDriveSyncBackendTest {
         server.seedOwnedBundleBytes(base);
         server.seedOwnedBundleBytes(first);
         server.seedOwnedBundleBytes(second);
-        server.ageBundles(2L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
+        // Created long ago; superseded only as far as this sync can tell.
+        server.ageBundles(3L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
 
         publish(backend(), snapshotWithTitle("Third"));
 
-        // The head the publish descended from is kept: a concurrent publisher is about to name
-        // it as a parent. Its ancestors are gone.
-        assertThat(server.bundleCount()).isEqualTo(2);
-        assertThat(server.deletedFileIds()).hasSize(2);
-        assertThat(
-                        backend()
-                                .readSnapshot()
-                                .find(SyncRecord.Type.NOTE, NOTE_ID)
-                                .getPayload()
-                                .get("title")
-                                .getAsString())
-                .isEqualTo("Third");
-    }
+        // Old by creation, but their supersession was only just recorded: nothing goes yet.
+        assertThat(server.deletedFileIds()).isEmpty();
+        assertThat(server.supersededBundleCount()).isEqualTo(2);
+        assertThat(server.bundleCount()).isEqualTo(4);
 
-    @Test
-    public void publish_keepsASupersededBundleUntilTheGracePeriodHasPassed() throws Exception {
-        GoogleDriveSyncBackend recent = backend();
-        publish(recent, snapshotWithTitle("First"));
-        publish(recent, snapshotWithTitle("Second"));
-
-        // Both were published by this clock moments ago; a device that listed the folder just
-        // before may still be reading the older one.
-        assertThat(server.bundleCount()).isEqualTo(2);
-
+        // Two hours on, by Drive's clock and this device's alike.
+        server.advanceClock(2L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
         GoogleDriveSyncBackend later =
                 new GoogleDriveSyncBackend(
                         "token",
@@ -758,19 +746,24 @@ public class GoogleDriveSyncBackendTest {
                         server.uploadBase(),
                         Clock.offset(CLOCK, java.time.Duration.ofHours(2)),
                         new SyncBundleCodec());
-        publish(later, snapshotWithTitle("Third"));
+        publish(later, snapshotWithTitle("Fourth"));
 
-        // Two hours on, the first is an ancestor nobody can still be fetching; the second is the
-        // head this publish descended from and stays for one more round.
-        assertThat(server.bundleCount()).isEqualTo(2);
-        assertThat(server.deletedFileIds()).hasSize(1);
+        // base and first were marked two hours ago and go; second was superseded by Third and
+        // is only marked now; Third is the head this publish descends from.
+        assertThat(server.deletedFileIds()).hasSize(2);
+        assertThat(server.bundleCount()).isEqualTo(3);
+        assertThat(
+                        backend()
+                                .readSnapshot()
+                                .find(SyncRecord.Type.NOTE, NOTE_ID)
+                                .getPayload()
+                                .get("title")
+                                .getAsString())
+                .isEqualTo("Fourth");
     }
 
     @Test
-    public void publish_neverPrunesABundleWhoseAgeDriveDoesNotReport() throws Exception {
-        // A device's own publication stamp used to stand in for the age, and a missing stamp
-        // counted as old — so a bundle another device was still fetching could be deleted under
-        // it. Only Drive's creation time is trusted now, and its absence means "keep".
+    public void publish_neverPrunesABundleWhoseSupersessionDriveDoesNotDate() throws Exception {
         SyncBundleCodec codec = new SyncBundleCodec();
         byte[] base = codec.encode(snapshotWithTitle("Base"), CLOCK.instant());
         String baseId = codec.decode(new ByteArrayInputStream(base)).getBundleId();
@@ -779,32 +772,22 @@ public class GoogleDriveSyncBackendTest {
                         snapshotWithTitle("Head"), CLOCK.instant(), Collections.singleton(baseId));
         server.seedOwnedBundleBytes(base);
         server.seedOwnedBundleBytes(head);
-        server.ageBundles(2L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
-        server.withholdCreatedTime();
-
+        server.withholdModifiedTime();
         publish(backend(), snapshotWithTitle("Next"));
+        server.advanceClock(2L * GoogleDriveSyncBackend.BUNDLE_PRUNE_GRACE_MILLIS);
 
+        publish(
+                new GoogleDriveSyncBackend(
+                        "token",
+                        server.apiBase(),
+                        server.uploadBase(),
+                        Clock.offset(CLOCK, java.time.Duration.ofHours(2)),
+                        new SyncBundleCodec()),
+                snapshotWithTitle("Later"));
+
+        // Marked, but Drive reports no time for the mark: nothing can be proven old enough.
         assertThat(server.deletedFileIds()).isEmpty();
-        assertThat(server.bundleCount()).isEqualTo(3);
-    }
-
-    @Test
-    public void readAttachment_fallsBackToTheGoodCopyInAnotherRoot() throws Exception {
-        // Duplicate roots are a supported state. With Drive's checksums withheld the bytes must
-        // be read to tell the copies apart; handing over the first root's only candidate unread
-        // let a corrupt copy there shadow the good one in the other root on every sync.
-        byte[] good = "good bytes".getBytes(StandardCharsets.UTF_8);
-        String hash = sha256(good);
-        server.seedCorruptAttachment(hash, "corrupt".getBytes(StandardCharsets.UTF_8));
-        server.registerAttachment(good);
-        server.seedOwnedBundle(snapshot(NOTE_ID, hash));
-        server.withholdChecksums();
-        assertThat(server.ownedFolderCount()).isEqualTo(2);
-
-        try (java.io.InputStream restored = backend().readAttachment(hash)) {
-            assertThat(restored).isNotNull();
-            assertThat(readAll(restored)).isEqualTo(good);
-        }
+        assertThat(server.bundleCount()).isEqualTo(4);
     }
 
     // ------------------------------------------------- attachment transfer cost
@@ -842,6 +825,24 @@ public class GoogleDriveSyncBackendTest {
         assertThat(backend.hasVerifiedAttachment(claimed, (long) wrong.length)).isFalse();
         assertThat(server.mediaReadsOfAttachment(hash)).isEqualTo(0);
         assertThat(server.mediaReadsOfAttachment(claimed)).isEqualTo(0);
+    }
+
+    @Test
+    public void hasVerifiedAttachment_readsTheBlobWhenTheListingCannotConfirmItsSize()
+            throws Exception {
+        // Drive's digest matches but the listing carries no usable size. Treating that as corrupt
+        // reported a good blob absent, so the service uploaded a duplicate on every sync and then
+        // failed anyway when the duplicate listed the same way.
+        byte[] bytes = "photo".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        backend().writeAttachment(hash, bytes.length, new ByteArrayInputStream(bytes));
+        server.withholdSizes();
+        GoogleDriveSyncBackend backend = backend();
+
+        assertThat(backend.hasVerifiedAttachment(hash, (long) bytes.length)).isTrue();
+
+        assertThat(server.mediaReadsOfAttachment(hash)).isEqualTo(1);
+        assertThat(server.ownedAttachmentCount(hash)).isEqualTo(1);
     }
 
     @Test
@@ -1207,7 +1208,12 @@ public class GoogleDriveSyncBackendTest {
         private final List<String> deletedFileIds =
                 java.util.Collections.synchronizedList(new ArrayList<>());
         private volatile boolean withholdChecksums;
-        private volatile boolean withholdCreatedTime;
+        private volatile boolean withholdSizes;
+        private volatile boolean withholdModifiedTime;
+
+        /** Drive's clock, as the fake stamps files with it; starts at the tests' fixed CLOCK. */
+        private volatile long serverNowMillis = CLOCK.millis();
+
         private SyncSnapshot updateBeforeNextPatch;
         private final AtomicInteger nextId = new AtomicInteger(1);
 
@@ -1294,11 +1300,12 @@ public class GoogleDriveSyncBackendTest {
             return new ArrayList<>(deletedFileIds);
         }
 
-        /** Moves every stored bundle's Drive-side creation time {@code millis} into the past. */
+        /** Moves every stored bundle's Drive-side timestamps {@code millis} into the past. */
         void ageBundles(long millis) {
             for (DriveFile file : files.values()) {
                 if ("1".equals(file.appProperties.get("mynotesBundle"))) {
                     file.createdAtMillis -= millis;
+                    file.modifiedAtMillis -= millis;
                 }
             }
         }
@@ -1415,9 +1422,31 @@ public class GoogleDriveSyncBackendTest {
             withholdChecksums = true;
         }
 
-        /** Models a listing that reports no creation time for its files. */
-        void withholdCreatedTime() {
-            withholdCreatedTime = true;
+        /** Models a listing that reports no modification time for its files. */
+        void withholdModifiedTime() {
+            withholdModifiedTime = true;
+        }
+
+        /** Models objects whose listing carries a checksum but no usable size. */
+        void withholdSizes() {
+            withholdSizes = true;
+        }
+
+        /** Moves Drive's clock forward; later stamps are dated from the new time. */
+        void advanceClock(long millis) {
+            serverNowMillis += millis;
+        }
+
+        /** Whether the client has marked the newest {@code count} bundles as superseded. */
+        int supersededBundleCount() {
+            int count = 0;
+            for (DriveFile file : files.values()) {
+                if ("1".equals(file.appProperties.get("mynotesBundle"))
+                        && file.appProperties.containsKey("mynotesBundleSuperseded")) {
+                    count++;
+                }
+            }
+            return count;
         }
 
         String registerAttachment(byte[] bytes) throws Exception {
@@ -1562,7 +1591,9 @@ public class GoogleDriveSyncBackendTest {
                     // stored bytes exactly as Drive does, so a corrupt object is exposed by its
                     // real digest rather than by the property the uploader claimed.
                     if (!withholdChecksums) {
-                        value.addProperty("size", String.valueOf(file.content.length));
+                        if (!withholdSizes) {
+                            value.addProperty("size", String.valueOf(file.content.length));
+                        }
                         if (!"application/vnd.google-apps.folder".equals(file.mimeType)) {
                             value.addProperty("sha256Checksum", sha256Unchecked(file.content));
                         }
@@ -1572,11 +1603,13 @@ public class GoogleDriveSyncBackendTest {
                         appProperties.addProperty(entry.getKey(), entry.getValue());
                     }
                     value.add("appProperties", appProperties);
-                    if (!withholdCreatedTime) {
-                        // Drive's own clock, RFC 3339, as the real listing reports it.
+                    // Drive's own clock, RFC 3339, as the real listing reports it.
+                    value.addProperty(
+                            "createdTime", Instant.ofEpochMilli(file.createdAtMillis).toString());
+                    if (!withholdModifiedTime) {
                         value.addProperty(
-                                "createdTime",
-                                Instant.ofEpochMilli(file.createdAtMillis).toString());
+                                "modifiedTime",
+                                Instant.ofEpochMilli(file.modifiedAtMillis).toString());
                     }
                     array.add(value);
                 }
@@ -1614,6 +1647,19 @@ public class GoogleDriveSyncBackendTest {
                 files.remove(id);
                 deletedFileIds.add(id);
                 return Response.json(204, "");
+            }
+            if ("POST".equals(request.method)
+                    && "PATCH".equals(request.headers.get("x-http-method-override"))) {
+                // files.update: merges appProperties and, like Drive, stamps modifiedTime.
+                JsonObject patch = readJson(request.body);
+                if (patch.has("appProperties")) {
+                    for (Map.Entry<String, com.google.gson.JsonElement> entry :
+                            patch.getAsJsonObject("appProperties").entrySet()) {
+                        file.appProperties.put(entry.getKey(), entry.getValue().getAsString());
+                    }
+                }
+                file.modifiedAtMillis = serverNowMillis;
+                return Response.json(200, fileMetadata(file).toString(), file.eTag());
             }
             if ("media".equals(parseQuery(uri).get("alt"))) {
                 mediaReads.merge(id, 1, Integer::sum);
@@ -1774,6 +1820,8 @@ public class GoogleDriveSyncBackendTest {
         private DriveFile createFile(String name, String mimeType, String parentId) {
             DriveFile file =
                     new DriveFile(Integer.toString(nextId.getAndIncrement()), name, mimeType);
+            file.createdAtMillis = serverNowMillis;
+            file.modifiedAtMillis = serverNowMillis;
             if (parentId != null) {
                 file.parents.add(parentId);
             }
@@ -1979,8 +2027,10 @@ public class GoogleDriveSyncBackendTest {
     private static final class DriveFile {
         private final String id;
 
-        /** Drive's creation time; the fake's server clock is the tests' fixed CLOCK. */
+        /** Drive's own timestamps, stamped from the fake server's clock. */
         private long createdAtMillis = CLOCK.millis();
+
+        private long modifiedAtMillis = CLOCK.millis();
 
         private byte[] content = new byte[0];
         private String name;

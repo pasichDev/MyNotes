@@ -1511,6 +1511,7 @@ public final class RoomSyncStore implements SyncStore {
         JsonArray hashes = new JsonArray();
         JsonObject names = new JsonObject();
         Map<String, String> logicalIdByUrl = new HashMap<>();
+        Set<String> logicalIdsInNote = new HashSet<>();
         boolean complete = true;
         for (int attachmentIndex = 0; attachmentIndex < attachments.size(); attachmentIndex++) {
             JsonElement element = attachments.get(attachmentIndex);
@@ -1600,7 +1601,9 @@ public final class RoomSyncStore implements SyncStore {
             }
             String displayName = displayNameFor(attachment, file, hash);
             String logicalId = attachment.id;
-            if (!isCanonicalUuid(logicalId)) {
+            // A column entry may repeat an id — a duplicated block whose file was later replaced.
+            // The manifest is keyed by id, so the repeat is given its own, as if it had none.
+            if (!isCanonicalUuid(logicalId) || logicalIdsInNote.contains(logicalId)) {
                 // Existing editor data predates logical attachment IDs. Deriving from the stable
                 // note, source URL, position and content keeps the migration deterministic while
                 // allowing equal-content references to remain distinct logical attachments. The
@@ -1620,6 +1623,7 @@ public final class RoomSyncStore implements SyncStore {
                                 displayName,
                                 hash);
             }
+            logicalIdsInNote.add(logicalId);
             hashes.add(hash);
             names.addProperty(logicalId, displayName);
             logicalIdByUrl.put(comparableUrl(attachment.url), logicalId);

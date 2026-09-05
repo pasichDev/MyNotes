@@ -45,6 +45,14 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private static final String PROPERTY_BUNDLE = "mynotesBundle";
     private static final String PROPERTY_BUNDLE_PUBLISHED_AT = "mynotesBundlePublishedAt";
     private static final String PROPERTY_ATTACHMENT_SHA256 = "mynotesAttachmentSha256";
+
+    /**
+     * Set on a bundle the first time a read finds it outside the frontier. Drive stamps the update
+     * with its own {@code modifiedTime}, which is therefore the moment the bundle was seen to be
+     * superseded — measured by Drive's clock, not by whichever device happened to publish.
+     */
+    private static final String PROPERTY_BUNDLE_SUPERSEDED = "mynotesBundleSuperseded";
+
     private static final int MAX_BUNDLE_RESPONSE_BYTES = 32 * 1024 * 1024;
     private static final long MAX_ATTACHMENT_RESPONSE_BYTES =
             SyncBundleValidator.MAX_ATTACHMENT_BYTES;
@@ -55,11 +63,13 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private static final int MAX_ERROR_DETAIL_CHARS = 200;
 
     /**
-     * How long a superseded bundle stays after its successor appears.
+     * How long a superseded bundle stays after it was first seen to be superseded.
      *
      * <p>A device that listed the folder just before the successor was published may still be
      * fetching the old bundle; an hour outlives any read, including the six-hourly worker's, which
-     * WorkManager stops after ten minutes.
+     * WorkManager stops after ten minutes. Measured from the supersession mark, not from the
+     * bundle's creation: a head created days ago and superseded seconds ago is exactly the file
+     * another device is most likely to be reading right now.
      */
     static final long BUNDLE_PRUNE_GRACE_MILLIS = 60L * 60L * 1000L;
 
@@ -239,10 +249,46 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
                             SyncMergeResult.Source.REMOTE));
         }
 
+        markSupersededBundles(bundleFiles, frontier);
         lastReadBundles = Collections.unmodifiableList(bundleFiles);
         lastReadToken = UUID.randomUUID().toString();
         return new RemoteSnapshot(
                 merged, conflicts, frontier, alternatives, resolvedAlternativeIds, lastReadToken);
+    }
+
+    /**
+     * Stamps every bundle that has left the frontier, once, so its grace period starts now.
+     *
+     * <p>Best effort: a bundle that cannot be marked is never pruned, which costs a download per
+     * sync and nothing else.
+     */
+    private void markSupersededBundles(
+            @NonNull List<BundleFile> bundles, @NonNull Collection<String> frontier) {
+        for (BundleFile bundle : bundles) {
+            if (frontier.contains(bundle.logicalId) || bundle.supersededAtMillis != null) {
+                continue;
+            }
+            try {
+                JsonObject patch = new JsonObject();
+                patch.add("appProperties", appProperties(PROPERTY_BUNDLE_SUPERSEDED, "1"));
+                // HttpURLConnection has no PATCH; Google's APIs honour the override header.
+                HttpURLConnection connection =
+                        open("POST", apiBase + "/files/" + bundle.fileId + "?fields=id");
+                connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+                connection.setRequestProperty("Content-Type", MIME_JSON);
+                connection.setDoOutput(true);
+                try {
+                    try (OutputStream output = connection.getOutputStream()) {
+                        output.write(jsonBytes(patch));
+                    }
+                    ensureSuccess(connection);
+                } finally {
+                    connection.disconnect();
+                }
+            } catch (IOException ignored) {
+                // Marked at the next read instead; the grace period simply starts later.
+            }
+        }
     }
 
     @Override
@@ -297,9 +343,9 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
      * sync, and every later sync downloaded, unzipped and validated all of them to compute a
      * frontier of one or two heads. A bundle is a complete snapshot, so everything a superseded
      * bundle held — records, tombstones, unresolved alternatives — lives on in its descendants, and
-     * the read path already tolerates a missing ancestor. The heads this publish descended from are
-     * kept for now: they are what a concurrent publisher is about to name as parents. They go at
-     * the next sync, once the grace period has passed.
+     * the read path already tolerates a missing ancestor. A bundle goes only once it has been
+     * marked superseded for the whole grace period; the heads this publish descended from are not
+     * even marked yet, and are what a concurrent publisher is about to name as parents.
      *
      * <p>Best effort by design: a bundle that cannot be removed costs a download next time, never
      * correctness.
@@ -307,12 +353,12 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private void pruneSupersededBundles(@NonNull Collection<String> frontierBundleIds) {
         long cutoff = clock.millis() - BUNDLE_PRUNE_GRACE_MILLIS;
         for (BundleFile bundle : lastReadBundles) {
-            // The age comes from Drive's own creation time, never from a property the publishing
-            // device stamped with its clock; a bundle whose age Drive does not report is left
-            // alone rather than assumed old.
+            // Only a bundle that was already marked superseded when this sync read it, with the
+            // mark's Drive-side timestamp older than the grace, may go. A bundle marked during
+            // this very read, or one whose mark Drive does not date, stays.
             if (frontierBundleIds.contains(bundle.logicalId)
-                    || bundle.createdAtMillis == null
-                    || bundle.createdAtMillis > cutoff) {
+                    || bundle.supersededAtMillis == null
+                    || bundle.supersededAtMillis > cutoff) {
                 continue;
             }
             try {
@@ -637,20 +683,22 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     private static final class BundleFile {
         private final String fileId;
         @Nullable private final String logicalId;
-        @Nullable private final Long createdAtMillis;
+
+        /** Drive's modifiedTime of the supersession mark, or null when unmarked or undated. */
+        @Nullable private final Long supersededAtMillis;
 
         private BundleFile(
                 @NonNull String fileId,
                 @Nullable String logicalId,
-                @Nullable Long createdAtMillis) {
+                @Nullable Long supersededAtMillis) {
             this.fileId = fileId;
             this.logicalId = logicalId;
-            this.createdAtMillis = createdAtMillis;
+            this.supersededAtMillis = supersededAtMillis;
         }
 
         @NonNull
         private BundleFile withLogicalId(@NonNull String id) {
-            return new BundleFile(fileId, id, createdAtMillis);
+            return new BundleFile(fileId, id, supersededAtMillis);
         }
     }
 
@@ -659,28 +707,30 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         JsonArray bundles =
                 listFiles(
                         ownedFilesQuery(folderId, PROPERTY_BUNDLE, "1"),
-                        "files(id,name,createdTime)");
+                        "files(id,name,modifiedTime,appProperties)");
         List<BundleFile> result = new ArrayList<>(bundles.size());
         for (int index = 0; index < bundles.size(); index++) {
             JsonObject file = bundles.get(index).getAsJsonObject();
+            JsonObject properties = file.getAsJsonObject("appProperties");
+            boolean marked = properties != null && properties.has(PROPERTY_BUNDLE_SUPERSEDED);
             result.add(
                     new BundleFile(
                             file.get("id").getAsString(),
                             null,
-                            createdAtOf(optionalString(file, "createdTime"))));
+                            marked ? instantOf(optionalString(file, "modifiedTime")) : null));
         }
         result.sort(Comparator.comparing(file -> file.fileId));
         return result;
     }
 
-    /** Drive reports {@code createdTime} as RFC 3339; anything else counts as unknown. */
+    /** Drive reports times as RFC 3339; anything else counts as unknown. */
     @Nullable
-    private static Long createdAtOf(@Nullable String createdTime) {
-        if (createdTime == null) {
+    private static Long instantOf(@Nullable String time) {
+        if (time == null) {
             return null;
         }
         try {
-            return java.time.Instant.parse(createdTime).toEpochMilli();
+            return java.time.Instant.parse(time).toEpochMilli();
         } catch (RuntimeException malformed) {
             return null;
         }
@@ -741,8 +791,11 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             if (isVerifiedWithoutReading(candidate, sha256, expectedSize)) {
                 return candidate.id;
             }
-            if (candidate.sha256Checksum != null) {
+            if (candidate.sha256Checksum != null && !candidate.sha256Checksum.equals(sha256)) {
                 // Drive's own digest disagrees with the index; reading would only confirm it.
+                // Anything less definite — a matching digest without a usable size, or one the
+                // expected size disagrees with — is read and verified like an unlisted object,
+                // rather than counted as corrupt and re-uploaded on every sync.
                 continue;
             }
             try (InputStream content = openAttachment(candidate.id)) {
