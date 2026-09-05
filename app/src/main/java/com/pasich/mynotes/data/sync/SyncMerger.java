@@ -91,8 +91,13 @@ public final class SyncMerger {
                 merged.put(key, local);
                 return;
             }
-            if (base.equals(local.getCanonicalPayloadHash())) {
-                // This device has not moved since it last synchronized; the remote has.
+            if (base.equals(local.getCanonicalPayloadHash())
+                    && !remote.getUpdatedAt().isBefore(local.getUpdatedAt())) {
+                // This device has not moved since it last synchronized; the remote has. Only
+                // forwards, though: a remote older than what this device synchronized is a head
+                // that has gone missing, and following it would revert the newer version on every
+                // unedited device until it existed nowhere. That case falls through to
+                // last-writer-wins below, which keeps the local copy and republishes it.
                 merged.put(key, remote);
                 return;
             }

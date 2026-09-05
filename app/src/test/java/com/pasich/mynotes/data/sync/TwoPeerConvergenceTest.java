@@ -59,6 +59,55 @@ public class TwoPeerConvergenceTest {
     }
 
     @Test
+    public void aRecordRevivedElsewhereLeavesNoPhantomDeletionOnAPeerThatNeverHeldIt() {
+        // B edits, C deletes, B keeps the edit. A — a fresh install that never held the record —
+        // received the deletion-versus-edit conflict along the way. Once the edit arrives on A the
+        // row is meaningless: offered anyway, pre-selected on the deletion, one tap deleted the
+        // record on every device with no conflict raised anywhere.
+        SyncRecord.Type type = SyncRecord.Type.TASK;
+        Peer b = new Peer("B", clock, drive);
+        Peer c = new Peer("C", clock, drive);
+        Peer a = new Peer("A", clock, drive);
+        b.create(type, RECORD_ID, "TaskX");
+        clock.advance();
+        assertThat(b.sync().getConflictCount()).isEqualTo(0);
+        clock.advance();
+        assertThat(c.sync().getConflictCount()).isEqualTo(0);
+        clock.advance();
+        assertThat(b.sync().getConflictCount()).isEqualTo(0);
+
+        b.edit(type, RECORD_ID, "TaskX-B");
+        clock.advance();
+        c.delete(type, RECORD_ID);
+        clock.advance();
+        assertThat(c.sync().getConflictCount()).isEqualTo(0);
+        clock.advance();
+        assertThat(b.sync().getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(b.store.pendingConflicts()).hasSize(1);
+        clock.advance();
+        a.sync();
+
+        // B keeps its edit and publishes it.
+        clock.advance();
+        b.store.resolveAllKeepingLive(clock.instant());
+        clock.advance();
+        assertThat(b.sync().getConflictCount()).isEqualTo(0);
+        clock.advance();
+        assertThat(a.sync().getConflictCount()).isEqualTo(0);
+
+        assertThat(a.store.pendingConflicts()).isEmpty();
+        assertThat(a.store.titleOf(type, RECORD_ID)).isEqualTo("TaskX-B");
+        clock.advance();
+        assertThat(c.sync().getConflictCount()).isEqualTo(0);
+        assertThat(c.store.titleOf(type, RECORD_ID)).isEqualTo("TaskX-B");
+        clock.advance();
+        assertThat(a.sync().getConflictCount()).isEqualTo(0);
+        clock.advance();
+        assertThat(b.sync().getConflictCount()).isEqualTo(0);
+        assertThat(b.store.titleOf(type, RECORD_ID)).isEqualTo("TaskX-B");
+    }
+
+    @Test
     public void aTaskSyncedBeforeBasesWereRecordedStillSettlesAfterOneResolution() {
         deletedHereEditedThereSettlesAfterOneResolution(SyncRecord.Type.TASK, true);
     }
@@ -251,8 +300,7 @@ public class TwoPeerConvergenceTest {
                                                     .isAfter(row.conflict.getLoser().getUpdatedAt())
                                             ? row.conflict.getWinner().getUpdatedAt()
                                             : row.conflict.getLoser().getUpdatedAt())
-                    && !contentDigest(current).equals(contentDigest(row.conflict.getWinner()))
-                    && !contentDigest(current).equals(contentDigest(row.conflict.getLoser()))) {
+                    && !contentDigest(current).equals(contentDigest(row.conflict.getWinner()))) {
                 conflicts.remove(row);
                 return;
             }

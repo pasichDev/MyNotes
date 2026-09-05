@@ -56,6 +56,21 @@ public class SyncMergerTest {
     }
 
     @Test
+    public void merge_doesNotFollowARemoteOlderThanWhatItLastSynchronized() {
+        // A head bundle gone missing from Drive makes the remote fall back to an older version.
+        // Taking it because "only the remote moved" reverted the newer copy on every unedited
+        // device until it existed nowhere; last-writer-wins keeps it and republishes it.
+        SyncRecord synced = note(NOTE_ID, TWENTY, "Milk and bread");
+        SyncRecord unchanged = synced.withBaseVersion(synced.getCanonicalPayloadHash());
+        SyncRecord olderRemote = note(NOTE_ID, TEN, "Milk");
+
+        SyncMergeResult result = merger.merge(snapshot(unchanged), snapshot(olderRemote));
+
+        assertThat(result.getMergedSnapshot().getRecords()).containsExactly(unchanged);
+        assertThat(result.getConflicts()).hasSize(1);
+    }
+
+    @Test
     public void merge_stillReportsAConflictWhenBothSidesMovedFromTheSameBase() {
         SyncRecord synced = note(NOTE_ID, TEN, "Milk");
         SyncRecord editedHere =
