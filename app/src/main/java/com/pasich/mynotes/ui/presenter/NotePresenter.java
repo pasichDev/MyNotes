@@ -7,6 +7,7 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
+import com.pasich.mynotes.extendedEditor.utils.EditorDocument;
 import com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.utils.constants.AutoSave;
@@ -320,12 +321,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
 
             pendingClose = true;
 
-            // Extended editor "empty JSON" check is WRONG — replace with targetNote
-            if (extendedEditor && !hasMeaningfulContent(targetNote)) {
-                if (!isViewDead()) getView().closeNoteActivity();
-                return;
-            }
-
             saveNote(
                     targetNote,
                     new NoteContract.AutoSaveCallback() {
@@ -391,14 +386,18 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
         if (!note.getTitle().trim().isEmpty()) return true;
         if (!note.getValue().trim().isEmpty()) return true;
 
-        // Attachments (extended editor too)
-        if (note.getAttachments() != null && !note.getAttachments().trim().isEmpty()) {
+        // Attachments (extended editor too). Every extended-editor change writes the parsed
+        // attachment list, so a note without attachments carries the string "[]" here — ask the
+        // note whether the list holds anything instead of whether the field was written.
+        if (note.isAttachments()) {
             return true;
         }
 
-        // Extended editor JSON
-        String json = note.getValueJson();
-        return json != null && !json.trim().isEmpty() && !json.equals("[]");
+        // Extended editor document: emptiness is decided by the parsed blocks. An untouched
+        // editor still serializes a document — an empty paragraph is enough — so comparing the
+        // string against "[]" made a note nobody typed into read as meaningful, saved it and
+        // counted it in the statistics.
+        return EditorDocument.hasContent(note.getValueJson());
     }
 
     @Override
