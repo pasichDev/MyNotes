@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [2.6.55] - 25.09.2026
+
+**Improvements**
+
+- The app no longer interrupts you with a full-screen update prompt on start. Google Play keeps
+  My Notes up to date on its own, following your Play Store settings.
+
+**Fixes**
+
+- A new rich note you open and leave without typing is discarded instead of showing up in the
+  list and statistics as an empty note.
+
 ## [2.6.54] - 05.09.2026
 
 **New**

@@ -2,28 +2,21 @@ package com.pasich.mynotes.ui.controllers.mainActivity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.play.core.appupdate.AppUpdateInfo;
-import com.google.android.play.core.appupdate.AppUpdateManager;
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
-import com.google.android.play.core.install.model.AppUpdateType;
-import com.google.android.play.core.install.model.UpdateAvailability;
 import com.pasich.mynotes.ui.view.activity.ChangelogActivity;
 import com.pasich.mynotes.ui.view.dialogs.UpdateChangelogDialog;
 import com.pasich.mynotes.utils.UpdateChecker;
 
-/** Handles in-app update checks and changelog display. */
+/**
+ * Shows what changed after the app was updated. It never asks the user to update: Google Play
+ * updates the app on its own, and a blocking update screen on every launch drove users away.
+ */
 public class AppUpdateController {
-
-    private static final int REQUEST_UPDATE = 100;
 
     private final Activity activity;
     private final UpdateChecker updateChecker;
     private final ActivityResultLauncher<Intent> changelogLauncher;
-
-    private AppUpdateManager updateManager;
 
     public AppUpdateController(
             Activity activity,
@@ -32,50 +25,7 @@ public class AppUpdateController {
         this.activity = activity;
         this.updateChecker = updateChecker;
         this.changelogLauncher = changelogLauncher;
-
-        init();
-    }
-
-    private void init() {
-        updateManager = AppUpdateManagerFactory.create(activity);
         updateChecker.initializeVersionCheck();
-        checkForUpdate();
-    }
-
-    /** Resumes an in-progress immediate update flow if one was started. */
-    public void handleOnResume() {
-        updateManager
-                .getAppUpdateInfo()
-                .addOnSuccessListener(
-                        info -> {
-                            if (info.updateAvailability()
-                                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                                startImmediateUpdate(info);
-                            }
-                        });
-    }
-
-    private void checkForUpdate() {
-        updateManager
-                .getAppUpdateInfo()
-                .addOnSuccessListener(
-                        info -> {
-                            if (info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                                    && info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
-
-                                startImmediateUpdate(info);
-                            }
-                        })
-                .addOnFailureListener(e -> Log.d("AppUpdate", "check error: " + e.getMessage()));
-    }
-
-    private void startImmediateUpdate(AppUpdateInfo info) {
-        try {
-            updateManager.startUpdateFlowForResult(
-                    info, AppUpdateType.IMMEDIATE, activity, REQUEST_UPDATE);
-        } catch (Exception e) {
-            Log.d("AppUpdate", "startUpdate error: " + e.getMessage());
-        }
     }
 
     /** Shows the changelog dialog if a new app version was detected. */

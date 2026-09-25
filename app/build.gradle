@@ -21,7 +21,7 @@ apply from: "$projectDir/gradle/libs-task.gradle"
 apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
-def appVersionCode = 54
+def appVersionCode = 55
 def appVersionName = "2.6.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
@@ -199,7 +199,6 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
 
     //Pay Billing
-    implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'com.android.billingclient:billing:8.3.0'
 
     //Other lib (Gson/PhotoView)
