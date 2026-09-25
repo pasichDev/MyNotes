@@ -266,12 +266,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        appUpdateController.handleOnResume();
-    }
-
-    @Override
     public void startDeleteTagDialog(Tag tag) {
         new DeleteTagDialog(tag).show(getSupportFragmentManager(), "deleteTag");
     }
