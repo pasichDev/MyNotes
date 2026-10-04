@@ -664,6 +664,43 @@ public class SyncMutationCoordinator {
                 });
     }
 
+    /**
+     * Deletes every note (trashed ones included), task, user tag and task category in one
+     * transaction, leaving a tombstone for each so a sync propagates the deletion instead of
+     * restoring the records from the remote copy. Attachment files and alarms are the caller's.
+     */
+    public void clearAllUserData() {
+        transactionExecutor.run(
+                () -> {
+                    long timestamp = timeProvider.now();
+                    List<Integer> noteIds = noteDao.getAllNoteIdsSync();
+                    noteDao.deleteAllNotes();
+                    markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
+
+                    List<Integer> taskIds = taskDao.getAllTaskIdsSync();
+                    taskDao.deleteAllTasks();
+                    markDeletedRecords(SyncMetadata.RECORD_TYPE_TASK, taskIds, timestamp);
+
+                    List<Tag> tags = tagsDao.getUserTagsSync();
+                    tagsDao.deleteUserTags();
+                    if (tags != null) {
+                        for (Tag tag : tags) {
+                            markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
+                        }
+                    }
+
+                    List<TaskCategory> categories = taskCategoryDao.getCategoriesSync();
+                    taskCategoryDao.deleteAllCategories();
+                    if (categories != null) {
+                        for (TaskCategory category : categories) {
+                            markDeletedRecord(
+                                    SyncMetadata.RECORD_TYPE_CATEGORY, category.getId(), timestamp);
+                        }
+                    }
+                    return null;
+                });
+    }
+
     private long insertNoteInternal(@NonNull Note note, long timestamp) {
         long insertedId = noteDao.addNote(note);
         int localId = resolveIntId(note.getId(), insertedId);

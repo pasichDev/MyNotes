@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [Unreleased]
+
+**New**
+
+- **Meet Encly:** A new page in the menu, and a one-time dialog after this update, introduces
+  Encly, the encrypted, offline successor to My Notes. With Encly installed, one tap moves your
+  notes (including the trash), tasks, tags and task lists to it. Attachments, images, reminders
+  and pins stay behind, and the page tells you how many. Nothing is deleted from My Notes; after
+  a successful move you can clear it as a separate, confirmed step.
+
 ## [2.6.55] - 25.09.2026
 
 **Improvements**

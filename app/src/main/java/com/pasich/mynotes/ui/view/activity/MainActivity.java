@@ -52,12 +52,15 @@ import com.pasich.mynotes.utils.adapters.tagAdapter.OnItemClickListenerTag;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
+import com.pasich.mynotes.utils.encly.EnclyMigrationRepository;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.Completable;
+import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
@@ -99,6 +102,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     @Inject SearchNotesAdapter searchNotesAdapter;
     @Inject UpdateChecker updateChecker;
     @Inject ThemePreferencesCache themePreferencesCache;
+    @Inject EnclyMigrationRepository enclyMigrationRepository;
     private SearchController searchController;
     private AppUpdateController appUpdateController;
     private NavigationController navigationController;
@@ -168,6 +172,10 @@ public class MainActivity extends BaseActivity implements MainContract.view {
                                 mainPresenter.updateSearchTagFilter(tagName);
                             }
                         });
+        if (savedInstanceState == null) {
+            sweepEnclyHandoffFiles();
+        }
+
         appUpdateController = new AppUpdateController(this, updateChecker, changelogLauncher);
         appUpdateController.showChangelogIfNeeded();
 
@@ -182,6 +190,17 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         navigationController.handleShortcuts(getIntent());
 
         mainRenderListsController = new MainRenderListsController(mActivityBinding);
+    }
+
+    /**
+     * A hand-off to Encly is a plain-text copy of every note. It is deleted when Encly answers;
+     * this sweeps one left behind when the process died before that.
+     */
+    private void sweepEnclyHandoffFiles() {
+        Completable.fromAction(enclyMigrationRepository::clearArchives)
+                .subscribeOn(Schedulers.io())
+                .onErrorComplete()
+                .subscribe();
     }
 
     @Override

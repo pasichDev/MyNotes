@@ -257,6 +257,57 @@ public class SyncMutationCoordinatorTest {
     }
 
     @Test
+    public void clearAllUserData_deletesEverythingAndLeavesATombstoneForEachRecord() {
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(
+                        SyncMetadata.RECORD_TYPE_NOTE, 1L, "note-stable", 90L, null));
+        when(noteDao.getAllNoteIdsSync()).thenReturn(List.of(1, 2));
+        when(taskDao.getAllTaskIdsSync()).thenReturn(List.of(5));
+        Tag tag = new Tag().create("Work");
+        tag.id = 7;
+        when(tagsDao.getUserTagsSync()).thenReturn(List.of(tag));
+        TaskCategory category = new TaskCategory("Home", "#000000");
+        category.setId(8);
+        when(taskCategoryDao.getCategoriesSync()).thenReturn(List.of(category));
+
+        SyncMutationCoordinator clearing =
+                new SyncMutationCoordinator(
+                        new SyncMutationCoordinator.TransactionExecutor() {
+                            @Override
+                            public <T> T run(
+                                    SyncMutationCoordinator.TransactionCallable<T> callable) {
+                                return callable.call();
+                            }
+                        },
+                        noteDao,
+                        taskDao,
+                        tagsDao,
+                        taskCategoryDao,
+                        transactions,
+                        syncMetadataDao,
+                        new FixedTimeProvider(1_000L),
+                        new QueueStableIdGenerator("s1", "s2", "s3", "s4", "s5"));
+
+        clearing.clearAllUserData();
+
+        verify(noteDao).deleteAllNotes();
+        verify(taskDao).deleteAllTasks();
+        verify(tagsDao).deleteUserTags();
+        verify(taskCategoryDao).deleteAllCategories();
+        SyncMetadataEntity seeded = syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 1L);
+        assertThat(seeded.stableId).isEqualTo("note-stable");
+        assertThat(seeded.deletedAt).isEqualTo(1_000L);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 2L).deletedAt)
+                .isEqualTo(1_000L);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_TASK, 5L).deletedAt)
+                .isEqualTo(1_000L);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_TAG, 7L).deletedAt)
+                .isEqualTo(1_000L);
+        assertThat(syncMetadataDao.get(SyncMetadata.RECORD_TYPE_CATEGORY, 8L).deletedAt)
+                .isEqualTo(1_000L);
+    }
+
+    @Test
     public void insertNotes_usesSingleImportTimestampForWholeBatch() {
         List<Note> notes = new ArrayList<>();
         notes.add(new Note().create("One", "1", 1L, ""));

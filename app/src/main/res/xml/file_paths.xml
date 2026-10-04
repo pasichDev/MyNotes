@@ -3,6 +3,10 @@
     <cache-path
         name="cache"
         path="." />
+    <!-- The Encly hand-off ZIP. Its own path, so the URI never names anything else in the cache. -->
+    <cache-path
+        name="encly_handoff"
+        path="encly-handoff/" />
     <files-path
         name="attachments"
         path="attachments/" />

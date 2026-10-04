@@ -27,6 +27,15 @@ public interface TagsDao {
     @Query("SELECT * FROM tags WHERE name = :name LIMIT 1")
     Tag getTagByNameSync(String name);
 
+    @Query(
+            "SELECT * FROM tags WHERE systemAction = "
+                    + SystemTagsManager.SYSTEM_ACTION_USER_TAG
+                    + " ORDER BY position ASC, id ASC")
+    List<Tag> getUserTagsSync();
+
+    @Query("DELETE FROM tags WHERE systemAction = " + SystemTagsManager.SYSTEM_ACTION_USER_TAG)
+    void deleteUserTags();
+
     @Query("DELETE FROM tags WHERE id = :id")
     void deleteById(long id);
 

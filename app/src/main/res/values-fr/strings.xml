@@ -472,4 +472,43 @@
     <string name="help_sync_background_description">Après avoir confirmé la première synchronisation, vous pouvez activer la synchronisation en arrière-plan. Elle s’exécute environ toutes les 6 heures lorsque l’appareil est connecté à Internet et peut être désactivée à tout moment.</string>
     <string name="help_sync_conflicts_title">Résoudre les conflits</string>
     <string name="help_sync_conflicts_description">Lorsque les versions locale et Drive diffèrent, choisissez pour chaque conflit de conserver la version locale ou celle de Google Drive.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Découvrez Encly</string>
+    <string name="meet_encly_drawer_subtitle">Le successeur de Mes notes</string>
+    <string name="meet_encly_intro">Encly est la nouvelle application de l\'auteur de Mes notes : une application de notes entièrement chiffrée qui fonctionne hors ligne. Vos notes sont stockées dans une base de données chiffrée, l\'application se verrouille par code PIN et les sauvegardes sont chiffrées elles aussi.</string>
+    <string name="meet_encly_one_way">Le transfert est à sens unique : Mes notes transmet vos données à Encly, et Encly ne renvoie jamais rien. Rien n\'est supprimé de Mes notes, qui continue de fonctionner comme avant.</string>
+    <string name="meet_encly_moves_title">Ce qui est transféré</string>
+    <string name="meet_encly_moves_notes">Notes, corbeille comprise : %1$d</string>
+    <string name="meet_encly_moves_tasks">Tâches : %1$d</string>
+    <string name="meet_encly_moves_tags">Étiquettes : %1$d</string>
+    <string name="meet_encly_moves_categories">Listes de tâches (elles deviennent des étiquettes) : %1$d</string>
+    <string name="meet_encly_stays_title">Ce qui n\'est pas transféré</string>
+    <string name="meet_encly_stays_attachments">Pièces jointes et images : %1$d. Elles restent dans Mes notes.</string>
+    <string name="meet_encly_stays_reminders">Rappels : %1$d. Encly n\'a pas de rappels.</string>
+    <string name="meet_encly_stays_pinned">Notes épinglées : %1$d. Elles sont transférées, mais sans l\'épingle.</string>
+    <string name="meet_encly_get">Obtenir Encly</string>
+    <string name="meet_encly_update">Mettre à jour Encly</string>
+    <string name="meet_encly_needs_update">La version installée d\'Encly ne peut pas encore recevoir de notes. Mettez-la à jour vers la dernière version, puis revenez ici.</string>
+    <string name="meet_encly_untrusted">L\'application installée sous le nom d\'Encly n\'est pas la version officielle : vos notes ne lui seront pas envoyées. Installez Encly depuis Google Play, F-Droid ou GitHub.</string>
+    <string name="meet_encly_move">Transférer mes notes vers Encly</string>
+    <string name="meet_encly_result_ok">Encly a reçu vos données. Notes : %1$d, tâches : %2$d, étiquettes : %3$d. Ignorés : %4$d.</string>
+    <string name="meet_encly_result_attachments">Pièces jointes et images restées dans Mes notes : %1$d.</string>
+    <string name="meet_encly_result_cancelled">Le transfert a été annulé. Rien n\'a changé.</string>
+    <string name="meet_encly_result_untrusted">Encly n\'accepte les notes que de l\'application officielle Mes notes. Installez Mes notes depuis Google Play, F-Droid ou GitHub, puis réessayez.</string>
+    <string name="meet_encly_result_unsupported">Cette version d\'Encly ne peut pas lire les données de cette version de Mes notes. Mettez Encly à jour, puis réessayez.</string>
+    <string name="meet_encly_result_invalid">Encly n\'a pas pu lire les données. Rien n\'a été importé.</string>
+    <string name="meet_encly_result_too_large">Il y a trop de données pour un seul transfert. Rien n\'a été importé.</string>
+    <string name="meet_encly_result_failed">Encly n\'a pas pu terminer l\'importation. Rien n\'a été supprimé de Mes notes.</string>
+    <string name="meet_encly_error_prepare">Impossible de préparer vos notes pour Encly.</string>
+    <string name="meet_encly_clear_hint">Vos notes sont maintenant dans Encly. Mes notes conserve toujours sa propre copie. Vous pouvez la vider si vous n\'en avez plus besoin.</string>
+    <string name="meet_encly_clear">Vider Mes notes</string>
+    <string name="meet_encly_clear_confirm_title">Vider Mes notes ?</string>
+    <string name="meet_encly_clear_confirm_message">Cette action supprime définitivement de Mes notes toutes les notes (corbeille comprise), les tâches, les étiquettes, les listes de tâches et les fichiers joints. Si la synchronisation Google Drive est activée, ils seront aussi supprimés de la copie synchronisée. Les pièces jointes n\'ont pas été transférées vers Encly. Cette action est irréversible.</string>
+    <string name="meet_encly_clear_confirm">Tout supprimer</string>
+    <string name="meet_encly_cleared">Mes notes a été vidé.</string>
+    <string name="meet_encly_clear_failed">Impossible de vider Mes notes.</string>
+    <string name="meet_encly_dialog_text">Mes notes a un successeur : Encly, une application de notes entièrement chiffrée qui fonctionne hors ligne. Vous pouvez y transférer toutes vos notes en un seul geste.</string>
+    <string name="meet_encly_dialog_more">En savoir plus</string>
+    <string name="meet_encly_dialog_later">Plus tard</string>
 </resources>

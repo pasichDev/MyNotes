@@ -513,4 +513,43 @@
     <string name="sync_signed_out_description">Sync and Google Drive backup become available after you sign in.</string>
     <string name="sync_unavailable_title">Sync unavailable</string>
     <string name="sync_unavailable_description">Sync and Google Drive backup need Google Play services, which this device does not have.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Meet Encly</string>
+    <string name="meet_encly_drawer_subtitle">The successor of My Notes</string>
+    <string name="meet_encly_intro">Encly is the next app from the author of My Notes: a fully encrypted notes app that works offline. Your notes live in an encrypted database, the app locks with a PIN, and backups are encrypted too.</string>
+    <string name="meet_encly_one_way">Moving is one way: My Notes hands your data to Encly, and Encly never sends anything back. Nothing is deleted from My Notes; it keeps working as before.</string>
+    <string name="meet_encly_moves_title">What moves</string>
+    <string name="meet_encly_moves_notes">Notes, including the trash: %1$d</string>
+    <string name="meet_encly_moves_tasks">Tasks: %1$d</string>
+    <string name="meet_encly_moves_tags">Tags: %1$d</string>
+    <string name="meet_encly_moves_categories">Task lists (they become tags): %1$d</string>
+    <string name="meet_encly_stays_title">What does not move</string>
+    <string name="meet_encly_stays_attachments">Attachments and images: %1$d. They stay in My Notes.</string>
+    <string name="meet_encly_stays_reminders">Reminders: %1$d. Encly has no reminders.</string>
+    <string name="meet_encly_stays_pinned">Pinned notes: %1$d. They move, but without the pin.</string>
+    <string name="meet_encly_get">Get Encly</string>
+    <string name="meet_encly_update">Update Encly</string>
+    <string name="meet_encly_needs_update">The installed Encly cannot receive notes yet. Update it to the latest version, then come back here.</string>
+    <string name="meet_encly_untrusted">The installed app called Encly is not the official build, so your notes will not be sent to it. Install Encly from Google Play, F-Droid or GitHub.</string>
+    <string name="meet_encly_move">Move my notes to Encly</string>
+    <string name="meet_encly_result_ok">Encly received your data. Notes: %1$d, tasks: %2$d, tags: %3$d. Skipped: %4$d.</string>
+    <string name="meet_encly_result_attachments">Attachments and images left in My Notes: %1$d.</string>
+    <string name="meet_encly_result_cancelled">The move was cancelled. Nothing has changed.</string>
+    <string name="meet_encly_result_untrusted">Encly accepts notes only from the official My Notes app. Install My Notes from Google Play, F-Droid or GitHub and try again.</string>
+    <string name="meet_encly_result_unsupported">This Encly cannot read data from this version of My Notes. Update Encly and try again.</string>
+    <string name="meet_encly_result_invalid">Encly could not read the data. Nothing was imported.</string>
+    <string name="meet_encly_result_too_large">There is too much data to move in one go. Nothing was imported.</string>
+    <string name="meet_encly_result_failed">Encly could not finish the import. Nothing was deleted from My Notes.</string>
+    <string name="meet_encly_error_prepare">Could not prepare your notes for Encly.</string>
+    <string name="meet_encly_clear_hint">Your notes are now in Encly. My Notes still keeps its own copy. You can clear it if you no longer need it.</string>
+    <string name="meet_encly_clear">Clear My Notes</string>
+    <string name="meet_encly_clear_confirm_title">Clear My Notes?</string>
+    <string name="meet_encly_clear_confirm_message">This permanently deletes all notes (including the trash), tasks, tags, task lists and attachment files from My Notes. If Google Drive sync is on, they are deleted from the synced copy too. Attachments did not move to Encly. This cannot be undone.</string>
+    <string name="meet_encly_clear_confirm">Delete everything</string>
+    <string name="meet_encly_cleared">My Notes has been cleared.</string>
+    <string name="meet_encly_clear_failed">Could not clear My Notes.</string>
+    <string name="meet_encly_dialog_text">My Notes has a successor: Encly, a fully encrypted notes app that works offline. You can move all your notes to it in one tap.</string>
+    <string name="meet_encly_dialog_more">Learn more</string>
+    <string name="meet_encly_dialog_later">Later</string>
 </resources>

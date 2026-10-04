@@ -476,4 +476,43 @@
     <string name="help_sync_background_description">Пасля пацвярджэння першай сінхранізацыі можна ўключыць фонавую. Яна запускаецца прыблізна кожныя 6 гадзін пры наяўнасці інтэрнэту, і яе можна выключыць у любы час.</string>
     <string name="help_sync_conflicts_title">Вырашэнне канфліктаў</string>
     <string name="help_sync_conflicts_description">Калі лакальная версія і версія на Drive адрозніваюцца, для кожнага канфлікту выберыце, якую захаваць: лакальную або з Google Drive.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Знаёмцеся: Encly</string>
+    <string name="meet_encly_drawer_subtitle">Пераемнік «Мае Нататкі»</string>
+    <string name="meet_encly_intro">Encly — новая праграма ад аўтара «Мае Нататкі»: цалкам зашыфраваныя нататкі, якія працуюць афлайн. Нататкі захоўваюцца ў зашыфраванай базе даных, праграма блакуецца PIN-кодам, а рэзервовыя копіі таксама зашыфраваныя.</string>
+    <string name="meet_encly_one_way">Перанос аднабаковы: «Мае Нататкі» перадаюць вашы даныя ў Encly, а Encly нічога не адпраўляе назад. З «Мае Нататкі» нічога не выдаляецца, праграма працуе як раней.</string>
+    <string name="meet_encly_moves_title">Што пераносіцца</string>
+    <string name="meet_encly_moves_notes">Нататкі, разам з сметніцай: %1$d</string>
+    <string name="meet_encly_moves_tasks">Задачы: %1$d</string>
+    <string name="meet_encly_moves_tags">Тэгі: %1$d</string>
+    <string name="meet_encly_moves_categories">Спісы задач (стануць тэгамі): %1$d</string>
+    <string name="meet_encly_stays_title">Што не пераносіцца</string>
+    <string name="meet_encly_stays_attachments">Укладанні і выявы: %1$d. Яны застануцца ў «Мае Нататкі».</string>
+    <string name="meet_encly_stays_reminders">Напаміны: %1$d. У Encly няма напамінаў.</string>
+    <string name="meet_encly_stays_pinned">Замацаваныя нататкі: %1$d. Яны перанясуцца, але без замацавання.</string>
+    <string name="meet_encly_get">Атрымаць Encly</string>
+    <string name="meet_encly_update">Абнавіць Encly</string>
+    <string name="meet_encly_needs_update">Усталяваная версія Encly пакуль не ўмее прымаць нататкі. Абнавіце яе да апошняй версіі і вярніцеся сюды.</string>
+    <string name="meet_encly_untrusted">Усталяваная праграма з назвай Encly не з\'яўляецца афіцыйнай зборкай, таму нататкі ёй не перадаюцца. Усталюйце Encly з Google Play, F-Droid або GitHub.</string>
+    <string name="meet_encly_move">Перанесці мае нататкі ў Encly</string>
+    <string name="meet_encly_result_ok">Encly атрымаў вашы даныя. Нататак: %1$d, задач: %2$d, тэгаў: %3$d. Прапушчана: %4$d.</string>
+    <string name="meet_encly_result_attachments">Укладанняў і выяў засталося ў «Мае Нататкі»: %1$d.</string>
+    <string name="meet_encly_result_cancelled">Перанос скасаваны. Нічога не змянілася.</string>
+    <string name="meet_encly_result_untrusted">Encly прымае нататкі толькі ад афіцыйнай праграмы «Мае Нататкі». Усталюйце «Мае Нататкі» з Google Play, F-Droid або GitHub і паспрабуйце зноў.</string>
+    <string name="meet_encly_result_unsupported">Гэтая версія Encly не можа прачытаць даныя з гэтай версіі «Мае Нататкі». Абнавіце Encly і паспрабуйце зноў.</string>
+    <string name="meet_encly_result_invalid">Encly не змог прачытаць даныя. Нічога не імпартавана.</string>
+    <string name="meet_encly_result_too_large">Даных занадта шмат, каб перанесці іх за адзін раз. Нічога не імпартавана.</string>
+    <string name="meet_encly_result_failed">Encly не змог завяршыць імпарт. З «Мае Нататкі» нічога не выдалена.</string>
+    <string name="meet_encly_error_prepare">Не ўдалося падрыхтаваць нататкі для Encly.</string>
+    <string name="meet_encly_clear_hint">Вашы нататкі цяпер у Encly. «Мае Нататкі» па-ранейшаму захоўваюць уласную копію. Яе можна ачысціць, калі яна больш не патрэбна.</string>
+    <string name="meet_encly_clear">Ачысціць «Мае Нататкі»</string>
+    <string name="meet_encly_clear_confirm_title">Ачысціць «Мае Нататкі»?</string>
+    <string name="meet_encly_clear_confirm_message">Гэта назаўсёды выдаліць з «Мае Нататкі» ўсе нататкі (разам з сметніцай), задачы, тэгі, спісы задач і файлы ўкладанняў. Калі ўключана сінхранізацыя з Google Дыскам, яны будуць выдалены і з сінхранізаванай копіі. Укладанні не пераносіліся ў Encly. Гэта дзеянне нельга адмяніць.</string>
+    <string name="meet_encly_clear_confirm">Выдаліць усё</string>
+    <string name="meet_encly_cleared">«Мае Нататкі» ачышчаны.</string>
+    <string name="meet_encly_clear_failed">Не ўдалося ачысціць «Мае Нататкі».</string>
+    <string name="meet_encly_dialog_text">У «Мае Нататкі» з\'явіўся пераемнік — Encly, цалкам зашыфраваныя нататкі, якія працуюць афлайн. Усе нататкі можна перанесці ў яго адным дотыкам.</string>
+    <string name="meet_encly_dialog_more">Падрабязней</string>
+    <string name="meet_encly_dialog_later">Пазней</string>
 </resources>

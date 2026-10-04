@@ -474,4 +474,43 @@
     <string name="help_sync_background_description">Dopo aver confermato la prima sincronizzazione, puoi attivare la sincronizzazione in background. Viene eseguita circa ogni 6 ore quando il dispositivo dispone di una connessione Internet e può essere disattivata in qualsiasi momento.</string>
     <string name="help_sync_conflicts_title">Risolvi conflitti</string>
     <string name="help_sync_conflicts_description">Quando le versioni locale e Drive differiscono, scegli per ogni conflitto se mantenere la versione locale o quella di Google Drive.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Scopri Encly</string>
+    <string name="meet_encly_drawer_subtitle">Il successore di Le mie note</string>
+    <string name="meet_encly_intro">Encly è la nuova app dell\'autore di Le mie note: un\'app di note completamente cifrata che funziona offline. Le note sono salvate in un database cifrato, l\'app si blocca con un PIN e anche i backup sono cifrati.</string>
+    <string name="meet_encly_one_way">Il trasferimento è in una sola direzione: Le mie note consegna i tuoi dati a Encly, ed Encly non invia mai nulla indietro. Da Le mie note non viene eliminato nulla: l\'app continua a funzionare come prima.</string>
+    <string name="meet_encly_moves_title">Cosa viene trasferito</string>
+    <string name="meet_encly_moves_notes">Note, cestino compreso: %1$d</string>
+    <string name="meet_encly_moves_tasks">Attività: %1$d</string>
+    <string name="meet_encly_moves_tags">Tag: %1$d</string>
+    <string name="meet_encly_moves_categories">Elenchi di attività (diventano tag): %1$d</string>
+    <string name="meet_encly_stays_title">Cosa non viene trasferito</string>
+    <string name="meet_encly_stays_attachments">Allegati e immagini: %1$d. Restano in Le mie note.</string>
+    <string name="meet_encly_stays_reminders">Promemoria: %1$d. Encly non ha promemoria.</string>
+    <string name="meet_encly_stays_pinned">Note fissate: %1$d. Vengono trasferite, ma senza essere fissate.</string>
+    <string name="meet_encly_get">Scarica Encly</string>
+    <string name="meet_encly_update">Aggiorna Encly</string>
+    <string name="meet_encly_needs_update">La versione installata di Encly non può ancora ricevere note. Aggiornala all\'ultima versione e poi torna qui.</string>
+    <string name="meet_encly_untrusted">L\'app installata con il nome Encly non è la versione ufficiale, quindi le tue note non le verranno inviate. Installa Encly da Google Play, F-Droid o GitHub.</string>
+    <string name="meet_encly_move">Trasferisci le mie note su Encly</string>
+    <string name="meet_encly_result_ok">Encly ha ricevuto i tuoi dati. Note: %1$d, attività: %2$d, tag: %3$d. Saltati: %4$d.</string>
+    <string name="meet_encly_result_attachments">Allegati e immagini rimasti in Le mie note: %1$d.</string>
+    <string name="meet_encly_result_cancelled">Il trasferimento è stato annullato. Non è cambiato nulla.</string>
+    <string name="meet_encly_result_untrusted">Encly accetta note solo dall\'app ufficiale Le mie note. Installa Le mie note da Google Play, F-Droid o GitHub e riprova.</string>
+    <string name="meet_encly_result_unsupported">Questa versione di Encly non può leggere i dati di questa versione di Le mie note. Aggiorna Encly e riprova.</string>
+    <string name="meet_encly_result_invalid">Encly non è riuscito a leggere i dati. Non è stato importato nulla.</string>
+    <string name="meet_encly_result_too_large">Ci sono troppi dati da trasferire in una volta sola. Non è stato importato nulla.</string>
+    <string name="meet_encly_result_failed">Encly non è riuscito a completare l\'importazione. Da Le mie note non è stato eliminato nulla.</string>
+    <string name="meet_encly_error_prepare">Impossibile preparare le note per Encly.</string>
+    <string name="meet_encly_clear_hint">Le tue note ora sono in Encly. Le mie note conserva ancora una propria copia. Puoi svuotarla se non ti serve più.</string>
+    <string name="meet_encly_clear">Svuota Le mie note</string>
+    <string name="meet_encly_clear_confirm_title">Svuotare Le mie note?</string>
+    <string name="meet_encly_clear_confirm_message">Verranno eliminati definitivamente da Le mie note tutte le note (cestino compreso), le attività, i tag, gli elenchi di attività e i file allegati. Se la sincronizzazione con Google Drive è attiva, verranno eliminati anche dalla copia sincronizzata. Gli allegati non sono stati trasferiti su Encly. L\'operazione non può essere annullata.</string>
+    <string name="meet_encly_clear_confirm">Elimina tutto</string>
+    <string name="meet_encly_cleared">Le mie note è stata svuotata.</string>
+    <string name="meet_encly_clear_failed">Impossibile svuotare Le mie note.</string>
+    <string name="meet_encly_dialog_text">Le mie note ha un successore: Encly, un\'app di note completamente cifrata che funziona offline. Puoi trasferire tutte le tue note con un solo tocco.</string>
+    <string name="meet_encly_dialog_more">Scopri di più</string>
+    <string name="meet_encly_dialog_later">Più tardi</string>
 </resources>

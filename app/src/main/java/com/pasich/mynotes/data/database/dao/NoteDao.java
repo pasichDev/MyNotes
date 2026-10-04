@@ -26,6 +26,16 @@ public interface NoteDao {
     @Query("SELECT * FROM notes WHERE isTrash = 1")
     List<Note> getTrashNotesSync();
 
+    /** Every note, trashed ones included — the Encly hand-off sends them all. */
+    @Query("SELECT * FROM notes ORDER BY id")
+    List<Note> getAllNotesSync();
+
+    @Query("SELECT id FROM notes")
+    List<Integer> getAllNoteIdsSync();
+
+    @Query("DELETE FROM notes")
+    void deleteAllNotes();
+
     @Query("SELECT * FROM notes WHERE id = :id LIMIT 1")
     Note getNoteSync(int id);
 

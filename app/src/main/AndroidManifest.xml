@@ -29,6 +29,10 @@
         <!-- Read by PlayServicesAvailability. Without this the package table reports Play
              services as absent on API 30+, and sync would hide itself on every device. -->
         <package android:name="com.google.android.gms" />
+
+        <!-- The "Meet Encly" page checks that Encly is installed, signed by Encly's key and able
+             to receive the hand-off before any note leaves the app (pasichDev/MyNotes#167). -->
+        <package android:name="com.pasich.encly" />
     </queries>
 
     <application
@@ -54,6 +58,9 @@
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.ChangelogActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.activity.MeetEnclyActivity"
             android:exported="false" />
         <activity
             android:name=".ui.view.activity.LibsActivity"

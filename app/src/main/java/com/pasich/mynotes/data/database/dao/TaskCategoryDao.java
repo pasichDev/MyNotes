@@ -25,6 +25,9 @@ public interface TaskCategoryDao {
     @Query("SELECT * FROM task_categories ORDER BY position ASC, id ASC")
     List<TaskCategory> getCategoriesSync();
 
+    @Query("DELETE FROM task_categories")
+    void deleteAllCategories();
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertCategory(TaskCategory category);
 

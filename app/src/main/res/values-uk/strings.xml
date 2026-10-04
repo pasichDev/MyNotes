@@ -485,4 +485,43 @@
     <string name="sync_signed_out_description">Синхронізація та копія на Google Диску доступні після входу.</string>
     <string name="sync_unavailable_title">Синхронізація недоступна</string>
     <string name="sync_unavailable_description">Синхронізація та копія на Google Диску потребують сервісів Google Play, яких немає на цьому пристрої.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Знайомтеся: Encly</string>
+    <string name="meet_encly_drawer_subtitle">Наступник «Мої Нотатки»</string>
+    <string name="meet_encly_intro">Encly — новий застосунок від автора «Мої Нотатки»: повністю зашифровані нотатки, що працюють офлайн. Нотатки зберігаються в зашифрованій базі даних, застосунок блокується PIN-кодом, а резервні копії теж зашифровані.</string>
+    <string name="meet_encly_one_way">Перенесення одностороннє: «Мої Нотатки» передають ваші дані в Encly, а Encly нічого не надсилає назад. З «Мої Нотатки» нічого не видаляється, застосунок працює як і раніше.</string>
+    <string name="meet_encly_moves_title">Що переноситься</string>
+    <string name="meet_encly_moves_notes">Нотатки, разом із кошиком: %1$d</string>
+    <string name="meet_encly_moves_tasks">Завдання: %1$d</string>
+    <string name="meet_encly_moves_tags">Теги: %1$d</string>
+    <string name="meet_encly_moves_categories">Списки завдань (стануть тегами): %1$d</string>
+    <string name="meet_encly_stays_title">Що не переноситься</string>
+    <string name="meet_encly_stays_attachments">Вкладення та зображення: %1$d. Вони залишаться в «Мої Нотатки».</string>
+    <string name="meet_encly_stays_reminders">Нагадування: %1$d. В Encly немає нагадувань.</string>
+    <string name="meet_encly_stays_pinned">Закріплені нотатки: %1$d. Вони перенесуться, але без закріплення.</string>
+    <string name="meet_encly_get">Отримати Encly</string>
+    <string name="meet_encly_update">Оновити Encly</string>
+    <string name="meet_encly_needs_update">Встановлена версія Encly ще не вміє приймати нотатки. Оновіть її до останньої версії і поверніться сюди.</string>
+    <string name="meet_encly_untrusted">Встановлений застосунок з назвою Encly не є офіційною збіркою, тому нотатки йому не передаватимуться. Встановіть Encly з Google Play, F-Droid або GitHub.</string>
+    <string name="meet_encly_move">Перенести мої нотатки в Encly</string>
+    <string name="meet_encly_result_ok">Encly отримав ваші дані. Нотаток: %1$d, завдань: %2$d, тегів: %3$d. Пропущено: %4$d.</string>
+    <string name="meet_encly_result_attachments">Вкладень і зображень залишилося в «Мої Нотатки»: %1$d.</string>
+    <string name="meet_encly_result_cancelled">Перенесення скасовано. Нічого не змінилося.</string>
+    <string name="meet_encly_result_untrusted">Encly приймає нотатки лише від офіційного застосунку «Мої Нотатки». Встановіть «Мої Нотатки» з Google Play, F-Droid або GitHub і спробуйте ще раз.</string>
+    <string name="meet_encly_result_unsupported">Ця версія Encly не може прочитати дані з цієї версії «Мої Нотатки». Оновіть Encly і спробуйте ще раз.</string>
+    <string name="meet_encly_result_invalid">Encly не зміг прочитати дані. Нічого не імпортовано.</string>
+    <string name="meet_encly_result_too_large">Даних забагато, щоб перенести їх за один раз. Нічого не імпортовано.</string>
+    <string name="meet_encly_result_failed">Encly не зміг завершити імпорт. З «Мої Нотатки» нічого не видалено.</string>
+    <string name="meet_encly_error_prepare">Не вдалося підготувати нотатки для Encly.</string>
+    <string name="meet_encly_clear_hint">Ваші нотатки тепер в Encly. «Мої Нотатки» досі зберігають власну копію. Її можна очистити, якщо вона більше не потрібна.</string>
+    <string name="meet_encly_clear">Очистити «Мої Нотатки»</string>
+    <string name="meet_encly_clear_confirm_title">Очистити «Мої Нотатки»?</string>
+    <string name="meet_encly_clear_confirm_message">Це назавжди видалить з «Мої Нотатки» всі нотатки (разом із кошиком), завдання, теги, списки завдань і файли вкладень. Якщо увімкнено синхронізацію з Google Диском, їх буде видалено й із синхронізованої копії. Вкладення не переносилися в Encly. Цю дію не можна скасувати.</string>
+    <string name="meet_encly_clear_confirm">Видалити все</string>
+    <string name="meet_encly_cleared">«Мої Нотатки» очищено.</string>
+    <string name="meet_encly_clear_failed">Не вдалося очистити «Мої Нотатки».</string>
+    <string name="meet_encly_dialog_text">У «Мої Нотатки» з\'явився наступник — Encly, повністю зашифровані нотатки, що працюють офлайн. Усі нотатки можна перенести в нього одним дотиком.</string>
+    <string name="meet_encly_dialog_more">Детальніше</string>
+    <string name="meet_encly_dialog_later">Пізніше</string>
 </resources>

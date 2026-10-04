@@ -61,6 +61,18 @@ public class UpdateChecker {
         cache.setLastKnownVersion(currentVersion);
     }
 
+    /**
+     * The one-time "Meet Encly" introduction is shown on the first start of an updated version,
+     * like the changelog it precedes, and never again once seen.
+     */
+    public boolean shouldShowMeetEncly() {
+        return hasNewVersion() && !cache.isMeetEnclyShown();
+    }
+
+    public void markMeetEnclyShown() {
+        cache.setMeetEnclyShown();
+    }
+
     /** Initialize version check (should be called on the first launch) */
     public void initializeVersionCheck() {
         String lastKnownVersion = cache.getLastKnownVersion();

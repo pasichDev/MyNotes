@@ -476,4 +476,43 @@
     <string name="help_sync_background_description">Nach der Bestätigung der ersten Synchronisierung können Sie die Hintergrundsynchronisierung aktivieren. Sie läuft bei bestehender Internetverbindung etwa alle 6 Stunden und kann jederzeit deaktiviert werden.</string>
     <string name="help_sync_conflicts_title">Konflikte lösen</string>
     <string name="help_sync_conflicts_description">Wenn sich die lokale und die Drive-Version unterscheiden, wählen Sie für jeden Konflikt, ob die lokale Version oder die Version aus Google Drive behalten werden soll.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Lerne Encly kennen</string>
+    <string name="meet_encly_drawer_subtitle">Der Nachfolger von Meine Notizen</string>
+    <string name="meet_encly_intro">Encly ist die nächste App vom Entwickler von Meine Notizen: eine vollständig verschlüsselte Notiz-App, die offline funktioniert. Deine Notizen liegen in einer verschlüsselten Datenbank, die App wird mit einer PIN gesperrt, und auch Sicherungen sind verschlüsselt.</string>
+    <string name="meet_encly_one_way">Der Umzug geht nur in eine Richtung: Meine Notizen übergibt deine Daten an Encly, und Encly sendet nichts zurück. In Meine Notizen wird nichts gelöscht; die App funktioniert weiter wie bisher.</string>
+    <string name="meet_encly_moves_title">Was umzieht</string>
+    <string name="meet_encly_moves_notes">Notizen, einschließlich Papierkorb: %1$d</string>
+    <string name="meet_encly_moves_tasks">Aufgaben: %1$d</string>
+    <string name="meet_encly_moves_tags">Tags: %1$d</string>
+    <string name="meet_encly_moves_categories">Aufgabenlisten (werden zu Tags): %1$d</string>
+    <string name="meet_encly_stays_title">Was nicht umzieht</string>
+    <string name="meet_encly_stays_attachments">Anhänge und Bilder: %1$d. Sie bleiben in Meine Notizen.</string>
+    <string name="meet_encly_stays_reminders">Erinnerungen: %1$d. Encly hat keine Erinnerungen.</string>
+    <string name="meet_encly_stays_pinned">Angeheftete Notizen: %1$d. Sie ziehen um, aber ohne Anheftung.</string>
+    <string name="meet_encly_get">Encly holen</string>
+    <string name="meet_encly_update">Encly aktualisieren</string>
+    <string name="meet_encly_needs_update">Das installierte Encly kann noch keine Notizen empfangen. Aktualisiere es auf die neueste Version und komm dann hierher zurück.</string>
+    <string name="meet_encly_untrusted">Die installierte App namens Encly ist nicht die offizielle Version, daher werden deine Notizen nicht an sie gesendet. Installiere Encly über Google Play, F-Droid oder GitHub.</string>
+    <string name="meet_encly_move">Meine Notizen zu Encly umziehen</string>
+    <string name="meet_encly_result_ok">Encly hat deine Daten erhalten. Notizen: %1$d, Aufgaben: %2$d, Tags: %3$d. Übersprungen: %4$d.</string>
+    <string name="meet_encly_result_attachments">In Meine Notizen verbliebene Anhänge und Bilder: %1$d.</string>
+    <string name="meet_encly_result_cancelled">Der Umzug wurde abgebrochen. Es wurde nichts geändert.</string>
+    <string name="meet_encly_result_untrusted">Encly nimmt Notizen nur von der offiziellen App Meine Notizen an. Installiere Meine Notizen über Google Play, F-Droid oder GitHub und versuche es erneut.</string>
+    <string name="meet_encly_result_unsupported">Dieses Encly kann die Daten dieser Version von Meine Notizen nicht lesen. Aktualisiere Encly und versuche es erneut.</string>
+    <string name="meet_encly_result_invalid">Encly konnte die Daten nicht lesen. Es wurde nichts importiert.</string>
+    <string name="meet_encly_result_too_large">Es sind zu viele Daten für einen Umzug auf einmal. Es wurde nichts importiert.</string>
+    <string name="meet_encly_result_failed">Encly konnte den Import nicht abschließen. In Meine Notizen wurde nichts gelöscht.</string>
+    <string name="meet_encly_error_prepare">Deine Notizen konnten nicht für Encly vorbereitet werden.</string>
+    <string name="meet_encly_clear_hint">Deine Notizen sind jetzt in Encly. Meine Notizen behält weiterhin eine eigene Kopie. Du kannst sie leeren, wenn du sie nicht mehr brauchst.</string>
+    <string name="meet_encly_clear">Meine Notizen leeren</string>
+    <string name="meet_encly_clear_confirm_title">Meine Notizen leeren?</string>
+    <string name="meet_encly_clear_confirm_message">Damit werden alle Notizen (einschließlich Papierkorb), Aufgaben, Tags, Aufgabenlisten und Anhangsdateien dauerhaft aus Meine Notizen gelöscht. Ist die Google-Drive-Synchronisierung aktiv, werden sie auch aus der synchronisierten Kopie gelöscht. Anhänge sind nicht zu Encly umgezogen. Das kann nicht rückgängig gemacht werden.</string>
+    <string name="meet_encly_clear_confirm">Alles löschen</string>
+    <string name="meet_encly_cleared">Meine Notizen wurde geleert.</string>
+    <string name="meet_encly_clear_failed">Meine Notizen konnte nicht geleert werden.</string>
+    <string name="meet_encly_dialog_text">Meine Notizen hat einen Nachfolger: Encly, eine vollständig verschlüsselte Notiz-App, die offline funktioniert. Du kannst alle deine Notizen mit einem Tippen dorthin umziehen.</string>
+    <string name="meet_encly_dialog_more">Mehr erfahren</string>
+    <string name="meet_encly_dialog_later">Später</string>
 </resources>

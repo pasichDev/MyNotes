@@ -473,4 +473,43 @@
     <string name="help_sync_background_description">Алғашқы синхрондауды растағаннан кейін фондық синхрондауды қоса аласыз. Ол құрылғы интернетке қосылған кезде шамамен әр 6 сағат сайын орындалады және оны кез келген уақытта өшіруге болады.</string>
     <string name="help_sync_conflicts_title">Қайшылықтарды шешу</string>
     <string name="help_sync_conflicts_description">Жергілікті және Drive нұсқалары әртүрлі болса, әр қайшылық үшін жергілікті нұсқаны не Google Drive нұсқасын сақтауды таңдаңыз.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Encly-мен танысыңыз</string>
+    <string name="meet_encly_drawer_subtitle">«Менің жазбаларым» қолданбасының мұрагері</string>
+    <string name="meet_encly_intro">Encly — «Менің жазбаларым» авторының жаңа қолданбасы: офлайн жұмыс істейтін толық шифрланған жазбалар. Жазбалар шифрланған дерекқорда сақталады, қолданба PIN-кодпен құлыпталады, ал сақтық көшірмелер де шифрланған.</string>
+    <string name="meet_encly_one_way">Көшіру бір бағытта жүреді: «Менің жазбаларым» деректеріңізді Encly-ге береді, ал Encly ешнәрсені кері жібермейді. «Менің жазбаларым» қолданбасынан ештеңе жойылмайды, ол бұрынғыдай жұмыс істей береді.</string>
+    <string name="meet_encly_moves_title">Не көшіріледі</string>
+    <string name="meet_encly_moves_notes">Жазбалар, себетті қоса: %1$d</string>
+    <string name="meet_encly_moves_tasks">Тапсырмалар: %1$d</string>
+    <string name="meet_encly_moves_tags">Тегтер: %1$d</string>
+    <string name="meet_encly_moves_categories">Тапсырмалар тізімдері (тегке айналады): %1$d</string>
+    <string name="meet_encly_stays_title">Не көшірілмейді</string>
+    <string name="meet_encly_stays_attachments">Тіркемелер мен суреттер: %1$d. Олар «Менің жазбаларым» қолданбасында қалады.</string>
+    <string name="meet_encly_stays_reminders">Еске салғыштар: %1$d. Encly-де еске салғыштар жоқ.</string>
+    <string name="meet_encly_stays_pinned">Бекітілген жазбалар: %1$d. Олар көшіріледі, бірақ бекітусіз.</string>
+    <string name="meet_encly_get">Encly алу</string>
+    <string name="meet_encly_update">Encly жаңарту</string>
+    <string name="meet_encly_needs_update">Орнатылған Encly нұсқасы әзірге жазбаларды қабылдай алмайды. Оны соңғы нұсқаға дейін жаңартып, осында қайта оралыңыз.</string>
+    <string name="meet_encly_untrusted">Encly деп аталатын орнатылған қолданба ресми нұсқа емес, сондықтан жазбаларыңыз оған жіберілмейді. Encly-ді Google Play, F-Droid немесе GitHub арқылы орнатыңыз.</string>
+    <string name="meet_encly_move">Жазбаларымды Encly-ге көшіру</string>
+    <string name="meet_encly_result_ok">Encly деректеріңізді алды. Жазбалар: %1$d, тапсырмалар: %2$d, тегтер: %3$d. Өткізіліп жіберілді: %4$d.</string>
+    <string name="meet_encly_result_attachments">«Менің жазбаларым» қолданбасында қалған тіркемелер мен суреттер: %1$d.</string>
+    <string name="meet_encly_result_cancelled">Көшіру тоқтатылды. Ештеңе өзгерген жоқ.</string>
+    <string name="meet_encly_result_untrusted">Encly жазбаларды тек ресми «Менің жазбаларым» қолданбасынан қабылдайды. «Менің жазбаларым» қолданбасын Google Play, F-Droid немесе GitHub арқылы орнатып, қайталап көріңіз.</string>
+    <string name="meet_encly_result_unsupported">Бұл Encly нұсқасы «Менің жазбаларым» қолданбасының осы нұсқасының деректерін оқи алмайды. Encly-ді жаңартып, қайталап көріңіз.</string>
+    <string name="meet_encly_result_invalid">Encly деректерді оқи алмады. Ештеңе импортталған жоқ.</string>
+    <string name="meet_encly_result_too_large">Бір реттік көшіру үшін деректер тым көп. Ештеңе импортталған жоқ.</string>
+    <string name="meet_encly_result_failed">Encly импортты аяқтай алмады. «Менің жазбаларым» қолданбасынан ештеңе жойылған жоқ.</string>
+    <string name="meet_encly_error_prepare">Жазбаларды Encly үшін дайындау мүмкін болмады.</string>
+    <string name="meet_encly_clear_hint">Жазбаларыңыз енді Encly-де. «Менің жазбаларым» әлі де өз көшірмесін сақтайды. Ол қажет болмаса, оны тазалауға болады.</string>
+    <string name="meet_encly_clear">«Менің жазбаларым» тазалау</string>
+    <string name="meet_encly_clear_confirm_title">«Менің жазбаларым» тазаланбақ па?</string>
+    <string name="meet_encly_clear_confirm_message">Бұл «Менің жазбаларым» қолданбасынан барлық жазбаларды (себетті қоса), тапсырмаларды, тегтерді, тапсырмалар тізімдерін және тіркеме файлдарын біржола жояды. Google Drive синхрондауы қосулы болса, олар синхрондалған көшірмеден де жойылады. Тіркемелер Encly-ге көшірілген жоқ. Бұл әрекетті болдырмау мүмкін емес.</string>
+    <string name="meet_encly_clear_confirm">Барлығын жою</string>
+    <string name="meet_encly_cleared">«Менің жазбаларым» тазаланды.</string>
+    <string name="meet_encly_clear_failed">«Менің жазбаларым» тазалау мүмкін болмады.</string>
+    <string name="meet_encly_dialog_text">«Менің жазбаларым» қолданбасының мұрагері бар — Encly, офлайн жұмыс істейтін толық шифрланған жазбалар. Барлық жазбаларыңызды оған бір түртумен көшіруге болады.</string>
+    <string name="meet_encly_dialog_more">Толығырақ</string>
+    <string name="meet_encly_dialog_later">Кейінірек</string>
 </resources>

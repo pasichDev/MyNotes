@@ -84,6 +84,19 @@ public class AppPreferencesCache {
         }
     }
 
+    /** Whether the one-time "Meet Encly" introduction has been shown. */
+    public boolean isMeetEnclyShown() {
+        return prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_MEET_ENCLY_SHOWN, false);
+    }
+
+    public synchronized void setMeetEnclyShown() {
+        try {
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_MEET_ENCLY_SHOWN, true);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to save meet-encly flag", e);
+        }
+    }
+
     public String getSortPref() {
         ensureInitialized();
         return sortPref;
