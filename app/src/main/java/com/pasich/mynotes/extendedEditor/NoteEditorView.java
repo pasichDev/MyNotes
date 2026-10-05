@@ -307,13 +307,13 @@ public class NoteEditorView extends FrameLayout {
 
     /**
      * Focuses the page and opens the keyboard on its caret, giving the page a caret first when it
-     * has none. A request made while the screen is still opening, or before the WebView is
-     * connected to the input method, is dropped by the system; it waits for window focus and is
-     * repeated until the keyboard is up ({@link KeyboardRequest}).
+     * has none. The keyboard is asked for only once the page's editable field holds the focus, and
+     * is then connected to it afresh: asked for earlier, it can come up attached to nothing. A
+     * request made while the screen is still opening waits for window focus, and is repeated until
+     * the keyboard is up ({@link KeyboardRequest}).
      */
     public void showKeyboard() {
         if (webView == null || releasing) return;
-        if (editorInterface != null) editorInterface.focusCaret();
         keyboardRequest.start();
         handler.removeCallbacks(keyboardStep);
         continueKeyboardRequest();
@@ -323,24 +323,35 @@ public class NoteEditorView extends FrameLayout {
         if (webView == null || releasing) return;
         WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(webView);
         boolean visible = insets != null && insets.isVisible(WindowInsetsCompat.Type.ime());
-        switch (keyboardRequest.next(visible, webView.hasWindowFocus())) {
+        // The WebView reports a text editor only while an editable field of the page is focused.
+        boolean editorFocused = webView.hasFocus() && webView.onCheckIsTextEditor();
+        InputMethodManager imm =
+                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        switch (keyboardRequest.next(visible, webView.hasWindowFocus(), editorFocused)) {
             case DONE, WAIT_FOR_WINDOW_FOCUS -> {
                 // Done, or continued from onWindowFocusChanged.
             }
-            case SHOW_AND_RETRY -> {
+            case FOCUS_AND_RETRY -> {
+                // The view first, so the page is focused when it moves the focus to its field.
                 if (!webView.hasFocus()) webView.requestFocus();
-                Window window = findWindow();
-                if (window != null) {
-                    WindowCompat.getInsetsController(window, webView)
-                            .show(WindowInsetsCompat.Type.ime());
-                }
-                InputMethodManager imm =
-                        (InputMethodManager)
-                                getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
+                if (editorInterface != null) editorInterface.focusCaret();
                 handler.postDelayed(keyboardStep, KeyboardRequest.RETRY_MS);
             }
+            case CONNECT_AND_SHOW -> {
+                if (imm != null) imm.restartInput(webView);
+                askForKeyboard(imm);
+            }
+            case SHOW_AND_RETRY -> askForKeyboard(imm);
         }
+    }
+
+    private void askForKeyboard(@Nullable InputMethodManager imm) {
+        Window window = findWindow();
+        if (window != null) {
+            WindowCompat.getInsetsController(window, webView).show(WindowInsetsCompat.Type.ime());
+        }
+        if (imm != null) imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
+        handler.postDelayed(keyboardStep, KeyboardRequest.RETRY_MS);
     }
 
     @Nullable
