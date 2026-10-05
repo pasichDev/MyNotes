@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c && node copy-dist.js",
-    "dev": "rollup -c -w"
+    "dev": "rollup -c -w",
+    "test": "node --test test/*.test.mjs"
   },
   "keywords": [],
   "author": "pasichDev",

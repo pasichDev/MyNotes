@@ -414,15 +414,23 @@ function stopHistory () {
   reportHistory()
 }
 
-/** Starts the history again from the document now on screen. */
-function resetHistory () {
+/**
+ * Starts the history again from the document now on screen. Editor.js refuses to save while it is
+ * read-only, so a note shown in reading mode has no history until editing starts; setReadMode()
+ * starts it then.
+ *
+ * @param settle ignore Editor.js's late change reports for a moment, for a document it has just
+ *     rendered again.
+ */
+function resetHistory (settle) {
   stopHistory()
-  if (!editor) return
+  if (!editor || isReadMode) return
   const epoch = __hist.epoch
   readDocument()
     .then(doc => {
       if (epoch !== __hist.epoch) return
       __hist.current = historyEntry(doc, null)
+      if (settle) __hist.settleUntil = Date.now() + HISTORY_SETTLE_MS
       reportHistory()
     })
     .catch(err => console.error('[History] reset failed:', err))
@@ -977,6 +985,8 @@ function setReadMode (readOnly, caret) {
   isReadMode = readOnly
   applyTitleEditable()
   return editor.readOnly.toggle(readOnly).then(() => {
+    // Opened in reading mode, the note had no history to record edits into.
+    if (!readOnly && !__hist.current) resetHistory(true)
     restoreViewState({
       caretId: !readOnly && caret ? caret.id : null,
       caretInput: caret ? caret.input : 0,
