@@ -69,7 +69,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:maxLines="2"
                         android:text="@string/share"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -95,7 +96,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:maxLines="2"
                         android:text="@string/copyNoteEdits"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -122,7 +124,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:maxLines="2"
                         android:text="@string/translateNote"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -150,7 +153,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:maxLines="2"
                         android:text="@string/pinNote"
                         android:textSize="11sp" />
                 </LinearLayout>
