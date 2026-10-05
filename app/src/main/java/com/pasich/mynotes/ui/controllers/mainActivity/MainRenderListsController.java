@@ -141,6 +141,24 @@ public class MainRenderListsController {
         listFader.dim(true, LIST_DIM_MS, new AccelerateInterpolator(), submit);
     }
 
+    /**
+     * Readies the list for content just swapped in behind the fade: rebuilds the grid columns from
+     * scratch so the grid comes back without gaps and, when {@code toTop}, puts the first note at
+     * the top.
+     *
+     * <p>Does nothing for an empty list. Resetting the spans of a {@link
+     * StaggeredGridLayoutManager} and asking it to scroll while it has no items leaves it anchored
+     * wrong, and the next non-empty content was laid out below the screen: switching from an empty
+     * tag back to all notes showed a blank list until the app was restarted.
+     */
+    public void prepareSwappedList(int notesCount, boolean toTop) {
+        if (notesCount == 0) return;
+        if (listNotes.getLayoutManager() instanceof StaggeredGridLayoutManager grid) {
+            grid.invalidateSpanAssignments();
+        }
+        if (toTop) jumpToTop();
+    }
+
     /** Smoothly scrolls the notes list to the top. */
     public void scrollUpNoteList() {
         listNotes.post(() -> listNotes.smoothScrollToPosition(0));

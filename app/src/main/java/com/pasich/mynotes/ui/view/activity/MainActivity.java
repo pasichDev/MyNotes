@@ -655,7 +655,7 @@ public class MainActivity extends BaseActivity
         List<Note> notes = swapNotes;
         swapNotes = null;
         if (notes == null) {
-            gridLayoutManager.invalidateSpanAssignments();
+            mainRenderListsController.prepareSwappedList(mNoteAdapter.getItemCount(), false);
             mainRenderListsController.showStateNoteList(
                     currentSelectedTag, mNoteAdapter.getItemCount(), isListInteractive());
             return;
@@ -665,12 +665,10 @@ public class MainActivity extends BaseActivity
                 notes,
                 () -> {
                     // Nothing is visible here: rebuild the columns from scratch so the grid
-                    // comes back without gaps.
-                    gridLayoutManager.invalidateSpanAssignments();
-                    if (swapToTop) {
-                        swapToTop = false;
-                        mainRenderListsController.jumpToTop();
-                    }
+                    // comes back without gaps (not while empty, see prepareSwappedList).
+                    boolean toTop = swapToTop;
+                    swapToTop = false;
+                    mainRenderListsController.prepareSwappedList(notes.size(), toTop);
                     mainRenderListsController.showStateNoteList(
                             tag, notes.size(), isListInteractive());
                 });

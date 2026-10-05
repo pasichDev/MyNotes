@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
@@ -157,5 +158,37 @@ public class MainRenderListsControllerTest {
 
         assertThat(tags.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(tags.getAlpha()).isEqualTo(1f);
+    }
+
+    @Test
+    public void swappingInAnEmptyList_leavesTheGridAlone() {
+        // Resetting the spans of a StaggeredGridLayoutManager or scrolling it while it has no
+        // items left it anchored wrong on a device: the next list was laid out below the screen.
+        StaggeredGridLayoutManager grid =
+                Mockito.spy(new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL));
+        list.setLayoutManager(grid);
+        Mockito.clearInvocations(grid);
+
+        controller.prepareSwappedList(0, true);
+
+        Mockito.verify(grid, Mockito.never()).invalidateSpanAssignments();
+        Mockito.verify(grid, Mockito.never())
+                .scrollToPositionWithOffset(Mockito.anyInt(), Mockito.anyInt());
+    }
+
+    @Test
+    public void swappingInNotes_rebuildsTheColumnsAndJumpsToTheTopWhenAsked() {
+        StaggeredGridLayoutManager grid =
+                Mockito.spy(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        list.setLayoutManager(grid);
+        Mockito.clearInvocations(grid);
+
+        controller.prepareSwappedList(14, false);
+        Mockito.verify(grid).invalidateSpanAssignments();
+        Mockito.verify(grid, Mockito.never())
+                .scrollToPositionWithOffset(Mockito.anyInt(), Mockito.anyInt());
+
+        controller.prepareSwappedList(14, true);
+        Mockito.verify(grid).scrollToPositionWithOffset(0, 0);
     }
 }
