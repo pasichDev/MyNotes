@@ -165,6 +165,11 @@ public class MainRenderListsController {
         if (toTop) jumpToTop();
     }
 
+    /** Whether the first note is at the top of the list, or is about to be put there. */
+    public boolean isAtTop() {
+        return pendingJump != null || !listNotes.canScrollVertically(-1);
+    }
+
     /**
      * Puts the first note at the top, fully visible and without animation, together with the search
      * bar and tags above it.

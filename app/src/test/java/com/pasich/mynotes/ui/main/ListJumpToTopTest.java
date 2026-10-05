@@ -146,6 +146,37 @@ public class ListJumpToTopTest {
         assertTopNoteFullyVisible(0);
     }
 
+    @Test
+    public void isAtTop_followsTheScrollPosition() {
+        setUp(1);
+        assertThat(controller.isAtTop()).isTrue();
+
+        scrollDownBy(1);
+        assertThat(controller.isAtTop()).isFalse();
+    }
+
+    @Test
+    public void aJumpWaitingForLayout_countsAsAtTop() {
+        setUp(2);
+        scrollDownBy(3);
+        adapter.insertTop(100);
+        controller.jumpToTop();
+
+        assertThat(controller.isAtTop()).isTrue();
+        settle();
+        assertTopNoteFullyVisible(100);
+    }
+
+    @Test
+    public void aNoteEditedBelowAPinnedNote_jumpKeepsTheFirstNoteAtTheTop() {
+        setUp(1);
+        adapter.move(5, 1);
+        controller.jumpToTop();
+        settle();
+
+        assertTopNoteFullyVisible(0);
+    }
+
     private static final class Items extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final List<Integer> ids = new ArrayList<>();
 

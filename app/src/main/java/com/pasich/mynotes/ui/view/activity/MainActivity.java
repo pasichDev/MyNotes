@@ -175,7 +175,15 @@ public class MainActivity extends BaseActivity
             () -> {
                 settling = false;
                 applyPendingState();
+                restoreTopAfterReturn();
             };
+
+    /**
+     * The list was at its top when the screen was left. Coming back it is put at the top again,
+     * whatever the changes made meanwhile did to the scroll position.
+     */
+    private boolean returnToTop;
+
     private Tag currentSelectedTag = null;
     private List<Tag> currentTags = new ArrayList<>();
 
@@ -402,11 +410,13 @@ public class MainActivity extends BaseActivity
                                 previous, notes, gridLayoutManager.getSpanCount());
         List<Note> next = new ArrayList<>(notes);
         int count = notes.size();
+        boolean keepTop = returnToTop;
 
         if (swap) {
             swapNotes = next;
             swapTag = selectedTag;
-            swapToTop |= datasetChanged || topChanged || event == UiEvent.NOTE_CREATED;
+            swapToTop |=
+                    datasetChanged || topChanged || returnToTop || event == UiEvent.NOTE_CREATED;
             mainRenderListsController.swapListContent(animate, this::commitListSwap);
         } else {
             mNoteAdapter.submitList(
@@ -415,7 +425,7 @@ public class MainActivity extends BaseActivity
                         mainRenderListsController.showStateNoteList(selectedTag, count, animate);
                         // A new note jumps rather than scrolls: the editor opens over the list
                         // right away and a smooth scroll stopped half-way left it there.
-                        if (topChanged || event == UiEvent.NOTE_CREATED) {
+                        if (topChanged || keepTop || event == UiEvent.NOTE_CREATED) {
                             mainRenderListsController.jumpToTop();
                         }
                     });
@@ -439,14 +449,25 @@ public class MainActivity extends BaseActivity
                 settling = true;
                 settleHandler.removeCallbacks(endSettling);
                 settleHandler.postDelayed(endSettling, settleMs);
+            } else {
+                restoreTopAfterReturn();
             }
         }
+    }
+
+    private void restoreTopAfterReturn() {
+        if (!returnToTop) return;
+        returnToTop = false;
+        if (mActivityBinding.listNotes.getScrollState() == RecyclerView.SCROLL_STATE_DRAGGING)
+            return;
+        mainRenderListsController.jumpToTop();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         stopped = true;
+        returnToTop = mNoteAdapter.getItemCount() > 0 && mainRenderListsController.isAtTop();
         if (navigationController != null) navigationController.onHostStopped();
         settleHandler.removeCallbacks(endSettling);
         settling = false;
