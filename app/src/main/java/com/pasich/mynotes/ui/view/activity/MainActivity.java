@@ -795,8 +795,9 @@ public class MainActivity extends BaseActivity
         List<Note> list = mNoteAdapter.getCurrentList();
         if (position < 0 || position >= list.size()) return;
         if (direction == ItemTouchHelper.LEFT) {
+            // Selecting rebinds the card's selection state; the card itself is put back here.
             selectItemAction(list.get(position));
-            mNoteAdapter.notifyItemChanged(position);
+            NoteDragCallback.returnSwipedCard(noteTouchHelper, viewHolder);
         } else {
             Note sNote = list.get(position);
             mainPresenter.setBackupDeleteNote(sNote);

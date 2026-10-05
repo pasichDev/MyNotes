@@ -1,5 +1,8 @@
 package com.pasich.mynotes.utils.recycler;
 
+import android.animation.ValueAnimator;
+import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -181,4 +184,36 @@ public class NoteDragCallback extends SwipeToListNotesCallback {
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
         host.onSwiped(viewHolder, direction);
     }
+
+    /**
+     * Slides a card that was swiped off the screen but stays in the list (it was selected, not
+     * removed) back into its place.
+     *
+     * <p>{@link ItemTouchHelper} keeps drawing a swiped card where the swipe left it until its view
+     * is detached from the list. That used to happen when the card was rebound: the change was
+     * shown with a second copy of the card and the swiped one went away. Without change animations
+     * the same view is rebound in place, so the card stayed off the screen. Here the helper lets go
+     * of it as if it was detached, and the card is animated back.
+     */
+    public static void returnSwipedCard(
+            @NonNull ItemTouchHelper helper, @NonNull RecyclerView.ViewHolder holder) {
+        View card = holder.itemView;
+        float x = card.getTranslationX();
+        float alpha = card.getAlpha();
+        helper.onChildViewDetachedFromWindow(card);
+        // Its own animator: the list's item animator cancels the view's property animations
+        // when the card is rebound for its new selection state.
+        ValueAnimator back = ValueAnimator.ofFloat(1f, 0f);
+        back.setDuration(SWIPE_RETURN_MS);
+        back.setInterpolator(new DecelerateInterpolator());
+        back.addUpdateListener(
+                animation -> {
+                    float left = (float) animation.getAnimatedValue();
+                    card.setTranslationX(x * left);
+                    card.setAlpha(1f - (1f - alpha) * left);
+                });
+        back.start();
+    }
+
+    static final long SWIPE_RETURN_MS = 220;
 }
