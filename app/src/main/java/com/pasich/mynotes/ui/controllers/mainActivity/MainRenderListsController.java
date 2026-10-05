@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import com.google.android.material.appbar.AppBarLayout;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
@@ -54,6 +55,10 @@ public class MainRenderListsController {
     private boolean swapping;
 
     @Nullable private ViewTreeObserver.OnPreDrawListener pendingReveal;
+    @Nullable private ViewTreeObserver.OnPreDrawListener pendingJump;
+
+    /** The search bar and tags above the list; scrolled away with it, shown again at the top. */
+    @Nullable private AppBarLayout appBar;
 
     public MainRenderListsController(ActivityMainBinding binding) {
         this(
@@ -63,6 +68,7 @@ public class MainRenderListsController {
                 binding.includeEmpty.imageEmpty,
                 binding.listTags,
                 ValueAnimator::areAnimatorsEnabled);
+        this.appBar = binding.appBarMainActivity;
     }
 
     @VisibleForTesting
@@ -161,17 +167,64 @@ public class MainRenderListsController {
 
     /** Smoothly scrolls the notes list to the top. */
     public void scrollUpNoteList() {
+        if (appBar != null) appBar.setExpanded(true, true);
         listNotes.post(() -> listNotes.smoothScrollToPosition(0));
     }
 
-    /** Puts the first note at the top in the next layout pass, without animation. */
+    /**
+     * Puts the first note at the top, fully visible and without animation, together with the search
+     * bar and tags above it.
+     *
+     * <p>When the list still has adapter changes that were not laid out (the usual case: this is
+     * called from the commit callback of a new list) the scroll waits until they are. A {@link
+     * StaggeredGridLayoutManager} resolves a pending scroll against the children of the previous
+     * layout: if that layout's first child was the removed top note its position is -1 and nothing
+     * was laid out at all (an empty "All notes" after moving the top note to the trash); if the new
+     * top note was moved up from a visible card it measured the offset from where that card used to
+     * be, and the list stayed scrolled down. Once the changes are laid out the scroll is exact. The
+     * frame in between is not drawn, so the list never shows the intermediate position.
+     */
     public void jumpToTop() {
+        if (appBar != null) appBar.setExpanded(true, false);
+        if (!listNotes.hasPendingAdapterUpdates()) {
+            cancelPendingJump();
+            scrollToTopNow();
+            return;
+        }
+        if (pendingJump != null) return;
+        ViewTreeObserver.OnPreDrawListener listener =
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        // Not laid out yet (the window was not traversed): keep waiting.
+                        if (listNotes.hasPendingAdapterUpdates()) return true;
+                        removePendingJump(this);
+                        scrollToTopNow();
+                        // Skip this frame; the next one is laid out at the top.
+                        return false;
+                    }
+                };
+        pendingJump = listener;
+        listNotes.getViewTreeObserver().addOnPreDrawListener(listener);
+    }
+
+    private void scrollToTopNow() {
         RecyclerView.LayoutManager lm = listNotes.getLayoutManager();
         if (lm instanceof StaggeredGridLayoutManager grid) {
             grid.scrollToPositionWithOffset(0, 0);
         } else if (lm != null) {
             lm.scrollToPosition(0);
         }
+    }
+
+    private void cancelPendingJump() {
+        if (pendingJump != null) removePendingJump(pendingJump);
+    }
+
+    private void removePendingJump(ViewTreeObserver.OnPreDrawListener listener) {
+        ViewTreeObserver observer = listNotes.getViewTreeObserver();
+        if (observer.isAlive()) observer.removeOnPreDrawListener(listener);
+        if (pendingJump == listener) pendingJump = null;
     }
 
     /** Shows the tags row only when the user has tags of their own. */
@@ -194,6 +247,7 @@ public class MainRenderListsController {
     /** Cancels running animations and pending callbacks; call when the screen goes away. */
     public void release() {
         cancelReveal();
+        cancelPendingJump();
         listFader.cancel();
         emptyFader.cancel();
         tagsFader.cancel();

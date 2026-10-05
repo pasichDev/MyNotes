@@ -177,7 +177,7 @@ public class MainRenderListsControllerTest {
     }
 
     @Test
-    public void swappingInNotes_rebuildsTheColumnsAndJumpsToTheTopWhenAsked() {
+    public void swappingInNotes_rebuildsTheColumns() {
         StaggeredGridLayoutManager grid =
                 Mockito.spy(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         list.setLayoutManager(grid);
@@ -187,8 +187,6 @@ public class MainRenderListsControllerTest {
         Mockito.verify(grid).invalidateSpanAssignments();
         Mockito.verify(grid, Mockito.never())
                 .scrollToPositionWithOffset(Mockito.anyInt(), Mockito.anyInt());
-
-        controller.prepareSwappedList(14, true);
-        Mockito.verify(grid).scrollToPositionWithOffset(0, 0);
+        // Where the jump to the top lands is covered on real layouts by ListJumpToTopTest.
     }
 }

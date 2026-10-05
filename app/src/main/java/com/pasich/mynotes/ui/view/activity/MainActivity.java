@@ -410,9 +410,11 @@ public class MainActivity extends BaseActivity
                     next,
                     () -> {
                         mainRenderListsController.showStateNoteList(selectedTag, count, animate);
-                        if (event == UiEvent.NOTE_CREATED) {
+                        // Smooth scrolling needs a visible, laid-out list; a state applied
+                        // while the editor is in front jumps instead.
+                        if (event == UiEvent.NOTE_CREATED && animate) {
                             mainRenderListsController.scrollUpNoteList();
-                        } else if (topChanged) {
+                        } else if (topChanged || event == UiEvent.NOTE_CREATED) {
                             mainRenderListsController.jumpToTop();
                         }
                     });
