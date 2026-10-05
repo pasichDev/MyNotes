@@ -49,6 +49,12 @@
 - Nothing typed in the last moments before leaving a note is lost any more: switching apps,
   rotating the screen or opening the file picker saves it straight away. After a rotation the note
   reopens at the same place, with the cursor where it was.
+- Adding a picture in the rich editor no longer makes the note flicker or jump. The editor stays
+  responsive while the picture is saved, its place is kept at the right size from the start so
+  the text around it does not move, and the editor no longer flashes white when it opens,
+  especially in the dark theme. A picture picked while the screen was recreated (for example
+  after rotating it) is still added where you inserted it, and a picture you have just added can
+  no longer be cleaned up before the note has saved it.
 
 ## [2.6.55] - 25.09.2026
 

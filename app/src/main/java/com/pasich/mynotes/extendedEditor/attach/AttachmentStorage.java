@@ -9,8 +9,10 @@ import android.util.Log;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.utils.file.ImageOptimizer;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 
 /**
  * Utility class for managing note attachments stored in the app's internal storage. Handles
@@ -67,6 +69,41 @@ public class AttachmentStorage {
         } catch (Exception ignored) {
         }
         return -1;
+    }
+
+    /** The display name a content provider reports for {@code uri}, or null. */
+    public static String getDisplayName(Context ctx, Uri uri) {
+        try (Cursor cursor = ctx.getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (nameIndex != -1) return cursor.getString(nameIndex);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * Reads a picked file's bytes. Returns null when it cannot be read or is larger than {@link
+     * #MAX_FILE_SIZE}. Blocking: never call it on the main thread.
+     */
+    public static byte[] readUri(Context ctx, Uri uri) {
+        try (InputStream in = ctx.getContentResolver().openInputStream(uri)) {
+            if (in == null) return null;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[64 * 1024];
+            long total = 0;
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                total += read;
+                if (total > MAX_FILE_SIZE) return null;
+                out.write(buffer, 0, read);
+            }
+            return out.toByteArray();
+        } catch (Exception e) {
+            Log.e(TAG, "readUri() failed", e);
+            return null;
+        }
     }
 
     /**

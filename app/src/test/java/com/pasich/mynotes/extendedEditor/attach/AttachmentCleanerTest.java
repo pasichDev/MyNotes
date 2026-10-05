@@ -5,6 +5,9 @@ import static com.google.common.truth.Truth.assertThat;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -188,6 +191,73 @@ public class AttachmentCleanerTest {
 
         assertThat(result).isEqualTo(AttachmentCleaner.Result.CLEANED);
         assertThat(orphan.exists()).isFalse();
+    }
+
+    private static final long NOW = 1_800_000_000_000L;
+
+    @Test
+    public void freshUploadWhoseBlockIsNotSavedYetIsKept() throws Exception {
+        // The image was stored, but the block that references it has not reached the database.
+        File uploaded = write("1731000000005_123456.jpg", "just picked");
+        uploaded.setLastModified(NOW - AttachmentCleaner.GRACE_PERIOD_MS - 60_000);
+        Set<String> recent = new HashSet<>();
+        recent.add("1731000000005_123456.jpg");
+
+        AttachmentCleaner.Result result =
+                AttachmentCleaner.cleanup(attachmentsRoot, 42, json(), recent, NOW);
+
+        assertThat(result).isEqualTo(AttachmentCleaner.Result.CLEANED);
+        assertThat(uploaded.exists()).isTrue();
+    }
+
+    @Test
+    public void fileInsideTheGracePeriodIsKeptEvenWhenNotRegistered() throws Exception {
+        // The process that uploaded it died before the save: only its age protects it.
+        File young = write("1731000000006_654321.jpg", "young");
+        young.setLastModified(NOW - AttachmentCleaner.GRACE_PERIOD_MS / 2);
+
+        AttachmentCleaner.cleanup(attachmentsRoot, 42, json(), new HashSet<>(), NOW);
+
+        assertThat(young.exists()).isTrue();
+    }
+
+    @Test
+    public void orphanOlderThanTheGracePeriodIsStillDeleted() throws Exception {
+        File old = write("1731000000007_111111.jpg", "old orphan");
+        old.setLastModified(NOW - AttachmentCleaner.GRACE_PERIOD_MS - 60_000);
+
+        AttachmentCleaner.cleanup(attachmentsRoot, 42, json(), new HashSet<>(), NOW);
+
+        assertThat(old.exists()).isFalse();
+    }
+
+    @Test
+    public void uploadStopsBeingProtectedOnceASavedNoteReferencesIt() throws Exception {
+        String name = "1731000000008_222222.jpg";
+        File file = write(name, "inserted");
+        file.setLastModified(NOW - AttachmentCleaner.GRACE_PERIOD_MS - 60_000);
+        RecentAttachmentUploads.register(42, name);
+
+        AttachmentCleaner.cleanup(
+                attachmentsRoot,
+                42,
+                json("editorjs://attachments/note_42/" + name),
+                RecentAttachmentUploads.protectedNames(42),
+                NOW);
+
+        assertThat(file.exists()).isTrue();
+        assertThat(RecentAttachmentUploads.protectedNames(42)).isEmpty();
+
+        // The user deletes the block later: from then on the file is a genuine orphan.
+        AttachmentCleaner.cleanup(
+                attachmentsRoot, 42, json(), RecentAttachmentUploads.protectedNames(42), NOW);
+
+        assertThat(file.exists()).isFalse();
+    }
+
+    @After
+    public void forgetRecentUploads() {
+        RecentAttachmentUploads.clear();
     }
 
     private File write(String name, String content) throws Exception {

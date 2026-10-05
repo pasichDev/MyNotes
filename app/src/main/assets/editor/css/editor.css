@@ -18,7 +18,9 @@ body {
   margin: 0;
   padding: 16px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--surface-color, #ffffff);
+  /* Transparent until Android sends the theme: the WebView's own background, set from the
+     app theme before the page loads, shows through instead of a white flash. */
+  background-color: var(--surface-color, transparent);
   color: var(--on-surface-color, #000000);
 }
 .codex-editor {
@@ -267,3 +269,28 @@ body {
 }
 
 .ce-spacer-m { height: 25px }
+
+/* Images: the box keeps the picture's proportions from the moment it is known, so inserting or
+   loading an image never changes the height of the note under the caret. */
+.image-tool--uploading .image-tool__image {
+  background-color: var(--surface-variant-color, transparent) !important;
+  border-color: var(--outline-color, rgba(201, 201, 204, 0.48)) !important;
+  border-radius: 12px;
+}
+
+.image-tool--reserved:not(.image-tool--filled) .image-tool__image {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: var(--reserved-ratio);
+  background-color: var(--surface-variant-color, transparent);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.image-tool--uploading .image-tool__image-preloader {
+  background-color: var(--surface-color, transparent);
+  --bg-color: var(--surface-variant-color, #cdd1e0);
+  --front-color: var(--primary-color, #388ae5);
+}

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Keeps a note's attachment folder consistent with its attachments JSON.
@@ -33,6 +34,13 @@ public class AttachmentCleaner {
 
     private static final String TAG = "AttachmentCleaner";
     private static final Gson gson = new Gson();
+
+    /**
+     * Files younger than this are never treated as orphans. A just-uploaded file is referenced only
+     * by a block that has not been saved yet; {@link RecentAttachmentUploads} covers that within
+     * this process, and the age rule covers a process that died before the save.
+     */
+    public static final long GRACE_PERIOD_MS = TimeUnit.MINUTES.toMillis(10);
 
     /** Outcome of one cleanup pass; {@code ABORTED_*} guarantees nothing was deleted. */
     public enum Result {
@@ -69,7 +77,9 @@ public class AttachmentCleaner {
         return cleanup(
                 new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR),
                 note.getId(),
-                note.getAttachments());
+                note.getAttachments(),
+                RecentAttachmentUploads.protectedNames(note.getId()),
+                System.currentTimeMillis());
     }
 
     /**
@@ -82,6 +92,23 @@ public class AttachmentCleaner {
     @NonNull
     static Result cleanup(
             @NonNull File attachmentsRoot, int noteId, @Nullable String attachmentsJson) {
+        return cleanup(attachmentsRoot, noteId, attachmentsJson, new HashSet<>(), Long.MIN_VALUE);
+    }
+
+    /**
+     * As {@link #cleanup(File, int, String)}, but never deletes a file in {@code recentUploads} or
+     * one modified within {@link #GRACE_PERIOD_MS} before {@code nowMillis}.
+     *
+     * @param recentUploads names uploaded in this process whose block may not be saved yet.
+     * @param nowMillis the current time; {@link Long#MIN_VALUE} disables the age rule.
+     */
+    @NonNull
+    static Result cleanup(
+            @NonNull File attachmentsRoot,
+            int noteId,
+            @Nullable String attachmentsJson,
+            @NonNull Set<String> recentUploads,
+            long nowMillis) {
         List<EditorAttachment> referenced;
         try {
             Type type = new TypeToken<List<EditorAttachment>>() {}.getType();
@@ -123,12 +150,26 @@ public class AttachmentCleaner {
             return Result.ABORTED_UNRESOLVED_REFERENCE;
         }
 
+        RecentAttachmentUploads.settle(noteId, expected);
         for (File candidate : actualFiles) {
             if (!candidate.isFile() || expected.contains(candidate.getName())) continue;
+            if (recentUploads.contains(candidate.getName())) {
+                d("Kept recent upload: " + candidate.getName());
+                continue;
+            }
+            if (isWithinGracePeriod(candidate, nowMillis)) {
+                d("Kept file inside the grace period: " + candidate.getName());
+                continue;
+            }
             boolean deleted = candidate.delete();
             w("Orphan deleted: " + candidate.getName() + " -> " + deleted);
         }
         return Result.CLEANED;
+    }
+
+    private static boolean isWithinGracePeriod(File file, long nowMillis) {
+        if (nowMillis == Long.MIN_VALUE) return false;
+        return file.lastModified() > nowMillis - GRACE_PERIOD_MS;
     }
 
     public static void deleteAttachmentFolderByNoteId(Context ctx, long noteId) {

@@ -54,6 +54,8 @@ public class NoteExtendedEditorActivity
     private static final String STATE_ANCHOR_OFFSET = "extended.anchorOffset";
     private static final String STATE_DRAFT_TITLE = "extended.draftTitle";
     private static final String STATE_DRAFT_JSON = "extended.draftJson";
+    private static final String STATE_CHOOSER_KIND = "extended.chooserKind";
+    private static final String STATE_CHOOSER_INDEX = "extended.chooserIndex";
 
     /**
      * Largest unsaved document kept in the saved state. The draft only matters while a save is in
@@ -79,6 +81,12 @@ public class NoteExtendedEditorActivity
             draftJson = savedInstanceState.getString(STATE_DRAFT_JSON);
         }
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null && binding != null) {
+            // A picker opened by the previous instance answers this one.
+            binding.noteEditor.restoreChooserState(
+                    savedInstanceState.getString(STATE_CHOOSER_KIND),
+                    savedInstanceState.getInt(STATE_CHOOSER_INDEX, -1));
+        }
     }
 
     @Override
@@ -87,6 +95,10 @@ public class NoteExtendedEditorActivity
         if (binding == null) return;
         outState.putInt(STATE_ANCHOR_INDEX, binding.noteEditor.getAnchorIndex());
         outState.putInt(STATE_ANCHOR_OFFSET, binding.noteEditor.getAnchorOffset());
+        if (binding.noteEditor.getChooserKind() != null) {
+            outState.putString(STATE_CHOOSER_KIND, binding.noteEditor.getChooserKind());
+            outState.putInt(STATE_CHOOSER_INDEX, binding.noteEditor.getChooserBlockIndex());
+        }
         if (notePresenter != null && notePresenter.hasUnsavedChanges()) {
             Note note = notePresenter.getNote();
             String json = note.getValueJson();
@@ -168,6 +180,11 @@ public class NoteExtendedEditorActivity
                                                         blockIndex, offsetPx);
                                             }
                                         });
+                            }
+
+                            @Override
+                            public void onNoteRendered() {
+                                if (binding != null) binding.noteEditor.onNoteRenderedFromBridge();
                             }
 
                             @Override

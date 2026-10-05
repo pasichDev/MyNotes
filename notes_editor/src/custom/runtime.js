@@ -183,6 +183,7 @@ function loadNote (note) {
   editor.render({ blocks }).then(() => {
     __lastSavedJson = JSON.stringify(blocks)
     restoreViewportAnchor(note.anchor)
+    safeAndroidCall('onNoteRendered')
   })
 }
 
@@ -199,41 +200,112 @@ function fileToBase64 (file) {
 }
 
 /**
+ * Uploads run on Android's side, off the JS thread. Each request gets an id; Android answers
+ * through window.__onUploadFinished(id, result) once the file is stored. A synchronous bridge
+ * call carrying the whole file used to block the page for the length of the save, which froze
+ * the editor and made it jump when it caught up.
+ */
+const __pendingUploads = new Map()
+let __uploadSeq = 0
+
+function requestUpload (kind, file) {
+  return new Promise(resolve => {
+    const id = `u${Date.now()}_${++__uploadSeq}`
+    __pendingUploads.set(id, resolve)
+
+    // A file from the system picker: Android already holds its content URI and reads it itself.
+    const started = safeAndroidCall(
+      'requestPickedUpload',
+      id,
+      kind,
+      file.name || '',
+      file.size || 0
+    )
+    if (started === true) return
+
+    // Pasted or dropped: hand the bytes over; Android stores them in the background.
+    fileToBase64(file)
+      .then(base64 => {
+        const accepted = safeAndroidCall(
+          'uploadBase64Async',
+          id,
+          kind,
+          base64,
+          file.name || 'file'
+        )
+        if (accepted !== true) finishUpload(id, null)
+      })
+      .catch(() => finishUpload(id, null))
+  })
+}
+
+function finishUpload (id, result) {
+  const resolve = __pendingUploads.get(id)
+  if (!resolve) return
+  __pendingUploads.delete(id)
+  resolve(result)
+}
+
+window.__onUploadFinished = finishUpload
+
+/**
  * Upload attachment via Android and return Editor.js result.
  */
 async function uploadAttachment (file) {
-  const base64 = await fileToBase64(file)
-  const url = safeAndroidCall('uploadFile', base64, file.name)
-
+  const result = await requestUpload('file', file)
+  if (!result || !result.success || !result.file) {
+    return { success: 0, file: null }
+  }
   return {
-    success: url ? 1 : 0,
-    file: url
-      ? {
-          url,
-          name: file.name,
-          size: file.size,
-          extension: file.name.split('.').pop()
-        }
-      : null
+    success: 1,
+    file: {
+      url: result.file.url,
+      name: file.name,
+      size: file.size,
+      extension: file.name.split('.').pop()
+    }
   }
 }
 
 /**
- * Upload image via Android and return ImageTool format.
+ * Upload image via Android and return ImageTool format. The stored image's size travels with
+ * the block, so its space is reserved before it has loaded, now and every time the note opens.
  */
 async function uploadImage (file) {
-  const base64 = await fileToBase64(file)
-  const respJson = safeAndroidCall('uploadImage', base64, file.name)
-
-  if (!respJson) {
+  const result = await requestUpload('image', file)
+  if (!result || !result.success || !result.file) {
     return { success: 0 }
   }
+  return { success: 1, file: result.file }
+}
 
-  try {
-    return JSON.parse(respJson)
-  } catch (e) {
-    console.error('[ImageUpload] Invalid JSON:', respJson)
-    return { success: 0 }
+/**
+ * Index of the block holding the caret, so a picked file can be put back in the same place if
+ * the screen is recreated while the picker is open.
+ */
+function currentBlockIndex () {
+  if (!editor) return -1
+  return editor.blocks.getCurrentBlockIndex()
+}
+
+/**
+ * Inserts a block for a file Android stored after the page was recreated (the picker answered
+ * a page that no longer exists).
+ */
+function insertUploadedBlockFromAndroid (kind, file, index) {
+  if (!editor || !file || !file.url) return
+  const count = editor.blocks.getBlocksCount()
+  const at = index >= 0 && index <= count ? index : count
+  if (kind === 'image') {
+    editor.blocks.insert('image', { file }, undefined, at, false)
+  } else {
+    editor.blocks.insert(
+      'attaches',
+      { file, title: file.name || '' },
+      undefined,
+      at,
+      false
+    )
   }
 }
 
@@ -293,6 +365,8 @@ window.loadNote = loadNote
 window.uploadAttachment = uploadAttachment
 window.toggleReadModeFromAndroid = toggleReadModeFromAndroid
 window.saveContent = saveContent
+window.currentBlockIndex = currentBlockIndex
+window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid
 window.flushContent = flushContent
 // expose globally
 window.uploadImage = uploadImage

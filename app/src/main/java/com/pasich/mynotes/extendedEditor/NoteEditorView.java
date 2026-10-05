@@ -18,12 +18,16 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 import androidx.core.view.ViewCompat;
+import com.google.android.material.color.MaterialColors;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
+import com.pasich.mynotes.extendedEditor.models.PickedFile;
 import com.pasich.mynotes.extendedEditor.utils.EditorAttachmentsWebViewClient;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class NoteEditorView extends FrameLayout {
@@ -46,6 +50,15 @@ public class NoteEditorView extends FrameLayout {
     private OnFileChooserListener fileChooserListener;
     private OnContextDialogListener onContextDialogListener;
     private ValueCallback<Uri[]> fileCallback;
+    // What the open picker was asked for and where its block goes. Kept in the activity's saved
+    // state, so a result that comes back to a recreated screen still lands in the right place.
+    private String chooserKind;
+    private int chooserBlockIndex = -1;
+    // Files picked for a page that no longer exists, inserted once the note is rendered again.
+    private final List<PickedFile> orphanedPicks = new ArrayList<>();
+    private String orphanedKind;
+    private int orphanedIndex = -1;
+    private boolean noteRendered = false;
 
     public NoteEditorView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -108,6 +121,12 @@ public class NoteEditorView extends FrameLayout {
 
         webView.setLayerType(View.LAYER_TYPE_NONE, null);
 
+        // The page is transparent until the theme reaches it; paint the theme's surface from the
+        // first frame so the editor never flashes white, least of all in the dark theme.
+        webView.setBackgroundColor(
+                MaterialColors.getColor(
+                        webView, com.google.android.material.R.attr.colorSurfaceContainerLow));
+
         webView.setVerticalScrollBarEnabled(false);
         webView.setHorizontalScrollBarEnabled(false);
         webView.setWebViewClient(new EditorAttachmentsWebViewClient(getContext()));
@@ -118,21 +137,28 @@ public class NoteEditorView extends FrameLayout {
                             WebView webView,
                             ValueCallback<Uri[]> filePathCallback,
                             FileChooserParams fileChooserParams) {
-                        fileCallback = filePathCallback;
+                        if (fileChooserListener == null) return false;
                         Intent intent;
                         try {
                             intent = fileChooserParams.createIntent();
                         } catch (Exception e) {
-                            fileCallback = null;
                             return false;
                         }
-
-                        if (fileChooserListener != null) {
-                            fileChooserListener.onOpenFileChooser(intent, FILE_CHOOSER_REQUEST);
-                            return true;
-                        }
-
-                        return false;
+                        fileCallback = filePathCallback;
+                        chooserKind = kindFor(fileChooserParams.getAcceptTypes());
+                        chooserBlockIndex = -1;
+                        // Remember which block asked before the picker covers the screen, then
+                        // open it.
+                        webView.evaluateJavascript(
+                                "window.currentBlockIndex ? currentBlockIndex() : -1",
+                                value -> {
+                                    chooserBlockIndex = parseIndex(value);
+                                    if (fileChooserListener != null) {
+                                        fileChooserListener.onOpenFileChooser(
+                                                intent, FILE_CHOOSER_REQUEST);
+                                    }
+                                });
+                        return true;
                     }
                 });
 
@@ -149,6 +175,23 @@ public class NoteEditorView extends FrameLayout {
 
     public WebView getWebView() {
         return webView;
+    }
+
+    private static String kindFor(String[] acceptTypes) {
+        if (acceptTypes != null) {
+            for (String type : acceptTypes) {
+                if (type != null && type.startsWith("image/")) return EditorJSInterface.KIND_IMAGE;
+            }
+        }
+        return EditorJSInterface.KIND_FILE;
+    }
+
+    private static int parseIndex(String value) {
+        try {
+            return value == null ? -1 : (int) Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     public void onEditorReadyFromBridge() {
@@ -261,9 +304,11 @@ public class NoteEditorView extends FrameLayout {
      * before passing the file to JS.
      */
     public void onFileChooserResult(int resultCode, Intent data) {
-        if (fileCallback == null) return;
-
         Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+        String kind = chooserKind;
+        int index = chooserBlockIndex;
+        chooserKind = null;
+        chooserBlockIndex = -1;
 
         if (result != null && result.length > 0) {
 
@@ -274,14 +319,81 @@ public class NoteEditorView extends FrameLayout {
 
             if (!validation.ok) {
                 Toast.makeText(getContext(), validation.error, Toast.LENGTH_SHORT).show();
-                fileCallback.onReceiveValue(null);
-                fileCallback = null;
-                return;
+                result = null;
             }
         }
 
+        List<PickedFile> picked = new ArrayList<>();
+        if (result != null) {
+            for (Uri uri : result) {
+                picked.add(
+                        new PickedFile(
+                                uri,
+                                AttachmentStorage.getDisplayName(getContext(), uri),
+                                AttachmentStorage.getFileSize(getContext(), uri)));
+            }
+        }
+
+        if (fileCallback == null) {
+            // The screen was recreated while the picker was open: the page that asked is gone.
+            // Store the file and put its block back where the old page had it.
+            if (!picked.isEmpty() && kind != null) {
+                orphanedPicks.clear();
+                orphanedPicks.addAll(picked);
+                orphanedKind = kind;
+                orphanedIndex = index;
+                insertOrphanedPicks();
+            }
+            return;
+        }
+
+        if (editorInterface != null) editorInterface.offerPickedFiles(picked);
         fileCallback.onReceiveValue(result);
         fileCallback = null;
+    }
+
+    /** Called when the page has rendered a note; picks waiting for it are inserted now. */
+    public void onNoteRenderedFromBridge() {
+        handler.post(
+                () -> {
+                    noteRendered = true;
+                    insertOrphanedPicks();
+                });
+    }
+
+    private void insertOrphanedPicks() {
+        if (!noteRendered || editorInterface == null || orphanedPicks.isEmpty()) return;
+        String kind = orphanedKind;
+        int index = orphanedIndex;
+        for (PickedFile file : orphanedPicks) {
+            editorInterface.uploadAndInsert(
+                    kind,
+                    file,
+                    index,
+                    () ->
+                            Toast.makeText(
+                                            getContext(),
+                                            R.string.attachment_save_failed,
+                                            Toast.LENGTH_SHORT)
+                                    .show());
+            if (index >= 0) index++;
+        }
+        orphanedPicks.clear();
+    }
+
+    /** The open picker's kind, to keep in the saved state; null when no picker is open. */
+    public String getChooserKind() {
+        return chooserKind;
+    }
+
+    public int getChooserBlockIndex() {
+        return chooserBlockIndex;
+    }
+
+    /** Restores what a picker opened by the previous instance was asked for. */
+    public void restoreChooserState(String kind, int blockIndex) {
+        chooserKind = kind;
+        chooserBlockIndex = blockIndex;
     }
 
     @Override
@@ -326,6 +438,7 @@ public class NoteEditorView extends FrameLayout {
             Log.e(TAG, "Error while destroying WebView", t);
         }
 
+        if (editorInterface != null) editorInterface.release();
         editorInterface = null;
 
         if (handler != null) {
