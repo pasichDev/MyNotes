@@ -350,8 +350,17 @@ public class SyncServiceTest {
         syncing.start();
         assertThat(backend.readStarted.await(5, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
 
+        java.util.concurrent.atomic.AtomicBoolean syncAppliedBeforeClear =
+                new java.util.concurrent.atomic.AtomicBoolean();
         Thread clearing =
-                new Thread(() -> SyncService.runWhileNoSyncRuns(() -> order.add("cleared")));
+                new Thread(
+                        () ->
+                                SyncService.runWhileNoSyncRuns(
+                                        () -> {
+                                            syncAppliedBeforeClear.set(
+                                                    store.appliedSnapshot != null);
+                                            order.add("cleared");
+                                        }));
         clearing.start();
         Thread.sleep(200L);
 
@@ -360,7 +369,10 @@ public class SyncServiceTest {
         backend.readReleased.countDown();
         syncing.join(5_000L);
         clearing.join(5_000L);
-        assertThat(order).containsExactly("sync finished", "cleared").inOrder();
+        // "sync finished" is recorded after the sync lets go of the lock, so it may land on either
+        // side of "cleared"; what matters is that the wipe ran only once the sync had applied.
+        assertThat(order).containsExactly("sync finished", "cleared");
+        assertThat(syncAppliedBeforeClear.get()).isTrue();
         assertThat(store.appliedSnapshot).isNotNull();
     }
 
