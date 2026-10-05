@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.pasich.mynotes.base.dialog.BaseDialogBottomSheets;
 import com.pasich.mynotes.data.database.entities.NoteVersionEntity;
@@ -23,7 +24,8 @@ import com.pasich.mynotes.ui.sync.SyncConflictPresentation;
  * in both, and the way to restore it.
  *
  * <p>The sheet holds no data of its own: the host activity has the versions and the current note,
- * so the sheet survives recreation and closes itself if its version has gone.
+ * so the sheet survives recreation. A recreated host loads them again; the sheet waits for that
+ * ({@link #onHostDataChanged}) and closes itself only if its version has gone.
  */
 public class NoteVersionSheet extends BaseDialogBottomSheets {
 
@@ -45,7 +47,30 @@ public class NoteVersionSheet extends BaseDialogBottomSheets {
         NoteVersionEntity findVersion(long versionId);
 
         void onRestoreRequested(long versionId);
+
+        /** Whether the note and its versions have been loaded. */
+        boolean isHistoryLoaded();
     }
+
+    /** What the sheet does with what its host has. */
+    @VisibleForTesting
+    enum Show {
+        /** Show the version. */
+        BIND,
+        /** The host is still loading (it was recreated): wait for it. */
+        WAIT,
+        /** The note or the version is gone: close. */
+        CLOSE
+    }
+
+    @VisibleForTesting
+    static Show decide(
+            boolean loaded, @Nullable Note current, @Nullable NoteVersionEntity version) {
+        if (current != null && version != null) return Show.BIND;
+        return loaded ? Show.CLOSE : Show.WAIT;
+    }
+
+    private boolean bound;
 
     @Nullable private Host host;
     private SheetNoteVersionBinding binding;
@@ -86,14 +111,26 @@ public class NoteVersionSheet extends BaseDialogBottomSheets {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Note current = host == null ? null : host.currentNote();
-        NoteVersionEntity version = host == null ? null : host.findVersion(versionId);
-        if (current == null || version == null) {
-            dismissAllowingStateLoss();
-            return;
-        }
-        bind(current, version);
         initListeners();
+        onHostDataChanged();
+    }
+
+    /** The host has loaded, or reloaded, the note or its versions. */
+    public void onHostDataChanged() {
+        if (binding == null || host == null) return;
+        Note current = host.currentNote();
+        NoteVersionEntity version = host.findVersion(versionId);
+        switch (decide(host.isHistoryLoaded(), current, version)) {
+            case BIND -> {
+                bind(current, version);
+                bound = true;
+            }
+            case CLOSE -> dismissAllowingStateLoss();
+            case WAIT -> {
+                // Shown again once the host has its data.
+            }
+        }
+        binding.versionSheetRestore.setEnabled(bound && binding.versionSheetRestore.isEnabled());
     }
 
     private void bind(@NonNull Note current, @NonNull NoteVersionEntity version) {

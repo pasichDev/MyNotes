@@ -9,7 +9,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.ConcatAdapter;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -19,6 +18,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteHistoryBinding;
 import com.pasich.mynotes.ui.history.NoteVersionAdapter;
 import com.pasich.mynotes.ui.view.dialogs.NoteVersionSheet;
+import com.pasich.mynotes.ui.view.dialogs.RestoreVersionDialog;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -36,7 +36,8 @@ import javax.inject.Inject;
  * then reloads the note, or the notes list — can confirm it.
  */
 @AndroidEntryPoint
-public class NoteHistoryActivity extends BaseActivity implements NoteVersionSheet.Host {
+public class NoteHistoryActivity extends BaseActivity
+        implements NoteVersionSheet.Host, RestoreVersionDialog.Host {
 
     private static final String TAG = "NoteHistoryActivity";
     private static final String EXTRA_NOTE_ID = "noteId";
@@ -50,6 +51,8 @@ public class NoteHistoryActivity extends BaseActivity implements NoteVersionShee
     @Nullable private Note current;
     @NonNull private List<NoteVersionEntity> versions = new ArrayList<>();
     private boolean restoring;
+    private boolean noteLoaded;
+    private boolean versionsLoaded;
 
     @NonNull
     public static Intent intent(@NonNull Context context, int noteId) {
@@ -92,8 +95,10 @@ public class NoteHistoryActivity extends BaseActivity implements NoteVersionShee
                                         return;
                                     }
                                     current = note;
+                                    noteLoaded = true;
                                     String title = note.getTitle().trim();
                                     binding.toolbar.setSubtitle(title.isEmpty() ? null : title);
+                                    notifyOpenSheet();
                                 },
                                 error -> Log.e(TAG, "loading the note failed", error)));
     }
@@ -107,7 +112,9 @@ public class NoteHistoryActivity extends BaseActivity implements NoteVersionShee
                         .subscribe(
                                 list -> {
                                     versions = list;
+                                    versionsLoaded = true;
                                     adapter.submitList(list);
+                                    notifyOpenSheet();
                                     boolean empty = list.isEmpty();
                                     binding.versionList.setVisibility(
                                             empty ? View.GONE : View.VISIBLE);
@@ -122,6 +129,19 @@ public class NoteHistoryActivity extends BaseActivity implements NoteVersionShee
         if (getSupportFragmentManager().findFragmentByTag(NoteVersionSheet.TAG) != null) return;
         NoteVersionSheet.newInstance(version.id)
                 .show(getSupportFragmentManager(), NoteVersionSheet.TAG);
+    }
+
+    /** A preview kept open through a recreation shows its version once the data is back. */
+    private void notifyOpenSheet() {
+        if (getSupportFragmentManager().findFragmentByTag(NoteVersionSheet.TAG)
+                instanceof NoteVersionSheet sheet) {
+            sheet.onHostDataChanged();
+        }
+    }
+
+    @Override
+    public boolean isHistoryLoaded() {
+        return noteLoaded && versionsLoaded;
     }
 
     @Nullable
@@ -141,13 +161,14 @@ public class NoteHistoryActivity extends BaseActivity implements NoteVersionShee
 
     @Override
     public void onRestoreRequested(long versionId) {
-        new MaterialAlertDialogBuilder(this)
-                .setIcon(R.drawable.ic_history)
-                .setTitle(R.string.version_restore_title)
-                .setMessage(R.string.version_restore_message)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.version_restore, (dialog, which) -> restore(versionId))
-                .show();
+        if (getSupportFragmentManager().findFragmentByTag(RestoreVersionDialog.TAG) != null) return;
+        RestoreVersionDialog.newInstance(versionId)
+                .show(getSupportFragmentManager(), RestoreVersionDialog.TAG);
+    }
+
+    @Override
+    public void onRestoreConfirmed(long versionId) {
+        restore(versionId);
     }
 
     private void restore(long versionId) {
