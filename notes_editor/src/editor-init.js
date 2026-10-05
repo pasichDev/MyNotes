@@ -32,11 +32,15 @@ window.SpacerTool = SpacerTool
 
 
 
+    // Android turns autofocus off when it is about to put the caret back where the note was
+    // left; the first block would otherwise take focus and the keyboard first.
+    const params = new URLSearchParams(global.location.search)
+
     const editor = new EditorJS({
       holder: 'editorjs',
       i18n,
       placeholder: i18n.placeholder,
-      autofocus: true,
+      autofocus: params.get('autofocus') !== '0',
       readOnly: false,
 
       tools: {

@@ -5,6 +5,7 @@ import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
 import com.pasich.mynotes.data.sync.SyncMutationCoordinator;
+import com.pasich.mynotes.utils.editor.NoteViewStateStore;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -20,11 +21,16 @@ public class AppDbHelper implements DbHelper {
 
     private final AppDatabase appDatabase;
     private final SyncMutationCoordinator syncMutationCoordinator;
+    private final NoteViewStateStore noteViewStateStore;
 
     @Inject
-    AppDbHelper(AppDatabase appDatabase, SyncMutationCoordinator syncMutationCoordinator) {
+    AppDbHelper(
+            AppDatabase appDatabase,
+            SyncMutationCoordinator syncMutationCoordinator,
+            NoteViewStateStore noteViewStateStore) {
         this.appDatabase = appDatabase;
         this.syncMutationCoordinator = syncMutationCoordinator;
+        this.noteViewStateStore = noteViewStateStore;
     }
 
     @Override
@@ -107,7 +113,8 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable clearTrash() {
-        return Completable.fromAction(syncMutationCoordinator::deleteAllTrashNotes);
+        return Completable.fromAction(
+                () -> noteViewStateStore.removeAll(syncMutationCoordinator.deleteAllTrashNotes()));
     }
 
     @Override
@@ -172,12 +179,21 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable deleteNote(Note note) {
-        return Completable.fromAction(() -> syncMutationCoordinator.deleteNote(note));
+        return Completable.fromAction(
+                () -> {
+                    syncMutationCoordinator.deleteNote(note);
+                    noteViewStateStore.remove(note.getId());
+                });
     }
 
     @Override
     public Completable deleteNote(ArrayList<Note> notes) {
-        return Completable.fromAction(() -> syncMutationCoordinator.deleteNotes(notes));
+        return Completable.fromAction(
+                () -> {
+                    syncMutationCoordinator.deleteNotes(notes);
+                    if (notes == null) return;
+                    for (Note note : notes) noteViewStateStore.remove(note.getId());
+                });
     }
 
     @Override

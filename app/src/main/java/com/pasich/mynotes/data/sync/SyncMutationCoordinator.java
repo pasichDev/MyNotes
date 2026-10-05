@@ -464,15 +464,20 @@ public class SyncMutationCoordinator {
                 });
     }
 
-    public void deleteAllTrashNotes() {
-        transactionExecutor.run(
+    /**
+     * Deletes every note in the trash.
+     *
+     * @return the ids of the deleted notes.
+     */
+    public List<Integer> deleteAllTrashNotes() {
+        return transactionExecutor.run(
                 () -> {
                     List<Integer> trashNoteIds = noteDao.getTrashNoteIdsSync();
-                    if (trashNoteIds.isEmpty()) return null;
+                    if (trashNoteIds.isEmpty()) return Collections.<Integer>emptyList();
                     long timestamp = timeProvider.now();
                     noteDao.deleteAllTrashNotes();
                     markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, trashNoteIds, timestamp);
-                    return null;
+                    return trashNoteIds;
                 });
     }
 

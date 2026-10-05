@@ -28,7 +28,11 @@ import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.utils.editor.EditableLinkMovementMethod;
 import com.pasich.mynotes.utils.editor.EditorCursor;
+import com.pasich.mynotes.utils.editor.NoteViewState;
+import com.pasich.mynotes.utils.editor.NoteViewStateStore;
+import com.pasich.mynotes.utils.editor.PositionRestorer;
 import dagger.hilt.android.AndroidEntryPoint;
+import javax.inject.Inject;
 
 /** Activity for creating and editing a single note. */
 @AndroidEntryPoint
@@ -74,9 +78,23 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     private String draftTitle;
     private String draftValue;
 
+    @Inject NoteViewStateStore noteViewStateStore;
+
+    // A fresh open (not a recreation) goes back to where the note was left.
+    private boolean restoreSavedPosition = false;
+    // Set while a saved position waits for the first layout; nothing is saved meanwhile, so
+    // leaving at once cannot replace the saved position with the top of the note.
+    private boolean savedPositionPending = false;
+    // The note's text is on screen; before that there is no position worth saving.
+    private boolean noteShown = false;
+    // Caret from the last visit, used when editing starts while it is still on screen.
+    private int savedSelectionStart = EditorCursor.NONE;
+    private int savedSelectionEnd = EditorCursor.NONE;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         readRestoredState(savedInstanceState);
+        restoreSavedPosition = savedInstanceState == null;
         super.onCreate(savedInstanceState);
     }
 
@@ -111,7 +129,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
     @Override
     protected void onNewNoteInit(Note note) {
-        // Simple version
+        noteShown = true;
     }
 
     @Override
@@ -345,15 +363,70 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
     /** Scrolls so the line holding {@code offset} sits at the top, once the text is laid out. */
     private void scrollToOffsetWhenLaidOut(int offset) {
+        scrollToOffsetWhenLaidOut(offset, null);
+    }
+
+    private void scrollToOffsetWhenLaidOut(int offset, @Nullable Runnable then) {
         OneShotPreDrawListener.add(
                 binding.valueNote,
                 () -> {
                     Layout layout = binding.valueNote.getLayout();
-                    if (layout == null) return;
-                    int clamped = EditorCursor.clamp(offset, binding.valueNote.length());
-                    int line = layout.getLineForOffset(clamped);
-                    binding.scrollView.scrollTo(0, valueTextTop() + layout.getLineTop(line));
+                    if (layout != null) {
+                        int clamped = EditorCursor.clamp(offset, binding.valueNote.length());
+                        int line = layout.getLineForOffset(clamped);
+                        binding.scrollView.scrollTo(0, valueTextTop() + layout.getLineTop(line));
+                    }
+                    if (then != null) then.run();
                 });
+    }
+
+    /**
+     * Brings back where the note was left on this device: the line at the top of the screen, and
+     * the caret for when editing starts. The text may have changed since; {@link PositionRestorer}
+     * finds the position again or falls back to the start of the note.
+     */
+    private void restoreSavedPosition(long noteId, String shownValue) {
+        NoteViewState saved = noteViewStateStore.get(noteId);
+        PositionRestorer.SimpleTarget target =
+                PositionRestorer.restoreSimple(saved != null ? saved.simple : null, shownValue);
+        if (target.match == PositionRestorer.Match.TOP) return;
+        if (target.hasSelection()) {
+            savedSelectionStart = target.selectionStart;
+            savedSelectionEnd = target.selectionEnd;
+        }
+        if (target.topOffset != EditorCursor.NONE) {
+            savedPositionPending = true;
+            scrollToOffsetWhenLaidOut(target.topOffset, () -> savedPositionPending = false);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveViewState();
+    }
+
+    /** Keeps where the note is being read or edited, for the next time it is opened. */
+    private void saveViewState() {
+        if (binding == null || notePresenter == null || !noteShown || savedPositionPending) {
+            return;
+        }
+        long noteId = notePresenter.getIdKey();
+        // An empty note has no position, and a new one is deleted as the screen closes.
+        if (noteId <= 0 || binding.valueNote.length() == 0) return;
+        boolean editing = binding.valueNote.isEnabled();
+        int scrollY = binding.scrollView.getScrollY();
+        View content = binding.scrollView.getChildAt(0);
+        int scrollable = content != null ? content.getHeight() - binding.scrollView.getHeight() : 0;
+        noteViewStateStore.putSimple(
+                noteId,
+                PositionRestorer.captureSimple(
+                        binding.valueNote.getText().toString(),
+                        editing ? binding.valueNote.getSelectionStart() : EditorCursor.NONE,
+                        editing ? binding.valueNote.getSelectionEnd() : EditorCursor.NONE,
+                        readingAnchorOffset(),
+                        scrollY,
+                        scrollable > 0 ? (float) scrollY / scrollable : 0f));
     }
 
     @Override
@@ -430,12 +503,23 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
     @Override
     public void activatedActivity() {
+        int firstVisible = firstVisibleOffset();
+        int lastVisible = lastVisibleOffset();
+        if (restoredSelectionStart == EditorCursor.NONE
+                && savedSelectionStart != EditorCursor.NONE
+                && isOnScreen(savedSelectionStart, firstVisible, lastVisible)) {
+            // The caret from the last visit, unless the reader has scrolled away from it.
+            restoredSelectionStart = savedSelectionStart;
+            restoredSelectionEnd = savedSelectionEnd;
+        }
+        savedSelectionStart = EditorCursor.NONE;
+        savedSelectionEnd = EditorCursor.NONE;
         int[] selection =
                 EditorCursor.activationSelection(
                         restoredSelectionStart,
                         restoredSelectionEnd,
-                        firstVisibleOffset(),
-                        lastVisibleOffset(),
+                        firstVisible,
+                        lastVisible,
                         binding.valueNote.length());
         restoredSelectionStart = EditorCursor.NONE;
         restoredSelectionEnd = EditorCursor.NONE;
@@ -463,6 +547,11 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                 imm.showSoftInput(binding.valueNote, InputMethodManager.SHOW_IMPLICIT);
             }
         }
+    }
+
+    private static boolean isOnScreen(int offset, int firstVisible, int lastVisible) {
+        if (firstVisible == EditorCursor.NONE || lastVisible == EditorCursor.NONE) return false;
+        return offset >= firstVisible && offset <= lastVisible;
     }
 
     @Override
@@ -540,7 +629,11 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         if (restoredAnchorOffset != EditorCursor.NONE) {
             scrollToOffsetWhenLaidOut(restoredAnchorOffset);
             restoredAnchorOffset = EditorCursor.NONE;
+        } else if (restoreSavedPosition && !notePresenter.getNewNotesKey()) {
+            restoreSavedPosition(note.getId(), value != null ? value : "");
         }
+        restoreSavedPosition = false;
+        noteShown = true;
 
         if (notePresenter.getNewNotesKey() || restoredEditing) {
             restoredEditing = false;

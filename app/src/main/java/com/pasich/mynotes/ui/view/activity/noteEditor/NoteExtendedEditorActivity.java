@@ -30,10 +30,15 @@ import com.pasich.mynotes.extendedEditor.attach.AttachmentCleaner;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.models.SettingsEditorJsBridge;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
+import com.pasich.mynotes.extendedEditor.utils.ExtendedViewStateJson;
 import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.extendedEditor.view.CopyTextDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
+import com.pasich.mynotes.utils.editor.NoteViewState;
+import com.pasich.mynotes.utils.editor.NoteViewStateStore;
+import com.pasich.mynotes.utils.editor.PositionRestorer;
+import com.pasich.mynotes.utils.navigation.NoteExtras;
 import dagger.hilt.android.AndroidEntryPoint;
 import jakarta.inject.Inject;
 
@@ -65,7 +70,11 @@ public class NoteExtendedEditorActivity
     private static final int MAX_DRAFT_CHARS = 64 * 1024;
 
     @Inject AppPreferencesCache appPreferencesCache;
+    @Inject NoteViewStateStore noteViewStateStore;
     private boolean isReadMode = false;
+
+    // A fresh open (not a recreation) of an existing note goes back to where it was left.
+    private boolean restoreSavedPosition = false;
 
     private int restoredAnchorIndex = -1;
     private int restoredAnchorOffset = 0;
@@ -81,12 +90,26 @@ public class NoteExtendedEditorActivity
             draftJson = savedInstanceState.getString(STATE_DRAFT_JSON);
         }
         super.onCreate(savedInstanceState);
+        // The note loads asynchronously, so this is decided before it arrives; the store is
+        // injected by super.onCreate.
+        long openedId = getIntent().getLongExtra(NoteExtras.EXTRA_ID_NOTE, 0);
+        restoreSavedPosition =
+                savedInstanceState == null && openedId > 0 && hasSavedPosition(openedId);
+        if (binding != null && restoreSavedPosition) {
+            // The caret goes back where it was, so the first block must not take it first.
+            binding.noteEditor.setAutofocus(false);
+        }
         if (savedInstanceState != null && binding != null) {
             // A picker opened by the previous instance answers this one.
             binding.noteEditor.restoreChooserState(
                     savedInstanceState.getString(STATE_CHOOSER_KIND),
                     savedInstanceState.getInt(STATE_CHOOSER_INDEX, -1));
         }
+    }
+
+    private boolean hasSavedPosition(long noteId) {
+        NoteViewState saved = noteViewStateStore.get(noteId);
+        return saved != null && saved.extended != null;
     }
 
     @Override
@@ -107,6 +130,21 @@ public class NoteExtendedEditorActivity
                 outState.putString(STATE_DRAFT_JSON, json);
             }
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveViewState();
+    }
+
+    /** Keeps where the note is being read or edited, for the next time it is opened. */
+    private void saveViewState() {
+        if (binding == null || notePresenter == null) return;
+        long noteId = notePresenter.getIdKey();
+        NoteViewState.Extended state =
+                ExtendedViewStateJson.fromPage(binding.noteEditor.getLastViewState());
+        if (noteId > 0 && state != null) noteViewStateStore.putExtended(noteId, state);
     }
 
     @Override
@@ -178,6 +216,16 @@ public class NoteExtendedEditorActivity
                                             if (binding != null) {
                                                 binding.noteEditor.onViewportAnchor(
                                                         blockIndex, offsetPx);
+                                            }
+                                        });
+                            }
+
+                            @Override
+                            public void onViewState(String json) {
+                                runOnUiThread(
+                                        () -> {
+                                            if (binding != null) {
+                                                binding.noteEditor.onViewState(json);
                                             }
                                         });
                             }
@@ -378,6 +426,17 @@ public class NoteExtendedEditorActivity
         if (restoredAnchorIndex >= 0) {
             binding.noteEditor.setRestoreAnchor(restoredAnchorIndex, restoredAnchorOffset);
             restoredAnchorIndex = -1;
+        } else if (restoreSavedPosition) {
+            restoreSavedPosition = false;
+            NoteViewState saved = noteViewStateStore.get(note.getId());
+            PositionRestorer.ExtendedTarget target =
+                    PositionRestorer.restoreExtended(
+                            saved != null ? saved.extended : null,
+                            ExtendedViewStateJson.blockIds(note.getValueJson()));
+            if (target.match != PositionRestorer.Match.TOP) {
+                binding.noteEditor.setRestoreViewState(
+                        ExtendedViewStateJson.toPage(target).toString());
+            }
         }
 
         String pendingTitle = draftTitle;

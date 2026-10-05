@@ -9,6 +9,7 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
+import androidx.annotation.Nullable;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
@@ -108,6 +109,19 @@ public class EditorJSInterface {
         if (listener != null) listener.onViewportAnchor(blockIndex, offsetPx);
     }
 
+    /**
+     * Reports where the note is being read or edited (the block at the top of the viewport and the
+     * caret's block and offset) once scrolling or the caret settles, so the position can be saved
+     * when the note is left.
+     *
+     * @param json the page's {@code currentViewState()}, read by {@link ExtendedViewStateJson}.
+     */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onViewState(String json) {
+        if (listener != null) listener.onViewState(json);
+    }
+
     /** The note handed over by loadNoteToEditor has been rendered. */
     @SuppressWarnings("unused")
     @JavascriptInterface
@@ -165,14 +179,18 @@ public class EditorJSInterface {
      * @param note The note model which will be rendered in the editor.
      */
     public void loadNoteToEditor(Note note) {
-        loadNoteToEditor(note, -1, 0);
+        loadNoteToEditor(note, -1, 0, null);
     }
 
     /**
      * Loads a note and, once it is rendered, scrolls block {@code anchorIndex} to {@code
      * anchorOffset} CSS pixels from the top. A negative index keeps the top of the note.
+     *
+     * @param viewState a saved position resolved for this note ({@link
+     *     ExtendedViewStateJson#toPage}), applied instead of the anchor; null for none.
      */
-    public void loadNoteToEditor(Note note, int anchorIndex, int anchorOffset) {
+    public void loadNoteToEditor(
+            Note note, int anchorIndex, int anchorOffset, @Nullable String viewState) {
         if (webView == null || note == null) return;
         try {
             JSONObject json = new JSONObject();
@@ -200,6 +218,7 @@ public class EditorJSInterface {
                 anchor.put("offset", anchorOffset);
                 json.put("anchor", anchor);
             }
+            if (viewState != null) json.put("viewState", new JSONObject(viewState));
             String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
         } catch (Exception e) {
@@ -454,6 +473,8 @@ public class EditorJSInterface {
         void onContentFlushed(String jsonData);
 
         void onViewportAnchor(int blockIndex, int offsetPx);
+
+        void onViewState(String json);
 
         void onNoteRendered();
 

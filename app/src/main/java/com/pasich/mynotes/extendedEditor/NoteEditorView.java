@@ -45,6 +45,12 @@ public class NoteEditorView extends FrameLayout {
     // Reading position to restore on the next load (after a recreation).
     private int restoreAnchorIndex = -1;
     private int restoreAnchorOffset = 0;
+    // A saved position resolved for the next load, in the page's form.
+    private String restoreViewState;
+    // Where the note is being read or edited, as last reported by the page; null until the page
+    // has shown the note and applied any saved position.
+    private String lastViewState;
+    private boolean autofocus = true;
     private boolean editorIsReady = false;
     private boolean htmlLoaded = false;
     private OnFileChooserListener fileChooserListener;
@@ -97,9 +103,19 @@ public class NoteEditorView extends FrameLayout {
     /** Loads the Editor.js HTML page from the app assets with the current locale. */
     private void loadEditorHtml() {
         if (webView == null) return;
-        webView.loadUrl(
+        String url =
                 "file:///android_asset/editor/editor.html?locale="
-                        + Locale.getDefault().getLanguage());
+                        + Locale.getDefault().getLanguage();
+        if (!autofocus) url += "&autofocus=0";
+        webView.loadUrl(url);
+    }
+
+    /**
+     * Whether the editor puts the caret in the first block as it starts; on unless a saved position
+     * is about to put it back. Takes effect only before the view is attached.
+     */
+    public void setAutofocus(boolean autofocus) {
+        this.autofocus = autofocus;
     }
 
     /**
@@ -267,9 +283,30 @@ public class NoteEditorView extends FrameLayout {
     }
 
     private void loadIntoEditor(Note note) {
-        editorInterface.loadNoteToEditor(note, restoreAnchorIndex, restoreAnchorOffset);
+        lastViewState = null;
+        editorInterface.loadNoteToEditor(
+                note, restoreAnchorIndex, restoreAnchorOffset, restoreViewState);
         restoreAnchorIndex = -1;
         restoreAnchorOffset = 0;
+        restoreViewState = null;
+    }
+
+    /**
+     * A saved position to apply once the next note is rendered ({@code
+     * ExtendedViewStateJson.toPage}); it takes the place of the reading anchor.
+     */
+    public void setRestoreViewState(String viewState) {
+        restoreViewState = viewState;
+    }
+
+    /** Remembers where the note is being read or edited, as reported by the page. */
+    public void onViewState(String json) {
+        lastViewState = json;
+    }
+
+    /** The last position the page reported, or null when it has not reported one yet. */
+    public String getLastViewState() {
+        return lastViewState;
     }
 
     /** Remembers the block at the top of the viewport, as reported by the editor. */

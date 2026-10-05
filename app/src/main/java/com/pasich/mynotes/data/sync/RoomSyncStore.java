@@ -25,6 +25,7 @@ import com.pasich.mynotes.extendedEditor.attach.AttachmentUrl;
 import com.pasich.mynotes.extendedEditor.attach.EditorAttachmentBlocks;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
+import com.pasich.mynotes.utils.editor.NoteViewStateStore;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -1075,9 +1076,11 @@ public final class RoomSyncStore implements SyncStore {
     }
 
     private void markDeleted(SyncMetadataEntity metadata) {
-        if ("note".equals(metadata.recordType))
+        if ("note".equals(metadata.recordType)) {
             database.noteDao().deleteById((int) metadata.localId);
-        else if ("task".equals(metadata.recordType))
+            // A position on this device means nothing once another device deleted the note.
+            new NoteViewStateStore(context).remove(metadata.localId);
+        } else if ("task".equals(metadata.recordType))
             database.taskDao().deleteById((int) metadata.localId);
         else if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(metadata.recordType))
             database.taskCategoryDao().deleteById((int) metadata.localId);

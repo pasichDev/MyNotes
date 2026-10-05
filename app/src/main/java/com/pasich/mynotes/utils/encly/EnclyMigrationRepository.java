@@ -11,6 +11,7 @@ import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
 import com.pasich.mynotes.data.sync.SyncMutationCoordinator;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
+import com.pasich.mynotes.utils.editor.NoteViewStateStore;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 import dagger.hilt.android.qualifiers.ApplicationContext;
@@ -114,6 +115,7 @@ public class EnclyMigrationRepository {
             }
         }
         syncMutationCoordinator.clearAllUserData();
+        new NoteViewStateStore(context).clear();
         deleteRecursively(AttachmentStorage.baseDirPath(context));
     }
 

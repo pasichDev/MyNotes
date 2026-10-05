@@ -105,6 +105,148 @@ window.addEventListener(
   { passive: true }
 )
 
+/**
+ * Where the note is being read or edited, for Android to keep per note on this device: the block
+ * at the top of the viewport and the block, input and character offset of the caret. Block ids
+ * survive edits and saves, so the position can be found again after the note changed.
+ * Reported once scrolling or the caret settles, and only after a reopened note's saved position
+ * has been applied, so the start of the note never overwrites it.
+ */
+let __viewStateTimer = null
+let __viewStateReady = false
+
+function blockForHolder (holder) {
+  const count = editor.blocks.getBlocksCount()
+  for (let i = 0; i < count; i++) {
+    const block = editor.blocks.getBlockByIndex(i)
+    if (block?.holder === holder) return block
+  }
+  return null
+}
+
+function editableInputs (holder) {
+  return [...holder.querySelectorAll('[contenteditable="true"]')]
+}
+
+function caretPosition () {
+  if (!editor || isReadMode) return null
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0 || !selection.focusNode) return null
+  const node = selection.focusNode
+  const element = node.nodeType === 1 ? node : node.parentElement
+  const input = element?.closest('[contenteditable="true"]')
+  const holder = input?.closest('.ce-block')
+  if (!holder) return null
+  const block = blockForHolder(holder)
+  if (!block) return null
+  const range = document.createRange()
+  range.selectNodeContents(input)
+  range.setEnd(node, selection.focusOffset)
+  return {
+    id: block.id,
+    input: Math.max(0, editableInputs(holder).indexOf(input)),
+    offset: range.toString().length
+  }
+}
+
+function currentViewState () {
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight
+  const state = {
+    scrollTop: Math.round(window.scrollY),
+    ratio: scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0,
+    topId: null,
+    topIndex: -1,
+    topOffset: 0,
+    caret: caretPosition()
+  }
+  if (window.scrollY >= 1) {
+    const count = editor.blocks.getBlocksCount()
+    for (let i = 0; i < count; i++) {
+      const block = editor.blocks.getBlockByIndex(i)
+      const rect = block?.holder?.getBoundingClientRect()
+      if (rect && rect.bottom > 0) {
+        state.topId = block.id
+        state.topIndex = i
+        state.topOffset = Math.round(rect.top)
+        break
+      }
+    }
+  }
+  return state
+}
+
+function reportViewState () {
+  if (!editor || !__viewStateReady) return
+  safeAndroidCall('onViewState', JSON.stringify(currentViewState()))
+}
+
+function scheduleViewStateReport () {
+  clearTimeout(__viewStateTimer)
+  __viewStateTimer = setTimeout(reportViewState, 200)
+}
+
+window.addEventListener('scroll', scheduleViewStateReport, { passive: true })
+document.addEventListener('selectionchange', scheduleViewStateReport)
+
+/**
+ * Puts the caret {@code offset} characters into {@code input}, at its end when the text is now
+ * shorter, so a saved offset can never point outside the text.
+ */
+function placeCaret (input, offset) {
+  const walker = document.createTreeWalker(input, NodeFilter.SHOW_TEXT)
+  let remaining = Math.max(0, offset || 0)
+  let node = walker.nextNode()
+  let last = null
+  while (node) {
+    last = node
+    if (remaining <= node.length) break
+    remaining -= node.length
+    node = walker.nextNode()
+  }
+  const range = document.createRange()
+  if (node) range.setStart(node, remaining)
+  else if (last) range.setStart(last, last.length)
+  else range.setStart(input, 0)
+  range.collapse(true)
+  const selection = window.getSelection()
+  selection.removeAllRanges()
+  selection.addRange(range)
+}
+
+/**
+ * Applies a saved position Android resolved against the note's current blocks: the caret first
+ * (placing it may scroll), then the block that was at the top of the viewport.
+ */
+function restoreViewState (state) {
+  if (!editor || !state) return
+  if (state.caretId && !isReadMode) {
+    const block = editor.blocks.getById(state.caretId)
+    if (block?.holder) {
+      try {
+        editor.caret.setToBlock(block, 'start')
+      } catch (e) {
+        console.error('[Editor] setToBlock failed:', e)
+      }
+      const inputs = editableInputs(block.holder)
+      const input = inputs[Math.min(state.caretInput || 0, inputs.length - 1)]
+      if (input) {
+        input.focus({ preventScroll: true })
+        placeCaret(input, state.caretOffset)
+      }
+    }
+  }
+  let target = state.topId ? editor.blocks.getById(state.topId) : null
+  if (!target && state.topIndex >= 0) {
+    const count = editor.blocks.getBlocksCount()
+    if (count > 0) target = editor.blocks.getBlockByIndex(Math.min(state.topIndex, count - 1))
+  }
+  if (!target?.holder) return
+  requestAnimationFrame(() => {
+    const top = target.holder.getBoundingClientRect().top
+    window.scrollTo(0, window.scrollY + top - (state.topOffset || 0))
+  })
+}
+
 function restoreViewportAnchor (anchor) {
   if (!editor || !anchor || anchor.index < 0) return
   const count = editor.blocks.getBlocksCount()
@@ -180,10 +322,19 @@ function loadNote (note) {
     blocks = note.valueJson
   }
 
+  __viewStateReady = false
   editor.render({ blocks }).then(() => {
     __lastSavedJson = JSON.stringify(blocks)
-    restoreViewportAnchor(note.anchor)
+    if (note.viewState) restoreViewState(note.viewState)
+    else restoreViewportAnchor(note.anchor)
     safeAndroidCall('onNoteRendered')
+    // Both restores scroll on the next frame; start reporting once that has happened.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        __viewStateReady = true
+        reportViewState()
+      })
+    )
   })
 }
 

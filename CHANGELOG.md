@@ -9,6 +9,11 @@
   notes (including the trash), tasks, tags and task lists to it. Attachments, images, reminders
   and pins stay behind, and the page tells you how many. Nothing is deleted from My Notes; after
   a successful move you can clear it as a separate, confirmed step.
+- **Notes reopen where you left them.** A long note opens at the line you were reading, and if
+  you were editing, the cursor is back where it was as soon as you continue. This works in both
+  editors and survives restarting the app. If the note changed in the meantime, here or on
+  another device, the same place is found again by the text around it; a note that was rewritten
+  or emptied opens at the top. Positions stay on this device and are never synced.
 
 **Improvements**
 

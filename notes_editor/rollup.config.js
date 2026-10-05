@@ -80,6 +80,7 @@ export default [
                   'toggleReadModeFromAndroid',
                   'saveContent',
                   'flushContent',
+                  'restoreViewState',
                   'uploadAttachment',
                   'loadNote',
                   'setThemeColors'
