@@ -48,6 +48,13 @@ public class AttachmentStorageTest {
         noteFolder.mkdirs();
         File orphan = new File(noteFolder, "orphan.jpg");
         orphan.createNewFile();
+        // Older than the grace period that protects a just-inserted image.
+        assertThat(
+                        orphan.setLastModified(
+                                System.currentTimeMillis()
+                                        - AttachmentCleaner.GRACE_PERIOD_MS
+                                        - 60_000L))
+                .isTrue();
 
         com.pasich.mynotes.data.model.Note emptyNote =
                 new com.pasich.mynotes.data.model.Note()
@@ -57,5 +64,25 @@ public class AttachmentStorageTest {
         AttachmentCleaner.cleanup(context, emptyNote);
 
         assertThat(orphan.exists()).isFalse();
+    }
+
+    @Test
+    public void cleanup_keepsAnOrphanFileInsideTheGracePeriod() throws Exception {
+        File base = new File(context.getFilesDir(), AttachmentStorage.ATTACHMENTS_BASE_DIR);
+        File noteFolder = new File(base, "note_66667");
+        noteFolder.mkdirs();
+        File fresh = new File(noteFolder, "fresh.jpg");
+        fresh.createNewFile();
+
+        com.pasich.mynotes.data.model.Note emptyNote =
+                new com.pasich.mynotes.data.model.Note()
+                        .create("", "", System.currentTimeMillis(), "");
+        emptyNote.setId(66667);
+
+        AttachmentCleaner.cleanup(context, emptyNote);
+
+        // An image saved moments ago may not be in the saved note yet: it stays.
+        assertThat(fresh.exists()).isTrue();
+        fresh.delete();
     }
 }
