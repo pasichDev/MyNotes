@@ -195,7 +195,7 @@ public final class SyncConflictPresentation {
      *     side, where its differing part ends. Equal strings give a zero-length range.
      */
     @NonNull
-    static int[] differenceRange(@NonNull String first, @NonNull String second) {
+    public static int[] differenceRange(@NonNull String first, @NonNull String second) {
         int prefix = 0;
         int shortest = Math.min(first.length(), second.length());
         while (prefix < shortest && first.charAt(prefix) == second.charAt(prefix)) {
@@ -265,7 +265,7 @@ public final class SyncConflictPresentation {
     }
 
     @NonNull
-    static Window window(@NonNull String text, int diffStart, int diffEnd, int limit) {
+    public static Window window(@NonNull String text, int diffStart, int diffEnd, int limit) {
         if (text.length() <= limit) {
             return new Window(text, clamp(diffStart, text.length()), clamp(diffEnd, text.length()));
         }

@@ -66,4 +66,50 @@ public class NoteVersionTextTest {
                 .containsExactly(3, 3)
                 .inOrder();
     }
+
+    @Test
+    public void aLongNoteWithThreeChangedLines_marksOnlyThoseLines() {
+        StringBuilder before = new StringBuilder("Title");
+        StringBuilder after = new StringBuilder("Title");
+        for (int i = 1; i <= 60; i++) {
+            before.append("\nLine ").append(i).append(" of the note text");
+            String changed = i == 5 || i == 30 || i == 55 ? "edited " : "";
+            after.append("\nLine ")
+                    .append(i)
+                    .append(" of the ")
+                    .append(changed)
+                    .append("note text");
+        }
+        String a = before.toString();
+        String b = after.toString();
+
+        java.util.List<int[]> inAfter = NoteVersionText.changedRanges(b, a);
+        assertThat(inAfter).hasSize(3);
+        int marked = 0;
+        for (int[] range : inAfter) {
+            assertThat(b.substring(range[0], range[1])).isEqualTo("edited ");
+            marked += range[1] - range[0];
+        }
+        assertThat(marked).isLessThan(b.length() / 20);
+        // Words were only added: nothing in the older text is marked.
+        assertThat(NoteVersionText.changedRanges(a, b)).isEmpty();
+    }
+
+    @Test
+    public void aChangedWordInALongNote_marksThatWordOnBothSides() {
+        StringBuilder before = new StringBuilder();
+        StringBuilder after = new StringBuilder();
+        for (int i = 1; i <= 60; i++) {
+            before.append("Row ").append(i).append(i == 40 ? " total 1200" : " text").append('\n');
+            after.append("Row ").append(i).append(i == 40 ? " total 1500" : " text").append('\n');
+        }
+        String a = before.toString();
+        String b = after.toString();
+
+        java.util.List<int[]> inBefore = NoteVersionText.changedRanges(a, b);
+        assertThat(inBefore).hasSize(1);
+        assertThat(a.substring(inBefore.get(0)[0], inBefore.get(0)[1])).isEqualTo("1200");
+        java.util.List<int[]> inAfter = NoteVersionText.changedRanges(b, a);
+        assertThat(b.substring(inAfter.get(0)[0], inAfter.get(0)[1])).isEqualTo("1500");
+    }
 }

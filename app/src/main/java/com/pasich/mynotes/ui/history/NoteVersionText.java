@@ -13,6 +13,8 @@ import com.google.android.material.color.MaterialColors;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.history.NoteVersionReason;
 import com.pasich.mynotes.ui.sync.SyncConflictPresentation;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Wording and formatting shared by the version list and the version preview. */
 public final class NoteVersionText {
@@ -96,29 +98,123 @@ public final class NoteVersionText {
         return Character.isLetterOrDigit(c);
     }
 
-    /** The window's text with its differing range marked in the theme's primary colours. */
+    /** Most line pairs compared one by one; longer notes are compared as one block. */
+    @VisibleForTesting static final int MAX_LINE_PAIRS = 250_000;
+
+    /**
+     * The parts of {@code text} that differ from {@code other}, as {@code {start, end}} ranges in
+     * {@code text}, each widened to whole words.
+     *
+     * <p>The lines of both texts are matched first (longest common subsequence), so equal lines
+     * stay unmarked however far apart the changes are; inside each run of changed lines only the
+     * part between the common start and end is marked. Texts with too many lines to match fall back
+     * to a single range from the first to the last difference.
+     */
+    @NonNull
+    @VisibleForTesting
+    static List<int[]> changedRanges(@NonNull String text, @NonNull String other) {
+        List<int[]> ranges = new ArrayList<>();
+        String[] a = text.split("\n", -1);
+        String[] b = other.split("\n", -1);
+        int n = a.length;
+        int m = b.length;
+        if ((long) n * m > MAX_LINE_PAIRS) {
+            addChange(ranges, text, 0, text.length(), other);
+            return ranges;
+        }
+        int[] starts = new int[n + 1];
+        for (int i = 0; i < n; i++) starts[i + 1] = starts[i] + a[i].length() + 1;
+        // common[i][j]: longest common run of lines of a[i..] and b[j..].
+        int[][] common = new int[n + 1][m + 1];
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = m - 1; j >= 0; j--) {
+                common[i][j] =
+                        a[i].equals(b[j])
+                                ? common[i + 1][j + 1] + 1
+                                : Math.max(common[i + 1][j], common[i][j + 1]);
+            }
+        }
+        int i = 0;
+        int j = 0;
+        while (i < n || j < m) {
+            if (i < n && j < m && a[i].equals(b[j])) {
+                i++;
+                j++;
+                continue;
+            }
+            int fromA = i;
+            int fromB = j;
+            while ((i < n || j < m) && !(i < n && j < m && a[i].equals(b[j]))) {
+                if (j < m && (i == n || common[i][j + 1] >= common[i + 1][j])) {
+                    j++;
+                } else {
+                    i++;
+                }
+            }
+            if (i > fromA) {
+                int start = starts[fromA];
+                int end = Math.min(text.length(), starts[i] - 1);
+                addChange(ranges, text, start, end, String.join("\n", sub(b, fromB, j)));
+            }
+        }
+        return ranges;
+    }
+
+    private static String[] sub(String[] lines, int from, int to) {
+        String[] out = new String[to - from];
+        System.arraycopy(lines, from, out, 0, to - from);
+        return out;
+    }
+
+    /** Marks what differs between {@code text[start, end)} and {@code replaced}. */
+    private static void addChange(
+            List<int[]> ranges, String text, int start, int end, String replaced) {
+        String part = text.substring(start, end);
+        int[] diff = SyncConflictPresentation.differenceRange(part, replaced);
+        int[] range = wholeWords(text, start + diff[0], start + diff[1]);
+        if (range[1] > range[0]) ranges.add(range);
+    }
+
+    /**
+     * {@code text} with the parts that differ from {@code other} marked in the theme's primary
+     * colours. Longer than {@code limit}, it is cut to a window around its first change.
+     */
     @NonNull
     public static CharSequence highlighted(
-            @NonNull Context context, @NonNull SyncConflictPresentation.Window window) {
-        int[] range = wholeWords(window.text, window.start, window.end);
-        if (range[1] <= range[0]) return window.text;
-        SpannableString text = new SpannableString(window.text);
+            @NonNull Context context, @NonNull String text, @NonNull String other, int limit) {
+        List<int[]> ranges = changedRanges(text, other);
+        String shown = text;
+        int shift = 0;
+        if (text.length() > limit) {
+            int[] first = ranges.isEmpty() ? new int[] {0, 0} : ranges.get(0);
+            SyncConflictPresentation.Window window =
+                    SyncConflictPresentation.window(text, first[0], first[1], limit);
+            shown = window.text;
+            shift = window.start - first[0];
+        }
+        if (ranges.isEmpty()) return shown;
+        SpannableString marked = new SpannableString(shown);
         int container =
                 MaterialColors.getColor(
                         context, com.google.android.material.R.attr.colorPrimaryContainer, 0);
         int onContainer =
                 MaterialColors.getColor(
                         context, com.google.android.material.R.attr.colorOnPrimaryContainer, 0);
-        text.setSpan(
-                new BackgroundColorSpan(container),
-                range[0],
-                range[1],
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        text.setSpan(
-                new ForegroundColorSpan(onContainer),
-                range[0],
-                range[1],
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return text;
+        for (int[] range : ranges) {
+            int from = Math.max(0, range[0] + shift);
+            int to = Math.min(shown.length(), range[1] + shift);
+            if (to <= from) continue;
+            marked.setSpan(
+                    new BackgroundColorSpan(container),
+                    from,
+                    to,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            marked.setSpan(
+                    new ForegroundColorSpan(onContainer),
+                    from,
+                    to,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return marked;
     }
 }

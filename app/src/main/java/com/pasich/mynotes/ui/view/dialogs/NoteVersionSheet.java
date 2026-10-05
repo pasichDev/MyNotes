@@ -17,7 +17,6 @@ import com.pasich.mynotes.data.history.NoteVersionRestore;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.SheetNoteVersionBinding;
 import com.pasich.mynotes.ui.history.NoteVersionText;
-import com.pasich.mynotes.ui.sync.SyncConflictPresentation;
 
 /**
  * Preview of one kept version next to the current note, with the part where they differ highlighted
@@ -142,15 +141,9 @@ public class NoteVersionSheet extends BaseDialogBottomSheets {
         String versionText = NoteVersionText.readable(version.title, version.value);
         String currentText = NoteVersionText.readable(current.getTitle(), current.getValue());
         binding.versionSheetText.setText(
-                NoteVersionText.highlighted(
-                        context,
-                        SyncConflictPresentation.compare(versionText, currentText, VERSION_LIMIT)
-                                .first));
+                NoteVersionText.highlighted(context, versionText, currentText, VERSION_LIMIT));
         binding.versionSheetCurrent.setText(
-                NoteVersionText.highlighted(
-                        context,
-                        SyncConflictPresentation.compare(versionText, currentText, CURRENT_LIMIT)
-                                .second));
+                NoteVersionText.highlighted(context, currentText, versionText, CURRENT_LIMIT));
 
         Note restored = new Note();
         restored.copyFrom(current);
