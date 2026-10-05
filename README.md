@@ -30,17 +30,26 @@ No ads or tracking — your content stays on your device unless you explicitly e
   <img src="doc/scr2.jpg" width="280" />
 </div>
 
+<div style="display: flex; justify-content: center; gap: 10px;">
+  <img src="doc/scr3.jpg" width="280" />
+  <img src="doc/scr4.jpg" width="280" />
+</div>
+
 ## Features
 
 - 📥 Import from **Google Keep**
 - 🏷️ **Tags** for sorting and searching notes
 - ✍️ **Advanced editor** — headings, lists, quotes, formatting (Editor.js)
-- 🔔 **Reminders** with repeat schedules
+- ↩️ **Undo and redo** while you type, right above the keyboard
+- 🕘 **Version history** — preview what changed and restore an earlier version
+- ↕️ **Custom order** — drag notes into the order you want, in the list or the grid
+- 🔔 **Reminders** with repeat schedules, including custom ones like every 3 hours
 - 🎨 **Themes and colors** to match your mood
 - 🌍 **10 languages** — EN, UK, RU, DE, FR, ES, IT, PL, BE, KK
 - 🚫 **No ads** — just your notes
 - 🔒 **Local-first** — works fully offline; Google Drive sync is optional
 - 💻 **Open-source** — transparent and accessible code
+- 🔐 **Move to Encly** — hand your notes over to Encly, the encrypted successor app, in one step
 - 🎯 **Modern and intuitive design**
 
 ## Privacy
