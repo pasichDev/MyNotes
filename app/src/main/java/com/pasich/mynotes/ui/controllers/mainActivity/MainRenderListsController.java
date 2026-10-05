@@ -165,12 +165,6 @@ public class MainRenderListsController {
         if (toTop) jumpToTop();
     }
 
-    /** Smoothly scrolls the notes list to the top. */
-    public void scrollUpNoteList() {
-        if (appBar != null) appBar.setExpanded(true, true);
-        listNotes.post(() -> listNotes.smoothScrollToPosition(0));
-    }
-
     /**
      * Puts the first note at the top, fully visible and without animation, together with the search
      * bar and tags above it.
