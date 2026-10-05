@@ -1,11 +1,15 @@
 package com.pasich.mynotes.utils.recycler;
 
 import android.animation.ValueAnimator;
+import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.ItemTouchHelperAccess;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,11 +46,36 @@ public class NoteDragCallback extends SwipeToListNotesCallback {
         void onSwiped(@NonNull RecyclerView.ViewHolder holder, int direction);
     }
 
+    /** Height of the band at the top and bottom of the visible list that scrolls it, in dp. */
+    static final int EDGE_ZONE_DP = 72;
+
+    /** Fastest edge scroll, in dp per frame, reached at the very edge. */
+    static final int EDGE_MAX_SPEED_DP = 16;
+
     private final Host host;
+    @Nullable private ItemTouchHelper helper;
+
+    // The edge scroll: the list, the card held, which way (-1 up, +1 down, 0 none) and how deep
+    // into the band the card is (0..1).
+    @Nullable private RecyclerView edgeList;
+    @Nullable private RecyclerView.ViewHolder edgeCard;
+    private int edgeDirection;
+    private float edgeDepth;
+    private boolean edgeScrolling;
+    private final Rect visible = new Rect();
+    private final Runnable edgeStep = this::edgeStep;
 
     public NoteDragCallback(@NonNull Host host) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.host = host;
+    }
+
+    /**
+     * The helper this callback belongs to; needed to scroll the list when a card is held near its
+     * top or bottom edge.
+     */
+    public void attachHelper(@NonNull ItemTouchHelper helper) {
+        this.helper = helper;
     }
 
     @Override
@@ -164,6 +193,87 @@ public class NoteDragCallback extends SwipeToListNotesCallback {
         // and hid the dragged card. NotesGridLayoutManager keeps it on screen instead.
     }
 
+    /**
+     * The helper's own edge scroll starts only once the card crosses the list's bottom, which is
+     * below the screen while the search bar is expanded: a card shorter than that overhang could
+     * never reach it. The list is scrolled from {@link #onChildDraw} instead, when the card enters
+     * a band at the visible top or bottom, whatever its height.
+     */
+    @Override
+    public int interpolateOutOfBoundsScroll(
+            @NonNull RecyclerView recyclerView,
+            int viewSize,
+            int viewSizeOutOfBounds,
+            int totalSize,
+            long msSinceStartScroll) {
+        return helper != null
+                ? 0
+                : super.interpolateOutOfBoundsScroll(
+                        recyclerView, viewSize, viewSizeOutOfBounds, totalSize, msSinceStartScroll);
+    }
+
+    @Override
+    public void onChildDraw(
+            @NonNull Canvas c,
+            @NonNull RecyclerView recyclerView,
+            @NonNull RecyclerView.ViewHolder viewHolder,
+            float dX,
+            float dY,
+            int actionState,
+            boolean isCurrentlyActive) {
+        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && isCurrentlyActive) {
+            followEdges(recyclerView, viewHolder, dY);
+        } else if (viewHolder == edgeCard) {
+            edgeDirection = 0;
+        }
+    }
+
+    /** Starts, steers or stops the edge scroll for the card held at {@code dY} from its place. */
+    private void followEdges(RecyclerView list, RecyclerView.ViewHolder card, float dY) {
+        edgeList = list;
+        edgeCard = card;
+        edgeDirection = 0;
+        if (helper == null || !list.getLocalVisibleRect(visible)) return;
+        int top = Math.max(visible.top, list.getPaddingTop());
+        int bottom = visible.bottom;
+        float density = list.getResources().getDisplayMetrics().density;
+        float zone = Math.min(EDGE_ZONE_DP * density, (bottom - top) / 4f);
+        if (zone <= 0) return;
+        View view = card.itemView;
+        float center = view.getTop() + dY + view.getHeight() / 2f;
+        if (center > bottom - zone && list.canScrollVertically(1)) {
+            edgeDirection = 1;
+            edgeDepth = Math.min(1f, (center - (bottom - zone)) / zone);
+        } else if (center < top + zone && list.canScrollVertically(-1)) {
+            edgeDirection = -1;
+            edgeDepth = Math.min(1f, (top + zone - center) / zone);
+        }
+        if (edgeDirection != 0 && !edgeScrolling) {
+            edgeScrolling = true;
+            ViewCompat.postOnAnimation(list, edgeStep);
+        }
+    }
+
+    private void edgeStep() {
+        RecyclerView list = edgeList;
+        RecyclerView.ViewHolder card = edgeCard;
+        if (list == null || card == null || helper == null || edgeDirection == 0) {
+            edgeScrolling = false;
+            return;
+        }
+        float density = list.getResources().getDisplayMetrics().density;
+        int speed =
+                Math.max(1, Math.round(EDGE_MAX_SPEED_DP * density * (0.2f + 0.8f * edgeDepth)));
+        list.scrollBy(0, edgeDirection * speed);
+        // The card stays under the finger while the list moves; it may now cover another card.
+        ItemTouchHelperAccess.moveIfNecessary(helper, card);
+        // Drawn again, the card reports where it is now and steers the next step.
+        edgeDirection = 0;
+        list.invalidate();
+        ViewCompat.postOnAnimation(list, edgeStep);
+    }
+
     @Override
     public void onSelectedChanged(@Nullable RecyclerView.ViewHolder viewHolder, int actionState) {
         super.onSelectedChanged(viewHolder, actionState);
@@ -176,6 +286,10 @@ public class NoteDragCallback extends SwipeToListNotesCallback {
     public void clearView(
             @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
+        if (viewHolder == edgeCard) {
+            edgeCard = null;
+            edgeDirection = 0;
+        }
         viewHolder.itemView.setAlpha(1f);
         if (host.isDragging()) host.onDragEnded(viewHolder);
     }

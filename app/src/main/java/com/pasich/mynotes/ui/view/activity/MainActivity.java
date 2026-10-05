@@ -724,69 +724,66 @@ public class MainActivity extends BaseActivity
                 new NotesItemAnimator(
                         () -> isListInteractive() && !mainRenderListsController.isSwapping()));
 
-        noteTouchHelper =
-                new ItemTouchHelper(
-                        new NoteDragCallback(
-                                new NoteDragCallback.Host() {
-                                    @Override
-                                    public boolean canDrag() {
-                                        return canDragNotes();
-                                    }
+        NoteDragCallback dragCallback =
+                new NoteDragCallback(
+                        new NoteDragCallback.Host() {
+                            @Override
+                            public boolean canDrag() {
+                                return canDragNotes();
+                            }
 
-                                    @Override
-                                    public boolean canSwipe() {
-                                        return !selectionController.isInSelectionMode()
-                                                && mainPresenter.getDataManager().getFormatCount()
-                                                        == 1;
-                                    }
+                            @Override
+                            public boolean canSwipe() {
+                                return !selectionController.isInSelectionMode()
+                                        && mainPresenter.getDataManager().getFormatCount() == 1;
+                            }
 
-                                    @Override
-                                    public boolean canTrade(int first, int second) {
-                                        return sameSection(first, second);
-                                    }
+                            @Override
+                            public boolean canTrade(int first, int second) {
+                                return sameSection(first, second);
+                            }
 
-                                    @Override
-                                    public boolean isDragging() {
-                                        return dragging;
-                                    }
+                            @Override
+                            public boolean isDragging() {
+                                return dragging;
+                            }
 
-                                    @Override
-                                    public void move(int from, int to) {
-                                        mNoteAdapter.moveDuringDrag(from, to);
-                                        dragMoved = true;
-                                        pendingMenuNote = null;
-                                    }
+                            @Override
+                            public void move(int from, int to) {
+                                mNoteAdapter.moveDuringDrag(from, to);
+                                dragMoved = true;
+                                pendingMenuNote = null;
+                            }
 
-                                    @Override
-                                    public void onDragStarted(
-                                            @NonNull RecyclerView.ViewHolder holder) {
-                                        dragStarted = true;
-                                        dragging = true;
-                                        dragMoved = false;
-                                        mNoteAdapter.beginDrag();
-                                        int position = holder.getBindingAdapterPosition();
-                                        List<Note> list = mNoteAdapter.getCurrentList();
-                                        draggedNoteId =
-                                                position >= 0 && position < list.size()
-                                                        ? list.get(position).getId()
-                                                        : -1;
-                                        liftCard(holder.itemView, true);
-                                    }
+                            @Override
+                            public void onDragStarted(@NonNull RecyclerView.ViewHolder holder) {
+                                dragStarted = true;
+                                dragging = true;
+                                dragMoved = false;
+                                mNoteAdapter.beginDrag();
+                                int position = holder.getBindingAdapterPosition();
+                                List<Note> list = mNoteAdapter.getCurrentList();
+                                draggedNoteId =
+                                        position >= 0 && position < list.size()
+                                                ? list.get(position).getId()
+                                                : -1;
+                                liftCard(holder.itemView, true);
+                            }
 
-                                    @Override
-                                    public void onDragEnded(
-                                            @NonNull RecyclerView.ViewHolder holder) {
-                                        liftCard(holder.itemView, false);
-                                        if (mNoteAdapter.isDragging()) dropCard();
-                                    }
+                            @Override
+                            public void onDragEnded(@NonNull RecyclerView.ViewHolder holder) {
+                                liftCard(holder.itemView, false);
+                                if (mNoteAdapter.isDragging()) dropCard();
+                            }
 
-                                    @Override
-                                    public void onSwiped(
-                                            @NonNull RecyclerView.ViewHolder viewHolder,
-                                            int direction) {
-                                        swipeNote(viewHolder, direction);
-                                    }
-                                }));
+                            @Override
+                            public void onSwiped(
+                                    @NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                                swipeNote(viewHolder, direction);
+                            }
+                        });
+        noteTouchHelper = new ItemTouchHelper(dragCallback);
+        dragCallback.attachHelper(noteTouchHelper);
         noteTouchHelper.attachToRecyclerView(mActivityBinding.listNotes);
     }
 
@@ -885,12 +882,16 @@ public class MainActivity extends BaseActivity
         int menuPosition = pendingMenuPosition;
         pendingMenuNote = null;
         boolean moved = dragMoved;
+        boolean droppedFirst = moved && position == 0;
         mNoteAdapter.endDrag(
                 () -> {
                     dragging = false;
                     // The cards moved one by one under the finger; laying the grid's columns out
                     // again closes the gaps that leaves.
                     if (moved) gridLayoutManager.invalidateSpanAssignments();
+                    // Dropped first, often after scrolling up past the top edge: show it at the
+                    // top with the search bar and tags expanded again.
+                    if (droppedFirst) mainRenderListsController.jumpToTop();
                     // States that arrived during the drag were held back.
                     applyPendingState();
                 });
