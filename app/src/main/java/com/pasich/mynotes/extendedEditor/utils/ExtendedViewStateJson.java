@@ -45,6 +45,24 @@ public final class ExtendedViewStateJson {
         return state;
     }
 
+    /**
+     * The page's position from the result of {@code currentViewStateJson()} run through {@code
+     * WebView.evaluateJavascript}, which hands back the returned string JSON-encoded; null when the
+     * page had no position to give.
+     */
+    @Nullable
+    public static String fromScriptResult(@Nullable String result) {
+        if (result == null) return null;
+        try {
+            JsonElement value = JsonParser.parseString(result);
+            if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) return null;
+            String json = value.getAsString();
+            return json.isEmpty() ? null : json;
+        } catch (JsonParseException | IllegalStateException e) {
+            return null;
+        }
+    }
+
     /** The target in the form {@code restoreViewState()} in runtime.js takes. */
     @NonNull
     public static JsonObject toPage(@NonNull PositionRestorer.ExtendedTarget target) {

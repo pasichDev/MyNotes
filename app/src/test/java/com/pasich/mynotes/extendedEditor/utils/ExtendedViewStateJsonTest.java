@@ -92,4 +92,23 @@ public class ExtendedViewStateJsonTest {
         assertThat(page.get("topIndex").getAsInt()).isEqualTo(1);
         assertThat(page.get("topOffset").getAsInt()).isEqualTo(12);
     }
+
+    @Test
+    public void fromScriptResult_unwrapsTheStringThePageReturned() {
+        String json = "{\"scrollTop\":250,\"topIndex\":2}";
+        String result = new com.google.gson.JsonPrimitive(json).toString();
+
+        assertThat(ExtendedViewStateJson.fromScriptResult(result)).isEqualTo(json);
+        assertThat(ExtendedViewStateJson.fromPage(ExtendedViewStateJson.fromScriptResult(result)))
+                .isNotNull();
+    }
+
+    @Test
+    public void fromScriptResult_withoutAPosition_isNull() {
+        assertThat(ExtendedViewStateJson.fromScriptResult(null)).isNull();
+        assertThat(ExtendedViewStateJson.fromScriptResult("null")).isNull();
+        assertThat(ExtendedViewStateJson.fromScriptResult("\"\"")).isNull();
+        assertThat(ExtendedViewStateJson.fromScriptResult("{\"a\":1}")).isNull();
+        assertThat(ExtendedViewStateJson.fromScriptResult("not json")).isNull();
+    }
 }

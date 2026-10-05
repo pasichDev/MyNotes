@@ -174,13 +174,22 @@ public class NoteExtendedEditorActivity
         saveViewState();
     }
 
-    /** Keeps where the note is being read or edited, for the next time it is opened. */
+    /**
+     * Keeps where the note is being read or edited, for the next time it is opened: the position
+     * the page reported last right away, then the one it is at now once the page has answered. A
+     * report can be older than the last scroll, above all in reading mode, where no caret moves.
+     */
     private void saveViewState() {
         if (binding == null || notePresenter == null) return;
         long noteId = notePresenter.getIdKey();
-        NoteViewState.Extended state =
-                ExtendedViewStateJson.fromPage(binding.noteEditor.getLastViewState());
-        if (noteId > 0 && state != null) noteViewStateStore.putExtended(noteId, state);
+        if (noteId <= 0) return;
+        putViewState(noteId, binding.noteEditor.getLastViewState());
+        binding.noteEditor.readViewState(json -> putViewState(noteId, json));
+    }
+
+    private void putViewState(long noteId, String json) {
+        NoteViewState.Extended state = ExtendedViewStateJson.fromPage(json);
+        if (state != null) noteViewStateStore.putExtended(noteId, state);
     }
 
     @Override

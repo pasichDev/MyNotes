@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -215,6 +216,20 @@ public class EditorJSInterface {
                 () -> {
                     if (!released) webView.evaluateJavascript(script, null);
                 });
+    }
+
+    /**
+     * Reads where the note is being read or edited right now; {@code callback} gets the page's JSON
+     * on the main thread, or null when the page has no position yet or is gone.
+     */
+    public void readViewState(@NonNull ValueCallback<String> callback) {
+        if (webView == null || released) {
+            callback.onReceiveValue(null);
+            return;
+        }
+        webView.evaluateJavascript(
+                "window.currentViewStateJson ? currentViewStateJson() : null",
+                result -> callback.onReceiveValue(ExtendedViewStateJson.fromScriptResult(result)));
     }
 
     /** Makes sure the page holds a caret for the keyboard that is about to open. */

@@ -21,6 +21,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -428,6 +429,23 @@ public class NoteEditorView extends FrameLayout {
     /** Remembers where the note is being read or edited, as reported by the page. */
     public void onViewState(String json) {
         lastViewState = json;
+    }
+
+    /**
+     * Asks the page where the note is right now, without waiting for its next report; {@code
+     * callback} gets the page's JSON, or null when it has none. The answer is also kept as the last
+     * position.
+     */
+    public void readViewState(@NonNull ValueCallback<String> callback) {
+        if (!editorIsReady || editorInterface == null || releasing) {
+            callback.onReceiveValue(null);
+            return;
+        }
+        editorInterface.readViewState(
+                json -> {
+                    if (json != null) lastViewState = json;
+                    callback.onReceiveValue(json);
+                });
     }
 
     /** The last position the page reported, or null when it has not reported one yet. */

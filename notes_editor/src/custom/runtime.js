@@ -202,13 +202,42 @@ function reportViewState () {
   safeAndroidCall('onViewState', JSON.stringify(currentViewState()))
 }
 
+// While scrolling goes on, the position is also reported every so often, not only once it
+// settles: the note may be left in the middle of a fling, and in reading mode there is no caret
+// to report it otherwise.
+const VIEW_STATE_SETTLE_MS = 200
+const VIEW_STATE_WHILE_SCROLLING_MS = 250
+let __lastViewStateReport = 0
+
+function reportViewStateNow () {
+  clearTimeout(__viewStateTimer)
+  __lastViewStateReport = Date.now()
+  reportViewState()
+}
+
 function scheduleViewStateReport () {
   clearTimeout(__viewStateTimer)
-  __viewStateTimer = setTimeout(reportViewState, 200)
+  if (Date.now() - __lastViewStateReport >= VIEW_STATE_WHILE_SCROLLING_MS) {
+    __lastViewStateReport = Date.now()
+    reportViewState()
+  }
+  __viewStateTimer = setTimeout(reportViewStateNow, VIEW_STATE_SETTLE_MS)
 }
 
 window.addEventListener('scroll', scheduleViewStateReport, { passive: true })
 document.addEventListener('selectionchange', scheduleViewStateReport)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) reportViewStateNow()
+})
+
+/**
+ * The position right now, for Android to save as the note is left; null until the note is shown
+ * and any saved position has been applied.
+ */
+function currentViewStateJson () {
+  if (!editor || !__viewStateReady) return null
+  return JSON.stringify(currentViewState())
+}
 
 /**
  * Puts the caret {@code offset} characters into {@code input}, at its end when the text is now
@@ -856,6 +885,9 @@ function loadNote (note) {
         console.error('[Editor] placing the caret failed:', e)
       }
     }
+    // No saved position (the note opens at its start): the title is on screen, whatever placing
+    // the caret scrolled.
+    if (!note.viewState && !(note.anchor?.index >= 0)) window.scrollTo(0, 0)
     safeAndroidCall('onNoteRendered')
     // Both restores scroll on the next frame; start reporting once that has happened.
     requestAnimationFrame(() =>
@@ -1149,6 +1181,7 @@ window.currentBlockIndex = currentBlockIndex
 window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid
 window.flushContent = flushContent
 window.finishPage = finishPage
+window.currentViewStateJson = currentViewStateJson
 window.focusCaretFromAndroid = focusCaretFromAndroid
 window.historyUndo = historyUndo
 window.historyRedo = historyRedo
