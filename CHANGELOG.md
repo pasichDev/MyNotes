@@ -48,8 +48,8 @@
   deletions, pastes, formatting and blocks you add, remove or move, putting the cursor back where
   it was. On a keyboard, Ctrl+Z undoes and Ctrl+Shift+Z or Ctrl+Y redoes. An undo is saved like
   any other edit, and saving never clears the history. It belongs to the note you are editing: it
-  starts afresh whenever a note is opened, copied or restored from its version history, and in the
-  simple editor it also survives turning the screen.
+  starts afresh whenever a note is opened, copied or restored from its version history, and it
+  survives turning the screen in both editors.
 
 **Improvements**
 
