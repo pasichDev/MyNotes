@@ -187,6 +187,18 @@ public class MainActivity extends BaseActivity
     /** From the moment a card is picked up until the dropped order is behind the adapter. */
     private boolean dragging;
 
+    /**
+     * What the list swap in progress puts on screen once the list has faded out: the newest notes
+     * (null when only the layout changes) with their category, and whether the list then starts at
+     * the top. A swap requested while another is still fading replaces the pending callback, so
+     * everything it has to apply is kept here and read at that moment instead of being captured by
+     * each request; a later state or layout change then adds to the swap rather than dropping it.
+     */
+    @Nullable private List<Note> swapNotes;
+
+    @Nullable private Tag swapTag;
+    private boolean swapToTop;
+
     /** Whether the card picked up has actually moved. */
     private boolean dragMoved;
 
@@ -378,31 +390,21 @@ public class MainActivity extends BaseActivity
         int previousTopId = previous.isEmpty() ? -1 : previous.get(0).getId();
         boolean topChanged = !notes.isEmpty() && notes.get(0).getId() != previousTopId;
         boolean datasetChanged = event == UiEvent.SORT_CHANGED || event == UiEvent.TAG_CHANGED;
+        // A state that arrives while a swap is still fading joins it: submitted on its own, it
+        // would race the swap's pending list and the older one could land last.
         boolean swap =
                 datasetChanged
+                        || mainRenderListsController.isSwapping()
                         || NoteListTransition.needsCrossfade(
                                 previous, notes, gridLayoutManager.getSpanCount());
         List<Note> next = new ArrayList<>(notes);
         int count = notes.size();
 
         if (swap) {
-            mainRenderListsController.swapListContent(
-                    animate,
-                    () ->
-                            mNoteAdapter.submitList(
-                                    next,
-                                    () -> {
-                                        // Nothing is visible here: rebuild the columns from
-                                        // scratch so the grid comes back without gaps.
-                                        gridLayoutManager.invalidateSpanAssignments();
-                                        if (datasetChanged
-                                                || topChanged
-                                                || event == UiEvent.NOTE_CREATED) {
-                                            mainRenderListsController.jumpToTop();
-                                        }
-                                        mainRenderListsController.showStateNoteList(
-                                                selectedTag, count, animate);
-                                    }));
+            swapNotes = next;
+            swapTag = selectedTag;
+            swapToTop |= datasetChanged || topChanged || event == UiEvent.NOTE_CREATED;
+            mainRenderListsController.swapListContent(animate, this::commitListSwap);
         } else {
             mNoteAdapter.submitList(
                     next,
@@ -638,17 +640,39 @@ public class MainActivity extends BaseActivity
     public void onViewLayoutSelected(int format) {
         if (!formatList.setFormat(format, viewOptionsItem())) return;
         bindViewOptionsAction(format);
-        int notesCount = mNoteAdapter.getItemCount();
-        boolean animate = isListInteractive();
         // Changing the column count moves every card at once; doing it behind the list's fade
         // keeps cards from sliding over one another, the same way a new sort order is shown.
-        mainRenderListsController.swapListContent(
-                animate,
+        mainRenderListsController.swapListContent(isListInteractive(), this::commitListSwap);
+    }
+
+    /**
+     * Applies everything the swap in progress is waiting for while the list is not visible: the
+     * saved layout, then the newest notes, if any, and finally reveals the list again.
+     */
+    private void commitListSwap() {
+        int format = formatList.getFormat();
+        if (gridLayoutManager.getSpanCount() != format) gridLayoutManager.setSpanCount(format);
+        List<Note> notes = swapNotes;
+        swapNotes = null;
+        if (notes == null) {
+            gridLayoutManager.invalidateSpanAssignments();
+            mainRenderListsController.showStateNoteList(
+                    currentSelectedTag, mNoteAdapter.getItemCount(), isListInteractive());
+            return;
+        }
+        Tag tag = swapTag;
+        mNoteAdapter.submitList(
+                notes,
                 () -> {
-                    gridLayoutManager.setSpanCount(format);
+                    // Nothing is visible here: rebuild the columns from scratch so the grid
+                    // comes back without gaps.
                     gridLayoutManager.invalidateSpanAssignments();
+                    if (swapToTop) {
+                        swapToTop = false;
+                        mainRenderListsController.jumpToTop();
+                    }
                     mainRenderListsController.showStateNoteList(
-                            currentSelectedTag, notesCount, animate);
+                            tag, notes.size(), isListInteractive());
                 });
     }
 

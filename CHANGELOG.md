@@ -84,7 +84,9 @@
 - The main list animates smoothly again. Cards no longer slide over one another when a note moves
   to the top or the grid is rearranged, the list can no longer get stuck invisible or half-faded
   after quick changes, and returning from a note no longer shuffles cards under the closing
-  animation. With system animations turned off, every change is applied instantly.
+  animation. Changes that come in quick succession, such as switching category while a sync
+  finishes or changing the layout mid-fade, always end on the latest notes and layout instead of
+  an older list. With system animations turned off, every change is applied instantly.
 - Editing a long note no longer throws you around. Opening or closing the keyboard keeps the text
   where it was and the cursor in view, tapping Edit puts the cursor on the part of the note you
   are reading instead of jumping to its end, and the cursor no longer falls back to the top of
