@@ -688,4 +688,5 @@
     <string name="note_moved_to">Moved to position %1$d of %2$d</string>
     <string name="editor_undo">Undo</string>
     <string name="editor_redo">Redo</string>
+    <string name="editor_hide_keyboard">Hide keyboard</string>
 </resources>

@@ -34,6 +34,7 @@ import com.pasich.mynotes.cache.NoteOpeningPreferences;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
+import com.pasich.mynotes.ui.view.widgets.EditorKeyboardBar;
 import com.pasich.mynotes.utils.editor.EditableLinkMovementMethod;
 import com.pasich.mynotes.utils.editor.EditorCursor;
 import com.pasich.mynotes.utils.editor.NoteViewState;
@@ -335,6 +336,11 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     }
 
     @Override
+    protected EditorKeyboardBar getKeyboardBar() {
+        return binding.keyboardBar;
+    }
+
+    @Override
     protected ActivityNoteBinding inflateBinding(LayoutInflater inflater) {
         return ActivityNoteBinding.inflate(inflater);
     }
@@ -433,7 +439,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                     Insets systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
                     int visibleHeight =
-                            binding.getRoot().getHeight() - imeInsets.bottom - systemInsets.top;
+                            binding.getRoot().getHeight()
+                                    - imeInsets.bottom
+                                    - systemInsets.top
+                                    - binding.keyboardBar.getReservedHeight();
 
                     int lineHeight = layout.getLineBottom(line) - layout.getLineTop(line);
                     int lineVisibleTop = absoluteLineTop - currentScrollY;
@@ -493,9 +502,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
     /**
      * Handles system insets and the keyboard: the root takes the status bar, the FAB clears the
-     * navigation bar, and the scroll view ends above the keyboard or the navigation bar. When the
-     * keyboard opens, the caret is brought into view; when it closes nothing is moved, so the text
-     * stays where the user left it.
+     * navigation bar, the bar with Undo and Redo sits on the keyboard, and the scroll view ends
+     * above that bar, or above the navigation bar while the keyboard is down. When the keyboard
+     * opens, the caret is brought into view; when it closes nothing is moved, so the text stays
+     * where the user left it.
      */
     @Override
     protected void applyEdgeToEdgeInsets(View rootView) {
@@ -524,7 +534,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
                     v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), 0);
 
-                    int bottomMargin = Math.max(imeInsets.bottom, systemBars.bottom);
+                    binding.keyboardBar.onWindowInsets(insets);
+                    int bottomMargin =
+                            Math.max(imeInsets.bottom, systemBars.bottom)
+                                    + binding.keyboardBar.getReservedHeight();
                     android.widget.LinearLayout.LayoutParams params =
                             (android.widget.LinearLayout.LayoutParams)
                                     binding.scrollView.getLayoutParams();
@@ -811,7 +824,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         restoredSelectionEnd = EditorCursor.NONE;
 
         binding.setActivateEdit(true);
-        setUndoRedoShown(true);
+        setEditing(true);
         binding.valueNote.setEnabled(true);
         binding.valueNote.setFocusable(true);
         binding.valueNote.setFocusableInTouchMode(true);

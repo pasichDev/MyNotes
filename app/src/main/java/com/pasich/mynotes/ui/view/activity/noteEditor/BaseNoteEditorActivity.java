@@ -5,7 +5,6 @@ import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerT
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -20,8 +19,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
 import com.google.android.material.chip.Chip;
@@ -36,6 +37,7 @@ import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.NoteHistoryActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
+import com.pasich.mynotes.ui.view.widgets.EditorKeyboardBar;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.reminder.RepeatRuleFormatter;
@@ -48,18 +50,15 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Inject protected NoteContract.presenter notePresenter;
 
-    /** Alpha of a disabled toolbar icon, the Material 38%. */
-    private static final int DISABLED_ICON_ALPHA = 97;
-
     // Menu for the save status indicator
     protected MenuItem saveStatusMenuItem;
-    private MenuItem undoMenuItem;
-    private MenuItem redoMenuItem;
-    // Undo and Redo show while the note is being edited and are enabled while there is something
-    // to take back or apply again.
-    private boolean undoRedoShown = false;
+    // Undo and Redo apply while the note is being edited and are enabled while there is something
+    // to take back or apply again. They live on the bar above the keyboard and in More.
+    private boolean editing = false;
     private boolean canUndo = false;
     private boolean canRedo = false;
+    // The More sheet, while it is open, follows the history state.
+    @Nullable private Runnable editHistoryObserver;
     protected T binding;
     protected long idNote;
 
@@ -82,6 +81,9 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     // Returns toolbar menu layout
 
     protected abstract Toolbar getToolbar();
+
+    /** The bar docked above the keyboard, with Undo, Redo and Hide keyboard. */
+    protected abstract EditorKeyboardBar getKeyboardBar();
 
     /** The chip at the top of the note that shows the active reminder. */
     protected abstract Chip getReminderChip();
@@ -131,6 +133,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         setContentView(binding.getRoot());
 
         applyEdgeToEdgeInsets(binding.getRoot());
+        setupKeyboardBar();
 
         bindingSetPresenter(binding);
 
@@ -199,17 +202,49 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(getMenuResId(), menu);
         saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
-        undoMenuItem = menu.findItem(R.id.actionUndo);
-        redoMenuItem = menu.findItem(R.id.actionRedo);
-        applyUndoRedoState();
         return true;
     }
 
-    /** Shows Undo and Redo while the note is edited, hides them while it is read. */
-    protected void setUndoRedoShown(boolean shown) {
-        if (undoRedoShown == shown) return;
-        undoRedoShown = shown;
-        applyUndoRedoState();
+    private void setupKeyboardBar() {
+        EditorKeyboardBar bar = getKeyboardBar();
+        if (bar == null) return;
+        bar.setActions(
+                new EditorKeyboardBar.Actions() {
+                    @Override
+                    public void onUndo() {
+                        undoEdit();
+                    }
+
+                    @Override
+                    public void onRedo() {
+                        redoEdit();
+                    }
+
+                    @Override
+                    public void onHideKeyboard() {
+                        hideKeyboard();
+                    }
+                });
+        bar.setEditing(editing);
+        bar.setHistoryState(canUndo, canRedo);
+    }
+
+    /** Puts the on-screen keyboard away; the note stays in editing mode. */
+    protected void hideKeyboard() {
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .hide(WindowInsetsCompat.Type.ime());
+    }
+
+    /**
+     * The note is being edited (true) or read. Undo and Redo, on the bar above the keyboard and in
+     * More, and their shortcuts apply only while editing.
+     */
+    protected void setEditing(boolean editing) {
+        if (this.editing == editing) return;
+        this.editing = editing;
+        EditorKeyboardBar bar = binding != null ? getKeyboardBar() : null;
+        if (bar != null) bar.setEditing(editing);
+        notifyEditHistoryObserver();
     }
 
     /** Enables Undo and Redo according to the editor's history. */
@@ -217,22 +252,43 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         if (this.canUndo == canUndo && this.canRedo == canRedo) return;
         this.canUndo = canUndo;
         this.canRedo = canRedo;
-        applyUndoRedoState();
+        EditorKeyboardBar bar = binding != null ? getKeyboardBar() : null;
+        if (bar != null) bar.setHistoryState(canUndo, canRedo);
+        notifyEditHistoryObserver();
     }
 
-    private void applyUndoRedoState() {
-        applyHistoryItem(undoMenuItem, canUndo);
-        applyHistoryItem(redoMenuItem, canRedo);
+    private void notifyEditHistoryObserver() {
+        if (editHistoryObserver != null) editHistoryObserver.run();
     }
 
-    private void applyHistoryItem(MenuItem item, boolean enabled) {
-        if (item == null) return;
-        item.setVisible(undoRedoShown);
-        item.setEnabled(enabled);
-        // A disabled action button keeps its icon's colour; dim it so the state is visible. The
-        // menu has already mutated the icon to tint it, so this changes only this item.
-        Drawable icon = item.getIcon();
-        if (icon != null) icon.setAlpha(enabled ? 255 : DISABLED_ICON_ALPHA);
+    @Override
+    public boolean isEditingNote() {
+        return editing;
+    }
+
+    @Override
+    public boolean canUndoEdit() {
+        return editing && canUndo;
+    }
+
+    @Override
+    public boolean canRedoEdit() {
+        return editing && canRedo;
+    }
+
+    @Override
+    public void undoLastEdit() {
+        if (editing) undoEdit();
+    }
+
+    @Override
+    public void redoLastEdit() {
+        if (editing) redoEdit();
+    }
+
+    @Override
+    public void setEditHistoryObserver(@Nullable Runnable observer) {
+        editHistoryObserver = observer;
     }
 
     /**
@@ -248,7 +304,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     /** Runs Undo or Redo for their shortcut; returns whether the key was one of them. */
     protected boolean onHistoryShortcut(int keyCode, KeyEvent event) {
         if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
-        if (!undoRedoShown || !event.isCtrlPressed() || event.isAltPressed()) return false;
+        if (!editing || !event.isCtrlPressed() || event.isAltPressed()) return false;
         if (keyCode == KeyEvent.KEYCODE_Z) {
             if (event.isShiftPressed()) redoEdit();
             else undoEdit();
@@ -333,15 +389,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
             notePresenter.closeActivity();
         }
 
-        if (item.getItemId() == R.id.actionUndo) {
-            undoEdit();
-            return true;
-        }
-        if (item.getItemId() == R.id.actionRedo) {
-            redoEdit();
-            return true;
-        }
-
         if (item.getItemId() == R.id.moreBut) {
             if (notePresenter.hasNote()) {
                 MoreNoteDialog dialog =
@@ -412,7 +459,11 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Override
     public void onDestroy() {
-        if (binding != null) getReminderChip().setOnClickListener(null);
+        if (binding != null) {
+            getReminderChip().setOnClickListener(null);
+            getKeyboardBar().setActions(null);
+        }
+        editHistoryObserver = null;
         super.onDestroy();
         if (notePresenter != null) {
             ((NotePresenter) notePresenter).cleanupHandlers();

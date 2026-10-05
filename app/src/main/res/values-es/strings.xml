@@ -642,4 +642,5 @@
     <string name="note_moved_to">Movida a la posición %1$d de %2$d</string>
     <string name="editor_undo">Deshacer</string>
     <string name="editor_redo">Rehacer</string>
+    <string name="editor_hide_keyboard">Ocultar teclado</string>
 </resources>

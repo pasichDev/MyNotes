@@ -37,6 +37,7 @@ import com.pasich.mynotes.extendedEditor.view.AttachmentActionsDialog;
 import com.pasich.mynotes.extendedEditor.view.CopyTextDialog;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
 import com.pasich.mynotes.ui.view.activity.PhotoViewActivity;
+import com.pasich.mynotes.ui.view.widgets.EditorKeyboardBar;
 import com.pasich.mynotes.utils.editor.NoteViewState;
 import com.pasich.mynotes.utils.editor.NoteViewStateStore;
 import com.pasich.mynotes.utils.editor.PositionRestorer;
@@ -122,6 +123,7 @@ public class NoteExtendedEditorActivity
             if (restoreSavedPosition) binding.noteEditor.setAutofocus(false);
             binding.noteEditor.setFocusStart(editOnOpen);
         }
+        setEditing(!isReadMode);
         if (savedInstanceState != null && binding != null) {
             // A picker opened by the previous instance answers this one.
             binding.noteEditor.restoreChooserState(
@@ -194,6 +196,11 @@ public class NoteExtendedEditorActivity
     @Override
     protected Chip getReminderChip() {
         return binding.reminderChip;
+    }
+
+    @Override
+    protected EditorKeyboardBar getKeyboardBar() {
+        return binding.keyboardBar;
     }
 
     @Override
@@ -343,10 +350,11 @@ public class NoteExtendedEditorActivity
     }
 
     /**
-     * The window draws edge to edge, so the keyboard does not resize it: the root is padded by the
-     * keyboard or the navigation bar, whichever is taller. Without it the keyboard covered the
-     * lower half of the editor and the caret typed out of sight; the editor page keeps the caret
-     * visible when its height changes.
+     * The window draws edge to edge, so the keyboard does not resize it: the editor ends above the
+     * keyboard or the navigation bar, whichever is taller, and above the bar with Undo and Redo
+     * that sits on the keyboard while editing. Without it the keyboard covered the lower half of
+     * the editor and the caret typed out of sight; the editor page keeps the caret visible when its
+     * height changes, so the caret line stays above the bar.
      */
     @Override
     protected void applyEdgeToEdgeInsets(View rootView) {
@@ -355,8 +363,18 @@ public class NoteExtendedEditorActivity
                 (v, insets) -> {
                     Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                     Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-                    int bottom = Math.max(ime.bottom, systemBars.bottom);
-                    v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), bottom);
+                    // The bottom is left to the editor and the bar, which follows the keyboard.
+                    v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), 0);
+                    binding.keyboardBar.onWindowInsets(insets);
+                    int bottom =
+                            Math.max(ime.bottom, systemBars.bottom)
+                                    + binding.keyboardBar.getReservedHeight();
+                    ViewGroup.MarginLayoutParams params =
+                            (ViewGroup.MarginLayoutParams) binding.noteEditor.getLayoutParams();
+                    if (params.bottomMargin != bottom) {
+                        params.bottomMargin = bottom;
+                        binding.noteEditor.setLayoutParams(params);
+                    }
                     return insets;
                 });
     }
@@ -455,10 +473,10 @@ public class NoteExtendedEditorActivity
 
     /**
      * Shows the action that leaves the current mode: Edit while reading, Read while editing. Undo
-     * and Redo are there only while editing.
+     * and Redo, on the bar above the keyboard and in More, apply only while editing.
      */
     private void updateReadModeItem() {
-        setUndoRedoShown(!isReadMode);
+        setEditing(!isReadMode);
         if (readModeItem == null) return;
         readModeItem.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
         readModeItem.setTitle(isReadMode ? R.string.read_mode_exit : R.string.read_mode_enter);

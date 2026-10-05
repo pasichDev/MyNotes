@@ -257,6 +257,22 @@
         <item name="android:layout_marginEnd">0dp</item>
     </style>
 
+    <!-- A button on the bar above the keyboard: a 48dp touch target around a 24dp icon. -->
+    <style name="Widget.EditorKeyboardBar.Button" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="iconSize">24dp</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconTint">@color/editor_keyboard_bar_icon</item>
+    </style>
+
     <!-- Meet Encly: shared pieces of the page and its bottom sheet. -->
     <style name="MeetEncly.Card" parent="">
         <item name="android:layout_width">match_parent</item>

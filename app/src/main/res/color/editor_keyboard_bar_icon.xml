@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icons on the bar above the keyboard: the Material 3 disabled state (onSurface at 38%) when
+     there is nothing to undo or redo, onSurfaceVariant otherwise. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.38" android:color="?attr/colorOnSurface" android:state_enabled="false" />
+    <item android:color="?attr/colorOnSurfaceVariant" />
+</selector>

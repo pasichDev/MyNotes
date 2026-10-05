@@ -103,5 +103,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/reminderChip" />
 
+        <!-- Undo, Redo and Hide keyboard, docked above the keyboard while editing. -->
+        <com.pasich.mynotes.ui.view.widgets.EditorKeyboardBar
+            android:id="@+id/keyboardBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

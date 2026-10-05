@@ -257,6 +257,12 @@
             app:layout_dodgeInsetEdges="bottom"
             app:srcCompat="@drawable/ic_edit" />
 
+        <!-- Undo, Redo and Hide keyboard, docked above the keyboard while editing. -->
+        <com.pasich.mynotes.ui.view.widgets.EditorKeyboardBar
+            android:id="@+id/keyboardBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

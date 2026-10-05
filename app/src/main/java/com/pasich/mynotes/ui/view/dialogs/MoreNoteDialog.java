@@ -288,6 +288,19 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                 binding.quickCopy.setVisibility(GONE);
             }
 
+            // The sheet stays open, so Undo can be pressed several times; the rows follow the
+            // history as it changes.
+            binding.moreUndo.setOnClickListener(
+                    v -> {
+                        if (noteActivity != null) noteActivity.undoLastEdit();
+                    });
+            binding.moreRedo.setOnClickListener(
+                    v -> {
+                        if (noteActivity != null) noteActivity.redoLastEdit();
+                    });
+            if (noteActivity != null) noteActivity.setEditHistoryObserver(this::applyEditHistory);
+            applyEditHistory();
+
         } else {
             binding.actionPanelActivate.setOnClickListener(
                     view -> {
@@ -355,6 +368,13 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                 });
     }
 
+    /** Shows Undo and Redo while the note is edited and enables them by its history. */
+    private void applyEditHistory() {
+        if (binding == null) return;
+        EditHistoryRows.apply(
+                binding.editHistoryGroup, binding.moreUndo, binding.moreRedo, noteActivity);
+    }
+
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
@@ -367,6 +387,9 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             binding.quickTranslate.setOnClickListener(null);
             binding.quickPin.setOnClickListener(null);
             binding.settingsActivity.textStyleItem.setOnClickListener(null);
+            binding.moreUndo.setOnClickListener(null);
+            binding.moreRedo.setOnClickListener(null);
+            if (noteActivity != null) noteActivity.setEditHistoryObserver(null);
             noteActivity = null;
         } else {
             mainActivity = null;

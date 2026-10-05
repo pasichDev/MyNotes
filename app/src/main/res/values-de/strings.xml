@@ -641,4 +641,5 @@
     <string name="note_moved_to">An Position %1$d von %2$d verschoben</string>
     <string name="editor_undo">Rückgängig</string>
     <string name="editor_redo">Wiederholen</string>
+    <string name="editor_hide_keyboard">Tastatur ausblenden</string>
 </resources>
