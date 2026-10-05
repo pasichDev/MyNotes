@@ -647,4 +647,6 @@
     <string name="editor_undo">Deshacer</string>
     <string name="editor_redo">Rehacer</string>
     <string name="editor_hide_keyboard">Ocultar teclado</string>
+    <string name="custom_order_hint">Para reordenar las notas arrastrándolas, activa «Orden personalizado»</string>
+    <string name="custom_order_hint_action">Activar</string>
 </resources>

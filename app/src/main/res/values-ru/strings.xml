@@ -671,4 +671,6 @@
     <string name="editor_undo">Отменить</string>
     <string name="editor_redo">Повторить</string>
     <string name="editor_hide_keyboard">Скрыть клавиатуру</string>
+    <string name="custom_order_hint">Чтобы менять порядок перетаскиванием, включите «Свой порядок»</string>
+    <string name="custom_order_hint_action">Включить</string>
 </resources>

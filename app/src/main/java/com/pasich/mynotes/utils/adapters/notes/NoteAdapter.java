@@ -234,6 +234,27 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteHolder> {
         }
 
         /**
+         * A handle on the cards that can be dragged, in the custom order. The first line of text
+         * keeps clear of it.
+         */
+        void bindDragHandle(boolean shown) {
+            binding.dragHandle.setVisibility(shown ? View.VISIBLE : View.GONE);
+            int clear =
+                    shown
+                            ? itemView.getResources()
+                                    .getDimensionPixelSize(R.dimen.note_drag_handle_clearance)
+                            : 0;
+            boolean titled = binding.nameNote.getVisibility() == View.VISIBLE;
+            setEndPadding(binding.nameNote, titled ? clear : 0);
+            setEndPadding(binding.previewNote, titled ? 0 : clear);
+        }
+
+        private void setEndPadding(View view, int end) {
+            view.setPaddingRelative(
+                    view.getPaddingStart(), view.getPaddingTop(), end, view.getPaddingBottom());
+        }
+
+        /**
          * In the custom order a card can also be moved without dragging, which is the only way for
          * someone using TalkBack or a switch.
          */
@@ -247,6 +268,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteHolder> {
                 moveDownAction = View.NO_ID;
             }
             ReorderListener reorder = reorderListener;
+            bindDragHandle(reorder != null && !note.isPinned());
             if (reorder == null) return;
             moveUpAction =
                     ViewCompat.addAccessibilityAction(

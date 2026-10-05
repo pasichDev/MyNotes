@@ -646,4 +646,6 @@
     <string name="editor_undo">Rückgängig</string>
     <string name="editor_redo">Wiederholen</string>
     <string name="editor_hide_keyboard">Tastatur ausblenden</string>
+    <string name="custom_order_hint">Um Notizen per Ziehen zu ordnen, aktiviere „Eigene Reihenfolge“</string>
+    <string name="custom_order_hint_action">Aktivieren</string>
 </resources>

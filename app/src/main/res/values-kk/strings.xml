@@ -643,4 +643,6 @@
     <string name="editor_undo">Болдырмау</string>
     <string name="editor_redo">Қайталау</string>
     <string name="editor_hide_keyboard">Пернетақтаны жасыру</string>
+    <string name="custom_order_hint">Жазбаларды сүйреп ретін өзгерту үшін «Өз ретім» параметрін қосыңыз</string>
+    <string name="custom_order_hint_action">Қосу</string>
 </resources>

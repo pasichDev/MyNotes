@@ -644,4 +644,6 @@
     <string name="editor_undo">Annulla</string>
     <string name="editor_redo">Ripeti</string>
     <string name="editor_hide_keyboard">Nascondi tastiera</string>
+    <string name="custom_order_hint">Per riordinare le note trascinandole, attiva «Ordine personalizzato»</string>
+    <string name="custom_order_hint_action">Attiva</string>
 </resources>

@@ -642,4 +642,6 @@
     <string name="editor_undo">Annuler</string>
     <string name="editor_redo">Rétablir</string>
     <string name="editor_hide_keyboard">Masquer le clavier</string>
+    <string name="custom_order_hint">Pour réordonner les notes en les faisant glisser, activez « Ordre personnalisé »</string>
+    <string name="custom_order_hint_action">Activer</string>
 </resources>

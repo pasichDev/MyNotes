@@ -667,4 +667,6 @@
     <string name="editor_undo">Cofnij</string>
     <string name="editor_redo">Ponów</string>
     <string name="editor_hide_keyboard">Ukryj klawiaturę</string>
+    <string name="custom_order_hint">Aby zmieniać kolejność przeciąganiem, włącz „Własna kolejność”</string>
+    <string name="custom_order_hint_action">Włącz</string>
 </resources>

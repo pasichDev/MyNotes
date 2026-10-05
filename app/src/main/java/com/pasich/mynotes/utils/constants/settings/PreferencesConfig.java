@@ -48,6 +48,9 @@ public class PreferencesConfig {
     /** Whether the notes list uses the custom order; device-local, never backed up or synced. */
     public static final String ARGUMENT_PREFERENCE_CUSTOM_ORDER = "notesCustomOrder";
 
+    /** Whether the one-time hint pointing a long press at the custom order was shown. */
+    public static final String ARGUMENT_PREFERENCE_CUSTOM_ORDER_HINT_SHOWN = "customOrderHintShown";
+
     // ThemeMode
     public static final String ARGUMENT_PREFERENCE_THEME_MODE = "themeMode";
     public static final int ARGUMENT_DEFAULT_THEME_MODE_VALUE =

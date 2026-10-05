@@ -666,4 +666,6 @@
     <string name="editor_undo">Адрабіць</string>
     <string name="editor_redo">Паўтарыць</string>
     <string name="editor_hide_keyboard">Схаваць клавіятуру</string>
+    <string name="custom_order_hint">Каб мяняць парадак перацягваннем, уключыце «Свой парадак»</string>
+    <string name="custom_order_hint_action">Уключыць</string>
 </resources>

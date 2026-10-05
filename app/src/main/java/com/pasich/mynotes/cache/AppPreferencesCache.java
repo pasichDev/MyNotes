@@ -119,6 +119,24 @@ public class AppPreferencesCache {
         return SortParam.Custom.equals(sortPref) ? SortParam.DataSort : sortPref;
     }
 
+    /**
+     * Whether the hint about dragging in the custom order may be shown after a long press: never in
+     * the custom order itself, in selection or in search, and only once ever.
+     */
+    public static boolean customOrderHintDue(
+            boolean customOrder, boolean selecting, boolean searching, boolean shownBefore) {
+        return !customOrder && !selecting && !searching && !shownBefore;
+    }
+
+    public boolean isCustomOrderHintShown() {
+        return prefs.getBoolean(
+                PreferencesConfig.ARGUMENT_PREFERENCE_CUSTOM_ORDER_HINT_SHOWN, false);
+    }
+
+    public void setCustomOrderHintShown() {
+        prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_CUSTOM_ORDER_HINT_SHOWN, true);
+    }
+
     public synchronized void setSortPref(String sort) {
         try {
             boolean custom = SortParam.Custom.equals(sort);

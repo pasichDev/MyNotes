@@ -692,4 +692,6 @@
     <string name="editor_undo">Undo</string>
     <string name="editor_redo">Redo</string>
     <string name="editor_hide_keyboard">Hide keyboard</string>
+    <string name="custom_order_hint">To reorder notes by dragging, turn on “Custom order”</string>
+    <string name="custom_order_hint_action">Turn on</string>
 </resources>

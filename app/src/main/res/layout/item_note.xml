@@ -60,6 +60,19 @@
                     android:layout_height="10dp"
                     android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments() || Note.hasReminder() || Note.pinned) ? View.VISIBLE : View.GONE}" />
             </LinearLayout>
+
+            <!-- Custom order only; the card's own move up and move down actions serve TalkBack. -->
+            <ImageView
+                android:id="@+id/dragHandle"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="8dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_drag_handle"
+                android:visibility="gone"
+                app:tint="?attr/colorOnSurfaceVariant" />
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView

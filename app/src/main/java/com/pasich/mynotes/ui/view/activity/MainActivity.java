@@ -19,6 +19,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,6 +60,7 @@ import com.pasich.mynotes.utils.adapters.tagAdapter.OnItemClickListenerTag;
 import com.pasich.mynotes.utils.adapters.tagAdapter.TagsAdapter;
 import com.pasich.mynotes.utils.constants.NameTransition;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
+import com.pasich.mynotes.utils.constants.settings.SortParam;
 import com.pasich.mynotes.utils.encly.EnclyMigrationRepository;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.navigation.NoteNavigator;
@@ -1028,6 +1031,44 @@ public class MainActivity extends BaseActivity
                         note.getId(), MoreNoteDialog.RootActivity.MainActivity, position);
 
         dialog.show(getSupportFragmentManager(), "ChoiceDialog");
+        offerCustomOrderHint(dialog);
+    }
+
+    /**
+     * A long press outside the custom order may have been meant to move the note: once the note's
+     * menu is closed, says once ever how to turn the custom order on.
+     */
+    private void offerCustomOrderHint(MoreNoteDialog dialog) {
+        if (!customOrderHintDue()) return;
+        dialog.getLifecycle()
+                .addObserver(
+                        (LifecycleEventObserver)
+                                (source, event) -> {
+                                    if (event != Lifecycle.Event.ON_DESTROY) return;
+                                    if (!getLifecycle()
+                                                    .getCurrentState()
+                                                    .isAtLeast(Lifecycle.State.RESUMED)
+                                            || !customOrderHintDue()) return;
+                                    appPreferencesCache.setCustomOrderHintShown();
+                                    Snackbar snackbar =
+                                            Snackbar.make(
+                                                    mActivityBinding.drawerLayout,
+                                                    R.string.custom_order_hint,
+                                                    Snackbar.LENGTH_LONG);
+                                    snackbar.setAction(
+                                            R.string.custom_order_hint_action,
+                                            v -> onViewSortSelected(SortParam.Custom));
+                                    snackbar.setAnchorView(mActivityBinding.newNotesButton);
+                                    snackbar.show();
+                                });
+    }
+
+    private boolean customOrderHintDue() {
+        return AppPreferencesCache.customOrderHintDue(
+                mainPresenter.isCustomOrder(),
+                selectionController.isInSelectionMode(),
+                mActivityBinding.searchView.isShowing(),
+                appPreferencesCache.isCustomOrderHintShown());
     }
 
     private boolean finishActivity() {

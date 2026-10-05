@@ -18,4 +18,6 @@
 
 
     <dimen name="marginHorizontalActivity">10dp</dimen>
+    <!-- Room kept beside the drag handle of a card in the custom order. -->
+    <dimen name="note_drag_handle_clearance">20dp</dimen>
 </resources>

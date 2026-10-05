@@ -66,4 +66,24 @@ public class AppPreferencesCacheSortTest {
         assertThat(cache.getSortPref()).isEqualTo(SortParam.Custom);
         assertThat(cache.getSyncedSortPref()).isEqualTo(SortParam.DataReserve);
     }
+
+    @Test
+    public void customOrderHint_isDueOnlyOnceAndOnlyOutsideTheCustomOrder() {
+        assertThat(AppPreferencesCache.customOrderHintDue(false, false, false, false)).isTrue();
+        assertThat(AppPreferencesCache.customOrderHintDue(true, false, false, false)).isFalse();
+        assertThat(AppPreferencesCache.customOrderHintDue(false, true, false, false)).isFalse();
+        assertThat(AppPreferencesCache.customOrderHintDue(false, false, true, false)).isFalse();
+
+        assertThat(cache.isCustomOrderHintShown()).isFalse();
+        cache.setCustomOrderHintShown();
+        verify(preferences)
+                .putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_CUSTOM_ORDER_HINT_SHOWN, true);
+        when(preferences.getBoolean(
+                        PreferencesConfig.ARGUMENT_PREFERENCE_CUSTOM_ORDER_HINT_SHOWN, false))
+                .thenReturn(true);
+        assertThat(
+                        AppPreferencesCache.customOrderHintDue(
+                                false, false, false, cache.isCustomOrderHintShown()))
+                .isFalse();
+    }
 }

@@ -675,4 +675,6 @@
     <string name="editor_undo">Скасувати</string>
     <string name="editor_redo">Повторити</string>
     <string name="editor_hide_keyboard">Сховати клавіатуру</string>
+    <string name="custom_order_hint">Щоб змінити порядок перетягуванням, увімкніть «Власний порядок»</string>
+    <string name="custom_order_hint_action">Увімкнути</string>
 </resources>
