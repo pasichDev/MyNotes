@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [Unreleased]
+## [2.7.56] - 05.10.2026
 
 **New**
 
