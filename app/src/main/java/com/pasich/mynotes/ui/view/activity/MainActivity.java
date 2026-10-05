@@ -449,6 +449,7 @@ public class MainActivity extends BaseActivity
     protected void onStop() {
         super.onStop();
         stopped = true;
+        if (navigationController != null) navigationController.onHostStopped();
         settleHandler.removeCallbacks(endSettling);
         settling = false;
         // Anything held back is applied now, without animation, while nobody is looking.
