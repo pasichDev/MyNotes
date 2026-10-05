@@ -4,9 +4,9 @@ import android.content.Context;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.utils.recycler.NotesGridLayoutManager;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.diffutil.DiffUtilTag;
 import dagger.Module;
@@ -29,8 +29,8 @@ public class ListUtilsModule {
 
     @Provides
     @ActivityScoped
-    StaggeredGridLayoutManager providesStaggeredGridLayoutManager(int spanCount) {
-        return new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
+    NotesGridLayoutManager providesNotesGridLayoutManager(int spanCount) {
+        return new NotesGridLayoutManager(spanCount);
     }
 
     @Named("Tag")
