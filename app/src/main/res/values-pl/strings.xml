@@ -14,7 +14,6 @@
     <string name="telegram">Otwórz kontakty programistów</string>
     <string name="notSupportedShare">Ta zawartość nie jest obsługiwana.</string>
     <string name="notFoundPlayMarket">Brak aplikacji Play Market</string>
-    <string name="cd_format">Formatuj notatki</string>
 
     <string name="search">Szukaj w notatkach</string>
     <string name="close">Zamknij</string>
@@ -103,7 +102,6 @@
     <string name="restoreDataFall">Błąd: Uszkodzona kopia zapasowa</string>
     <string name="errorDriveSync">Błąd serwera lub niska jakość internetu</string>
 
-    <string name="sortNotes">Sortuj notatki</string>
 
     <!-- Oferta produktowa -->
     <string name="thanks_title">Drogi użytkowniku</string>
@@ -172,9 +170,9 @@
     <string name="help_navigation_search_title">Wyszukiwanie</string>
     <string name="help_navigation_search_description">Użyj paska wyszukiwania, aby szybko znaleźć swoje notatki według tytułu lub zawartości</string>
     <string name="help_navigation_sort_title">Sortowanie</string>
-    <string name="help_navigation_sort_description">Sortuj swoje notatki według daty ostatniej modyfikacji lub nazwy w kolejności rosnącej lub malejącej</string>
+    <string name="help_navigation_sort_description">Naciśnij przycisk opcji widoku na pasku wyszukiwania, aby wyświetlać ostatnio edytowane notatki na początku lub na końcu.</string>
     <string name="help_navigation_format_title">Format wyświetlania</string>
-    <string name="help_navigation_format_description">Przełączaj między listą a siatką, aby wyświetlać swoje notatki w wygodnym dla siebie układzie</string>
+    <string name="help_navigation_format_description">W tych samych opcjach widoku przełączaj między listą a siatką.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gesty przesuwania</string>
@@ -450,7 +448,7 @@
     <string name="help_tasks_reminder_description">Ustaw przypomnienie dla dowolnego zadania, naciskając ikonę dzwonka. O wyznaczonej porze otrzymasz powiadomienie. Naciśnij je, aby od razu otworzyć zadanie.</string>
     <string name="help_reminders_title">Przypomnienia</string>
     <string name="help_reminders_notes_title">Przypomnienia o notatkach</string>
-    <string name="help_reminders_notes_description">Otwórz dowolną notatkę i naciśnij ikonę dzwonka, aby ustawić przypomnienie. Wybierz godzinę za pomocą opcji szybkiego wyboru albo selektora daty i godziny. O wyznaczonej porze pojawi się powiadomienie.</string>
+    <string name="help_reminders_notes_description">Otwórz notatkę, naciśnij „Więcej” i wybierz „Przypomnienie”. Wybierz godzinę za pomocą opcji szybkiego wyboru albo selektora daty i godziny. Przypomnienie pojawi się na górze notatki; naciśnij je, aby je zmienić. O wyznaczonej porze pojawi się powiadomienie.</string>
     <string name="help_reminders_repeat_title">Opcje powtarzania</string>
     <string name="help_reminders_repeat_description">Podczas ustawiania przypomnienia do notatki włącz przełącznik „Powtarzaj”, aby wybrać cykl: codziennie, co tydzień lub co miesiąc. Po każdym powiadomieniu przypomnienie jest planowane ponownie automatycznie.</string>
     <string name="help_reminders_interval_title">Powiadomienia interwałowe</string>
@@ -516,4 +514,17 @@
     <string name="meet_encly_dialog_text">Moje notatki mają następcę: Encly, w pełni szyfrowane notatki działające offline. Możesz przenieść do niej wszystkie notatki jednym dotknięciem.</string>
     <string name="meet_encly_dialog_more">Dowiedz się więcej</string>
     <string name="meet_encly_dialog_later">Później</string>
+    <string name="search_short">Szukaj</string>
+    <string name="view_options">Opcje widoku</string>
+    <string name="view_options_cd_list">Opcje widoku. Notatki są wyświetlane jako lista</string>
+    <string name="view_options_cd_grid">Opcje widoku. Notatki są wyświetlane jako siatka</string>
+    <string name="view_options_sort">Sortuj według ostatniej zmiany</string>
+    <string name="view_options_sort_newest">Najpierw najnowsze</string>
+    <string name="view_options_sort_oldest">Najpierw najstarsze</string>
+    <string name="view_options_layout">Układ</string>
+    <string name="view_options_layout_list">Lista</string>
+    <string name="view_options_layout_grid">Siatka</string>
+    <string name="read_mode_enter">Tryb czytania</string>
+    <string name="read_mode_exit">Wróć do edycji</string>
+    <string name="reminder_chip_cd">Przypomnienie: %1$s. Zmień przypomnienie</string>
 </resources>

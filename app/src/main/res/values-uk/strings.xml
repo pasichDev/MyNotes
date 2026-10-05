@@ -14,8 +14,7 @@
     <string name="telegram">Відкрити контакти розробника</string>
     <string name="notSupportedShare">Цей вміст не підтримується.</string>
     <string name="notFoundPlayMarket">Відсутній  Play Market</string>
-    <string name="cd_format">Форматувати нотатки</string>
-    <string name="search">Пошук у нотатках </string>
+    <string name="search">Пошук у нотатках</string>
     <string name="close">Закрити</string>
     <string name="addTag">Додати тег</string>
     <string name="deleteTag">Видалити</string>
@@ -100,7 +99,6 @@
     <string name="restoreDataOkay">Відновлення даних успішно завершено</string>
     <string name="restoreDataFall">Помилка: Резервна копія пошкоджена</string>
     <string name="errorDriveSync">Помилка сервера або погана якість інтернету</string>
-    <string name="sortNotes">Сортувати нотатки</string>
     <!-- Product offer -->
     <string name="thanks_title">Шановний користувач</string>
     <string name="thanks_donate">Розробник проекту каже вам спасибі за вашу покупку. Ми будемо прагнути стати кращими і зручнішими. \n <b>З повагою, мої нотатки!</b></string>
@@ -171,9 +169,9 @@
     <string name="help_navigation_search_title">Пошук</string>
     <string name="help_navigation_search_description">Використовуйте панель пошуку для швидкого знаходження ваших нотаток за назвою або змістом</string>
     <string name="help_navigation_sort_title">Сортування</string>
-    <string name="help_navigation_sort_description">Сортуйте ваші нотатки за датою останньої зміни або назвою у висхідному чи спадному порядку</string>
+    <string name="help_navigation_sort_description">Натисніть кнопку параметрів перегляду в рядку пошуку, щоб показувати нещодавно змінені нотатки першими або останніми.</string>
     <string name="help_navigation_format_title">Формат відображення</string>
-    <string name="help_navigation_format_description">Переключайтеся між списком та сіткою для відображення ваших нотаток у зручному для вас макеті</string>
+    <string name="help_navigation_format_description">У тих самих параметрах перегляду перемикайтеся між списком і сіткою.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жести свайп</string>
@@ -249,7 +247,7 @@
     <!-- Reminders Help Section -->
     <string name="help_reminders_title">Нагадування</string>
     <string name="help_reminders_notes_title">Нагадування для нотаток</string>
-    <string name="help_reminders_notes_description">Відкрийте будь-яку нотатку та натисніть іконку дзвіночка, щоб встановити нагадування. Виберіть час за допомогою швидких варіантів або вручну. Сповіщення з\'явиться у вказаний час.</string>
+    <string name="help_reminders_notes_description">Відкрийте нотатку, натисніть «Більше» й виберіть «Нагадування». Виберіть час за допомогою швидких варіантів або вручну. Нагадування з\'явиться вгорі нотатки, натисніть на нього, щоб змінити. Сповіщення з\'явиться у вказаний час.</string>
     <string name="help_reminders_repeat_title">Параметри повторення</string>
     <string name="help_reminders_repeat_description">При встановленні нагадування для нотатки увімкніть перемикач «Повторення», щоб вибрати цикл: щодня, щотижня або щомісяця. Нагадування автоматично переноситься після кожного спрацювання.</string>
     <string name="help_reminders_interval_title">Інтервальні сповіщення</string>
@@ -524,4 +522,17 @@
     <string name="meet_encly_dialog_text">У «Мої Нотатки» з\'явився наступник — Encly, повністю зашифровані нотатки, що працюють офлайн. Усі нотатки можна перенести в нього одним дотиком.</string>
     <string name="meet_encly_dialog_more">Детальніше</string>
     <string name="meet_encly_dialog_later">Пізніше</string>
+    <string name="search_short">Пошук</string>
+    <string name="view_options">Параметри перегляду</string>
+    <string name="view_options_cd_list">Параметри перегляду. Нотатки показано списком</string>
+    <string name="view_options_cd_grid">Параметри перегляду. Нотатки показано сіткою</string>
+    <string name="view_options_sort">Сортувати за останньою зміною</string>
+    <string name="view_options_sort_newest">Спочатку нові</string>
+    <string name="view_options_sort_oldest">Спочатку старі</string>
+    <string name="view_options_layout">Вигляд</string>
+    <string name="view_options_layout_list">Список</string>
+    <string name="view_options_layout_grid">Сітка</string>
+    <string name="read_mode_enter">Режим читання</string>
+    <string name="read_mode_exit">Повернутися до редагування</string>
+    <string name="reminder_chip_cd">Нагадування: %1$s. Змінити нагадування</string>
 </resources>

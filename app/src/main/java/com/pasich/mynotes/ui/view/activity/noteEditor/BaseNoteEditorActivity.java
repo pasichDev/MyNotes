@@ -4,11 +4,10 @@ import static com.pasich.mynotes.utils.navigation.NoteExtras.EXTRA_ID_NOTE;
 import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +20,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -43,7 +43,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     // Menu for the save status indicator
     protected MenuItem saveStatusMenuItem;
-    private MenuItem reminderMenuItem;
     protected T binding;
     protected long idNote;
 
@@ -52,6 +51,9 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     // Returns toolbar menu layout
 
     protected abstract Toolbar getToolbar();
+
+    /** The chip at the top of the note that shows the active reminder. */
+    protected abstract Chip getReminderChip();
 
     // Returns toolbar instance
 
@@ -101,6 +103,8 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
         onAfterPresenterReady();
 
+        getReminderChip().setOnClickListener(v -> openReminderPicker());
+
         getSupportFragmentManager()
                 .setFragmentResultListener(
                         "reminderChanged",
@@ -112,7 +116,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
                                     .getNote()
                                     .setReminderTime(
                                             hasReminder ? result.getLong("reminderTime") : null);
-                            updateReminderIcon(notePresenter.getNote());
+                            updateReminderChip(notePresenter.getNote());
                         });
 
         getOnBackPressedDispatcher()
@@ -158,7 +162,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(getMenuResId(), menu);
         saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
-        reminderMenuItem = menu.findItem(R.id.reminderBut);
         return true;
     }
 
@@ -166,22 +169,41 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus && notePresenter != null && notePresenter.hasNote()) {
-            updateReminderIcon(notePresenter.getNote());
+            // A reminder may have fired, or been changed from the notification, meanwhile.
+            updateReminderChip(notePresenter.getNote());
         }
     }
 
-    protected void updateReminderIcon(Note note) {
-        if (reminderMenuItem == null || note == null) return;
-        boolean hasReminder = note.hasReminder();
-        TypedValue tv = new TypedValue();
-        getTheme()
-                .resolveAttribute(
-                        hasReminder
-                                ? android.R.attr.colorPrimary
-                                : com.google.android.material.R.attr.colorOnBackground,
-                        tv,
-                        true);
-        reminderMenuItem.setIconTintList(ColorStateList.valueOf(tv.data));
+    /**
+     * Shows the note's upcoming reminder as a chip at the top of the note, or hides the chip when
+     * there is none. Setting a reminder lives in More, so the toolbar keeps only Back, the save
+     * status and More.
+     */
+    protected void updateReminderChip(Note note) {
+        Chip chip = getReminderChip();
+        if (chip == null) return;
+        if (note == null || !note.hasReminder()) {
+            chip.setVisibility(View.GONE);
+            return;
+        }
+        String when =
+                DateUtils.formatDateTime(
+                        this,
+                        note.getReminderTime(),
+                        DateUtils.FORMAT_SHOW_DATE
+                                | DateUtils.FORMAT_SHOW_TIME
+                                | DateUtils.FORMAT_SHOW_WEEKDAY
+                                | DateUtils.FORMAT_ABBREV_ALL);
+        chip.setText(when);
+        chip.setContentDescription(getString(R.string.reminder_chip_cd, when));
+        chip.setVisibility(View.VISIBLE);
+    }
+
+    private void openReminderPicker() {
+        if (notePresenter == null || !notePresenter.hasNote()) return;
+        if (getSupportFragmentManager().findFragmentByTag("ReminderPicker") != null) return;
+        ReminderPickerBottomSheet.newInstance(notePresenter.getNote().getId())
+                .show(getSupportFragmentManager(), "ReminderPicker");
     }
 
     protected void settingsStatusBar(Window window) {
@@ -211,13 +233,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             notePresenter.closeActivity();
-        }
-
-        if (item.getItemId() == R.id.reminderBut) {
-            if (notePresenter.hasNote()) {
-                ReminderPickerBottomSheet.newInstance(notePresenter.getNote().getId())
-                        .show(getSupportFragmentManager(), "ReminderPicker");
-            }
         }
 
         if (item.getItemId() == R.id.moreBut) {
@@ -290,6 +305,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Override
     public void onDestroy() {
+        if (binding != null) getReminderChip().setOnClickListener(null);
         super.onDestroy();
         if (notePresenter != null) {
             ((NotePresenter) notePresenter).cleanupHandlers();

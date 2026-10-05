@@ -183,6 +183,18 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
+                    <!-- Active reminder; tapping it opens the reminder picker. -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/reminderChip"
+                        style="@style/noteReminderChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:visibility="gone"
+                        tools:text="Tue, 14 Oct, 18:00"
+                        tools:visibility="visible" />
+
                     <EditText
                         android:id="@+id/notesTitle"
                         android:layout_width="match_parent"

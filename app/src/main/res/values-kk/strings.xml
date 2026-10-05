@@ -14,8 +14,7 @@
     <string name="telegram">Әзірлеуші ​​контактілерін ашыңыз</string>
     <string name="notSupportedShare">Бұл мазмұнға қолдау көрсетілмейді.</string>
     <string name="notFoundPlayMarket">Play Market қолданбасы жоқ</string>
-    <string name="cd_format">Жазбаларды пішімдеу</string>
-    <string name="search">Ескертпелердегі іздеу</string>
+    <string name="search">Жазбалардан іздеу</string>
     <string name="close">Жабу</string>
     <string name="addTag">Тег қосу</string>
     <string name="deleteTag">Текті</string>
@@ -101,7 +100,6 @@
     <string name="restoreDataFall">Қате: сақтық көшірме бүлінген</string>
     <string name="errorDriveSync">Сервер қатесі немесе нашар интернет сапасы</string>
 
-    <string name="sortNotes">Ескертпелерді сұрыптау</string>
 
     <string name="thanks_title">Құрметті пайдаланушы</string>
     <string name="thanks_donate">Жоба әзірлеушісі сатып алғаныңыз үшін алғыс білдіреді. Біз жақсырақ және ыңғайлырақ болуға тырысамыз. \n <b>Құрметпен, менің жазбаларым!</b></string>
@@ -170,9 +168,9 @@
     <string name="help_navigation_search_title">Іздеу</string>
     <string name="help_navigation_search_description">Жазбаларыңызды атауы немесе мазмұны бойынша тез табу үшін іздеу жолағын пайдаланыңыз</string>
     <string name="help_navigation_sort_title">Сұрыптау</string>
-    <string name="help_navigation_sort_description">Жазбаларыңызды соңғы өзгерту күні немесе атауы бойынша өсу немесе кему ретімен сұрыптаңыз</string>
+    <string name="help_navigation_sort_description">Жақында өзгертілген жазбаларды басында немесе соңында көрсету үшін іздеу жолағындағы көрініс параметрлері түймесін басыңыз.</string>
     <string name="help_navigation_format_title">Көрсету форматы</string>
-    <string name="help_navigation_format_description">Жазбаларыңызды өзіңізге ыңғайлы орналасуда көрсету үшін тізім мен тор арасында ауысыңыз</string>
+    <string name="help_navigation_format_description">Сол көрініс параметрлерінде тізім мен тор арасында ауысыңыз.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Сырғыту жестері</string>
@@ -446,7 +444,7 @@
     <string name="help_tasks_reminder_description">Қоңырау белгішесін басып, кез келген тапсырмаға еске салғыш қойыңыз. Белгіленген уақытта хабарландыру келеді. Тапсырманы бірден ашу үшін хабарландыруды басыңыз.</string>
     <string name="help_reminders_title">Еске салғыштар</string>
     <string name="help_reminders_notes_title">Жазба еске салғыштары</string>
-    <string name="help_reminders_notes_description">Кез келген жазбаны ашып, еске салғыш қою үшін қоңырау белгішесін басыңыз. Уақытты жылдам нұсқалар арқылы немесе күн мен уақытты таңдау терезесінен көрсетіңіз. Белгіленген уақытта хабарландыру шығады.</string>
+    <string name="help_reminders_notes_description">Жазбаны ашып, «Қосымша» түймесін басып, «Еске салу» тармағын таңдаңыз. Уақытты жылдам нұсқалар арқылы немесе күн мен уақытты таңдау терезесінен көрсетіңіз. Еске салу жазбаның жоғарғы жағында көрсетіледі, өзгерту үшін оны басыңыз. Белгіленген уақытта хабарландыру шығады.</string>
     <string name="help_reminders_repeat_title">Қайталау параметрлері</string>
     <string name="help_reminders_repeat_description">Жазбаға еске салғыш қойғанда қайталау циклін таңдау үшін «Қайталау» қосқышын қосыңыз: күн сайын, апта сайын немесе ай сайын. Әр хабарландырудан кейін еске салғыш автоматты түрде қайта жоспарланады.</string>
     <string name="help_reminders_interval_title">Аралық хабарландырулар</string>
@@ -512,4 +510,17 @@
     <string name="meet_encly_dialog_text">«Менің жазбаларым» қолданбасының мұрагері бар — Encly, офлайн жұмыс істейтін толық шифрланған жазбалар. Барлық жазбаларыңызды оған бір түртумен көшіруге болады.</string>
     <string name="meet_encly_dialog_more">Толығырақ</string>
     <string name="meet_encly_dialog_later">Кейінірек</string>
+    <string name="search_short">Іздеу</string>
+    <string name="view_options">Көрініс параметрлері</string>
+    <string name="view_options_cd_list">Көрініс параметрлері. Жазбалар тізім түрінде көрсетілген</string>
+    <string name="view_options_cd_grid">Көрініс параметрлері. Жазбалар тор түрінде көрсетілген</string>
+    <string name="view_options_sort">Соңғы өзгеріс бойынша сұрыптау</string>
+    <string name="view_options_sort_newest">Алдымен жаңалары</string>
+    <string name="view_options_sort_oldest">Алдымен ескілері</string>
+    <string name="view_options_layout">Орналасу</string>
+    <string name="view_options_layout_list">Тізім</string>
+    <string name="view_options_layout_grid">Тор</string>
+    <string name="read_mode_enter">Оқу режимі</string>
+    <string name="read_mode_exit">Өңдеуге оралу</string>
+    <string name="reminder_chip_cd">Еске салу: %1$s. Еске салуды өзгерту</string>
 </resources>

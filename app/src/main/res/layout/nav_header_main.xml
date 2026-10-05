@@ -17,36 +17,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="80dp" />
-        <!-- Main buttons -->
-        <LinearLayout
-            android:id="@+id/nav_tasks"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="4dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_item_full"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="16dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="16dp"
-                android:contentDescription="@string/tasks_title"
-                android:src="@drawable/ic_task"
-                app:tint="?attr/colorPrimary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/tasks_title"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="16sp" />
-        </LinearLayout>
-
+        <!-- Notes first: their tags and the trash, then tasks -->
         <LinearLayout
             android:id="@+id/nav_tags"
             android:layout_width="match_parent"
@@ -64,7 +35,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="16dp"
-                android:contentDescription="@string/tags_management"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_tag"
                 app:tint="?attr/colorPrimary" />
 
@@ -81,6 +53,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_item_full"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="16dp"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_trash_notes"
+                app:tint="?attr/colorPrimary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trash"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tasks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4dp"
             android:layout_marginBottom="16dp"
             android:background="@drawable/bg_item_full"
             android:clickable="true"
@@ -93,14 +95,15 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="16dp"
-                android:contentDescription="@string/trash"
-                android:src="@drawable/ic_trash_notes"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_task"
                 app:tint="?attr/colorPrimary" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/trash"
+                android:text="@string/tasks_title"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
         </LinearLayout>
@@ -127,7 +130,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="16dp"
-                android:contentDescription="@string/settings"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_interface_set"
                 app:tint="?attr/colorPrimary" />
 
@@ -156,7 +160,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="16dp"
-                android:contentDescription="@string/your_data"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_backup_restore"
                 app:tint="?attr/colorPrimary" />
 
@@ -185,7 +190,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
-                android:contentDescription="@string/aboutApps"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_about"
                 app:tint="?attr/colorPrimary" />
 
@@ -242,7 +248,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="16dp"
-                android:contentDescription="@string/whatNewVersion"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_new_w"
                 app:tint="?attr/colorPrimary" />
 
@@ -271,7 +278,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center_vertical"
-                android:contentDescription="@string/meet_encly_title"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_security"
                 app:tint="?attr/colorPrimary" />
 
@@ -427,7 +435,8 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginEnd="8dp"
-                android:contentDescription="@string/help_title"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_heart_support"
                 app:tint="?attr/colorOnPrimary" />
 

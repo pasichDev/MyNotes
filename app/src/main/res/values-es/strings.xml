@@ -16,7 +16,6 @@
     <string name="telegram">Abrir contactos de desarrollador</string>
     <string name="notSupportedShare">Este contenido no es compatible.</string>
     <string name="notFoundPlayMarket">Falta la aplicación Play Market</string>
-    <string name="cd_format">Formato de notas</string>
 
     <string name="search">Buscar en notas</string>
     <string name="close">Cerrar</string>
@@ -103,7 +102,6 @@
     <string name="restoreDataOkay">Restauración de datos completada con éxito</string>
     <string name="restoreDataFall">Error: la copia de seguridad está dañada</string>
     <string name="errorDriveSync">Error del servidor o mala calidad de Internet</string>
-    <string name="sortNotes">Ordenar notas</string>
 
     <!-- Oferta de productos -->
     <string name="thanks_title">Estimado usuario</string>
@@ -173,9 +171,9 @@
     <string name="help_navigation_search_title">Búsqueda</string>
     <string name="help_navigation_search_description">Usa la barra de búsqueda para encontrar rápidamente tus notas por título o contenido</string>
     <string name="help_navigation_sort_title">Ordenación</string>
-    <string name="help_navigation_sort_description">Ordena tus notas por fecha de última modificación o nombre en orden ascendente o descendente</string>
+    <string name="help_navigation_sort_description">Toca el botón de opciones de vista en la barra de búsqueda para mostrar primero o al final las notas editadas recientemente.</string>
     <string name="help_navigation_format_title">Formato de visualización</string>
-    <string name="help_navigation_format_description">Cambia entre lista y cuadrícula para mostrar tus notas en un diseño conveniente para ti</string>
+    <string name="help_navigation_format_description">En las mismas opciones de vista, cambia entre lista y cuadrícula.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gestos de deslizar</string>
@@ -450,7 +448,7 @@
     <string name="help_tasks_reminder_description">Configura un recordatorio para cualquier tarea tocando el icono de la campana. Recibirás una notificación a la hora prevista. Tócala para abrir la tarea directamente.</string>
     <string name="help_reminders_title">Recordatorios</string>
     <string name="help_reminders_notes_title">Recordatorios de notas</string>
-    <string name="help_reminders_notes_description">Abre cualquier nota y toca el icono de la campana para configurar un recordatorio. Elige la hora con las opciones rápidas o con el selector de fecha y hora. A la hora prevista aparecerá una notificación.</string>
+    <string name="help_reminders_notes_description">Abre una nota, toca «Más» y elige «Recordatorio». Elige la hora con las opciones rápidas o con el selector de fecha y hora. El recordatorio aparece en la parte superior de la nota; tócalo para cambiarlo. A la hora prevista aparecerá una notificación.</string>
     <string name="help_reminders_repeat_title">Opciones de repetición</string>
     <string name="help_reminders_repeat_description">Al configurar un recordatorio de nota, activa el interruptor «Repetir» para elegir el ciclo: diario, semanal o mensual. El recordatorio se reprograma automáticamente tras cada notificación.</string>
     <string name="help_reminders_interval_title">Notificaciones por intervalo</string>
@@ -516,4 +514,17 @@
     <string name="meet_encly_dialog_text">Mis notas tiene un sucesor: Encly, una app de notas totalmente cifrada que funciona sin conexión. Puedes trasladar todas tus notas con un solo toque.</string>
     <string name="meet_encly_dialog_more">Más información</string>
     <string name="meet_encly_dialog_later">Más tarde</string>
+    <string name="search_short">Buscar</string>
+    <string name="view_options">Opciones de vista</string>
+    <string name="view_options_cd_list">Opciones de vista. Las notas se muestran en lista</string>
+    <string name="view_options_cd_grid">Opciones de vista. Las notas se muestran en cuadrícula</string>
+    <string name="view_options_sort">Ordenar por última modificación</string>
+    <string name="view_options_sort_newest">Más recientes primero</string>
+    <string name="view_options_sort_oldest">Más antiguas primero</string>
+    <string name="view_options_layout">Diseño</string>
+    <string name="view_options_layout_list">Lista</string>
+    <string name="view_options_layout_grid">Cuadrícula</string>
+    <string name="read_mode_enter">Modo lectura</string>
+    <string name="read_mode_exit">Volver a editar</string>
+    <string name="reminder_chip_cd">Recordatorio: %1$s. Cambiar recordatorio</string>
 </resources>

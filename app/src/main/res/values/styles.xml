@@ -125,6 +125,16 @@
     </style>
 
 
+    <!-- Active-reminder chip at the top of a note: bell, date and time, opens the picker. -->
+    <style name="noteReminderChip" parent="@style/Widget.Material3.Chip.Assist">
+        <item name="chipIcon">@drawable/ic_bell_small</item>
+        <item name="chipIconTint">?attr/colorPrimary</item>
+        <item name="chipIconVisible">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+    </style>
+
     <style name="chipTagItemNote" parent="@style/Widget.Material3.Chip.Assist">
         <item name="android:enabled">false</item>
         <item name="chipCornerRadius">@dimen/defaultCornerChip</item>

@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import com.google.android.material.chip.Chip;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.data.model.Note;
@@ -59,6 +60,11 @@ public class NoteExtendedEditorActivity
     @Override
     protected Toolbar getToolbar() {
         return binding.toolbar;
+    }
+
+    @Override
+    protected Chip getReminderChip() {
+        return binding.reminderChip;
     }
 
     @Override
@@ -130,6 +136,7 @@ public class NoteExtendedEditorActivity
     @Override
     protected void onNewNoteInit(Note note) {
         binding.noteEditor.load(note);
+        updateReminderChip(note);
     }
 
     @Override
@@ -242,6 +249,7 @@ public class NoteExtendedEditorActivity
             isReadMode = !isReadMode;
             binding.noteEditor.actionRead();
             item.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
+            item.setTitle(isReadMode ? R.string.read_mode_exit : R.string.read_mode_enter);
             return true;
         }
         return super.onOptionsItemSelected(item);

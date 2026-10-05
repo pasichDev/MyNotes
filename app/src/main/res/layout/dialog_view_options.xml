@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "View options" sheet of the main screen: the sort order and the list/grid layout, which used to
+    be two separate toolbar actions. Both apply as soon as they are tapped; the sheet stays open so
+    both can be changed in one visit.
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:id="@+id/viewOptionsHead"
+            style="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:accessibilityHeading="true"
+            tools:targetApi="p"
+            android:gravity="start"
+            android:text="@string/view_options"
+            android:textAlignment="viewStart" />
+
+        <TextView
+            android:id="@+id/sortSectionTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="4dp"
+            android:accessibilityHeading="true"
+            tools:targetApi="p"
+            android:text="@string/view_options_sort"
+            android:textAlignment="viewStart"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="?attr/colorPrimary" />
+
+        <RadioGroup
+            android:id="@+id/sortGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp">
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/sortNewest"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:text="@string/view_options_sort_newest"
+                android:textAlignment="viewStart"
+                android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/sortOldest"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:text="@string/view_options_sort_oldest"
+                android:textAlignment="viewStart"
+                android:textAppearance="?attr/textAppearanceBodyLarge" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/layoutSectionTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="12dp"
+            android:accessibilityHeading="true"
+            tools:targetApi="p"
+            android:text="@string/view_options_layout"
+            android:textAlignment="viewStart"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="?attr/colorPrimary" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/layoutGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/layoutList"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="56dp"
+                android:text="@string/view_options_layout_list"
+                app:icon="@drawable/ic_edit_format_list"
+                app:iconGravity="textStart"
+                tools:checked="true" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/layoutGrid"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="56dp"
+                android:text="@string/view_options_layout_grid"
+                app:icon="@drawable/ic_edit_format_tiles"
+                app:iconGravity="textStart" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

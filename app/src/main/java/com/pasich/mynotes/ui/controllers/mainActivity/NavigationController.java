@@ -170,15 +170,6 @@ public class NavigationController {
                                                         new Intent(
                                                                 activity, SupportActivity.class))));
 
-        header.findViewById(R.id.drawerStatsCard)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                activity.startActivity(
-                                                        new Intent(
-                                                                activity, SupportActivity.class))));
-
         header.findViewById(R.id.nav_meet_encly)
                 .setOnClickListener(v -> delay(appUpdateController::openMeetEncly));
 
@@ -263,7 +254,6 @@ public class NavigationController {
             header.findViewById(R.id.nav_backups).setOnClickListener(null);
             header.findViewById(R.id.nav_about).setOnClickListener(null);
             header.findViewById(R.id.nav_support).setOnClickListener(null);
-            header.findViewById(R.id.drawerStatsCard).setOnClickListener(null);
             header.findViewById(R.id.nav_meet_encly).setOnClickListener(null);
 
             View newVersion = header.findViewById(R.id.newVersion);

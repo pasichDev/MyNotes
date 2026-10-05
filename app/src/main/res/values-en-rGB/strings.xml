@@ -13,7 +13,6 @@
     <string name="exitWhat">Repeat the action to exit</string>
     <string name="notFoundPlayMarket">Google Play app not found</string>
     <string name="notSupportedShare">This content is not supported.</string>
-    <string name="cd_format">Format notes</string>
 
     <string name="search">Search notes</string>
     <string name="close">Close</string>
@@ -114,7 +113,6 @@
     <string name="restoreDataOkay">Data restored successfully</string>
     <string name="restoreDataFall">Error: backup is corrupted</string>
     <string name="errorDriveSync">Server error or poor network quality</string>
-    <string name="sortNotes">Sort notes</string>
 
     <!-- Donations -->
     <string name="thanks_title">Dear user</string>
@@ -178,9 +176,9 @@
     <string name="help_navigation_search_title">Search</string>
     <string name="help_navigation_search_description">Quickly find notes by title or content.</string>
     <string name="help_navigation_sort_title">Sorting</string>
-    <string name="help_navigation_sort_description">Sort notes by name or modification date.</string>
+    <string name="help_navigation_sort_description">Tap the view options button in the search bar to show recently edited notes first or last.</string>
     <string name="help_navigation_format_title">Display format</string>
-    <string name="help_navigation_format_description">Switch between list and grid view.</string>
+    <string name="help_navigation_format_description">In the same view options, switch between a list and a grid.</string>
 
     <string name="help_navigation_swipe_title">Swipe gestures</string>
     <string name="help_navigation_swipe_description">Swipe left to enter multi-selection mode, swipe right to delete a note. Available only in single-column mode.</string>
@@ -496,7 +494,7 @@
     <string name="help_tasks_reminder_description">Set a reminder for any task by tapping the bell icon. You will receive a notification at the scheduled time. Tap the notification to open the task directly.</string>
     <string name="help_reminders_title">Reminders</string>
     <string name="help_reminders_notes_title">Note Reminders</string>
-    <string name="help_reminders_notes_description">Open any note and tap the bell icon to set a reminder. Pick a time using quick options or the date and time picker. A notification will appear at the scheduled time.</string>
+    <string name="help_reminders_notes_description">Open a note, tap More and choose Reminder. Pick a time using quick options or the date and time picker. The reminder appears at the top of the note; tap it to change it. A notification will appear at the scheduled time.</string>
     <string name="help_reminders_repeat_title">Repeat Options</string>
     <string name="help_reminders_repeat_description">When setting a note reminder, enable the Repeat toggle to choose a repeat cycle: Daily, Weekly, or Monthly. The reminder reschedules automatically after each notification.</string>
     <string name="help_reminders_interval_title">Interval Notifications</string>
@@ -562,4 +560,17 @@
     <string name="meet_encly_dialog_text">My Notes has a successor: Encly, a fully encrypted notes app that works offline. You can move all your notes to it in one tap.</string>
     <string name="meet_encly_dialog_more">Learn more</string>
     <string name="meet_encly_dialog_later">Later</string>
+    <string name="search_short">Search</string>
+    <string name="view_options">View options</string>
+    <string name="view_options_cd_list">View options. Notes are shown as a list</string>
+    <string name="view_options_cd_grid">View options. Notes are shown as a grid</string>
+    <string name="view_options_sort">Sort by last edit</string>
+    <string name="view_options_sort_newest">Newest first</string>
+    <string name="view_options_sort_oldest">Oldest first</string>
+    <string name="view_options_layout">Layout</string>
+    <string name="view_options_layout_list">List</string>
+    <string name="view_options_layout_grid">Grid</string>
+    <string name="read_mode_enter">Reading mode</string>
+    <string name="read_mode_exit">Back to editing</string>
+    <string name="reminder_chip_cd">Reminder: %1$s. Change reminder</string>
 </resources>

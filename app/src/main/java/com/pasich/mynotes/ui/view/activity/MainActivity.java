@@ -10,12 +10,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,6 +26,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
+import com.pasich.mynotes.cache.AppPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
@@ -44,7 +47,7 @@ import com.pasich.mynotes.ui.view.dialogs.main.AllTagSelectDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.DeleteTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.NameTagDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.SingleTagSelectDialog;
-import com.pasich.mynotes.ui.view.dialogs.main.SortDialog;
+import com.pasich.mynotes.ui.view.dialogs.main.ViewOptionsDialog;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTag;
 import com.pasich.mynotes.ui.view.dialogs.main.popupWindowsTag.PopupWindowsTagOnClickListener;
 import com.pasich.mynotes.utils.UpdateChecker;
@@ -62,6 +65,7 @@ import com.pasich.mynotes.utils.recycler.NoteListTransition;
 import com.pasich.mynotes.utils.recycler.NotesItemAnimator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
+import com.pasich.mynotes.utils.search.SearchHintFitter;
 import com.pasich.mynotes.utils.search.SearchHit;
 import com.pasich.mynotes.utils.tool.FormatListTool;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -74,7 +78,8 @@ import javax.inject.Named;
 
 /** Main screen showing the notes list and tag navigation. */
 @AndroidEntryPoint
-public class MainActivity extends BaseActivity implements MainContract.view {
+public class MainActivity extends BaseActivity
+        implements MainContract.view, ViewOptionsDialog.Listener {
 
     private final ActivityResultLauncher<Intent> themeUpdateListener =
             registerForActivityResult(
@@ -109,6 +114,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     @Inject UpdateChecker updateChecker;
     @Inject ThemePreferencesCache themePreferencesCache;
     @Inject EnclyMigrationRepository enclyMigrationRepository;
+    @Inject AppPreferencesCache appPreferencesCache;
     private SearchController searchController;
     private AppUpdateController appUpdateController;
     private NavigationController navigationController;
@@ -418,19 +424,17 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     public void initListeners() {
         mActivityBinding.actionSearch.setOnClickListener(v -> mActivityBinding.searchView.show());
         searchNotesAdapter.setItemClickListener(this::openNoteEdit);
+        bindViewOptionsAction(formatList.getFormat());
+        SearchHintFitter.attach(
+                mActivityBinding.actionSearch,
+                getString(R.string.search),
+                getString(R.string.search_short));
         mActivityBinding.actionSearch.setOnMenuItemClickListener(
                 menuItem -> {
-                    int idItem = menuItem.getItemId();
-                    if (idItem == R.id.sort) {
-                        if (!selectionController.isInSelectionMode()) showSortDialog();
-                    } else if (idItem == R.id.format) {
-                        if (!selectionController.isInSelectionMode()) {
-                            formatList.formatNote(menuItem);
-                            gridLayoutManager.setSpanCount(
-                                    mainPresenter.getDataManager().getFormatCount());
-                        }
+                    if (menuItem.getItemId() == R.id.viewOptions
+                            && !selectionController.isInSelectionMode()) {
+                        showViewOptions();
                     }
-
                     return true;
                 });
 
@@ -512,19 +516,47 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         }
     }
 
-    void showSortDialog() {
-        SortDialog dialog = SortDialog.newInstance(false);
-        dialog.setListener(
-                new SortDialog.SortListener() {
-                    @Override
-                    public void onSortSelected(String sortParam) {
-                        mainPresenter.onSortChanged(sortParam);
-                    }
+    private void showViewOptions() {
+        if (getSupportFragmentManager().findFragmentByTag(ViewOptionsDialog.TAG) != null) return;
+        ViewOptionsDialog.newInstance(appPreferencesCache.getSortPref(), formatList.getFormat())
+                .show(getSupportFragmentManager(), ViewOptionsDialog.TAG);
+    }
 
-                    @Override
-                    public void onTagsSortSelected(String tagsSortParam) {}
+    @Override
+    public void onViewSortSelected(String sortParam) {
+        appPreferencesCache.setSortPref(sortParam);
+        mainPresenter.onSortChanged(sortParam);
+    }
+
+    @Override
+    public void onViewLayoutSelected(int format) {
+        if (!formatList.setFormat(format, viewOptionsItem())) return;
+        bindViewOptionsAction(format);
+        int notesCount = mNoteAdapter.getItemCount();
+        boolean animate = isListInteractive();
+        // Changing the column count moves every card at once; doing it behind the list's fade
+        // keeps cards from sliding over one another, the same way a new sort order is shown.
+        mainRenderListsController.swapListContent(
+                animate,
+                () -> {
+                    gridLayoutManager.setSpanCount(format);
+                    gridLayoutManager.invalidateSpanAssignments();
+                    mainRenderListsController.showStateNoteList(
+                            currentSelectedTag, notesCount, animate);
                 });
-        dialog.show(getSupportFragmentManager(), "SortDialog");
+    }
+
+    @Nullable
+    private MenuItem viewOptionsItem() {
+        return mActivityBinding.actionSearch.getMenu().findItem(R.id.viewOptions);
+    }
+
+    /** Shows the current layout on the toolbar action, for sighted and TalkBack users alike. */
+    private void bindViewOptionsAction(int format) {
+        MenuItem item = viewOptionsItem();
+        if (item == null) return;
+        formatList.init(item);
+        item.setContentDescription(getString(FormatListTool.contentDescriptionFor(format)));
     }
 
     @Override

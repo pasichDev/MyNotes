@@ -14,8 +14,7 @@
     <string name="telegram">Ouvrir les contacts des développeurs</string>
     <string name="notSupportedShare">Ce contenu n\'est pas pris en charge.</string>
     <string name="notFoundPlayMarket">PlayMarket est manquant</string>
-    <string name="cd_format">Notes de mise en forme</string>
-    <string name="search">Rechercher dans les notes </string>
+    <string name="search">Rechercher dans les notes</string>
     <string name="close">Fermer</string>
     <string name="addTag">Ajouter une balise</string>
     <string name="deleteTag">Supprimer</string>
@@ -99,7 +98,6 @@
     <string name="restoreDataOkay">Restauration des données terminée avec succès</string>
     <string name="restoreDataFall">Erreur: Sauvegarde corrompue</string>
     <string name="errorDriveSync">Erreur de serveur ou mauvaise qualité Internet</string>
-    <string name="sortNotes">Trier les notes</string>
 
     <!-- Offre produit -->
     <string name="thanks_title">Cher utilisateur</string>
@@ -168,9 +166,9 @@
     <string name="help_navigation_search_title">Recherche</string>
     <string name="help_navigation_search_description">Utilisez la barre de recherche pour trouver rapidement vos notes par titre ou contenu</string>
     <string name="help_navigation_sort_title">Tri</string>
-    <string name="help_navigation_sort_description">Triez vos notes par date de dernière modification ou nom dans l\'ordre croissant ou décroissant</string>
+    <string name="help_navigation_sort_description">Appuyez sur le bouton des options d’affichage dans la barre de recherche pour afficher les notes modifiées récemment en premier ou en dernier.</string>
     <string name="help_navigation_format_title">Format d\'affichage</string>
-    <string name="help_navigation_format_description">Basculez entre la liste et la grille pour afficher vos notes dans une mise en page qui vous convient</string>
+    <string name="help_navigation_format_description">Dans ces mêmes options d’affichage, basculez entre la liste et la grille.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gestes de balayage</string>
@@ -445,7 +443,7 @@
     <string name="help_tasks_reminder_description">Définissez un rappel pour n’importe quelle tâche en appuyant sur l’icône de cloche. Vous recevrez une notification à l’heure prévue. Appuyez dessus pour ouvrir directement la tâche.</string>
     <string name="help_reminders_title">Rappels</string>
     <string name="help_reminders_notes_title">Rappels de notes</string>
-    <string name="help_reminders_notes_description">Ouvrez une note et appuyez sur l’icône de cloche pour définir un rappel. Choisissez une heure via les options rapides ou le sélecteur de date et d’heure. Une notification apparaîtra à l’heure prévue.</string>
+    <string name="help_reminders_notes_description">Ouvrez une note, appuyez sur « Plus » et choisissez « Rappel ». Choisissez une heure via les options rapides ou le sélecteur de date et d’heure. Le rappel s’affiche en haut de la note ; appuyez dessus pour le modifier. Une notification apparaîtra à l’heure prévue.</string>
     <string name="help_reminders_repeat_title">Options de répétition</string>
     <string name="help_reminders_repeat_description">Lors de la création d’un rappel de note, activez l’option « Répéter » pour choisir un cycle : quotidien, hebdomadaire ou mensuel. Le rappel est replanifié automatiquement après chaque notification.</string>
     <string name="help_reminders_interval_title">Notifications par intervalle</string>
@@ -511,4 +509,17 @@
     <string name="meet_encly_dialog_text">Mes notes a un successeur : Encly, une application de notes entièrement chiffrée qui fonctionne hors ligne. Vous pouvez y transférer toutes vos notes en un seul geste.</string>
     <string name="meet_encly_dialog_more">En savoir plus</string>
     <string name="meet_encly_dialog_later">Plus tard</string>
+    <string name="search_short">Rechercher</string>
+    <string name="view_options">Options d’affichage</string>
+    <string name="view_options_cd_list">Options d’affichage. Les notes sont affichées en liste</string>
+    <string name="view_options_cd_grid">Options d’affichage. Les notes sont affichées en grille</string>
+    <string name="view_options_sort">Trier par dernière modification</string>
+    <string name="view_options_sort_newest">Les plus récentes d’abord</string>
+    <string name="view_options_sort_oldest">Les plus anciennes d’abord</string>
+    <string name="view_options_layout">Disposition</string>
+    <string name="view_options_layout_list">Liste</string>
+    <string name="view_options_layout_grid">Grille</string>
+    <string name="read_mode_enter">Mode lecture</string>
+    <string name="read_mode_exit">Revenir à l’édition</string>
+    <string name="reminder_chip_cd">Rappel : %1$s. Modifier le rappel</string>
 </resources>

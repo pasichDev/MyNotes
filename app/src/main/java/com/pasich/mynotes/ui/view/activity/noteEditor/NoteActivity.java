@@ -15,6 +15,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
+import com.google.android.material.chip.Chip;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.simplifications.TextWatcher;
 import com.pasich.mynotes.data.model.Note;
@@ -63,6 +64,11 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     @Override
     protected Toolbar getToolbar() {
         return binding.toolbar;
+    }
+
+    @Override
+    protected Chip getReminderChip() {
+        return binding.reminderChip;
     }
 
     @Override
@@ -383,6 +389,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         changeTag(tag != null ? tag : "", false);
 
         updateWordCount(value);
+        updateReminderChip(note);
 
         if (notePresenter.getNewNotesKey()) {
             activatedActivity();

@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-- Sort order and list/grid layout live together in one sheet; the icon shows the
+         layout that is on screen now. -->
     <item
-        android:id="@+id/sort"
-        android:icon="@drawable/ic_sort"
-        android:title="@string/sortNotes"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/format"
+        android:id="@+id/viewOptions"
         android:icon="@drawable/ic_edit_format_list"
-        android:title="@string/cd_format"
-        app:showAsAction="ifRoom" />
+        android:title="@string/view_options"
+        app:showAsAction="always" />
 </menu>

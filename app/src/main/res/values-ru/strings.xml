@@ -19,9 +19,8 @@
     <string name="telegram">Открыть контакты разработчика</string>
     <string name="notSupportedShare">Этот контент не поддерживается.</string>
     <string name="notFoundPlayMarket">Отсутствует приложение Play Market</string>
-    <string name="cd_format">Форматировать заметки</string>
 
-    <string name="search">Поиск в заметках </string>
+    <string name="search">Поиск в заметках</string>
     <string name="close">Закрыть</string>
     <string name="addTag">Добавить метку</string>
     <string name="deleteTag">Удалить</string>
@@ -104,7 +103,6 @@
     <string name="restoreDataFall">Ошибка: Резервная копия повреждена</string>
     <string name="errorDriveSync">Ошибка сервера, или плохое качество интернета</string>
 
-    <string name="sortNotes">Сортировать заметки</string>
 
     <!-- Product offer  -->
     <string name="thanks_title">Уважаемый пользователь</string>
@@ -173,9 +171,9 @@
     <string name="help_navigation_search_title">Поиск</string>
     <string name="help_navigation_search_description">Используйте панель поиска для быстрого нахождения ваших заметок по названию или содержимому</string>
     <string name="help_navigation_sort_title">Сортировка</string>
-    <string name="help_navigation_sort_description">Сортируйте ваши заметки по дате последнего изменения или названию в восходящем или нисходящем порядке</string>
+    <string name="help_navigation_sort_description">Нажмите кнопку параметров просмотра в строке поиска, чтобы показывать недавно изменённые заметки первыми или последними.</string>
     <string name="help_navigation_format_title">Формат отображения</string>
-    <string name="help_navigation_format_description">Переключайтесь между списком и сеткой для отображения ваших заметок в удобном для вас макете</string>
+    <string name="help_navigation_format_description">В тех же параметрах просмотра переключайтесь между списком и сеткой.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жесты свайп</string>
@@ -454,7 +452,7 @@
     <string name="help_tasks_reminder_description">Задайте напоминание для любой задачи, нажав значок колокольчика. В указанное время придёт уведомление. Нажмите на него, чтобы сразу открыть задачу.</string>
     <string name="help_reminders_title">Напоминания</string>
     <string name="help_reminders_notes_title">Напоминания о заметках</string>
-    <string name="help_reminders_notes_description">Откройте любую заметку и нажмите значок колокольчика, чтобы задать напоминание. Выберите время быстрым вариантом или через выбор даты и времени. В назначенное время появится уведомление.</string>
+    <string name="help_reminders_notes_description">Откройте заметку, нажмите «Больше» и выберите «Напоминание». Выберите время быстрым вариантом или через выбор даты и времени. Напоминание появится вверху заметки, нажмите на него, чтобы изменить. В назначенное время появится уведомление.</string>
     <string name="help_reminders_repeat_title">Повторение</string>
     <string name="help_reminders_repeat_description">При настройке напоминания для заметки включите переключатель «Повтор», чтобы выбрать цикл: ежедневно, еженедельно или ежемесячно. После каждого уведомления напоминание переносится автоматически.</string>
     <string name="help_reminders_interval_title">Интервальные уведомления</string>
@@ -520,4 +518,17 @@
     <string name="meet_encly_dialog_text">У «Мои Заметки» появился преемник — Encly, полностью зашифрованные заметки, которые работают офлайн. Все заметки можно перенести в него одним касанием.</string>
     <string name="meet_encly_dialog_more">Подробнее</string>
     <string name="meet_encly_dialog_later">Позже</string>
+    <string name="search_short">Поиск</string>
+    <string name="view_options">Параметры просмотра</string>
+    <string name="view_options_cd_list">Параметры просмотра. Заметки показаны списком</string>
+    <string name="view_options_cd_grid">Параметры просмотра. Заметки показаны сеткой</string>
+    <string name="view_options_sort">Сортировать по последнему изменению</string>
+    <string name="view_options_sort_newest">Сначала новые</string>
+    <string name="view_options_sort_oldest">Сначала старые</string>
+    <string name="view_options_layout">Вид</string>
+    <string name="view_options_layout_list">Список</string>
+    <string name="view_options_layout_grid">Сетка</string>
+    <string name="read_mode_enter">Режим чтения</string>
+    <string name="read_mode_exit">Вернуться к редактированию</string>
+    <string name="reminder_chip_cd">Напоминание: %1$s. Изменить напоминание</string>
 </resources>

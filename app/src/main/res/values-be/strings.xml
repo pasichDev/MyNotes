@@ -14,9 +14,8 @@
     <string name="telegram">Адкрыць кантакты распрацоўніка</string>
     <string name="notSupportedShare">Гэты кантэнт не падтрымліваецца.</string>
     <string name="notFoundPlayMarket">Адсутнічае прыкладанне Play Market</string>
-    <string name="cd_format">Фарматаваць нататкі</string>
 
-    <string name="search">Пошук у нататках </string>
+    <string name="search">Пошук у нататках</string>
     <string name="close">Закрыць</string>
     <string name="addTag">Дадаць пазнаку</string>
     <string name="deleteTag">Выдаліць</string>
@@ -102,7 +101,6 @@
     <string name="restoreDataFall">Памылка: Рэзервовая копія пашкоджана</string>
     <string name="errorDriveSync">Памылка сервера, або дрэнная якасць інтэрнэту</string>
 
-    <string name="sortNotes">Сартаваць нататкі</string>
 
     <!-- Product offer -->
     <string name="thanks_title">Паважаны карыстальнік</string>
@@ -172,9 +170,9 @@
     <string name="help_navigation_search_title">Пошук</string>
     <string name="help_navigation_search_description">Выкарыстоўвайце панэль пошуку для хуткага знаходжання вашых нататак па назве або змесце</string>
     <string name="help_navigation_sort_title">Сартаванне</string>
-    <string name="help_navigation_sort_description">Сартуйце вашы нататкі па даце апошняй змены або назве ў ўзыходным ці спадным парадку</string>
+    <string name="help_navigation_sort_description">Націсніце кнопку параметраў прагляду ў радку пошуку, каб паказваць нядаўна змененыя нататкі першымі або апошнімі.</string>
     <string name="help_navigation_format_title">Фармат адлюстравання</string>
-    <string name="help_navigation_format_description">Пераключайцеся паміж спісам і сеткай для адлюстравання вашых нататак у зручным для вас макеце</string>
+    <string name="help_navigation_format_description">У тых жа параметрах прагляду пераключайцеся паміж спісам і сеткай.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жэсты свайп</string>
@@ -449,7 +447,7 @@
     <string name="help_tasks_reminder_description">Задайце нагадванне для любога задання, націснуўшы значок званочка. У прызначаны час прыйдзе апавяшчэнне. Націсніце на яго, каб адразу адкрыць заданне.</string>
     <string name="help_reminders_title">Нагадванні</string>
     <string name="help_reminders_notes_title">Нагадванні пра нататкі</string>
-    <string name="help_reminders_notes_description">Адкрыйце любую нататку і націсніце значок званочка, каб задаць нагадванне. Выберыце час хуткім варыянтам або праз выбар даты і часу. У прызначаны час з’явіцца апавяшчэнне.</string>
+    <string name="help_reminders_notes_description">Адкрыйце нататку, націсніце «Больш» і выберыце «Нагадванне». Выберыце час хуткім варыянтам або праз выбар даты і часу. Нагадванне з’явіцца ўверсе нататкі, націсніце на яго, каб змяніць. У прызначаны час з’явіцца апавяшчэнне.</string>
     <string name="help_reminders_repeat_title">Паўтарэнне</string>
     <string name="help_reminders_repeat_description">Пры наладзе нагадвання для нататкі ўключыце пераключальнік «Паўтор», каб выбраць цыкл: штодня, штотыдня або штомесяц. Пасля кожнага апавяшчэння нагадванне пераносіцца аўтаматычна.</string>
     <string name="help_reminders_interval_title">Інтэрвальныя апавяшчэнні</string>
@@ -515,4 +513,17 @@
     <string name="meet_encly_dialog_text">У «Мае Нататкі» з\'явіўся пераемнік — Encly, цалкам зашыфраваныя нататкі, якія працуюць афлайн. Усе нататкі можна перанесці ў яго адным дотыкам.</string>
     <string name="meet_encly_dialog_more">Падрабязней</string>
     <string name="meet_encly_dialog_later">Пазней</string>
+    <string name="search_short">Пошук</string>
+    <string name="view_options">Параметры прагляду</string>
+    <string name="view_options_cd_list">Параметры прагляду. Нататкі паказаны спісам</string>
+    <string name="view_options_cd_grid">Параметры прагляду. Нататкі паказаны сеткай</string>
+    <string name="view_options_sort">Сартаваць па апошняй змене</string>
+    <string name="view_options_sort_newest">Спачатку новыя</string>
+    <string name="view_options_sort_oldest">Спачатку старыя</string>
+    <string name="view_options_layout">Выгляд</string>
+    <string name="view_options_layout_list">Спіс</string>
+    <string name="view_options_layout_grid">Сетка</string>
+    <string name="read_mode_enter">Рэжым чытання</string>
+    <string name="read_mode_exit">Вярнуцца да рэдагавання</string>
+    <string name="reminder_chip_cd">Нагадванне: %1$s. Змяніць нагадванне</string>
 </resources>

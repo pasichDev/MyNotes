@@ -12,6 +12,13 @@
 
 **Improvements**
 
+- The main screen's search bar is tidier. Sorting and the list or grid layout now live together
+  under one View options button, which opens a sheet where both can be changed in one visit; the
+  button shows the layout you are using. The search hint no longer gets cut off with large text,
+  and the menu puts Tags and Trash first, then Tasks, with a single way to support the developer.
+- The note toolbar keeps only Back, the save status and More. An upcoming reminder now shows as a
+  chip at the top of the note with its day and time; tap it to change or remove the reminder. New
+  reminders are set from More.
 - Search puts the best match first. A note whose title is exactly what you typed comes first,
   then titles that start with it, contain it as a word or contain it at all, then notes whose
   tag matches, and only then notes that mention it in their text; pinned and newer notes lead
@@ -20,6 +27,9 @@
 
 **Fixes**
 
+- Switching between list and grid no longer makes cards slide over one another: the list fades,
+  takes its new shape and fades back in. The layout button also shows the right layout as soon
+  as the app opens, instead of the opposite one.
 - Notes no longer vanish from the main screen after a Google Drive sync. The list, the tags row
   and the selected category stay in step with what sync changed: a category renamed or merged on
   another device stays selected, and one deleted there falls back to All notes instead of
