@@ -19,6 +19,13 @@
   in the extended one). Open them where you left off or always at the beginning. And, if you like,
   double-tap the text in reading mode to start editing right where you tapped. New notes always
   open ready for typing. These choices stay on this device.
+- **Custom repeat for reminders.** Next to Daily, Weekly and Monthly, Custom… repeats a note
+  reminder every so many hours, days, weeks, months or years, from 1 to 999. The rule shows
+  wherever the reminder does, as in "Every 3 hours", on the note card, at the top of the note and
+  in More. Each time is counted from the one you picked, so a reminder never drifts later, a
+  monthly reminder on the 31st rings on the last day of shorter months and is back on the 31st
+  afterwards, and a yearly one on 29 February rings on 28 February in other years. Daily, weekly
+  and monthly reminders keep working in older versions of the app on your other devices.
 
 **Improvements**
 
@@ -70,6 +77,13 @@
   especially in the dark theme. A picture picked while the screen was recreated (for example
   after rotating it) is still added where you inserted it, and a picture you have just added can
   no longer be cleaned up before the note has saved it.
+- Repeating reminders are kept up to date. One missed while the phone was off or the app was
+  stopped now arrives once when it is back and then continues on schedule, instead of stopping
+  for good. Snoozing no longer cancels a repeating reminder, a snooze survives a restart, and
+  "repeat notification" no longer pushes the next occurrence later. A reminder set, changed or
+  removed on another device takes effect here as soon as the sync finishes. Without the "Alarms
+  & reminders" permission reminders are still delivered, possibly a little late, and the app
+  offers to turn it on instead of silently skipping them.
 
 ## [2.6.55] - 25.09.2026
 

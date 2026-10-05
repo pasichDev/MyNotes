@@ -1,43 +1,48 @@
 package com.pasich.mynotes.ui.receiver;
 
+import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import com.pasich.mynotes.data.DataManager;
-import com.pasich.mynotes.utils.reminder.ReminderManager;
-import com.pasich.mynotes.utils.reminder.TaskReminderManager;
+import com.pasich.mynotes.utils.reminder.ReminderRescheduler;
 import dagger.hilt.android.AndroidEntryPoint;
-import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import javax.inject.Inject;
 
-/** BroadcastReceiver that reschedules all reminders after device reboot. */
+/**
+ * Re-arms every reminder when armed alarms were lost or can now be exact: after a reboot, after the
+ * app was updated, and when "Alarms & reminders" is granted (the system then delivers this so
+ * alarms armed inexactly meanwhile become exact).
+ */
 @AndroidEntryPoint
 public class BootReceiver extends BroadcastReceiver {
 
     private static final String TAG = "BootReceiver";
 
-    @Inject DataManager dataManager;
+    @Inject ReminderRescheduler reminderRescheduler;
 
     @Override
     public void onReceive(Context ctx, Intent intent) {
-        if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) return;
+        String action = intent.getAction();
+        if (!Intent.ACTION_BOOT_COMPLETED.equals(action)
+                && !Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)
+                && !AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED.equals(
+                        action)) {
+            return;
+        }
 
         final PendingResult pendingResult = goAsync();
-
-        Single.zip(
-                        dataManager.getNotesWithActiveReminders(),
-                        dataManager.getTasksWithReminders(),
-                        (notes, tasks) -> {
-                            ReminderManager.rescheduleAll(ctx, notes);
-                            TaskReminderManager.rescheduleAll(ctx, tasks);
-                            return true;
-                        })
-                .subscribe(
-                        result -> pendingResult.finish(),
-                        e -> {
-                            Log.e(TAG, "reschedule failed", e);
-                            pendingResult.finish();
+        Schedulers.io()
+                .scheduleDirect(
+                        () -> {
+                            try {
+                                reminderRescheduler.rescheduleAll(System.currentTimeMillis());
+                            } catch (RuntimeException e) {
+                                Log.e(TAG, "reschedule failed", e);
+                            } finally {
+                                pendingResult.finish();
+                            }
                         });
     }
 }

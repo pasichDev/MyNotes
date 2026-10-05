@@ -10,6 +10,7 @@ import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import com.pasich.mynotes.utils.FormattedDataUtil;
+import com.pasich.mynotes.utils.reminder.RepeatRuleFormatter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -168,6 +169,9 @@ public class NoteBindingAdapters {
             SimpleDateFormat dateFmt = new SimpleDateFormat("d MMM", Locale.getDefault());
             text = dateFmt.format(rem.getTime());
         }
+
+        String repeat = RepeatRuleFormatter.summary(ctx, note.getReminderRepeat());
+        if (repeat != null) text = ctx.getString(R.string.reminder_time_with_repeat, text, repeat);
 
         textView.setText(text);
         textView.setVisibility(View.VISIBLE);

@@ -116,6 +116,14 @@ public interface NoteDao {
             "SELECT * FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
     List<Note> getNotesWithActiveRemindersSync(long now);
 
+    /** Every note holding a reminder, overdue ones included, outside the trash. */
+    @Query("SELECT * FROM notes WHERE reminderTime IS NOT NULL AND isTrash = 0")
+    List<Note> getNotesWithRemindersSync();
+
+    @Query(
+            "SELECT COUNT(*) FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
+    int countUpcomingRemindersSync(long now);
+
     @Query(
             "UPDATE notes SET reminderTime = NULL, reminderRepeat = 'NONE', reminderIntervalMinutes = 0 WHERE id = :noteId")
     void clearReminderSync(int noteId);

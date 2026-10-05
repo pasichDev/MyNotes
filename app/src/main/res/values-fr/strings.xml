@@ -445,7 +445,7 @@
     <string name="help_reminders_notes_title">Rappels de notes</string>
     <string name="help_reminders_notes_description">Ouvrez une note, appuyez sur « Plus » et choisissez « Rappel ». Choisissez une heure via les options rapides ou le sélecteur de date et d’heure. Le rappel s’affiche en haut de la note ; appuyez dessus pour le modifier. Une notification apparaîtra à l’heure prévue.</string>
     <string name="help_reminders_repeat_title">Options de répétition</string>
-    <string name="help_reminders_repeat_description">Lors de la création d’un rappel de note, activez l’option « Répéter » pour choisir un cycle : quotidien, hebdomadaire ou mensuel. Le rappel est replanifié automatiquement après chaque notification.</string>
+    <string name="help_reminders_repeat_description">Lors de la création d’un rappel de note, choisissez sa répétition : quotidien, hebdomadaire, mensuel ou « Personnalisé… » pour un intervalle de plusieurs heures, jours, semaines, mois ou années. Chaque répétition est comptée à partir de l’heure choisie : un rappel le 31 sonne le dernier jour des mois plus courts, puis de nouveau le 31. Les rappels récurrents sont conservés après un redémarrage du téléphone.</string>
     <string name="help_reminders_interval_title">Notifications par intervalle</string>
     <string name="help_reminders_interval_description">Pour les rappels récurrents, vous pouvez activer une nouvelle notification toutes les 5, 10, 15, 30 ou 60 minutes. La notification se répétera à l’intervalle choisi jusqu’à la prochaine échéance.</string>
     <string name="help_reminders_sound_title">Son et volume des notifications</string>
@@ -538,4 +538,56 @@
     <string name="note_opening_double_tap">Toucher deux fois pour modifier</string>
     <string name="note_opening_double_tap_description">En mode lecture, touchez deux fois le texte pour commencer à le modifier exactement à cet endroit.</string>
     <string name="choice_selected">Sélectionné</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Personnalisé…</string>
+    <string name="reminder_repeat_custom_title">Répétition personnalisée</string>
+    <string name="reminder_repeat_custom_hint">Intervalle</string>
+    <string name="reminder_repeat_custom_error">Saisissez un nombre entre 1 et 999</string>
+    <string name="reminder_repeat_custom_apply">OK</string>
+    <string name="reminder_repeat_custom_cd">Répétition personnalisée : %1$s. Modifier</string>
+    <string name="reminder_repeat_hourly">Toutes les heures</string>
+    <string name="reminder_repeat_yearly">Tous les ans</string>
+    <string name="reminder_exact_alarm_needed">Les rappels risquent d’arriver en retard. Autorisez « Alarmes et rappels » pour les recevoir à l’heure.</string>
+    <string name="reminder_exact_alarm_allow">Autoriser</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Toutes les %d heures</item>
+        <item quantity="other">Toutes les %d heures</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Tous les %d jours</item>
+        <item quantity="other">Tous les %d jours</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Toutes les %d semaines</item>
+        <item quantity="other">Toutes les %d semaines</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Tous les %d mois</item>
+        <item quantity="other">Tous les %d mois</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Tous les %d ans</item>
+        <item quantity="other">Tous les %d ans</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d heure</item>
+        <item quantity="other">%d heures</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d jour</item>
+        <item quantity="other">%d jours</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d semaine</item>
+        <item quantity="other">%d semaines</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d mois</item>
+        <item quantity="other">%d mois</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d an</item>
+        <item quantity="other">%d ans</item>
+    </plurals>
 </resources>

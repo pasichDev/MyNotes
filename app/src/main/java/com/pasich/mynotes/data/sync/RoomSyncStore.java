@@ -26,6 +26,7 @@ import com.pasich.mynotes.extendedEditor.attach.EditorAttachmentBlocks;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
 import com.pasich.mynotes.utils.editor.NoteViewStateStore;
+import com.pasich.mynotes.utils.reminder.ReminderRescheduler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -101,6 +102,14 @@ public final class RoomSyncStore implements SyncStore {
      */
     private final java.util.concurrent.atomic.AtomicBoolean appliedPreferencesChange =
             new java.util.concurrent.atomic.AtomicBoolean(false);
+
+    /**
+     * Notes whose row this apply wrote or deleted. A reminder set, moved or turned off on another
+     * device reaches this one only as a row; once the transaction has committed, their alarms are
+     * armed or cancelled to match, so the change does not wait for the next app start.
+     */
+    private final Set<Integer> notesToReconcile =
+            java.util.Collections.synchronizedSet(new HashSet<>());
 
     public RoomSyncStore(
             @NonNull Context context,
@@ -275,6 +284,7 @@ public final class RoomSyncStore implements SyncStore {
         // The live digest at the moment the journal is written, decided inside the transaction
         // below; the commit afterwards refuses to run if the settings moved again since.
         String[] preferencesBaseline = {null};
+        notesToReconcile.clear();
         try {
             database.runInTransaction(
                     () -> {
@@ -442,8 +452,13 @@ public final class RoomSyncStore implements SyncStore {
                         }
                     });
         } catch (SyncRuntimeException error) {
+            notesToReconcile.clear();
             throw error.ioException;
+        } catch (RuntimeException error) {
+            notesToReconcile.clear();
+            throw error;
         }
+        reconcileReminders();
         if (deferFinalState || preferencesBaseline[0] != null) {
             boolean committed = false;
             if (preferencesBaseline[0] != null) {
@@ -909,6 +924,7 @@ public final class RoomSyncStore implements SyncStore {
             }
             if (stored == null || !sameRow(stored, note)) {
                 database.noteDao().addNote(note);
+                notesToReconcile.add(note.getId());
             }
         } else if ("task".equals(metadata.recordType)) {
             Task task = gson.fromJson(payload, Task.class);
@@ -1010,6 +1026,7 @@ public final class RoomSyncStore implements SyncStore {
                             note.getDate(),
                             note.getTag(),
                             note.getAttachments());
+            if (note.getReminderTime() != null) notesToReconcile.add(note.getId());
             return localId;
         }
         if (record.getType() == SyncRecord.Type.TASK) {
@@ -1080,6 +1097,7 @@ public final class RoomSyncStore implements SyncStore {
             database.noteDao().deleteById((int) metadata.localId);
             // A position on this device means nothing once another device deleted the note.
             new NoteViewStateStore(context).remove(metadata.localId);
+            notesToReconcile.add((int) metadata.localId);
         } else if ("task".equals(metadata.recordType))
             database.taskDao().deleteById((int) metadata.localId);
         else if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(metadata.recordType))
@@ -1182,6 +1200,7 @@ public final class RoomSyncStore implements SyncStore {
             return;
         }
 
+        notesToReconcile.clear();
         try {
             database.runInTransaction(
                     () -> {
@@ -1199,7 +1218,29 @@ public final class RoomSyncStore implements SyncStore {
                                 .markResolved(conflictId, resolution.name(), resolvedAt);
                     });
         } catch (SyncRuntimeException error) {
+            notesToReconcile.clear();
             throw error.ioException;
+        } catch (RuntimeException error) {
+            notesToReconcile.clear();
+            throw error;
+        }
+        reconcileReminders();
+    }
+
+    /** Arms or cancels the alarms of the notes the committed apply changed. */
+    private void reconcileReminders() {
+        List<Integer> ids;
+        synchronized (notesToReconcile) {
+            ids = new ArrayList<>(notesToReconcile);
+            notesToReconcile.clear();
+        }
+        if (ids.isEmpty()) return;
+        try {
+            new ReminderRescheduler(context, database)
+                    .reconcileNotes(ids, System.currentTimeMillis());
+        } catch (RuntimeException error) {
+            // The data is committed; alarms are re-armed from it again at the next app start.
+            Log.w(TAG, "Re-arming reminders after sync failed", error);
         }
     }
 

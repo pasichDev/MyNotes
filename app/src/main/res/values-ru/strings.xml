@@ -454,7 +454,7 @@
     <string name="help_reminders_notes_title">Напоминания о заметках</string>
     <string name="help_reminders_notes_description">Откройте заметку, нажмите «Больше» и выберите «Напоминание». Выберите время быстрым вариантом или через выбор даты и времени. Напоминание появится вверху заметки, нажмите на него, чтобы изменить. В назначенное время появится уведомление.</string>
     <string name="help_reminders_repeat_title">Повторение</string>
-    <string name="help_reminders_repeat_description">При настройке напоминания для заметки включите переключатель «Повтор», чтобы выбрать цикл: ежедневно, еженедельно или ежемесячно. После каждого уведомления напоминание переносится автоматически.</string>
+    <string name="help_reminders_repeat_description">При настройке напоминания для заметки выберите, как оно повторяется: ежедневно, еженедельно, ежемесячно или «Свой…» — каждые несколько часов, дней, недель, месяцев или лет. Каждый повтор отсчитывается от выбранного времени, поэтому напоминание на 31-е число в более коротких месяцах срабатывает в последний день, а затем снова 31-го. Повторяющиеся напоминания сохраняются и после перезапуска телефона.</string>
     <string name="help_reminders_interval_title">Интервальные уведомления</string>
     <string name="help_reminders_interval_description">Для повторяющихся напоминаний можно включить повторное уведомление каждые 5, 10, 15, 30 или 60 минут. Уведомление будет повторяться с выбранным интервалом до следующего срабатывания.</string>
     <string name="help_reminders_sound_title">Звук и громкость уведомлений</string>
@@ -547,4 +547,76 @@
     <string name="note_opening_double_tap">Двойное касание для редактирования</string>
     <string name="note_opening_double_tap_description">В режиме чтения дважды коснитесь текста, чтобы начать редактировать именно там, где коснулись.</string>
     <string name="choice_selected">Выбрано</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Свой…</string>
+    <string name="reminder_repeat_custom_title">Свой повтор</string>
+    <string name="reminder_repeat_custom_hint">Повторять каждые</string>
+    <string name="reminder_repeat_custom_error">Введите число от 1 до 999</string>
+    <string name="reminder_repeat_custom_apply">Готово</string>
+    <string name="reminder_repeat_custom_cd">Свой повтор: %1$s. Изменить</string>
+    <string name="reminder_repeat_hourly">Ежечасно</string>
+    <string name="reminder_repeat_yearly">Ежегодно</string>
+    <string name="reminder_exact_alarm_needed">Напоминания могут приходить с опозданием. Разрешите «Будильники и напоминания», чтобы они приходили вовремя.</string>
+    <string name="reminder_exact_alarm_allow">Разрешить</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Каждый %d час</item>
+        <item quantity="few">Каждые %d часа</item>
+        <item quantity="many">Каждые %d часов</item>
+        <item quantity="other">Каждые %d часа</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Каждый %d день</item>
+        <item quantity="few">Каждые %d дня</item>
+        <item quantity="many">Каждые %d дней</item>
+        <item quantity="other">Каждые %d дня</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Каждую %d неделю</item>
+        <item quantity="few">Каждые %d недели</item>
+        <item quantity="many">Каждые %d недель</item>
+        <item quantity="other">Каждые %d недели</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Каждый %d месяц</item>
+        <item quantity="few">Каждые %d месяца</item>
+        <item quantity="many">Каждые %d месяцев</item>
+        <item quantity="other">Каждые %d месяца</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Каждый %d год</item>
+        <item quantity="few">Каждые %d года</item>
+        <item quantity="many">Каждые %d лет</item>
+        <item quantity="other">Каждые %d года</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d час</item>
+        <item quantity="few">%d часа</item>
+        <item quantity="many">%d часов</item>
+        <item quantity="other">%d часа</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d день</item>
+        <item quantity="few">%d дня</item>
+        <item quantity="many">%d дней</item>
+        <item quantity="other">%d дня</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d неделя</item>
+        <item quantity="few">%d недели</item>
+        <item quantity="many">%d недель</item>
+        <item quantity="other">%d недели</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d месяц</item>
+        <item quantity="few">%d месяца</item>
+        <item quantity="many">%d месяцев</item>
+        <item quantity="other">%d месяца</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d год</item>
+        <item quantity="few">%d года</item>
+        <item quantity="many">%d лет</item>
+        <item quantity="other">%d года</item>
+    </plurals>
 </resources>

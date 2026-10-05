@@ -32,6 +32,7 @@ import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
+import com.pasich.mynotes.utils.reminder.RepeatRuleFormatter;
 import com.pasich.mynotes.utils.transition.CopyNoteAnimationUtil;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -194,6 +195,8 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
                                 | DateUtils.FORMAT_SHOW_TIME
                                 | DateUtils.FORMAT_SHOW_WEEKDAY
                                 | DateUtils.FORMAT_ABBREV_ALL);
+        String repeat = RepeatRuleFormatter.summary(this, note.getReminderRepeat());
+        if (repeat != null) when = getString(R.string.reminder_time_with_repeat, when, repeat);
         chip.setText(when);
         chip.setContentDescription(getString(R.string.reminder_chip_cd, when));
         chip.setVisibility(View.VISIBLE);

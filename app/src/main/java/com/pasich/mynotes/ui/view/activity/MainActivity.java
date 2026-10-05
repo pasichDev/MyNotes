@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
@@ -65,11 +66,16 @@ import com.pasich.mynotes.utils.recycler.NoteListTransition;
 import com.pasich.mynotes.utils.recycler.NotesItemAnimator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
+import com.pasich.mynotes.utils.reminder.ReminderManager;
+import com.pasich.mynotes.utils.reminder.ReminderRescheduler;
 import com.pasich.mynotes.utils.search.SearchHintFitter;
 import com.pasich.mynotes.utils.search.SearchHit;
 import com.pasich.mynotes.utils.tool.FormatListTool;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +121,12 @@ public class MainActivity extends BaseActivity
     @Inject ThemePreferencesCache themePreferencesCache;
     @Inject EnclyMigrationRepository enclyMigrationRepository;
     @Inject AppPreferencesCache appPreferencesCache;
+    @Inject ReminderRescheduler reminderRescheduler;
+
+    /** The exact-alarm hint is offered once per app process, not on every rotation. */
+    private static boolean exactAlarmHintOffered;
+
+    private Disposable reminderCheck;
     private SearchController searchController;
     private AppUpdateController appUpdateController;
     private NavigationController navigationController;
@@ -131,6 +143,9 @@ public class MainActivity extends BaseActivity
 
     /** How long a return transition from the editor may take (300 ms) plus a margin. */
     private static final long RETURN_SETTLE_MS = 380;
+
+    private static final String TAG = "MainActivity";
+    private static final int EXACT_ALARM_HINT_MS = 8000;
 
     private final Handler settleHandler = new Handler(Looper.getMainLooper());
     private MainRenderListsController mainRenderListsController;
@@ -203,6 +218,7 @@ public class MainActivity extends BaseActivity
                         });
         if (savedInstanceState == null) {
             sweepEnclyHandoffFiles();
+            rescheduleReminders();
         }
 
         appUpdateController = new AppUpdateController(this, updateChecker, changelogLauncher);
@@ -217,6 +233,53 @@ public class MainActivity extends BaseActivity
                         this::finishActivity);
         navigationController.init();
         navigationController.handleShortcuts(getIntent());
+    }
+
+    /**
+     * Re-arms reminders at app start, which also restores those lost to a force stop, and asks once
+     * for "Alarms & reminders" when upcoming reminders can only be armed to ring late.
+     */
+    private void rescheduleReminders() {
+        reminderCheck =
+                Single.fromCallable(
+                                () -> {
+                                    long now = System.currentTimeMillis();
+                                    reminderRescheduler.rescheduleAll(now);
+                                    return reminderRescheduler.countUpcoming(now);
+                                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                upcoming -> {
+                                    if (upcoming > 0
+                                            && !exactAlarmHintOffered
+                                            && !ReminderManager.canScheduleExact(this)) {
+                                        exactAlarmHintOffered = true;
+                                        showExactAlarmHint();
+                                    }
+                                },
+                                e -> Log.w(TAG, "rescheduling reminders failed", e));
+    }
+
+    private void showExactAlarmHint() {
+        Intent settings = ReminderManager.exactAlarmSettingsIntent(this);
+        if (settings == null || isFinishing() || mActivityBinding == null) return;
+        Snackbar snackbar =
+                Snackbar.make(
+                        mActivityBinding.drawerLayout,
+                        R.string.reminder_exact_alarm_needed,
+                        EXACT_ALARM_HINT_MS);
+        snackbar.setAction(
+                R.string.reminder_exact_alarm_allow,
+                v -> {
+                    try {
+                        startActivity(settings);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        Log.w(TAG, "no exact alarm settings screen", e);
+                    }
+                });
+        snackbar.setAnchorView(mActivityBinding.newNotesButton);
+        snackbar.show();
     }
 
     /**
@@ -750,6 +813,7 @@ public class MainActivity extends BaseActivity
     @Override
     protected void onDestroy() {
         settleHandler.removeCallbacksAndMessages(null);
+        if (reminderCheck != null) reminderCheck.dispose();
         if (mainRenderListsController != null) mainRenderListsController.release();
         super.onDestroy();
         if (navigationController != null) {

@@ -253,7 +253,7 @@
     <string name="help_reminders_notes_title">Note Reminders</string>
     <string name="help_reminders_notes_description">Open a note, tap More and choose Reminder. Pick a time using quick options or the date and time picker. The reminder appears at the top of the note, tap it to change it. A notification will appear at the scheduled time.</string>
     <string name="help_reminders_repeat_title">Repeat Options</string>
-    <string name="help_reminders_repeat_description">When setting a note reminder, enable the Repeat toggle to choose a repeat cycle: Daily, Weekly, or Monthly. The reminder reschedules automatically after each notification.</string>
+    <string name="help_reminders_repeat_description">When setting a note reminder, choose how it repeats: Daily, Weekly, Monthly, or Custom… for every few hours, days, weeks, months or years. Each repeat is counted from the time you picked, so a reminder on the 31st rings on the last day of shorter months and is back on the 31st after them. Repeating reminders survive a restart of the phone.</string>
     <string name="help_reminders_interval_title">Interval Notifications</string>
     <string name="help_reminders_interval_description">For repeating reminders, you can enable interval re-notifications every 5, 10, 15, 30, or 60 minutes. The notification will repeat at the chosen interval until the next scheduled occurrence.</string>
     <string name="help_reminders_sound_title">Notification Sound and Volume</string>
@@ -579,4 +579,57 @@
     <string name="note_opening_double_tap">Double-tap to edit</string>
     <string name="note_opening_double_tap_description">In reading mode, double-tap the text to start editing right where you tapped.</string>
     <string name="choice_selected">Selected</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Custom…</string>
+    <string name="reminder_repeat_custom_title">Custom repeat</string>
+    <string name="reminder_repeat_custom_hint">Repeat every</string>
+    <string name="reminder_repeat_custom_error">Enter a number from 1 to 999</string>
+    <string name="reminder_repeat_custom_apply">Done</string>
+    <string name="reminder_repeat_custom_cd">Custom repeat: %1$s. Change</string>
+    <string name="reminder_repeat_hourly">Every hour</string>
+    <string name="reminder_repeat_yearly">Every year</string>
+    <string name="reminder_exact_alarm_needed">Reminders may ring late. Allow Alarms &amp; reminders to get them on time.</string>
+    <string name="reminder_exact_alarm_allow">Allow</string>
+    <string name="reminder_time_with_repeat" translatable="false">%1$s · %2$s</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Every %d hour</item>
+        <item quantity="other">Every %d hours</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Every %d day</item>
+        <item quantity="other">Every %d days</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Every %d week</item>
+        <item quantity="other">Every %d weeks</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Every %d month</item>
+        <item quantity="other">Every %d months</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Every %d year</item>
+        <item quantity="other">Every %d years</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d month</item>
+        <item quantity="other">%d months</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d year</item>
+        <item quantity="other">%d years</item>
+    </plurals>
 </resources>

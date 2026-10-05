@@ -25,6 +25,7 @@ import com.pasich.mynotes.databinding.DialogMoreNoteBinding;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
 import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
+import com.pasich.mynotes.utils.reminder.RepeatRuleFormatter;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.text.SimpleDateFormat;
@@ -139,7 +140,12 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         boolean hasReminder = note != null && note.hasReminder();
         if (hasReminder) {
             SimpleDateFormat fmt = new SimpleDateFormat("d MMM · HH:mm", Locale.getDefault());
-            binding.reminderSubtitle.setText(fmt.format(new Date(note.getReminderTime())));
+            String when = fmt.format(new Date(note.getReminderTime()));
+            String repeat = RepeatRuleFormatter.summary(requireContext(), note.getReminderRepeat());
+            binding.reminderSubtitle.setText(
+                    repeat == null
+                            ? when
+                            : getString(R.string.reminder_time_with_repeat, when, repeat));
             binding.reminderSubtitle.setVisibility(View.VISIBLE);
         } else {
             binding.reminderSubtitle.setVisibility(View.GONE);

@@ -128,14 +128,20 @@
                     android:textStyle="bold"
                     android:drawablePadding="3dp"
                     android:drawableStart="@drawable/ic_bell_small"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     app:reminderText="@{Note}"
                     android:visibility="@{Note.hasReminder() ? View.VISIBLE : View.GONE}"
                     tools:text="18:00" />
 
+                <!-- Pushes the pin to the end. With a reminder the reminder text, which may
+                     shorten to fit, takes this space instead. -->
                 <View
                     android:layout_width="0dp"
                     android:layout_height="0dp"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:visibility="@{Note.hasReminder() ? View.GONE : View.VISIBLE}" />
 
                 <ImageView
                     android:layout_width="14dp"

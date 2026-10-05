@@ -150,6 +150,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            app:selectionRequired="true"
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
@@ -180,6 +181,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reminder_repeat_monthly" />
+
+            <!-- Opens "Every [N] [unit]"; once set it shows the rule, e.g. "Every 3 hours". -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipCustom"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reminder_repeat_custom" />
 
         </com.google.android.material.chip.ChipGroup>
 

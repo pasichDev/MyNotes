@@ -449,7 +449,7 @@
     <string name="help_reminders_notes_title">Нагадванні пра нататкі</string>
     <string name="help_reminders_notes_description">Адкрыйце нататку, націсніце «Больш» і выберыце «Нагадванне». Выберыце час хуткім варыянтам або праз выбар даты і часу. Нагадванне з’явіцца ўверсе нататкі, націсніце на яго, каб змяніць. У прызначаны час з’явіцца апавяшчэнне.</string>
     <string name="help_reminders_repeat_title">Паўтарэнне</string>
-    <string name="help_reminders_repeat_description">Пры наладзе нагадвання для нататкі ўключыце пераключальнік «Паўтор», каб выбраць цыкл: штодня, штотыдня або штомесяц. Пасля кожнага апавяшчэння нагадванне пераносіцца аўтаматычна.</string>
+    <string name="help_reminders_repeat_description">Пры наладзе нагадвання для нататкі выберыце, як яно паўтараецца: штодня, штотыдзень, штомесяц або «Свой…» — кожныя некалькі гадзін, дзён, тыдняў, месяцаў ці гадоў. Кожнае паўтарэнне адлічваецца ад выбранага часу, таму нагадванне на 31-е чысло ў карацейшых месяцах спрацуе ў апошні дзень, а потым зноў 31-га. Паўторныя нагадванні захоўваюцца і пасля перазапуску тэлефона.</string>
     <string name="help_reminders_interval_title">Інтэрвальныя апавяшчэнні</string>
     <string name="help_reminders_interval_description">Для паўтаральных нагадванняў можна ўключыць паўторнае апавяшчэнне кожныя 5, 10, 15, 30 або 60 хвілін. Апавяшчэнне будзе паўтарацца з выбраным інтэрвалам да наступнага спрацоўвання.</string>
     <string name="help_reminders_sound_title">Гук і гучнасць апавяшчэнняў</string>
@@ -542,4 +542,76 @@
     <string name="note_opening_double_tap">Падвойны дотык для рэдагавання</string>
     <string name="note_opening_double_tap_description">У рэжыме чытання двойчы дакраніцеся да тэксту, каб пачаць рэдагаваць менавіта там, дзе дакрануліся.</string>
     <string name="choice_selected">Выбрана</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Свой…</string>
+    <string name="reminder_repeat_custom_title">Сваё паўтарэнне</string>
+    <string name="reminder_repeat_custom_hint">Паўтараць кожныя</string>
+    <string name="reminder_repeat_custom_error">Увядзіце лік ад 1 да 999</string>
+    <string name="reminder_repeat_custom_apply">Гатова</string>
+    <string name="reminder_repeat_custom_cd">Сваё паўтарэнне: %1$s. Змяніць</string>
+    <string name="reminder_repeat_hourly">Штогадзіну</string>
+    <string name="reminder_repeat_yearly">Штогод</string>
+    <string name="reminder_exact_alarm_needed">Нагадванні могуць прыходзіць са спазненнем. Дазвольце «Будзільнікі і нагадванні», каб яны прыходзілі своечасова.</string>
+    <string name="reminder_exact_alarm_allow">Дазволіць</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Кожную %d гадзіну</item>
+        <item quantity="few">Кожныя %d гадзіны</item>
+        <item quantity="many">Кожныя %d гадзін</item>
+        <item quantity="other">Кожныя %d гадзіны</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Кожны %d дзень</item>
+        <item quantity="few">Кожныя %d дні</item>
+        <item quantity="many">Кожныя %d дзён</item>
+        <item quantity="other">Кожныя %d дня</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Кожны %d тыдзень</item>
+        <item quantity="few">Кожныя %d тыдні</item>
+        <item quantity="many">Кожныя %d тыдняў</item>
+        <item quantity="other">Кожныя %d тыдня</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Кожны %d месяц</item>
+        <item quantity="few">Кожныя %d месяцы</item>
+        <item quantity="many">Кожныя %d месяцаў</item>
+        <item quantity="other">Кожныя %d месяца</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Кожны %d год</item>
+        <item quantity="few">Кожныя %d гады</item>
+        <item quantity="many">Кожныя %d гадоў</item>
+        <item quantity="other">Кожныя %d года</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d гадзіна</item>
+        <item quantity="few">%d гадзіны</item>
+        <item quantity="many">%d гадзін</item>
+        <item quantity="other">%d гадзіны</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d дзень</item>
+        <item quantity="few">%d дні</item>
+        <item quantity="many">%d дзён</item>
+        <item quantity="other">%d дня</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d тыдзень</item>
+        <item quantity="few">%d тыдні</item>
+        <item quantity="many">%d тыдняў</item>
+        <item quantity="other">%d тыдня</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d месяц</item>
+        <item quantity="few">%d месяцы</item>
+        <item quantity="many">%d месяцаў</item>
+        <item quantity="other">%d месяца</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d год</item>
+        <item quantity="few">%d гады</item>
+        <item quantity="many">%d гадоў</item>
+        <item quantity="other">%d года</item>
+    </plurals>
 </resources>

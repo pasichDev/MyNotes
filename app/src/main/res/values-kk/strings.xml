@@ -446,7 +446,7 @@
     <string name="help_reminders_notes_title">Жазба еске салғыштары</string>
     <string name="help_reminders_notes_description">Жазбаны ашып, «Қосымша» түймесін басып, «Еске салу» тармағын таңдаңыз. Уақытты жылдам нұсқалар арқылы немесе күн мен уақытты таңдау терезесінен көрсетіңіз. Еске салу жазбаның жоғарғы жағында көрсетіледі, өзгерту үшін оны басыңыз. Белгіленген уақытта хабарландыру шығады.</string>
     <string name="help_reminders_repeat_title">Қайталау параметрлері</string>
-    <string name="help_reminders_repeat_description">Жазбаға еске салғыш қойғанда қайталау циклін таңдау үшін «Қайталау» қосқышын қосыңыз: күн сайын, апта сайын немесе ай сайын. Әр хабарландырудан кейін еске салғыш автоматты түрде қайта жоспарланады.</string>
+    <string name="help_reminders_repeat_description">Жазбаға еске салғыш қойғанда оның қалай қайталанатынын таңдаңыз: күн сайын, апта сайын, ай сайын немесе «Басқаша…» — бірнеше сағат, күн, апта, ай не жыл сайын. Әр қайталау таңдалған уақыттан бастап саналады, сондықтан айдың 31-іне қойылған еске салғыш қысқа айларда соңғы күні, кейін қайтадан 31-інде келеді. Қайталанатын еске салғыштар телефон қайта іске қосылғаннан кейін де сақталады.</string>
     <string name="help_reminders_interval_title">Аралық хабарландырулар</string>
     <string name="help_reminders_interval_description">Қайталанатын еске салғыштар үшін әр 5, 10, 15, 30 немесе 60 минут сайын қайта хабарлауды қосуға болады. Хабарландыру келесі жоспарланған уақытқа дейін таңдалған аралықпен қайталанады.</string>
     <string name="help_reminders_sound_title">Хабарландыру дыбысы мен қаттылығы</string>
@@ -539,4 +539,56 @@
     <string name="note_opening_double_tap">Өңдеу үшін екі рет түрту</string>
     <string name="note_opening_double_tap_description">Оқу режимінде мәтінді екі рет түртіп, дәл сол жерден өңдеуді бастаңыз.</string>
     <string name="choice_selected">Таңдалған</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Басқаша…</string>
+    <string name="reminder_repeat_custom_title">Қайталауды баптау</string>
+    <string name="reminder_repeat_custom_hint">Қайталау аралығы</string>
+    <string name="reminder_repeat_custom_error">1-ден 999-ға дейінгі санды енгізіңіз</string>
+    <string name="reminder_repeat_custom_apply">Дайын</string>
+    <string name="reminder_repeat_custom_cd">Қайталауды баптау: %1$s. Өзгерту</string>
+    <string name="reminder_repeat_hourly">Сағат сайын</string>
+    <string name="reminder_repeat_yearly">Жыл сайын</string>
+    <string name="reminder_exact_alarm_needed">Еске салғыштар кешігуі мүмкін. Уақытында келуі үшін «Оятқыштар мен еске салғыштар» рұқсатын беріңіз.</string>
+    <string name="reminder_exact_alarm_allow">Рұқсат беру</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">%d сағат сайын</item>
+        <item quantity="other">%d сағат сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">%d күн сайын</item>
+        <item quantity="other">%d күн сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">%d апта сайын</item>
+        <item quantity="other">%d апта сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">%d ай сайын</item>
+        <item quantity="other">%d ай сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">%d жыл сайын</item>
+        <item quantity="other">%d жыл сайын</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d сағат</item>
+        <item quantity="other">%d сағат</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d күн</item>
+        <item quantity="other">%d күн</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d апта</item>
+        <item quantity="other">%d апта</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d ай</item>
+        <item quantity="other">%d ай</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d жыл</item>
+        <item quantity="other">%d жыл</item>
+    </plurals>
 </resources>

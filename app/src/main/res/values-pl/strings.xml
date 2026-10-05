@@ -450,7 +450,7 @@
     <string name="help_reminders_notes_title">Przypomnienia o notatkach</string>
     <string name="help_reminders_notes_description">Otwórz notatkę, naciśnij „Więcej” i wybierz „Przypomnienie”. Wybierz godzinę za pomocą opcji szybkiego wyboru albo selektora daty i godziny. Przypomnienie pojawi się na górze notatki; naciśnij je, aby je zmienić. O wyznaczonej porze pojawi się powiadomienie.</string>
     <string name="help_reminders_repeat_title">Opcje powtarzania</string>
-    <string name="help_reminders_repeat_description">Podczas ustawiania przypomnienia do notatki włącz przełącznik „Powtarzaj”, aby wybrać cykl: codziennie, co tydzień lub co miesiąc. Po każdym powiadomieniu przypomnienie jest planowane ponownie automatycznie.</string>
+    <string name="help_reminders_repeat_description">Podczas ustawiania przypomnienia do notatki wybierz, jak ma się powtarzać: codziennie, co tydzień, co miesiąc lub „Własne…” – co kilka godzin, dni, tygodni, miesięcy albo lat. Każde powtórzenie liczy się od wybranej godziny, więc przypomnienie ustawione na 31. dzień w krótszych miesiącach przyjdzie ostatniego dnia, a potem znów 31. Powtarzające się przypomnienia przetrwają ponowne uruchomienie telefonu.</string>
     <string name="help_reminders_interval_title">Powiadomienia interwałowe</string>
     <string name="help_reminders_interval_description">Dla powtarzających się przypomnień możesz włączyć ponowne powiadamianie co 5, 10, 15, 30 lub 60 minut. Powiadomienie będzie powtarzane w wybranym odstępie aż do następnego terminu.</string>
     <string name="help_reminders_sound_title">Dźwięk i głośność powiadomień</string>
@@ -543,4 +543,76 @@
     <string name="note_opening_double_tap">Dwukrotne stuknięcie, aby edytować</string>
     <string name="note_opening_double_tap_description">W trybie czytania stuknij dwukrotnie tekst, aby zacząć edycję dokładnie w tym miejscu.</string>
     <string name="choice_selected">Wybrano</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Własne…</string>
+    <string name="reminder_repeat_custom_title">Własne powtarzanie</string>
+    <string name="reminder_repeat_custom_hint">Powtarzaj co</string>
+    <string name="reminder_repeat_custom_error">Wpisz liczbę od 1 do 999</string>
+    <string name="reminder_repeat_custom_apply">Gotowe</string>
+    <string name="reminder_repeat_custom_cd">Własne powtarzanie: %1$s. Zmień</string>
+    <string name="reminder_repeat_hourly">Co godzinę</string>
+    <string name="reminder_repeat_yearly">Co roku</string>
+    <string name="reminder_exact_alarm_needed">Przypomnienia mogą przychodzić z opóźnieniem. Zezwól na „Alarmy i przypomnienia”, aby przychodziły na czas.</string>
+    <string name="reminder_exact_alarm_allow">Zezwól</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Co %d godzinę</item>
+        <item quantity="few">Co %d godziny</item>
+        <item quantity="many">Co %d godzin</item>
+        <item quantity="other">Co %d godziny</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Co %d dzień</item>
+        <item quantity="few">Co %d dni</item>
+        <item quantity="many">Co %d dni</item>
+        <item quantity="other">Co %d dnia</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Co %d tydzień</item>
+        <item quantity="few">Co %d tygodnie</item>
+        <item quantity="many">Co %d tygodni</item>
+        <item quantity="other">Co %d tygodnia</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Co %d miesiąc</item>
+        <item quantity="few">Co %d miesiące</item>
+        <item quantity="many">Co %d miesięcy</item>
+        <item quantity="other">Co %d miesiąca</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Co %d rok</item>
+        <item quantity="few">Co %d lata</item>
+        <item quantity="many">Co %d lat</item>
+        <item quantity="other">Co %d roku</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d godzina</item>
+        <item quantity="few">%d godziny</item>
+        <item quantity="many">%d godzin</item>
+        <item quantity="other">%d godziny</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d dzień</item>
+        <item quantity="few">%d dni</item>
+        <item quantity="many">%d dni</item>
+        <item quantity="other">%d dnia</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d tydzień</item>
+        <item quantity="few">%d tygodnie</item>
+        <item quantity="many">%d tygodni</item>
+        <item quantity="other">%d tygodnia</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d miesiąc</item>
+        <item quantity="few">%d miesiące</item>
+        <item quantity="many">%d miesięcy</item>
+        <item quantity="other">%d miesiąca</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d rok</item>
+        <item quantity="few">%d lata</item>
+        <item quantity="many">%d lat</item>
+        <item quantity="other">%d roku</item>
+    </plurals>
 </resources>

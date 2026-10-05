@@ -5,6 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
@@ -13,22 +16,32 @@ import com.pasich.mynotes.cache.NotificationPreferencesCache;
 import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.ReminderRepeat;
+import com.pasich.mynotes.data.model.RepeatRule;
 import com.pasich.mynotes.ui.view.activity.MainActivity;
 import com.pasich.mynotes.ui.view.activity.ReminderTapActivity;
 import com.pasich.mynotes.ui.view.activity.SnoozeActivity;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
+import com.pasich.mynotes.utils.reminder.SnoozeStore;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.schedulers.Schedulers;
 import javax.inject.Inject;
 
-/** BroadcastReceiver that fires reminder notifications and reschedules repeating alarms. */
+/**
+ * Posts note reminder notifications and moves a repeating reminder to its next occurrence.
+ *
+ * <p>Each alarm is checked against the note as stored now, not as it was when the alarm was armed:
+ * a note deleted, trashed or given another time meanwhile (here or by sync) is not announced by an
+ * alarm that no longer describes it.
+ */
 @AndroidEntryPoint
 public class ReminderReceiver extends BroadcastReceiver {
 
     private static final String TAG = "ReminderReceiver";
+
+    /** An alarm arriving this much before the stored time is stale and is re-armed instead. */
+    private static final long EARLY_TOLERANCE_MS = 60_000L;
 
     @Inject DataManager dataManager;
 
@@ -42,144 +55,115 @@ public class ReminderReceiver extends BroadcastReceiver {
     public void onReceive(Context ctx, Intent intent) {
         int noteId = intent.getIntExtra(ReminderManager.EXTRA_NOTE_ID, -1);
         if (noteId == -1) return;
+        Context app = ctx.getApplicationContext();
 
         if (ACTION_DISMISS.equals(intent.getAction())) {
-            String dRepeat = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
-            int dInterval = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
-            String dTitle = intent.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
-            String dPreview = intent.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
-            cancelIntervalReminder(ctx, noteId, dRepeat, dInterval, dTitle, dPreview);
+            // Ends the "repeat notification" cycle only; the schedule moved on when it fired.
+            ReminderManager.cancelNag(app, noteId);
+            NotificationManagerCompat.from(app).cancel(noteId);
             return;
         }
 
-        String title = intent.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
-        String preview = intent.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
-        String repeatStr = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
-        int intervalMinutes = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
-
-        Log.d(
-                TAG,
-                "onReceive: noteId="
-                        + noteId
-                        + " repeatStr="
-                        + repeatStr
-                        + " intervalMinutes="
-                        + intervalMinutes);
-
-        // A note with attachments opens only in the extended editor, and the alarm does not say
-        // whether it has any: look the note up off the main thread before posting.
         PendingResult pending = goAsync();
-        Context appContext = ctx.getApplicationContext();
-        dataManager
-                .getNoteForId(noteId)
-                .map(Note::isAttachments)
-                .onErrorReturnItem(false)
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                        hasAttachments -> {
+        Schedulers.io()
+                .scheduleDirect(
+                        () -> {
                             try {
-                                showNotification(
-                                        appContext,
-                                        noteId,
-                                        title,
-                                        preview,
-                                        repeatStr,
-                                        intervalMinutes,
-                                        hasAttachments);
+                                handle(app, intent, noteId, System.currentTimeMillis());
+                            } catch (RuntimeException e) {
+                                Log.e(TAG, "reminder handling failed", e);
                             } finally {
                                 pending.finish();
                             }
-                        },
-                        e -> pending.finish());
+                        });
+    }
 
-        if (intervalMinutes > 0) {
-            long nextTime = System.currentTimeMillis() + intervalMinutes * 60_000L;
-            Log.d(TAG, "onReceive: INTERVAL path → nextTime=" + new java.util.Date(nextTime));
-            dataManager
-                    .updateNoteReminderFull(
-                            noteId,
-                            nextTime,
-                            repeatStr != null ? repeatStr : "NONE",
-                            intervalMinutes)
-                    .subscribe(() -> {}, e -> Log.e(TAG, "updateReminderFull failed", e));
-            Note tempNote = new Note();
-            tempNote.setId(noteId);
-            tempNote.setTitle(title != null ? title : "");
-            tempNote.setValue(preview != null ? preview : "");
-            tempNote.setReminderTime(nextTime);
-            tempNote.setReminderRepeat(repeatStr != null ? repeatStr : "NONE");
-            tempNote.setReminderIntervalMinutes(intervalMinutes);
-            ReminderManager.scheduleReminder(ctx, tempNote);
+    @WorkerThread
+    private void handle(Context ctx, Intent intent, int noteId, long now) {
+        String action = intent.getAction();
+        int alarmNag = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
+        Note note = loadNote(noteId);
+
+        if (ReminderManager.ACTION_NAG.equals(action)) {
+            if (note == null || note.isTrash()) return;
+            showNotification(ctx, note, alarmNag);
+            ReminderManager.scheduleNag(ctx, noteId, alarmNag, now);
             return;
         }
 
-        ReminderRepeat repeat = ReminderRepeat.from(repeatStr);
-        if (repeat == ReminderRepeat.NONE) {
-            Log.d(TAG, "onReceive: ONE-TIME path → clearing reminder for noteId=" + noteId);
-            dataManager
-                    .clearReminder(noteId)
-                    .subscribe(() -> {}, e -> Log.e(TAG, "clearReminder failed", e));
+        if (ReminderManager.ACTION_SNOOZE.equals(action)) {
+            SnoozeStore snoozes = new SnoozeStore(ctx);
+            SnoozeStore.Entry entry = snoozes.get(noteId);
+            long scheduledAt = intent.getLongExtra(ReminderManager.EXTRA_SCHEDULED_AT, -1L);
+            // Re-armed by the rescheduler after it already fired, or replaced by a later snooze.
+            if (entry == null || entry.time != scheduledAt) return;
+            snoozes.remove(noteId);
+            if (note == null || note.isTrash()) return;
+            showNotification(ctx, note, entry.intervalMinutes);
+            if (entry.intervalMinutes > 0) {
+                ReminderManager.scheduleNag(ctx, noteId, entry.intervalMinutes, now);
+            }
+            return;
+        }
+
+        if (note == null || note.isTrash() || note.getReminderTime() == null) {
+            ReminderManager.cancelNag(ctx, noteId);
+            return;
+        }
+        long due = note.getReminderTime();
+        if (due > now + EARLY_TOLERANCE_MS) {
+            // Armed for a time the note no longer has, typically moved by sync; wait for it.
+            ReminderManager.scheduleReminder(ctx, note);
+            return;
+        }
+
+        int nag = note.getReminderIntervalMinutes();
+        showNotification(ctx, note, nag);
+
+        RepeatRule rule = RepeatRule.parse(note.getReminderRepeat());
+        if (rule.isRepeating()) {
+            // Counted from the anchor, so neither a late delivery nor days of downtime shift it,
+            // and missed periods are skipped rather than announced one after another.
+            long next = rule.next(rule.anchorOr(due), Math.max(now, due));
+            Log.d(TAG, "repeat " + note.getReminderRepeat() + " → next at " + next);
+            note.setReminderTime(next);
+            try {
+                dataManager
+                        .updateNoteReminderFull(noteId, next, note.getReminderRepeat(), nag)
+                        .blockingAwait();
+            } catch (RuntimeException e) {
+                Log.e(TAG, "advancing the reminder failed", e);
+            }
+            ReminderManager.scheduleReminder(ctx, note);
         } else {
-            long nextTime = ReminderManager.computeNextTime(System.currentTimeMillis(), repeat);
-            Log.d(
-                    TAG,
-                    "onReceive: REPEAT("
-                            + repeat
-                            + ") path → scheduling next at "
-                            + new java.util.Date(nextTime));
-            dataManager
-                    .updateNoteReminderFull(noteId, nextTime, repeat.name(), 0)
-                    .subscribe(() -> {}, e -> Log.e(TAG, "updateReminder failed", e));
-            Note tempNote = new Note();
-            tempNote.setId(noteId);
-            tempNote.setTitle(title != null ? title : "");
-            tempNote.setValue(preview != null ? preview : "");
-            tempNote.setReminderTime(nextTime);
-            tempNote.setReminderRepeat(repeat.name());
-            tempNote.setReminderIntervalMinutes(0);
-            ReminderManager.scheduleReminder(ctx, tempNote);
+            try {
+                dataManager.clearReminder(noteId).blockingAwait();
+            } catch (RuntimeException e) {
+                Log.e(TAG, "clearReminder failed", e);
+            }
+        }
+
+        if (nag > 0) ReminderManager.scheduleNag(ctx, noteId, nag, now);
+        else ReminderManager.cancelNag(ctx, noteId);
+    }
+
+    @Nullable
+    private Note loadNote(int noteId) {
+        try {
+            Note note = dataManager.getNoteForId(noteId).blockingGet();
+            // A missing note comes back as an empty placeholder.
+            return note != null && note.getId() == noteId ? note : null;
+        } catch (RuntimeException e) {
+            Log.w(TAG, "note lookup failed", e);
+            return null;
         }
     }
 
-    private void cancelIntervalReminder(
-            Context ctx,
-            int noteId,
-            String repeatStr,
-            int intervalMinutes,
-            String title,
-            String preview) {
-        ReminderManager.cancelReminder(ctx, noteId);
-        NotificationManagerCompat.from(ctx).cancel(noteId);
-
-        ReminderRepeat repeat = ReminderRepeat.from(repeatStr);
-        if (repeat != ReminderRepeat.NONE) {
-            long nextTime = ReminderManager.computeNextTime(System.currentTimeMillis(), repeat);
-            dataManager
-                    .updateNoteReminderFull(noteId, nextTime, repeat.name(), intervalMinutes)
-                    .subscribe(() -> {}, e -> Log.e(TAG, "updateReminderFull failed", e));
-            Note tempNote = new Note();
-            tempNote.setId(noteId);
-            tempNote.setTitle(title != null ? title : "");
-            tempNote.setValue(preview != null ? preview : "");
-            tempNote.setReminderTime(nextTime);
-            tempNote.setReminderRepeat(repeat.name());
-            tempNote.setReminderIntervalMinutes(intervalMinutes);
-            ReminderManager.scheduleReminder(ctx, tempNote);
-        } else {
-            dataManager
-                    .clearReminder(noteId)
-                    .subscribe(() -> {}, e -> Log.e(TAG, "clearReminder failed", e));
-        }
-    }
-
-    private void showNotification(
-            Context ctx,
-            int noteId,
-            String title,
-            String preview,
-            String repeatStr,
-            int intervalMinutes,
-            boolean hasAttachments) {
+    private void showNotification(@NonNull Context ctx, @NonNull Note note, int intervalMinutes) {
+        int noteId = note.getId();
+        String title = note.getTitle();
+        String preview = note.getValuePreview();
+        boolean hasAttachments = note.isAttachments();
         Intent noteIntent =
                 NoteNavigator.existingNoteIntent(
                         ctx, themePreferencesCache, noteId, hasAttachments);
@@ -194,10 +178,6 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         Intent tapIntent = new Intent(ctx, ReminderTapActivity.class);
         tapIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
-        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_TITLE, title);
-        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_PREVIEW, preview);
-        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_REPEAT, repeatStr);
-        tapIntent.putExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, intervalMinutes);
         tapIntent.putExtra(NoteExtras.EXTRA_HAS_ATTACHMENTS, hasAttachments);
         PendingIntent tapPi =
                 PendingIntent.getActivity(
@@ -208,9 +188,6 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         Intent snoozeIntent = new Intent(ctx, SnoozeActivity.class);
         snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
-        snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_TITLE, title);
-        snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_PREVIEW, preview);
-        snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_REPEAT, repeatStr);
         snoozeIntent.putExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, intervalMinutes);
         snoozeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent snoozePi =
@@ -223,10 +200,6 @@ public class ReminderReceiver extends BroadcastReceiver {
         Intent dismissIntent = new Intent(ctx, ReminderReceiver.class);
         dismissIntent.setAction(ACTION_DISMISS);
         dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_ID, noteId);
-        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_TITLE, title);
-        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_PREVIEW, preview);
-        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_REPEAT, repeatStr);
-        dismissIntent.putExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, intervalMinutes);
         PendingIntent dismissPi =
                 PendingIntent.getBroadcast(
                         ctx,
@@ -241,9 +214,7 @@ public class ReminderReceiver extends BroadcastReceiver {
                         ? preview.substring(0, 100)
                         : (preview != null ? preview : "");
 
-        // For interval reminders, tapping opens the note and stops the current interval cycle
-        // (scheduling next daily/weekly/monthly occurrence if repeatStr != NONE).
-        // For one-time / periodic reminders, tapping just opens the note.
+        // With "repeat notification" on, tapping opens the note and also ends the cycle.
         PendingIntent contentPi = (intervalMinutes > 0) ? tapPi : openPi;
 
         NotificationCompat.Builder builder =

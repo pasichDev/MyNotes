@@ -4,7 +4,6 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.ui.receiver.TaskReminderReceiver;
 import java.util.List;
@@ -19,14 +18,11 @@ public class TaskReminderManager {
     // Offset to avoid collision with note reminder PendingIntent request codes
     private static final int REQUEST_CODE_OFFSET = 100000;
 
-    /** Schedules an exact alarm for the given task's reminder time. */
+    /** Schedules an alarm for the given task's reminder time. */
     public static void scheduleReminder(Context ctx, Task task) {
         if (task.getReminderTime() == null) return;
-        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
-        if (am == null) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) return;
-        am.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP, task.getReminderTime(), buildPendingIntent(ctx, task));
+        // Without "Alarms & reminders" the task is still reminded, possibly a little late.
+        ReminderManager.arm(ctx, task.getReminderTime(), buildPendingIntent(ctx, task));
     }
 
     /** Cancels a previously scheduled alarm for the given task ID. */
