@@ -640,4 +640,6 @@
     <string name="note_move_at_top">Już na początku</string>
     <string name="note_move_at_bottom">Już na końcu</string>
     <string name="note_moved_to">Przeniesiono na pozycję %1$d z %2$d</string>
+    <string name="editor_undo">Cofnij</string>
+    <string name="editor_redo">Ponów</string>
 </resources>

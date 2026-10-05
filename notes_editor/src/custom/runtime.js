@@ -298,6 +298,425 @@ function keepCaretVisible () {
 window.addEventListener('resize', () => requestAnimationFrame(keepCaretVisible))
 
 /**
+ * Undo and redo.
+ *
+ * The history is a list of whole document states (title and blocks), each with the caret that
+ * was in it. Changes are batched: a state is kept once typing pauses, a word or line is finished,
+ * a block is added, removed or moved, or a batch has run for a few seconds. Undo and redo apply a
+ * state with the smallest edit that reaches it: blocks whose content differs are updated in place
+ * and only a change in the list of blocks renders the document again, so the page does not jump.
+ * Each applied state is an ordinary change for Android, so it is autosaved like typing.
+ *
+ * The history belongs to the note on screen: loading a note starts it again, and it is never kept
+ * across notes or page loads.
+ */
+const HISTORY_LIMIT = 100
+const HISTORY_IDLE_MS = 700
+const HISTORY_MAX_BATCH_MS = 3000
+// Editor.js reports a change up to 400 ms after it happened; a report that late about a state
+// this history applied itself is not a new change.
+const HISTORY_SETTLE_MS = 600
+
+const __hist = {
+  undo: [],
+  redo: [],
+  current: null,
+  pending: false,
+  // Whether the open batch has typed anything other than whitespace.
+  batchHasText: false,
+  caretBefore: null,
+  lastCaret: null,
+  batchStart: 0,
+  timer: null,
+  applying: false,
+  settleUntil: 0,
+  epoch: 0,
+  changeSeq: 0,
+  queue: Promise.resolve(),
+  reported: ''
+}
+
+function historyTitleElement () {
+  return document.getElementById('noteTitleInput')
+}
+
+/** The caret as { title: true, offset } in the title, or { id, input, offset } in a block. */
+function historyCaret () {
+  if (!editor || isReadMode) return null
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0 || !selection.focusNode) return null
+  const title = historyTitleElement()
+  if (title && title.contains(selection.focusNode)) {
+    const range = document.createRange()
+    range.selectNodeContents(title)
+    range.setEnd(selection.focusNode, selection.focusOffset)
+    return { title: true, offset: range.toString().length }
+  }
+  return caretPosition()
+}
+
+function readDocument () {
+  return editor.save().then(output => ({
+    title: historyTitleElement()?.innerText || '',
+    blocks: output.blocks
+  }))
+}
+
+function historyEntry (doc, caret) {
+  return { doc, json: JSON.stringify(doc), caret }
+}
+
+function reportHistory () {
+  const canUndo = __hist.undo.length > 0 || __hist.pending
+  const canRedo = __hist.redo.length > 0 && !__hist.pending
+  const key = `${canUndo}|${canRedo}`
+  if (key === __hist.reported) return
+  __hist.reported = key
+  safeAndroidCall('onHistoryChanged', canUndo, canRedo)
+}
+
+/** Attachment URLs a document refers to. */
+function attachmentUrls (doc) {
+  const urls = new Set()
+  for (const block of doc?.blocks || []) {
+    const data = block?.data
+    if (data?.file?.url) urls.add(data.file.url)
+    if (Array.isArray(data?.files)) {
+      for (const file of data.files) if (file?.url) urls.add(file.url)
+    }
+  }
+  return urls
+}
+
+/**
+ * Files a step takes out of the note may come back with an undo. Android removes files no saved
+ * note refers to, so it is told to keep these.
+ */
+function keepAttachmentsForUndo (fromDoc, toDoc) {
+  const kept = attachmentUrls(toDoc)
+  const leaving = [...attachmentUrls(fromDoc)].filter(url => !kept.has(url))
+  if (leaving.length > 0) safeAndroidCall('keepForUndo', JSON.stringify(leaving))
+}
+
+/** Forgets the history; nothing is recorded until resetHistory() reads the new document. */
+function stopHistory () {
+  __hist.epoch++
+  clearTimeout(__hist.timer)
+  __hist.timer = null
+  __hist.undo = []
+  __hist.redo = []
+  __hist.current = null
+  __hist.pending = false
+  __hist.caretBefore = null
+  __hist.lastCaret = null
+  __hist.applying = false
+  __hist.settleUntil = 0
+  reportHistory()
+}
+
+/** Starts the history again from the document now on screen. */
+function resetHistory () {
+  stopHistory()
+  if (!editor) return
+  const epoch = __hist.epoch
+  readDocument()
+    .then(doc => {
+      if (epoch !== __hist.epoch) return
+      __hist.current = historyEntry(doc, null)
+      reportHistory()
+    })
+    .catch(err => console.error('[History] reset failed:', err))
+}
+
+/**
+ * Something in the note changed, or is about to. {@code immediate} closes the batch now.
+ * {@code fromEditor} marks Editor.js's own late change report.
+ */
+function historyNoteChange (immediate, fromEditor) {
+  if (!__hist.current || __hist.applying || isReadMode) return
+  if (fromEditor && Date.now() < __hist.settleUntil) return
+  __hist.changeSeq++
+  if (!__hist.pending) {
+    __hist.pending = true
+    __hist.batchHasText = false
+    __hist.batchStart = Date.now()
+    if (!__hist.caretBefore) __hist.caretBefore = __hist.lastCaret
+  }
+  clearTimeout(__hist.timer)
+  const overdue = Date.now() - __hist.batchStart >= HISTORY_MAX_BATCH_MS
+  __hist.timer = setTimeout(captureHistory, immediate || overdue ? 0 : HISTORY_IDLE_MS)
+  reportHistory()
+}
+
+/** Called before a key or an input changes the note: remembers where the caret was. */
+function historyInputStarting () {
+  if (!__hist.current || __hist.applying || isReadMode) return
+  if (!__hist.pending && !__hist.caretBefore) __hist.caretBefore = historyCaret()
+}
+
+/**
+ * Keeps the document as a new state if it differs from the last one. With {@code force} the
+ * document is compared even when no change was reported.
+ */
+function captureHistory (force) {
+  clearTimeout(__hist.timer)
+  __hist.timer = null
+  if (!editor || !__hist.current || (!__hist.pending && !force)) return Promise.resolve()
+  const epoch = __hist.epoch
+  const seq = __hist.changeSeq
+  return readDocument().then(doc => {
+    if (epoch !== __hist.epoch || !__hist.current) return
+    const caretBefore = __hist.caretBefore
+    const changedMeanwhile = seq !== __hist.changeSeq
+    __hist.pending = changedMeanwhile
+    __hist.caretBefore = null
+    if (changedMeanwhile) __hist.batchStart = Date.now()
+    else __hist.batchHasText = false
+    const entry = historyEntry(doc, historyCaret())
+    if (entry.json !== __hist.current.json) {
+      keepAttachmentsForUndo(__hist.current.doc, doc)
+      __hist.undo.push({ ...__hist.current, caret: caretBefore || __hist.current.caret })
+      if (__hist.undo.length > HISTORY_LIMIT) __hist.undo.shift()
+      __hist.redo = []
+      __hist.current = entry
+    }
+    reportHistory()
+  })
+}
+
+/** Whether two block lists hold the same blocks, by id and type, in the same order. */
+function sameBlockList (a, b) {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].id !== b[i].id || a[i].type !== b[i].type) return false
+  }
+  return true
+}
+
+/**
+ * Whether the editor shows exactly the blocks of {@code blocks}. Saving leaves out blocks with
+ * nothing in them (an empty paragraph), so the saved document and the screen can differ.
+ */
+function editorShows (blocks) {
+  if (editor.blocks.getBlocksCount() !== blocks.length) return false
+  for (let i = 0; i < blocks.length; i++) {
+    if (editor.blocks.getBlockByIndex(i)?.id !== blocks[i].id) return false
+  }
+  return true
+}
+
+/** The block with this id, or null; unlike getById it does not warn about a missing one. */
+function findBlock (id) {
+  if (!id) return null
+  const count = editor.blocks.getBlocksCount()
+  for (let i = 0; i < count; i++) {
+    const block = editor.blocks.getBlockByIndex(i)
+    if (block?.id === id) return block
+  }
+  return null
+}
+
+function restoreHistoryCaret (caret, keep, fallbackId) {
+  const title = historyTitleElement()
+  if (caret?.title && title) {
+    title.focus({ preventScroll: true })
+    placeCaret(title, caret.offset)
+  } else if (caret?.id && findBlock(caret.id)) {
+    restoreViewState({
+      caretId: caret.id,
+      caretInput: caret.input,
+      caretOffset: caret.offset,
+      topId: findBlock(keep?.topId) ? keep.topId : null,
+      topIndex: keep ? keep.topIndex : -1,
+      topOffset: keep?.topOffset || 0
+    })
+  } else {
+    const block = findBlock(fallbackId)
+    if (block) {
+      try {
+        editor.caret.setToBlock(block, 'end')
+      } catch (e) {
+        console.error('[History] placing the caret failed:', e)
+      }
+    }
+    if (keep) {
+      restoreViewState({
+        topId: findBlock(keep.topId) ? keep.topId : null,
+        topIndex: keep.topIndex,
+        topOffset: keep.topOffset
+      })
+    }
+  }
+  // restoreViewState scrolls on the next frame; the caret is brought into view after that.
+  requestAnimationFrame(() => requestAnimationFrame(keepCaretVisible))
+}
+
+/** Puts the document of {@code entry} on screen with the smallest change that gets there. */
+function applyHistoryEntry (entry) {
+  const from = __hist.current.doc
+  const to = entry.doc
+  const epoch = __hist.epoch
+  __hist.applying = true
+  keepAttachmentsForUndo(from, to)
+
+  const title = historyTitleElement()
+  if (title && from.title !== to.title) {
+    title.innerText = to.title
+    // The title's own listeners update its placeholder and tell Android.
+    title.dispatchEvent(new Event('input'))
+  }
+
+  let keep = null
+  let changedId = null
+  let work
+  if (sameBlockList(from.blocks, to.blocks) && editorShows(from.blocks)) {
+    const updates = []
+    for (let i = 0; i < to.blocks.length; i++) {
+      if (JSON.stringify(from.blocks[i]) === JSON.stringify(to.blocks[i])) continue
+      changedId = to.blocks[i].id
+      updates.push(editor.blocks.update(to.blocks[i].id, to.blocks[i].data, to.blocks[i].tunes))
+    }
+    work = Promise.all(updates)
+  } else {
+    keep = currentViewState()
+    work = editor.render({ blocks: to.blocks })
+  }
+
+  return work
+    .then(() => readDocument())
+    .then(doc => {
+      if (epoch !== __hist.epoch) return
+      __hist.current = historyEntry(doc, entry.caret)
+      __hist.settleUntil = Date.now() + HISTORY_SETTLE_MS
+      restoreHistoryCaret(entry.caret, keep, changedId)
+      saveContent()
+    })
+    .catch(err => console.error('[History] applying a step failed:', err))
+    .finally(() => {
+      if (epoch === __hist.epoch) __hist.applying = false
+      reportHistory()
+    })
+}
+
+function runHistoryAction (action) {
+  __hist.queue = __hist.queue.then(action).catch(err => console.error('[History]', err))
+  return __hist.queue
+}
+
+function historyUndo () {
+  if (!editor || isReadMode) return
+  runHistoryAction(() =>
+    captureHistory(true).then(() => {
+      const entry = __hist.undo.pop()
+      if (!entry || !__hist.current) return
+      __hist.redo.push({ ...__hist.current, caret: historyCaret() || __hist.current.caret })
+      return applyHistoryEntry(entry)
+    })
+  )
+}
+
+function historyRedo () {
+  if (!editor || isReadMode) return
+  runHistoryAction(() =>
+    captureHistory(true).then(() => {
+      const entry = __hist.redo.pop()
+      if (!entry || !__hist.current) return
+      __hist.undo.push({ ...__hist.current, caret: historyCaret() || __hist.current.caret })
+      return applyHistoryEntry(entry)
+    })
+  )
+}
+
+/**
+ * A block Android has deleted together with its file is taken out of every state, so no undo
+ * can bring back a block whose file is gone. Steps left with nothing to change are dropped.
+ */
+function forgetHistoryBlock (blockId) {
+  const strip = entry => {
+    const blocks = entry.doc.blocks.filter(block => block.id !== blockId)
+    if (blocks.length === entry.doc.blocks.length) return entry
+    return historyEntry({ title: entry.doc.title, blocks }, entry.caret)
+  }
+  const distinct = list => list.filter((entry, i) => i === 0 || entry.json !== list[i - 1].json)
+  if (__hist.current) __hist.current = strip(__hist.current)
+  const undo = distinct(__hist.undo.map(strip))
+  if (__hist.current && undo.length && undo[undo.length - 1].json === __hist.current.json) undo.pop()
+  // The next redo is the last element; walk them from the current state outwards.
+  const redo = distinct(__hist.redo.map(strip).reverse())
+  if (__hist.current && redo.length && redo[0].json === __hist.current.json) redo.shift()
+  __hist.undo = undo
+  __hist.redo = redo.reverse()
+  reportHistory()
+}
+
+/** Editor.js reported changes; a new, removed or moved block closes the batch at once. */
+function historyEditorChanged (event) {
+  const events = Array.isArray(event) ? event : [event]
+  const structural = events.some(e => e && e.type && e.type !== 'block-changed')
+  historyNoteChange(structural, true)
+}
+
+function isHistoryShortcut (event) {
+  if (!(event.ctrlKey || event.metaKey) || event.altKey) return null
+  const key = (event.key || '').toLowerCase()
+  if (key === 'z') return event.shiftKey ? 'redo' : 'undo'
+  if (key === 'y' && !event.shiftKey) return 'redo'
+  return null
+}
+
+function isEditingKey (event) {
+  if (event.ctrlKey || event.metaKey || event.altKey) return false
+  if (event.keyCode === 229) return true
+  const key = event.key || ''
+  return key.length === 1 || key === 'Enter' || key === 'Backspace' || key === 'Delete' || key === 'Tab'
+}
+
+document.addEventListener(
+  'keydown',
+  event => {
+    const action = isHistoryShortcut(event)
+    if (action) {
+      event.preventDefault()
+      event.stopPropagation()
+      if (action === 'undo') historyUndo()
+      else historyRedo()
+      return
+    }
+    if (isEditingKey(event)) {
+      historyInputStarting()
+      if (event.key === 'Enter') historyNoteChange(true, false)
+    }
+  },
+  true
+)
+
+document.addEventListener(
+  'beforeinput',
+  event => {
+    if (event.inputType === 'historyUndo' || event.inputType === 'historyRedo') {
+      // The browser's own undo knows nothing about blocks; ours replaces it.
+      event.preventDefault()
+      if (event.inputType === 'historyUndo') historyUndo()
+      else historyRedo()
+      return
+    }
+    historyInputStarting()
+    // A finished word or line closes the batch, the space or line break with it; a space that
+    // only follows a pause stays with the word typed after it.
+    const data = typeof event.data === 'string' ? event.data : ''
+    const lineBreak = event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak'
+    const endsWord = lineBreak || (/\s$/.test(data) && (__hist.batchHasText || /\S/.test(data)))
+    historyNoteChange(endsWord, false)
+    if (/\S/.test(data)) __hist.batchHasText = true
+  },
+  true
+)
+
+document.addEventListener('selectionchange', () => {
+  if (!__hist.pending && !__hist.applying) __hist.lastCaret = historyCaret()
+})
+
+/**
  * Apply theme colors from Android.
  */
 function setThemeColors (colors) {
@@ -332,8 +751,11 @@ function loadNote (note) {
   }
 
   __viewStateReady = false
+  // Undo never reaches into another note, or into this one as it was before a reload.
+  stopHistory()
   editor.render({ blocks }).then(() => {
     __lastSavedJson = JSON.stringify(blocks)
+    resetHistory()
     if (note.viewState) restoreViewState(note.viewState)
     else restoreViewportAnchor(note.anchor)
     // "Open in editing mode" with no caret to restore: the caret starts at the block shown at
@@ -500,6 +922,8 @@ window.deleteAttachmentBlockFromAndroid = function (blockId, fileUrl) {
     if (index < 0) return
 
     editor.blocks.delete(index)
+    // Its file is deleted next; no undo may bring the block back without it.
+    forgetHistoryBlock(blockId)
 
     setTimeout(() => {
       safeAndroidCall('onAttachmentBlockDeletedResponse', blockId, fileUrl)
@@ -526,6 +950,7 @@ const titleEl = document.getElementById('noteTitleInput')
 titleEl.addEventListener('input', () => {
   updateTitlePlaceholder()
   safeAndroidCall('onTitleChanged', titleEl.innerText.trim())
+  historyNoteChange(false, false)
 })
 
 /**
@@ -617,5 +1042,8 @@ window.saveContent = saveContent
 window.currentBlockIndex = currentBlockIndex
 window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid
 window.flushContent = flushContent
+window.historyUndo = historyUndo
+window.historyRedo = historyRedo
+window.historyEditorChanged = historyEditorChanged
 // expose globally
 window.uploadImage = uploadImage

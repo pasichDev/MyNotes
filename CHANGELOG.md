@@ -41,6 +41,13 @@
   and back, and it is saved in local backups. It stays on this device: moving a note is not an
   edit, so it never reaches Google Drive and never changes the order on your other devices. With
   TalkBack, each note offers Move up and Move down.
+- **Undo and Redo.** While you edit a note, Undo and Redo sit in the toolbar of both editors and
+  are greyed out when there is nothing to take back or bring back. They step through your typing
+  a word at a time, and through deletions, pastes, formatting and blocks you add, remove or move,
+  putting the cursor back where it was. On a keyboard, Ctrl+Z undoes and Ctrl+Shift+Z or Ctrl+Y
+  redoes. An undo is saved like any other edit, and saving never clears the history. It belongs
+  to the note you are editing: it starts afresh whenever a note is opened, copied or restored
+  from its version history, and in the simple editor it also survives turning the screen.
 
 **Improvements**
 
@@ -48,9 +55,9 @@
   under one View options button, which opens a sheet where both can be changed in one visit; the
   button shows the layout you are using. The search hint no longer gets cut off with large text,
   and the menu puts Tags and Trash first, then Tasks, with a single way to support the developer.
-- The note toolbar keeps only Back, the save status and More. An upcoming reminder now shows as a
-  chip at the top of the note with its day and time; tap it to change or remove the reminder. New
-  reminders are set from More.
+- The note toolbar keeps only Back, the save status and More, plus Undo and Redo while you edit.
+  An upcoming reminder now shows as a chip at the top of the note with its day and time; tap it to
+  change or remove the reminder. New reminders are set from More.
 - Search puts the best match first. A note whose title is exactly what you typed comes first,
   then titles that start with it, contain it as a word or contain it at all, then notes whose
   tag matches, and only then notes that mention it in their text; pinned and newer notes lead

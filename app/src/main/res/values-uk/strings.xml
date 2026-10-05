@@ -648,4 +648,6 @@
     <string name="note_move_at_top">Уже на початку</string>
     <string name="note_move_at_bottom">Уже в кінці</string>
     <string name="note_moved_to">Переміщено на позицію %1$d з %2$d</string>
+    <string name="editor_undo">Скасувати</string>
+    <string name="editor_redo">Повторити</string>
 </resources>

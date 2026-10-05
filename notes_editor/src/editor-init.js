@@ -100,10 +100,11 @@ window.SpacerTool = SpacerTool
         updateTitlePlaceholder(i18n.title_placeholder || 'Title...')
       },
 
-      onChange () {
+      onChange (api, event) {
         if (!global.__EDITOR_READY) return
 
-          global.saveContent?.()
+        global.saveContent?.()
+        global.historyEditorChanged?.(event)
       }
     })
 

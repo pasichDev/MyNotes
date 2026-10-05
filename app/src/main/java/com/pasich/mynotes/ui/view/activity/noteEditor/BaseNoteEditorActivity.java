@@ -5,9 +5,11 @@ import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerT
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,8 +48,18 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Inject protected NoteContract.presenter notePresenter;
 
+    /** Alpha of a disabled toolbar icon, the Material 38%. */
+    private static final int DISABLED_ICON_ALPHA = 97;
+
     // Menu for the save status indicator
     protected MenuItem saveStatusMenuItem;
+    private MenuItem undoMenuItem;
+    private MenuItem redoMenuItem;
+    // Undo and Redo show while the note is being edited and are enabled while there is something
+    // to take back or apply again.
+    private boolean undoRedoShown = false;
+    private boolean canUndo = false;
+    private boolean canRedo = false;
     protected T binding;
     protected long idNote;
 
@@ -99,6 +111,12 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     protected abstract void setNewNoteTitle();
 
     // Set title for a new note
+
+    /** Takes back the last edit in this editor. */
+    protected abstract void undoEdit();
+
+    /** Applies the last undone edit again. */
+    protected abstract void redoEdit();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -181,7 +199,66 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(getMenuResId(), menu);
         saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
+        undoMenuItem = menu.findItem(R.id.actionUndo);
+        redoMenuItem = menu.findItem(R.id.actionRedo);
+        applyUndoRedoState();
         return true;
+    }
+
+    /** Shows Undo and Redo while the note is edited, hides them while it is read. */
+    protected void setUndoRedoShown(boolean shown) {
+        if (undoRedoShown == shown) return;
+        undoRedoShown = shown;
+        applyUndoRedoState();
+    }
+
+    /** Enables Undo and Redo according to the editor's history. */
+    protected void setUndoRedoState(boolean canUndo, boolean canRedo) {
+        if (this.canUndo == canUndo && this.canRedo == canRedo) return;
+        this.canUndo = canUndo;
+        this.canRedo = canRedo;
+        applyUndoRedoState();
+    }
+
+    private void applyUndoRedoState() {
+        applyHistoryItem(undoMenuItem, canUndo);
+        applyHistoryItem(redoMenuItem, canRedo);
+    }
+
+    private void applyHistoryItem(MenuItem item, boolean enabled) {
+        if (item == null) return;
+        item.setVisible(undoRedoShown);
+        item.setEnabled(enabled);
+        // A disabled action button keeps its icon's colour; dim it so the state is visible. The
+        // menu has already mutated the icon to tint it, so this changes only this item.
+        Drawable icon = item.getIcon();
+        if (icon != null) icon.setAlpha(enabled ? 255 : DISABLED_ICON_ALPHA);
+    }
+
+    /**
+     * Ctrl+Z undoes, Ctrl+Shift+Z and Ctrl+Y redo, on a hardware keyboard. A text field has an undo
+     * of its own that knows nothing about this history, so an editor whose fields would see the
+     * shortcut first passes their key events to {@link #onHistoryShortcut} as well.
+     */
+    @Override
+    public boolean onKeyShortcut(int keyCode, KeyEvent event) {
+        return onHistoryShortcut(keyCode, event) || super.onKeyShortcut(keyCode, event);
+    }
+
+    /** Runs Undo or Redo for their shortcut; returns whether the key was one of them. */
+    protected boolean onHistoryShortcut(int keyCode, KeyEvent event) {
+        if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+        if (!undoRedoShown || !event.isCtrlPressed() || event.isAltPressed()) return false;
+        if (keyCode == KeyEvent.KEYCODE_Z) {
+            if (event.isShiftPressed()) redoEdit();
+            else undoEdit();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_Y && !event.isShiftPressed()) {
+            redoEdit();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -254,6 +331,15 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             notePresenter.closeActivity();
+        }
+
+        if (item.getItemId() == R.id.actionUndo) {
+            undoEdit();
+            return true;
+        }
+        if (item.getItemId() == R.id.actionRedo) {
+            redoEdit();
+            return true;
         }
 
         if (item.getItemId() == R.id.moreBut) {

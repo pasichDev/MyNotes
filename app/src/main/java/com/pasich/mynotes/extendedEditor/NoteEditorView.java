@@ -298,6 +298,16 @@ public class NoteEditorView extends FrameLayout {
         }
     }
 
+    /** Takes back the last change in the note; the page saves the result like any edit. */
+    public void undo() {
+        if (editorIsReady && editorInterface != null) editorInterface.undo();
+    }
+
+    /** Applies the last undone change again. */
+    public void redo() {
+        if (editorIsReady && editorInterface != null) editorInterface.redo();
+    }
+
     public void deleteBlock(String blockId, String fileUrl) {
         if (!editorIsReady) return;
         editorInterface.deleteAttachmentBlockRequest(blockId, fileUrl);

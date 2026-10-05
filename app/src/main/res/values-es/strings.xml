@@ -620,4 +620,6 @@
     <string name="note_move_at_top">Ya está arriba del todo</string>
     <string name="note_move_at_bottom">Ya está abajo del todo</string>
     <string name="note_moved_to">Movida a la posición %1$d de %2$d</string>
+    <string name="editor_undo">Deshacer</string>
+    <string name="editor_redo">Rehacer</string>
 </resources>

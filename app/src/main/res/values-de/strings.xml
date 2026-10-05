@@ -619,4 +619,6 @@
     <string name="note_move_at_top">Bereits ganz oben</string>
     <string name="note_move_at_bottom">Bereits ganz unten</string>
     <string name="note_moved_to">An Position %1$d von %2$d verschoben</string>
+    <string name="editor_undo">Rückgängig</string>
+    <string name="editor_redo">Wiederholen</string>
 </resources>

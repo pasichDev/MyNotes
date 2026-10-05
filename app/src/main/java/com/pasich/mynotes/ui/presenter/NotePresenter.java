@@ -508,6 +508,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                                 setNote(note);
                                                 // Update saved values on load
                                                 savedNote.copyFrom(note);
+                                                getView().resetEditHistory();
                                                 updateSaveState(SaveState.IDLE);
                                             }
                                         },
@@ -534,6 +535,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                                 getView().reloadExtendedEditor();
                                             }
                                             getView().loadingNote(note);
+                                            getView().resetEditHistory();
                                             updateSaveState(SaveState.IDLE);
                                         },
                                         throwable -> Log.e(TAG, "reloadNote() failed", throwable)));
@@ -672,6 +674,8 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                                                                     getView()
                                                                                             .loadingNote(
                                                                                                     note);
+                                                                                    getView()
+                                                                                            .resetEditHistory();
                                                                                     getView()
                                                                                             .onNoteCopied(
                                                                                                     newId);

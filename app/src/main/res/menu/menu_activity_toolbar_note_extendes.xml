@@ -1,25 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Every action is "always": with "ifRoom" a narrow phone shows at most three actions, so Undo
+     and Redo would push More into an overflow menu. Undo and Redo come after the save status,
+     so the status appearing and disappearing while typing never moves them. -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AlwaysShowAction">
 
     <item
         android:id="@+id/saveStatusBut"
         android:icon="@drawable/ic_save_pending"
         android:title="@string/saveStatus"
         android:visible="false"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/actionUndo"
+        android:enabled="false"
+        android:icon="@drawable/ic_undo"
+        android:title="@string/editor_undo"
+        android:visible="false"
+        app:iconTint="?attr/colorOnBackground"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/actionRedo"
+        android:enabled="false"
+        android:icon="@drawable/ic_redo"
+        android:title="@string/editor_redo"
+        android:visible="false"
+        app:iconTint="?attr/colorOnBackground"
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/actionRead"
         android:icon="@drawable/ic_read"
         android:title="@string/read_mode_enter"
         app:iconTint="?attr/colorOnBackground"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/moreBut"
         android:icon="@drawable/ic_more"
         android:title="@string/more"
         app:iconTint="?attr/colorOnBackground"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>

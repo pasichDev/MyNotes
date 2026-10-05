@@ -42,6 +42,13 @@ public interface NoteContract {
 
         /** Reloads the extended editor with the current note content. */
         void reloadExtendedEditor();
+
+        /**
+         * Starts the editor's undo history again: a note was loaded, or replaced by a copy or a
+         * restored version, so nothing typed before may be undone into it. Saving never calls this,
+         * so the history survives every autosave.
+         */
+        void resetEditHistory();
     }
 
     interface presenter extends BasePresenter<view> {

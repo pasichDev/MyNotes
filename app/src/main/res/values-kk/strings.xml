@@ -616,4 +616,6 @@
     <string name="note_move_at_top">Қазірдің өзінде ең жоғарыда</string>
     <string name="note_move_at_bottom">Қазірдің өзінде ең төменде</string>
     <string name="note_moved_to">%2$d ішінен %1$d орынға жылжытылды</string>
+    <string name="editor_undo">Болдырмау</string>
+    <string name="editor_redo">Қайталау</string>
 </resources>

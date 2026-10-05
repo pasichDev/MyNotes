@@ -269,6 +269,16 @@ public class NoteExtendedEditorActivity
                             }
 
                             @Override
+                            public void onHistoryChanged(boolean canUndo, boolean canRedo) {
+                                runOnUiThread(
+                                        () -> {
+                                            if (binding != null) {
+                                                setUndoRedoState(canUndo, canRedo);
+                                            }
+                                        });
+                            }
+
+                            @Override
                             public void onNoteRendered() {
                                 if (binding != null) binding.noteEditor.onNoteRenderedFromBridge();
                                 runOnUiThread(
@@ -443,8 +453,12 @@ public class NoteExtendedEditorActivity
         return shown;
     }
 
-    /** Shows the action that leaves the current mode: Edit while reading, Read while editing. */
+    /**
+     * Shows the action that leaves the current mode: Edit while reading, Read while editing. Undo
+     * and Redo are there only while editing.
+     */
     private void updateReadModeItem() {
+        setUndoRedoShown(!isReadMode);
         if (readModeItem == null) return;
         readModeItem.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
         readModeItem.setTitle(isReadMode ? R.string.read_mode_exit : R.string.read_mode_enter);
@@ -461,6 +475,27 @@ public class NoteExtendedEditorActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void undoEdit() {
+        if (binding == null || isReadMode) return;
+        binding.noteEditor.undo();
+    }
+
+    @Override
+    protected void redoEdit() {
+        if (binding == null || isReadMode) return;
+        binding.noteEditor.redo();
+    }
+
+    /**
+     * The page keeps the history and starts it again whenever it loads a note, so it never reaches
+     * across notes or into a version restored from the history. A new page starts with none.
+     */
+    @Override
+    public void resetEditHistory() {
+        // Nothing to do here; see above.
     }
 
     @Override

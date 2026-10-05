@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
+import com.pasich.mynotes.extendedEditor.attach.AttachmentUrl;
 import com.pasich.mynotes.extendedEditor.attach.RecentAttachmentUploads;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.models.PickedFile;
@@ -139,6 +140,62 @@ public class EditorJSInterface {
     @JavascriptInterface
     public void onNoteRendered() {
         if (listener != null) listener.onNoteRendered();
+    }
+
+    /**
+     * The page's undo history changed: whether there is something to undo or redo.
+     *
+     * @param canUndo whether an undo would change the note.
+     * @param canRedo whether a redo would change the note.
+     */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onHistoryChanged(boolean canUndo, boolean canRedo) {
+        if (listener != null) listener.onHistoryChanged(canUndo, canRedo);
+    }
+
+    /**
+     * Attachment files an edit took out of the note that an undo may bring back. They are kept from
+     * the orphan cleanup the way a fresh upload is, until a saved note refers to them again or the
+     * app process ends.
+     *
+     * @param urlsJson a JSON array of attachment URLs.
+     */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void keepForUndo(String urlsJson) {
+        if (released || urlsJson == null || listener == null) return;
+        int noteId = listener.getNoteId();
+        if (noteId <= 0) return;
+        try {
+            JSONArray urls = new JSONArray(urlsJson);
+            for (int i = 0; i < urls.length(); i++) {
+                AttachmentUrl url = AttachmentUrl.parse(urls.optString(i, null));
+                if (url != null && url.getNoteFolder().equals("note_" + noteId)) {
+                    RecentAttachmentUploads.register(noteId, url.getFileName());
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "keepForUndo: unreadable list", e);
+        }
+    }
+
+    /** Takes back the last change in the page. */
+    public void undo() {
+        evaluate("window.historyUndo && historyUndo();");
+    }
+
+    /** Applies the last undone change in the page again. */
+    public void redo() {
+        evaluate("window.historyRedo && historyRedo();");
+    }
+
+    private void evaluate(String script) {
+        if (webView == null || released) return;
+        webView.post(
+                () -> {
+                    if (!released) webView.evaluateJavascript(script, null);
+                });
     }
 
     /** Asks the editor to send its document now; it answers through onContentFlushed. */
@@ -496,6 +553,8 @@ public class EditorJSInterface {
         void onViewState(String json);
 
         void onReadModeChanged(boolean readOnly, boolean byDoubleTap);
+
+        void onHistoryChanged(boolean canUndo, boolean canRedo);
 
         void onNoteRendered();
 
