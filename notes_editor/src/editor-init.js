@@ -28,16 +28,23 @@ window.SpacerTool = SpacerTool
     global.__saveTimer = null
 
     const titleDiv = document.getElementById('noteTitleInput')
+    // The title hint, also for runtime.js, which shows it again whenever a note is loaded.
+    global.__titlePlaceholder = i18n.title_placeholder
     const AttachesTool = global.AttachesTool
 
 
+
+    // Android turns autofocus off when it is about to put the caret back where the note was
+    // left; the first block would otherwise take focus and the keyboard first.
+    const params = new URLSearchParams(global.location.search)
 
     const editor = new EditorJS({
       holder: 'editorjs',
       i18n,
       placeholder: i18n.placeholder,
-      autofocus: true,
-      readOnly: false,
+      autofocus: params.get('autofocus') !== '0',
+      // "Open in reading mode": rendered read-only from the start, with no switch to see.
+      readOnly: params.get('readonly') === '1',
 
       tools: {
         paragraph: { class: Paragraph, inlineToolbar: true },
@@ -92,13 +99,14 @@ window.SpacerTool = SpacerTool
 
         global.Android?.onEditorReady()
 
-        updateTitlePlaceholder(i18n.title_placeholder || 'Title...')
+        updateTitlePlaceholder(global.__titlePlaceholder)
       },
 
-      onChange () {
+      onChange (api, event) {
         if (!global.__EDITOR_READY) return
 
-          global.saveContent?.()
+        global.saveContent?.()
+        global.historyEditorChanged?.(event)
       }
     })
 
@@ -109,7 +117,7 @@ window.SpacerTool = SpacerTool
     }
 
     titleDiv.addEventListener('input', () => {
-      updateTitlePlaceholder(i18n.title_placeholder || 'Title...')
+      updateTitlePlaceholder(global.__titlePlaceholder)
       global.Android?.onTitleChanged(titleDiv.innerText.trim())
     })
 

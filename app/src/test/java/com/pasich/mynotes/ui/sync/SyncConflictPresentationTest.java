@@ -271,4 +271,27 @@ public class SyncConflictPresentationTest {
                 1L,
                 0L);
     }
+
+    @Test
+    public void compare_windowsEachTextAroundTheirDifference() {
+        String head = "x".repeat(300);
+        SyncConflictPresentation.Comparison comparison =
+                SyncConflictPresentation.compare(head + "old tail", head + "new tail", 40);
+
+        // Both windows keep the difference on screen, however far into the text it is.
+        assertThat(comparison.first.text.substring(comparison.first.start, comparison.first.end))
+                .isEqualTo("old");
+        assertThat(comparison.second.text.substring(comparison.second.start, comparison.second.end))
+                .isEqualTo("new");
+        assertThat(comparison.first.text).startsWith("…");
+    }
+
+    @Test
+    public void compare_equalTextsHaveNoHighlight() {
+        SyncConflictPresentation.Comparison comparison =
+                SyncConflictPresentation.compare("same", "same", 40);
+
+        assertThat(comparison.first.end).isEqualTo(comparison.first.start);
+        assertThat(comparison.second.text).isEqualTo("same");
+    }
 }

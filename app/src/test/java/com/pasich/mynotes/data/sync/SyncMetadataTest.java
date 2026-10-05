@@ -44,6 +44,45 @@ public class SyncMetadataTest {
     }
 
     @Test
+    public void stripDeviceLocalFields_dropsTheCustomPositionSoNoteHashesDoNotChange() {
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        com.pasich.mynotes.data.model.Note here =
+                new com.pasich.mynotes.data.model.Note().create("Shopping", "milk", 10L, "work");
+        here.setId(4);
+        here.setCustomPosition(4096L);
+        com.pasich.mynotes.data.model.Note elsewhere =
+                new com.pasich.mynotes.data.model.Note().create("Shopping", "milk", 10L, "work");
+        elsewhere.setId(9);
+        elsewhere.setCustomPosition(1024L);
+
+        JsonObject first = gson.toJsonTree(here).getAsJsonObject();
+        JsonObject second = gson.toJsonTree(elsewhere).getAsJsonObject();
+        assertThat(first.has("n")).isTrue();
+        // What a client from before the custom order serialized: the same note, no "n".
+        JsonObject older = gson.toJsonTree(here).getAsJsonObject();
+        older.remove("n");
+
+        SyncMetadata.stripDeviceLocalFields(SyncMetadata.RECORD_TYPE_NOTE, first);
+        SyncMetadata.stripDeviceLocalFields(SyncMetadata.RECORD_TYPE_NOTE, second);
+        SyncMetadata.stripDeviceLocalFields(SyncMetadata.RECORD_TYPE_NOTE, older);
+
+        assertThat(first.has("n")).isFalse();
+        // Two devices ordering the same note differently, and a client that never heard of the
+        // order, all describe one version: a drag is not an edit and causes no conflict.
+        assertThat(hash(first)).isEqualTo(hash(second));
+        assertThat(hash(first)).isEqualTo(hash(older));
+    }
+
+    private static String hash(JsonObject payload) {
+        return SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        "00000000-0000-4000-8000-000000000001",
+                        java.time.Instant.EPOCH,
+                        payload)
+                .getCanonicalPayloadHash();
+    }
+
+    @Test
     public void stripDeviceLocalFields_leavesPreferencesUntouched() {
         // PreferencesBackup is serialized with the same short Gson aliases as Note, so "a" is the
         // format count and "h" is a real setting. Stripping by key without checking the record

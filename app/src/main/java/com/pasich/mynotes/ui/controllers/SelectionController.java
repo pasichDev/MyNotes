@@ -7,6 +7,7 @@ import com.pasich.mynotes.databinding.ActionPanelBinding;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.payloads.NotePayloads;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
@@ -60,12 +61,15 @@ public class SelectionController {
     public void setPanelMode(Mode mode) {
         switch (mode) {
             case NORMAL:
+                panel.actionTagChange.setVisibility(View.VISIBLE);
                 panel.actionShare.setVisibility(View.VISIBLE);
                 panel.actionDelete.setVisibility(View.VISIBLE);
                 panel.actionRestore.setVisibility(View.GONE);
                 break;
 
             case RESTORE:
+                // A note in the trash has no tag to change.
+                panel.actionTagChange.setVisibility(View.GONE);
                 panel.actionShare.setVisibility(View.GONE);
                 panel.actionDelete.setVisibility(View.GONE);
                 panel.actionRestore.setVisibility(View.VISIBLE);
@@ -121,6 +125,35 @@ public class SelectionController {
 
         selectionMode = false;
         showPanel(false);
+        notifyListener();
+    }
+
+    /**
+     * Drops selected notes that no longer exist (for example deleted by a sync). Leaves selection
+     * mode when nothing selected is left.
+     */
+    public void retainOnly(Collection<Integer> existingIds) {
+        if (!selectionMode) return;
+        HashSet<Integer> keep = new HashSet<>(existingIds);
+        List<Integer> gone = new ArrayList<>();
+        for (int id : selectedIds) {
+            if (!keep.contains(id)) gone.add(id);
+        }
+        if (gone.isEmpty()) return;
+
+        selectedIds.removeAll(gone);
+        for (int id : gone) {
+            updateNoteVisualState(id);
+        }
+        if (selectedIds.isEmpty()) {
+            clearSelection();
+            return;
+        }
+        int count = selectedIds.size();
+        panel.selectedCount.setText(
+                panel.getRoot()
+                        .getResources()
+                        .getQuantityString(R.plurals.selected_count, count, count));
         notifyListener();
     }
 

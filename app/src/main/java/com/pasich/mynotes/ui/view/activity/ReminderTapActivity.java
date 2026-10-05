@@ -3,21 +3,20 @@ package com.pasich.mynotes.ui.view.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.DataManager;
-import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.ReminderRepeat;
-import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
+import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
 import javax.inject.Inject;
 
 /**
- * Trampoline activity for interval reminder notification taps. Cancels the current interval alarm.
- * If the note has a daily/weekly/monthly repeat, schedules the next occurrence; otherwise clears
- * the reminder entirely. Then navigates to the note or tasks screen.
+ * Trampoline activity for taps on a reminder notification that repeats until answered. Ends the
+ * repeating notification, then navigates to the note or tasks screen.
  */
 @AndroidEntryPoint
 public class ReminderTapActivity extends AppCompatActivity {
@@ -25,6 +24,8 @@ public class ReminderTapActivity extends AppCompatActivity {
     public static final String EXTRA_IS_TASK = "isTask";
 
     @Inject DataManager dataManager;
+
+    @Inject ThemePreferencesCache themePreferencesCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,35 +51,17 @@ public class ReminderTapActivity extends AppCompatActivity {
                 finish();
                 return;
             }
-            String repeatStr = incoming.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
-            int intervalMinutes =
-                    incoming.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
-            String title = incoming.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
-            String preview = incoming.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
+            // Tapping answers the notification: the "repeat notification" cycle ends. The
+            // schedule already moved to its next occurrence when the reminder fired.
+            ReminderManager.cancelNag(this, noteId);
+            NotificationManagerCompat.from(this).cancel(noteId);
 
-            ReminderManager.cancelReminder(this, noteId);
-
-            ReminderRepeat repeat = ReminderRepeat.from(repeatStr);
-            if (repeat != ReminderRepeat.NONE) {
-                long nextTime = ReminderManager.computeNextTime(System.currentTimeMillis(), repeat);
-                Note tempNote = new Note();
-                tempNote.setId(noteId);
-                tempNote.setTitle(title != null ? title : "");
-                tempNote.setValue(preview != null ? preview : "");
-                tempNote.setReminderTime(nextTime);
-                tempNote.setReminderRepeat(repeat.name());
-                tempNote.setReminderIntervalMinutes(intervalMinutes);
-                dataManager
-                        .updateNoteReminderFull(noteId, nextTime, repeat.name(), intervalMinutes)
-                        .subscribe(() -> {}, e -> {});
-                ReminderManager.scheduleReminder(this, tempNote);
-            } else {
-                dataManager.clearReminder(noteId).subscribe(() -> {}, e -> {});
-            }
-
-            Intent noteIntent = new Intent(this, NoteActivity.class);
-            noteIntent.putExtra(NoteExtras.EXTRA_NEW_NOTE, false);
-            noteIntent.putExtra(NoteExtras.EXTRA_ID_NOTE, (long) noteId);
+            Intent noteIntent =
+                    NoteNavigator.existingNoteIntent(
+                            this,
+                            themePreferencesCache,
+                            noteId,
+                            incoming.getBooleanExtra(NoteExtras.EXTRA_HAS_ATTACHMENTS, false));
             TaskStackBuilder.create(this)
                     .addNextIntent(new Intent(this, MainActivity.class))
                     .addNextIntent(noteIntent)

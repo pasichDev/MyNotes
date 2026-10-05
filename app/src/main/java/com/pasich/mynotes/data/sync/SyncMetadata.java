@@ -32,6 +32,10 @@ public final class SyncMetadata {
      * <p>Identity travels in the record's stable ID and attachments travel in the bundle manifest,
      * so nothing here is needed on the wire. Applied to decoded remote records as well, so bundles
      * written by 2.6.48/2.6.49 normalize to the same shape instead of conflicting forever.
+     *
+     * <p>A note's custom position is stripped for a different reason: it is this device's own
+     * arrangement, changed without touching the record, so carrying it would turn every drag into
+     * an edit of the note on every device, and clients that predate it would see it as a change.
      */
     public static void stripDeviceLocalFields(
             String recordType, com.google.gson.JsonObject payload) {
@@ -41,6 +45,7 @@ public final class SyncMetadata {
         if (RECORD_TYPE_NOTE.equals(recordType)) {
             payload.remove("a"); // Note.id
             payload.remove("h"); // Note.attachments: device-local file:// paths
+            payload.remove("n"); // Note.customPosition: this device's own manual order
         } else if (RECORD_TYPE_TAG.equals(recordType)) {
             payload.remove("a"); // Tag.id
         } else if (RECORD_TYPE_TASK.equals(recordType)) {

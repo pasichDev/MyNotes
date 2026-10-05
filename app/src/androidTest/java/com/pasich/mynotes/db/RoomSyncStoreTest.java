@@ -257,6 +257,34 @@ public class RoomSyncStoreTest {
     }
 
     @Test
+    public void applySnapshot_aSecondSyncOfAnUnchangedNoteWithAnAttachmentReEmitsNothing()
+            throws Exception {
+        byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
+        int noteId = seedNoteWithAttachment("photo.png", bytes);
+        // The first apply moves the file to this device's canonical name and rewrites the column;
+        // that is a real change and is written.
+        store.applySnapshot(store.readSnapshot(), Collections.emptyList());
+        String afterFirst = db.noteDao().getNoteSync(noteId).getAttachments();
+        SyncSnapshot unchanged = store.readSnapshot();
+        io.reactivex.subscribers.TestSubscriber<List<Note>> notes =
+                db.noteDao().getNotesAll().test();
+        notes.awaitCount(
+                1, io.reactivex.observers.BaseTestConsumer.TestWaitStrategy.SLEEP_10MS, 5_000L);
+        assertThat(notes.valueCount()).isEqualTo(1);
+
+        store.applySnapshot(unchanged, Collections.emptyList());
+
+        // Every later sync re-applied the note with a REPLACE insert, so the main list was
+        // re-emitted and re-animated after every sync that changed nothing.
+        notes.awaitCount(
+                2, io.reactivex.observers.BaseTestConsumer.TestWaitStrategy.SLEEP_10MS, 1_000L);
+        assertThat(notes.valueCount()).isEqualTo(1);
+        assertThat(db.noteDao().getNoteSync(noteId).getAttachments()).isEqualTo(afterFirst);
+        assertThat(resolveFirstAttachment(afterFirst).isFile()).isTrue();
+        notes.dispose();
+    }
+
+    @Test
     public void applySnapshot_repointsEditorBlocksAtTheFilesThisDeviceWrote() throws Exception {
         byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
         int noteId = seedNoteWithAttachment("photo.png", bytes);
@@ -416,6 +444,40 @@ public class RoomSyncStoreTest {
         } finally {
             dbB.close();
         }
+    }
+
+    // ------------------------------------------------- version history across a sync
+
+    @Test
+    public void applySnapshot_keepsTheReplacedTextInHistoryAndKeepsTheCustomPosition()
+            throws Exception {
+        int noteId = seedNote("Shopping", "milk", null);
+        Note seeded = db.noteDao().getNoteSync(noteId);
+        seeded.setCustomPosition(7_168L);
+        db.noteDao().addNote(seeded);
+        SyncRecord local = onlyNote(store.readSnapshot());
+        JsonObject payload = local.getPayload().deepCopy();
+        payload.addProperty("c", "milk, bread from the other phone");
+        SyncRecord remote =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        local.getId(),
+                        local.getUpdatedAt().plusSeconds(60),
+                        payload);
+
+        store.applySnapshot(
+                new SyncSnapshot(Collections.singletonList(remote)), Collections.emptyList());
+
+        // The note row is written with a REPLACE insert, which SQLite carries out as a delete and
+        // an insert; a cascading foreign key would have wiped the history right here.
+        Note applied = db.noteDao().getNoteSync(noteId);
+        assertThat(applied.getValue()).isEqualTo("milk, bread from the other phone");
+        assertThat(applied.getCustomPosition()).isEqualTo(7_168L);
+        List<com.pasich.mynotes.data.database.entities.NoteVersionEntity> history =
+                db.noteVersionDao().getForNoteSync(noteId);
+        assertThat(history).hasSize(1);
+        assertThat(history.get(0).value).isEqualTo("milk");
+        assertThat(history.get(0).reason).isEqualTo("PRE_SYNC");
     }
 
     // ------------------------------------------------- an ordinary edit after a clean sync

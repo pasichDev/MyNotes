@@ -42,6 +42,13 @@ public interface NoteContract {
 
         /** Reloads the extended editor with the current note content. */
         void reloadExtendedEditor();
+
+        /**
+         * Starts the editor's undo history again: a note was loaded, or replaced by a copy or a
+         * restored version, so nothing typed before may be undone into it. Saving never calls this,
+         * so the history survives every autosave.
+         */
+        void resetEditHistory();
     }
 
     interface presenter extends BasePresenter<view> {
@@ -98,6 +105,21 @@ public interface NoteContract {
 
         /** Requests duplication of the current note. */
         void copyNoteRequest();
+
+        /**
+         * Saves right away whatever the debounced autosave is still holding. Called when the editor
+         * stops, so leaving the screen never loses the last edits.
+         */
+        void flushPending();
+
+        /** Returns true if the note holds content that has not been written yet. */
+        boolean hasUnsavedChanges();
+
+        /**
+         * Reads the note again from the database and shows it, after something other than this
+         * editor changed it — a version restored from its history.
+         */
+        void reloadNote();
     }
 
     interface AutoSaveCallback {

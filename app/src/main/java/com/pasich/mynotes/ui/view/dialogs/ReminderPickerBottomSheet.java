@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
@@ -28,14 +28,17 @@ import com.google.android.material.timepicker.TimeFormat;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.ReminderRepeat;
+import com.pasich.mynotes.data.model.RepeatRule;
+import com.pasich.mynotes.utils.reminder.ReminderDraft;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
+import com.pasich.mynotes.utils.reminder.RepeatRuleFormatter;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.disposables.CompositeDisposable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 import javax.inject.Inject;
 
 @AndroidEntryPoint
@@ -43,13 +46,27 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
 
     private static final String TAG = "ReminderPicker";
     private static final String ARG_NOTE_ID = "noteId";
+    private static final String TAG_DATE_PICKER = "datePicker";
+    private static final String TAG_TIME_PICKER = "timePicker";
 
     @Inject DataManager dataManager;
 
     private int noteId;
     private Long selectedTime = null;
-    private ReminderRepeat selectedRepeat = ReminderRepeat.NONE;
     private Note currentNote;
+
+    /** The reminder as stored when the sheet opened, so re-saving it keeps its anchor. */
+    private Long originalTime = null;
+
+    private RepeatRule originalRule = RepeatRule.NONE;
+
+    /** The rule behind the Custom chip, or null while it has none. */
+    @Nullable private RepeatRule customRule;
+
+    /** The preset chip to fall back to when the custom dialog is cancelled. */
+    private int lastPresetChipId = R.id.chipNone;
+
+    private Chip chipCustom;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private View selectedTimeCard;
@@ -62,6 +79,13 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
     private View intervalDivider;
     private com.google.android.material.materialswitch.MaterialSwitch switchRepeatInterval;
     private ChipGroup intervalChips;
+    private TextView pastTimeError;
+
+    /** A day picked in the date picker whose time is being chosen (UTC midnight), or null. */
+    @Nullable private Long pickedDateUtc;
+
+    /** What was chosen before the sheet was recreated (a rotation); null for a fresh sheet. */
+    @Nullable private ReminderDraft restoredDraft;
 
     private final ActivityResultLauncher<String> notifPermLauncher =
             registerForActivityResult(
@@ -83,6 +107,10 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         noteId = requireArguments().getInt(ARG_NOTE_ID, -1);
+        restoredDraft = ReminderDraft.restore(savedInstanceState);
+        getChildFragmentManager()
+                .setFragmentResultListener(
+                        CustomRepeatDialog.REQUEST_KEY, this, (key, b) -> onCustomRepeat(b));
     }
 
     @Nullable
@@ -97,11 +125,13 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         selectedTimeDisplay = view.findViewById(R.id.selectedTimeDisplay);
         repeatLabel = view.findViewById(R.id.repeatLabel);
         repeatChips = view.findViewById(R.id.repeatChips);
+        chipCustom = view.findViewById(R.id.chipCustom);
         btnSave = view.findViewById(R.id.btnSave);
         btnDeleteReminder = view.findViewById(R.id.btnDeleteReminder);
         intervalDivider = view.findViewById(R.id.intervalDivider);
         switchRepeatInterval = view.findViewById(R.id.switchRepeatInterval);
         intervalChips = view.findViewById(R.id.intervalChips);
+        pastTimeError = view.findViewById(R.id.pastTimeError);
 
         switchRepeatInterval.setOnCheckedChangeListener(
                 (btn, checked) -> {
@@ -113,6 +143,15 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                         selectedIntervalMinutes = 10;
                     }
                 });
+
+        repeatChips.setOnCheckedStateChangeListener(
+                (group, checkedIds) -> {
+                    if (!checkedIds.isEmpty() && checkedIds.get(0) != R.id.chipCustom) {
+                        lastPresetChipId = checkedIds.get(0);
+                    }
+                });
+        // A click rather than a check: tapping Custom again, already selected, edits the rule.
+        chipCustom.setOnClickListener(v -> openCustomRepeat());
 
         intervalChips.setOnCheckedStateChangeListener(
                 (group, checkedIds) -> {
@@ -141,16 +180,75 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         view.findViewById(R.id.btnCancel).setOnClickListener(v -> dismiss());
         btnDeleteReminder.setOnClickListener(v -> deleteReminder());
 
+        if (restoredDraft != null) applyDraft(restoredDraft);
+        reattachPickers();
         return view;
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (repeatChips == null) return;
+        ReminderDraft draft = new ReminderDraft();
+        draft.time = selectedTime;
+        draft.repeatChipId = repeatChips.getCheckedChipId();
+        draft.customRule = customRule;
+        draft.intervalMinutes = switchRepeatInterval.isChecked() ? selectedIntervalMinutes : 0;
+        draft.pickedDateUtc = pickedDateUtc;
+        draft.save(outState);
+    }
+
+    /** Puts back what was chosen before the sheet was recreated. */
+    private void applyDraft(@NonNull ReminderDraft draft) {
+        pickedDateUtc = draft.pickedDateUtc;
+        if (draft.time != null) applyPreset(draft.time);
+        if (draft.customRule != null) {
+            showRepeatRule(draft.customRule);
+            if (draft.repeatChipId != R.id.chipCustom && draft.repeatChipId != View.NO_ID) {
+                repeatChips.check(draft.repeatChipId);
+            }
+        } else if (draft.repeatChipId != View.NO_ID && draft.repeatChipId != 0) {
+            repeatChips.check(draft.repeatChipId);
+        }
+        if (draft.intervalMinutes > 0) {
+            switchRepeatInterval.setChecked(true);
+            selectedIntervalMinutes = draft.intervalMinutes;
+            setIntervalChip(draft.intervalMinutes);
+        }
+    }
+
+    /**
+     * Pickers open over the sheet are recreated with it, but without their listeners: an answer
+     * from them would otherwise be lost.
+     */
+    @SuppressWarnings("unchecked")
+    private void reattachPickers() {
+        if (getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER)
+                instanceof MaterialDatePicker<?> date) {
+            ((MaterialDatePicker<Long>) date).addOnPositiveButtonClickListener(this::onDatePicked);
+        }
+        if (getChildFragmentManager().findFragmentByTag(TAG_TIME_PICKER)
+                instanceof MaterialTimePicker time) {
+            time.addOnPositiveButtonClickListener(v -> onTimePicked(time));
+        }
+    }
+
     private void prefillExistingReminder(Note note) {
+        if (note.hasReminder() && restoredDraft != null) {
+            // The sheet was recreated: what the user chose stays, the stored reminder is only
+            // what re-saving compares with.
+            originalTime = note.getReminderTime();
+            originalRule = RepeatRule.parse(note.getReminderRepeat());
+            btnDeleteReminder.setVisibility(View.VISIBLE);
+            return;
+        }
         if (note.hasReminder()) {
             selectedTime = note.getReminderTime();
-            selectedRepeat = ReminderRepeat.from(note.getReminderRepeat());
+            originalTime = note.getReminderTime();
+            originalRule = RepeatRule.parse(note.getReminderRepeat());
             updateTimeDisplay();
             showRepeatSection();
-            setRepeatChip(selectedRepeat);
+            showRepeatRule(originalRule);
             btnDeleteReminder.setVisibility(View.VISIBLE);
             btnSave.setEnabled(true);
             int existingInterval = note.getReminderIntervalMinutes();
@@ -198,12 +296,14 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
 
     private void applyPreset(long time) {
         selectedTime = time;
+        if (pastTimeError != null) pastTimeError.setVisibility(View.GONE);
         updateTimeDisplay();
         showRepeatSection();
         btnSave.setEnabled(true);
     }
 
     private void showDatePicker() {
+        if (getChildFragmentManager().findFragmentByTag(TAG_DATE_PICKER) != null) return;
         CalendarConstraints constraints =
                 new CalendarConstraints.Builder()
                         .setValidator(DateValidatorPointForward.now())
@@ -215,51 +315,58 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                         .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                         .setCalendarConstraints(constraints)
                         .build();
+        datePicker.addOnPositiveButtonClickListener(this::onDatePicked);
+        datePicker.show(getChildFragmentManager(), TAG_DATE_PICKER);
+    }
 
-        datePicker.addOnPositiveButtonClickListener(
-                dateMs -> {
-                    Calendar dateCal = Calendar.getInstance();
-                    dateCal.setTimeInMillis(dateMs);
+    private void onDatePicked(Long dateUtc) {
+        if (dateUtc == null || !isAdded()) return;
+        pickedDateUtc = dateUtc;
+        Calendar now = Calendar.getInstance();
+        boolean today =
+                ReminderDraft.at(dateUtc, 0, 0, TimeZone.getDefault())
+                        == ReminderDraft.at(
+                                MaterialDatePicker.todayInUtcMilliseconds(),
+                                0,
+                                0,
+                                TimeZone.getDefault());
+        int defaultHour = today ? now.get(Calendar.HOUR_OF_DAY) : 9;
+        int defaultMinute = today ? now.get(Calendar.MINUTE) + 1 : 0;
+        if (defaultMinute > 59) {
+            defaultMinute = 0;
+            defaultHour = Math.min(23, defaultHour + 1);
+        }
 
-                    Calendar now = Calendar.getInstance();
-                    int defaultHour =
-                            (dateCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)
-                                            && dateCal.get(Calendar.YEAR) == now.get(Calendar.YEAR))
-                                    ? now.get(Calendar.HOUR_OF_DAY)
-                                    : 9;
-                    int defaultMinute =
-                            (defaultHour == now.get(Calendar.HOUR_OF_DAY))
-                                    ? now.get(Calendar.MINUTE) + 1
-                                    : 0;
+        MaterialTimePicker timePicker =
+                new MaterialTimePicker.Builder()
+                        .setTimeFormat(TimeFormat.CLOCK_24H)
+                        .setHour(defaultHour)
+                        .setMinute(defaultMinute)
+                        .build();
+        timePicker.addOnPositiveButtonClickListener(v -> onTimePicked(timePicker));
+        timePicker.show(getChildFragmentManager(), TAG_TIME_PICKER);
+    }
 
-                    MaterialTimePicker timePicker =
-                            new MaterialTimePicker.Builder()
-                                    .setTimeFormat(TimeFormat.CLOCK_24H)
-                                    .setHour(defaultHour)
-                                    .setMinute(defaultMinute)
-                                    .build();
+    private void onTimePicked(@NonNull MaterialTimePicker timePicker) {
+        Long day = pickedDateUtc;
+        if (day == null || !isAdded()) return;
+        long time =
+                ReminderDraft.at(
+                        day, timePicker.getHour(), timePicker.getMinute(), TimeZone.getDefault());
+        if (time <= System.currentTimeMillis()) {
+            showPastTimeError(time);
+            return;
+        }
+        pickedDateUtc = null;
+        applyPreset(time);
+    }
 
-                    timePicker.addOnPositiveButtonClickListener(
-                            v -> {
-                                dateCal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
-                                dateCal.set(Calendar.MINUTE, timePicker.getMinute());
-                                dateCal.set(Calendar.SECOND, 0);
-                                dateCal.set(Calendar.MILLISECOND, 0);
-                                if (dateCal.getTimeInMillis() <= System.currentTimeMillis()) {
-                                    Toast.makeText(
-                                                    requireContext(),
-                                                    R.string.reminder_past_time_error,
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
-                                    return;
-                                }
-                                applyPreset(dateCal.getTimeInMillis());
-                            });
-
-                    timePicker.show(getChildFragmentManager(), "timePicker");
-                });
-
-        datePicker.show(getChildFragmentManager(), "datePicker");
+    /** Says in the sheet itself, where it stays in sight, that the chosen time has passed. */
+    private void showPastTimeError(long time) {
+        SimpleDateFormat fmt = new SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault());
+        pastTimeError.setText(getString(R.string.reminder_time_passed, fmt.format(new Date(time))));
+        pastTimeError.setVisibility(View.VISIBLE);
+        pastTimeError.announceForAccessibility(pastTimeError.getText());
     }
 
     private void showRepeatSection() {
@@ -276,23 +383,86 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         selectedTimeCard.setVisibility(View.VISIBLE);
     }
 
-    private void setRepeatChip(ReminderRepeat repeat) {
-        int chipId =
-                switch (repeat) {
-                    case DAILY -> R.id.chipDaily;
-                    case WEEKLY -> R.id.chipWeekly;
-                    case MONTHLY -> R.id.chipMonthly;
-                    default -> R.id.chipNone;
-                };
-        repeatChips.check(chipId);
+    /**
+     * Selects the chip for a rule: a preset when one says the same, otherwise Custom showing the
+     * rule itself, "Every 3 hours".
+     */
+    private void showRepeatRule(@NonNull RepeatRule rule) {
+        int preset = presetChipFor(rule);
+        if (preset != 0) {
+            repeatChips.check(preset);
+            return;
+        }
+        customRule = RepeatRule.every(rule.getInterval(), rule.getUnit(), null);
+        String summary = RepeatRuleFormatter.summary(requireContext(), customRule);
+        chipCustom.setText(summary);
+        chipCustom.setContentDescription(getString(R.string.reminder_repeat_custom_cd, summary));
+        repeatChips.check(R.id.chipCustom);
     }
 
-    private ReminderRepeat getSelectedRepeat() {
-        int checkedId = repeatChips.getCheckedChipId();
-        if (checkedId == R.id.chipDaily) return ReminderRepeat.DAILY;
-        if (checkedId == R.id.chipWeekly) return ReminderRepeat.WEEKLY;
-        if (checkedId == R.id.chipMonthly) return ReminderRepeat.MONTHLY;
-        return ReminderRepeat.NONE;
+    private static int presetChipFor(@NonNull RepeatRule rule) {
+        if (!rule.isRepeating()) return R.id.chipNone;
+        if (rule.getInterval() != 1) return 0;
+        return switch (rule.getUnit()) {
+            case DAYS -> R.id.chipDaily;
+            case WEEKS -> R.id.chipWeekly;
+            case MONTHS -> R.id.chipMonthly;
+            default -> 0;
+        };
+    }
+
+    @NonNull
+    private static RepeatRule presetRule(int chipId) {
+        if (chipId == R.id.chipDaily) return RepeatRule.every(1, RepeatRule.Unit.DAYS, null);
+        if (chipId == R.id.chipWeekly) return RepeatRule.every(1, RepeatRule.Unit.WEEKS, null);
+        if (chipId == R.id.chipMonthly) return RepeatRule.every(1, RepeatRule.Unit.MONTHS, null);
+        return RepeatRule.NONE;
+    }
+
+    private void openCustomRepeat() {
+        if (getChildFragmentManager().findFragmentByTag(CustomRepeatDialog.TAG) != null) return;
+        RepeatRule current = customRule != null ? customRule : presetRule(lastPresetChipId);
+        CustomRepeatDialog.newInstance(
+                        current.isRepeating() ? current.getInterval() : 2,
+                        current.isRepeating() ? current.getUnit() : RepeatRule.Unit.DAYS)
+                .show(getChildFragmentManager(), CustomRepeatDialog.TAG);
+    }
+
+    private void onCustomRepeat(@NonNull Bundle result) {
+        if (repeatChips == null) return;
+        if (!result.getBoolean(CustomRepeatDialog.RESULT_APPLIED, false)) {
+            // Cancelled: back to what was selected before, unless Custom already held a rule.
+            if (customRule == null) repeatChips.check(lastPresetChipId);
+            return;
+        }
+        RepeatRule.Unit unit;
+        try {
+            unit = RepeatRule.Unit.valueOf(result.getString(CustomRepeatDialog.RESULT_UNIT, ""));
+        } catch (IllegalArgumentException e) {
+            return;
+        }
+        showRepeatRule(
+                RepeatRule.every(result.getInt(CustomRepeatDialog.RESULT_INTERVAL, 1), unit, null));
+    }
+
+    /**
+     * The chosen rule, anchored at the chosen time. Re-saving without changing the time or the
+     * repeat keeps the stored anchor: a monthly reminder for the 31st that now waits for the 30th
+     * would otherwise move to the 30th for good.
+     */
+    @NonNull
+    private RepeatRule selectedRule(long time) {
+        int checked = repeatChips.getCheckedChipId();
+        RepeatRule rule =
+                checked == R.id.chipCustom && customRule != null ? customRule : presetRule(checked);
+        if (!rule.isRepeating()) return RepeatRule.NONE;
+        boolean unchanged =
+                originalTime != null
+                        && originalTime == time
+                        && originalRule.isRepeating()
+                        && originalRule.getInterval() == rule.getInterval()
+                        && originalRule.getUnit() == rule.getUnit();
+        return rule.withAnchor(unchanged ? originalRule.anchorOr(time) : time);
     }
 
     private int intervalMinutesFromChipId(int chipId) {
@@ -315,17 +485,14 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void checkPermissionsAndSave() {
-        if (selectedTime == null || selectedTime <= System.currentTimeMillis()) {
+        if (selectedTime == null) {
             Toast.makeText(requireContext(), R.string.reminder_past_time_error, Toast.LENGTH_SHORT)
                     .show();
             return;
         }
-
-        if (!ReminderManager.canScheduleExact(requireContext())) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                startActivity(intent);
-            }
+        if (selectedTime <= System.currentTimeMillis()) {
+            // The time passed while the sheet was open.
+            showPastTimeError(selectedTime);
             return;
         }
 
@@ -344,9 +511,8 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
     private void saveReminder() {
         if (selectedTime == null) return;
 
-        selectedRepeat = getSelectedRepeat();
         final long time = selectedTime;
-        final String repeat = selectedRepeat.name();
+        final String repeat = selectedRule(time).serialize();
 
         disposables.add(
                 dataManager
@@ -364,7 +530,13 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                                     tempNote.setReminderTime(time);
                                     tempNote.setReminderRepeat(repeat);
                                     tempNote.setReminderIntervalMinutes(selectedIntervalMinutes);
-                                    ReminderManager.scheduleReminder(requireContext(), tempNote);
+                                    // Redefined: a snooze or repeating notification of the old
+                                    // reminder no longer applies.
+                                    ReminderManager.cancelReminder(requireContext(), noteId);
+                                    boolean exact =
+                                            ReminderManager.scheduleReminder(
+                                                    requireContext(), tempNote);
+                                    if (!exact) askForExactAlarms();
 
                                     Bundle result = new Bundle();
                                     result.putBoolean("hasReminder", true);
@@ -395,6 +567,22 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
                                     dismiss();
                                 },
                                 e -> Log.e(TAG, "delete failed", e)));
+    }
+
+    /**
+     * The reminder is saved and armed, but without "Alarms & reminders" it may ring late: say so
+     * and open the system switch for this app. Granting it re-arms every reminder exactly.
+     */
+    private void askForExactAlarms() {
+        Intent settings = ReminderManager.exactAlarmSettingsIntent(requireContext());
+        Toast.makeText(requireContext(), R.string.reminder_exact_alarm_needed, Toast.LENGTH_LONG)
+                .show();
+        if (settings == null) return;
+        try {
+            startActivity(settings);
+        } catch (android.content.ActivityNotFoundException e) {
+            Log.w(TAG, "no exact alarm settings screen", e);
+        }
     }
 
     private void showPermissionDenied() {

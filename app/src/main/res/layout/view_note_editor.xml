@@ -9,12 +9,14 @@
         android:layout_gravity="center"
         android:indeterminateTint="?attr/colorPrimary" />
 
-    <!-- WebView for Editor.js -->
+    <!-- WebView for Editor.js. Laid out at its full size from the start, only transparent until
+         the note is shown: a page with no size placed the caret and the saved position against
+         an empty viewport. -->
     <WebView
         android:id="@+id/editorWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
+        android:alpha="0"
         android:paddingBottom="10dp"
         android:background="?attr/colorSurfaceContainerLow" />
 </merge>

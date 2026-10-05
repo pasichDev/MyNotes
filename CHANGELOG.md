@@ -1,5 +1,76 @@
 # CHANGELOG
 
+## [2.7.56] - 05.10.2026
+
+**New**
+
+- **Meet Encly.** A new page in the menu, and a one-time introduction after this update, presents
+  Encly, the encrypted, offline successor to My Notes. With Encly installed, one tap moves your
+  notes (the trash included), tasks, tags and task lists to it; the page tells you what stays
+  behind (attachments, images, reminders and pins). Nothing is deleted from My Notes, and clearing
+  it after a successful move is a separate, confirmed step.
+- **Undo and Redo.** While you edit, Undo and Redo sit on a slim bar right above the keyboard in
+  both editors, next to a button that puts the keyboard away; with the keyboard closed they are in
+  More. They step back through typing, deletions, pastes, formatting and blocks, and put the
+  cursor back where it was. Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y work on a hardware keyboard. The
+  history belongs to the note you are editing and survives turning the screen.
+- **Version history.** More → Version history lists earlier versions of a note with when and why
+  each was kept: while you edit, and always before a sync, a conflict choice or a restore replaces
+  the text. Open one to see it next to the current note with the changed words highlighted, and
+  restore it in one tap; the text it replaces is kept too, so a restore can be undone. Up to 20
+  versions per note stay on this device only and are not synced or backed up.
+- **Arrange notes yourself.** Choose **Custom order** in View options (the button in the search
+  bar), then press and hold a note and drag it where you want it, in the list or in the grid; the
+  list scrolls when you hold a note near the top or bottom. Notes you can move show a small drag
+  handle, and the first time you long-press a note in another order the app offers to turn the
+  custom order on. Pinned notes stay in their own section above the others. The order stays on
+  this device and is saved in local backups. With TalkBack, each note offers Move up and Move down.
+- **Custom repeat for reminders.** Next to Daily, Weekly and Monthly, Custom… repeats a reminder
+  every so many hours, days, weeks, months or years, shown as in "Every 3 hours" on the card, at
+  the top of the note and in More. Repeats never drift: a monthly reminder on the 31st rings on
+  the last day of shorter months and is back on the 31st afterwards.
+- **Notes reopen where you left them.** A long note opens at the line you were reading, with the
+  cursor where it was if you were editing, in both editors and after restarting the app. If the
+  note changed meanwhile, the same place is found by the text around it.
+- **Choose how notes open.** Settings → Interaction lets you open notes in reading mode, editing
+  mode or automatically as before, where you left off or always at the beginning, and optionally
+  double-tap the text in reading mode to start editing right there. New notes always open ready
+  for typing.
+
+**Improvements**
+
+- **Search** puts the best match first: exact titles, then titles that start with or contain what
+  you typed, then matching tags, and only then the text of notes. Case, accents and extra spaces
+  no longer matter, so "cafe" finds "Café", and the matching part of each result is highlighted.
+- **Simpler toolbars.** Sorting and the list or grid layout live together under one View options
+  button in the search bar. The note toolbar keeps only Back, the save status and More, and an
+  upcoming reminder shows as a chip at the top of the note that you tap to change it.
+- **Tidier menu.** The menu puts Tags and Trash first, then Tasks, with a single way to support
+  the developer, and closes when you open a screen from it.
+
+**Fixes**
+
+- **The editor keeps your place.** Opening or closing the keyboard, tapping Edit or switching
+  reading mode no longer moves the text or sends the cursor to the start or end of the note, the
+  keyboard opens reliably in the rich editor, and reading mode locks the title too.
+- **Nothing is lost when you leave.** What you typed in the last moments is saved when you switch
+  apps, turn the screen or open the file picker, and the note reopens at the same place.
+- **Pictures in the rich editor** no longer make the note flicker, jump or flash white, and a
+  picture picked while the screen was turned is still added where you inserted it.
+- **The note list stays right.** No more empty list after a Google Drive sync, after choosing an
+  empty tag or after moving the top note to the trash; cards no longer slide over one another when
+  the list changes; and after creating, editing, pinning or restoring a note the list comes back
+  at the top with the search bar and tags in view.
+- **Syncing is lighter.** A sync writes only what another device actually changed, so a sync with
+  nothing new no longer redraws the list, and a tag renamed, merged or deleted elsewhere keeps the
+  right tag selected here.
+- **Reminders are dependable.** A repeating reminder missed while the phone was off arrives once
+  and continues on schedule, snoozing no longer cancels it, a change made on another device takes
+  effect after the sync, and tapping a reminder opens the note in the editor it belongs to.
+- **Smaller fixes.** Labels in the More and reminder sheets are no longer cut off with large
+  text, buttons are named for what they do for screen readers, and a card swiped left to select
+  it slides back into place.
+
 ## [2.6.55] - 25.09.2026
 
 **Improvements**

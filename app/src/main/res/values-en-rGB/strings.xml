@@ -13,7 +13,6 @@
     <string name="exitWhat">Repeat the action to exit</string>
     <string name="notFoundPlayMarket">Google Play app not found</string>
     <string name="notSupportedShare">This content is not supported.</string>
-    <string name="cd_format">Format notes</string>
 
     <string name="search">Search notes</string>
     <string name="close">Close</string>
@@ -69,7 +68,6 @@
     <string name="save_to_notes">Save to My Notes</string>
     <string name="telegram_nick" translatable="false">"@"pasichDev</string>
     <string name="email_address" translatable="false">pasichDev@gmail.com</string>
-    <string name="editNoteButton" translatable="false">EditNote</string>
     <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
@@ -114,7 +112,6 @@
     <string name="restoreDataOkay">Data restored successfully</string>
     <string name="restoreDataFall">Error: backup is corrupted</string>
     <string name="errorDriveSync">Server error or poor network quality</string>
-    <string name="sortNotes">Sort notes</string>
 
     <!-- Donations -->
     <string name="thanks_title">Dear user</string>
@@ -178,9 +175,9 @@
     <string name="help_navigation_search_title">Search</string>
     <string name="help_navigation_search_description">Quickly find notes by title or content.</string>
     <string name="help_navigation_sort_title">Sorting</string>
-    <string name="help_navigation_sort_description">Sort notes by name or modification date.</string>
+    <string name="help_navigation_sort_description">Tap the view options button in the search bar to show recently edited notes first or last, or choose Custom order and arrange notes yourself by dragging them.</string>
     <string name="help_navigation_format_title">Display format</string>
-    <string name="help_navigation_format_description">Switch between list and grid view.</string>
+    <string name="help_navigation_format_description">In the same view options, switch between a list and a grid.</string>
 
     <string name="help_navigation_swipe_title">Swipe gestures</string>
     <string name="help_navigation_swipe_description">Swipe left to enter multi-selection mode, swipe right to delete a note. Available only in single-column mode.</string>
@@ -237,6 +234,8 @@
     <string name="tags_management">Tags</string>
     <string name="create_tag">Tap this button to create a tag.</string>
     <string name="tag_options">Tag options</string>
+    <string name="selection_change_tag">Change tag</string>
+    <string name="edit_note_action">Edit note</string>
     <string name="createTag">Create tag</string>
     <string name="toastTagVisible">Notes with this tag are visible in the main list.</string>
     <string name="toastTagHidde">Notes with this tag are hidden from the main list.</string>
@@ -414,6 +413,7 @@
     <string name="reminder_menu_item">Reminder</string>
     <string name="reminder_chip_tomorrow">Tomorrow %1$s</string>
     <string name="reminder_past_time_error">Please select a future time</string>
+    <string name="reminder_time_passed">The time you chose, %1$s, has already passed. Choose a later time.</string>
     <string name="tile_label">New note</string>
     <string name="search_filter_all">All</string>
     <string name="search_hint_keep_typing">Keep typing…</string>
@@ -496,9 +496,9 @@
     <string name="help_tasks_reminder_description">Set a reminder for any task by tapping the bell icon. You will receive a notification at the scheduled time. Tap the notification to open the task directly.</string>
     <string name="help_reminders_title">Reminders</string>
     <string name="help_reminders_notes_title">Note Reminders</string>
-    <string name="help_reminders_notes_description">Open any note and tap the bell icon to set a reminder. Pick a time using quick options or the date and time picker. A notification will appear at the scheduled time.</string>
+    <string name="help_reminders_notes_description">Open a note, tap More and choose Reminder. Pick a time using quick options or the date and time picker. The reminder appears at the top of the note; tap it to change it. A notification will appear at the scheduled time.</string>
     <string name="help_reminders_repeat_title">Repeat Options</string>
-    <string name="help_reminders_repeat_description">When setting a note reminder, enable the Repeat toggle to choose a repeat cycle: Daily, Weekly, or Monthly. The reminder reschedules automatically after each notification.</string>
+    <string name="help_reminders_repeat_description">When setting a note reminder, choose how it repeats: Daily, Weekly, Monthly, or Custom… for every few hours, days, weeks, months or years. Each repeat is counted from the time you picked, so a reminder on the 31st rings on the last day of shorter months and is back on the 31st after them. Repeating reminders survive a restart of the phone.</string>
     <string name="help_reminders_interval_title">Interval Notifications</string>
     <string name="help_reminders_interval_description">For repeating reminders, you can enable interval re-notifications every 5, 10, 15, 30, or 60 minutes. The notification will repeat at the chosen interval until the next scheduled occurrence.</string>
     <string name="help_reminders_sound_title">Notification Sound and Volume</string>
@@ -523,4 +523,175 @@
     <string name="help_sync_background_description">After you confirm the first sync, you can enable background sync. It runs about every 6 hours when the device has an internet connection and can be turned off at any time.</string>
     <string name="help_sync_conflicts_title">Resolve Conflicts</string>
     <string name="help_sync_conflicts_description">When local and Drive versions differ, choose whether to keep the local version or the version from Google Drive for each conflict.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Meet Encly</string>
+    <string name="meet_encly_drawer_subtitle">The successor of My Notes</string>
+    <string name="meet_encly_eyebrow">From the author of My Notes</string>
+    <string name="meet_encly_promise">Notes that stay encrypted and stay on your phone. No account, no internet.</string>
+    <string name="meet_encly_benefit_encrypted">Encrypted, always</string>
+    <string name="meet_encly_benefit_encrypted_text">Every note is kept in an encrypted database, and backups are encrypted too.</string>
+    <string name="meet_encly_benefit_offline">Offline, no account</string>
+    <string name="meet_encly_benefit_offline_text">Encly has no internet permission, so your notes never leave the phone.</string>
+    <string name="meet_encly_benefit_lock">PIN and fingerprint lock</string>
+    <string name="meet_encly_benefit_lock_text">Only your PIN or fingerprint opens your notes.</string>
+    <string name="meet_encly_benefit_open">Free and open source</string>
+    <string name="meet_encly_benefit_open_text">Anyone can check the code. Available on Google Play, F-Droid and GitHub.</string>
+    <string name="meet_encly_one_way">Moving copies your notes to Encly. Nothing is deleted from My Notes, and Encly never sends anything back.</string>
+    <string name="meet_encly_moves_title">Moves to Encly</string>
+    <string name="meet_encly_moves_notes">Notes, including the trash</string>
+    <string name="meet_encly_moves_tasks">Tasks</string>
+    <string name="meet_encly_moves_tags">Tags</string>
+    <string name="meet_encly_moves_categories">Task lists</string>
+    <string name="meet_encly_moves_categories_note">Become tags in Encly</string>
+    <string name="meet_encly_stays_title">Stays in My Notes</string>
+    <string name="meet_encly_stays_attachments">Attachments and images</string>
+    <string name="meet_encly_stays_attachments_note">Encly does not store files</string>
+    <string name="meet_encly_stays_reminders">Reminders</string>
+    <string name="meet_encly_stays_reminders_note">Encly has no reminders</string>
+    <string name="meet_encly_stays_pinned">Pins on notes</string>
+    <string name="meet_encly_stays_pinned_note">The notes themselves move, unpinned</string>
+    <string name="meet_encly_stays_none">Nothing. Everything you have moves to Encly.</string>
+    <string name="meet_encly_get">Get Encly</string>
+    <string name="meet_encly_update">Update Encly</string>
+    <string name="meet_encly_move">Move my notes to Encly</string>
+    <string name="meet_encly_moving">Preparing your notes…</string>
+    <string name="meet_encly_hint_ready">Encly opens and takes everything in one go. It only takes a moment.</string>
+    <string name="meet_encly_hint_get">Free on Google Play, F-Droid and GitHub. Come back here once it is installed.</string>
+    <string name="meet_encly_needs_update">This version of Encly cannot receive notes yet. Update it, then come back here.</string>
+    <string name="meet_encly_untrusted">The installed app called Encly is not the official build, so your notes will not be sent to it. Install Encly from Google Play, F-Droid or GitHub.</string>
+    <string name="meet_encly_result_ok">Your notes are in Encly</string>
+    <string name="meet_encly_result_notes">Notes</string>
+    <string name="meet_encly_result_skipped">Skipped</string>
+    <string name="meet_encly_result_attachments">Attachments and images left in My Notes: %1$d.</string>
+    <string name="meet_encly_result_failed_title">The move did not finish</string>
+    <string name="meet_encly_result_cancelled">The move was cancelled. Nothing has changed.</string>
+    <string name="meet_encly_result_untrusted">Encly accepts notes only from the official My Notes app. Install My Notes from Google Play, F-Droid or GitHub and try again.</string>
+    <string name="meet_encly_result_unsupported">This Encly cannot read data from this version of My Notes. Update Encly and try again.</string>
+    <string name="meet_encly_result_invalid">Encly could not read the data. Nothing was imported.</string>
+    <string name="meet_encly_result_too_large">There is too much data to move in one go. Nothing was imported.</string>
+    <string name="meet_encly_result_failed">Encly could not finish the import. Nothing was deleted from My Notes.</string>
+    <string name="meet_encly_error_prepare">Could not prepare your notes for Encly.</string>
+    <string name="meet_encly_clear_hint">My Notes still keeps its own copy. If you no longer need it, you can clear it. You will be asked to confirm first.</string>
+    <string name="meet_encly_clear">Clear My Notes</string>
+    <string name="meet_encly_clear_confirm_title">Clear My Notes?</string>
+    <string name="meet_encly_clear_confirm_message">This permanently deletes all notes (including the trash), tasks, tags, task lists and attachment files from My Notes. If Google Drive sync is on, they are deleted from the synced copy too. Attachments did not move to Encly. This cannot be undone.</string>
+    <string name="meet_encly_clear_confirm">Delete everything</string>
+    <string name="meet_encly_cleared">My Notes has been cleared.</string>
+    <string name="meet_encly_clear_failed">Could not clear My Notes.</string>
+    <string name="meet_encly_dialog_text">My Notes has a successor: Encly, a notes app that keeps everything encrypted and offline. Move all your notes in one tap.</string>
+    <string name="meet_encly_dialog_more">See how to move</string>
+    <string name="meet_encly_dialog_later">Later</string>
+    <string name="search_short">Search</string>
+    <string name="view_options">View options</string>
+    <string name="view_options_cd_list">View options. Notes are shown as a list</string>
+    <string name="view_options_cd_grid">View options. Notes are shown as a grid</string>
+    <string name="view_options_sort">Order</string>
+    <string name="view_options_sort_newest">Recently edited first</string>
+    <string name="view_options_sort_oldest">Recently edited last</string>
+    <string name="view_options_layout">Layout</string>
+    <string name="view_options_layout_list">List</string>
+    <string name="view_options_layout_grid">Grid</string>
+    <string name="read_mode_enter">Reading mode</string>
+    <string name="read_mode_exit">Back to editing</string>
+    <string name="reminder_chip_cd">Reminder: %1$s. Change reminder</string>
+    <string name="note_opening_mode">Open notes in</string>
+    <string name="note_opening_mode_description">New notes always open ready for typing.</string>
+    <string name="note_opening_mode_auto">Automatic</string>
+    <string name="note_opening_mode_auto_summary">Reading mode in the simple editor, editing mode in the extended editor</string>
+    <string name="note_opening_mode_read">Reading mode</string>
+    <string name="note_opening_mode_read_summary">Nothing changes by accident. Tap Edit to start typing</string>
+    <string name="note_opening_mode_edit">Editing mode</string>
+    <string name="note_opening_mode_edit_summary">The cursor is in place and the keyboard opens</string>
+    <string name="note_opening_position">Open notes at</string>
+    <string name="note_opening_position_last">Where you left off</string>
+    <string name="note_opening_position_last_summary">The line you were reading, and the cursor where you stopped editing</string>
+    <string name="note_opening_position_start">The beginning</string>
+    <string name="note_opening_position_start_summary">Always start from the first line</string>
+    <string name="note_opening_double_tap">Double-tap to edit</string>
+    <string name="note_opening_double_tap_description">In reading mode, double-tap the text to start editing right where you tapped.</string>
+    <string name="choice_selected">Selected</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Custom…</string>
+    <string name="reminder_repeat_custom_title">Custom repeat</string>
+    <string name="reminder_repeat_custom_hint">Repeat every</string>
+    <string name="reminder_repeat_custom_error">Enter a number from 1 to 999</string>
+    <string name="reminder_repeat_custom_apply">Done</string>
+    <string name="reminder_repeat_custom_cd">Custom repeat: %1$s. Change</string>
+    <string name="reminder_repeat_hourly">Every hour</string>
+    <string name="reminder_repeat_yearly">Every year</string>
+    <string name="reminder_exact_alarm_needed">Reminders may ring late. Allow Alarms &amp; reminders to get them on time.</string>
+    <string name="reminder_exact_alarm_allow">Allow</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Every %d hour</item>
+        <item quantity="other">Every %d hours</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Every %d day</item>
+        <item quantity="other">Every %d days</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Every %d week</item>
+        <item quantity="other">Every %d weeks</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Every %d month</item>
+        <item quantity="other">Every %d months</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Every %d year</item>
+        <item quantity="other">Every %d years</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d month</item>
+        <item quantity="other">%d months</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d year</item>
+        <item quantity="other">%d years</item>
+    </plurals>
+    <string name="version_history">Version history</string>
+    <string name="version_history_info">Earlier versions of this note are kept on this device only, up to %1$d. They are not synced or included in backups.</string>
+    <string name="version_history_empty_title">No earlier versions yet</string>
+    <string name="version_history_empty_text">When this note changes, its earlier text is kept here so you can bring it back.</string>
+    <string name="version_reason_autosave">Autosaved</string>
+    <string name="version_reason_pre_sync">Before sync</string>
+    <string name="version_reason_pre_restore">Before restore</string>
+    <string name="version_reason_pre_conflict">Before conflict</string>
+    <string name="version_time_just_now">Just now, %1$s</string>
+    <string name="version_preview_this">This version</string>
+    <string name="version_preview_current">Current note</string>
+    <string name="version_preview_same">This version has the same text as the current note.</string>
+    <string name="version_restore">Restore</string>
+    <string name="version_restore_title">Restore this version?</string>
+    <string name="version_restore_message">The note\'s current text will be replaced. It stays in version history, so you can switch back.</string>
+    <string name="version_restore_attachments">Attachments that are no longer in the note won\'t come back with this version.</string>
+    <string name="version_restored">Version restored</string>
+    <string name="version_restore_failed">Couldn\'t restore this version</string>
+    <string name="version_untitled">Empty note</string>
+    <string name="view_options_sort_custom">Custom order</string>
+    <string name="view_options_sort_custom_hint">Press and hold a note, then drag it to a new place. Pinned notes stay above the others.</string>
+    <string name="note_move_up">Move up</string>
+    <string name="note_move_down">Move down</string>
+    <string name="note_move_at_top">Already at the top</string>
+    <string name="note_move_at_bottom">Already at the bottom</string>
+    <string name="note_moved_to">Moved to position %1$d of %2$d</string>
+    <string name="editor_undo">Undo</string>
+    <string name="editor_redo">Redo</string>
+    <string name="editor_hide_keyboard">Hide keyboard</string>
+    <string name="custom_order_hint">To reorder notes by dragging, turn on “Custom order”</string>
+    <string name="custom_order_hint_action">Turn on</string>
 </resources>

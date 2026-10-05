@@ -25,6 +25,7 @@ import com.pasich.mynotes.databinding.DialogMoreNoteBinding;
 import com.pasich.mynotes.ui.contract.dialogs.MoreNoteDialogContract;
 import com.pasich.mynotes.ui.presenter.dialogs.MoreNoteDialogPresenter;
 import com.pasich.mynotes.utils.navigation.GoogleTranslateHelper;
+import com.pasich.mynotes.utils.reminder.RepeatRuleFormatter;
 import com.pasich.mynotes.utils.tool.TextStyleTool;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.text.SimpleDateFormat;
@@ -94,7 +95,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
 
         if (rootActivity != RootActivity.MainActivity) {
-            binding.setReminder.setBackgroundResource(R.drawable.bg_item_full);
+            // In the editor the reminder and the version history form a group of their own.
+            binding.setReminder.setBackgroundResource(R.drawable.bg_item_start);
+        } else {
+            binding.setReminder.setBackgroundResource(R.drawable.bg_item_middle);
         }
 
         return binding.getRoot();
@@ -139,7 +143,12 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         boolean hasReminder = note != null && note.hasReminder();
         if (hasReminder) {
             SimpleDateFormat fmt = new SimpleDateFormat("d MMM · HH:mm", Locale.getDefault());
-            binding.reminderSubtitle.setText(fmt.format(new Date(note.getReminderTime())));
+            String when = fmt.format(new Date(note.getReminderTime()));
+            String repeat = RepeatRuleFormatter.summary(requireContext(), note.getReminderRepeat());
+            binding.reminderSubtitle.setText(
+                    repeat == null
+                            ? when
+                            : getString(R.string.reminder_time_with_repeat, when, repeat));
             binding.reminderSubtitle.setVisibility(View.VISIBLE);
         } else {
             binding.reminderSubtitle.setVisibility(View.GONE);
@@ -279,6 +288,19 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                 binding.quickCopy.setVisibility(GONE);
             }
 
+            // The sheet stays open, so Undo can be pressed several times; the rows follow the
+            // history as it changes.
+            binding.moreUndo.setOnClickListener(
+                    v -> {
+                        if (noteActivity != null) noteActivity.undoLastEdit();
+                    });
+            binding.moreRedo.setOnClickListener(
+                    v -> {
+                        if (noteActivity != null) noteActivity.redoLastEdit();
+                    });
+            if (noteActivity != null) noteActivity.setEditHistoryObserver(this::applyEditHistory);
+            applyEditHistory();
+
         } else {
             binding.actionPanelActivate.setOnClickListener(
                     view -> {
@@ -322,6 +344,18 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                     dismiss();
                 });
 
+        binding.versionHistory.setOnClickListener(
+                v -> {
+                    Note note = mPresenter.getNote();
+                    if (note == null) return;
+                    if (rootActivity == RootActivity.MainActivity) {
+                        if (mainActivity != null) mainActivity.openVersionHistory(note.getId());
+                    } else if (noteActivity != null) {
+                        noteActivity.openVersionHistory();
+                    }
+                    dismiss();
+                });
+
         binding.moveToTrash.setOnClickListener(
                 v -> {
                     mPresenter.noteMoveToTrash();
@@ -332,6 +366,13 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                         noteActivity.closeActivityNotSaved();
                     }
                 });
+    }
+
+    /** Shows Undo and Redo while the note is edited and enables them by its history. */
+    private void applyEditHistory() {
+        if (binding == null) return;
+        EditHistoryRows.apply(
+                binding.editHistoryGroup, binding.moreUndo, binding.moreRedo, noteActivity);
     }
 
     @Override
@@ -346,6 +387,9 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             binding.quickTranslate.setOnClickListener(null);
             binding.quickPin.setOnClickListener(null);
             binding.settingsActivity.textStyleItem.setOnClickListener(null);
+            binding.moreUndo.setOnClickListener(null);
+            binding.moreRedo.setOnClickListener(null);
+            if (noteActivity != null) noteActivity.setEditHistoryObserver(null);
             noteActivity = null;
         } else {
             mainActivity = null;
@@ -357,6 +401,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
         binding.setReminder.setOnClickListener(null);
+        binding.versionHistory.setOnClickListener(null);
         binding.moveToTrash.setOnClickListener(null);
     }
 

@@ -39,23 +39,22 @@
                 android:visibility="@{activityNote ? View.VISIBLE : View.GONE}" />
 
             <!-- Quick actions row: Share / Copy / Translate / Pin -->
-            <LinearLayout
+            <com.pasich.mynotes.ui.view.widgets.QuickActionsRow
                 android:id="@+id/quickActionsRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:background="@drawable/bg_item_full"
-                android:orientation="horizontal"
                 android:visibility="@{activityNote ? View.VISIBLE : View.GONE}">
 
                 <LinearLayout
                     android:id="@+id/quickShare"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -68,8 +67,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="2"
                         android:text="@string/share"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -78,10 +80,10 @@
                     android:id="@+id/quickCopy"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -94,8 +96,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="2"
                         android:text="@string/copyNoteEdits"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -104,10 +109,10 @@
                     android:id="@+id/quickTranslate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp"
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp"
                     android:visibility="@{valuesText ? View.VISIBLE : View.GONE}">
 
                     <ImageView
@@ -121,8 +126,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="2"
                         android:text="@string/translateNote"
                         android:textSize="11sp" />
                 </LinearLayout>
@@ -131,10 +139,10 @@
                     android:id="@+id/quickPin"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp">
 
                     <ImageView
                         android:id="@+id/quickPinIcon"
@@ -149,17 +157,76 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
+                        android:maxLines="2"
                         android:text="@string/pinNote"
                         android:textSize="11sp" />
                 </LinearLayout>
-            </LinearLayout>
+            </com.pasich.mynotes.ui.view.widgets.QuickActionsRow>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="8dp"
                 android:visibility="@{activityNote ? View.VISIBLE : View.GONE}" />
+
+            <!-- Undo and Redo while the note is being edited, also reachable without the keyboard
+                 and its bar. Shown and enabled from Java (EditHistoryRows). -->
+            <LinearLayout
+                android:id="@+id/editHistoryGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/moreUndo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_start"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconDialogList"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_undo" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/editor_undo" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp" />
+
+                <LinearLayout
+                    android:id="@+id/moreRedo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@drawable/bg_item_end"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/paddingItems">
+
+                    <ImageView
+                        style="@style/iconDialogList"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_redo" />
+
+                    <TextView
+                        style="@style/itemTextBottomSheets"
+                        android:text="@string/editor_redo" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp" />
+            </LinearLayout>
 
             <!-- Editor type switch row -->
             <LinearLayout
@@ -380,6 +447,29 @@
                     android:textSize="12sp"
                     android:visibility="gone"
                     tools:text="12 Jan · 17:00" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp" />
+
+            <LinearLayout
+                android:id="@+id/versionHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:background="@drawable/bg_item_end"
+                android:orientation="horizontal"
+                android:padding="@dimen/paddingItems">
+
+                <ImageView
+                    style="@style/iconDialogList"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_history" />
+
+                <TextView
+                    style="@style/itemTextBottomSheets"
+                    android:text="@string/version_history" />
             </LinearLayout>
 
             <View

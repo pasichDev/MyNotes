@@ -14,7 +14,6 @@
     <string name="telegram">Otwórz kontakty programistów</string>
     <string name="notSupportedShare">Ta zawartość nie jest obsługiwana.</string>
     <string name="notFoundPlayMarket">Brak aplikacji Play Market</string>
-    <string name="cd_format">Formatuj notatki</string>
 
     <string name="search">Szukaj w notatkach</string>
     <string name="close">Zamknij</string>
@@ -103,7 +102,6 @@
     <string name="restoreDataFall">Błąd: Uszkodzona kopia zapasowa</string>
     <string name="errorDriveSync">Błąd serwera lub niska jakość internetu</string>
 
-    <string name="sortNotes">Sortuj notatki</string>
 
     <!-- Oferta produktowa -->
     <string name="thanks_title">Drogi użytkowniku</string>
@@ -172,9 +170,9 @@
     <string name="help_navigation_search_title">Wyszukiwanie</string>
     <string name="help_navigation_search_description">Użyj paska wyszukiwania, aby szybko znaleźć swoje notatki według tytułu lub zawartości</string>
     <string name="help_navigation_sort_title">Sortowanie</string>
-    <string name="help_navigation_sort_description">Sortuj swoje notatki według daty ostatniej modyfikacji lub nazwy w kolejności rosnącej lub malejącej</string>
+    <string name="help_navigation_sort_description">Naciśnij przycisk opcji widoku na pasku wyszukiwania, aby wyświetlać ostatnio edytowane notatki na początku lub na końcu, albo wybierz Własną kolejność i układaj notatki samodzielnie, przeciągając je.</string>
     <string name="help_navigation_format_title">Format wyświetlania</string>
-    <string name="help_navigation_format_description">Przełączaj między listą a siatką, aby wyświetlać swoje notatki w wygodnym dla siebie układzie</string>
+    <string name="help_navigation_format_description">W tych samych opcjach widoku przełączaj między listą a siatką.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gesty przesuwania</string>
@@ -225,6 +223,8 @@
     <string name="tags_management">Tagi</string>
     <string name="create_tag">Naciśnij ten przycisk, aby utworzyć tag.</string>
     <string name="tag_options">Opcje tagu</string>
+    <string name="selection_change_tag">Zmień tag</string>
+    <string name="edit_note_action">Edytuj notatkę</string>
     <string name="createTag">Utwórz tag</string>
     <string name="toastTagVisible">Notatki z tym tagiem są wyświetlane na liście ogólnej.</string>
     <string name="toastTagHidde">Notatki z tym tagiem są ukryte na liście ogólnej.</string>
@@ -369,6 +369,7 @@
     <string name="reminder_menu_item">Przypomnienie</string>
     <string name="reminder_chip_tomorrow">Jutro %1$s</string>
     <string name="reminder_past_time_error">Wybierz przyszłą datę i godzinę</string>
+    <string name="reminder_time_passed">Wybrany czas, %1$s, już minął. Wybierz późniejszy termin.</string>
     <string name="tile_label">Nowa notatka</string>
     <string name="search_filter_all">Wszystkie</string>
     <string name="search_hint_keep_typing">Pisz dalej…</string>
@@ -450,9 +451,9 @@
     <string name="help_tasks_reminder_description">Ustaw przypomnienie dla dowolnego zadania, naciskając ikonę dzwonka. O wyznaczonej porze otrzymasz powiadomienie. Naciśnij je, aby od razu otworzyć zadanie.</string>
     <string name="help_reminders_title">Przypomnienia</string>
     <string name="help_reminders_notes_title">Przypomnienia o notatkach</string>
-    <string name="help_reminders_notes_description">Otwórz dowolną notatkę i naciśnij ikonę dzwonka, aby ustawić przypomnienie. Wybierz godzinę za pomocą opcji szybkiego wyboru albo selektora daty i godziny. O wyznaczonej porze pojawi się powiadomienie.</string>
+    <string name="help_reminders_notes_description">Otwórz notatkę, naciśnij „Więcej” i wybierz „Przypomnienie”. Wybierz godzinę za pomocą opcji szybkiego wyboru albo selektora daty i godziny. Przypomnienie pojawi się na górze notatki; naciśnij je, aby je zmienić. O wyznaczonej porze pojawi się powiadomienie.</string>
     <string name="help_reminders_repeat_title">Opcje powtarzania</string>
-    <string name="help_reminders_repeat_description">Podczas ustawiania przypomnienia do notatki włącz przełącznik „Powtarzaj”, aby wybrać cykl: codziennie, co tydzień lub co miesiąc. Po każdym powiadomieniu przypomnienie jest planowane ponownie automatycznie.</string>
+    <string name="help_reminders_repeat_description">Podczas ustawiania przypomnienia do notatki wybierz, jak ma się powtarzać: codziennie, co tydzień, co miesiąc lub „Własne…” – co kilka godzin, dni, tygodni, miesięcy albo lat. Każde powtórzenie liczy się od wybranej godziny, więc przypomnienie ustawione na 31. dzień w krótszych miesiącach przyjdzie ostatniego dnia, a potem znów 31. Powtarzające się przypomnienia przetrwają ponowne uruchomienie telefonu.</string>
     <string name="help_reminders_interval_title">Powiadomienia interwałowe</string>
     <string name="help_reminders_interval_description">Dla powtarzających się przypomnień możesz włączyć ponowne powiadamianie co 5, 10, 15, 30 lub 60 minut. Powiadomienie będzie powtarzane w wybranym odstępie aż do następnego terminu.</string>
     <string name="help_reminders_sound_title">Dźwięk i głośność powiadomień</string>
@@ -477,4 +478,195 @@
     <string name="help_sync_background_description">Po potwierdzeniu pierwszej synchronizacji możesz włączyć synchronizację w tle. Uruchamia się ona mniej więcej co 6 godzin, gdy urządzenie ma połączenie z internetem, i można ją wyłączyć w dowolnym momencie.</string>
     <string name="help_sync_conflicts_title">Rozwiązywanie konfliktów</string>
     <string name="help_sync_conflicts_description">Gdy wersje lokalna i Drive się różnią, dla każdego konfliktu wybierz, czy zachować wersję lokalną, czy wersję z Google Drive.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Poznaj Encly</string>
+    <string name="meet_encly_drawer_subtitle">Następca aplikacji Moje notatki</string>
+    <string name="meet_encly_eyebrow">Od autora Moich notatek</string>
+    <string name="meet_encly_promise">Twoje notatki – zaszyfrowane i tylko na Twoim telefonie. Bez konta i bez internetu.</string>
+    <string name="meet_encly_benefit_encrypted">Zawsze zaszyfrowane</string>
+    <string name="meet_encly_benefit_encrypted_text">Każda notatka jest przechowywana w zaszyfrowanej bazie danych, a kopie zapasowe też są zaszyfrowane.</string>
+    <string name="meet_encly_benefit_offline">Offline, bez konta</string>
+    <string name="meet_encly_benefit_offline_text">Encly nie ma uprawnienia do internetu, więc notatki nigdy nie opuszczają telefonu.</string>
+    <string name="meet_encly_benefit_lock">Blokada PIN-em i odciskiem palca</string>
+    <string name="meet_encly_benefit_lock_text">Notatki otworzy tylko Twój PIN lub odcisk palca.</string>
+    <string name="meet_encly_benefit_open">Darmowa i open source</string>
+    <string name="meet_encly_benefit_open_text">Każdy może sprawdzić kod. Dostępna w Google Play, F-Droid i na GitHubie.</string>
+    <string name="meet_encly_one_way">Przeniesienie kopiuje notatki do Encly. Z Moich notatek nic nie jest usuwane, a Encly niczego nie odsyła.</string>
+    <string name="meet_encly_moves_title">Trafi do Encly</string>
+    <string name="meet_encly_moves_notes">Notatki, łącznie z koszem</string>
+    <string name="meet_encly_moves_tasks">Zadania</string>
+    <string name="meet_encly_moves_tags">Tagi</string>
+    <string name="meet_encly_moves_categories">Listy zadań</string>
+    <string name="meet_encly_moves_categories_note">W Encly staną się tagami</string>
+    <string name="meet_encly_stays_title">Zostanie w Moich notatkach</string>
+    <string name="meet_encly_stays_attachments">Załączniki i obrazy</string>
+    <string name="meet_encly_stays_attachments_note">Encly nie przechowuje plików</string>
+    <string name="meet_encly_stays_reminders">Przypomnienia</string>
+    <string name="meet_encly_stays_reminders_note">Encly nie ma przypomnień</string>
+    <string name="meet_encly_stays_pinned">Przypięcie notatek</string>
+    <string name="meet_encly_stays_pinned_note">Same notatki zostaną przeniesione, ale nieprzypięte</string>
+    <string name="meet_encly_stays_none">Nic – wszystko trafi do Encly.</string>
+    <string name="meet_encly_get">Pobierz Encly</string>
+    <string name="meet_encly_update">Zaktualizuj Encly</string>
+    <string name="meet_encly_move">Przenieś moje notatki do Encly</string>
+    <string name="meet_encly_moving">Przygotowujemy notatki…</string>
+    <string name="meet_encly_hint_ready">Otworzy się Encly i przejmie wszystko za jednym razem. To zajmie tylko chwilę.</string>
+    <string name="meet_encly_hint_get">Za darmo w Google Play, F-Droid i na GitHubie. Po instalacji wróć tutaj.</string>
+    <string name="meet_encly_needs_update">Ta wersja Encly nie umie jeszcze przyjmować notatek. Zaktualizuj ją i wróć tutaj.</string>
+    <string name="meet_encly_untrusted">Zainstalowana aplikacja o nazwie Encly nie jest oficjalną wersją, więc notatki nie zostaną do niej wysłane. Zainstaluj Encly z Google Play, F-Droid lub GitHuba.</string>
+    <string name="meet_encly_result_ok">Twoje notatki są już w Encly</string>
+    <string name="meet_encly_result_notes">Notatki</string>
+    <string name="meet_encly_result_skipped">Pominięte</string>
+    <string name="meet_encly_result_attachments">Załączniki i obrazy pozostawione w Moich notatkach: %1$d.</string>
+    <string name="meet_encly_result_failed_title">Przenoszenie nie zostało ukończone</string>
+    <string name="meet_encly_result_cancelled">Przenoszenie zostało anulowane. Nic się nie zmieniło.</string>
+    <string name="meet_encly_result_untrusted">Encly przyjmuje notatki tylko z oficjalnej aplikacji Moje notatki. Zainstaluj Moje notatki z Google Play, F-Droid lub GitHub i spróbuj ponownie.</string>
+    <string name="meet_encly_result_unsupported">Ta wersja Encly nie potrafi odczytać danych z tej wersji Moich notatek. Zaktualizuj Encly i spróbuj ponownie.</string>
+    <string name="meet_encly_result_invalid">Encly nie mógł odczytać danych. Nic nie zostało zaimportowane.</string>
+    <string name="meet_encly_result_too_large">Danych jest za dużo, by przenieść je za jednym razem. Nic nie zostało zaimportowane.</string>
+    <string name="meet_encly_result_failed">Encly nie mógł dokończyć importu. Z Moich notatek nic nie zostało usunięte.</string>
+    <string name="meet_encly_error_prepare">Nie udało się przygotować notatek dla Encly.</string>
+    <string name="meet_encly_clear_hint">Moje notatki nadal przechowują własną kopię. Jeśli nie jest już potrzebna, możesz ją wyczyścić – najpierw poprosimy o potwierdzenie.</string>
+    <string name="meet_encly_clear">Wyczyść Moje notatki</string>
+    <string name="meet_encly_clear_confirm_title">Wyczyścić Moje notatki?</string>
+    <string name="meet_encly_clear_confirm_message">Spowoduje to trwałe usunięcie z Moich notatek wszystkich notatek (łącznie z koszem), zadań, tagów, list zadań i plików załączników. Jeśli synchronizacja z Dyskiem Google jest włączona, zostaną one usunięte także z synchronizowanej kopii. Załączniki nie zostały przeniesione do Encly. Tej operacji nie można cofnąć.</string>
+    <string name="meet_encly_clear_confirm">Usuń wszystko</string>
+    <string name="meet_encly_cleared">Moje notatki zostały wyczyszczone.</string>
+    <string name="meet_encly_clear_failed">Nie udało się wyczyścić Moich notatek.</string>
+    <string name="meet_encly_dialog_text">Moje notatki mają następcę: Encly, aplikację, która trzyma notatki zaszyfrowane i offline. Przenieś wszystko jednym dotknięciem.</string>
+    <string name="meet_encly_dialog_more">Jak przenieść</string>
+    <string name="meet_encly_dialog_later">Później</string>
+    <string name="search_short">Szukaj</string>
+    <string name="view_options">Opcje widoku</string>
+    <string name="view_options_cd_list">Opcje widoku. Notatki są wyświetlane jako lista</string>
+    <string name="view_options_cd_grid">Opcje widoku. Notatki są wyświetlane jako siatka</string>
+    <string name="view_options_sort">Kolejność</string>
+    <string name="view_options_sort_newest">Ostatnio edytowane na początku</string>
+    <string name="view_options_sort_oldest">Ostatnio edytowane na końcu</string>
+    <string name="view_options_layout">Układ</string>
+    <string name="view_options_layout_list">Lista</string>
+    <string name="view_options_layout_grid">Siatka</string>
+    <string name="read_mode_enter">Tryb czytania</string>
+    <string name="read_mode_exit">Wróć do edycji</string>
+    <string name="reminder_chip_cd">Przypomnienie: %1$s. Zmień przypomnienie</string>
+    <string name="note_opening_mode">Tryb otwierania notatek</string>
+    <string name="note_opening_mode_description">Nowe notatki zawsze otwierają się gotowe do pisania.</string>
+    <string name="note_opening_mode_auto">Automatycznie</string>
+    <string name="note_opening_mode_auto_summary">Tryb czytania w prostym edytorze, tryb edycji w rozszerzonym</string>
+    <string name="note_opening_mode_read">Czytanie</string>
+    <string name="note_opening_mode_read_summary">Nic nie zmieni się przypadkiem. Stuknij Edytuj, aby zacząć pisać</string>
+    <string name="note_opening_mode_edit">Edycja</string>
+    <string name="note_opening_mode_edit_summary">Kursor jest na miejscu, a klawiatura się otwiera</string>
+    <string name="note_opening_position">Otwieraj notatki</string>
+    <string name="note_opening_position_last">Tam, gdzie skończyłeś</string>
+    <string name="note_opening_position_last_summary">Na wierszu, który czytałeś, z kursorem tam, gdzie skończyłeś edycję</string>
+    <string name="note_opening_position_start">Od początku</string>
+    <string name="note_opening_position_start_summary">Zawsze od pierwszego wiersza</string>
+    <string name="note_opening_double_tap">Dwukrotne stuknięcie, aby edytować</string>
+    <string name="note_opening_double_tap_description">W trybie czytania stuknij dwukrotnie tekst, aby zacząć edycję dokładnie w tym miejscu.</string>
+    <string name="choice_selected">Wybrano</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Własne…</string>
+    <string name="reminder_repeat_custom_title">Własne powtarzanie</string>
+    <string name="reminder_repeat_custom_hint">Powtarzaj co</string>
+    <string name="reminder_repeat_custom_error">Wpisz liczbę od 1 do 999</string>
+    <string name="reminder_repeat_custom_apply">Gotowe</string>
+    <string name="reminder_repeat_custom_cd">Własne powtarzanie: %1$s. Zmień</string>
+    <string name="reminder_repeat_hourly">Co godzinę</string>
+    <string name="reminder_repeat_yearly">Co roku</string>
+    <string name="reminder_exact_alarm_needed">Przypomnienia mogą przychodzić z opóźnieniem. Zezwól na „Alarmy i przypomnienia”, aby przychodziły na czas.</string>
+    <string name="reminder_exact_alarm_allow">Zezwól</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Co %d godzinę</item>
+        <item quantity="few">Co %d godziny</item>
+        <item quantity="many">Co %d godzin</item>
+        <item quantity="other">Co %d godziny</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Co %d dzień</item>
+        <item quantity="few">Co %d dni</item>
+        <item quantity="many">Co %d dni</item>
+        <item quantity="other">Co %d dnia</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Co %d tydzień</item>
+        <item quantity="few">Co %d tygodnie</item>
+        <item quantity="many">Co %d tygodni</item>
+        <item quantity="other">Co %d tygodnia</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Co %d miesiąc</item>
+        <item quantity="few">Co %d miesiące</item>
+        <item quantity="many">Co %d miesięcy</item>
+        <item quantity="other">Co %d miesiąca</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Co %d rok</item>
+        <item quantity="few">Co %d lata</item>
+        <item quantity="many">Co %d lat</item>
+        <item quantity="other">Co %d roku</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d godzina</item>
+        <item quantity="few">%d godziny</item>
+        <item quantity="many">%d godzin</item>
+        <item quantity="other">%d godziny</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d dzień</item>
+        <item quantity="few">%d dni</item>
+        <item quantity="many">%d dni</item>
+        <item quantity="other">%d dnia</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d tydzień</item>
+        <item quantity="few">%d tygodnie</item>
+        <item quantity="many">%d tygodni</item>
+        <item quantity="other">%d tygodnia</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d miesiąc</item>
+        <item quantity="few">%d miesiące</item>
+        <item quantity="many">%d miesięcy</item>
+        <item quantity="other">%d miesiąca</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d rok</item>
+        <item quantity="few">%d lata</item>
+        <item quantity="many">%d lat</item>
+        <item quantity="other">%d roku</item>
+    </plurals>
+    <string name="version_history">Historia wersji</string>
+    <string name="version_history_info">Wcześniejsze wersje tej notatki są przechowywane tylko na tym urządzeniu, maksymalnie %1$d. Nie są synchronizowane ani dołączane do kopii zapasowych.</string>
+    <string name="version_history_empty_title">Nie ma jeszcze wcześniejszych wersji</string>
+    <string name="version_history_empty_text">Gdy notatka się zmienia, jej wcześniejszy tekst jest zachowywany tutaj, aby można go było przywrócić.</string>
+    <string name="version_reason_autosave">Zapisano automatycznie</string>
+    <string name="version_reason_pre_sync">Przed synchronizacją</string>
+    <string name="version_reason_pre_restore">Przed przywróceniem</string>
+    <string name="version_reason_pre_conflict">Przed konfliktem</string>
+    <string name="version_time_just_now">Przed chwilą, %1$s</string>
+    <string name="version_preview_this">Ta wersja</string>
+    <string name="version_preview_current">Bieżąca notatka</string>
+    <string name="version_preview_same">Ta wersja ma ten sam tekst co bieżąca notatka.</string>
+    <string name="version_restore">Przywróć</string>
+    <string name="version_restore_title">Przywrócić tę wersję?</string>
+    <string name="version_restore_message">Bieżący tekst notatki zostanie zastąpiony. Pozostanie w historii wersji, więc możesz do niego wrócić.</string>
+    <string name="version_restore_attachments">Załączniki, których nie ma już w notatce, nie wrócą z tą wersją.</string>
+    <string name="version_restored">Przywrócono wersję</string>
+    <string name="version_restore_failed">Nie udało się przywrócić tej wersji</string>
+    <string name="version_untitled">Pusta notatka</string>
+    <string name="view_options_sort_custom">Własna kolejność</string>
+    <string name="view_options_sort_custom_hint">Naciśnij i przytrzymaj notatkę, a następnie przeciągnij ją w nowe miejsce. Przypięte notatki pozostają nad pozostałymi.</string>
+    <string name="note_move_up">Przenieś wyżej</string>
+    <string name="note_move_down">Przenieś niżej</string>
+    <string name="note_move_at_top">Już na początku</string>
+    <string name="note_move_at_bottom">Już na końcu</string>
+    <string name="note_moved_to">Przeniesiono na pozycję %1$d z %2$d</string>
+    <string name="editor_undo">Cofnij</string>
+    <string name="editor_redo">Ponów</string>
+    <string name="editor_hide_keyboard">Ukryj klawiaturę</string>
+    <string name="custom_order_hint">Aby zmieniać kolejność przeciąganiem, włącz „Własna kolejność”</string>
+    <string name="custom_order_hint_action">Włącz</string>
 </resources>

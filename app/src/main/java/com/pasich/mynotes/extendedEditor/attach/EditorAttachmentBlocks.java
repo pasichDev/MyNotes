@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The one walk over an Editor.js document that knows where attachment references live.
@@ -79,6 +80,89 @@ public final class EditorAttachmentBlocks {
             return new ArrayList<>();
         }
         return urls;
+    }
+
+    /** A document with some attachment references taken out, and how many were. */
+    public static final class Filtered {
+        @Nullable public final String valueJson;
+        public final int removed;
+
+        Filtered(@Nullable String valueJson, int removed) {
+            this.valueJson = valueJson;
+            this.removed = removed;
+        }
+    }
+
+    /**
+     * Takes out every file reference whose URL is not in {@code keep}.
+     *
+     * <p>A block whose only file goes is removed with it, since an image or attachment block
+     * without its file renders as a broken placeholder; a block listing several files keeps the
+     * ones that remain.
+     *
+     * @return the filtered document, with {@code valueJson} itself returned verbatim when nothing
+     *     was taken out or the document could not be read.
+     */
+    @NonNull
+    public static Filtered keepOnlyFiles(@Nullable String valueJson, @NonNull Set<String> keep) {
+        if (valueJson == null || valueJson.trim().isEmpty()) {
+            return new Filtered(valueJson, 0);
+        }
+        JsonArray blocks;
+        try {
+            blocks = JsonParser.parseString(valueJson).getAsJsonArray();
+        } catch (RuntimeException unreadable) {
+            return new Filtered(valueJson, 0);
+        }
+        int removed = 0;
+        JsonArray result = new JsonArray();
+        for (JsonElement element : blocks) {
+            if (!element.isJsonObject()) {
+                result.add(element);
+                continue;
+            }
+            JsonObject block = element.getAsJsonObject();
+            JsonElement dataElement = block.get("data");
+            if (dataElement == null || !dataElement.isJsonObject()) {
+                result.add(block);
+                continue;
+            }
+            JsonObject data = dataElement.getAsJsonObject();
+            boolean hadFile = false;
+            boolean keptFile = false;
+            JsonElement file = data.get("file");
+            if (hasUrl(file)) {
+                hadFile = true;
+                if (keep.contains(file.getAsJsonObject().get("url").getAsString())) {
+                    keptFile = true;
+                } else {
+                    data.remove("file");
+                    removed++;
+                }
+            }
+            JsonElement list = data.get("files");
+            if (list != null && list.isJsonArray()) {
+                JsonArray kept = new JsonArray();
+                for (JsonElement candidate : list.getAsJsonArray()) {
+                    if (!hasUrl(candidate)) {
+                        kept.add(candidate);
+                        continue;
+                    }
+                    hadFile = true;
+                    if (keep.contains(candidate.getAsJsonObject().get("url").getAsString())) {
+                        kept.add(candidate);
+                        keptFile = true;
+                    } else {
+                        removed++;
+                    }
+                }
+                data.add("files", kept);
+            }
+            if (hadFile && !keptFile) continue;
+            result.add(block);
+        }
+        // JsonElement.toString(), as in rewriteUrls, so the output is serialized the same way.
+        return removed == 0 ? new Filtered(valueJson, 0) : new Filtered(result.toString(), removed);
     }
 
     /** The file object of the block with {@code blockId}, or {@code null}. */

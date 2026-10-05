@@ -15,16 +15,21 @@ import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
 import com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity;
 import com.pasich.mynotes.data.database.entities.SyncStateEntity;
+import com.pasich.mynotes.data.history.NoteHistory;
+import com.pasich.mynotes.data.history.NoteVersionReason;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
+import com.pasich.mynotes.data.order.CustomOrder;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentUrl;
 import com.pasich.mynotes.extendedEditor.attach.EditorAttachmentBlocks;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.utils.backup.models.PreferencesBackup;
+import com.pasich.mynotes.utils.editor.NoteViewStateStore;
+import com.pasich.mynotes.utils.reminder.ReminderRescheduler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -40,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,6 +70,13 @@ public final class RoomSyncStore implements SyncStore {
     private final AttachmentHasher attachmentHasher;
     private final TransactionFailureInjector transactionFailureInjector;
     private final AttachmentHashCache hashCache;
+
+    /**
+     * The local version history of notes. A version from another device, or the side of a conflict
+     * the user picks, replaces a note's text without the user typing anything here, so the text it
+     * replaces is always kept first.
+     */
+    private final NoteHistory noteHistory;
 
     /**
      * Content hash to the note-folder file holding it, indexed while the snapshot is built so the
@@ -99,6 +112,14 @@ public final class RoomSyncStore implements SyncStore {
      */
     private final java.util.concurrent.atomic.AtomicBoolean appliedPreferencesChange =
             new java.util.concurrent.atomic.AtomicBoolean(false);
+
+    /**
+     * Notes whose row this apply wrote or deleted. A reminder set, moved or turned off on another
+     * device reaches this one only as a row; once the transaction has committed, their alarms are
+     * armed or cancelled to match, so the change does not wait for the next app start.
+     */
+    private final Set<Integer> notesToReconcile =
+            java.util.Collections.synchronizedSet(new HashSet<>());
 
     public RoomSyncStore(
             @NonNull Context context,
@@ -147,6 +168,15 @@ public final class RoomSyncStore implements SyncStore {
         this.transactionFailureInjector = transactionFailureInjector;
         this.preferences =
                 context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        this.noteHistory =
+                new NoteHistory(
+                        database.noteVersionDao(),
+                        noteId -> {
+                            SyncMetadataEntity metadata =
+                                    database.syncMetadataDao()
+                                            .get(SyncMetadata.RECORD_TYPE_NOTE, noteId);
+                            return metadata == null ? null : metadata.stableId;
+                        });
         this.hashCache =
                 new AttachmentHashCache(
                         new File(
@@ -273,6 +303,7 @@ public final class RoomSyncStore implements SyncStore {
         // The live digest at the moment the journal is written, decided inside the transaction
         // below; the commit afterwards refuses to run if the settings moved again since.
         String[] preferencesBaseline = {null};
+        notesToReconcile.clear();
         try {
             database.runInTransaction(
                     () -> {
@@ -363,36 +394,27 @@ public final class RoomSyncStore implements SyncStore {
                                 }
                                 if (record.isTombstone()) {
                                     markDeleted(metadata);
-                                    database.syncMetadataDao()
-                                            .setVersion(
-                                                    metadata.recordType,
-                                                    metadata.localId,
-                                                    record.getUpdatedAt().toEpochMilli(),
-                                                    record.getDeletedAt().toEpochMilli());
-                                    database.syncMetadataDao()
-                                            .setSyncedVersion(
-                                                    metadata.recordType,
-                                                    metadata.localId,
-                                                    record.getCanonicalPayloadHash());
+                                    recordAppliedVersion(
+                                            metadata,
+                                            record.getUpdatedAt().toEpochMilli(),
+                                            record.getDeletedAt().toEpochMilli(),
+                                            record.getCanonicalPayloadHash());
                                     retireConflictsSupersededBy(record);
                                     transactionFailureInjector.afterRecordApplied(record);
                                     continue;
                                 }
-                                if (!applyPayload(metadata, record.getPayload())) {
+                                if (!applyPayload(
+                                        metadata,
+                                        record.getPayload(),
+                                        NoteVersionReason.PRE_SYNC)) {
                                     skippedKeys.add(key);
                                     continue;
                                 }
-                                database.syncMetadataDao()
-                                        .setVersion(
-                                                metadata.recordType,
-                                                metadata.localId,
-                                                record.getUpdatedAt().toEpochMilli(),
-                                                null);
-                                database.syncMetadataDao()
-                                        .setSyncedVersion(
-                                                metadata.recordType,
-                                                metadata.localId,
-                                                record.getCanonicalPayloadHash());
+                                recordAppliedVersion(
+                                        metadata,
+                                        record.getUpdatedAt().toEpochMilli(),
+                                        null,
+                                        record.getCanonicalPayloadHash());
                                 retireConflictsSupersededBy(record);
                                 transactionFailureInjector.afterRecordApplied(record);
                             }
@@ -444,6 +466,9 @@ public final class RoomSyncStore implements SyncStore {
                                 }
                             }
                             persistConflicts(conflicts, skippedKeys);
+                            // A note deleted by another device takes its history with it above;
+                            // this also catches history any older path left behind.
+                            noteHistory.sweepOrphans();
                             if (finalState != null && !deferFinalState) {
                                 database.syncStateDao().upsert(toEntity(finalState));
                             }
@@ -452,8 +477,13 @@ public final class RoomSyncStore implements SyncStore {
                         }
                     });
         } catch (SyncRuntimeException error) {
+            notesToReconcile.clear();
             throw error.ioException;
+        } catch (RuntimeException error) {
+            notesToReconcile.clear();
+            throw error;
         }
+        reconcileReminders();
         if (deferFinalState || preferencesBaseline[0] != null) {
             boolean committed = false;
             if (preferencesBaseline[0] != null) {
@@ -843,12 +873,67 @@ public final class RoomSyncStore implements SyncStore {
     }
 
     /**
-     * Writes one live version over the local row.
+     * Records the version this device now holds, writing only the columns that differ.
+     *
+     * <p>Every sync applies the whole merged snapshot, and nearly all of it is what this device
+     * already holds. Rewriting identical bookkeeping for each record made every sync a burst of
+     * writes for nothing. The row is read afresh rather than taken from the map built before the
+     * loop, because an earlier record in the same apply (a tag reconciled by name) can have changed
+     * it since.
+     */
+    private void recordAppliedVersion(
+            @NonNull SyncMetadataEntity metadata,
+            long updatedAt,
+            @Nullable Long deletedAt,
+            @NonNull String versionId) {
+        SyncMetadataEntity current =
+                database.syncMetadataDao().get(metadata.recordType, metadata.localId);
+        if (current == null
+                || current.updatedAt != updatedAt
+                || !Objects.equals(current.deletedAt, deletedAt)) {
+            database.syncMetadataDao()
+                    .setVersion(metadata.recordType, metadata.localId, updatedAt, deletedAt);
+        }
+        if (current == null || !versionId.equals(current.syncedVersionId)) {
+            database.syncMetadataDao()
+                    .setSyncedVersion(metadata.recordType, metadata.localId, versionId);
+        }
+    }
+
+    /**
+     * Whether two rows of the same entity hold the same values.
+     *
+     * <p>Compared through the same Gson the payloads are read with, which sees every stored column
+     * (the entities' only non-column fields are UI state that is never set on either side here).
+     */
+    private boolean sameRow(@NonNull Object stored, @NonNull Object incoming) {
+        return gson.toJsonTree(stored).equals(gson.toJsonTree(incoming));
+    }
+
+    private static boolean isEmptyAttachmentList(@Nullable String attachments) {
+        if (attachments == null) return true;
+        String trimmed = attachments.trim();
+        return trimmed.isEmpty() || trimmed.equals("[]");
+    }
+
+    /**
+     * Writes one live version over the local row, unless the row already holds exactly it.
+     *
+     * <p>The comparison is made against the row this version would produce, not against the version
+     * hash: a note whose attachment references are rewritten to this device's files on apply hashes
+     * the same before and after, yet only the apply puts its blocks right. When the row already
+     * matches, nothing is written, so a sync that changes nothing does not invalidate the notes,
+     * tags or tasks queries and the lists on screen are not re-emitted.
+     *
+     * <p>A note's text that the version replaces is first kept in the note's local history under
+     * {@code reason}, and the note keeps its place in this device's custom order, which never
+     * travels with the version.
      *
      * @return false when the version was deliberately not applied and the record's local version
      *     must therefore not be advanced to it.
      */
-    private boolean applyPayload(SyncMetadataEntity metadata, JsonObject payload)
+    private boolean applyPayload(
+            SyncMetadataEntity metadata, JsonObject payload, @NonNull NoteVersionReason reason)
             throws IOException {
         // A record that was deleted here and then edited on another device has no row left to
         // update; @Update on a missing row is a silent no-op, and the tombstone was cleared
@@ -859,7 +944,25 @@ public final class RoomSyncStore implements SyncStore {
             Note note = gson.fromJson(payload, Note.class);
             note.setId((int) metadata.localId);
             restoreAttachments(note, payload);
-            database.noteDao().addNote(note);
+            Note stored = revive ? null : database.noteDao().getNoteSync(note.getId());
+            if (stored != null
+                    && isEmptyAttachmentList(note.getAttachments())
+                    && isEmptyAttachmentList(stored.getAttachments())) {
+                // No attachments either way; the editor stores that as "[]" and a received
+                // version as null. Spelling it the local way keeps the row equal below.
+                note.setAttachments(stored.getAttachments());
+            }
+            note.setCustomPosition(
+                    stored != null
+                            ? stored.getCustomPosition()
+                            // Brought back after a deletion here: it returns at the top, like a
+                            // new note, since its old place is gone.
+                            : CustomOrder.above(database.noteDao().getHighestCustomPositionSync()));
+            if (stored == null || !sameRow(stored, note)) {
+                noteHistory.recordBeforeOverwrite(stored, note, reason, System.currentTimeMillis());
+                database.noteDao().addNote(note);
+                notesToReconcile.add(note.getId());
+            }
         } else if ("task".equals(metadata.recordType)) {
             Task task = gson.fromJson(payload, Task.class);
             task.setId((int) metadata.localId);
@@ -871,26 +974,32 @@ public final class RoomSyncStore implements SyncStore {
                                         payload.get("categoryStableId").getAsString());
                 if (category != null) task.setCategoryId((int) category.localId);
             }
-            if (revive || database.taskDao().getTaskSync(task.getId()) == null) {
+            Task stored = revive ? null : database.taskDao().getTaskSync(task.getId());
+            if (stored == null) {
                 database.taskDao().insertTask(task);
-            } else {
+            } else if (!sameRow(stored, task)) {
                 database.taskDao().updateTask(task);
             }
         } else if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(metadata.recordType)) {
             TaskCategory category = gson.fromJson(payload, TaskCategory.class);
             category.setId((int) metadata.localId);
-            if (revive || database.taskCategoryDao().getCategorySync(category.getId()) == null) {
+            TaskCategory stored =
+                    revive ? null : database.taskCategoryDao().getCategorySync(category.getId());
+            if (stored == null) {
                 database.taskCategoryDao().insertCategory(category);
-            } else {
+            } else if (!sameRow(stored, category)) {
                 database.taskCategoryDao().updateCategory(category);
             }
         } else if ("tag".equals(metadata.recordType)) {
             Tag tag = gson.fromJson(payload, Tag.class);
             tag.id = metadata.localId;
-            if (revive || database.tagsDao().getTagSync(tag.id) == null) {
+            Tag stored = revive ? null : database.tagsDao().getTagSync(tag.id);
+            if (stored == null) {
                 return reviveTag(metadata, tag);
             }
-            database.tagsDao().updateTag(tag);
+            if (!sameRow(stored, tag)) {
+                database.tagsDao().updateTag(tag);
+            }
         } else if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
             // SharedPreferences is outside Room. applySnapshotInternal journals and commits this
             // payload only after the Room transaction succeeds.
@@ -942,6 +1051,9 @@ public final class RoomSyncStore implements SyncStore {
             Note note = gson.fromJson(record.getPayload(), Note.class);
             note.setId(0);
             note.setAttachments(null);
+            // The order is this device's own; a note from another device starts at the top.
+            note.setCustomPosition(
+                    CustomOrder.above(database.noteDao().getHighestCustomPositionSync()));
             long localId = database.noteDao().addNote(note);
             note.setId((int) localId);
             restoreAttachments(note, record.getPayload());
@@ -954,6 +1066,7 @@ public final class RoomSyncStore implements SyncStore {
                             note.getDate(),
                             note.getTag(),
                             note.getAttachments());
+            if (note.getReminderTime() != null) notesToReconcile.add(note.getId());
             return localId;
         }
         if (record.getType() == SyncRecord.Type.TASK) {
@@ -1020,9 +1133,14 @@ public final class RoomSyncStore implements SyncStore {
     }
 
     private void markDeleted(SyncMetadataEntity metadata) {
-        if ("note".equals(metadata.recordType))
+        if ("note".equals(metadata.recordType)) {
             database.noteDao().deleteById((int) metadata.localId);
-        else if ("task".equals(metadata.recordType))
+            // Deleted for good on another device, or by the side of a conflict picked here.
+            noteHistory.forget(java.util.Collections.singletonList((int) metadata.localId));
+            // A position on this device means nothing once another device deleted the note.
+            new NoteViewStateStore(context).remove(metadata.localId);
+            notesToReconcile.add((int) metadata.localId);
+        } else if ("task".equals(metadata.recordType))
             database.taskDao().deleteById((int) metadata.localId);
         else if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(metadata.recordType))
             database.taskCategoryDao().deleteById((int) metadata.localId);
@@ -1124,6 +1242,7 @@ public final class RoomSyncStore implements SyncStore {
             return;
         }
 
+        notesToReconcile.clear();
         try {
             database.runInTransaction(
                     () -> {
@@ -1141,7 +1260,29 @@ public final class RoomSyncStore implements SyncStore {
                                 .markResolved(conflictId, resolution.name(), resolvedAt);
                     });
         } catch (SyncRuntimeException error) {
+            notesToReconcile.clear();
             throw error.ioException;
+        } catch (RuntimeException error) {
+            notesToReconcile.clear();
+            throw error;
+        }
+        reconcileReminders();
+    }
+
+    /** Arms or cancels the alarms of the notes the committed apply changed. */
+    private void reconcileReminders() {
+        List<Integer> ids;
+        synchronized (notesToReconcile) {
+            ids = new ArrayList<>(notesToReconcile);
+            notesToReconcile.clear();
+        }
+        if (ids.isEmpty()) return;
+        try {
+            new ReminderRescheduler(context, database)
+                    .reconcileNotes(ids, System.currentTimeMillis());
+        } catch (RuntimeException error) {
+            // The data is committed; alarms are re-armed from it again at the next app start.
+            Log.w(TAG, "Re-arming reminders after sync failed", error);
         }
     }
 
@@ -1457,7 +1598,10 @@ public final class RoomSyncStore implements SyncStore {
                         database.syncMetadataDao()
                                 .getByStableId(conflict.recordType, conflict.stableId);
                 if (preferencesMetadata != null) {
-                    applyPayload(preferencesMetadata, selected.getPayload());
+                    applyPayload(
+                            preferencesMetadata,
+                            selected.getPayload(),
+                            NoteVersionReason.PRE_CONFLICT);
                     database.syncMetadataDao()
                             .setVersion(
                                     conflict.recordType,
@@ -1469,7 +1613,7 @@ public final class RoomSyncStore implements SyncStore {
             return;
         }
 
-        applyPayload(metadata, selected.getPayload());
+        applyPayload(metadata, selected.getPayload(), NoteVersionReason.PRE_CONFLICT);
         database.syncMetadataDao()
                 .setVersion(conflict.recordType, metadata.localId, updatedAt, null);
     }

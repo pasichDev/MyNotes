@@ -80,4 +80,23 @@ public class BackupParserTest {
         assertThat(restored.getValue()).isEqualTo("MyValue");
         assertThat(restored.getTag()).isEqualTo("MyTag");
     }
+
+    @Test
+    public void jsonBackup_keepsTheCustomOrderAndReadsOlderBackupsWithout() {
+        Note note = new Note().create("Title", "Body", 12345L, "");
+        note.setCustomPosition(5120L);
+        JsonBackup backup = new JsonBackup();
+        backup.setNotes(Collections.singletonList(note));
+        backup.setTags(Collections.emptyList());
+
+        String json = gson.toJson(backup);
+        assertThat(json).contains("\"n\":5120");
+        JsonBackup restored = gson.fromJson(json, JsonBackup.class);
+        assertThat(restored.getNotes().get(0).getCustomPosition()).isEqualTo(5120L);
+
+        // A backup from before the custom order: the note comes back unplaced (0), and the
+        // restore gives it a place on top.
+        JsonBackup older = gson.fromJson(json.replace(",\"n\":5120", ""), JsonBackup.class);
+        assertThat(older.getNotes().get(0).getCustomPosition()).isEqualTo(0L);
+    }
 }

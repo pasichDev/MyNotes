@@ -16,7 +16,6 @@
     <string name="telegram">Abrir contactos de desarrollador</string>
     <string name="notSupportedShare">Este contenido no es compatible.</string>
     <string name="notFoundPlayMarket">Falta la aplicación Play Market</string>
-    <string name="cd_format">Formato de notas</string>
 
     <string name="search">Buscar en notas</string>
     <string name="close">Cerrar</string>
@@ -103,7 +102,6 @@
     <string name="restoreDataOkay">Restauración de datos completada con éxito</string>
     <string name="restoreDataFall">Error: la copia de seguridad está dañada</string>
     <string name="errorDriveSync">Error del servidor o mala calidad de Internet</string>
-    <string name="sortNotes">Ordenar notas</string>
 
     <!-- Oferta de productos -->
     <string name="thanks_title">Estimado usuario</string>
@@ -173,9 +171,9 @@
     <string name="help_navigation_search_title">Búsqueda</string>
     <string name="help_navigation_search_description">Usa la barra de búsqueda para encontrar rápidamente tus notas por título o contenido</string>
     <string name="help_navigation_sort_title">Ordenación</string>
-    <string name="help_navigation_sort_description">Ordena tus notas por fecha de última modificación o nombre en orden ascendente o descendente</string>
+    <string name="help_navigation_sort_description">Toca el botón de opciones de vista en la barra de búsqueda para mostrar primero o al final las notas editadas recientemente, o elige Orden personalizado y ordena las notas tú mismo arrastrándolas.</string>
     <string name="help_navigation_format_title">Formato de visualización</string>
-    <string name="help_navigation_format_description">Cambia entre lista y cuadrícula para mostrar tus notas en un diseño conveniente para ti</string>
+    <string name="help_navigation_format_description">En las mismas opciones de vista, cambia entre lista y cuadrícula.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gestos de deslizar</string>
@@ -226,6 +224,8 @@
     <string name="tags_management">Etiquetas</string>
     <string name="create_tag">Presiona este botón para crear una etiqueta.</string>
     <string name="tag_options">Opciones de etiqueta</string>
+    <string name="selection_change_tag">Cambiar etiqueta</string>
+    <string name="edit_note_action">Editar nota</string>
     <string name="createTag">Crear etiqueta</string>
     <string name="toastTagVisible">Las notas con esta etiqueta se muestran en la lista general.</string>
     <string name="toastTagHidde">Las notas con esta etiqueta están ocultas en la lista general.</string>
@@ -371,6 +371,7 @@
     <string name="reminder_menu_item">Recordatorio</string>
     <string name="reminder_chip_tomorrow">Mañana %1$s</string>
     <string name="reminder_past_time_error">Por favor, selecciona una hora futura</string>
+    <string name="reminder_time_passed">La hora elegida, %1$s, ya ha pasado. Elige una hora posterior.</string>
     <string name="tile_label">Nueva nota</string>
     <string name="search_filter_all">Todos</string>
     <string name="search_hint_keep_typing">Sigue escribiendo…</string>
@@ -450,9 +451,9 @@
     <string name="help_tasks_reminder_description">Configura un recordatorio para cualquier tarea tocando el icono de la campana. Recibirás una notificación a la hora prevista. Tócala para abrir la tarea directamente.</string>
     <string name="help_reminders_title">Recordatorios</string>
     <string name="help_reminders_notes_title">Recordatorios de notas</string>
-    <string name="help_reminders_notes_description">Abre cualquier nota y toca el icono de la campana para configurar un recordatorio. Elige la hora con las opciones rápidas o con el selector de fecha y hora. A la hora prevista aparecerá una notificación.</string>
+    <string name="help_reminders_notes_description">Abre una nota, toca «Más» y elige «Recordatorio». Elige la hora con las opciones rápidas o con el selector de fecha y hora. El recordatorio aparece en la parte superior de la nota; tócalo para cambiarlo. A la hora prevista aparecerá una notificación.</string>
     <string name="help_reminders_repeat_title">Opciones de repetición</string>
-    <string name="help_reminders_repeat_description">Al configurar un recordatorio de nota, activa el interruptor «Repetir» para elegir el ciclo: diario, semanal o mensual. El recordatorio se reprograma automáticamente tras cada notificación.</string>
+    <string name="help_reminders_repeat_description">Al configurar un recordatorio de nota, elige cómo se repite: diariamente, semanalmente, mensualmente o «Personalizado…» para cada varias horas, días, semanas, meses o años. Cada repetición se cuenta desde la hora elegida, así que un recordatorio el día 31 suena el último día de los meses más cortos y vuelve al 31 después. Los recordatorios periódicos se conservan tras reiniciar el teléfono.</string>
     <string name="help_reminders_interval_title">Notificaciones por intervalo</string>
     <string name="help_reminders_interval_description">Para los recordatorios repetidos puedes activar una nueva notificación cada 5, 10, 15, 30 o 60 minutos. La notificación se repetirá en el intervalo elegido hasta la siguiente vez programada.</string>
     <string name="help_reminders_sound_title">Sonido y volumen de las notificaciones</string>
@@ -477,4 +478,175 @@
     <string name="help_sync_background_description">Después de confirmar la primera sincronización, puedes activar la sincronización en segundo plano. Se ejecuta aproximadamente cada 6 horas cuando el dispositivo tiene conexión a internet y se puede desactivar en cualquier momento.</string>
     <string name="help_sync_conflicts_title">Resolver conflictos</string>
     <string name="help_sync_conflicts_description">Cuando las versiones local y de Drive son distintas, elige para cada conflicto si conservar la versión local o la versión de Google Drive.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Conoce Encly</string>
+    <string name="meet_encly_drawer_subtitle">El sucesor de Mis notas</string>
+    <string name="meet_encly_eyebrow">Del autor de Mis notas</string>
+    <string name="meet_encly_promise">Tus notas, cifradas y solo en tu teléfono. Sin cuenta y sin internet.</string>
+    <string name="meet_encly_benefit_encrypted">Siempre cifrado</string>
+    <string name="meet_encly_benefit_encrypted_text">Cada nota se guarda en una base de datos cifrada, y las copias de seguridad también van cifradas.</string>
+    <string name="meet_encly_benefit_offline">Sin conexión y sin cuenta</string>
+    <string name="meet_encly_benefit_offline_text">Encly no tiene permiso de internet, así que tus notas nunca salen del teléfono.</string>
+    <string name="meet_encly_benefit_lock">Bloqueo con PIN y huella</string>
+    <string name="meet_encly_benefit_lock_text">Solo tu PIN o tu huella abren tus notas.</string>
+    <string name="meet_encly_benefit_open">Gratis y de código abierto</string>
+    <string name="meet_encly_benefit_open_text">Cualquiera puede revisar el código. Disponible en Google Play, F-Droid y GitHub.</string>
+    <string name="meet_encly_one_way">El traslado copia tus notas a Encly. No se borra nada de Mis notas y Encly nunca devuelve nada.</string>
+    <string name="meet_encly_moves_title">Pasa a Encly</string>
+    <string name="meet_encly_moves_notes">Notas, incluida la papelera</string>
+    <string name="meet_encly_moves_tasks">Tareas</string>
+    <string name="meet_encly_moves_tags">Etiquetas</string>
+    <string name="meet_encly_moves_categories">Listas de tareas</string>
+    <string name="meet_encly_moves_categories_note">En Encly se convierten en etiquetas</string>
+    <string name="meet_encly_stays_title">Se queda en Mis notas</string>
+    <string name="meet_encly_stays_attachments">Adjuntos e imágenes</string>
+    <string name="meet_encly_stays_attachments_note">Encly no guarda archivos</string>
+    <string name="meet_encly_stays_reminders">Recordatorios</string>
+    <string name="meet_encly_stays_reminders_note">Encly no tiene recordatorios</string>
+    <string name="meet_encly_stays_pinned">Fijado de notas</string>
+    <string name="meet_encly_stays_pinned_note">Las notas se trasladan, pero sin fijar</string>
+    <string name="meet_encly_stays_none">Nada: todo pasa a Encly.</string>
+    <string name="meet_encly_get">Obtener Encly</string>
+    <string name="meet_encly_update">Actualizar Encly</string>
+    <string name="meet_encly_move">Trasladar mis notas a Encly</string>
+    <string name="meet_encly_moving">Preparando tus notas…</string>
+    <string name="meet_encly_hint_ready">Encly se abrirá y lo recibirá todo de una vez. Solo tarda un momento.</string>
+    <string name="meet_encly_hint_get">Gratis en Google Play, F-Droid y GitHub. Vuelve aquí cuando esté instalada.</string>
+    <string name="meet_encly_needs_update">Esta versión de Encly aún no puede recibir notas. Actualízala y vuelve aquí.</string>
+    <string name="meet_encly_untrusted">La app instalada con el nombre Encly no es la versión oficial, así que no se le enviarán tus notas. Instala Encly desde Google Play, F-Droid o GitHub.</string>
+    <string name="meet_encly_result_ok">Tus notas ya están en Encly</string>
+    <string name="meet_encly_result_notes">Notas</string>
+    <string name="meet_encly_result_skipped">Omitidos</string>
+    <string name="meet_encly_result_attachments">Adjuntos e imágenes que quedan en Mis notas: %1$d.</string>
+    <string name="meet_encly_result_failed_title">El traslado no terminó</string>
+    <string name="meet_encly_result_cancelled">El traslado se canceló. No ha cambiado nada.</string>
+    <string name="meet_encly_result_untrusted">Encly solo acepta notas de la app oficial Mis notas. Instala Mis notas desde Google Play, F-Droid o GitHub e inténtalo de nuevo.</string>
+    <string name="meet_encly_result_unsupported">Esta versión de Encly no puede leer los datos de esta versión de Mis notas. Actualiza Encly e inténtalo de nuevo.</string>
+    <string name="meet_encly_result_invalid">Encly no pudo leer los datos. No se importó nada.</string>
+    <string name="meet_encly_result_too_large">Hay demasiados datos para trasladarlos de una vez. No se importó nada.</string>
+    <string name="meet_encly_result_failed">Encly no pudo terminar la importación. No se borró nada de Mis notas.</string>
+    <string name="meet_encly_error_prepare">No se pudieron preparar tus notas para Encly.</string>
+    <string name="meet_encly_clear_hint">Mis notas sigue guardando su propia copia. Si ya no la necesitas, puedes vaciarla; antes te pediremos confirmación.</string>
+    <string name="meet_encly_clear">Vaciar Mis notas</string>
+    <string name="meet_encly_clear_confirm_title">¿Vaciar Mis notas?</string>
+    <string name="meet_encly_clear_confirm_message">Esto borra de forma permanente de Mis notas todas las notas (incluida la papelera), tareas, etiquetas, listas de tareas y archivos adjuntos. Si la sincronización con Google Drive está activada, también se borrarán de la copia sincronizada. Los adjuntos no se trasladaron a Encly. Esta acción no se puede deshacer.</string>
+    <string name="meet_encly_clear_confirm">Borrar todo</string>
+    <string name="meet_encly_cleared">Mis notas se ha vaciado.</string>
+    <string name="meet_encly_clear_failed">No se pudo vaciar Mis notas.</string>
+    <string name="meet_encly_dialog_text">Mis notas tiene un sucesor: Encly, una app de notas que lo guarda todo cifrado y sin conexión. Traslada todas tus notas con un toque.</string>
+    <string name="meet_encly_dialog_more">Ver cómo trasladarlas</string>
+    <string name="meet_encly_dialog_later">Más tarde</string>
+    <string name="search_short">Buscar</string>
+    <string name="view_options">Opciones de vista</string>
+    <string name="view_options_cd_list">Opciones de vista. Las notas se muestran en lista</string>
+    <string name="view_options_cd_grid">Opciones de vista. Las notas se muestran en cuadrícula</string>
+    <string name="view_options_sort">Orden</string>
+    <string name="view_options_sort_newest">Editadas recientemente primero</string>
+    <string name="view_options_sort_oldest">Editadas recientemente al final</string>
+    <string name="view_options_layout">Diseño</string>
+    <string name="view_options_layout_list">Lista</string>
+    <string name="view_options_layout_grid">Cuadrícula</string>
+    <string name="read_mode_enter">Modo lectura</string>
+    <string name="read_mode_exit">Volver a editar</string>
+    <string name="reminder_chip_cd">Recordatorio: %1$s. Cambiar recordatorio</string>
+    <string name="note_opening_mode">Abrir las notas en</string>
+    <string name="note_opening_mode_description">Las notas nuevas siempre se abren listas para escribir.</string>
+    <string name="note_opening_mode_auto">Automático</string>
+    <string name="note_opening_mode_auto_summary">Modo lectura en el editor simple, modo edición en el editor avanzado</string>
+    <string name="note_opening_mode_read">Modo lectura</string>
+    <string name="note_opening_mode_read_summary">Nada cambia por accidente. Toca Editar para empezar a escribir</string>
+    <string name="note_opening_mode_edit">Modo edición</string>
+    <string name="note_opening_mode_edit_summary">El cursor está colocado y se abre el teclado</string>
+    <string name="note_opening_position">Abrir las notas</string>
+    <string name="note_opening_position_last">Donde lo dejaste</string>
+    <string name="note_opening_position_last_summary">La línea que estabas leyendo y el cursor donde dejaste de editar</string>
+    <string name="note_opening_position_start">Al principio</string>
+    <string name="note_opening_position_start_summary">Empezar siempre por la primera línea</string>
+    <string name="note_opening_double_tap">Tocar dos veces para editar</string>
+    <string name="note_opening_double_tap_description">En modo lectura, toca dos veces el texto para empezar a editar justo donde tocaste.</string>
+    <string name="choice_selected">Seleccionado</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Personalizado…</string>
+    <string name="reminder_repeat_custom_title">Repetición personalizada</string>
+    <string name="reminder_repeat_custom_hint">Repetir cada</string>
+    <string name="reminder_repeat_custom_error">Introduce un número del 1 al 999</string>
+    <string name="reminder_repeat_custom_apply">Listo</string>
+    <string name="reminder_repeat_custom_cd">Repetición personalizada: %1$s. Cambiar</string>
+    <string name="reminder_repeat_hourly">Cada hora</string>
+    <string name="reminder_repeat_yearly">Anualmente</string>
+    <string name="reminder_exact_alarm_needed">Los recordatorios pueden llegar tarde. Permite «Alarmas y recordatorios» para recibirlos a tiempo.</string>
+    <string name="reminder_exact_alarm_allow">Permitir</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Cada %d hora</item>
+        <item quantity="other">Cada %d horas</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Cada %d día</item>
+        <item quantity="other">Cada %d días</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Cada %d semana</item>
+        <item quantity="other">Cada %d semanas</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Cada %d mes</item>
+        <item quantity="other">Cada %d meses</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Cada %d año</item>
+        <item quantity="other">Cada %d años</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d hora</item>
+        <item quantity="other">%d horas</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d día</item>
+        <item quantity="other">%d días</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d semana</item>
+        <item quantity="other">%d semanas</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d mes</item>
+        <item quantity="other">%d meses</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d año</item>
+        <item quantity="other">%d años</item>
+    </plurals>
+    <string name="version_history">Historial de versiones</string>
+    <string name="version_history_info">Las versiones anteriores de esta nota se guardan solo en este dispositivo, hasta %1$d. No se sincronizan ni se incluyen en las copias de seguridad.</string>
+    <string name="version_history_empty_title">Aún no hay versiones anteriores</string>
+    <string name="version_history_empty_text">Cuando esta nota cambia, su texto anterior se guarda aquí para que puedas recuperarlo.</string>
+    <string name="version_reason_autosave">Guardado automático</string>
+    <string name="version_reason_pre_sync">Antes de sincronizar</string>
+    <string name="version_reason_pre_restore">Antes de restaurar</string>
+    <string name="version_reason_pre_conflict">Antes del conflicto</string>
+    <string name="version_time_just_now">Justo ahora, %1$s</string>
+    <string name="version_preview_this">Esta versión</string>
+    <string name="version_preview_current">Nota actual</string>
+    <string name="version_preview_same">Esta versión tiene el mismo texto que la nota actual.</string>
+    <string name="version_restore">Restaurar</string>
+    <string name="version_restore_title">¿Restaurar esta versión?</string>
+    <string name="version_restore_message">El texto actual de la nota se reemplazará. Se conserva en el historial de versiones, así que podrás volver a él.</string>
+    <string name="version_restore_attachments">Los adjuntos que ya no están en la nota no volverán con esta versión.</string>
+    <string name="version_restored">Versión restaurada</string>
+    <string name="version_restore_failed">No se pudo restaurar esta versión</string>
+    <string name="version_untitled">Nota vacía</string>
+    <string name="view_options_sort_custom">Orden personalizado</string>
+    <string name="view_options_sort_custom_hint">Mantén pulsada una nota y arrástrala a un nuevo lugar. Las notas fijadas se quedan encima de las demás.</string>
+    <string name="note_move_up">Subir</string>
+    <string name="note_move_down">Bajar</string>
+    <string name="note_move_at_top">Ya está arriba del todo</string>
+    <string name="note_move_at_bottom">Ya está abajo del todo</string>
+    <string name="note_moved_to">Movida a la posición %1$d de %2$d</string>
+    <string name="editor_undo">Deshacer</string>
+    <string name="editor_redo">Rehacer</string>
+    <string name="editor_hide_keyboard">Ocultar teclado</string>
+    <string name="custom_order_hint">Para reordenar las notas arrastrándolas, activa «Orden personalizado»</string>
+    <string name="custom_order_hint_action">Activar</string>
 </resources>

@@ -26,6 +26,16 @@ public interface NoteDao {
     @Query("SELECT * FROM notes WHERE isTrash = 1")
     List<Note> getTrashNotesSync();
 
+    /** Every note, trashed ones included — the Encly hand-off sends them all. */
+    @Query("SELECT * FROM notes ORDER BY id")
+    List<Note> getAllNotesSync();
+
+    @Query("SELECT id FROM notes")
+    List<Integer> getAllNoteIdsSync();
+
+    @Query("DELETE FROM notes")
+    void deleteAllNotes();
+
     @Query("SELECT * FROM notes WHERE id = :id LIMIT 1")
     Note getNoteSync(int id);
 
@@ -106,6 +116,14 @@ public interface NoteDao {
             "SELECT * FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
     List<Note> getNotesWithActiveRemindersSync(long now);
 
+    /** Every note holding a reminder, overdue ones included, outside the trash. */
+    @Query("SELECT * FROM notes WHERE reminderTime IS NOT NULL AND isTrash = 0")
+    List<Note> getNotesWithRemindersSync();
+
+    @Query(
+            "SELECT COUNT(*) FROM notes WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isTrash = 0")
+    int countUpcomingRemindersSync(long now);
+
     @Query(
             "UPDATE notes SET reminderTime = NULL, reminderRepeat = 'NONE', reminderIntervalMinutes = 0 WHERE id = :noteId")
     void clearReminderSync(int noteId);
@@ -119,4 +137,16 @@ public interface NoteDao {
 
     @Query("UPDATE notes SET isPinned = :pinned WHERE id = :noteId")
     void setPinNoteSync(int noteId, boolean pinned);
+
+    /** The highest place in the custom order, or 0 when there are no notes. */
+    @Query("SELECT COALESCE(MAX(customPosition), 0) FROM notes")
+    long getHighestCustomPositionSync();
+
+    /** A note's place in the custom order, or null when the note is gone. */
+    @Query("SELECT customPosition FROM notes WHERE id = :noteId")
+    Long getCustomPositionSync(int noteId);
+
+    /** Moves a note in the custom order; touches nothing else, so it is not an edit. */
+    @Query("UPDATE notes SET customPosition = :position WHERE id = :noteId")
+    void setCustomPositionSync(int noteId, long position);
 }

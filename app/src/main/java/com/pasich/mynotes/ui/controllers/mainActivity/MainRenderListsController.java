@@ -1,184 +1,233 @@
 package com.pasich.mynotes.ui.controllers.mainActivity;
 
+import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import com.google.android.material.appbar.AppBarLayout;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.ActivityMainBinding;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
-/** Controls note list and empty-state rendering with animations. */
+/**
+ * Shows the notes list, the empty state and the tags row.
+ *
+ * <p>Each of the three views is driven toward a target state ({@link ViewFader}), so overlapping
+ * requests — a sync that empties a category and fills it again a moment later, or a tag switch
+ * while the list is still fading — always settle on the latest one instead of leaving the screen
+ * blank. A full content swap (another category, another sort order, a reordered grid) fades the
+ * list out, replaces its content while nothing is visible, and fades it back in after the new
+ * layout is ready, so cards never slide across each other.
+ */
 public class MainRenderListsController {
 
-    private final ActivityMainBinding binding;
+    private static final long LIST_SHOW_MS = 220;
+    private static final long LIST_HIDE_MS = 160;
+    private static final long LIST_DIM_MS = 110;
+    private static final long EMPTY_SHOW_MS = 200;
+    private static final long EMPTY_HIDE_MS = 150;
+    private static final long TAGS_SHOW_MS = 240;
+    private static final long TAGS_HIDE_MS = 180;
+
+    private final RecyclerView listNotes;
+    private final TextView emptyText;
+    private final View emptyImage;
     private final Resources res;
+    private final BooleanSupplier animationsEnabled;
+
+    private final ViewFader listFader;
+    private final ViewFader emptyFader;
+    private final ViewFader tagsFader;
+
+    /** True from the start of a swap until the swapped-in content has been laid out. */
+    private boolean swapping;
+
+    @Nullable private ViewTreeObserver.OnPreDrawListener pendingReveal;
+    @Nullable private ViewTreeObserver.OnPreDrawListener pendingJump;
+
+    /** The search bar and tags above the list; scrolled away with it, shown again at the top. */
+    @Nullable private AppBarLayout appBar;
 
     public MainRenderListsController(ActivityMainBinding binding) {
-        this.binding = binding;
-        this.res = binding.getRoot().getResources();
+        this(
+                binding.listNotes,
+                binding.includeEmpty.emptyViewNote,
+                binding.includeEmpty.emptyNotesText,
+                binding.includeEmpty.imageEmpty,
+                binding.listTags,
+                ValueAnimator::areAnimatorsEnabled);
+        this.appBar = binding.appBarMainActivity;
     }
 
-    /** Briefly fades and rescales the list to signal a dataset change. */
-    public void animateNoteListChange() {
-        binding.listNotes
-                .animate()
-                .alpha(0f)
-                .scaleY(0.97f)
-                .setDuration(120)
-                .withEndAction(
-                        () -> {
-                            binding.listNotes.scheduleLayoutAnimation();
-                            binding.listNotes
-                                    .animate()
-                                    .alpha(1f)
-                                    .scaleY(1f)
-                                    .setInterpolator(new OvershootInterpolator(0.6f))
-                                    .setDuration(220)
-                                    .start();
-                        })
-                .start();
+    @VisibleForTesting
+    public MainRenderListsController(
+            RecyclerView listNotes,
+            View emptyView,
+            TextView emptyText,
+            View emptyImage,
+            View listTags,
+            BooleanSupplier animationsEnabled) {
+        this.listNotes = listNotes;
+        this.emptyText = emptyText;
+        this.emptyImage = emptyImage;
+        this.res = listNotes.getResources();
+        this.animationsEnabled = animationsEnabled;
+        this.listFader = new ViewFader(listNotes, View.INVISIBLE, 0.97f, animationsEnabled);
+        this.emptyFader = new ViewFader(emptyView, View.GONE, 1f, animationsEnabled);
+        listTags.setPivotY(0f);
+        this.tagsFader = new ViewFader(listTags, View.GONE, 0.85f, animationsEnabled);
+    }
+
+    /** Whether the system "remove animations" setting currently allows animation. */
+    public boolean animationsEnabled() {
+        return animationsEnabled.getAsBoolean();
     }
 
     /**
-     * Handles switching between the notes list and the empty state view, including fade/scale
-     * animations and optional smooth scrolling.
+     * True while the list content is being replaced behind a fade. Item animations must not run in
+     * that window: the new layout is meant to appear in one piece.
      */
-    public void showStateNoteList(@Nullable Tag selectedTag, int mNotesCount) {
-        if (mNotesCount == 0) {
-            animateHideList(binding.listNotes);
-            animateShowEmpty(binding.includeEmpty.emptyViewNote);
-            updateEmptyText(new EmptyStateBuilder().build(selectedTag, mNotesCount));
+    public boolean isSwapping() {
+        return swapping;
+    }
+
+    /**
+     * Shows the list when there are notes, the empty state otherwise. Safe to call any number of
+     * times, in any order: the last call wins.
+     *
+     * @param animate false to apply the result at once (for example while the screen is not
+     *     visible)
+     */
+    public void showStateNoteList(@Nullable Tag selectedTag, int notesCount, boolean animate) {
+        if (notesCount == 0) {
+            cancelReveal();
+            swapping = false;
+            listFader.hide(animate, LIST_HIDE_MS, new AccelerateInterpolator(1.4f));
+            updateEmptyText(new EmptyStateBuilder().build(selectedTag, notesCount));
+            emptyFader.show(animate, EMPTY_SHOW_MS, new DecelerateInterpolator());
             return;
         }
 
-        animateHideEmpty(binding.includeEmpty.emptyViewNote);
-        animateShowList(binding.listNotes);
-    }
-
-    /** Smoothly scrolls the notes list to the top. */
-    public void scrollUpNoteList() {
-        binding.listNotes.post(() -> binding.listNotes.smoothScrollToPosition(0));
-    }
-
-    /** Instantly jumps the staggered-grid list to position zero. */
-    public void scrollToTopInstant() {
-        binding.listNotes.post(
-                () -> {
-                    StaggeredGridLayoutManager lm =
-                            (StaggeredGridLayoutManager) binding.listNotes.getLayoutManager();
-                    if (lm != null) lm.scrollToPositionWithOffset(0, 0);
-                });
-    }
-
-    /** Smoothly shows the notes list using fade + scale animation. */
-    private void animateShowList(View list) {
-        if (list.getVisibility() == View.VISIBLE) return;
-
-        list.setVisibility(View.VISIBLE);
-        list.setAlpha(0f);
-        list.setScaleY(0.95f);
-
-        list.animate()
-                .alpha(1f)
-                .scaleY(1f)
-                .setDuration(250)
-                .setInterpolator(new DecelerateInterpolator(1.6f))
-                .start();
-    }
-
-    /** Smoothly hides the notes list with fade + scale collapse animation. */
-    private void animateHideList(View list) {
-        if (list.getVisibility() != View.VISIBLE) return;
-
-        list.animate()
-                .alpha(0f)
-                .scaleY(0.95f)
-                .setDuration(180)
-                .setInterpolator(new AccelerateInterpolator(1.4f))
-                .withEndAction(() -> list.setVisibility(View.INVISIBLE))
-                .start();
-    }
-
-    /** Shows the empty state view using a simple fade-in animation. */
-    private void animateShowEmpty(View empty) {
-        if (empty.getVisibility() == View.VISIBLE) return;
-
-        empty.setVisibility(View.VISIBLE);
-        empty.setAlpha(0f);
-
-        empty.animate().alpha(1f).setDuration(200).start();
-    }
-
-    /** Hides the empty state view using fade-out animation. */
-    private void animateHideEmpty(View empty) {
-        if (empty.getVisibility() != View.VISIBLE) return;
-
-        empty.animate()
-                .alpha(0f)
-                .setDuration(180)
-                .withEndAction(() -> empty.setVisibility(View.GONE))
-                .start();
-    }
-
-    /**
-     * Updates the empty state text based on the selected tag and note count. Also applies
-     * density-specific adjustments for low DPI devices.
-     */
-    private void updateEmptyText(String emptyText) {
-        binding.includeEmpty.emptyNotesText.setText(emptyText);
-
-        // Low-density devices optimization
-        if (binding.getRoot().getResources().getDisplayMetrics().density < 2.2) {
-            binding.includeEmpty.imageEmpty.setVisibility(View.GONE);
+        emptyFader.hide(animate, EMPTY_HIDE_MS, new AccelerateInterpolator());
+        if (swapping && animate) {
+            revealAfterLayout();
+        } else {
+            cancelReveal();
+            swapping = false;
+            listFader.show(animate, LIST_SHOW_MS, new DecelerateInterpolator(1.6f));
         }
     }
 
-    /** Expands a horizontal list (tags list) using soft scale + fade animation. */
-    private void expandHorizontal(View view) {
-        if (view.getVisibility() == View.VISIBLE) return;
-
-        view.setVisibility(View.VISIBLE);
-        view.setPivotY(0);
-        view.setScaleY(0.85f);
-        view.setAlpha(0f);
-
-        view.animate()
-                .scaleY(1f)
-                .alpha(1f)
-                .setDuration(260)
-                .setInterpolator(new OvershootInterpolator(0.8f))
-                .start();
-    }
-
-    /** Collapses a horizontal list with fade + slight scale-down animation. */
-    private void collapseHorizontal(View view) {
-        if (view.getVisibility() == View.GONE) return;
-
-        view.animate()
-                .scaleY(0.85f)
-                .alpha(0f)
-                .setDuration(200)
-                .setInterpolator(new DecelerateInterpolator(1.6f))
-                .withEndAction(
-                        () -> {
-                            view.setVisibility(View.GONE);
-                            view.setScaleY(1f);
-                            view.setAlpha(1f);
-                        })
-                .start();
+    /**
+     * Replaces the whole list content behind a short fade: {@code submit} runs once the list is no
+     * longer visible, and must end by calling {@link #showStateNoteList} from its commit callback.
+     * Runs {@code submit} immediately when there is nothing on screen to fade.
+     */
+    public void swapListContent(boolean animate, @NonNull Runnable submit) {
+        if (!animate || !animationsEnabled() || !listFader.isTargetShown()) {
+            submit.run();
+            return;
+        }
+        swapping = true;
+        cancelReveal();
+        RecyclerView.ItemAnimator itemAnimator = listNotes.getItemAnimator();
+        if (itemAnimator != null) itemAnimator.endAnimations();
+        listFader.dim(true, LIST_DIM_MS, new AccelerateInterpolator(), submit);
     }
 
     /**
-     * Handles rendering of the tags list with animations depending on whether user-defined tags
-     * exist.
+     * Readies the list for content just swapped in behind the fade: rebuilds the grid columns from
+     * scratch so the grid comes back without gaps and, when {@code toTop}, puts the first note at
+     * the top.
+     *
+     * <p>Does nothing for an empty list. Resetting the spans of a {@link
+     * StaggeredGridLayoutManager} and asking it to scroll while it has no items leaves it anchored
+     * wrong, and the next non-empty content was laid out below the screen: switching from an empty
+     * tag back to all notes showed a blank list until the app was restarted.
      */
-    public void renderListTags(List<Tag> tags) {
+    public void prepareSwappedList(int notesCount, boolean toTop) {
+        if (notesCount == 0) return;
+        if (listNotes.getLayoutManager() instanceof StaggeredGridLayoutManager grid) {
+            grid.invalidateSpanAssignments();
+        }
+        if (toTop) jumpToTop();
+    }
+
+    /** Whether the first note is at the top of the list, or is about to be put there. */
+    public boolean isAtTop() {
+        return pendingJump != null || !listNotes.canScrollVertically(-1);
+    }
+
+    /**
+     * Puts the first note at the top, fully visible and without animation, together with the search
+     * bar and tags above it.
+     *
+     * <p>When the list still has adapter changes that were not laid out (the usual case: this is
+     * called from the commit callback of a new list) the scroll waits until they are. A {@link
+     * StaggeredGridLayoutManager} resolves a pending scroll against the children of the previous
+     * layout: if that layout's first child was the removed top note its position is -1 and nothing
+     * was laid out at all (an empty "All notes" after moving the top note to the trash); if the new
+     * top note was moved up from a visible card it measured the offset from where that card used to
+     * be, and the list stayed scrolled down. Once the changes are laid out the scroll is exact. The
+     * frame in between is not drawn, so the list never shows the intermediate position.
+     */
+    public void jumpToTop() {
+        if (appBar != null) appBar.setExpanded(true, false);
+        if (!listNotes.hasPendingAdapterUpdates()) {
+            cancelPendingJump();
+            scrollToTopNow();
+            return;
+        }
+        if (pendingJump != null) return;
+        ViewTreeObserver.OnPreDrawListener listener =
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        // Not laid out yet (the window was not traversed): keep waiting.
+                        if (listNotes.hasPendingAdapterUpdates()) return true;
+                        removePendingJump(this);
+                        scrollToTopNow();
+                        // Skip this frame; the next one is laid out at the top.
+                        return false;
+                    }
+                };
+        pendingJump = listener;
+        listNotes.getViewTreeObserver().addOnPreDrawListener(listener);
+    }
+
+    private void scrollToTopNow() {
+        RecyclerView.LayoutManager lm = listNotes.getLayoutManager();
+        if (lm instanceof StaggeredGridLayoutManager grid) {
+            grid.scrollToPositionWithOffset(0, 0);
+        } else if (lm != null) {
+            lm.scrollToPosition(0);
+        }
+    }
+
+    private void cancelPendingJump() {
+        if (pendingJump != null) removePendingJump(pendingJump);
+    }
+
+    private void removePendingJump(ViewTreeObserver.OnPreDrawListener listener) {
+        ViewTreeObserver observer = listNotes.getViewTreeObserver();
+        if (observer.isAlive()) observer.removeOnPreDrawListener(listener);
+        if (pendingJump == listener) pendingJump = null;
+    }
+
+    /** Shows the tags row only when the user has tags of their own. */
+    public void renderListTags(List<Tag> tags, boolean animate) {
         boolean hasUserTags = false;
         for (Tag tag : tags) {
             if (!SystemTagsManager.isSystemTag(tag)) {
@@ -188,9 +237,63 @@ public class MainRenderListsController {
         }
 
         if (hasUserTags) {
-            expandHorizontal(binding.listTags);
+            tagsFader.show(animate, TAGS_SHOW_MS, new FastOutSlowInInterpolator());
         } else {
-            collapseHorizontal(binding.listTags);
+            tagsFader.hide(animate, TAGS_HIDE_MS, new DecelerateInterpolator(1.6f));
+        }
+    }
+
+    /** Cancels running animations and pending callbacks; call when the screen goes away. */
+    public void release() {
+        cancelReveal();
+        cancelPendingJump();
+        listFader.cancel();
+        emptyFader.cancel();
+        tagsFader.cancel();
+    }
+
+    /**
+     * Fades the swapped-in list back in right before its first frame is drawn, so the new layout is
+     * complete (and item animations were skipped) by the time it becomes visible.
+     */
+    private void revealAfterLayout() {
+        if (pendingReveal != null) return;
+        ViewTreeObserver.OnPreDrawListener listener =
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        removeReveal(this);
+                        swapping = false;
+                        if (animationsEnabled()) listNotes.scheduleLayoutAnimation();
+                        listFader.show(true, LIST_SHOW_MS, new DecelerateInterpolator(1.6f));
+                        return true;
+                    }
+                };
+        pendingReveal = listener;
+        listNotes.getViewTreeObserver().addOnPreDrawListener(listener);
+        listNotes.invalidate();
+    }
+
+    private void cancelReveal() {
+        if (pendingReveal != null) removeReveal(pendingReveal);
+    }
+
+    private void removeReveal(ViewTreeObserver.OnPreDrawListener listener) {
+        ViewTreeObserver observer = listNotes.getViewTreeObserver();
+        if (observer.isAlive()) observer.removeOnPreDrawListener(listener);
+        if (pendingReveal == listener) pendingReveal = null;
+    }
+
+    /**
+     * Updates the empty state text based on the selected tag and note count. Also applies
+     * density-specific adjustments for low DPI devices.
+     */
+    private void updateEmptyText(String text) {
+        emptyText.setText(text);
+
+        // Low-density devices optimization
+        if (res.getDisplayMetrics().density < 2.2) {
+            emptyImage.setVisibility(View.GONE);
         }
     }
 
@@ -199,7 +302,7 @@ public class MainRenderListsController {
         String build(@Nullable Tag selectedTag, int notesCount) {
             if (notesCount > 0) return "";
 
-            if (selectedTag == null || "allNotes".equals(selectedTag.getNameTag())) {
+            if (selectedTag == null || SystemTagsManager.isAllNotesTag(selectedTag)) {
                 return res.getString(R.string.emptyNotes);
             }
 

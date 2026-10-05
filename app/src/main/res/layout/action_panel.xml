@@ -39,7 +39,7 @@
                 android:id="@+id/action_tag_change"
                 style="@style/Widget.IconButton"
                 app:icon="@drawable/ic_tag"
-                android:contentDescription="@string/tag_options" />
+                android:contentDescription="@string/selection_change_tag" />
 
             <!-- Share -->
             <com.google.android.material.button.MaterialButton

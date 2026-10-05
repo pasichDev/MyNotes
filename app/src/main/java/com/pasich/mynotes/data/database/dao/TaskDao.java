@@ -33,6 +33,15 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY position ASC, createdAt ASC LIMIT 10")
     List<Task> getActiveTasksSync();
 
+    @Query("SELECT * FROM tasks ORDER BY position ASC, createdAt ASC")
+    List<Task> getAllTasksSync();
+
+    @Query("SELECT id FROM tasks")
+    List<Integer> getAllTaskIdsSync();
+
+    @Query("DELETE FROM tasks")
+    void deleteAllTasks();
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertTask(Task task);
 

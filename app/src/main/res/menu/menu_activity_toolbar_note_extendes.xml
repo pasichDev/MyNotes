@@ -1,34 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<!-- Every action is "always", so More never falls into an overflow menu. Undo and Redo live on the
+     bar above the keyboard and in More, not here. -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AlwaysShowAction">
 
     <item
         android:id="@+id/saveStatusBut"
         android:icon="@drawable/ic_save_pending"
         android:title="@string/saveStatus"
         android:visible="false"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/actionRead"
         android:icon="@drawable/ic_read"
-        android:title="Action Read"
+        android:title="@string/read_mode_enter"
         app:iconTint="?attr/colorOnBackground"
-        app:showAsAction="ifRoom"
-        tools:ignore="HardcodedText" />
-
-    <item
-        android:id="@+id/reminderBut"
-        android:icon="@drawable/ic_bell"
-        android:title="@string/reminder_title"
-        app:iconTint="?attr/colorOnBackground"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/moreBut"
         android:icon="@drawable/ic_more"
         android:title="@string/more"
         app:iconTint="?attr/colorOnBackground"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>

@@ -8,6 +8,7 @@ import android.view.View;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
@@ -37,6 +38,9 @@ public class NavigationController {
     private NavHeaderMainBinding headerBinding;
 
     private int swipeClose = 0;
+
+    /** A screen was opened from the drawer: the drawer closes once this one is out of sight. */
+    private boolean closeWhenHidden;
 
     public NavigationController(
             AppCompatActivity activity,
@@ -170,14 +174,8 @@ public class NavigationController {
                                                         new Intent(
                                                                 activity, SupportActivity.class))));
 
-        header.findViewById(R.id.drawerStatsCard)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                activity.startActivity(
-                                                        new Intent(
-                                                                activity, SupportActivity.class))));
+        header.findViewById(R.id.nav_meet_encly)
+                .setOnClickListener(v -> delay(appUpdateController::openMeetEncly));
 
         bindHeaderNewVersion(header);
     }
@@ -211,7 +209,25 @@ public class NavigationController {
     }
 
     private void delay(Runnable r) {
-        new Handler(Looper.getMainLooper()).postDelayed(r, 100);
+        navigateAway(r);
+    }
+
+    /**
+     * Opens another screen from the drawer. The drawer is closed when this screen stops (see {@link
+     * #onHostStopped}), so it is not open any more on the way back, and it is not seen sliding shut
+     * as the other screen opens.
+     */
+    @VisibleForTesting
+    void navigateAway(Runnable open) {
+        closeWhenHidden = true;
+        new Handler(Looper.getMainLooper()).postDelayed(open, 100);
+    }
+
+    /** Call from the activity's onStop. */
+    public void onHostStopped() {
+        if (!closeWhenHidden) return;
+        closeWhenHidden = false;
+        binding.drawerLayout.closeDrawer(GravityCompat.START, false);
     }
 
     private void handleBackPressed() {
@@ -260,7 +276,7 @@ public class NavigationController {
             header.findViewById(R.id.nav_backups).setOnClickListener(null);
             header.findViewById(R.id.nav_about).setOnClickListener(null);
             header.findViewById(R.id.nav_support).setOnClickListener(null);
-            header.findViewById(R.id.drawerStatsCard).setOnClickListener(null);
+            header.findViewById(R.id.nav_meet_encly).setOnClickListener(null);
 
             View newVersion = header.findViewById(R.id.newVersion);
             if (newVersion != null) {

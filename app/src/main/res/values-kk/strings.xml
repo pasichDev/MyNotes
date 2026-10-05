@@ -14,8 +14,7 @@
     <string name="telegram">Әзірлеуші ​​контактілерін ашыңыз</string>
     <string name="notSupportedShare">Бұл мазмұнға қолдау көрсетілмейді.</string>
     <string name="notFoundPlayMarket">Play Market қолданбасы жоқ</string>
-    <string name="cd_format">Жазбаларды пішімдеу</string>
-    <string name="search">Ескертпелердегі іздеу</string>
+    <string name="search">Жазбалардан іздеу</string>
     <string name="close">Жабу</string>
     <string name="addTag">Тег қосу</string>
     <string name="deleteTag">Текті</string>
@@ -101,7 +100,6 @@
     <string name="restoreDataFall">Қате: сақтық көшірме бүлінген</string>
     <string name="errorDriveSync">Сервер қатесі немесе нашар интернет сапасы</string>
 
-    <string name="sortNotes">Ескертпелерді сұрыптау</string>
 
     <string name="thanks_title">Құрметті пайдаланушы</string>
     <string name="thanks_donate">Жоба әзірлеушісі сатып алғаныңыз үшін алғыс білдіреді. Біз жақсырақ және ыңғайлырақ болуға тырысамыз. \n <b>Құрметпен, менің жазбаларым!</b></string>
@@ -170,9 +168,9 @@
     <string name="help_navigation_search_title">Іздеу</string>
     <string name="help_navigation_search_description">Жазбаларыңызды атауы немесе мазмұны бойынша тез табу үшін іздеу жолағын пайдаланыңыз</string>
     <string name="help_navigation_sort_title">Сұрыптау</string>
-    <string name="help_navigation_sort_description">Жазбаларыңызды соңғы өзгерту күні немесе атауы бойынша өсу немесе кему ретімен сұрыптаңыз</string>
+    <string name="help_navigation_sort_description">Жақында өзгертілген жазбаларды басында немесе соңында көрсету үшін іздеу жолағындағы көрініс параметрлері түймесін басыңыз немесе «Өз ретім» тармағын таңдап, жазбаларды сүйреп өзіңіз орналастырыңыз.</string>
     <string name="help_navigation_format_title">Көрсету форматы</string>
-    <string name="help_navigation_format_description">Жазбаларыңызды өзіңізге ыңғайлы орналасуда көрсету үшін тізім мен тор арасында ауысыңыз</string>
+    <string name="help_navigation_format_description">Сол көрініс параметрлерінде тізім мен тор арасында ауысыңыз.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Сырғыту жестері</string>
@@ -223,6 +221,8 @@
     <string name="tags_management">Тегтер</string>
     <string name="create_tag">Тег жасау үшін осы батырманы басыңыз.</string>
     <string name="tag_options">Тег параметрлері</string>
+    <string name="selection_change_tag">Тегті өзгерту</string>
+    <string name="edit_note_action">Жазбаны өңдеу</string>
     <string name="createTag">Тег жасау</string>
     <string name="toastTagVisible">Осы тегпен белгіленген жазбалар жалпы тізімде көрсетіледі.</string>
     <string name="toastTagHidde">Осы тегпен белгіленген жазбалар жалпы тізімде жасырылған.</string>
@@ -367,6 +367,7 @@
     <string name="reminder_menu_item">Еске салу</string>
     <string name="reminder_chip_tomorrow">Ертең %1$s</string>
     <string name="reminder_past_time_error">Болашақ уақытты таңдаңыз</string>
+    <string name="reminder_time_passed">Таңдалған уақыт, %1$s, өтіп кетті. Кейінірек уақытты таңдаңыз.</string>
     <string name="tile_label">Жаңа жазба</string>
     <string name="search_filter_all">Барлығы</string>
     <string name="search_hint_keep_typing">Теруді жалғастырыңыз…</string>
@@ -446,9 +447,9 @@
     <string name="help_tasks_reminder_description">Қоңырау белгішесін басып, кез келген тапсырмаға еске салғыш қойыңыз. Белгіленген уақытта хабарландыру келеді. Тапсырманы бірден ашу үшін хабарландыруды басыңыз.</string>
     <string name="help_reminders_title">Еске салғыштар</string>
     <string name="help_reminders_notes_title">Жазба еске салғыштары</string>
-    <string name="help_reminders_notes_description">Кез келген жазбаны ашып, еске салғыш қою үшін қоңырау белгішесін басыңыз. Уақытты жылдам нұсқалар арқылы немесе күн мен уақытты таңдау терезесінен көрсетіңіз. Белгіленген уақытта хабарландыру шығады.</string>
+    <string name="help_reminders_notes_description">Жазбаны ашып, «Қосымша» түймесін басып, «Еске салу» тармағын таңдаңыз. Уақытты жылдам нұсқалар арқылы немесе күн мен уақытты таңдау терезесінен көрсетіңіз. Еске салу жазбаның жоғарғы жағында көрсетіледі, өзгерту үшін оны басыңыз. Белгіленген уақытта хабарландыру шығады.</string>
     <string name="help_reminders_repeat_title">Қайталау параметрлері</string>
-    <string name="help_reminders_repeat_description">Жазбаға еске салғыш қойғанда қайталау циклін таңдау үшін «Қайталау» қосқышын қосыңыз: күн сайын, апта сайын немесе ай сайын. Әр хабарландырудан кейін еске салғыш автоматты түрде қайта жоспарланады.</string>
+    <string name="help_reminders_repeat_description">Жазбаға еске салғыш қойғанда оның қалай қайталанатынын таңдаңыз: күн сайын, апта сайын, ай сайын немесе «Басқаша…» — бірнеше сағат, күн, апта, ай не жыл сайын. Әр қайталау таңдалған уақыттан бастап саналады, сондықтан айдың 31-іне қойылған еске салғыш қысқа айларда соңғы күні, кейін қайтадан 31-інде келеді. Қайталанатын еске салғыштар телефон қайта іске қосылғаннан кейін де сақталады.</string>
     <string name="help_reminders_interval_title">Аралық хабарландырулар</string>
     <string name="help_reminders_interval_description">Қайталанатын еске салғыштар үшін әр 5, 10, 15, 30 немесе 60 минут сайын қайта хабарлауды қосуға болады. Хабарландыру келесі жоспарланған уақытқа дейін таңдалған аралықпен қайталанады.</string>
     <string name="help_reminders_sound_title">Хабарландыру дыбысы мен қаттылығы</string>
@@ -473,4 +474,175 @@
     <string name="help_sync_background_description">Алғашқы синхрондауды растағаннан кейін фондық синхрондауды қоса аласыз. Ол құрылғы интернетке қосылған кезде шамамен әр 6 сағат сайын орындалады және оны кез келген уақытта өшіруге болады.</string>
     <string name="help_sync_conflicts_title">Қайшылықтарды шешу</string>
     <string name="help_sync_conflicts_description">Жергілікті және Drive нұсқалары әртүрлі болса, әр қайшылық үшін жергілікті нұсқаны не Google Drive нұсқасын сақтауды таңдаңыз.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Encly-мен танысыңыз</string>
+    <string name="meet_encly_drawer_subtitle">«Менің жазбаларым» қолданбасының мұрагері</string>
+    <string name="meet_encly_eyebrow">«Менің жазбаларым» авторынан</string>
+    <string name="meet_encly_promise">Жазбаларыңыз шифрланған және тек телефоныңызда. Аккаунтсыз, интернетсіз.</string>
+    <string name="meet_encly_benefit_encrypted">Әрдайым шифрланған</string>
+    <string name="meet_encly_benefit_encrypted_text">Әр жазба шифрланған дерекқорда сақталады, сақтық көшірмелер де шифрланады.</string>
+    <string name="meet_encly_benefit_offline">Офлайн, аккаунтсыз</string>
+    <string name="meet_encly_benefit_offline_text">Encly-де интернетке рұқсат жоқ, сондықтан жазбалар телефоннан ешқашан шықпайды.</string>
+    <string name="meet_encly_benefit_lock">PIN-код пен саусақ ізімен құлыптау</string>
+    <string name="meet_encly_benefit_lock_text">Жазбаларды тек сіздің PIN-кодыңыз не саусақ ізіңіз ашады.</string>
+    <string name="meet_encly_benefit_open">Тегін әрі ашық кодты</string>
+    <string name="meet_encly_benefit_open_text">Кодты кез келген адам тексере алады. Google Play, F-Droid және GitHub-та бар.</string>
+    <string name="meet_encly_one_way">Көшіру жазбаларды Encly-ге көшіреді. «Менің жазбаларым» қолданбасынан ештеңе жойылмайды, ал Encly ештеңені кері жібермейді.</string>
+    <string name="meet_encly_moves_title">Encly-ге көшеді</string>
+    <string name="meet_encly_moves_notes">Жазбалар, себетті қоса</string>
+    <string name="meet_encly_moves_tasks">Тапсырмалар</string>
+    <string name="meet_encly_moves_tags">Тегтер</string>
+    <string name="meet_encly_moves_categories">Тапсырмалар тізімдері</string>
+    <string name="meet_encly_moves_categories_note">Encly-де тегтерге айналады</string>
+    <string name="meet_encly_stays_title">«Менің жазбаларым» ішінде қалады</string>
+    <string name="meet_encly_stays_attachments">Тіркемелер мен суреттер</string>
+    <string name="meet_encly_stays_attachments_note">Encly файлдарды сақтамайды</string>
+    <string name="meet_encly_stays_reminders">Еске салулар</string>
+    <string name="meet_encly_stays_reminders_note">Encly-де еске салулар жоқ</string>
+    <string name="meet_encly_stays_pinned">Жазбаларды бекіту</string>
+    <string name="meet_encly_stays_pinned_note">Жазбалардың өзі көшеді, бірақ бекітілмеген күйде</string>
+    <string name="meet_encly_stays_none">Ештеңе — бәрі Encly-ге көшеді.</string>
+    <string name="meet_encly_get">Encly алу</string>
+    <string name="meet_encly_update">Encly жаңарту</string>
+    <string name="meet_encly_move">Жазбаларымды Encly-ге көшіру</string>
+    <string name="meet_encly_moving">Жазбалар дайындалуда…</string>
+    <string name="meet_encly_hint_ready">Encly ашылып, бәрін бірден қабылдайды. Бұл бір сәтке ғана созылады.</string>
+    <string name="meet_encly_hint_get">Google Play, F-Droid және GitHub-та тегін. Орнатқаннан кейін осында оралыңыз.</string>
+    <string name="meet_encly_needs_update">Encly-дің бұл нұсқасы әлі жазбаларды қабылдай алмайды. Оны жаңартып, осында оралыңыз.</string>
+    <string name="meet_encly_untrusted">Encly деп аталатын орнатылған қолданба ресми нұсқа емес, сондықтан жазбалар оған жіберілмейді. Encly-ді Google Play, F-Droid немесе GitHub арқылы орнатыңыз.</string>
+    <string name="meet_encly_result_ok">Жазбаларыңыз енді Encly-де</string>
+    <string name="meet_encly_result_notes">Жазбалар</string>
+    <string name="meet_encly_result_skipped">Өткізіліп жіберілді</string>
+    <string name="meet_encly_result_attachments">«Менің жазбаларым» қолданбасында қалған тіркемелер мен суреттер: %1$d.</string>
+    <string name="meet_encly_result_failed_title">Көшіру аяқталмады</string>
+    <string name="meet_encly_result_cancelled">Көшіру тоқтатылды. Ештеңе өзгерген жоқ.</string>
+    <string name="meet_encly_result_untrusted">Encly жазбаларды тек ресми «Менің жазбаларым» қолданбасынан қабылдайды. «Менің жазбаларым» қолданбасын Google Play, F-Droid немесе GitHub арқылы орнатып, қайталап көріңіз.</string>
+    <string name="meet_encly_result_unsupported">Бұл Encly нұсқасы «Менің жазбаларым» қолданбасының осы нұсқасының деректерін оқи алмайды. Encly-ді жаңартып, қайталап көріңіз.</string>
+    <string name="meet_encly_result_invalid">Encly деректерді оқи алмады. Ештеңе импортталған жоқ.</string>
+    <string name="meet_encly_result_too_large">Бір реттік көшіру үшін деректер тым көп. Ештеңе импортталған жоқ.</string>
+    <string name="meet_encly_result_failed">Encly импортты аяқтай алмады. «Менің жазбаларым» қолданбасынан ештеңе жойылған жоқ.</string>
+    <string name="meet_encly_error_prepare">Жазбаларды Encly үшін дайындау мүмкін болмады.</string>
+    <string name="meet_encly_clear_hint">«Менің жазбаларым» әлі де өз көшірмесін сақтайды. Ол қажет болмаса, оны тазалауға болады — алдымен растауды сұраймыз.</string>
+    <string name="meet_encly_clear">«Менің жазбаларым» тазалау</string>
+    <string name="meet_encly_clear_confirm_title">«Менің жазбаларым» тазаланбақ па?</string>
+    <string name="meet_encly_clear_confirm_message">Бұл «Менің жазбаларым» қолданбасынан барлық жазбаларды (себетті қоса), тапсырмаларды, тегтерді, тапсырмалар тізімдерін және тіркеме файлдарын біржола жояды. Google Drive синхрондауы қосулы болса, олар синхрондалған көшірмеден де жойылады. Тіркемелер Encly-ге көшірілген жоқ. Бұл әрекетті болдырмау мүмкін емес.</string>
+    <string name="meet_encly_clear_confirm">Барлығын жою</string>
+    <string name="meet_encly_cleared">«Менің жазбаларым» тазаланды.</string>
+    <string name="meet_encly_clear_failed">«Менің жазбаларым» тазалау мүмкін болмады.</string>
+    <string name="meet_encly_dialog_text">«Менің жазбаларым» қолданбасының мұрагері бар — Encly: бәрін шифрланған күйде әрі офлайн сақтайтын жазбалар қолданбасы. Барлық жазбаны бір түртумен көшіріңіз.</string>
+    <string name="meet_encly_dialog_more">Қалай көшіру керек</string>
+    <string name="meet_encly_dialog_later">Кейінірек</string>
+    <string name="search_short">Іздеу</string>
+    <string name="view_options">Көрініс параметрлері</string>
+    <string name="view_options_cd_list">Көрініс параметрлері. Жазбалар тізім түрінде көрсетілген</string>
+    <string name="view_options_cd_grid">Көрініс параметрлері. Жазбалар тор түрінде көрсетілген</string>
+    <string name="view_options_sort">Реті</string>
+    <string name="view_options_sort_newest">Алдымен жақында өзгертілгендер</string>
+    <string name="view_options_sort_oldest">Жақында өзгертілгендер соңында</string>
+    <string name="view_options_layout">Орналасу</string>
+    <string name="view_options_layout_list">Тізім</string>
+    <string name="view_options_layout_grid">Тор</string>
+    <string name="read_mode_enter">Оқу режимі</string>
+    <string name="read_mode_exit">Өңдеуге оралу</string>
+    <string name="reminder_chip_cd">Еске салу: %1$s. Еске салуды өзгерту</string>
+    <string name="note_opening_mode">Жазбаларды ашу режимі</string>
+    <string name="note_opening_mode_description">Жаңа жазбалар әрқашан теруге дайын күйде ашылады.</string>
+    <string name="note_opening_mode_auto">Автоматты</string>
+    <string name="note_opening_mode_auto_summary">Қарапайым редакторда оқу режимі, кеңейтілген редакторда өңдеу режимі</string>
+    <string name="note_opening_mode_read">Оқу режимі</string>
+    <string name="note_opening_mode_read_summary">Ештеңе кездейсоқ өзгермейді. Теруді бастау үшін «Өңдеу» түймесін түртіңіз</string>
+    <string name="note_opening_mode_edit">Өңдеу режимі</string>
+    <string name="note_opening_mode_edit_summary">Курсор орнында, пернетақта ашылады</string>
+    <string name="note_opening_position">Жазбаларды ашу орны</string>
+    <string name="note_opening_position_last">Тоқтаған жерден</string>
+    <string name="note_opening_position_last_summary">Сіз оқыған жолдан, курсор өңдеуді тоқтатқан жерде</string>
+    <string name="note_opening_position_start">Басынан</string>
+    <string name="note_opening_position_start_summary">Әрқашан бірінші жолдан бастау</string>
+    <string name="note_opening_double_tap">Өңдеу үшін екі рет түрту</string>
+    <string name="note_opening_double_tap_description">Оқу режимінде мәтінді екі рет түртіп, дәл сол жерден өңдеуді бастаңыз.</string>
+    <string name="choice_selected">Таңдалған</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Басқаша…</string>
+    <string name="reminder_repeat_custom_title">Қайталауды баптау</string>
+    <string name="reminder_repeat_custom_hint">Қайталау аралығы</string>
+    <string name="reminder_repeat_custom_error">1-ден 999-ға дейінгі санды енгізіңіз</string>
+    <string name="reminder_repeat_custom_apply">Дайын</string>
+    <string name="reminder_repeat_custom_cd">Қайталауды баптау: %1$s. Өзгерту</string>
+    <string name="reminder_repeat_hourly">Сағат сайын</string>
+    <string name="reminder_repeat_yearly">Жыл сайын</string>
+    <string name="reminder_exact_alarm_needed">Еске салғыштар кешігуі мүмкін. Уақытында келуі үшін «Оятқыштар мен еске салғыштар» рұқсатын беріңіз.</string>
+    <string name="reminder_exact_alarm_allow">Рұқсат беру</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">%d сағат сайын</item>
+        <item quantity="other">%d сағат сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">%d күн сайын</item>
+        <item quantity="other">%d күн сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">%d апта сайын</item>
+        <item quantity="other">%d апта сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">%d ай сайын</item>
+        <item quantity="other">%d ай сайын</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">%d жыл сайын</item>
+        <item quantity="other">%d жыл сайын</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d сағат</item>
+        <item quantity="other">%d сағат</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d күн</item>
+        <item quantity="other">%d күн</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d апта</item>
+        <item quantity="other">%d апта</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d ай</item>
+        <item quantity="other">%d ай</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d жыл</item>
+        <item quantity="other">%d жыл</item>
+    </plurals>
+    <string name="version_history">Нұсқалар тарихы</string>
+    <string name="version_history_info">Осы жазбаның бұрынғы нұсқалары тек осы құрылғыда сақталады, ең көбі %1$d. Олар синхрондалмайды және сақтық көшірмелерге кірмейді.</string>
+    <string name="version_history_empty_title">Әзірге бұрынғы нұсқалар жоқ</string>
+    <string name="version_history_empty_text">Жазба өзгергенде, оның бұрынғы мәтіні қайтару үшін осында сақталады.</string>
+    <string name="version_reason_autosave">Автосақтау</string>
+    <string name="version_reason_pre_sync">Синхрондау алдында</string>
+    <string name="version_reason_pre_restore">Қалпына келтіру алдында</string>
+    <string name="version_reason_pre_conflict">Қайшылық алдында</string>
+    <string name="version_time_just_now">Жаңа ғана, %1$s</string>
+    <string name="version_preview_this">Осы нұсқа</string>
+    <string name="version_preview_current">Ағымдағы жазба</string>
+    <string name="version_preview_same">Бұл нұсқаның мәтіні ағымдағы жазбамен бірдей.</string>
+    <string name="version_restore">Қалпына келтіру</string>
+    <string name="version_restore_title">Осы нұсқаны қалпына келтіру керек пе?</string>
+    <string name="version_restore_message">Жазбаның ағымдағы мәтіні ауыстырылады. Ол нұсқалар тарихында қалады, сондықтан оған қайта орала аласыз.</string>
+    <string name="version_restore_attachments">Жазбада енді жоқ тіркемелер осы нұсқамен бірге қайтып келмейді.</string>
+    <string name="version_restored">Нұсқа қалпына келтірілді</string>
+    <string name="version_restore_failed">Бұл нұсқаны қалпына келтіру мүмкін болмады</string>
+    <string name="version_untitled">Бос жазба</string>
+    <string name="view_options_sort_custom">Өз ретім</string>
+    <string name="view_options_sort_custom_hint">Жазбаны басып тұрып, оны жаңа орынға сүйреңіз. Бекітілген жазбалар басқалардан жоғары тұрады.</string>
+    <string name="note_move_up">Жоғары жылжыту</string>
+    <string name="note_move_down">Төмен жылжыту</string>
+    <string name="note_move_at_top">Қазірдің өзінде ең жоғарыда</string>
+    <string name="note_move_at_bottom">Қазірдің өзінде ең төменде</string>
+    <string name="note_moved_to">%2$d ішінен %1$d орынға жылжытылды</string>
+    <string name="editor_undo">Болдырмау</string>
+    <string name="editor_redo">Қайталау</string>
+    <string name="editor_hide_keyboard">Пернетақтаны жасыру</string>
+    <string name="custom_order_hint">Жазбаларды сүйреп ретін өзгерту үшін «Өз ретім» параметрін қосыңыз</string>
+    <string name="custom_order_hint_action">Қосу</string>
 </resources>

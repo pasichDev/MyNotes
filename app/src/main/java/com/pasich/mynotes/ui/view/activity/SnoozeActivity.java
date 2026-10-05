@@ -6,8 +6,6 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.pasich.mynotes.data.model.Note;
-import com.pasich.mynotes.data.model.ReminderRepeat;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
 import java.util.Calendar;
@@ -17,9 +15,6 @@ import java.util.Calendar;
 public class SnoozeActivity extends AppCompatActivity {
 
     private int noteId;
-    private String noteTitle;
-    private String notePreview;
-    private String noteRepeat;
     private int noteIntervalMinutes;
 
     @Override
@@ -28,9 +23,6 @@ public class SnoozeActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         noteId = intent.getIntExtra(ReminderManager.EXTRA_NOTE_ID, -1);
-        noteTitle = intent.getStringExtra(ReminderManager.EXTRA_NOTE_TITLE);
-        notePreview = intent.getStringExtra(ReminderManager.EXTRA_NOTE_PREVIEW);
-        noteRepeat = intent.getStringExtra(ReminderManager.EXTRA_NOTE_REPEAT);
         noteIntervalMinutes = intent.getIntExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, 0);
 
         if (noteId == -1) {
@@ -85,13 +77,9 @@ public class SnoozeActivity extends AppCompatActivity {
     }
 
     private void scheduleSnooze(long time) {
-        Note tempNote = new Note();
-        tempNote.setId(noteId);
-        tempNote.setTitle(noteTitle != null ? noteTitle : "");
-        tempNote.setValue(notePreview != null ? notePreview : "");
-        tempNote.setReminderTime(time);
-        tempNote.setReminderRepeat(noteRepeat != null ? noteRepeat : ReminderRepeat.NONE.name());
-        tempNote.setReminderIntervalMinutes(noteIntervalMinutes);
-        ReminderManager.scheduleReminder(this, tempNote);
+        // The snooze replaces the "repeat notification" cycle and comes back on its own alarm,
+        // remembered across reboots; the repeat schedule is left as it is.
+        ReminderManager.cancelNag(this, noteId);
+        ReminderManager.scheduleSnooze(this, noteId, time, noteIntervalMinutes);
     }
 }

@@ -21,8 +21,8 @@ apply from: "$projectDir/gradle/libs-task.gradle"
 apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
-def appVersionCode = 55
-def appVersionName = "2.6.${appVersionCode}"
+def appVersionCode = 56
+def appVersionName = "2.7.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
     commandLine 'git', 'rev-parse', '--short', 'HEAD'
@@ -137,6 +137,7 @@ android {
     testOptions {
         unitTests {
             returnDefaultValues = true
+            includeAndroidResources = true
         }
     }
 }
@@ -215,6 +216,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:5.23.0'
     testImplementation 'com.google.truth:truth:1.4.2'
+    testImplementation 'org.robolectric:robolectric:4.16.1'
 
     // Room testing (integration tests)
     testImplementation "androidx.room:room-testing:$roomVersion"

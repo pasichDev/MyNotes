@@ -15,6 +15,7 @@ import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.SerialDisposable;
 import io.reactivex.subjects.PublishSubject;
 import java.util.Date;
@@ -39,6 +40,12 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     private boolean pendingClose = false;
     // Note downloaded from the database
     private Note targetNote;
+    // True while the note's plain text and attachment list still describe an older extended-editor
+    // document than its valueJson. They are derived at save time instead of on every change.
+    private boolean documentDerivedStale = false;
+    // A save started by flushPending(). Kept out of the composite on purpose: the screen is often
+    // being destroyed right after onStop, and disposing the composite must not cancel this write.
+    private Disposable flushSave;
 
     @Inject
     public NotePresenter(
@@ -76,11 +83,13 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     }
 
     public Note getNote() {
+        syncDocumentDerivedFields();
         return targetNote;
     }
 
     public void setNote(Note mNote) {
         this.targetNote = mNote;
+        this.documentDerivedStale = false;
     }
 
     public boolean getNewNotesKey() {
@@ -118,7 +127,9 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
      */
     @Override
     public void onNoteChanged() {
-        if (!hasMeaningfulContent(targetNote)) {
+        // A pending extended-editor document is judged when it is saved, so typing never pays
+        // for parsing the whole document.
+        if (!documentDerivedStale && !hasMeaningfulContent(targetNote)) {
             updateSaveState(SaveState.IDLE);
             return;
         }
@@ -128,38 +139,91 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
 
     private void performAutoSave() {
         if (targetNote != null && !isViewDead()) {
-            saveNote(
-                    targetNote,
-                    new NoteContract.AutoSaveCallback() {
-                        @Override
-                        public void onSuccess() {
-                            updateSaveState(SaveState.SAVED);
-                            if (!isViewDead()) {
-                                getView().runAttachmentsCleanup(targetNote);
-                            }
-                            idleTimer.set(
-                                    io.reactivex.Observable.timer(
-                                                    3,
-                                                    TimeUnit.SECONDS,
-                                                    getSchedulerProvider().computation())
-                                            .observeOn(getSchedulerProvider().ui())
-                                            .subscribe(ignored -> updateSaveState(SaveState.IDLE)));
-                        }
-
-                        @Override
-                        public void onError(Throwable error) {
-                            updateSaveState(SaveState.ERROR);
-                            idleTimer.set(
-                                    io.reactivex.Observable.timer(
-                                                    5,
-                                                    TimeUnit.SECONDS,
-                                                    getSchedulerProvider().computation())
-                                            .observeOn(getSchedulerProvider().ui())
-                                            .subscribe(
-                                                    ignored -> updateSaveState(SaveState.PENDING)));
-                        }
-                    });
+            saveNote(targetNote, autoSaveCallback());
         }
+    }
+
+    /** Status handling shared by the debounced autosave and {@link #flushPending()}. */
+    private NoteContract.AutoSaveCallback autoSaveCallback() {
+        return new NoteContract.AutoSaveCallback() {
+            @Override
+            public void onSuccess() {
+                updateSaveState(SaveState.SAVED);
+                if (!isViewDead()) {
+                    getView().runAttachmentsCleanup(targetNote);
+                }
+                idleTimer.set(
+                        io.reactivex.Observable.timer(
+                                        3, TimeUnit.SECONDS, getSchedulerProvider().computation())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(ignored -> updateSaveState(SaveState.IDLE)));
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                updateSaveState(SaveState.ERROR);
+                idleTimer.set(
+                        io.reactivex.Observable.timer(
+                                        5, TimeUnit.SECONDS, getSchedulerProvider().computation())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(ignored -> updateSaveState(SaveState.PENDING)));
+            }
+        };
+    }
+
+    /**
+     * Writes the note now if it holds anything the debounced autosave has not written yet.
+     *
+     * <p>Called from the editors' onStop. Without it, whatever was typed in the last two seconds
+     * before the screen went away (home, rotation, the file picker, a phone call) lived only in the
+     * pending debounce and was lost with the activity. The write is not tied to the screen's
+     * lifetime, so a destroy right after onStop cannot cancel it.
+     */
+    @Override
+    public void flushPending() {
+        if (targetNote == null) return;
+        syncDocumentDerivedFields();
+        if (!hasMeaningfulContent(targetNote) || !isContentChanged()) return;
+
+        Note note = targetNote;
+        note.setDate(new Date().getTime());
+        NoteContract.AutoSaveCallback callback = autoSaveCallback();
+        updateSaveState(SaveState.SAVING);
+        if (flushSave != null) flushSave.dispose();
+        flushSave =
+                getDataManager()
+                        .updateNote(note)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                () -> {
+                                    savedNote.copyFrom(note);
+                                    callback.onSuccess();
+                                },
+                                error -> {
+                                    Log.e(TAG, "flushPending() failed", error);
+                                    callback.onError(error);
+                                });
+    }
+
+    @Override
+    public boolean hasUnsavedChanges() {
+        if (targetNote == null) return false;
+        syncDocumentDerivedFields();
+        return hasMeaningfulContent(targetNote) && isContentChanged();
+    }
+
+    /**
+     * Brings the note's plain text and attachment list up to date with its extended-editor
+     * document. Parsing the document is linear in its size, so it runs once per save instead of
+     * once per change.
+     */
+    private void syncDocumentDerivedFields() {
+        if (!documentDerivedStale || targetNote == null) return;
+        documentDerivedStale = false;
+        ParsedNote parsed = EditorJsonUtils.extendedNoteToOldNote(targetNote.getValueJson());
+        targetNote.setValue(parsed.plainText);
+        targetNote.setAttachments(parsed.toAttachmentsJson());
     }
 
     /**
@@ -191,6 +255,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
             callback.onError(new Exception("Note is null"));
             return;
         }
+        syncDocumentDerivedFields();
 
         // Check if Activity is still alive
         // Activity is destroyed, but there are changes - perform emergency saving
@@ -201,10 +266,11 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
             return;
         }
 
-        // Check if there is valid content to save
+        // Nothing worth saving. The callback is not told it succeeded: it would clean the
+        // attachment folder against a list that was never written, deleting files the stored
+        // note still references.
         if (!hasMeaningfulContent(note)) {
             updateSaveState(SaveState.IDLE);
-            callback.onSuccess();
             return;
         }
 
@@ -239,6 +305,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
      * synchronously to ensure saving. Only NoteActivity (SimpleEditor)
      */
     private void performEmergencySave(Note note) {
+        syncDocumentDerivedFields();
         try {
             boolean hasChanges =
                     !note.getTitle().equals(savedNote.getTitle()) || isContentChanged();
@@ -286,6 +353,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
      */
     @Override
     public void closeActivity() {
+        syncDocumentDerivedFields();
 
         // Case: new empty note → delete and exit
         if (targetNote != null && newNoteKey && !hasMeaningfulContent(targetNote)) {
@@ -440,11 +508,37 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                                 setNote(note);
                                                 // Update saved values on load
                                                 savedNote.copyFrom(note);
+                                                getView().resetEditHistory();
                                                 updateSaveState(SaveState.IDLE);
                                             }
                                         },
                                         throwable ->
                                                 Log.e(TAG, "loadingData() failed", throwable)));
+    }
+
+    @Override
+    public void reloadNote() {
+        if (targetNote == null) return;
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .getNoteForId(targetNote.getId())
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        note -> {
+                                            if (note == null || note.getId() == 0 || isViewDead())
+                                                return;
+                                            setNote(note);
+                                            savedNote.copyFrom(note);
+                                            if (getExtendedEditor()) {
+                                                getView().reloadExtendedEditor();
+                                            }
+                                            getView().loadingNote(note);
+                                            getView().resetEditHistory();
+                                            updateSaveState(SaveState.IDLE);
+                                        },
+                                        throwable -> Log.e(TAG, "reloadNote() failed", throwable)));
     }
 
     @Override
@@ -483,24 +577,22 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
      *
      * @param title Optional updated title.
      * @param jsonData Optional Editor.js JSON containing blocks.
-     *     <p>If title is provided → update title. If jsonData is provided → parse blocks into: -
-     *     plain text → value - attachments → attachments JSON - raw blocks JSON → valueJson
-     *     <p>Marks the note as rich-content and triggers auto-save.
+     *     <p>If title is provided → update title. If jsonData is provided → it becomes valueJson at
+     *     once; the plain text and attachment list derived from it are brought up to date when the
+     *     note is next saved or read through {@link #getNote()}.
+     *     <p>Triggers auto-save.
      */
     @Override
     public void extendedNoteChange(String title, String jsonData) {
-        if (getNote() == null || title == null && jsonData == null) return;
+        if (targetNote == null || title == null && jsonData == null) return;
 
         if (title != null) {
-            getNote().setTitle(title);
+            targetNote.setTitle(title);
         }
 
         if (jsonData != null) {
-            ParsedNote parsed = EditorJsonUtils.extendedNoteToOldNote(jsonData);
-            String attachmentsJson = parsed.toAttachmentsJson();
-            getNote().setValue(parsed.plainText);
-            getNote().setAttachments(attachmentsJson);
-            getNote().setValueJson(jsonData);
+            targetNote.setValueJson(jsonData);
+            documentDerivedStale = true;
         }
 
         onNoteChanged();
@@ -542,6 +634,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     @Override
     public void copyNoteRequest() {
         if (targetNote == null) return;
+        syncDocumentDerivedFields();
 
         getCompositeDisposable()
                 .add(
@@ -565,7 +658,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                                                                     .ui())
                                                                     .subscribe(
                                                                             note -> {
-                                                                                targetNote = note;
+                                                                                setNote(note);
                                                                                 savedNote.copyFrom(
                                                                                         note);
                                                                                 idKey = newId;
@@ -581,6 +674,8 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                                                                     getView()
                                                                                             .loadingNote(
                                                                                                     note);
+                                                                                    getView()
+                                                                                            .resetEditHistory();
                                                                                     getView()
                                                                                             .onNoteCopied(
                                                                                                     newId);

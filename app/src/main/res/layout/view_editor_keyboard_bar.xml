@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Content of EditorKeyboardBar, the bar docked above the keyboard in both note editors: a
+     hairline, then history actions at the start and Hide keyboard at the end. Further actions (text
+     formatting) go into keyboardBarActions, between the two. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:orientation="vertical"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:dividerColor="?attr/colorOutlineVariant"
+        app:dividerThickness="@dimen/editor_keyboard_bar_divider" />
+
+    <LinearLayout
+        android:id="@+id/keyboardBarRow"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/editor_keyboard_bar_row_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/editor_keyboard_bar_side"
+        android:paddingEnd="@dimen/editor_keyboard_bar_side">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/keyboardBarUndo"
+            style="@style/Widget.EditorKeyboardBar.Button"
+            android:contentDescription="@string/editor_undo"
+            android:enabled="false"
+            android:tooltipText="@string/editor_undo"
+            app:icon="@drawable/ic_undo" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/keyboardBarRedo"
+            style="@style/Widget.EditorKeyboardBar.Button"
+            android:contentDescription="@string/editor_redo"
+            android:enabled="false"
+            android:tooltipText="@string/editor_redo"
+            app:icon="@drawable/ic_redo" />
+
+        <!-- Room for future actions; takes the free width so Hide keyboard stays at the end. -->
+        <LinearLayout
+            android:id="@+id/keyboardBarActions"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/keyboardBarHide"
+            style="@style/Widget.EditorKeyboardBar.Button"
+            android:contentDescription="@string/editor_hide_keyboard"
+            android:tooltipText="@string/editor_hide_keyboard"
+            app:icon="@drawable/ic_keyboard_hide" />
+
+    </LinearLayout>
+
+</merge>

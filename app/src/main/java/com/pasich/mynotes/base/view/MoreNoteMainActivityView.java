@@ -9,4 +9,7 @@ public interface MoreNoteMainActivityView {
     void openCopyNote(long idNote);
 
     void callbackDeleteNote(Note mNote);
+
+    /** Opens the note's local version history. */
+    void openVersionHistory(int noteId);
 }

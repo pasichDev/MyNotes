@@ -14,8 +14,7 @@
     <string name="telegram">Apri contatti sviluppatore</string>
     <string name="notSupportedShare">Questo contenuto non è supportato.</string>
     <string name="notFoundPlayMarket">Manca Play Market</string>
-    <string name="cd_format">Formatta le note</string>
-    <string name="search">Cerca nelle note </string>
+    <string name="search">Cerca nelle note</string>
     <string name="close">Chiudi</string>
     <string name="addTag">Aggiungi etichetta</string>
     <string name="deleteTag">Elimina</string>
@@ -99,7 +98,6 @@
     <string name="restoreDataFall">Errore: backup corrotto</string>
     <string name="errorDriveSync">Errore del server o scarsa qualità di Internet</string>
 
-    <string name="sortNotes">Ordina note</string>
 
     <!-- Offerta prodotto -->
     <string name="thanks_title">Gentile utente</string>
@@ -168,9 +166,9 @@
     <string name="help_navigation_search_title">Ricerca</string>
     <string name="help_navigation_search_description">Usa la barra di ricerca per trovare rapidamente le tue note per titolo o contenuto</string>
     <string name="help_navigation_sort_title">Ordinamento</string>
-    <string name="help_navigation_sort_description">Ordina le tue note per data dell\'ultima modifica o nome in ordine crescente o decrescente</string>
+    <string name="help_navigation_sort_description">Tocca il pulsante delle opzioni di visualizzazione nella barra di ricerca per mostrare per prime o per ultime le note modificate di recente, oppure scegli Ordine personalizzato e disponi le note tu stesso trascinandole.</string>
     <string name="help_navigation_format_title">Formato di visualizzazione</string>
-    <string name="help_navigation_format_description">Passa tra lista e griglia per visualizzare le tue note in un layout comodo per te</string>
+    <string name="help_navigation_format_description">Nelle stesse opzioni di visualizzazione, passa tra elenco e griglia.</string>
     
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Gesti di scorrimento</string>
@@ -221,6 +219,8 @@
     <string name="tags_management">Tag</string>
     <string name="create_tag">Premi questo pulsante per creare un tag.</string>
     <string name="tag_options">Opzioni del tag</string>
+    <string name="selection_change_tag">Cambia tag</string>
+    <string name="edit_note_action">Modifica nota</string>
     <string name="createTag">Crea tag</string>
     <string name="toastTagVisible">Le note con questo tag vengono visualizzate nell’elenco generale.</string>
     <string name="toastTagHidde">Le note con questo tag sono nascoste nell’elenco generale.</string>
@@ -368,6 +368,7 @@
     <string name="reminder_menu_item">Promemoria</string>
     <string name="reminder_chip_tomorrow">Domani %1$s</string>
     <string name="reminder_past_time_error">Seleziona un orario futuro</string>
+    <string name="reminder_time_passed">L’orario scelto, %1$s, è già passato. Scegli un orario successivo.</string>
     <string name="tile_label">Nuova nota</string>
     <string name="search_filter_all">Tutte</string>
     <string name="search_hint_keep_typing">Continua a digitare…</string>
@@ -447,9 +448,9 @@
     <string name="help_tasks_reminder_description">Imposta un promemoria per qualsiasi attività toccando l’icona della campanella. Riceverai una notifica all’ora prevista. Toccala per aprire direttamente l’attività.</string>
     <string name="help_reminders_title">Promemoria</string>
     <string name="help_reminders_notes_title">Promemoria delle note</string>
-    <string name="help_reminders_notes_description">Apri una nota e tocca l’icona della campanella per impostare un promemoria. Scegli l’orario con le opzioni rapide o con il selettore di data e ora. All’ora prevista comparirà una notifica.</string>
+    <string name="help_reminders_notes_description">Apri una nota, tocca «Altro» e scegli «Promemoria». Scegli l’orario con le opzioni rapide o con il selettore di data e ora. Il promemoria compare in cima alla nota; toccalo per modificarlo. All’ora prevista comparirà una notifica.</string>
     <string name="help_reminders_repeat_title">Opzioni di ripetizione</string>
-    <string name="help_reminders_repeat_description">Quando imposti un promemoria per una nota, attiva l’interruttore «Ripeti» per scegliere il ciclo: giornaliero, settimanale o mensile. Il promemoria viene riprogrammato automaticamente dopo ogni notifica.</string>
+    <string name="help_reminders_repeat_description">Quando imposti un promemoria per una nota, scegli come si ripete: giornaliero, settimanale, mensile o «Personalizzato…» per ogni tot ore, giorni, settimane, mesi o anni. Ogni ripetizione si conta dall’ora scelta, quindi un promemoria il 31 suona l’ultimo giorno dei mesi più brevi e poi di nuovo il 31. I promemoria ricorrenti restano attivi anche dopo il riavvio del telefono.</string>
     <string name="help_reminders_interval_title">Notifiche a intervalli</string>
     <string name="help_reminders_interval_description">Per i promemoria ricorrenti puoi attivare una nuova notifica ogni 5, 10, 15, 30 o 60 minuti. La notifica si ripeterà all’intervallo scelto fino alla scadenza successiva.</string>
     <string name="help_reminders_sound_title">Suono e volume delle notifiche</string>
@@ -474,4 +475,175 @@
     <string name="help_sync_background_description">Dopo aver confermato la prima sincronizzazione, puoi attivare la sincronizzazione in background. Viene eseguita circa ogni 6 ore quando il dispositivo dispone di una connessione Internet e può essere disattivata in qualsiasi momento.</string>
     <string name="help_sync_conflicts_title">Risolvi conflitti</string>
     <string name="help_sync_conflicts_description">Quando le versioni locale e Drive differiscono, scegli per ogni conflitto se mantenere la versione locale o quella di Google Drive.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Scopri Encly</string>
+    <string name="meet_encly_drawer_subtitle">Il successore di Le mie note</string>
+    <string name="meet_encly_eyebrow">Dall\'autore di Le mie note</string>
+    <string name="meet_encly_promise">Le tue note, cifrate e solo sul tuo telefono. Nessun account, niente internet.</string>
+    <string name="meet_encly_benefit_encrypted">Sempre cifrate</string>
+    <string name="meet_encly_benefit_encrypted_text">Ogni nota è conservata in un database cifrato, e anche i backup sono cifrati.</string>
+    <string name="meet_encly_benefit_offline">Offline, senza account</string>
+    <string name="meet_encly_benefit_offline_text">Encly non ha il permesso di accedere a internet: le tue note non lasciano mai il telefono.</string>
+    <string name="meet_encly_benefit_lock">Blocco con PIN e impronta</string>
+    <string name="meet_encly_benefit_lock_text">Solo il tuo PIN o la tua impronta aprono le tue note.</string>
+    <string name="meet_encly_benefit_open">Gratuita e open source</string>
+    <string name="meet_encly_benefit_open_text">Chiunque può verificare il codice. Disponibile su Google Play, F-Droid e GitHub.</string>
+    <string name="meet_encly_one_way">Il trasferimento copia le tue note su Encly. Da Le mie note non viene eliminato nulla, ed Encly non invia mai nulla indietro.</string>
+    <string name="meet_encly_moves_title">Passa su Encly</string>
+    <string name="meet_encly_moves_notes">Note, cestino compreso</string>
+    <string name="meet_encly_moves_tasks">Attività</string>
+    <string name="meet_encly_moves_tags">Tag</string>
+    <string name="meet_encly_moves_categories">Elenchi di attività</string>
+    <string name="meet_encly_moves_categories_note">Su Encly diventano tag</string>
+    <string name="meet_encly_stays_title">Resta in Le mie note</string>
+    <string name="meet_encly_stays_attachments">Allegati e immagini</string>
+    <string name="meet_encly_stays_attachments_note">Encly non salva file</string>
+    <string name="meet_encly_stays_reminders">Promemoria</string>
+    <string name="meet_encly_stays_reminders_note">Encly non ha promemoria</string>
+    <string name="meet_encly_stays_pinned">Fissaggio delle note</string>
+    <string name="meet_encly_stays_pinned_note">Le note stesse vengono trasferite, ma non fissate</string>
+    <string name="meet_encly_stays_none">Niente: tutto passa su Encly.</string>
+    <string name="meet_encly_get">Scarica Encly</string>
+    <string name="meet_encly_update">Aggiorna Encly</string>
+    <string name="meet_encly_move">Trasferisci le mie note su Encly</string>
+    <string name="meet_encly_moving">Preparazione delle note…</string>
+    <string name="meet_encly_hint_ready">Si aprirà Encly e riceverà tutto in una volta. Ci vuole solo un attimo.</string>
+    <string name="meet_encly_hint_get">Gratis su Google Play, F-Droid e GitHub. Torna qui dopo averla installata.</string>
+    <string name="meet_encly_needs_update">Questa versione di Encly non può ancora ricevere note. Aggiornala e torna qui.</string>
+    <string name="meet_encly_untrusted">L\'app installata con il nome Encly non è la versione ufficiale, quindi le tue note non le verranno inviate. Installa Encly da Google Play, F-Droid o GitHub.</string>
+    <string name="meet_encly_result_ok">Le tue note sono su Encly</string>
+    <string name="meet_encly_result_notes">Note</string>
+    <string name="meet_encly_result_skipped">Saltati</string>
+    <string name="meet_encly_result_attachments">Allegati e immagini rimasti in Le mie note: %1$d.</string>
+    <string name="meet_encly_result_failed_title">Il trasferimento non è stato completato</string>
+    <string name="meet_encly_result_cancelled">Il trasferimento è stato annullato. Non è cambiato nulla.</string>
+    <string name="meet_encly_result_untrusted">Encly accetta note solo dall\'app ufficiale Le mie note. Installa Le mie note da Google Play, F-Droid o GitHub e riprova.</string>
+    <string name="meet_encly_result_unsupported">Questa versione di Encly non può leggere i dati di questa versione di Le mie note. Aggiorna Encly e riprova.</string>
+    <string name="meet_encly_result_invalid">Encly non è riuscito a leggere i dati. Non è stato importato nulla.</string>
+    <string name="meet_encly_result_too_large">Ci sono troppi dati da trasferire in una volta sola. Non è stato importato nulla.</string>
+    <string name="meet_encly_result_failed">Encly non è riuscito a completare l\'importazione. Da Le mie note non è stato eliminato nulla.</string>
+    <string name="meet_encly_error_prepare">Impossibile preparare le note per Encly.</string>
+    <string name="meet_encly_clear_hint">Le mie note conserva ancora una propria copia. Se non ti serve più, puoi svuotarla: prima ti chiederemo conferma.</string>
+    <string name="meet_encly_clear">Svuota Le mie note</string>
+    <string name="meet_encly_clear_confirm_title">Svuotare Le mie note?</string>
+    <string name="meet_encly_clear_confirm_message">Verranno eliminati definitivamente da Le mie note tutte le note (cestino compreso), le attività, i tag, gli elenchi di attività e i file allegati. Se la sincronizzazione con Google Drive è attiva, verranno eliminati anche dalla copia sincronizzata. Gli allegati non sono stati trasferiti su Encly. L\'operazione non può essere annullata.</string>
+    <string name="meet_encly_clear_confirm">Elimina tutto</string>
+    <string name="meet_encly_cleared">Le mie note è stata svuotata.</string>
+    <string name="meet_encly_clear_failed">Impossibile svuotare Le mie note.</string>
+    <string name="meet_encly_dialog_text">Le mie note ha un successore: Encly, un\'app per le note che tiene tutto cifrato e offline. Trasferisci tutte le note con un tocco.</string>
+    <string name="meet_encly_dialog_more">Scopri come trasferirle</string>
+    <string name="meet_encly_dialog_later">Più tardi</string>
+    <string name="search_short">Cerca</string>
+    <string name="view_options">Opzioni di visualizzazione</string>
+    <string name="view_options_cd_list">Opzioni di visualizzazione. Le note sono mostrate come elenco</string>
+    <string name="view_options_cd_grid">Opzioni di visualizzazione. Le note sono mostrate come griglia</string>
+    <string name="view_options_sort">Ordine</string>
+    <string name="view_options_sort_newest">Modificate di recente per prime</string>
+    <string name="view_options_sort_oldest">Modificate di recente per ultime</string>
+    <string name="view_options_layout">Disposizione</string>
+    <string name="view_options_layout_list">Elenco</string>
+    <string name="view_options_layout_grid">Griglia</string>
+    <string name="read_mode_enter">Modalità lettura</string>
+    <string name="read_mode_exit">Torna alla modifica</string>
+    <string name="reminder_chip_cd">Promemoria: %1$s. Modifica promemoria</string>
+    <string name="note_opening_mode">Apri le note in</string>
+    <string name="note_opening_mode_description">Le nuove note si aprono sempre pronte per scrivere.</string>
+    <string name="note_opening_mode_auto">Automatico</string>
+    <string name="note_opening_mode_auto_summary">Modalità lettura nell\'editor semplice, modalità modifica nell\'editor avanzato</string>
+    <string name="note_opening_mode_read">Modalità lettura</string>
+    <string name="note_opening_mode_read_summary">Niente cambia per sbaglio. Tocca Modifica per iniziare a scrivere</string>
+    <string name="note_opening_mode_edit">Modalità modifica</string>
+    <string name="note_opening_mode_edit_summary">Il cursore è al suo posto e la tastiera si apre</string>
+    <string name="note_opening_position">Apri le note</string>
+    <string name="note_opening_position_last">Dove eri rimasto</string>
+    <string name="note_opening_position_last_summary">La riga che stavi leggendo e il cursore dove hai smesso di modificare</string>
+    <string name="note_opening_position_start">Dall\'inizio</string>
+    <string name="note_opening_position_start_summary">Inizia sempre dalla prima riga</string>
+    <string name="note_opening_double_tap">Doppio tocco per modificare</string>
+    <string name="note_opening_double_tap_description">In modalità lettura, tocca due volte il testo per iniziare a modificarlo proprio lì.</string>
+    <string name="choice_selected">Selezionato</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Personalizzato…</string>
+    <string name="reminder_repeat_custom_title">Ripetizione personalizzata</string>
+    <string name="reminder_repeat_custom_hint">Ripeti ogni</string>
+    <string name="reminder_repeat_custom_error">Inserisci un numero da 1 a 999</string>
+    <string name="reminder_repeat_custom_apply">Fine</string>
+    <string name="reminder_repeat_custom_cd">Ripetizione personalizzata: %1$s. Modifica</string>
+    <string name="reminder_repeat_hourly">Ogni ora</string>
+    <string name="reminder_repeat_yearly">Ogni anno</string>
+    <string name="reminder_exact_alarm_needed">I promemoria potrebbero arrivare in ritardo. Consenti «Sveglie e promemoria» per riceverli in orario.</string>
+    <string name="reminder_exact_alarm_allow">Consenti</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Ogni %d ora</item>
+        <item quantity="other">Ogni %d ore</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Ogni %d giorno</item>
+        <item quantity="other">Ogni %d giorni</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Ogni %d settimana</item>
+        <item quantity="other">Ogni %d settimane</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Ogni %d mese</item>
+        <item quantity="other">Ogni %d mesi</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Ogni %d anno</item>
+        <item quantity="other">Ogni %d anni</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d ora</item>
+        <item quantity="other">%d ore</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d giorno</item>
+        <item quantity="other">%d giorni</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d settimana</item>
+        <item quantity="other">%d settimane</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d mese</item>
+        <item quantity="other">%d mesi</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d anno</item>
+        <item quantity="other">%d anni</item>
+    </plurals>
+    <string name="version_history">Cronologia versioni</string>
+    <string name="version_history_info">Le versioni precedenti di questa nota sono conservate solo su questo dispositivo, fino a %1$d. Non vengono sincronizzate né incluse nei backup.</string>
+    <string name="version_history_empty_title">Ancora nessuna versione precedente</string>
+    <string name="version_history_empty_text">Quando questa nota cambia, il testo precedente viene conservato qui per poterlo recuperare.</string>
+    <string name="version_reason_autosave">Salvataggio automatico</string>
+    <string name="version_reason_pre_sync">Prima della sincronizzazione</string>
+    <string name="version_reason_pre_restore">Prima del ripristino</string>
+    <string name="version_reason_pre_conflict">Prima del conflitto</string>
+    <string name="version_time_just_now">Proprio ora, %1$s</string>
+    <string name="version_preview_this">Questa versione</string>
+    <string name="version_preview_current">Nota attuale</string>
+    <string name="version_preview_same">Questa versione ha lo stesso testo della nota attuale.</string>
+    <string name="version_restore">Ripristina</string>
+    <string name="version_restore_title">Ripristinare questa versione?</string>
+    <string name="version_restore_message">Il testo attuale della nota verrà sostituito. Resta nella cronologia versioni, quindi potrai tornarci.</string>
+    <string name="version_restore_attachments">Gli allegati che non sono più nella nota non torneranno con questa versione.</string>
+    <string name="version_restored">Versione ripristinata</string>
+    <string name="version_restore_failed">Impossibile ripristinare questa versione</string>
+    <string name="version_untitled">Nota vuota</string>
+    <string name="view_options_sort_custom">Ordine personalizzato</string>
+    <string name="view_options_sort_custom_hint">Tieni premuta una nota, poi trascinala in una nuova posizione. Le note fissate restano sopra le altre.</string>
+    <string name="note_move_up">Sposta su</string>
+    <string name="note_move_down">Sposta giù</string>
+    <string name="note_move_at_top">Già in cima</string>
+    <string name="note_move_at_bottom">Già in fondo</string>
+    <string name="note_moved_to">Spostata in posizione %1$d di %2$d</string>
+    <string name="editor_undo">Annulla</string>
+    <string name="editor_redo">Ripeti</string>
+    <string name="editor_hide_keyboard">Nascondi tastiera</string>
+    <string name="custom_order_hint">Per riordinare le note trascinandole, attiva «Ordine personalizzato»</string>
+    <string name="custom_order_hint_action">Attiva</string>
 </resources>

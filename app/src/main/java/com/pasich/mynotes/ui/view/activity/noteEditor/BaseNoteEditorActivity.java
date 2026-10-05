@@ -4,23 +4,29 @@ import static com.pasich.mynotes.utils.navigation.NoteExtras.EXTRA_ID_NOTE;
 import static com.pasich.mynotes.utils.transition.TransitionUtil.buildContainerTransform;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.util.Log;
-import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -28,10 +34,13 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
+import com.pasich.mynotes.ui.view.activity.NoteHistoryActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
+import com.pasich.mynotes.ui.view.widgets.EditorKeyboardBar;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
+import com.pasich.mynotes.utils.reminder.RepeatRuleFormatter;
 import com.pasich.mynotes.utils.transition.CopyNoteAnimationUtil;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -43,15 +52,41 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     // Menu for the save status indicator
     protected MenuItem saveStatusMenuItem;
-    private MenuItem reminderMenuItem;
+    // Undo and Redo apply while the note is being edited and are enabled while there is something
+    // to take back or apply again. They live on the bar above the keyboard and in More.
+    private boolean editing = false;
+    private boolean canUndo = false;
+    private boolean canRedo = false;
+    // The More sheet, while it is open, follows the history state.
+    @Nullable private Runnable editHistoryObserver;
     protected T binding;
     protected long idNote;
+
+    /** Version history; a restored version is read back into this editor. */
+    private final ActivityResultLauncher<Intent> versionHistoryLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() != RESULT_OK || notePresenter == null) return;
+                        notePresenter.reloadNote();
+                        Snackbar.make(
+                                        binding.getRoot(),
+                                        R.string.version_restored,
+                                        Snackbar.LENGTH_SHORT)
+                                .show();
+                    });
 
     protected abstract @MenuRes int getMenuResId();
 
     // Returns toolbar menu layout
 
     protected abstract Toolbar getToolbar();
+
+    /** The bar docked above the keyboard, with Undo, Redo and Hide keyboard. */
+    protected abstract EditorKeyboardBar getKeyboardBar();
+
+    /** The chip at the top of the note that shows the active reminder. */
+    protected abstract Chip getReminderChip();
 
     // Returns toolbar instance
 
@@ -79,6 +114,12 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     // Set title for a new note
 
+    /** Takes back the last edit in this editor. */
+    protected abstract void undoEdit();
+
+    /** Applies the last undone edit again. */
+    protected abstract void redoEdit();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +133,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         setContentView(binding.getRoot());
 
         applyEdgeToEdgeInsets(binding.getRoot());
+        setupKeyboardBar();
 
         bindingSetPresenter(binding);
 
@@ -100,6 +142,8 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         notePresenter.viewIsReady();
 
         onAfterPresenterReady();
+
+        getReminderChip().setOnClickListener(v -> openReminderPicker());
 
         getSupportFragmentManager()
                 .setFragmentResultListener(
@@ -112,7 +156,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
                                     .getNote()
                                     .setReminderTime(
                                             hasReminder ? result.getLong("reminderTime") : null);
-                            updateReminderIcon(notePresenter.getNote());
+                            updateReminderChip(notePresenter.getNote());
                         });
 
         getOnBackPressedDispatcher()
@@ -158,30 +202,162 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(getMenuResId(), menu);
         saveStatusMenuItem = menu.findItem(R.id.saveStatusBut);
-        reminderMenuItem = menu.findItem(R.id.reminderBut);
         return true;
+    }
+
+    private void setupKeyboardBar() {
+        EditorKeyboardBar bar = getKeyboardBar();
+        if (bar == null) return;
+        bar.setActions(
+                new EditorKeyboardBar.Actions() {
+                    @Override
+                    public void onUndo() {
+                        undoEdit();
+                    }
+
+                    @Override
+                    public void onRedo() {
+                        redoEdit();
+                    }
+
+                    @Override
+                    public void onHideKeyboard() {
+                        hideKeyboard();
+                    }
+                });
+        bar.setEditing(editing);
+        bar.setHistoryState(canUndo, canRedo);
+    }
+
+    /** Puts the on-screen keyboard away; the note stays in editing mode. */
+    protected void hideKeyboard() {
+        WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .hide(WindowInsetsCompat.Type.ime());
+    }
+
+    /**
+     * The note is being edited (true) or read. Undo and Redo, on the bar above the keyboard and in
+     * More, and their shortcuts apply only while editing.
+     */
+    protected void setEditing(boolean editing) {
+        if (this.editing == editing) return;
+        this.editing = editing;
+        EditorKeyboardBar bar = binding != null ? getKeyboardBar() : null;
+        if (bar != null) bar.setEditing(editing);
+        notifyEditHistoryObserver();
+    }
+
+    /** Enables Undo and Redo according to the editor's history. */
+    protected void setUndoRedoState(boolean canUndo, boolean canRedo) {
+        if (this.canUndo == canUndo && this.canRedo == canRedo) return;
+        this.canUndo = canUndo;
+        this.canRedo = canRedo;
+        EditorKeyboardBar bar = binding != null ? getKeyboardBar() : null;
+        if (bar != null) bar.setHistoryState(canUndo, canRedo);
+        notifyEditHistoryObserver();
+    }
+
+    private void notifyEditHistoryObserver() {
+        if (editHistoryObserver != null) editHistoryObserver.run();
+    }
+
+    @Override
+    public boolean isEditingNote() {
+        return editing;
+    }
+
+    @Override
+    public boolean canUndoEdit() {
+        return editing && canUndo;
+    }
+
+    @Override
+    public boolean canRedoEdit() {
+        return editing && canRedo;
+    }
+
+    @Override
+    public void undoLastEdit() {
+        if (editing) undoEdit();
+    }
+
+    @Override
+    public void redoLastEdit() {
+        if (editing) redoEdit();
+    }
+
+    @Override
+    public void setEditHistoryObserver(@Nullable Runnable observer) {
+        editHistoryObserver = observer;
+    }
+
+    /**
+     * Ctrl+Z undoes, Ctrl+Shift+Z and Ctrl+Y redo, on a hardware keyboard. A text field has an undo
+     * of its own that knows nothing about this history, so an editor whose fields would see the
+     * shortcut first passes their key events to {@link #onHistoryShortcut} as well.
+     */
+    @Override
+    public boolean onKeyShortcut(int keyCode, KeyEvent event) {
+        return onHistoryShortcut(keyCode, event) || super.onKeyShortcut(keyCode, event);
+    }
+
+    /** Runs Undo or Redo for their shortcut; returns whether the key was one of them. */
+    protected boolean onHistoryShortcut(int keyCode, KeyEvent event) {
+        if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+        if (!editing || !event.isCtrlPressed() || event.isAltPressed()) return false;
+        if (keyCode == KeyEvent.KEYCODE_Z) {
+            if (event.isShiftPressed()) redoEdit();
+            else undoEdit();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_Y && !event.isShiftPressed()) {
+            redoEdit();
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus && notePresenter != null && notePresenter.hasNote()) {
-            updateReminderIcon(notePresenter.getNote());
+            // A reminder may have fired, or been changed from the notification, meanwhile.
+            updateReminderChip(notePresenter.getNote());
         }
     }
 
-    protected void updateReminderIcon(Note note) {
-        if (reminderMenuItem == null || note == null) return;
-        boolean hasReminder = note.hasReminder();
-        TypedValue tv = new TypedValue();
-        getTheme()
-                .resolveAttribute(
-                        hasReminder
-                                ? android.R.attr.colorPrimary
-                                : com.google.android.material.R.attr.colorOnBackground,
-                        tv,
-                        true);
-        reminderMenuItem.setIconTintList(ColorStateList.valueOf(tv.data));
+    /**
+     * Shows the note's upcoming reminder as a chip at the top of the note, or hides the chip when
+     * there is none. Setting a reminder lives in More, so the toolbar keeps only Back, the save
+     * status and More.
+     */
+    protected void updateReminderChip(Note note) {
+        Chip chip = getReminderChip();
+        if (chip == null) return;
+        if (note == null || !note.hasReminder()) {
+            chip.setVisibility(View.GONE);
+            return;
+        }
+        String when =
+                DateUtils.formatDateTime(
+                        this,
+                        note.getReminderTime(),
+                        DateUtils.FORMAT_SHOW_DATE
+                                | DateUtils.FORMAT_SHOW_TIME
+                                | DateUtils.FORMAT_SHOW_WEEKDAY
+                                | DateUtils.FORMAT_ABBREV_ALL);
+        String repeat = RepeatRuleFormatter.summary(this, note.getReminderRepeat());
+        if (repeat != null) when = getString(R.string.reminder_time_with_repeat, when, repeat);
+        chip.setText(when);
+        chip.setContentDescription(getString(R.string.reminder_chip_cd, when));
+        chip.setVisibility(View.VISIBLE);
+    }
+
+    private void openReminderPicker() {
+        if (notePresenter == null || !notePresenter.hasNote()) return;
+        if (getSupportFragmentManager().findFragmentByTag("ReminderPicker") != null) return;
+        ReminderPickerBottomSheet.newInstance(notePresenter.getNote().getId())
+                .show(getSupportFragmentManager(), "ReminderPicker");
     }
 
     protected void settingsStatusBar(Window window) {
@@ -211,13 +387,6 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             notePresenter.closeActivity();
-        }
-
-        if (item.getItemId() == R.id.reminderBut) {
-            if (notePresenter.hasNote()) {
-                ReminderPickerBottomSheet.newInstance(notePresenter.getNote().getId())
-                        .show(getSupportFragmentManager(), "ReminderPicker");
-            }
         }
 
         if (item.getItemId() == R.id.moreBut) {
@@ -290,6 +459,11 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
 
     @Override
     public void onDestroy() {
+        if (binding != null) {
+            getReminderChip().setOnClickListener(null);
+            getKeyboardBar().setActions(null);
+        }
+        editHistoryObserver = null;
         super.onDestroy();
         if (notePresenter != null) {
             ((NotePresenter) notePresenter).cleanupHandlers();
@@ -323,6 +497,16 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 
         finish();
+    }
+
+    @Override
+    public void openVersionHistory() {
+        if (notePresenter == null || !notePresenter.hasNote()) return;
+        // Whatever the autosave still holds is written first, so the history shows it and a
+        // restore keeps it as the version it replaces.
+        notePresenter.flushPending();
+        versionHistoryLauncher.launch(
+                NoteHistoryActivity.intent(this, notePresenter.getNote().getId()));
     }
 
     @Override

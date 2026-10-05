@@ -29,14 +29,12 @@
             <TextView
                 android:id="@+id/nameNote"
                 style="@style/itemNoteTitle"
-                android:text="@{Note.title}"
                 android:visibility="@{Note.title.length() >= 1 ? View.VISIBLE : View.GONE }"
                 tools:text="Title Note" />
 
             <TextView
                 android:id="@+id/previewNote"
                 style="@style/itemNotePreview"
-                android:text="@{Note.valuePreview}"
                 tools:text="Preview Note Check" />
 
             <com.google.android.material.chip.ChipGroup

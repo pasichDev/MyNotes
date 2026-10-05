@@ -14,8 +14,7 @@
     <string name="telegram">Відкрити контакти розробника</string>
     <string name="notSupportedShare">Цей вміст не підтримується.</string>
     <string name="notFoundPlayMarket">Відсутній  Play Market</string>
-    <string name="cd_format">Форматувати нотатки</string>
-    <string name="search">Пошук у нотатках </string>
+    <string name="search">Пошук у нотатках</string>
     <string name="close">Закрити</string>
     <string name="addTag">Додати тег</string>
     <string name="deleteTag">Видалити</string>
@@ -100,7 +99,6 @@
     <string name="restoreDataOkay">Відновлення даних успішно завершено</string>
     <string name="restoreDataFall">Помилка: Резервна копія пошкоджена</string>
     <string name="errorDriveSync">Помилка сервера або погана якість інтернету</string>
-    <string name="sortNotes">Сортувати нотатки</string>
     <!-- Product offer -->
     <string name="thanks_title">Шановний користувач</string>
     <string name="thanks_donate">Розробник проекту каже вам спасибі за вашу покупку. Ми будемо прагнути стати кращими і зручнішими. \n <b>З повагою, мої нотатки!</b></string>
@@ -171,9 +169,9 @@
     <string name="help_navigation_search_title">Пошук</string>
     <string name="help_navigation_search_description">Використовуйте панель пошуку для швидкого знаходження ваших нотаток за назвою або змістом</string>
     <string name="help_navigation_sort_title">Сортування</string>
-    <string name="help_navigation_sort_description">Сортуйте ваші нотатки за датою останньої зміни або назвою у висхідному чи спадному порядку</string>
+    <string name="help_navigation_sort_description">Натисніть кнопку параметрів перегляду в рядку пошуку, щоб показувати нещодавно змінені нотатки першими або останніми, або виберіть «Власний порядок» і розставте нотатки самі, перетягуючи їх.</string>
     <string name="help_navigation_format_title">Формат відображення</string>
-    <string name="help_navigation_format_description">Переключайтеся між списком та сіткою для відображення ваших нотаток у зручному для вас макеті</string>
+    <string name="help_navigation_format_description">У тих самих параметрах перегляду перемикайтеся між списком і сіткою.</string>
 
     <!-- Navigation Section - Additional -->
     <string name="help_navigation_swipe_title">Жести свайп</string>
@@ -249,9 +247,9 @@
     <!-- Reminders Help Section -->
     <string name="help_reminders_title">Нагадування</string>
     <string name="help_reminders_notes_title">Нагадування для нотаток</string>
-    <string name="help_reminders_notes_description">Відкрийте будь-яку нотатку та натисніть іконку дзвіночка, щоб встановити нагадування. Виберіть час за допомогою швидких варіантів або вручну. Сповіщення з\'явиться у вказаний час.</string>
+    <string name="help_reminders_notes_description">Відкрийте нотатку, натисніть «Більше» й виберіть «Нагадування». Виберіть час за допомогою швидких варіантів або вручну. Нагадування з\'явиться вгорі нотатки, натисніть на нього, щоб змінити. Сповіщення з\'явиться у вказаний час.</string>
     <string name="help_reminders_repeat_title">Параметри повторення</string>
-    <string name="help_reminders_repeat_description">При встановленні нагадування для нотатки увімкніть перемикач «Повторення», щоб вибрати цикл: щодня, щотижня або щомісяця. Нагадування автоматично переноситься після кожного спрацювання.</string>
+    <string name="help_reminders_repeat_description">Під час налаштування нагадування для нотатки виберіть, як воно повторюється: щодня, щотижня, щомісяця або «Власний…» — кожні кілька годин, днів, тижнів, місяців чи років. Кожне повторення відраховується від вибраного часу, тож нагадування на 31-ше число в коротших місяцях спрацює останнього дня, а потім знову 31-го. Повторювані нагадування зберігаються й після перезапуску телефона.</string>
     <string name="help_reminders_interval_title">Інтервальні сповіщення</string>
     <string name="help_reminders_interval_description">Для повторюваних нагадувань можна увімкнути інтервальне повторення кожні 5, 10, 15, 30 або 60 хвилин. Сповіщення повторюватиметься через вибраний інтервал до наступного запланованого часу.</string>
     <string name="help_reminders_sound_title">Звук і гучність сповіщень</string>
@@ -260,6 +258,8 @@
     <string name="tags_management">Теги</string>
     <string name="create_tag">Натисніть цю кнопку, щоб створити тег.</string>
     <string name="tag_options">Налаштування тегу</string>
+    <string name="selection_change_tag">Змінити тег</string>
+    <string name="edit_note_action">Редагувати нотатку</string>
     <string name="createTag">Створити тег</string>
     <string name="toastTagVisible">Нотатки з цим тегом відображаються у загальному списку.</string>
     <string name="toastTagHidde">Нотатки з цим тегом приховані у загальному списку.</string>
@@ -410,6 +410,7 @@
     <string name="reminder_menu_item">Нагадування</string>
     <string name="reminder_chip_tomorrow">Завтра %1$s</string>
     <string name="reminder_past_time_error">Оберіть майбутній час</string>
+    <string name="reminder_time_passed">Обраний час, %1$s, уже минув. Оберіть пізніший час.</string>
     <string name="tile_label">Нова нотатка</string>
     <string name="search_filter_all">Усі</string>
     <string name="search_hint_keep_typing">Продовжуйте вводити…</string>
@@ -485,4 +486,195 @@
     <string name="sync_signed_out_description">Синхронізація та копія на Google Диску доступні після входу.</string>
     <string name="sync_unavailable_title">Синхронізація недоступна</string>
     <string name="sync_unavailable_description">Синхронізація та копія на Google Диску потребують сервісів Google Play, яких немає на цьому пристрої.</string>
+
+    <!-- Meet Encly (pasichDev/MyNotes#167) -->
+    <string name="meet_encly_title">Знайомтеся: Encly</string>
+    <string name="meet_encly_drawer_subtitle">Наступник «Мої Нотатки»</string>
+    <string name="meet_encly_eyebrow">Від автора «Мої Нотатки»</string>
+    <string name="meet_encly_promise">Ваші нотатки — зашифровані й лише на вашому телефоні. Без акаунта й без інтернету.</string>
+    <string name="meet_encly_benefit_encrypted">Завжди зашифровано</string>
+    <string name="meet_encly_benefit_encrypted_text">Кожна нотатка зберігається в зашифрованій базі даних, резервні копії теж зашифровані.</string>
+    <string name="meet_encly_benefit_offline">Офлайн і без акаунта</string>
+    <string name="meet_encly_benefit_offline_text">Encly не має дозволу на інтернет, тож нотатки ніколи не покидають телефон.</string>
+    <string name="meet_encly_benefit_lock">Блокування PIN-кодом і відбитком</string>
+    <string name="meet_encly_benefit_lock_text">Відкрити нотатки можна лише вашим PIN-кодом або відбитком пальця.</string>
+    <string name="meet_encly_benefit_open">Безкоштовний і з відкритим кодом</string>
+    <string name="meet_encly_benefit_open_text">Код може перевірити будь-хто. Є в Google Play, F-Droid і на GitHub.</string>
+    <string name="meet_encly_one_way">Перенесення копіює нотатки в Encly. З «Мої Нотатки» нічого не видаляється, а Encly нічого не надсилає назад.</string>
+    <string name="meet_encly_moves_title">Переїде в Encly</string>
+    <string name="meet_encly_moves_notes">Нотатки, разом із кошиком</string>
+    <string name="meet_encly_moves_tasks">Завдання</string>
+    <string name="meet_encly_moves_tags">Теги</string>
+    <string name="meet_encly_moves_categories">Списки завдань</string>
+    <string name="meet_encly_moves_categories_note">В Encly стануть тегами</string>
+    <string name="meet_encly_stays_title">Залишиться в «Мої Нотатки»</string>
+    <string name="meet_encly_stays_attachments">Вкладення та зображення</string>
+    <string name="meet_encly_stays_attachments_note">Encly не зберігає файли</string>
+    <string name="meet_encly_stays_reminders">Нагадування</string>
+    <string name="meet_encly_stays_reminders_note">В Encly немає нагадувань</string>
+    <string name="meet_encly_stays_pinned">Закріплення нотаток</string>
+    <string name="meet_encly_stays_pinned_note">Самі нотатки переїдуть, але незакріпленими</string>
+    <string name="meet_encly_stays_none">Нічого — усе переїде в Encly.</string>
+    <string name="meet_encly_get">Отримати Encly</string>
+    <string name="meet_encly_update">Оновити Encly</string>
+    <string name="meet_encly_move">Перенести мої нотатки в Encly</string>
+    <string name="meet_encly_moving">Готуємо нотатки…</string>
+    <string name="meet_encly_hint_ready">Відкриється Encly і забере все за один раз. Це займе лише мить.</string>
+    <string name="meet_encly_hint_get">Безкоштовно в Google Play, F-Droid і на GitHub. Після встановлення поверніться сюди.</string>
+    <string name="meet_encly_needs_update">Ця версія Encly ще не вміє приймати нотатки. Оновіть її і поверніться сюди.</string>
+    <string name="meet_encly_untrusted">Встановлений застосунок Encly — не офіційна збірка, тому нотатки йому не передаватимуться. Встановіть Encly з Google Play, F-Droid або GitHub.</string>
+    <string name="meet_encly_result_ok">Нотатки вже в Encly</string>
+    <string name="meet_encly_result_notes">Нотатки</string>
+    <string name="meet_encly_result_skipped">Пропущено</string>
+    <string name="meet_encly_result_attachments">Вкладень і зображень залишилося в «Мої Нотатки»: %1$d.</string>
+    <string name="meet_encly_result_failed_title">Перенесення не завершилося</string>
+    <string name="meet_encly_result_cancelled">Перенесення скасовано. Нічого не змінилося.</string>
+    <string name="meet_encly_result_untrusted">Encly приймає нотатки лише від офіційного застосунку «Мої Нотатки». Встановіть «Мої Нотатки» з Google Play, F-Droid або GitHub і спробуйте ще раз.</string>
+    <string name="meet_encly_result_unsupported">Ця версія Encly не може прочитати дані з цієї версії «Мої Нотатки». Оновіть Encly і спробуйте ще раз.</string>
+    <string name="meet_encly_result_invalid">Encly не зміг прочитати дані. Нічого не імпортовано.</string>
+    <string name="meet_encly_result_too_large">Даних забагато, щоб перенести їх за один раз. Нічого не імпортовано.</string>
+    <string name="meet_encly_result_failed">Encly не зміг завершити імпорт. З «Мої Нотатки» нічого не видалено.</string>
+    <string name="meet_encly_error_prepare">Не вдалося підготувати нотатки для Encly.</string>
+    <string name="meet_encly_clear_hint">«Мої Нотатки» досі зберігають власну копію. Якщо вона більше не потрібна, її можна очистити — спершу ми попросимо підтвердження.</string>
+    <string name="meet_encly_clear">Очистити «Мої Нотатки»</string>
+    <string name="meet_encly_clear_confirm_title">Очистити «Мої Нотатки»?</string>
+    <string name="meet_encly_clear_confirm_message">Це назавжди видалить з «Мої Нотатки» всі нотатки (разом із кошиком), завдання, теги, списки завдань і файли вкладень. Якщо увімкнено синхронізацію з Google Диском, їх буде видалено й із синхронізованої копії. Вкладення не переносилися в Encly. Цю дію не можна скасувати.</string>
+    <string name="meet_encly_clear_confirm">Видалити все</string>
+    <string name="meet_encly_cleared">«Мої Нотатки» очищено.</string>
+    <string name="meet_encly_clear_failed">Не вдалося очистити «Мої Нотатки».</string>
+    <string name="meet_encly_dialog_text">У «Мої Нотатки» з\'явився наступник — Encly: нотатки, які завжди зашифровані й працюють офлайн. Перенесіть усе одним дотиком.</string>
+    <string name="meet_encly_dialog_more">Як перенести</string>
+    <string name="meet_encly_dialog_later">Пізніше</string>
+    <string name="search_short">Пошук</string>
+    <string name="view_options">Параметри перегляду</string>
+    <string name="view_options_cd_list">Параметри перегляду. Нотатки показано списком</string>
+    <string name="view_options_cd_grid">Параметри перегляду. Нотатки показано сіткою</string>
+    <string name="view_options_sort">Порядок</string>
+    <string name="view_options_sort_newest">Спочатку нещодавно змінені</string>
+    <string name="view_options_sort_oldest">Нещодавно змінені в кінці</string>
+    <string name="view_options_layout">Вигляд</string>
+    <string name="view_options_layout_list">Список</string>
+    <string name="view_options_layout_grid">Сітка</string>
+    <string name="read_mode_enter">Режим читання</string>
+    <string name="read_mode_exit">Повернутися до редагування</string>
+    <string name="reminder_chip_cd">Нагадування: %1$s. Змінити нагадування</string>
+    <string name="note_opening_mode">Режим відкриття нотаток</string>
+    <string name="note_opening_mode_description">Нові нотатки завжди відкриваються готовими до набору.</string>
+    <string name="note_opening_mode_auto">Автоматично</string>
+    <string name="note_opening_mode_auto_summary">Режим читання у простому редакторі, режим редагування в розширеному</string>
+    <string name="note_opening_mode_read">Читання</string>
+    <string name="note_opening_mode_read_summary">Нічого не зміниться випадково. Натисніть «Редагувати», щоб почати друкувати</string>
+    <string name="note_opening_mode_edit">Редагування</string>
+    <string name="note_opening_mode_edit_summary">Курсор на місці, клавіатура відкривається</string>
+    <string name="note_opening_position">Відкривати нотатки</string>
+    <string name="note_opening_position_last">З місця, де ви зупинилися</string>
+    <string name="note_opening_position_last_summary">На рядку, який ви читали, і з курсором там, де ви закінчили редагувати</string>
+    <string name="note_opening_position_start">З початку</string>
+    <string name="note_opening_position_start_summary">Завжди з першого рядка</string>
+    <string name="note_opening_double_tap">Подвійний дотик для редагування</string>
+    <string name="note_opening_double_tap_description">У режимі читання двічі торкніться тексту, щоб почати редагувати саме там, де торкнулися.</string>
+    <string name="choice_selected">Вибрано</string>
+
+    <!-- Custom reminder repeat (pasichDev/MyNotes#179) -->
+    <string name="reminder_repeat_custom">Власний…</string>
+    <string name="reminder_repeat_custom_title">Власне повторення</string>
+    <string name="reminder_repeat_custom_hint">Повторювати кожні</string>
+    <string name="reminder_repeat_custom_error">Введіть число від 1 до 999</string>
+    <string name="reminder_repeat_custom_apply">Готово</string>
+    <string name="reminder_repeat_custom_cd">Власне повторення: %1$s. Змінити</string>
+    <string name="reminder_repeat_hourly">Щогодини</string>
+    <string name="reminder_repeat_yearly">Щороку</string>
+    <string name="reminder_exact_alarm_needed">Нагадування можуть спрацьовувати із запізненням. Дозвольте «Будильники й нагадування», щоб вони приходили вчасно.</string>
+    <string name="reminder_exact_alarm_allow">Дозволити</string>
+    <plurals name="reminder_repeat_every_hours">
+        <item quantity="one">Кожну %d годину</item>
+        <item quantity="few">Кожні %d години</item>
+        <item quantity="many">Кожні %d годин</item>
+        <item quantity="other">Кожні %d години</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_days">
+        <item quantity="one">Кожен %d день</item>
+        <item quantity="few">Кожні %d дні</item>
+        <item quantity="many">Кожні %d днів</item>
+        <item quantity="other">Кожні %d дня</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_weeks">
+        <item quantity="one">Кожен %d тиждень</item>
+        <item quantity="few">Кожні %d тижні</item>
+        <item quantity="many">Кожні %d тижнів</item>
+        <item quantity="other">Кожні %d тижня</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_months">
+        <item quantity="one">Кожен %d місяць</item>
+        <item quantity="few">Кожні %d місяці</item>
+        <item quantity="many">Кожні %d місяців</item>
+        <item quantity="other">Кожні %d місяця</item>
+    </plurals>
+    <plurals name="reminder_repeat_every_years">
+        <item quantity="one">Кожен %d рік</item>
+        <item quantity="few">Кожні %d роки</item>
+        <item quantity="many">Кожні %d років</item>
+        <item quantity="other">Кожні %d року</item>
+    </plurals>
+    <plurals name="reminder_unit_hours">
+        <item quantity="one">%d година</item>
+        <item quantity="few">%d години</item>
+        <item quantity="many">%d годин</item>
+        <item quantity="other">%d години</item>
+    </plurals>
+    <plurals name="reminder_unit_days">
+        <item quantity="one">%d день</item>
+        <item quantity="few">%d дні</item>
+        <item quantity="many">%d днів</item>
+        <item quantity="other">%d дня</item>
+    </plurals>
+    <plurals name="reminder_unit_weeks">
+        <item quantity="one">%d тиждень</item>
+        <item quantity="few">%d тижні</item>
+        <item quantity="many">%d тижнів</item>
+        <item quantity="other">%d тижня</item>
+    </plurals>
+    <plurals name="reminder_unit_months">
+        <item quantity="one">%d місяць</item>
+        <item quantity="few">%d місяці</item>
+        <item quantity="many">%d місяців</item>
+        <item quantity="other">%d місяця</item>
+    </plurals>
+    <plurals name="reminder_unit_years">
+        <item quantity="one">%d рік</item>
+        <item quantity="few">%d роки</item>
+        <item quantity="many">%d років</item>
+        <item quantity="other">%d року</item>
+    </plurals>
+    <string name="version_history">Історія версій</string>
+    <string name="version_history_info">Попередні версії цієї нотатки зберігаються лише на цьому пристрої, до %1$d. Вони не синхронізуються й не потрапляють до резервних копій.</string>
+    <string name="version_history_empty_title">Попередніх версій ще немає</string>
+    <string name="version_history_empty_text">Коли нотатка змінюється, її попередній текст зберігається тут, щоб ви могли його повернути.</string>
+    <string name="version_reason_autosave">Автозбереження</string>
+    <string name="version_reason_pre_sync">Перед синхронізацією</string>
+    <string name="version_reason_pre_restore">Перед відновленням</string>
+    <string name="version_reason_pre_conflict">Перед конфліктом</string>
+    <string name="version_time_just_now">Щойно, %1$s</string>
+    <string name="version_preview_this">Ця версія</string>
+    <string name="version_preview_current">Поточна нотатка</string>
+    <string name="version_preview_same">Ця версія має той самий текст, що й поточна нотатка.</string>
+    <string name="version_restore">Відновити</string>
+    <string name="version_restore_title">Відновити цю версію?</string>
+    <string name="version_restore_message">Поточний текст нотатки буде замінено. Він залишиться в історії версій, тож ви зможете до нього повернутися.</string>
+    <string name="version_restore_attachments">Вкладення, яких уже немає в нотатці, не повернуться з цією версією.</string>
+    <string name="version_restored">Версію відновлено</string>
+    <string name="version_restore_failed">Не вдалося відновити цю версію</string>
+    <string name="version_untitled">Порожня нотатка</string>
+    <string name="view_options_sort_custom">Власний порядок</string>
+    <string name="view_options_sort_custom_hint">Натисніть і утримуйте нотатку, а потім перетягніть її на нове місце. Закріплені нотатки залишаються над іншими.</string>
+    <string name="note_move_up">Перемістити вище</string>
+    <string name="note_move_down">Перемістити нижче</string>
+    <string name="note_move_at_top">Уже на початку</string>
+    <string name="note_move_at_bottom">Уже в кінці</string>
+    <string name="note_moved_to">Переміщено на позицію %1$d з %2$d</string>
+    <string name="editor_undo">Скасувати</string>
+    <string name="editor_redo">Повторити</string>
+    <string name="editor_hide_keyboard">Сховати клавіатуру</string>
+    <string name="custom_order_hint">Щоб змінити порядок перетягуванням, увімкніть «Власний порядок»</string>
+    <string name="custom_order_hint_action">Увімкнути</string>
 </resources>

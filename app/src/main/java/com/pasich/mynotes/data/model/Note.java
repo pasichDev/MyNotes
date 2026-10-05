@@ -58,6 +58,15 @@ public class Note {
     @androidx.room.ColumnInfo(name = "reminderIntervalMinutes")
     private int reminderIntervalMinutes = 0;
 
+    /**
+     * Place in the user's own order ("Custom" sort): larger comes first, and gaps are left between
+     * neighbours so a move rewrites one row. Local to this device — kept in local backups, never
+     * synced (see {@code SyncMetadata.stripDeviceLocalFields}) — and changing it is not an edit.
+     */
+    @SerializedName("n")
+    @androidx.room.ColumnInfo(name = "customPosition", defaultValue = "0")
+    private long customPosition = 0L;
+
     /** Initializes note fields and returns this instance. */
     public Note create(String title, String value, long date, String tag) {
         this.title = title;
@@ -211,6 +220,14 @@ public class Note {
         this.reminderIntervalMinutes = reminderIntervalMinutes;
     }
 
+    public long getCustomPosition() {
+        return customPosition;
+    }
+
+    public void setCustomPosition(long customPosition) {
+        this.customPosition = customPosition;
+    }
+
     /** Copies all mutable fields from another note into this one. */
     public void copyFrom(Note other) {
         if (other == null) return;
@@ -224,6 +241,7 @@ public class Note {
         this.reminderRepeat = other.reminderRepeat;
         this.isPinned = other.isPinned;
         this.reminderIntervalMinutes = other.reminderIntervalMinutes;
+        this.customPosition = other.customPosition;
     }
 
     /** Creates a new note copy without id, pinning, or reminder. */

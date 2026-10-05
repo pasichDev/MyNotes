@@ -11,7 +11,13 @@
     <dimen name="defaultCornerChip">10dp</dimen>
     <!-- ScrollView margins -->
     <dimen name="scroll_view_bottom_margin">16dp</dimen>
+    <!-- Bar above the keyboard in the note editors: a row of 48dp touch targets under a hairline. -->
+    <dimen name="editor_keyboard_bar_row_height">48dp</dimen>
+    <dimen name="editor_keyboard_bar_divider">1dp</dimen>
+    <dimen name="editor_keyboard_bar_side">4dp</dimen>
 
 
     <dimen name="marginHorizontalActivity">10dp</dimen>
+    <!-- Room kept beside the drag handle of a card in the custom order. -->
+    <dimen name="note_drag_handle_clearance">20dp</dimen>
 </resources>

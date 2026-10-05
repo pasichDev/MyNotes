@@ -60,6 +60,19 @@
                     android:layout_height="10dp"
                     android:visibility="@{(Note.tag.length() > 0 || Note.isAttachments() || Note.hasReminder() || Note.pinned) ? View.VISIBLE : View.GONE}" />
             </LinearLayout>
+
+            <!-- Custom order only; the card's own move up and move down actions serve TalkBack. -->
+            <ImageView
+                android:id="@+id/dragHandle"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="8dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_drag_handle"
+                android:visibility="gone"
+                app:tint="?attr/colorOnSurfaceVariant" />
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -128,14 +141,20 @@
                     android:textStyle="bold"
                     android:drawablePadding="3dp"
                     android:drawableStart="@drawable/ic_bell_small"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     app:reminderText="@{Note}"
                     android:visibility="@{Note.hasReminder() ? View.VISIBLE : View.GONE}"
                     tools:text="18:00" />
 
+                <!-- Pushes the pin to the end. With a reminder the reminder text, which may
+                     shorten to fit, takes this space instead. -->
                 <View
                     android:layout_width="0dp"
                     android:layout_height="0dp"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:visibility="@{Note.hasReminder() ? View.GONE : View.VISIBLE}" />
 
                 <ImageView
                     android:layout_width="14dp"
