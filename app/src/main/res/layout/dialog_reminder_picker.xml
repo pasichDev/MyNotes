@@ -133,6 +133,17 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- A chosen time that has already passed -->
+        <TextView
+            android:id="@+id/pastTimeError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:accessibilityLiveRegion="polite"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorError"
+            android:visibility="gone" />
+
         <!-- Repeat section -->
         <TextView
             android:id="@+id/repeatLabel"

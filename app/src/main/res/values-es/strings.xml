@@ -369,6 +369,7 @@
     <string name="reminder_menu_item">Recordatorio</string>
     <string name="reminder_chip_tomorrow">Mañana %1$s</string>
     <string name="reminder_past_time_error">Por favor, selecciona una hora futura</string>
+    <string name="reminder_time_passed">La hora elegida, %1$s, ya ha pasado. Elige una hora posterior.</string>
     <string name="tile_label">Nueva nota</string>
     <string name="search_filter_all">Todos</string>
     <string name="search_hint_keep_typing">Sigue escribiendo…</string>
