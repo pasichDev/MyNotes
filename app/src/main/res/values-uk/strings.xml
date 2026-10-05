@@ -652,6 +652,7 @@
     <string name="version_reason_pre_sync">Перед синхронізацією</string>
     <string name="version_reason_pre_restore">Перед відновленням</string>
     <string name="version_reason_pre_conflict">Перед конфліктом</string>
+    <string name="version_time_just_now">Щойно, %1$s</string>
     <string name="version_preview_this">Ця версія</string>
     <string name="version_preview_current">Поточна нотатка</string>
     <string name="version_preview_same">Ця версія має той самий текст, що й поточна нотатка.</string>

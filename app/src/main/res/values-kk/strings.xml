@@ -620,6 +620,7 @@
     <string name="version_reason_pre_sync">Синхрондау алдында</string>
     <string name="version_reason_pre_restore">Қалпына келтіру алдында</string>
     <string name="version_reason_pre_conflict">Қайшылық алдында</string>
+    <string name="version_time_just_now">Жаңа ғана, %1$s</string>
     <string name="version_preview_this">Осы нұсқа</string>
     <string name="version_preview_current">Ағымдағы жазба</string>
     <string name="version_preview_same">Бұл нұсқаның мәтіні ағымдағы жазбамен бірдей.</string>

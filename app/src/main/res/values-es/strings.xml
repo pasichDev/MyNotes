@@ -624,6 +624,7 @@
     <string name="version_reason_pre_sync">Antes de sincronizar</string>
     <string name="version_reason_pre_restore">Antes de restaurar</string>
     <string name="version_reason_pre_conflict">Antes del conflicto</string>
+    <string name="version_time_just_now">Justo ahora, %1$s</string>
     <string name="version_preview_this">Esta versión</string>
     <string name="version_preview_current">Nota actual</string>
     <string name="version_preview_same">Esta versión tiene el mismo texto que la nota actual.</string>

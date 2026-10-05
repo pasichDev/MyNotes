@@ -648,6 +648,7 @@
     <string name="version_reason_pre_sync">Перед синхронизацией</string>
     <string name="version_reason_pre_restore">Перед восстановлением</string>
     <string name="version_reason_pre_conflict">Перед конфликтом</string>
+    <string name="version_time_just_now">Только что, %1$s</string>
     <string name="version_preview_this">Эта версия</string>
     <string name="version_preview_current">Текущая заметка</string>
     <string name="version_preview_same">У этой версии тот же текст, что и у текущей заметки.</string>

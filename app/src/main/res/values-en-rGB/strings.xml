@@ -670,6 +670,7 @@
     <string name="version_reason_pre_sync">Before sync</string>
     <string name="version_reason_pre_restore">Before restore</string>
     <string name="version_reason_pre_conflict">Before conflict</string>
+    <string name="version_time_just_now">Just now, %1$s</string>
     <string name="version_preview_this">This version</string>
     <string name="version_preview_current">Current note</string>
     <string name="version_preview_same">This version has the same text as the current note.</string>

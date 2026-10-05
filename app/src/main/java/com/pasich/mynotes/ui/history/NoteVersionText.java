@@ -8,6 +8,7 @@ import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 import com.google.android.material.color.MaterialColors;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.history.NoteVersionReason;
@@ -38,9 +39,17 @@ public final class NoteVersionText {
         };
     }
 
-    /** "5 minutes ago, 14:05", "Yesterday, 14:05" or a date, in the user's locale. */
+    /**
+     * "Just now, 14:05", "5 minutes ago, 14:05", "Yesterday, 14:05" or a date, in the user's
+     * locale. Under a minute the system's wording says "0 minutes ago".
+     */
     @NonNull
     public static CharSequence when(@NonNull Context context, long time) {
+        if (isJustNow(System.currentTimeMillis(), time)) {
+            return context.getString(
+                    R.string.version_time_just_now,
+                    android.text.format.DateFormat.getTimeFormat(context).format(time));
+        }
         return DateUtils.getRelativeDateTimeString(
                 context,
                 time,
@@ -49,11 +58,50 @@ public final class NoteVersionText {
                 DateUtils.FORMAT_ABBREV_MONTH);
     }
 
+    /** Whether a version kept at {@code time} is less than a minute old at {@code now}. */
+    @VisibleForTesting
+    static boolean isJustNow(long now, long time) {
+        return Math.abs(now - time) < DateUtils.MINUTE_IN_MILLIS;
+    }
+
+    /**
+     * Widens a highlighted range so it never starts or ends inside a word or a number: a change
+     * from "1200" to "1500" marks "1200" and "1500", not "2" and "5". An empty range inside a word
+     * (letters only added on the other side) marks that word.
+     *
+     * @return {@code {start, end}}.
+     */
+    @NonNull
+    @VisibleForTesting
+    static int[] wholeWords(@NonNull CharSequence text, int start, int end) {
+        int length = text.length();
+        int from = Math.max(0, Math.min(start, length));
+        int to = Math.max(from, Math.min(end, length));
+        while (from > 0
+                && from < length
+                && isWordChar(text.charAt(from - 1))
+                && isWordChar(text.charAt(from))) {
+            from--;
+        }
+        while (to > 0
+                && to < length
+                && isWordChar(text.charAt(to - 1))
+                && isWordChar(text.charAt(to))) {
+            to++;
+        }
+        return new int[] {from, to};
+    }
+
+    private static boolean isWordChar(char c) {
+        return Character.isLetterOrDigit(c);
+    }
+
     /** The window's text with its differing range marked in the theme's primary colours. */
     @NonNull
     public static CharSequence highlighted(
             @NonNull Context context, @NonNull SyncConflictPresentation.Window window) {
-        if (window.end <= window.start) return window.text;
+        int[] range = wholeWords(window.text, window.start, window.end);
+        if (range[1] <= range[0]) return window.text;
         SpannableString text = new SpannableString(window.text);
         int container =
                 MaterialColors.getColor(
@@ -63,13 +111,13 @@ public final class NoteVersionText {
                         context, com.google.android.material.R.attr.colorOnPrimaryContainer, 0);
         text.setSpan(
                 new BackgroundColorSpan(container),
-                window.start,
-                window.end,
+                range[0],
+                range[1],
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         text.setSpan(
                 new ForegroundColorSpan(onContainer),
-                window.start,
-                window.end,
+                range[0],
+                range[1],
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return text;
     }

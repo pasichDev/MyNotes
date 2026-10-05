@@ -644,6 +644,7 @@
     <string name="version_reason_pre_sync">Przed synchronizacją</string>
     <string name="version_reason_pre_restore">Przed przywróceniem</string>
     <string name="version_reason_pre_conflict">Przed konfliktem</string>
+    <string name="version_time_just_now">Przed chwilą, %1$s</string>
     <string name="version_preview_this">Ta wersja</string>
     <string name="version_preview_current">Bieżąca notatka</string>
     <string name="version_preview_same">Ta wersja ma ten sam tekst co bieżąca notatka.</string>

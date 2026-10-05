@@ -623,6 +623,7 @@
     <string name="version_reason_pre_sync">Vor der Synchronisierung</string>
     <string name="version_reason_pre_restore">Vor der Wiederherstellung</string>
     <string name="version_reason_pre_conflict">Vor dem Konflikt</string>
+    <string name="version_time_just_now">Gerade eben, %1$s</string>
     <string name="version_preview_this">Diese Version</string>
     <string name="version_preview_current">Aktuelle Notiz</string>
     <string name="version_preview_same">Diese Version hat denselben Text wie die aktuelle Notiz.</string>

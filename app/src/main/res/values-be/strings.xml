@@ -643,6 +643,7 @@
     <string name="version_reason_pre_sync">Перад сінхранізацыяй</string>
     <string name="version_reason_pre_restore">Перад аднаўленнем</string>
     <string name="version_reason_pre_conflict">Перад канфліктам</string>
+    <string name="version_time_just_now">Толькі што, %1$s</string>
     <string name="version_preview_this">Гэтая версія</string>
     <string name="version_preview_current">Бягучая нататка</string>
     <string name="version_preview_same">У гэтай версіі той самы тэкст, што і ў бягучай нататкі.</string>
