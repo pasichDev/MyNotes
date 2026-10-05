@@ -10,6 +10,14 @@
   and pins stay behind, and the page tells you how many. Nothing is deleted from My Notes; after
   a successful move you can clear it as a separate, confirmed step.
 
+**Improvements**
+
+- Search puts the best match first. A note whose title is exactly what you typed comes first,
+  then titles that start with it, contain it as a word or contain it at all, then notes whose
+  tag matches, and only then notes that mention it in their text; pinned and newer notes lead
+  within each group. Case, accents and extra spaces no longer matter, so "cafe" finds "Café".
+  A single letter already finds titles, and the matching part of each result is highlighted.
+
 **Fixes**
 
 - Notes no longer vanish from the main screen after a Google Drive sync. The list, the tags row

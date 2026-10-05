@@ -8,6 +8,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.ui.state.MainViewState;
 import com.pasich.mynotes.ui.state.StatsData;
+import com.pasich.mynotes.utils.search.SearchHit;
 import dagger.hilt.android.scopes.ActivityScoped;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +36,11 @@ public interface MainContract {
         /** Shows the confirmation dialog to delete a tag. */
         void startDeleteTagDialog(Tag tag);
 
-        /** Renders search results to the UI. */
-        void renderSearch(List<Note> filtered);
+        /**
+         * Renders ranked search results. {@code titlesOnly} is true while the query is too short to
+         * search note text, so an empty result asks the user to keep typing.
+         */
+        void renderSearch(List<SearchHit> hits, boolean titlesOnly);
 
         /** Updates the drawer statistics panel. */
         void renderDrawerStats(StatsData stats);

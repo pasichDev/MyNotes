@@ -62,6 +62,7 @@ import com.pasich.mynotes.utils.recycler.NoteListTransition;
 import com.pasich.mynotes.utils.recycler.NotesItemAnimator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
+import com.pasich.mynotes.utils.search.SearchHit;
 import com.pasich.mynotes.utils.tool.FormatListTool;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.Completable;
@@ -398,18 +399,16 @@ public class MainActivity extends BaseActivity implements MainContract.view {
     }
 
     @Override
-    public void renderSearch(List<Note> filtered) {
-        searchNotesAdapter.submitList(filtered);
+    public void renderSearch(List<SearchHit> hits, boolean titlesOnly) {
+        searchNotesAdapter.submitList(hits);
 
-        String q = mActivityBinding.searchView.getEditText().getText().toString().trim();
-        boolean shortQuery = q.length() < 2;
-        boolean hasResults = !filtered.isEmpty();
-
+        boolean hasResults = !hits.isEmpty();
         mActivityBinding.resultsSearchList.setVisibility(hasResults ? View.VISIBLE : View.GONE);
         mActivityBinding.searchEmptyState.setVisibility(hasResults ? View.GONE : View.VISIBLE);
         if (!hasResults) {
+            // One character only searches titles, so "nothing found" would be premature.
             mActivityBinding.searchEmptyText.setText(
-                    shortQuery
+                    titlesOnly
                             ? R.string.search_hint_keep_typing
                             : R.string.search_empty_no_results);
         }

@@ -1,6 +1,9 @@
 package com.pasich.mynotes.presenter;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
@@ -18,6 +21,7 @@ import com.pasich.mynotes.ui.state.MainViewState;
 import com.pasich.mynotes.utils.constants.settings.SortParam;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
+import com.pasich.mynotes.utils.search.SearchHit;
 import io.reactivex.Flowable;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.CompositeDisposable;
@@ -287,5 +291,48 @@ public class MainPresenterTest extends BasePresenterTest {
 
         verify(mockView, times(1)).render(org.mockito.Mockito.any());
         assertThat(ids(lastRendered())).containsExactly(1);
+    }
+
+    // ---- Search ranking (#175) ----------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    private List<SearchHit> lastSearch(boolean expectTitlesOnly) {
+        ArgumentCaptor<List<SearchHit>> captor = ArgumentCaptor.forClass(List.class);
+        verify(mockView, atLeastOnce()).renderSearch(captor.capture(), eq(expectTitlesOnly));
+        List<List<SearchHit>> all = captor.getAllValues();
+        return all.get(all.size() - 1);
+    }
+
+    @Test
+    public void search_ranksExactTitleFirstAfterDebounce() {
+        MainPresenter p =
+                syncPresenter(
+                        tagsWith(),
+                        Arrays.asList(
+                                new Note().create("Weekly", "review the PR", 30, ""),
+                                new Note().create("PR", "", 10, "")));
+        clearInvocations(mockView);
+
+        p.updateSearchQuery("PR ");
+        verify(mockView, never()).renderSearch(any(), anyBoolean());
+        settle();
+
+        List<SearchHit> hits = lastSearch(false);
+        assertThat(hits).hasSize(2);
+        assertThat(hits.get(0).note().getTitle()).isEqualTo("PR");
+        assertThat(hits.get(0).kind()).isEqualTo(SearchHit.MatchKind.EXACT_TITLE);
+    }
+
+    @Test
+    public void search_oneCharacterAsksToKeepTyping() {
+        MainPresenter p =
+                syncPresenter(
+                        tagsWith(), Arrays.asList(new Note().create("Notes", "q is here", 30, "")));
+        clearInvocations(mockView);
+
+        p.updateSearchQuery("q");
+        settle();
+
+        assertThat(lastSearch(true)).isEmpty();
     }
 }

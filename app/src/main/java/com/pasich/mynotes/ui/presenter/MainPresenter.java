@@ -15,18 +15,18 @@ import com.pasich.mynotes.utils.TagsSorter;
 import com.pasich.mynotes.utils.constants.settings.SortParam;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
+import com.pasich.mynotes.utils.search.NoteSearchRanker;
+import com.pasich.mynotes.utils.search.SearchHit;
 import dagger.hilt.android.scopes.ActivityScoped;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 /** Presenter backing the main notes list screen. */
@@ -42,6 +42,9 @@ public class MainPresenter extends BasePresenter<MainContract.view>
      */
     static final long STATE_DEBOUNCE_MS = 50;
 
+    /** Folds the burst of a note edit and a query change into one ranking pass. */
+    static final long SEARCH_DEBOUNCE_MS = 150;
+
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
     private final BehaviorSubject<Tag> selectedTag =
             BehaviorSubject.createDefault(SystemTagsManager.createAllNotesTag());
@@ -49,6 +52,8 @@ public class MainPresenter extends BasePresenter<MainContract.view>
     private final BehaviorSubject<MainViewState> viewState = BehaviorSubject.create();
     private final BehaviorSubject<String> searchQuery = BehaviorSubject.createDefault("");
     private final BehaviorSubject<String> searchTagFilter = BehaviorSubject.createDefault("");
+
+    private final NoteSearchRanker searchRanker = new NoteSearchRanker();
 
     private UiEvent lastUiEvent = UiEvent.NONE;
     private Note backupDeleteNote;
@@ -241,38 +246,48 @@ public class MainPresenter extends BasePresenter<MainContract.view>
                                         notesStream,
                                         searchQuery,
                                         searchTagFilter,
-                                        this::filterNotes)
-                                .debounce(150, TimeUnit.MILLISECONDS)
+                                        SearchRequest::new)
+                                .debounce(
+                                        SEARCH_DEBOUNCE_MS,
+                                        TimeUnit.MILLISECONDS,
+                                        getSchedulerProvider().computation())
+                                .map(this::runSearch)
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(
-                                        filtered -> getView().renderSearch(filtered),
+                                        result ->
+                                                getView()
+                                                        .renderSearch(
+                                                                result.hits, result.titlesOnly),
                                         throwable -> Log.e(TAG, "search error", throwable)));
     }
 
-    private List<Note> filterNotes(List<Note> notes, String query, String tagFilter) {
-        if (query == null || query.trim().length() < 2) return Collections.emptyList();
+    /** Ranks off the main thread: the debounce hands the latest request to a worker. */
+    private SearchResult runSearch(SearchRequest request) {
+        List<SearchHit> hits = searchRanker.rank(request.notes, request.query, request.tagFilter);
+        return new SearchResult(hits, NoteSearchRanker.searchesTitlesOnly(request.query));
+    }
 
-        String q = query.toLowerCase().trim();
-        boolean hasTagFilter = tagFilter != null && !tagFilter.isEmpty();
+    private static final class SearchRequest {
+        final List<Note> notes;
+        final String query;
+        final String tagFilter;
 
-        return notes.stream()
-                .filter(
-                        n ->
-                                (n.getTitle().toLowerCase().contains(q)
-                                                || n.getValue().toLowerCase().contains(q))
-                                        && (!hasTagFilter || tagFilter.equals(n.getTag())))
-                .sorted(
-                        (n1, n2) -> {
-                            boolean n1Exact = n1.getTitle().equalsIgnoreCase(query);
-                            boolean n2Exact = n2.getTitle().equalsIgnoreCase(query);
+        SearchRequest(List<Note> notes, String query, String tagFilter) {
+            this.notes = notes;
+            this.query = query;
+            this.tagFilter = tagFilter;
+        }
+    }
 
-                            if (n1Exact && !n2Exact) return -1;
-                            if (!n1Exact && n2Exact) return 1;
+    private static final class SearchResult {
+        final List<SearchHit> hits;
+        final boolean titlesOnly;
 
-                            return Long.compare(n2.getDate(), n1.getDate());
-                        })
-                .collect(Collectors.toList());
+        SearchResult(List<SearchHit> hits, boolean titlesOnly) {
+            this.hits = hits;
+            this.titlesOnly = titlesOnly;
+        }
     }
 
     public void updateSearchQuery(String query) {
