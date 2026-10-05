@@ -504,8 +504,8 @@
     <string name="meet_encly_stays_attachments_note">Encly nie przechowuje plików</string>
     <string name="meet_encly_stays_reminders">Przypomnienia</string>
     <string name="meet_encly_stays_reminders_note">Encly nie ma przypomnień</string>
-    <string name="meet_encly_stays_pinned">Przypięte notatki</string>
-    <string name="meet_encly_stays_pinned_note">Zostaną przeniesione, ale bez przypięcia</string>
+    <string name="meet_encly_stays_pinned">Przypięcie notatek</string>
+    <string name="meet_encly_stays_pinned_note">Same notatki zostaną przeniesione, ale nieprzypięte</string>
     <string name="meet_encly_stays_none">Nic – wszystko trafi do Encly.</string>
     <string name="meet_encly_get">Pobierz Encly</string>
     <string name="meet_encly_update">Zaktualizuj Encly</string>

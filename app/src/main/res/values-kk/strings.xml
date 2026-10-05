@@ -500,8 +500,8 @@
     <string name="meet_encly_stays_attachments_note">Encly файлдарды сақтамайды</string>
     <string name="meet_encly_stays_reminders">Еске салулар</string>
     <string name="meet_encly_stays_reminders_note">Encly-де еске салулар жоқ</string>
-    <string name="meet_encly_stays_pinned">Бекітілген жазбалар</string>
-    <string name="meet_encly_stays_pinned_note">Көшеді, бірақ бекітусіз</string>
+    <string name="meet_encly_stays_pinned">Жазбаларды бекіту</string>
+    <string name="meet_encly_stays_pinned_note">Жазбалардың өзі көшеді, бірақ бекітілмеген күйде</string>
     <string name="meet_encly_stays_none">Ештеңе — бәрі Encly-ге көшеді.</string>
     <string name="meet_encly_get">Encly алу</string>
     <string name="meet_encly_update">Encly жаңарту</string>

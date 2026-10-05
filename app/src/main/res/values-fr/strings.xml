@@ -499,8 +499,8 @@
     <string name="meet_encly_stays_attachments_note">Encly ne stocke pas de fichiers</string>
     <string name="meet_encly_stays_reminders">Rappels</string>
     <string name="meet_encly_stays_reminders_note">Encly n\'a pas de rappels</string>
-    <string name="meet_encly_stays_pinned">Notes épinglées</string>
-    <string name="meet_encly_stays_pinned_note">Transférées, mais sans l\'épingle</string>
+    <string name="meet_encly_stays_pinned">Épinglage des notes</string>
+    <string name="meet_encly_stays_pinned_note">Les notes elles-mêmes sont transférées, mais désépinglées</string>
     <string name="meet_encly_stays_none">Rien : tout part vers Encly.</string>
     <string name="meet_encly_get">Obtenir Encly</string>
     <string name="meet_encly_update">Mettre à jour Encly</string>

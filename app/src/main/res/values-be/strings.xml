@@ -503,8 +503,8 @@
     <string name="meet_encly_stays_attachments_note">Encly не захоўвае файлы</string>
     <string name="meet_encly_stays_reminders">Напаміны</string>
     <string name="meet_encly_stays_reminders_note">У Encly няма напамінаў</string>
-    <string name="meet_encly_stays_pinned">Замацаваныя нататкі</string>
-    <string name="meet_encly_stays_pinned_note">Пераедуць, але без замацавання</string>
+    <string name="meet_encly_stays_pinned">Замацаванне нататак</string>
+    <string name="meet_encly_stays_pinned_note">Самі нататкі пераедуць, але незамацаванымі</string>
     <string name="meet_encly_stays_none">Нічога — усё пераедзе ў Encly.</string>
     <string name="meet_encly_get">Атрымаць Encly</string>
     <string name="meet_encly_update">Абнавіць Encly</string>

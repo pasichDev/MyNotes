@@ -508,8 +508,8 @@
     <string name="meet_encly_stays_attachments_note">Encly не хранит файлы</string>
     <string name="meet_encly_stays_reminders">Напоминания</string>
     <string name="meet_encly_stays_reminders_note">В Encly нет напоминаний</string>
-    <string name="meet_encly_stays_pinned">Закреплённые заметки</string>
-    <string name="meet_encly_stays_pinned_note">Переедут, но без закрепления</string>
+    <string name="meet_encly_stays_pinned">Закрепление заметок</string>
+    <string name="meet_encly_stays_pinned_note">Сами заметки переедут, но незакреплёнными</string>
     <string name="meet_encly_stays_none">Ничего — всё переедет в Encly.</string>
     <string name="meet_encly_get">Получить Encly</string>
     <string name="meet_encly_update">Обновить Encly</string>

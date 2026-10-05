@@ -512,8 +512,8 @@
     <string name="meet_encly_stays_attachments_note">Encly не зберігає файли</string>
     <string name="meet_encly_stays_reminders">Нагадування</string>
     <string name="meet_encly_stays_reminders_note">В Encly немає нагадувань</string>
-    <string name="meet_encly_stays_pinned">Закріплені нотатки</string>
-    <string name="meet_encly_stays_pinned_note">Переїдуть, але без закріплення</string>
+    <string name="meet_encly_stays_pinned">Закріплення нотаток</string>
+    <string name="meet_encly_stays_pinned_note">Самі нотатки переїдуть, але незакріпленими</string>
     <string name="meet_encly_stays_none">Нічого — усе переїде в Encly.</string>
     <string name="meet_encly_get">Отримати Encly</string>
     <string name="meet_encly_update">Оновити Encly</string>

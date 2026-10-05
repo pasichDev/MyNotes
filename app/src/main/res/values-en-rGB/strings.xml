@@ -549,8 +549,8 @@
     <string name="meet_encly_stays_attachments_note">Encly does not store files</string>
     <string name="meet_encly_stays_reminders">Reminders</string>
     <string name="meet_encly_stays_reminders_note">Encly has no reminders</string>
-    <string name="meet_encly_stays_pinned">Pinned notes</string>
-    <string name="meet_encly_stays_pinned_note">They move, but without the pin</string>
+    <string name="meet_encly_stays_pinned">Pins on notes</string>
+    <string name="meet_encly_stays_pinned_note">The notes themselves move, unpinned</string>
     <string name="meet_encly_stays_none">Nothing. Everything you have moves to Encly.</string>
     <string name="meet_encly_get">Get Encly</string>
     <string name="meet_encly_update">Update Encly</string>

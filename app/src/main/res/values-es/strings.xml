@@ -504,8 +504,8 @@
     <string name="meet_encly_stays_attachments_note">Encly no guarda archivos</string>
     <string name="meet_encly_stays_reminders">Recordatorios</string>
     <string name="meet_encly_stays_reminders_note">Encly no tiene recordatorios</string>
-    <string name="meet_encly_stays_pinned">Notas fijadas</string>
-    <string name="meet_encly_stays_pinned_note">Se trasladan, pero sin fijar</string>
+    <string name="meet_encly_stays_pinned">Fijado de notas</string>
+    <string name="meet_encly_stays_pinned_note">Las notas se trasladan, pero sin fijar</string>
     <string name="meet_encly_stays_none">Nada: todo pasa a Encly.</string>
     <string name="meet_encly_get">Obtener Encly</string>
     <string name="meet_encly_update">Actualizar Encly</string>

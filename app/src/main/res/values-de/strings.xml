@@ -503,8 +503,8 @@
     <string name="meet_encly_stays_attachments_note">Encly speichert keine Dateien</string>
     <string name="meet_encly_stays_reminders">Erinnerungen</string>
     <string name="meet_encly_stays_reminders_note">Encly hat keine Erinnerungen</string>
-    <string name="meet_encly_stays_pinned">Angeheftete Notizen</string>
-    <string name="meet_encly_stays_pinned_note">Ziehen um, aber ohne Anheften</string>
+    <string name="meet_encly_stays_pinned">Anheften von Notizen</string>
+    <string name="meet_encly_stays_pinned_note">Die Notizen selbst ziehen um, aber nicht angeheftet</string>
     <string name="meet_encly_stays_none">Nichts – alles zieht zu Encly um.</string>
     <string name="meet_encly_get">Encly holen</string>
     <string name="meet_encly_update">Encly aktualisieren</string>

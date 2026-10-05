@@ -501,8 +501,8 @@
     <string name="meet_encly_stays_attachments_note">Encly non salva file</string>
     <string name="meet_encly_stays_reminders">Promemoria</string>
     <string name="meet_encly_stays_reminders_note">Encly non ha promemoria</string>
-    <string name="meet_encly_stays_pinned">Note fissate</string>
-    <string name="meet_encly_stays_pinned_note">Vengono trasferite, ma non fissate</string>
+    <string name="meet_encly_stays_pinned">Fissaggio delle note</string>
+    <string name="meet_encly_stays_pinned_note">Le note stesse vengono trasferite, ma non fissate</string>
     <string name="meet_encly_stays_none">Niente: tutto passa su Encly.</string>
     <string name="meet_encly_get">Scarica Encly</string>
     <string name="meet_encly_update">Aggiorna Encly</string>
