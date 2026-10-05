@@ -10,16 +10,18 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.TaskStackBuilder;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.NotificationPreferencesCache;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.ReminderRepeat;
 import com.pasich.mynotes.ui.view.activity.MainActivity;
 import com.pasich.mynotes.ui.view.activity.ReminderTapActivity;
 import com.pasich.mynotes.ui.view.activity.SnoozeActivity;
-import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
+import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.schedulers.Schedulers;
 import javax.inject.Inject;
 
 /** BroadcastReceiver that fires reminder notifications and reschedules repeating alarms. */
@@ -31,6 +33,8 @@ public class ReminderReceiver extends BroadcastReceiver {
     @Inject DataManager dataManager;
 
     @Inject NotificationPreferencesCache notificationPreferencesCache;
+
+    @Inject ThemePreferencesCache themePreferencesCache;
 
     public static final String ACTION_DISMISS = "com.pasich.mynotes.ACTION_DISMISS_REMINDER";
 
@@ -62,7 +66,31 @@ public class ReminderReceiver extends BroadcastReceiver {
                         + " intervalMinutes="
                         + intervalMinutes);
 
-        showNotification(ctx, noteId, title, preview, repeatStr, intervalMinutes);
+        // A note with attachments opens only in the extended editor, and the alarm does not say
+        // whether it has any: look the note up off the main thread before posting.
+        PendingResult pending = goAsync();
+        Context appContext = ctx.getApplicationContext();
+        dataManager
+                .getNoteForId(noteId)
+                .map(Note::isAttachments)
+                .onErrorReturnItem(false)
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        hasAttachments -> {
+                            try {
+                                showNotification(
+                                        appContext,
+                                        noteId,
+                                        title,
+                                        preview,
+                                        repeatStr,
+                                        intervalMinutes,
+                                        hasAttachments);
+                            } finally {
+                                pending.finish();
+                            }
+                        },
+                        e -> pending.finish());
 
         if (intervalMinutes > 0) {
             long nextTime = System.currentTimeMillis() + intervalMinutes * 60_000L;
@@ -150,10 +178,11 @@ public class ReminderReceiver extends BroadcastReceiver {
             String title,
             String preview,
             String repeatStr,
-            int intervalMinutes) {
-        Intent noteIntent = new Intent(ctx, NoteActivity.class);
-        noteIntent.putExtra(NoteExtras.EXTRA_NEW_NOTE, false);
-        noteIntent.putExtra(NoteExtras.EXTRA_ID_NOTE, (long) noteId);
+            int intervalMinutes,
+            boolean hasAttachments) {
+        Intent noteIntent =
+                NoteNavigator.existingNoteIntent(
+                        ctx, themePreferencesCache, noteId, hasAttachments);
 
         PendingIntent openPi =
                 TaskStackBuilder.create(ctx)
@@ -169,6 +198,7 @@ public class ReminderReceiver extends BroadcastReceiver {
         tapIntent.putExtra(ReminderManager.EXTRA_NOTE_PREVIEW, preview);
         tapIntent.putExtra(ReminderManager.EXTRA_NOTE_REPEAT, repeatStr);
         tapIntent.putExtra(ReminderManager.EXTRA_NOTE_INTERVAL_MINUTES, intervalMinutes);
+        tapIntent.putExtra(NoteExtras.EXTRA_HAS_ATTACHMENTS, hasAttachments);
         PendingIntent tapPi =
                 PendingIntent.getActivity(
                         ctx,

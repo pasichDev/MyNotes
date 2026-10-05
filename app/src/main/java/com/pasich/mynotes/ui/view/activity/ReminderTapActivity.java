@@ -4,11 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.TaskStackBuilder;
+import com.pasich.mynotes.cache.ThemePreferencesCache;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.ReminderRepeat;
-import com.pasich.mynotes.ui.view.activity.noteEditor.NoteActivity;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
+import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -25,6 +26,8 @@ public class ReminderTapActivity extends AppCompatActivity {
     public static final String EXTRA_IS_TASK = "isTask";
 
     @Inject DataManager dataManager;
+
+    @Inject ThemePreferencesCache themePreferencesCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,9 +79,12 @@ public class ReminderTapActivity extends AppCompatActivity {
                 dataManager.clearReminder(noteId).subscribe(() -> {}, e -> {});
             }
 
-            Intent noteIntent = new Intent(this, NoteActivity.class);
-            noteIntent.putExtra(NoteExtras.EXTRA_NEW_NOTE, false);
-            noteIntent.putExtra(NoteExtras.EXTRA_ID_NOTE, (long) noteId);
+            Intent noteIntent =
+                    NoteNavigator.existingNoteIntent(
+                            this,
+                            themePreferencesCache,
+                            noteId,
+                            incoming.getBooleanExtra(NoteExtras.EXTRA_HAS_ATTACHMENTS, false));
             TaskStackBuilder.create(this)
                     .addNextIntent(new Intent(this, MainActivity.class))
                     .addNextIntent(noteIntent)

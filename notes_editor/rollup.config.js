@@ -81,6 +81,7 @@ export default [
                   'saveContent',
                   'flushContent',
                   'restoreViewState',
+                  'setReadMode',
                   'uploadAttachment',
                   'loadNote',
                   'setThemeColors'

@@ -41,7 +41,8 @@ window.SpacerTool = SpacerTool
       i18n,
       placeholder: i18n.placeholder,
       autofocus: params.get('autofocus') !== '0',
-      readOnly: false,
+      // "Open in reading mode": rendered read-only from the start, with no switch to see.
+      readOnly: params.get('readonly') === '1',
 
       tools: {
         paragraph: { class: Paragraph, inlineToolbar: true },

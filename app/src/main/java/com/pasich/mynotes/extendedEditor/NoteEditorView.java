@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -51,6 +52,10 @@ public class NoteEditorView extends FrameLayout {
     // has shown the note and applied any saved position.
     private String lastViewState;
     private boolean autofocus = true;
+    private boolean startReadOnly = false;
+    private boolean doubleTapToEdit = false;
+    // Put the caret at the start of the next loaded note ("open in editing mode").
+    private boolean focusStart = false;
     private boolean editorIsReady = false;
     private boolean htmlLoaded = false;
     private OnFileChooserListener fileChooserListener;
@@ -107,7 +112,23 @@ public class NoteEditorView extends FrameLayout {
                 "file:///android_asset/editor/editor.html?locale="
                         + Locale.getDefault().getLanguage();
         if (!autofocus) url += "&autofocus=0";
+        if (startReadOnly) url += "&readonly=1";
+        if (doubleTapToEdit) url += "&dbltap=1";
         webView.loadUrl(url);
+    }
+
+    /**
+     * How the page starts: in reading mode or not, and whether a double tap in reading mode starts
+     * editing there. Takes effect only before the view is attached.
+     */
+    public void setStartOptions(boolean readOnly, boolean doubleTapToEdit) {
+        this.startReadOnly = readOnly;
+        this.doubleTapToEdit = doubleTapToEdit;
+    }
+
+    /** Puts the caret at the start of the next note loaded, unless a saved position places it. */
+    public void setFocusStart(boolean focusStart) {
+        this.focusStart = focusStart;
     }
 
     /**
@@ -261,6 +282,22 @@ public class NoteEditorView extends FrameLayout {
         editorInterface.toggleReadMode();
     }
 
+    /** Whether the page has finished starting, so a mode switch can reach it. */
+    public boolean isEditorReady() {
+        return editorIsReady;
+    }
+
+    /** Focuses the page and opens the keyboard on the caret it holds. */
+    public void showKeyboard() {
+        if (webView == null) return;
+        webView.requestFocus();
+        InputMethodManager imm =
+                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
     public void deleteBlock(String blockId, String fileUrl) {
         if (!editorIsReady) return;
         editorInterface.deleteAttachmentBlockRequest(blockId, fileUrl);
@@ -285,10 +322,11 @@ public class NoteEditorView extends FrameLayout {
     private void loadIntoEditor(Note note) {
         lastViewState = null;
         editorInterface.loadNoteToEditor(
-                note, restoreAnchorIndex, restoreAnchorOffset, restoreViewState);
+                note, restoreAnchorIndex, restoreAnchorOffset, restoreViewState, focusStart);
         restoreAnchorIndex = -1;
         restoreAnchorOffset = 0;
         restoreViewState = null;
+        focusStart = false;
     }
 
     /**

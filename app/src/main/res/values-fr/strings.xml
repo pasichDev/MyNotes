@@ -522,4 +522,20 @@
     <string name="read_mode_enter">Mode lecture</string>
     <string name="read_mode_exit">Revenir à l’édition</string>
     <string name="reminder_chip_cd">Rappel : %1$s. Modifier le rappel</string>
+    <string name="note_opening_mode">Ouvrir les notes en</string>
+    <string name="note_opening_mode_description">Les nouvelles notes s\'ouvrent toujours prêtes à la saisie.</string>
+    <string name="note_opening_mode_auto">Automatique</string>
+    <string name="note_opening_mode_auto_summary">Mode lecture dans l\'éditeur simple, mode édition dans l\'éditeur avancé</string>
+    <string name="note_opening_mode_read">Mode lecture</string>
+    <string name="note_opening_mode_read_summary">Rien ne change par erreur. Touchez Modifier pour commencer à écrire</string>
+    <string name="note_opening_mode_edit">Mode édition</string>
+    <string name="note_opening_mode_edit_summary">Le curseur est placé et le clavier s\'ouvre</string>
+    <string name="note_opening_position">Ouvrir les notes</string>
+    <string name="note_opening_position_last">Là où vous vous êtes arrêté</string>
+    <string name="note_opening_position_last_summary">La ligne que vous lisiez, et le curseur là où vous avez arrêté de modifier</string>
+    <string name="note_opening_position_start">Au début</string>
+    <string name="note_opening_position_start_summary">Toujours commencer par la première ligne</string>
+    <string name="note_opening_double_tap">Toucher deux fois pour modifier</string>
+    <string name="note_opening_double_tap_description">En mode lecture, touchez deux fois le texte pour commencer à le modifier exactement à cet endroit.</string>
+    <string name="choice_selected">Sélectionné</string>
 </resources>

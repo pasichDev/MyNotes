@@ -526,4 +526,20 @@
     <string name="read_mode_enter">Рэжым чытання</string>
     <string name="read_mode_exit">Вярнуцца да рэдагавання</string>
     <string name="reminder_chip_cd">Нагадванне: %1$s. Змяніць нагадванне</string>
+    <string name="note_opening_mode">Рэжым адкрыцця нататак</string>
+    <string name="note_opening_mode_description">Новыя нататкі заўсёды адкрываюцца гатовымі да набору.</string>
+    <string name="note_opening_mode_auto">Аўтаматычна</string>
+    <string name="note_opening_mode_auto_summary">Рэжым чытання ў простым рэдактары, рэжым рэдагавання ў пашыраным</string>
+    <string name="note_opening_mode_read">Чытанне</string>
+    <string name="note_opening_mode_read_summary">Нічога не зменіцца выпадкова. Націсніце «Рэдагаваць», каб пачаць друкаваць</string>
+    <string name="note_opening_mode_edit">Рэдагаванне</string>
+    <string name="note_opening_mode_edit_summary">Курсор на месцы, клавіятура адкрываецца</string>
+    <string name="note_opening_position">Адкрываць нататкі</string>
+    <string name="note_opening_position_last">З месца, дзе вы спыніліся</string>
+    <string name="note_opening_position_last_summary">На радку, які вы чыталі, і з курсорам там, дзе вы скончылі рэдагаваць</string>
+    <string name="note_opening_position_start">З пачатку</string>
+    <string name="note_opening_position_start_summary">Заўсёды з першага радка</string>
+    <string name="note_opening_double_tap">Падвойны дотык для рэдагавання</string>
+    <string name="note_opening_double_tap_description">У рэжыме чытання двойчы дакраніцеся да тэксту, каб пачаць рэдагаваць менавіта там, дзе дакрануліся.</string>
+    <string name="choice_selected">Выбрана</string>
 </resources>

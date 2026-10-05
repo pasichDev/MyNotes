@@ -531,4 +531,20 @@
     <string name="read_mode_enter">Режим чтения</string>
     <string name="read_mode_exit">Вернуться к редактированию</string>
     <string name="reminder_chip_cd">Напоминание: %1$s. Изменить напоминание</string>
+    <string name="note_opening_mode">Режим открытия заметок</string>
+    <string name="note_opening_mode_description">Новые заметки всегда открываются готовыми к набору.</string>
+    <string name="note_opening_mode_auto">Автоматически</string>
+    <string name="note_opening_mode_auto_summary">Режим чтения в простом редакторе, режим редактирования в расширенном</string>
+    <string name="note_opening_mode_read">Чтение</string>
+    <string name="note_opening_mode_read_summary">Ничего не изменится случайно. Нажмите «Редактировать», чтобы начать печатать</string>
+    <string name="note_opening_mode_edit">Редактирование</string>
+    <string name="note_opening_mode_edit_summary">Курсор на месте, клавиатура открывается</string>
+    <string name="note_opening_position">Открывать заметки</string>
+    <string name="note_opening_position_last">С места, где вы остановились</string>
+    <string name="note_opening_position_last_summary">На строке, которую вы читали, и с курсором там, где вы закончили редактировать</string>
+    <string name="note_opening_position_start">С начала</string>
+    <string name="note_opening_position_start_summary">Всегда с первой строки</string>
+    <string name="note_opening_double_tap">Двойное касание для редактирования</string>
+    <string name="note_opening_double_tap_description">В режиме чтения дважды коснитесь текста, чтобы начать редактировать именно там, где коснулись.</string>
+    <string name="choice_selected">Выбрано</string>
 </resources>

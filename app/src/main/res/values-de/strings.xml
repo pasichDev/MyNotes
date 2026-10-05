@@ -526,4 +526,20 @@
     <string name="read_mode_enter">Lesemodus</string>
     <string name="read_mode_exit">Zurück zum Bearbeiten</string>
     <string name="reminder_chip_cd">Erinnerung: %1$s. Erinnerung ändern</string>
+    <string name="note_opening_mode">Öffnungsmodus für Notizen</string>
+    <string name="note_opening_mode_description">Neue Notizen öffnen sich immer bereit zum Schreiben.</string>
+    <string name="note_opening_mode_auto">Automatisch</string>
+    <string name="note_opening_mode_auto_summary">Lesemodus im einfachen Editor, Bearbeitungsmodus im erweiterten Editor</string>
+    <string name="note_opening_mode_read">Lesemodus</string>
+    <string name="note_opening_mode_read_summary">Nichts ändert sich versehentlich. Tippe auf Bearbeiten, um zu schreiben</string>
+    <string name="note_opening_mode_edit">Bearbeitungsmodus</string>
+    <string name="note_opening_mode_edit_summary">Der Cursor ist gesetzt und die Tastatur öffnet sich</string>
+    <string name="note_opening_position">Notizen öffnen</string>
+    <string name="note_opening_position_last">Wo du aufgehört hast</string>
+    <string name="note_opening_position_last_summary">Die Zeile, die du gelesen hast, und der Cursor dort, wo du zuletzt bearbeitet hast</string>
+    <string name="note_opening_position_start">Am Anfang</string>
+    <string name="note_opening_position_start_summary">Immer mit der ersten Zeile beginnen</string>
+    <string name="note_opening_double_tap">Zum Bearbeiten doppelt tippen</string>
+    <string name="note_opening_double_tap_description">Tippe im Lesemodus doppelt auf den Text, um genau dort mit dem Bearbeiten zu beginnen.</string>
+    <string name="choice_selected">Ausgewählt</string>
 </resources>

@@ -563,4 +563,20 @@
     <string name="read_mode_enter">Reading mode</string>
     <string name="read_mode_exit">Back to editing</string>
     <string name="reminder_chip_cd">Reminder: %1$s. Change reminder</string>
+    <string name="note_opening_mode">Open notes in</string>
+    <string name="note_opening_mode_description">New notes always open ready for typing.</string>
+    <string name="note_opening_mode_auto">Automatic</string>
+    <string name="note_opening_mode_auto_summary">Reading mode in the simple editor, editing mode in the extended editor</string>
+    <string name="note_opening_mode_read">Reading mode</string>
+    <string name="note_opening_mode_read_summary">Nothing changes by accident. Tap Edit to start typing</string>
+    <string name="note_opening_mode_edit">Editing mode</string>
+    <string name="note_opening_mode_edit_summary">The cursor is in place and the keyboard opens</string>
+    <string name="note_opening_position">Open notes at</string>
+    <string name="note_opening_position_last">Where you left off</string>
+    <string name="note_opening_position_last_summary">The line you were reading, and the cursor where you stopped editing</string>
+    <string name="note_opening_position_start">The beginning</string>
+    <string name="note_opening_position_start_summary">Always start from the first line</string>
+    <string name="note_opening_double_tap">Double-tap to edit</string>
+    <string name="note_opening_double_tap_description">In reading mode, double-tap the text to start editing right where you tapped.</string>
+    <string name="choice_selected">Selected</string>
 </resources>

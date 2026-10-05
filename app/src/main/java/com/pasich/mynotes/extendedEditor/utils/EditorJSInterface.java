@@ -122,6 +122,18 @@ public class EditorJSInterface {
         if (listener != null) listener.onViewState(json);
     }
 
+    /**
+     * The page switched reading mode, from the toolbar or by a double tap on the text.
+     *
+     * @param readOnly whether reading mode is now on.
+     * @param byDoubleTap whether a double tap started editing at the tapped text.
+     */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onReadModeChanged(boolean readOnly, boolean byDoubleTap) {
+        if (listener != null) listener.onReadModeChanged(readOnly, byDoubleTap);
+    }
+
     /** The note handed over by loadNoteToEditor has been rendered. */
     @SuppressWarnings("unused")
     @JavascriptInterface
@@ -179,7 +191,7 @@ public class EditorJSInterface {
      * @param note The note model which will be rendered in the editor.
      */
     public void loadNoteToEditor(Note note) {
-        loadNoteToEditor(note, -1, 0, null);
+        loadNoteToEditor(note, -1, 0, null, false);
     }
 
     /**
@@ -188,9 +200,15 @@ public class EditorJSInterface {
      *
      * @param viewState a saved position resolved for this note ({@link
      *     ExtendedViewStateJson#toPage}), applied instead of the anchor; null for none.
+     * @param focusStart put the caret at the start of the first block once rendered, unless a
+     *     restored position places it.
      */
     public void loadNoteToEditor(
-            Note note, int anchorIndex, int anchorOffset, @Nullable String viewState) {
+            Note note,
+            int anchorIndex,
+            int anchorOffset,
+            @Nullable String viewState,
+            boolean focusStart) {
         if (webView == null || note == null) return;
         try {
             JSONObject json = new JSONObject();
@@ -219,6 +237,7 @@ public class EditorJSInterface {
                 json.put("anchor", anchor);
             }
             if (viewState != null) json.put("viewState", new JSONObject(viewState));
+            if (focusStart) json.put("focusStart", true);
             String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
         } catch (Exception e) {
@@ -475,6 +494,8 @@ public class EditorJSInterface {
         void onViewportAnchor(int blockIndex, int offsetPx);
 
         void onViewState(String json);
+
+        void onReadModeChanged(boolean readOnly, boolean byDoubleTap);
 
         void onNoteRendered();
 

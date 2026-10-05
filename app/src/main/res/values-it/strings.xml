@@ -524,4 +524,20 @@
     <string name="read_mode_enter">Modalità lettura</string>
     <string name="read_mode_exit">Torna alla modifica</string>
     <string name="reminder_chip_cd">Promemoria: %1$s. Modifica promemoria</string>
+    <string name="note_opening_mode">Apri le note in</string>
+    <string name="note_opening_mode_description">Le nuove note si aprono sempre pronte per scrivere.</string>
+    <string name="note_opening_mode_auto">Automatico</string>
+    <string name="note_opening_mode_auto_summary">Modalità lettura nell\'editor semplice, modalità modifica nell\'editor avanzato</string>
+    <string name="note_opening_mode_read">Modalità lettura</string>
+    <string name="note_opening_mode_read_summary">Niente cambia per sbaglio. Tocca Modifica per iniziare a scrivere</string>
+    <string name="note_opening_mode_edit">Modalità modifica</string>
+    <string name="note_opening_mode_edit_summary">Il cursore è al suo posto e la tastiera si apre</string>
+    <string name="note_opening_position">Apri le note</string>
+    <string name="note_opening_position_last">Dove eri rimasto</string>
+    <string name="note_opening_position_last_summary">La riga che stavi leggendo e il cursore dove hai smesso di modificare</string>
+    <string name="note_opening_position_start">Dall\'inizio</string>
+    <string name="note_opening_position_start_summary">Inizia sempre dalla prima riga</string>
+    <string name="note_opening_double_tap">Doppio tocco per modificare</string>
+    <string name="note_opening_double_tap_description">In modalità lettura, tocca due volte il testo per iniziare a modificarlo proprio lì.</string>
+    <string name="choice_selected">Selezionato</string>
 </resources>

@@ -8,7 +8,9 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Layout;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import androidx.annotation.NonNull;
@@ -18,11 +20,13 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.OneShotPreDrawListener;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
 import com.google.android.material.chip.Chip;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.simplifications.TextWatcher;
+import com.pasich.mynotes.cache.NoteOpeningPreferences;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
@@ -79,6 +83,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     private String draftValue;
 
     @Inject NoteViewStateStore noteViewStateStore;
+    @Inject NoteOpeningPreferences noteOpeningPreferences;
+
+    // Double tap on the text in reading mode starts editing there, when that setting is on.
+    private GestureDetector doubleTapDetector;
 
     // A fresh open (not a recreation) goes back to where the note was left.
     private boolean restoreSavedPosition = false;
@@ -165,6 +173,57 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     @Override
     protected void onAfterPresenterReady() {
         setupAppBarScrollListener();
+        if (noteOpeningPreferences.isDoubleTapToEdit()) setupDoubleTapToEdit();
+    }
+
+    private void setupDoubleTapToEdit() {
+        doubleTapDetector =
+                new GestureDetector(
+                        this,
+                        new GestureDetector.SimpleOnGestureListener() {
+                            @Override
+                            public boolean onDoubleTap(@NonNull MotionEvent e) {
+                                return editAtTouch(e.getRawX(), e.getRawY());
+                            }
+                        });
+        doubleTapDetector.setIsLongpressEnabled(false);
+    }
+
+    /**
+     * The body ignores touches while reading (it is disabled), so the gesture is watched here
+     * without taking any event from the views underneath.
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (doubleTapDetector != null
+                && binding != null
+                && notePresenter != null
+                && notePresenter.hasNote()
+                && !binding.valueNote.isEnabled()) {
+            doubleTapDetector.onTouchEvent(ev);
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    /** Starts editing with the caret at the text under a screen point inside the body. */
+    private boolean editAtTouch(float rawX, float rawY) {
+        int[] location = new int[2];
+        binding.valueNote.getLocationOnScreen(location);
+        float x = rawX - location[0];
+        float y = rawY - location[1];
+        if (x < 0
+                || y < 0
+                || x > binding.valueNote.getWidth()
+                || y > binding.valueNote.getHeight()) {
+            return false;
+        }
+        int offset = binding.valueNote.getOffsetForPosition(x, y);
+        if (offset < 0) return false;
+        int caret = EditorCursor.clamp(offset, binding.valueNote.length());
+        restoredSelectionStart = caret;
+        restoredSelectionEnd = caret;
+        activatedActivity();
+        return true;
     }
 
     /** Scrolls the view to keep the cursor visible when the keyboard is open. */
@@ -385,19 +444,34 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
      * the caret for when editing starts. The text may have changed since; {@link PositionRestorer}
      * finds the position again or falls back to the start of the note.
      */
-    private void restoreSavedPosition(long noteId, String shownValue) {
+    private void restoreSavedPosition(long noteId, String shownValue, @Nullable Runnable then) {
         NoteViewState saved = noteViewStateStore.get(noteId);
         PositionRestorer.SimpleTarget target =
                 PositionRestorer.restoreSimple(saved != null ? saved.simple : null, shownValue);
-        if (target.match == PositionRestorer.Match.TOP) return;
         if (target.hasSelection()) {
             savedSelectionStart = target.selectionStart;
             savedSelectionEnd = target.selectionEnd;
         }
-        if (target.topOffset != EditorCursor.NONE) {
-            savedPositionPending = true;
-            scrollToOffsetWhenLaidOut(target.topOffset, () -> savedPositionPending = false);
+        if (target.topOffset == EditorCursor.NONE) {
+            // Nothing to scroll to: the note opens at its start, title included.
+            if (then != null) OneShotPreDrawListener.add(binding.valueNote, then);
+            return;
         }
+        savedPositionPending = true;
+        scrollToOffsetWhenLaidOut(
+                target.topOffset,
+                () -> {
+                    savedPositionPending = false;
+                    if (then != null) then.run();
+                });
+    }
+
+    /** Starts editing as the note opens, once it is laid out so the caret lands predictably. */
+    private void startEditingOnOpen() {
+        activatedActivity();
+        // The window may not have focus yet on the first frame; the controller waits for it.
+        WindowCompat.getInsetsController(getWindow(), binding.valueNote)
+                .show(WindowInsetsCompat.Type.ime());
     }
 
     @Override
@@ -630,7 +704,16 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
             scrollToOffsetWhenLaidOut(restoredAnchorOffset);
             restoredAnchorOffset = EditorCursor.NONE;
         } else if (restoreSavedPosition && !notePresenter.getNewNotesKey()) {
-            restoreSavedPosition(note.getId(), value != null ? value : "");
+            // A fresh open of an existing note follows the opening settings.
+            boolean editOnOpen =
+                    NoteOpeningPreferences.opensInEditMode(
+                            noteOpeningPreferences.getOpenMode(), false, false);
+            Runnable then = editOnOpen ? this::startEditingOnOpen : null;
+            if (noteOpeningPreferences.restoresLastPosition()) {
+                restoreSavedPosition(note.getId(), value != null ? value : "", then);
+            } else if (then != null) {
+                OneShotPreDrawListener.add(binding.valueNote, then);
+            }
         }
         restoreSavedPosition = false;
         noteShown = true;

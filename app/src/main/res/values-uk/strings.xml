@@ -535,4 +535,20 @@
     <string name="read_mode_enter">Режим читання</string>
     <string name="read_mode_exit">Повернутися до редагування</string>
     <string name="reminder_chip_cd">Нагадування: %1$s. Змінити нагадування</string>
+    <string name="note_opening_mode">Режим відкриття нотаток</string>
+    <string name="note_opening_mode_description">Нові нотатки завжди відкриваються готовими до набору.</string>
+    <string name="note_opening_mode_auto">Автоматично</string>
+    <string name="note_opening_mode_auto_summary">Режим читання у простому редакторі, режим редагування в розширеному</string>
+    <string name="note_opening_mode_read">Читання</string>
+    <string name="note_opening_mode_read_summary">Нічого не зміниться випадково. Натисніть «Редагувати», щоб почати друкувати</string>
+    <string name="note_opening_mode_edit">Редагування</string>
+    <string name="note_opening_mode_edit_summary">Курсор на місці, клавіатура відкривається</string>
+    <string name="note_opening_position">Відкривати нотатки</string>
+    <string name="note_opening_position_last">З місця, де ви зупинилися</string>
+    <string name="note_opening_position_last_summary">На рядку, який ви читали, і з курсором там, де ви закінчили редагувати</string>
+    <string name="note_opening_position_start">З початку</string>
+    <string name="note_opening_position_start_summary">Завжди з першого рядка</string>
+    <string name="note_opening_double_tap">Подвійний дотик для редагування</string>
+    <string name="note_opening_double_tap_description">У режимі читання двічі торкніться тексту, щоб почати редагувати саме там, де торкнулися.</string>
+    <string name="choice_selected">Вибрано</string>
 </resources>

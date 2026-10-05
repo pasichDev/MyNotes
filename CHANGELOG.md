@@ -14,6 +14,11 @@
   editors and survives restarting the app. If the note changed in the meantime, here or on
   another device, the same place is found again by the text around it; a note that was rewritten
   or emptied opens at the top. Positions stay on this device and are never synced.
+- **Choose how notes open.** Settings → Interaction has three new options. Open notes in
+  reading mode, editing mode, or automatically as before (reading in the simple editor, editing
+  in the extended one). Open them where you left off or always at the beginning. And, if you like,
+  double-tap the text in reading mode to start editing right where you tapped. New notes always
+  open ready for typing. These choices stay on this device.
 
 **Improvements**
 
@@ -32,6 +37,11 @@
 
 **Fixes**
 
+- Reading mode in the extended editor now locks the note's title too; it could still be edited
+  while the rest of the note was read-only. Reading mode also keeps your place when you switch it
+  on or off, and the toolbar button always shows the right action.
+- Tapping a reminder opens the note in the editor it belongs to. Notes with attachments, and all
+  notes when the extended editor is on, used to open in the simple editor from a reminder.
 - Switching between list and grid no longer makes cards slide over one another: the list fades,
   takes its new shape and fades back in. The layout button also shows the right layout as soon
   as the app opens, instead of the opposite one.

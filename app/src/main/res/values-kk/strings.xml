@@ -523,4 +523,20 @@
     <string name="read_mode_enter">Оқу режимі</string>
     <string name="read_mode_exit">Өңдеуге оралу</string>
     <string name="reminder_chip_cd">Еске салу: %1$s. Еске салуды өзгерту</string>
+    <string name="note_opening_mode">Жазбаларды ашу режимі</string>
+    <string name="note_opening_mode_description">Жаңа жазбалар әрқашан теруге дайын күйде ашылады.</string>
+    <string name="note_opening_mode_auto">Автоматты</string>
+    <string name="note_opening_mode_auto_summary">Қарапайым редакторда оқу режимі, кеңейтілген редакторда өңдеу режимі</string>
+    <string name="note_opening_mode_read">Оқу режимі</string>
+    <string name="note_opening_mode_read_summary">Ештеңе кездейсоқ өзгермейді. Теруді бастау үшін «Өңдеу» түймесін түртіңіз</string>
+    <string name="note_opening_mode_edit">Өңдеу режимі</string>
+    <string name="note_opening_mode_edit_summary">Курсор орнында, пернетақта ашылады</string>
+    <string name="note_opening_position">Жазбаларды ашу орны</string>
+    <string name="note_opening_position_last">Тоқтаған жерден</string>
+    <string name="note_opening_position_last_summary">Сіз оқыған жолдан, курсор өңдеуді тоқтатқан жерде</string>
+    <string name="note_opening_position_start">Басынан</string>
+    <string name="note_opening_position_start_summary">Әрқашан бірінші жолдан бастау</string>
+    <string name="note_opening_double_tap">Өңдеу үшін екі рет түрту</string>
+    <string name="note_opening_double_tap_description">Оқу режимінде мәтінді екі рет түртіп, дәл сол жерден өңдеуді бастаңыз.</string>
+    <string name="choice_selected">Таңдалған</string>
 </resources>

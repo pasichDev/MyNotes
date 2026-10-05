@@ -26,7 +26,16 @@ function safeAndroidCall (func, ...args) {
 window.attachEditorInstance = function (instance) {
   editor = instance
   window.__EDITOR_READY = true
+  // The editor may start read-only (Android's "open in reading mode"); the title follows it.
+  isReadMode = !!instance.readOnly?.isEnabled
+  applyTitleEditable()
 }
+
+/**
+ * Options Android passes in the page URL: whether a double tap in reading mode starts editing.
+ */
+const __pageParams = new URLSearchParams(window.location.search)
+const __doubleTapToEdit = __pageParams.get('dbltap') === '1'
 
 /**
  * Save current blocks and send to Android.
@@ -327,6 +336,22 @@ function loadNote (note) {
     __lastSavedJson = JSON.stringify(blocks)
     if (note.viewState) restoreViewState(note.viewState)
     else restoreViewportAnchor(note.anchor)
+    // "Open in editing mode" with no caret to restore: the caret starts at the block shown at
+    // the top, or at the first block. The saved scroll position is applied after this.
+    if (note.focusStart && !isReadMode && !note.viewState?.caretId) {
+      const vs = note.viewState
+      let block = vs?.topId ? editor.blocks.getById(vs.topId) : null
+      if (!block && vs?.topIndex >= 0) {
+        const count = editor.blocks.getBlocksCount()
+        if (count > 0) block = editor.blocks.getBlockByIndex(Math.min(vs.topIndex, count - 1))
+      }
+      try {
+        if (block) editor.caret.setToBlock(block, 'start')
+        else editor.caret.setToFirstBlock('start')
+      } catch (e) {
+        console.error('[Editor] placing the caret failed:', e)
+      }
+    }
     safeAndroidCall('onNoteRendered')
     // Both restores scroll on the next frame; start reporting once that has happened.
     requestAnimationFrame(() =>
@@ -504,17 +529,90 @@ titleEl.addEventListener('input', () => {
 })
 
 /**
+ * The title is edited outside Editor.js, so reading mode has to lock it separately.
+ */
+function applyTitleEditable () {
+  const title = document.getElementById('noteTitleInput')
+  if (!title) return
+  title.setAttribute('contenteditable', isReadMode ? 'false' : 'true')
+  if (isReadMode && document.activeElement === title) title.blur()
+}
+
+/**
+ * Switches reading mode on or off. Editor.js renders every block again, so the block at the top
+ * of the viewport is put back afterwards and the page does not jump. Android hears about every
+ * change, including one made by a double tap, so its toolbar always shows the actual mode.
+ *
+ * @param readOnly the mode to switch to.
+ * @param caret where to put the caret once editing is on ({ id, input, offset }), or null.
+ */
+function setReadMode (readOnly, caret) {
+  if (!editor?.readOnly) return Promise.resolve(isReadMode)
+  const keep = currentViewState()
+  isReadMode = readOnly
+  applyTitleEditable()
+  return editor.readOnly.toggle(readOnly).then(() => {
+    restoreViewState({
+      caretId: !readOnly && caret ? caret.id : null,
+      caretInput: caret ? caret.input : 0,
+      caretOffset: caret ? caret.offset : 0,
+      topId: keep.topId,
+      topIndex: keep.topIndex,
+      topOffset: keep.topOffset
+    })
+    safeAndroidCall('onReadModeChanged', readOnly, !!caret)
+    return readOnly
+  })
+}
+
+/**
  * Toggle read-only mode
  */
 function toggleReadModeFromAndroid () {
-  isReadMode = !isReadMode
-  if (editor?.readOnly) editor.readOnly.toggle()
+  setReadMode(!isReadMode, null)
 }
+
+/**
+ * The text position under a point in reading mode, as { id, input, offset }: the block, which of
+ * its inputs (a list has one per item) and how many characters into it.
+ */
+function positionAtPoint (x, y) {
+  const range = document.caretRangeFromPoint?.(x, y)
+  if (!range) return null
+  const node = range.startContainer
+  const element = node.nodeType === 1 ? node : node.parentElement
+  const holder = element?.closest('.ce-block')
+  if (!holder) return null
+  const block = blockForHolder(holder)
+  if (!block) return null
+  const inputs = [...holder.querySelectorAll('[contenteditable]')]
+  const input = inputs.find(candidate => candidate.contains(node))
+  if (!input) return { id: block.id, input: 0, offset: 0 }
+  const before = document.createRange()
+  before.selectNodeContents(input)
+  before.setEnd(node, range.startOffset)
+  return {
+    id: block.id,
+    input: inputs.indexOf(input),
+    offset: before.toString().length
+  }
+}
+
+document.addEventListener('dblclick', event => {
+  if (!__doubleTapToEdit || !isReadMode || !editor) return
+  const position = positionAtPoint(event.clientX, event.clientY)
+  // A double tap selects a word; editing starts with a plain caret instead.
+  window.getSelection()?.removeAllRanges()
+  if (!position) return
+  event.preventDefault()
+  setReadMode(false, position)
+})
 
 window.setThemeColors = setThemeColors
 window.loadNote = loadNote
 window.uploadAttachment = uploadAttachment
 window.toggleReadModeFromAndroid = toggleReadModeFromAndroid
+window.setReadMode = setReadMode
 window.saveContent = saveContent
 window.currentBlockIndex = currentBlockIndex
 window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid

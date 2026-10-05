@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.chip.Chip;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
+import com.pasich.mynotes.cache.NoteOpeningPreferences;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.extendedEditor.NoteEditorView;
@@ -55,6 +57,7 @@ public class NoteExtendedEditorActivity
                                     result.getResultCode(), result.getData());
                         }
                     });
+    private static final String STATE_READ_MODE = "extended.readMode";
     private static final String STATE_ANCHOR_INDEX = "extended.anchorIndex";
     private static final String STATE_ANCHOR_OFFSET = "extended.anchorOffset";
     private static final String STATE_DRAFT_TITLE = "extended.draftTitle";
@@ -71,7 +74,12 @@ public class NoteExtendedEditorActivity
 
     @Inject AppPreferencesCache appPreferencesCache;
     @Inject NoteViewStateStore noteViewStateStore;
+    @Inject NoteOpeningPreferences noteOpeningPreferences;
     private boolean isReadMode = false;
+    private MenuItem readModeItem;
+
+    // "Open in editing mode" was chosen: the keyboard opens once the note is on screen.
+    private boolean showKeyboardWhenRendered = false;
 
     // A fresh open (not a recreation) of an existing note goes back to where it was left.
     private boolean restoreSavedPosition = false;
@@ -93,11 +101,26 @@ public class NoteExtendedEditorActivity
         // The note loads asynchronously, so this is decided before it arrives; the store is
         // injected by super.onCreate.
         long openedId = getIntent().getLongExtra(NoteExtras.EXTRA_ID_NOTE, 0);
+        boolean freshOpen = savedInstanceState == null;
+        boolean newNote = notePresenter.getNewNotesKey();
+        NoteOpeningPreferences.OpenMode mode = noteOpeningPreferences.getOpenMode();
+        isReadMode =
+                freshOpen
+                        ? !NoteOpeningPreferences.opensInEditMode(mode, true, newNote)
+                        : savedInstanceState.getBoolean(STATE_READ_MODE, false);
         restoreSavedPosition =
-                savedInstanceState == null && openedId > 0 && hasSavedPosition(openedId);
-        if (binding != null && restoreSavedPosition) {
+                freshOpen
+                        && openedId > 0
+                        && noteOpeningPreferences.restoresLastPosition()
+                        && hasSavedPosition(openedId);
+        boolean editOnOpen = freshOpen && !newNote && mode == NoteOpeningPreferences.OpenMode.EDIT;
+        showKeyboardWhenRendered = editOnOpen;
+        if (binding != null) {
+            binding.noteEditor.setStartOptions(
+                    isReadMode, noteOpeningPreferences.isDoubleTapToEdit());
             // The caret goes back where it was, so the first block must not take it first.
-            binding.noteEditor.setAutofocus(false);
+            if (restoreSavedPosition) binding.noteEditor.setAutofocus(false);
+            binding.noteEditor.setFocusStart(editOnOpen);
         }
         if (savedInstanceState != null && binding != null) {
             // A picker opened by the previous instance answers this one.
@@ -116,6 +139,7 @@ public class NoteExtendedEditorActivity
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (binding == null) return;
+        outState.putBoolean(STATE_READ_MODE, isReadMode);
         outState.putInt(STATE_ANCHOR_INDEX, binding.noteEditor.getAnchorIndex());
         outState.putInt(STATE_ANCHOR_OFFSET, binding.noteEditor.getAnchorOffset());
         if (binding.noteEditor.getChooserKind() != null) {
@@ -231,8 +255,30 @@ public class NoteExtendedEditorActivity
                             }
 
                             @Override
+                            public void onReadModeChanged(boolean readOnly, boolean byDoubleTap) {
+                                runOnUiThread(
+                                        () -> {
+                                            if (binding == null) return;
+                                            isReadMode = readOnly;
+                                            updateReadModeItem();
+                                            // A double tap means "let me type here".
+                                            if (!readOnly && byDoubleTap) {
+                                                binding.noteEditor.showKeyboard();
+                                            }
+                                        });
+                            }
+
+                            @Override
                             public void onNoteRendered() {
                                 if (binding != null) binding.noteEditor.onNoteRenderedFromBridge();
+                                runOnUiThread(
+                                        () -> {
+                                            if (binding == null || !showKeyboardWhenRendered) {
+                                                return;
+                                            }
+                                            showKeyboardWhenRendered = false;
+                                            if (!isReadMode) binding.noteEditor.showKeyboard();
+                                        });
                             }
 
                             @Override
@@ -389,12 +435,29 @@ public class NoteExtendedEditorActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean shown = super.onCreateOptionsMenu(menu);
+        readModeItem = menu.findItem(R.id.actionRead);
+        // The note may open in reading mode: the action offers the way out from the start.
+        updateReadModeItem();
+        return shown;
+    }
+
+    /** Shows the action that leaves the current mode: Edit while reading, Read while editing. */
+    private void updateReadModeItem() {
+        if (readModeItem == null) return;
+        readModeItem.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
+        readModeItem.setTitle(isReadMode ? R.string.read_mode_exit : R.string.read_mode_enter);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.actionRead) {
+            // Before the page is ready a switch would be lost; the item keeps showing the truth.
+            if (!binding.noteEditor.isEditorReady()) return true;
             isReadMode = !isReadMode;
             binding.noteEditor.actionRead();
-            item.setIcon(isReadMode ? R.drawable.ic_edit : R.drawable.ic_read);
-            item.setTitle(isReadMode ? R.string.read_mode_exit : R.string.read_mode_enter);
+            updateReadModeItem();
             return true;
         }
         return super.onOptionsItemSelected(item);

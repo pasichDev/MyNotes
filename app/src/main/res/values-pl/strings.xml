@@ -527,4 +527,20 @@
     <string name="read_mode_enter">Tryb czytania</string>
     <string name="read_mode_exit">Wróć do edycji</string>
     <string name="reminder_chip_cd">Przypomnienie: %1$s. Zmień przypomnienie</string>
+    <string name="note_opening_mode">Tryb otwierania notatek</string>
+    <string name="note_opening_mode_description">Nowe notatki zawsze otwierają się gotowe do pisania.</string>
+    <string name="note_opening_mode_auto">Automatycznie</string>
+    <string name="note_opening_mode_auto_summary">Tryb czytania w prostym edytorze, tryb edycji w rozszerzonym</string>
+    <string name="note_opening_mode_read">Czytanie</string>
+    <string name="note_opening_mode_read_summary">Nic nie zmieni się przypadkiem. Stuknij Edytuj, aby zacząć pisać</string>
+    <string name="note_opening_mode_edit">Edycja</string>
+    <string name="note_opening_mode_edit_summary">Kursor jest na miejscu, a klawiatura się otwiera</string>
+    <string name="note_opening_position">Otwieraj notatki</string>
+    <string name="note_opening_position_last">Tam, gdzie skończyłeś</string>
+    <string name="note_opening_position_last_summary">Na wierszu, który czytałeś, z kursorem tam, gdzie skończyłeś edycję</string>
+    <string name="note_opening_position_start">Od początku</string>
+    <string name="note_opening_position_start_summary">Zawsze od pierwszego wiersza</string>
+    <string name="note_opening_double_tap">Dwukrotne stuknięcie, aby edytować</string>
+    <string name="note_opening_double_tap_description">W trybie czytania stuknij dwukrotnie tekst, aby zacząć edycję dokładnie w tym miejscu.</string>
+    <string name="choice_selected">Wybrano</string>
 </resources>
