@@ -9,7 +9,9 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
@@ -44,6 +46,12 @@ public class EditorJSInterface {
     public static final String KIND_FILE = "file";
     private static final String TAG = "EditorJSInterface";
 
+    /**
+     * How long a finishing page may take to hand over its last edit before the WebView is destroyed
+     * anyway.
+     */
+    @VisibleForTesting static final long FINISH_TIMEOUT_MS = 1500;
+
     private final EditorListener listener;
     private final WebView webView;
     private final Context appContext;
@@ -52,7 +60,10 @@ public class EditorJSInterface {
     // One file at a time, in the order they were picked; never on the JS or UI thread.
     private final ExecutorService uploads = Executors.newSingleThreadExecutor();
     private final List<PickedFile> pickedFiles = new ArrayList<>();
+    // Set once the WebView is destroyed: nothing may be sent to it after that.
     private volatile boolean released = false;
+    // Runs once the page has finished (onPageFinished) or the wait timed out.
+    @Nullable private volatile Runnable pendingFinish;
 
     public EditorJSInterface(
             EditorListener listener,
@@ -190,9 +201,17 @@ public class EditorJSInterface {
         evaluate("window.historyRedo && historyRedo();");
     }
 
+    /**
+     * Runs a script in the page: at once on the main thread, otherwise posted to it. Never reaches
+     * a destroyed WebView, also when a script was posted before it was destroyed.
+     */
     private void evaluate(String script) {
         if (webView == null || released) return;
-        webView.post(
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            webView.evaluateJavascript(script, null);
+            return;
+        }
+        mainHandler.post(
                 () -> {
                     if (!released) webView.evaluateJavascript(script, null);
                 });
@@ -200,9 +219,59 @@ public class EditorJSInterface {
 
     /** Asks the editor to send its document now; it answers through onContentFlushed. */
     public void requestFlush() {
-        if (webView == null) return;
-        webView.post(
-                () -> webView.evaluateJavascript("window.flushContent && flushContent();", null));
+        evaluate("window.flushContent && flushContent();");
+    }
+
+    /**
+     * The screen is going away: asks the page for its last edit (and, with {@code keepHistory}, its
+     * undo history, through onHistoryExported) and runs {@code then} on the main thread once the
+     * page has answered, or after {@link #FINISH_TIMEOUT_MS}. {@code then} destroys the WebView;
+     * until it runs the page stays alive so the answer can still arrive.
+     */
+    public void finishPage(boolean keepHistory, @NonNull Runnable then) {
+        if (webView == null || released) {
+            then.run();
+            return;
+        }
+        Runnable once =
+                new Runnable() {
+                    private boolean done;
+
+                    @Override
+                    public void run() {
+                        if (done) return;
+                        done = true;
+                        pendingFinish = null;
+                        mainHandler.removeCallbacks(this);
+                        then.run();
+                    }
+                };
+        pendingFinish = once;
+        mainHandler.postDelayed(once, FINISH_TIMEOUT_MS);
+        evaluate(
+                "window.finishPage ? finishPage("
+                        + keepHistory
+                        + ") : "
+                        + nameInterface
+                        + ".onPageFinished();");
+    }
+
+    /** Answer to {@link #finishPage}: the page has sent everything it had. */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onPageFinished() {
+        Runnable finish = pendingFinish;
+        if (finish != null) mainHandler.post(finish);
+    }
+
+    /**
+     * The page's undo history, handed over while the screen is recreated so the next page can take
+     * it over.
+     */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onHistoryExported(String json) {
+        if (listener != null && json != null) listener.onHistoryExported(json);
     }
 
     /**
@@ -212,7 +281,10 @@ public class EditorJSInterface {
     @SuppressWarnings("unused")
     @JavascriptInterface
     public void onTitleChanged(String title) {
-        webView.post(() -> listener.onTitleChanged(title));
+        mainHandler.post(
+                () -> {
+                    if (!released) listener.onTitleChanged(title);
+                });
     }
 
     /** Receives error messages thrown by the JS editor and reports them to listener. */
@@ -233,9 +305,7 @@ public class EditorJSInterface {
 
         try {
             JSONObject json = new JSONObject(colors);
-            final String jsCommand = "setThemeColors(" + json + ");";
-
-            webView.post(() -> webView.evaluateJavascript(jsCommand, null));
+            evaluate("setThemeColors(" + json + ");");
         } catch (Exception e) {
             Log.e(TAG, "Failed to set theme colors: " + e.getMessage());
         }
@@ -248,7 +318,7 @@ public class EditorJSInterface {
      * @param note The note model which will be rendered in the editor.
      */
     public void loadNoteToEditor(Note note) {
-        loadNoteToEditor(note, -1, 0, null, false);
+        loadNoteToEditor(note, -1, 0, null, false, null);
     }
 
     /**
@@ -259,13 +329,16 @@ public class EditorJSInterface {
      *     ExtendedViewStateJson#toPage}), applied instead of the anchor; null for none.
      * @param focusStart put the caret at the start of the first block once rendered, unless a
      *     restored position places it.
+     * @param history the undo history the page this one replaces handed over ({@link
+     *     #onHistoryExported}); the page takes it over only for the same document. Null for none.
      */
     public void loadNoteToEditor(
             Note note,
             int anchorIndex,
             int anchorOffset,
             @Nullable String viewState,
-            boolean focusStart) {
+            boolean focusStart,
+            @Nullable String history) {
         if (webView == null || note == null) return;
         try {
             JSONObject json = new JSONObject();
@@ -295,8 +368,14 @@ public class EditorJSInterface {
             }
             if (viewState != null) json.put("viewState", new JSONObject(viewState));
             if (focusStart) json.put("focusStart", true);
-            String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
-            webView.post(() -> webView.evaluateJavascript(jsCommand, null));
+            if (history != null) {
+                try {
+                    json.put("history", new JSONObject(history));
+                } catch (Exception e) {
+                    Log.w(TAG, "Unreadable undo history, starting without it", e);
+                }
+            }
+            evaluate("loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));");
         } catch (Exception e) {
             Log.e(TAG, "Failed to load note: " + e.getMessage(), e);
         }
@@ -394,9 +473,15 @@ public class EditorJSInterface {
                 });
     }
 
-    /** Stops accepting uploads; called when the WebView is destroyed. */
+    /**
+     * Stops accepting uploads and sending anything to the page; called when the WebView is
+     * destroyed.
+     */
     public void release() {
         released = true;
+        Runnable finish = pendingFinish;
+        if (finish != null) mainHandler.removeCallbacks(finish);
+        pendingFinish = null;
         uploads.shutdownNow();
     }
 
@@ -510,7 +595,7 @@ public class EditorJSInterface {
 
     /** Toggles read-only mode inside Editor.js (title and blocks become non-editable). */
     public void toggleReadMode() {
-        webView.post(() -> webView.evaluateJavascript("toggleReadModeFromAndroid();", null));
+        evaluate("toggleReadModeFromAndroid();");
     }
 
     /**
@@ -524,8 +609,7 @@ public class EditorJSInterface {
         // If fileUrl == null → JS should receive “null” instead of “null string”
         String jsUrl = (fileUrl == null) ? "null" : "'" + fileUrl.replace("'", "\\'") + "'";
 
-        webView.evaluateJavascript(
-                "deleteAttachmentBlockFromAndroid('" + blockId + "', " + jsUrl + ");", null);
+        evaluate("deleteAttachmentBlockFromAndroid('" + blockId + "', " + jsUrl + ");");
     }
 
     /**
@@ -559,6 +643,9 @@ public class EditorJSInterface {
         void onNoteRendered();
 
         void onTitleChanged(String tile);
+
+        /** The page's undo history, handed over while the screen is recreated. */
+        default void onHistoryExported(String json) {}
 
         void onError(String error);
 

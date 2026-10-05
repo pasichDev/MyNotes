@@ -69,9 +69,9 @@ function saveContent () {
  * Android asks for this when the screen stops, so the last keystrokes are saved too.
  */
 function flushContent () {
-  if (!editor) return
+  if (!editor) return Promise.resolve()
 
-  editor
+  return editor
     .save()
     .then(output => {
       const jsonStr = JSON.stringify(output.blocks)
@@ -80,6 +80,19 @@ function flushContent () {
       safeAndroidCall('onContentFlushed', jsonStr)
     })
     .catch(err => console.error('[Editor] Flush failed:', err))
+}
+
+/**
+ * The page is about to be destroyed. Hands the undo history to Android first when asked (the
+ * screen is being recreated, for example rotated), then sends the document, and always ends with
+ * onPageFinished: Android keeps the WebView alive until then, so the last edit reaches it.
+ */
+function finishPage (keepHistory) {
+  const history = keepHistory ? exportHistory() : Promise.resolve()
+  return history
+    .catch(err => console.error('[History] export failed:', err))
+    .then(() => flushContent())
+    .finally(() => safeAndroidCall('onPageFinished'))
 }
 
 /**
@@ -308,7 +321,8 @@ window.addEventListener('resize', () => requestAnimationFrame(keepCaretVisible))
  * Each applied state is an ordinary change for Android, so it is autosaved like typing.
  *
  * The history belongs to the note on screen: loading a note starts it again, and it is never kept
- * across notes or page loads.
+ * across notes. A page recreated with the screen (a rotation) takes over the history of the page
+ * it replaces, through Android, when it shows the same document.
  */
 const HISTORY_LIMIT = 100
 const HISTORY_IDLE_MS = 700
@@ -415,6 +429,63 @@ function stopHistory () {
 }
 
 /**
+ * Largest history handed over to a recreated page, in characters of document JSON. The oldest
+ * undo steps and the farthest redo steps are left out first.
+ */
+const HISTORY_EXPORT_MAX_CHARS = 1500000
+
+// History handed over by the page this one replaces; used when the history starts on the same
+// document, then dropped.
+let __historyToImport = null
+
+function exportedEntry (entry) {
+  return { json: entry.json, caret: entry.caret || null }
+}
+
+function importedEntry (entry) {
+  return historyEntry(JSON.parse(entry.json), entry.caret || null)
+}
+
+/** Sends the history to Android (onHistoryExported) to be given to the next page. */
+function exportHistory () {
+  return runHistoryAction(() =>
+    (isReadMode ? Promise.resolve() : captureHistory(true)).then(() => {
+      if (!__hist.current) return
+      const undo = __hist.undo.map(exportedEntry)
+      const redo = __hist.redo.map(exportedEntry)
+      const size = list => list.reduce((sum, e) => sum + e.json.length, 0)
+      let total = __hist.current.json.length + size(undo) + size(redo)
+      while (total > HISTORY_EXPORT_MAX_CHARS && (undo.length || redo.length)) {
+        // The oldest undo step is first; the farthest redo step is first too.
+        const dropped = undo.length >= redo.length ? undo.shift() : redo.shift()
+        total -= dropped.json.length
+      }
+      if (total > HISTORY_EXPORT_MAX_CHARS) return
+      safeAndroidCall(
+        'onHistoryExported',
+        JSON.stringify({ current: exportedEntry(__hist.current), undo, redo })
+      )
+    })
+  )
+}
+
+/** Takes over a handed-over history when it was recorded on the document now on screen. */
+function importHistory () {
+  const imported = __historyToImport
+  __historyToImport = null
+  if (!imported?.current || imported.current.json !== __hist.current?.json) return
+  try {
+    __hist.undo = (imported.undo || []).map(importedEntry).slice(-HISTORY_LIMIT)
+    __hist.redo = (imported.redo || []).map(importedEntry).slice(-HISTORY_LIMIT)
+    __hist.current.caret = imported.current.caret || null
+  } catch (e) {
+    console.error('[History] import failed:', e)
+    __hist.undo = []
+    __hist.redo = []
+  }
+}
+
+/**
  * Starts the history again from the document now on screen. Editor.js refuses to save while it is
  * read-only, so a note shown in reading mode has no history until editing starts; setReadMode()
  * starts it then.
@@ -431,6 +502,7 @@ function resetHistory (settle) {
       if (epoch !== __hist.epoch) return
       __hist.current = historyEntry(doc, null)
       if (settle) __hist.settleUntil = Date.now() + HISTORY_SETTLE_MS
+      importHistory()
       reportHistory()
     })
     .catch(err => console.error('[History] reset failed:', err))
@@ -759,8 +831,10 @@ function loadNote (note) {
   }
 
   __viewStateReady = false
-  // Undo never reaches into another note, or into this one as it was before a reload.
+  // Undo never reaches into another note, or into this one as it was before a reload; only a
+  // page recreated on the same document takes over its predecessor's history.
   stopHistory()
+  __historyToImport = note.history || null
   editor.render({ blocks }).then(() => {
     __lastSavedJson = JSON.stringify(blocks)
     resetHistory()
@@ -1052,6 +1126,7 @@ window.saveContent = saveContent
 window.currentBlockIndex = currentBlockIndex
 window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid
 window.flushContent = flushContent
+window.finishPage = finishPage
 window.historyUndo = historyUndo
 window.historyRedo = historyRedo
 window.historyEditorChanged = historyEditorChanged

@@ -30,6 +30,7 @@ import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.LongFunction;
 
 public class NoteEditorView extends FrameLayout {
 
@@ -70,6 +71,10 @@ public class NoteEditorView extends FrameLayout {
     private String orphanedKind;
     private int orphanedIndex = -1;
     private boolean noteRendered = false;
+    // Undo history handed over by the page of the screen this one replaced; asked once, for the
+    // first note loaded.
+    private LongFunction<String> handedOverHistory;
+    private boolean releasing = false;
 
     public NoteEditorView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -331,12 +336,27 @@ public class NoteEditorView extends FrameLayout {
 
     private void loadIntoEditor(Note note) {
         lastViewState = null;
+        LongFunction<String> history = handedOverHistory;
+        handedOverHistory = null;
         editorInterface.loadNoteToEditor(
-                note, restoreAnchorIndex, restoreAnchorOffset, restoreViewState, focusStart);
+                note,
+                restoreAnchorIndex,
+                restoreAnchorOffset,
+                restoreViewState,
+                focusStart,
+                history != null ? history.apply(note.getId()) : null);
         restoreAnchorIndex = -1;
         restoreAnchorOffset = 0;
         restoreViewState = null;
         focusStart = false;
+    }
+
+    /**
+     * Where the undo history of the page this screen replaced can be found, by note id; asked when
+     * the first note is loaded.
+     */
+    public void setHandedOverHistory(LongFunction<String> source) {
+        handedOverHistory = source;
     }
 
     /**
@@ -494,10 +514,33 @@ public class NoteEditorView extends FrameLayout {
     }
 
     /**
-     * Fully and safely destroys the WebView instance to prevent memory leaks. Must be called from
+     * Destroys the WebView once the page has handed over its last edit. Must be called from
      * Activity/Fragment onDestroy().
      */
     public void release() {
+        release(false);
+    }
+
+    /**
+     * Destroys the WebView once the page has handed over its last edit and, with {@code
+     * keepHistory} (the screen is being recreated), its undo history. The page answers
+     * asynchronously, so the WebView is kept until it has, for a short time at most; destroying it
+     * at once lost the last edit and made a flush still on its way reach a destroyed WebView.
+     */
+    public void release(boolean keepHistory) {
+        if (releasing) return;
+        releasing = true;
+        if (handler != null) handler.removeCallbacksAndMessages(null);
+        if (editorIsReady && editorInterface != null && webView != null) {
+            editorInterface.finishPage(keepHistory, this::destroyWebView);
+        } else {
+            destroyWebView();
+        }
+    }
+
+    private void destroyWebView() {
+        // Before the WebView goes: nothing still queued may reach it afterwards.
+        if (editorInterface != null) editorInterface.release();
         try {
             if (webView != null) {
 
@@ -523,7 +566,6 @@ public class NoteEditorView extends FrameLayout {
             Log.e(TAG, "Error while destroying WebView", t);
         }
 
-        if (editorInterface != null) editorInterface.release();
         editorInterface = null;
 
         if (handler != null) {

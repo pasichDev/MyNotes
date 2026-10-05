@@ -21,6 +21,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.chip.Chip;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.cache.AppPreferencesCache;
@@ -41,6 +42,7 @@ import com.pasich.mynotes.ui.view.widgets.EditorKeyboardBar;
 import com.pasich.mynotes.utils.editor.NoteViewState;
 import com.pasich.mynotes.utils.editor.NoteViewStateStore;
 import com.pasich.mynotes.utils.editor.PositionRestorer;
+import com.pasich.mynotes.utils.editor.RetainedEditHistory;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import dagger.hilt.android.AndroidEntryPoint;
 import jakarta.inject.Inject;
@@ -89,6 +91,7 @@ public class NoteExtendedEditorActivity
     private int restoredAnchorOffset = 0;
     private String draftTitle;
     private String draftJson;
+    private RetainedEditHistory retainedEditHistory;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,6 +102,11 @@ public class NoteExtendedEditorActivity
             draftJson = savedInstanceState.getString(STATE_DRAFT_JSON);
         }
         super.onCreate(savedInstanceState);
+        retainedEditHistory = new ViewModelProvider(this).get(RetainedEditHistory.class);
+        if (savedInstanceState != null && binding != null) {
+            // The page of the screen this one replaced hands its undo history over as it finishes.
+            binding.noteEditor.setHandedOverHistory(retainedEditHistory::take);
+        }
         // The note loads asynchronously, so this is decided before it arrives; the store is
         // injected by super.onCreate.
         long openedId = getIntent().getLongExtra(NoteExtras.EXTRA_ID_NOTE, 0);
@@ -301,6 +309,12 @@ public class NoteExtendedEditorActivity
                             @Override
                             public void onTitleChanged(String title) {
                                 runOnUiThread(() -> processTitleChange(title));
+                            }
+
+                            @Override
+                            public void onHistoryExported(String json) {
+                                long noteId = notePresenter.getIdKey();
+                                runOnUiThread(() -> retainedEditHistory.put(noteId, json));
                             }
 
                             @Override
@@ -509,7 +523,9 @@ public class NoteExtendedEditorActivity
 
     /**
      * The page keeps the history and starts it again whenever it loads a note, so it never reaches
-     * across notes or into a version restored from the history. A new page starts with none.
+     * across notes or into a version restored from the history. A page recreated with the screen
+     * takes over the previous page's history ({@link RetainedEditHistory}); a new page starts with
+     * none.
      */
     @Override
     public void resetEditHistory() {
@@ -521,7 +537,9 @@ public class NoteExtendedEditorActivity
         super.onDestroy();
         if (binding != null) {
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
-            binding.noteEditor.release();
+            // The WebView goes once the page has handed over its last edit and, when the screen
+            // is only being recreated, its undo history.
+            binding.noteEditor.release(isChangingConfigurations());
             if (binding.noteEditor.getParent() instanceof ViewGroup) {
                 ((ViewGroup) binding.noteEditor.getParent()).removeView(binding.noteEditor);
             }

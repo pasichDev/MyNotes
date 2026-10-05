@@ -111,7 +111,11 @@ export function fakeEditor (blocks, { readOnly = false } = {}) {
     blocks: {
       getBlocksCount: () => state.blocks.length,
       getBlockByIndex: block,
-      getById: id => block(state.blocks.findIndex(b => b.id === id)) || null
+      getById: id => block(state.blocks.findIndex(b => b.id === id)) || null,
+      update: async (id, data) => {
+        const target = state.blocks.find(b => b.id === id)
+        if (target) target.data = data
+      }
     },
     caret: { setToBlock () {}, setToFirstBlock () {} }
   }
