@@ -3,22 +3,30 @@ package com.pasich.mynotes.ui.view.activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.AttrRes;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.core.content.FileProvider;
+import androidx.core.view.ViewCompat;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
 import com.pasich.mynotes.databinding.ActivityMeetEnclyBinding;
+import com.pasich.mynotes.utils.UpdateChecker;
 import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.encly.AndroidEnclyInspector;
 import com.pasich.mynotes.utils.encly.EnclyHandoff;
@@ -33,6 +41,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.Objects;
 import javax.inject.Inject;
 
@@ -55,6 +64,7 @@ public class MeetEnclyActivity extends BaseActivity {
     private static final String STATE_CLEARED = "encly_cleared";
 
     @Inject EnclyMigrationRepository repository;
+    @Inject UpdateChecker updateChecker;
 
     private final CompositeDisposable disposables = new CompositeDisposable();
     private ActivityMeetEnclyBinding binding;
@@ -83,7 +93,11 @@ public class MeetEnclyActivity extends BaseActivity {
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        // The page's own headline names it; the bar only carries Back.
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        // Whoever reached this page has met Encly: the one-time introduction sheet is not due.
+        updateChecker.markMeetEnclyShown();
         if (savedInstanceState == null) {
             // A hand-off file left behind by a crash or a killed process is plain text: sweep it.
             clearArchivesInBackground();
@@ -138,47 +152,102 @@ public class MeetEnclyActivity extends BaseActivity {
 
     private void render() {
         if (binding == null) return;
-        if (summary != null) {
-            binding.movesText.setText(
-                    String.join(
-                            "\n",
-                            getString(R.string.meet_encly_moves_notes, summary.notes),
-                            getString(R.string.meet_encly_moves_tasks, summary.tasks),
-                            getString(R.string.meet_encly_moves_tags, summary.tags),
-                            getString(R.string.meet_encly_moves_categories, categories)));
-            binding.staysText.setText(
-                    String.join(
-                            "\n",
-                            getString(R.string.meet_encly_stays_attachments, summary.attachments),
-                            getString(R.string.meet_encly_stays_reminders, summary.reminders),
-                            getString(R.string.meet_encly_stays_pinned, summary.pinned)));
-        }
+        if (summary != null) renderSummary(summary);
 
         EnclyReceiverCheck.Status status =
                 receiver == null ? EnclyReceiverCheck.Status.NOT_INSTALLED : receiver.status;
         switch (status) {
             case READY -> {
                 binding.primaryButton.setText(R.string.meet_encly_move);
-                binding.statusText.setVisibility(View.GONE);
+                binding.statusCard.setVisibility(View.GONE);
+                showHint(R.string.meet_encly_hint_ready);
             }
             case NEEDS_UPDATE -> {
                 binding.primaryButton.setText(R.string.meet_encly_update);
-                binding.statusText.setText(R.string.meet_encly_needs_update);
-                binding.statusText.setVisibility(View.VISIBLE);
+                showStatus(
+                        R.string.meet_encly_needs_update,
+                        R.drawable.ic_history,
+                        com.google.android.material.R.attr.colorSecondaryContainer,
+                        com.google.android.material.R.attr.colorOnSecondaryContainer);
+                showHint(0);
             }
             case UNTRUSTED -> {
                 binding.primaryButton.setText(R.string.meet_encly_get);
-                binding.statusText.setText(R.string.meet_encly_untrusted);
-                binding.statusText.setVisibility(View.VISIBLE);
+                showStatus(
+                        R.string.meet_encly_untrusted,
+                        R.drawable.ic_info,
+                        com.google.android.material.R.attr.colorErrorContainer,
+                        com.google.android.material.R.attr.colorOnErrorContainer);
+                showHint(0);
             }
             default -> {
                 binding.primaryButton.setText(R.string.meet_encly_get);
-                binding.statusText.setVisibility(View.GONE);
+                binding.statusCard.setVisibility(View.GONE);
+                showHint(R.string.meet_encly_hint_get);
             }
+        }
+        // The hand-off is being prepared (a clear runs only once a result is on screen).
+        if (busy && result == null) {
+            binding.primaryButton.setText(R.string.meet_encly_moving);
+            showHint(0);
         }
         binding.primaryButton.setEnabled(!busy);
         binding.progress.setVisibility(busy ? View.VISIBLE : View.GONE);
         renderResult();
+    }
+
+    private void renderSummary(@NonNull HandoffPayloadBuilder.Summary summary) {
+        // What moves: notes always, the rest only when there is something to move.
+        setCount(binding.rowNotes, binding.countNotes, summary.notes, true);
+        setCount(binding.rowTasks, binding.countTasks, summary.tasks, false);
+        setCount(binding.rowTags, binding.countTags, summary.tags, false);
+        setCount(binding.rowCategories, binding.countCategories, categories, false);
+        // What stays: only what this library actually has.
+        boolean attachments =
+                setCount(
+                        binding.rowAttachments,
+                        binding.countAttachments,
+                        summary.attachments,
+                        false);
+        boolean reminders =
+                setCount(binding.rowReminders, binding.countReminders, summary.reminders, false);
+        boolean pinned = setCount(binding.rowPinned, binding.countPinned, summary.pinned, false);
+        binding.staysNone.setVisibility(
+                attachments || reminders || pinned ? View.GONE : View.VISIBLE);
+    }
+
+    /** Shows a label-and-count row, read by TalkBack as one item. Returns whether it is shown. */
+    private boolean setCount(
+            @NonNull View row, @NonNull TextView count, int value, boolean alwaysShown) {
+        boolean shown = alwaysShown || value > 0;
+        row.setVisibility(shown ? View.VISIBLE : View.GONE);
+        count.setText(NumberFormat.getIntegerInstance().format(value));
+        ViewCompat.setScreenReaderFocusable(row, true);
+        return shown;
+    }
+
+    private void showStatus(
+            @StringRes int text,
+            @DrawableRes int icon,
+            @AttrRes int container,
+            @AttrRes int onContainer) {
+        int background = MaterialColors.getColor(binding.statusCard, container);
+        int foreground = MaterialColors.getColor(binding.statusCard, onContainer);
+        binding.statusCard.setBackgroundTintList(ColorStateList.valueOf(background));
+        binding.statusIcon.setImageResource(icon);
+        binding.statusIcon.setImageTintList(ColorStateList.valueOf(foreground));
+        binding.statusText.setTextColor(foreground);
+        binding.statusText.setText(text);
+        binding.statusCard.setVisibility(View.VISIBLE);
+    }
+
+    private void showHint(@StringRes int text) {
+        if (text == 0) {
+            binding.hintText.setVisibility(View.GONE);
+        } else {
+            binding.hintText.setText(text);
+            binding.hintText.setVisibility(View.VISIBLE);
+        }
     }
 
     private void renderResult() {
@@ -188,29 +257,45 @@ public class MeetEnclyActivity extends BaseActivity {
         }
         binding.resultCard.setVisibility(View.VISIBLE);
         if (result.success) {
-            String text =
-                    getString(
-                            R.string.meet_encly_result_ok,
-                            result.notes,
-                            result.tasks,
-                            result.tags,
-                            result.skipped);
+            setResultIcon(
+                    R.drawable.ic_check,
+                    com.google.android.material.R.attr.colorPrimaryContainer,
+                    com.google.android.material.R.attr.colorOnPrimaryContainer);
+            binding.resultTitle.setText(R.string.meet_encly_result_ok);
+            binding.resultCounts.setVisibility(View.VISIBLE);
+            setCount(binding.resultRowNotes, binding.resultNotes, result.notes, true);
+            setCount(binding.resultRowTasks, binding.resultTasks, result.tasks, true);
+            setCount(binding.resultRowTags, binding.resultTags, result.tags, true);
+            setCount(binding.resultRowSkipped, binding.resultSkipped, result.skipped, false);
             if (summary != null && summary.attachments > 0) {
-                text +=
-                        "\n"
-                                + getString(
-                                        R.string.meet_encly_result_attachments,
-                                        summary.attachments);
+                binding.resultText.setText(
+                        getString(R.string.meet_encly_result_attachments, summary.attachments));
+                binding.resultText.setVisibility(View.VISIBLE);
+            } else {
+                binding.resultText.setVisibility(View.GONE);
             }
-            binding.resultText.setText(text);
-            binding.clearHint.setVisibility(cleared ? View.GONE : View.VISIBLE);
-            binding.clearButton.setVisibility(cleared ? View.GONE : View.VISIBLE);
+            binding.clearGroup.setVisibility(cleared ? View.GONE : View.VISIBLE);
             binding.clearButton.setEnabled(!busy);
         } else {
+            setResultIcon(
+                    R.drawable.ic_info,
+                    com.google.android.material.R.attr.colorErrorContainer,
+                    com.google.android.material.R.attr.colorOnErrorContainer);
+            binding.resultTitle.setText(R.string.meet_encly_result_failed_title);
+            binding.resultCounts.setVisibility(View.GONE);
             binding.resultText.setText(failureMessage(result.reason));
-            binding.clearHint.setVisibility(View.GONE);
-            binding.clearButton.setVisibility(View.GONE);
+            binding.resultText.setVisibility(View.VISIBLE);
+            binding.clearGroup.setVisibility(View.GONE);
         }
+    }
+
+    private void setResultIcon(
+            @DrawableRes int icon, @AttrRes int container, @AttrRes int onContainer) {
+        binding.resultIcon.setImageResource(icon);
+        binding.resultIcon.setBackgroundTintList(
+                ColorStateList.valueOf(MaterialColors.getColor(binding.resultIcon, container)));
+        binding.resultIcon.setImageTintList(
+                ColorStateList.valueOf(MaterialColors.getColor(binding.resultIcon, onContainer)));
     }
 
     private int failureMessage(@Nullable HandoffResult.Reason reason) {
@@ -321,6 +406,7 @@ public class MeetEnclyActivity extends BaseActivity {
         cleared = false;
         busy = false;
         render();
+        binding.scroll.post(() -> binding.scroll.smoothScrollTo(0, binding.resultCard.getBottom()));
     }
 
     @NonNull

@@ -6,201 +6,639 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:fitsSystemWindows="true"
     android:orientation="vertical"
     tools:context=".ui.view.activity.MeetEnclyActivity">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/transparent"
-        app:title="@string/meet_encly_title" />
+        android:background="@android:color/transparent" />
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipToPadding="false">
 
-        <LinearLayout
+        <!-- The content keeps a readable width on tablets and in landscape. -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_height="wrap_content">
 
-            <!-- What Encly is -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:id="@+id/content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/rounded_card_background"
-                android:elevation="2dp"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_max="600dp">
+
+                <!-- Hero -->
+                <ImageView
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:contentDescription="@null"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_encly_logo" />
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/meet_encly_title"
-                    android:textColor="?attr/colorPrimary"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_meet_encly_pill"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
+                    android:text="@string/meet_encly_eyebrow"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    android:textColor="?attr/colorOnSecondaryContainer" />
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:lineSpacingExtra="2dp"
-                    android:text="@string/meet_encly_intro"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:lineSpacingExtra="2dp"
-                    android:text="@string/meet_encly_one_way"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <!-- What moves -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/rounded_card_background"
-                android:elevation="2dp"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/meet_encly_moves_title"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/movesText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:lineSpacingExtra="4dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp"
-                    tools:text="Notes, including the trash: 12" />
-            </LinearLayout>
-
-            <!-- What does not move -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/rounded_card_background"
-                android:elevation="2dp"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/meet_encly_stays_title"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/staysText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:lineSpacingExtra="4dp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp"
-                    tools:text="Attachments and images: 3" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/statusText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:lineSpacingExtra="2dp"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp"
-                android:visibility="gone"
-                tools:text="@string/meet_encly_needs_update"
-                tools:visibility="visible" />
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:indeterminate="true"
-                android:visibility="gone" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/primaryButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:minHeight="56dp"
-                android:enabled="false"
-                android:text="@string/meet_encly_move"
-                app:cornerRadius="12dp" />
-
-            <!-- Encly's answer -->
-            <LinearLayout
-                android:id="@+id/resultCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/rounded_card_background"
-                android:elevation="2dp"
-                android:orientation="vertical"
-                android:padding="20dp"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <TextView
-                    android:id="@+id/resultText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:lineSpacingExtra="4dp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="15sp"
-                    tools:text="@string/meet_encly_result_ok" />
-
-                <TextView
-                    android:id="@+id/clearHint"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:lineSpacingExtra="2dp"
-                    android:text="@string/meet_encly_clear_hint"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp"
+                    android:accessibilityHeading="true"
+                    android:gravity="center"
+                    android:text="@string/meet_encly_title"
+                    android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:text="@string/meet_encly_promise"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <!-- Why Encly -->
+                <LinearLayout
+                    style="@style/MeetEncly.Card"
+                    android:layout_marginTop="28dp"
+                    android:paddingVertical="10dp">
+
+                    <LinearLayout style="@style/MeetEncly.Benefit">
+
+                        <ImageView
+                            style="@style/MeetEncly.Badge"
+                            android:src="@drawable/ic_security" />
+
+                        <LinearLayout style="@style/MeetEncly.BenefitText">
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitTitle"
+                                android:text="@string/meet_encly_benefit_encrypted" />
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitBody"
+                                android:text="@string/meet_encly_benefit_encrypted_text" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout style="@style/MeetEncly.Benefit">
+
+                        <ImageView
+                            style="@style/MeetEncly.Badge"
+                            android:src="@drawable/ic_cloud_off" />
+
+                        <LinearLayout style="@style/MeetEncly.BenefitText">
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitTitle"
+                                android:text="@string/meet_encly_benefit_offline" />
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitBody"
+                                android:text="@string/meet_encly_benefit_offline_text" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout style="@style/MeetEncly.Benefit">
+
+                        <ImageView
+                            style="@style/MeetEncly.Badge"
+                            android:src="@drawable/ic_lock" />
+
+                        <LinearLayout style="@style/MeetEncly.BenefitText">
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitTitle"
+                                android:text="@string/meet_encly_benefit_lock" />
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitBody"
+                                android:text="@string/meet_encly_benefit_lock_text" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout style="@style/MeetEncly.Benefit">
+
+                        <ImageView
+                            style="@style/MeetEncly.Badge"
+                            android:src="@drawable/ic_code" />
+
+                        <LinearLayout style="@style/MeetEncly.BenefitText">
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitTitle"
+                                android:text="@string/meet_encly_benefit_open" />
+
+                            <TextView
+                                style="@style/MeetEncly.BenefitBody"
+                                android:text="@string/meet_encly_benefit_open_text" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- What moves -->
+                <LinearLayout
+                    style="@style/MeetEncly.Card"
+                    android:layout_marginTop="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            style="@style/MeetEncly.Badge"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:padding="7dp"
+                            android:src="@drawable/ic_check" />
+
+                        <TextView
+                            style="@style/MeetEncly.SectionTitle"
+                            android:text="@string/meet_encly_moves_title" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowNotes"
+                        style="@style/MeetEncly.Row">
+
+                        <ImageView
+                            style="@style/MeetEncly.RowIcon"
+                            android:src="@drawable/ic_notebook" />
+
+                        <LinearLayout style="@style/MeetEncly.RowText">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:text="@string/meet_encly_moves_notes" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/countNotes"
+                            style="@style/MeetEncly.RowCount"
+                            tools:text="16" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowTasks"
+                        style="@style/MeetEncly.Row">
+
+                        <ImageView
+                            style="@style/MeetEncly.RowIcon"
+                            android:src="@drawable/ic_tasks" />
+
+                        <LinearLayout style="@style/MeetEncly.RowText">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:text="@string/meet_encly_moves_tasks" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/countTasks"
+                            style="@style/MeetEncly.RowCount"
+                            tools:text="4" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowTags"
+                        style="@style/MeetEncly.Row">
+
+                        <ImageView
+                            style="@style/MeetEncly.RowIcon"
+                            android:src="@drawable/ic_tag" />
+
+                        <LinearLayout style="@style/MeetEncly.RowText">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:text="@string/meet_encly_moves_tags" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/countTags"
+                            style="@style/MeetEncly.RowCount"
+                            tools:text="2" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowCategories"
+                        style="@style/MeetEncly.Row">
+
+                        <ImageView
+                            style="@style/MeetEncly.RowIcon"
+                            android:src="@drawable/ic_edit_format_list"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <LinearLayout style="@style/MeetEncly.RowText">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:text="@string/meet_encly_moves_categories" />
+
+                            <TextView
+                                style="@style/MeetEncly.RowNote"
+                                android:text="@string/meet_encly_moves_categories_note" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/countCategories"
+                            style="@style/MeetEncly.RowCount"
+                            tools:text="1" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- What stays behind -->
+                <LinearLayout
+                    style="@style/MeetEncly.Card"
+                    android:layout_marginTop="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            style="@style/MeetEncly.Badge"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:backgroundTint="?attr/colorSurfaceContainerHighest"
+                            android:padding="7dp"
+                            android:src="@drawable/ic_info"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            style="@style/MeetEncly.SectionTitle"
+                            android:text="@string/meet_encly_stays_title" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowAttachments"
+                        style="@style/MeetEncly.Row">
+
+                        <ImageView
+                            style="@style/MeetEncly.RowIcon"
+                            android:src="@drawable/ic_image" />
+
+                        <LinearLayout style="@style/MeetEncly.RowText">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:text="@string/meet_encly_stays_attachments" />
+
+                            <TextView
+                                style="@style/MeetEncly.RowNote"
+                                android:text="@string/meet_encly_stays_attachments_note" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/countAttachments"
+                            style="@style/MeetEncly.RowCount"
+                            tools:text="3" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowReminders"
+                        style="@style/MeetEncly.Row">
+
+                        <ImageView
+                            style="@style/MeetEncly.RowIcon"
+                            android:src="@drawable/ic_bell" />
+
+                        <LinearLayout style="@style/MeetEncly.RowText">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:text="@string/meet_encly_stays_reminders" />
+
+                            <TextView
+                                style="@style/MeetEncly.RowNote"
+                                android:text="@string/meet_encly_stays_reminders_note" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/countReminders"
+                            style="@style/MeetEncly.RowCount"
+                            tools:text="2" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowPinned"
+                        style="@style/MeetEncly.Row">
+
+                        <ImageView
+                            style="@style/MeetEncly.RowIcon"
+                            android:src="@drawable/ic_pin" />
+
+                        <LinearLayout style="@style/MeetEncly.RowText">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:text="@string/meet_encly_stays_pinned" />
+
+                            <TextView
+                                style="@style/MeetEncly.RowNote"
+                                android:text="@string/meet_encly_stays_pinned_note" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/countPinned"
+                            style="@style/MeetEncly.RowCount"
+                            tools:text="1" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/staysNone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="6dp"
+                        android:text="@string/meet_encly_stays_none"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!-- One way, nothing deleted -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginTop="1dp"
+                        android:contentDescription="@null"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_check_circle"
+                        app:tint="?attr/colorPrimary" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:text="@string/meet_encly_one_way"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+
+                <!-- Why the move is not available yet -->
+                <LinearLayout
+                    android:id="@+id/statusCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_meet_encly_tonal"
+                    android:backgroundTint="?attr/colorTertiaryContainer"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
                     android:visibility="gone"
-                    tools:visibility="visible" />
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:id="@+id/statusIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:contentDescription="@null"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_info"
+                        app:tint="?attr/colorOnTertiaryContainer" />
+
+                    <TextView
+                        android:id="@+id/statusText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:accessibilityLiveRegion="polite"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnTertiaryContainer"
+                        tools:text="@string/meet_encly_needs_update" />
+                </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/clearButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:id="@+id/primaryButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/meet_encly_clear"
-                    android:textColor="?attr/colorError"
-                    android:visibility="gone"
-                    app:cornerRadius="12dp"
-                    app:strokeColor="?attr/colorError"
-                    tools:visibility="visible" />
-            </LinearLayout>
+                    android:layout_marginTop="16dp"
+                    android:enabled="false"
+                    android:minHeight="56dp"
+                    android:paddingHorizontal="24dp"
+                    android:text="@string/meet_encly_move"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
 
-        </LinearLayout>
-    </ScrollView>
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="12dp"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    app:trackCornerRadius="2dp" />
+
+                <TextView
+                    android:id="@+id/hintText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    tools:text="@string/meet_encly_hint_ready"
+                    tools:visibility="visible" />
+
+                <!-- Encly's answer -->
+                <LinearLayout
+                    android:id="@+id/resultCard"
+                    style="@style/MeetEncly.Card"
+                    android:layout_marginTop="24dp"
+                    android:accessibilityLiveRegion="polite"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/resultIcon"
+                            style="@style/MeetEncly.Badge"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:padding="11dp"
+                            android:src="@drawable/ic_check" />
+
+                        <TextView
+                            android:id="@+id/resultTitle"
+                            style="@style/MeetEncly.SectionTitle"
+                            android:layout_marginStart="16dp"
+                            android:textAppearance="?attr/textAppearanceTitleLarge"
+                            tools:text="@string/meet_encly_result_ok" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/resultCounts"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:id="@+id/resultRowNotes"
+                            style="@style/MeetEncly.Row"
+                            android:minHeight="36dp">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:text="@string/meet_encly_result_notes" />
+
+                            <TextView
+                                android:id="@+id/resultNotes"
+                                style="@style/MeetEncly.RowCount"
+                                tools:text="16" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/resultRowTasks"
+                            style="@style/MeetEncly.Row"
+                            android:minHeight="36dp">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:text="@string/meet_encly_moves_tasks" />
+
+                            <TextView
+                                android:id="@+id/resultTasks"
+                                style="@style/MeetEncly.RowCount"
+                                tools:text="4" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/resultRowTags"
+                            style="@style/MeetEncly.Row"
+                            android:minHeight="36dp">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:text="@string/meet_encly_moves_tags" />
+
+                            <TextView
+                                android:id="@+id/resultTags"
+                                style="@style/MeetEncly.RowCount"
+                                tools:text="3" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/resultRowSkipped"
+                            style="@style/MeetEncly.Row"
+                            android:minHeight="36dp">
+
+                            <TextView
+                                style="@style/MeetEncly.RowLabel"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:text="@string/meet_encly_result_skipped" />
+
+                            <TextView
+                                android:id="@+id/resultSkipped"
+                                style="@style/MeetEncly.RowCount"
+                                tools:text="1" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/resultText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        tools:text="@string/meet_encly_result_cancelled" />
+
+                    <!-- A separate, confirmed step: clearly secondary to the move itself. -->
+                    <LinearLayout
+                        android:id="@+id/clearGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <com.google.android.material.divider.MaterialDivider
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginVertical="16dp" />
+
+                        <TextView
+                            android:id="@+id/clearHint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/meet_encly_clear_hint"
+                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/clearButton"
+                            style="@style/Widget.Material3.Button.TextButton.Icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="start"
+                            android:layout_marginStart="-12dp"
+                            android:layout_marginTop="4dp"
+                            android:minHeight="48dp"
+                            android:text="@string/meet_encly_clear"
+                            android:textColor="?attr/colorError"
+                            app:icon="@drawable/ic_delete_note"
+                            app:iconTint="?attr/colorError"
+                            app:rippleColor="?attr/colorErrorContainer" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

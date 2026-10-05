@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Encly's launcher icon (same author): the brand tile with its "E" mark, drawn from Encly's own
+     adaptive-icon foreground (a 72dp safe zone of the 108dp canvas). The colours are Encly's and
+     stay the same in light and dark themes. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="72dp"
+    android:viewportWidth="72"
+    android:viewportHeight="72">
+    <path
+        android:fillColor="#9A4A1F"
+        android:pathData="M20,0H52A20,20 0,0 1,72 20V52A20,20 0,0 1,52 72H20A20,20 0,0 1,0 52V20A20,20 0,0 1,20 0Z" />
+    <group
+        android:translateX="-18"
+        android:translateY="-18">
+        <path
+            android:pathData="M69,33H48a8,8 0,0 0,-8 8V67a8,8 0,0 0,8 8H69M40,54H63"
+            android:strokeWidth="6.5"
+            android:strokeColor="#F7F3EA"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>
