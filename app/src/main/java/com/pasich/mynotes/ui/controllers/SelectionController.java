@@ -61,12 +61,15 @@ public class SelectionController {
     public void setPanelMode(Mode mode) {
         switch (mode) {
             case NORMAL:
+                panel.actionTagChange.setVisibility(View.VISIBLE);
                 panel.actionShare.setVisibility(View.VISIBLE);
                 panel.actionDelete.setVisibility(View.VISIBLE);
                 panel.actionRestore.setVisibility(View.GONE);
                 break;
 
             case RESTORE:
+                // A note in the trash has no tag to change.
+                panel.actionTagChange.setVisibility(View.GONE);
                 panel.actionShare.setVisibility(View.GONE);
                 panel.actionDelete.setVisibility(View.GONE);
                 panel.actionRestore.setVisibility(View.VISIBLE);

@@ -224,6 +224,8 @@
     <string name="tags_management">Etiquetas</string>
     <string name="create_tag">Presiona este botón para crear una etiqueta.</string>
     <string name="tag_options">Opciones de etiqueta</string>
+    <string name="selection_change_tag">Cambiar etiqueta</string>
+    <string name="edit_note_action">Editar nota</string>
     <string name="createTag">Crear etiqueta</string>
     <string name="toastTagVisible">Las notas con esta etiqueta se muestran en la lista general.</string>
     <string name="toastTagHidde">Las notas con esta etiqueta están ocultas en la lista general.</string>

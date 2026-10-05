@@ -251,7 +251,7 @@
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="25dp"
             android:layout_marginBottom="25dp"
-            android:contentDescription="@string/editNoteButton"
+            android:contentDescription="@string/edit_note_action"
             android:onClick="@{(view) -> presenter.activateEditNote()}"
             android:visibility="@{activateEdit ? View.GONE : View.VISIBLE}"
             app:layout_dodgeInsetEdges="bottom"

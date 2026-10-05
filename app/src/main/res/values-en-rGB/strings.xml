@@ -68,7 +68,6 @@
     <string name="save_to_notes">Save to My Notes</string>
     <string name="telegram_nick" translatable="false">"@"pasichDev</string>
     <string name="email_address" translatable="false">pasichDev@gmail.com</string>
-    <string name="editNoteButton" translatable="false">EditNote</string>
     <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
@@ -235,6 +234,8 @@
     <string name="tags_management">Tags</string>
     <string name="create_tag">Tap this button to create a tag.</string>
     <string name="tag_options">Tag options</string>
+    <string name="selection_change_tag">Change tag</string>
+    <string name="edit_note_action">Edit note</string>
     <string name="createTag">Create tag</string>
     <string name="toastTagVisible">Notes with this tag are visible in the main list.</string>
     <string name="toastTagHidde">Notes with this tag are hidden from the main list.</string>

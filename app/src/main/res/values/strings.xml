@@ -71,7 +71,6 @@
     <string name="app_name"> My Notes </string>
     <string name="telegram_nick" translatable="false">"@"pasichDev</string>
     <string name="email_address" translatable="false">pasichDev@outlook.com</string>
-    <string name="editNoteButton" translatable="false">EditNote</string>
     <string name="developer" translatable="false">Andrii Pasichnik (pasichDev)</string>
     <string name="thanksImage" translatable="false">Thanks byy</string>
     <string name="sliderTextSize" translatable="false">Slider edit text size</string>
@@ -280,6 +279,8 @@
     <string name="create_tag">Press this button to create tag.</string>
     <string name="tags_management">Tags</string>
     <string name="tag_options">Tag options</string>
+    <string name="selection_change_tag">Change tag</string>
+    <string name="edit_note_action">Edit note</string>
     <string name="createTag">Create Tag</string>
     <string name="toastTagVisible">Notes marked with this tag are displayed in the general list.</string>
     <string name="toastTagHidde">Notes marked with this tag are hidden in the general list.</string>
