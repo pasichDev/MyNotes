@@ -35,6 +35,12 @@ public class NoteEditorView extends FrameLayout {
     private EditorJSInterface editorInterface;
     private Handler handler;
     private Note pendingNote;
+    // Block at the top of the viewport, as last reported by the editor.
+    private int anchorIndex = -1;
+    private int anchorOffset = 0;
+    // Reading position to restore on the next load (after a recreation).
+    private int restoreAnchorIndex = -1;
+    private int restoreAnchorOffset = 0;
     private boolean editorIsReady = false;
     private boolean htmlLoaded = false;
     private OnFileChooserListener fileChooserListener;
@@ -152,7 +158,7 @@ public class NoteEditorView extends FrameLayout {
                     applyTheme();
                     if (pendingNote != null) {
                         if (editorInterface != null) {
-                            editorInterface.loadNoteToEditor(pendingNote);
+                            loadIntoEditor(pendingNote);
                         } else {
                             Log.w(
                                     TAG,
@@ -211,10 +217,43 @@ public class NoteEditorView extends FrameLayout {
         }
 
         if (editorIsReady) {
-            editorInterface.loadNoteToEditor(mNote);
+            loadIntoEditor(mNote);
         } else {
             pendingNote = mNote;
         }
+    }
+
+    private void loadIntoEditor(Note note) {
+        editorInterface.loadNoteToEditor(note, restoreAnchorIndex, restoreAnchorOffset);
+        restoreAnchorIndex = -1;
+        restoreAnchorOffset = 0;
+    }
+
+    /** Remembers the block at the top of the viewport, as reported by the editor. */
+    public void onViewportAnchor(int blockIndex, int offsetPx) {
+        anchorIndex = blockIndex;
+        anchorOffset = offsetPx;
+    }
+
+    public int getAnchorIndex() {
+        return anchorIndex;
+    }
+
+    public int getAnchorOffset() {
+        return anchorOffset;
+    }
+
+    /** Reading position to scroll to once the next note has been rendered. */
+    public void setRestoreAnchor(int blockIndex, int offsetPx) {
+        restoreAnchorIndex = blockIndex;
+        restoreAnchorOffset = offsetPx;
+        anchorIndex = blockIndex;
+        anchorOffset = offsetPx;
+    }
+
+    /** Asks the editor for its document right away instead of after its change batching. */
+    public void requestFlush() {
+        if (editorIsReady && editorInterface != null) editorInterface.requestFlush();
     }
 
     /**

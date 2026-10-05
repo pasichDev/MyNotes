@@ -71,6 +71,36 @@ public class EditorJSInterface {
     }
 
     /**
+     * Answer to {@link #requestFlush()}: the document as it is right now, sent without waiting for
+     * the editor's change batching.
+     */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onContentFlushed(String jsonData) {
+        if (listener != null) listener.onContentFlushed(jsonData);
+    }
+
+    /**
+     * Reports which block is at the top of the viewport once scrolling settles, so the reading
+     * position can be restored after a rotation.
+     *
+     * @param blockIndex index of the first visible block, or -1 while the title is on screen.
+     * @param offsetPx that block's distance from the top of the viewport, in CSS pixels.
+     */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onViewportAnchor(int blockIndex, int offsetPx) {
+        if (listener != null) listener.onViewportAnchor(blockIndex, offsetPx);
+    }
+
+    /** Asks the editor to send its document now; it answers through onContentFlushed. */
+    public void requestFlush() {
+        if (webView == null) return;
+        webView.post(
+                () -> webView.evaluateJavascript("window.flushContent && flushContent();", null));
+    }
+
+    /**
      * Called from JS whenever the title field inside the editor changes. Executed on the main
      * thread to safely update UI listeners.
      */
@@ -113,6 +143,14 @@ public class EditorJSInterface {
      * @param note The note model which will be rendered in the editor.
      */
     public void loadNoteToEditor(Note note) {
+        loadNoteToEditor(note, -1, 0);
+    }
+
+    /**
+     * Loads a note and, once it is rendered, scrolls block {@code anchorIndex} to {@code
+     * anchorOffset} CSS pixels from the top. A negative index keeps the top of the note.
+     */
+    public void loadNoteToEditor(Note note, int anchorIndex, int anchorOffset) {
         if (webView == null || note == null) return;
         try {
             JSONObject json = new JSONObject();
@@ -134,6 +172,12 @@ public class EditorJSInterface {
             }
 
             json.put("plainTextFallback", isPlainTextFallback);
+            if (anchorIndex >= 0) {
+                JSONObject anchor = new JSONObject();
+                anchor.put("index", anchorIndex);
+                anchor.put("offset", anchorOffset);
+                json.put("anchor", anchor);
+            }
             String jsCommand = "loadNote(JSON.parse(" + JSONObject.quote(json.toString()) + "));";
             webView.post(() -> webView.evaluateJavascript(jsCommand, null));
         } catch (Exception e) {
@@ -286,6 +330,10 @@ public class EditorJSInterface {
         void onEditorReady();
 
         void onContentChanged(String jsonData);
+
+        void onContentFlushed(String jsonData);
+
+        void onViewportAnchor(int blockIndex, int offsetPx);
 
         void onTitleChanged(String tile);
 

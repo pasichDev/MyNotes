@@ -79,6 +79,7 @@ export default [
                   'deleteAttachmentBlockFromAndroid',
                   'toggleReadModeFromAndroid',
                   'saveContent',
+                  'flushContent',
                   'uploadAttachment',
                   'loadNote',
                   'setThemeColors'

@@ -4,14 +4,19 @@ import static android.view.View.VISIBLE;
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.os.Bundle;
 import android.text.Editable;
 import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.graphics.Insets;
+import androidx.core.view.OneShotPreDrawListener;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
@@ -21,12 +26,29 @@ import com.pasich.mynotes.base.simplifications.TextWatcher;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteBinding;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
-import com.pasich.mynotes.utils.linkMovement.CustomLinkMovementMethod;
+import com.pasich.mynotes.utils.editor.EditableLinkMovementMethod;
+import com.pasich.mynotes.utils.editor.EditorCursor;
 import dagger.hilt.android.AndroidEntryPoint;
 
 /** Activity for creating and editing a single note. */
 @AndroidEntryPoint
 public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
+
+    private static final String STATE_EDITING = "note.editing";
+    private static final String STATE_SELECTION_START = "note.selectionStart";
+    private static final String STATE_SELECTION_END = "note.selectionEnd";
+    private static final String STATE_ANCHOR_OFFSET = "note.anchorOffset";
+    private static final String STATE_DRAFT_TITLE = "note.draftTitle";
+    private static final String STATE_DRAFT_VALUE = "note.draftValue";
+
+    /**
+     * How long typing has to pause before the body is copied out of the field. Copying, counting
+     * words and comparing are linear in the note's length; doing them on every keystroke made
+     * typing in a long note stutter.
+     */
+    private static final long VALUE_COMMIT_DELAY_MS = 250;
+
+    private final Runnable commitValueRunnable = this::commitValueEdit;
 
     private TextWatcher titleWatcher;
     private TextWatcher valueWatcher;
@@ -37,14 +59,55 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     // Tracks scroll progress when adjusting view
     private int scrollProgress = -1;
 
-    // Saves scroll position when keyboard opens/closes
-    private int savedScrollPosition = -1;
-
     // Tracks current keyboard visibility state
     private boolean isKeyboardVisible = false;
 
     // Tracks last cursor line in multiline input
     private int lastCursorLine = -1;
+
+    // State carried over from a previous instance (rotation, process restore), applied once the
+    // note has been loaded.
+    private boolean restoredEditing = false;
+    private int restoredSelectionStart = EditorCursor.NONE;
+    private int restoredSelectionEnd = EditorCursor.NONE;
+    private int restoredAnchorOffset = EditorCursor.NONE;
+    private String draftTitle;
+    private String draftValue;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        readRestoredState(savedInstanceState);
+        super.onCreate(savedInstanceState);
+    }
+
+    private void readRestoredState(@Nullable Bundle state) {
+        if (state == null) return;
+        restoredEditing = state.getBoolean(STATE_EDITING, false);
+        restoredSelectionStart = state.getInt(STATE_SELECTION_START, EditorCursor.NONE);
+        restoredSelectionEnd = state.getInt(STATE_SELECTION_END, EditorCursor.NONE);
+        restoredAnchorOffset = state.getInt(STATE_ANCHOR_OFFSET, EditorCursor.NONE);
+        draftTitle = state.getString(STATE_DRAFT_TITLE);
+        draftValue = state.getString(STATE_DRAFT_VALUE);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (binding == null) return;
+        boolean editing = binding.valueNote.isEnabled();
+        outState.putBoolean(STATE_EDITING, editing);
+        if (editing) {
+            outState.putInt(STATE_SELECTION_START, binding.valueNote.getSelectionStart());
+            outState.putInt(STATE_SELECTION_END, binding.valueNote.getSelectionEnd());
+        }
+        outState.putInt(STATE_ANCHOR_OFFSET, readingAnchorOffset());
+        // The fields do not save their own text (see initListeners); a draft is kept only while a
+        // save is still on its way, so the next instance never shows older text than was typed.
+        if (notePresenter != null && notePresenter.hasUnsavedChanges()) {
+            outState.putString(STATE_DRAFT_TITLE, binding.notesTitle.getText().toString());
+            outState.putString(STATE_DRAFT_VALUE, binding.valueNote.getText().toString());
+        }
+    }
 
     @Override
     protected void onNewNoteInit(Note note) {
@@ -178,10 +241,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     }
 
     /**
-     * Handles system indents and keyboard appearance/disappearance: - correctly sets top inset for
-     * root layout - raises FAB above the navbar - adapts the bottom margin of ScrollView to the
-     * keyboard or system navbar - saves and restores the scroll position when opening/closing the
-     * keyboard - automatically scrolls to the cursor when the keyboard appears
+     * Handles system insets and the keyboard: the root takes the status bar, the FAB clears the
+     * navigation bar, and the scroll view ends above the keyboard or the navigation bar. When the
+     * keyboard opens, the caret is brought into view; when it closes nothing is moved, so the text
+     * stays where the user left it.
      */
     @Override
     protected void applyEdgeToEdgeInsets(View rootView) {
@@ -202,33 +265,26 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                     binding.editActive.setLayoutParams(fab);
 
                     Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
                     Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
 
                     boolean keyboardWasVisible = isKeyboardVisible;
                     boolean keyboardWillBeVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
-
-                    if (!keyboardWasVisible && keyboardWillBeVisible) {
-                        savedScrollPosition = binding.scrollView.getScrollY();
-                    }
-
                     isKeyboardVisible = keyboardWillBeVisible;
 
                     v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), 0);
 
                     int bottomMargin = Math.max(imeInsets.bottom, systemBars.bottom);
-
                     android.widget.LinearLayout.LayoutParams params =
                             (android.widget.LinearLayout.LayoutParams)
                                     binding.scrollView.getLayoutParams();
-
-                    if (keyboardWasVisible && !keyboardWillBeVisible && savedScrollPosition >= 0) {
-                        binding.scrollView.scrollTo(0, savedScrollPosition);
+                    if (params.bottomMargin != bottomMargin) {
+                        params.setMargins(
+                                params.leftMargin,
+                                params.topMargin,
+                                params.rightMargin,
+                                bottomMargin);
+                        binding.scrollView.setLayoutParams(params);
                     }
-
-                    params.setMargins(
-                            params.leftMargin, params.topMargin, params.rightMargin, bottomMargin);
-                    binding.scrollView.setLayoutParams(params);
 
                     binding.scrollView.setPadding(
                             binding.scrollView.getPaddingLeft(),
@@ -242,34 +298,88 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                             && binding.valueNote.isFocused()) {
                         lastCursorPosition = -1;
                         binding.valueNote.postDelayed(this::scrollToCursor, 200);
-                    } else if (keyboardWasVisible
-                            && !keyboardWillBeVisible
-                            && savedScrollPosition >= 0) {
-                        binding.scrollView.post(
-                                () -> {
-                                    if (Math.abs(
-                                                    binding.scrollView.getScrollY()
-                                                            - savedScrollPosition)
-                                            > 5) {
-                                        binding.scrollView.scrollTo(0, savedScrollPosition);
-                                    }
-                                });
                     }
 
                     return insets;
                 });
     }
 
+    /**
+     * Offset of the text at the top of the viewport; 0 while the start of the note is on screen.
+     */
+    private int firstVisibleOffset() {
+        Layout layout = binding.valueNote.getLayout();
+        if (layout == null) return EditorCursor.NONE;
+        int top = binding.scrollView.getScrollY() - valueTextTop();
+        if (top <= 0) return 0;
+        return layout.getLineStart(layout.getLineForVertical(top));
+    }
+
+    /**
+     * Reading position to restore after a recreation, or {@link EditorCursor#NONE} while the title
+     * area is still on screen. Unlike a pixel scroll position it survives a rotation, where the
+     * text re-wraps to a different width.
+     */
+    private int readingAnchorOffset() {
+        if (binding.scrollView.getScrollY() - valueTextTop() <= 0) return EditorCursor.NONE;
+        return firstVisibleOffset();
+    }
+
+    /** Offset of the text at the bottom of the viewport, or {@link EditorCursor#NONE}. */
+    private int lastVisibleOffset() {
+        Layout layout = binding.valueNote.getLayout();
+        if (layout == null) return EditorCursor.NONE;
+        int bottom = binding.scrollView.getScrollY() + binding.scrollView.getHeight();
+        int y = bottom - valueTextTop();
+        if (y < 0) return EditorCursor.NONE;
+        return layout.getLineEnd(layout.getLineForVertical(y));
+    }
+
+    /** Top of the note's first text line in the scroll view's content coordinates. */
+    private int valueTextTop() {
+        Rect rect = new Rect();
+        binding.valueNote.getDrawingRect(rect);
+        binding.scrollView.offsetDescendantRectToMyCoords(binding.valueNote, rect);
+        return rect.top + binding.valueNote.getTotalPaddingTop();
+    }
+
+    /** Scrolls so the line holding {@code offset} sits at the top, once the text is laid out. */
+    private void scrollToOffsetWhenLaidOut(int offset) {
+        OneShotPreDrawListener.add(
+                binding.valueNote,
+                () -> {
+                    Layout layout = binding.valueNote.getLayout();
+                    if (layout == null) return;
+                    int clamped = EditorCursor.clamp(offset, binding.valueNote.length());
+                    int line = layout.getLineForOffset(clamped);
+                    binding.scrollView.scrollTo(0, valueTextTop() + layout.getLineTop(line));
+                });
+    }
+
     @Override
     public void onStop() {
         super.onStop();
-        // CRITICAL: Emergency saving when stopping Activity
-        if (notePresenter != null && notePresenter.getNote() != null) {
-            String currentTitle = binding != null ? binding.notesTitle.getText().toString() : "";
-            String currentValue = binding != null ? binding.valueNote.getText().toString() : "";
-            // If there are unsaved changes, perform an emergency save.
-            notePresenter.simpleNoteChange(currentTitle, currentValue, true);
+        // Leaving the screen (home, rotation, another app) writes what is still waiting in the
+        // debounce, so the last seconds of typing are never lost.
+        if (binding == null || notePresenter == null || !notePresenter.hasNote()) return;
+        commitPendingValueEdit();
+        notePresenter.flushPending();
+    }
+
+    /** Copies the body out of the field and hands it to the presenter if it changed. */
+    private void commitValueEdit() {
+        if (binding == null || notePresenter == null || !notePresenter.hasNote()) return;
+        String newValue = binding.valueNote.getText().toString();
+        updateWordCount(newValue);
+        if (!newValue.equals(notePresenter.getNote().getValue())) {
+            notePresenter.simpleNoteChange(null, newValue, false);
         }
+    }
+
+    /** Runs a body commit that is still waiting for typing to pause, right now. */
+    private void commitPendingValueEdit() {
+        binding.valueNote.removeCallbacks(commitValueRunnable);
+        commitValueEdit();
     }
 
     @Override
@@ -295,15 +405,19 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                 new TextWatcher() {
                     @Override
                     protected void changeText(Editable s) {
-                        if (!notePresenter.hasNote()) return;
-                        String newValue = s.toString();
-                        updateWordCount(newValue);
-                        if (!newValue.equals(notePresenter.getNote().getValue())) {
-                            notePresenter.simpleNoteChange(null, newValue, false);
-                        }
+                        // Nothing linear in the note's length runs per keystroke: the body is
+                        // copied, counted and compared once typing pauses.
+                        binding.valueNote.removeCallbacks(commitValueRunnable);
+                        binding.valueNote.postDelayed(commitValueRunnable, VALUE_COMMIT_DELAY_MS);
                     }
                 };
         binding.valueNote.addTextChangedListener(valueWatcher);
+
+        // The note is reloaded from the database on recreation and an unsaved draft is kept in
+        // onSaveInstanceState, so the fields' own copies would only be a second, stale snapshot
+        // of the same text in the saved state.
+        binding.notesTitle.setSaveEnabled(false);
+        binding.valueNote.setSaveEnabled(false);
 
         // Add a click handler for the input field - only for cursor movement processing
         binding.valueNote.setOnClickListener(
@@ -316,12 +430,21 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
 
     @Override
     public void activatedActivity() {
+        int[] selection =
+                EditorCursor.activationSelection(
+                        restoredSelectionStart,
+                        restoredSelectionEnd,
+                        firstVisibleOffset(),
+                        lastVisibleOffset(),
+                        binding.valueNote.length());
+        restoredSelectionStart = EditorCursor.NONE;
+        restoredSelectionEnd = EditorCursor.NONE;
+
         binding.setActivateEdit(true);
         binding.valueNote.setEnabled(true);
         binding.valueNote.setFocusable(true);
-        if (!notePresenter.getNewNotesKey())
-            binding.valueNote.setSelection(binding.valueNote.getText().length());
         binding.valueNote.setFocusableInTouchMode(true);
+        binding.valueNote.setSelection(selection[0], selection[1]);
         binding.valueNote.requestFocus();
 
         if (notePresenter.getNewNotesKey()) {
@@ -352,10 +475,10 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
             binding.titleToolbarTagCollapsed.setOnClickListener(null);
             binding.valueNote.setOnFocusChangeListener(null);
             binding.valueNote.setOnClickListener(null);
+            binding.valueNote.removeCallbacks(commitValueRunnable);
             binding.scrollProgressIndicator.setProgress(0);
         }
         lastCursorPosition = -1;
-        savedScrollPosition = -1;
         isKeyboardVisible = false;
     }
 
@@ -369,10 +492,21 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         String title = note.getTitle();
         String value = note.getValue();
 
+        // Text typed before a recreation that had not reached the database yet.
+        String pendingTitle = draftTitle;
+        String pendingValue = draftValue;
+        draftTitle = null;
+        draftValue = null;
+        if (pendingTitle != null) title = pendingTitle;
+        if (pendingValue != null) value = pendingValue;
+
         binding.notesTitle.setText(title != null && !title.isEmpty() ? title : "");
 
         binding.valueNote.setText(value != null ? value : "");
-        binding.valueNote.setMovementMethod(CustomLinkMovementMethod.getInstance());
+        // After setText: with autoLink, a field that is not editable yet gets a link movement from
+        // setText, which clears the selection on focus and sent the caret to the start of the
+        // note. An editable field needs the editing movement.
+        binding.valueNote.setMovementMethod(EditableLinkMovementMethod.getInstance());
 
         String formattedDate =
                 getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate()));
@@ -391,7 +525,25 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         updateWordCount(value);
         updateReminderChip(note);
 
-        if (notePresenter.getNewNotesKey()) {
+        if (pendingTitle != null || pendingValue != null) {
+            // The presenter takes the loaded note right after this call; hand it the draft once
+            // it has, so the draft is compared against what is stored and saved.
+            String restoredTitle = pendingTitle;
+            String restoredValue = pendingValue;
+            binding.getRoot()
+                    .post(
+                            () ->
+                                    notePresenter.simpleNoteChange(
+                                            restoredTitle, restoredValue, false));
+        }
+
+        if (restoredAnchorOffset != EditorCursor.NONE) {
+            scrollToOffsetWhenLaidOut(restoredAnchorOffset);
+            restoredAnchorOffset = EditorCursor.NONE;
+        }
+
+        if (notePresenter.getNewNotesKey() || restoredEditing) {
+            restoredEditing = false;
             activatedActivity();
         }
     }

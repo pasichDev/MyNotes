@@ -6,6 +6,7 @@ import static com.pasich.mynotes.extendedEditor.utils.EditorJsonUtils.findBlockI
 import static com.pasich.mynotes.utils.FormattedDataUtil.lastDayEditNote;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -49,8 +50,62 @@ public class NoteExtendedEditorActivity
                                     result.getResultCode(), result.getData());
                         }
                     });
+    private static final String STATE_ANCHOR_INDEX = "extended.anchorIndex";
+    private static final String STATE_ANCHOR_OFFSET = "extended.anchorOffset";
+    private static final String STATE_DRAFT_TITLE = "extended.draftTitle";
+    private static final String STATE_DRAFT_JSON = "extended.draftJson";
+
+    /**
+     * Largest unsaved document kept in the saved state. The draft only matters while a save is in
+     * flight; a bigger one would risk the saved-state size limit for a few milliseconds of
+     * protection.
+     */
+    private static final int MAX_DRAFT_CHARS = 64 * 1024;
+
     @Inject AppPreferencesCache appPreferencesCache;
     private boolean isReadMode = false;
+
+    private int restoredAnchorIndex = -1;
+    private int restoredAnchorOffset = 0;
+    private String draftTitle;
+    private String draftJson;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            restoredAnchorIndex = savedInstanceState.getInt(STATE_ANCHOR_INDEX, -1);
+            restoredAnchorOffset = savedInstanceState.getInt(STATE_ANCHOR_OFFSET, 0);
+            draftTitle = savedInstanceState.getString(STATE_DRAFT_TITLE);
+            draftJson = savedInstanceState.getString(STATE_DRAFT_JSON);
+        }
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (binding == null) return;
+        outState.putInt(STATE_ANCHOR_INDEX, binding.noteEditor.getAnchorIndex());
+        outState.putInt(STATE_ANCHOR_OFFSET, binding.noteEditor.getAnchorOffset());
+        if (notePresenter != null && notePresenter.hasUnsavedChanges()) {
+            Note note = notePresenter.getNote();
+            String json = note.getValueJson();
+            if (json == null || json.length() <= MAX_DRAFT_CHARS) {
+                outState.putString(STATE_DRAFT_TITLE, note.getTitle());
+                outState.putString(STATE_DRAFT_JSON, json);
+            }
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (binding == null || notePresenter == null || !notePresenter.hasNote()) return;
+        // Write what the presenter already holds, then collect whatever the editor is still
+        // batching; that answer is written as soon as it arrives.
+        notePresenter.flushPending();
+        binding.noteEditor.requestFlush();
+    }
 
     @Override
     protected int getMenuResId() {
@@ -96,13 +151,33 @@ public class NoteExtendedEditorActivity
                             }
 
                             @Override
+                            public void onContentFlushed(String json) {
+                                runOnUiThread(
+                                        () -> {
+                                            processTextChange(json);
+                                            notePresenter.flushPending();
+                                        });
+                            }
+
+                            @Override
+                            public void onViewportAnchor(int blockIndex, int offsetPx) {
+                                runOnUiThread(
+                                        () -> {
+                                            if (binding != null) {
+                                                binding.noteEditor.onViewportAnchor(
+                                                        blockIndex, offsetPx);
+                                            }
+                                        });
+                            }
+
+                            @Override
                             public void onTitleChanged(String title) {
                                 runOnUiThread(() -> processTitleChange(title));
                             }
 
                             @Override
                             public void openPhoto(String blockId) {
-                                handleImageOpen(blockId);
+                                runOnUiThread(() -> handleImageOpen(blockId));
                             }
 
                             @Override
@@ -118,7 +193,9 @@ public class NoteExtendedEditorActivity
 
                             @Override
                             public int getNoteId() {
-                                return notePresenter.getNote().getId();
+                                // Called on the WebView's bridge thread: read the id, never the
+                                // note the UI thread is editing.
+                                return (int) notePresenter.getIdKey();
                             }
 
                             @Override
@@ -144,18 +221,21 @@ public class NoteExtendedEditorActivity
         binding.titleToolbarDataCollapsed.setText(getString(R.string.new_note));
     }
 
-    /** Configures indents taking into account the keyboard for NoteActivity */
+    /**
+     * The window draws edge to edge, so the keyboard does not resize it: the root is padded by the
+     * keyboard or the navigation bar, whichever is taller. Without it the keyboard covered the
+     * lower half of the editor and the caret typed out of sight; the editor page keeps the caret
+     * visible when its height changes.
+     */
     @Override
     protected void applyEdgeToEdgeInsets(View rootView) {
         ViewCompat.setOnApplyWindowInsetsListener(
                 rootView,
                 (v, insets) -> {
-                    // Get indents for system bars
                     Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-
-                    // Set padding at the top for system bars only for the root view
-                    v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), 0);
-
+                    Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+                    int bottom = Math.max(ime.bottom, systemBars.bottom);
+                    v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), bottom);
                     return insets;
                 });
     }
@@ -277,7 +357,31 @@ public class NoteExtendedEditorActivity
         changeTag(note.getTag() != null ? note.getTag() : "", false);
         binding.titleToolbarDataCollapsed.setText(
                 getString(R.string.lastDateEditNote, lastDayEditNote(note.getDate())));
-        binding.noteEditor.load(note);
+
+        if (restoredAnchorIndex >= 0) {
+            binding.noteEditor.setRestoreAnchor(restoredAnchorIndex, restoredAnchorOffset);
+            restoredAnchorIndex = -1;
+        }
+
+        String pendingTitle = draftTitle;
+        String pendingJson = draftJson;
+        draftTitle = null;
+        draftJson = null;
+        if (pendingTitle == null && pendingJson == null) {
+            binding.noteEditor.load(note);
+            return;
+        }
+
+        // Edits made before a recreation that had not reached the database: show them, and hand
+        // them to the presenter once it holds the loaded note so they are compared with what is
+        // stored and saved.
+        Note shown = new Note();
+        shown.copyFrom(note);
+        shown.setId(note.getId());
+        if (pendingTitle != null) shown.setTitle(pendingTitle);
+        if (pendingJson != null) shown.setValueJson(pendingJson);
+        binding.noteEditor.load(shown);
+        binding.getRoot().post(() -> notePresenter.extendedNoteChange(pendingTitle, pendingJson));
     }
 
     @Override

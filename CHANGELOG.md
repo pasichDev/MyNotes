@@ -41,6 +41,14 @@
   to the top or the grid is rearranged, the list can no longer get stuck invisible or half-faded
   after quick changes, and returning from a note no longer shuffles cards under the closing
   animation. With system animations turned off, every change is applied instantly.
+- Editing a long note no longer throws you around. Opening or closing the keyboard keeps the text
+  where it was and the cursor in view, tapping Edit puts the cursor on the part of the note you
+  are reading instead of jumping to its end, and the cursor no longer falls back to the top of
+  the note so that typing lands in the first line. Links in the text still open with a tap.
+  Typing stays smooth in long notes, and the rich editor now moves its text above the keyboard.
+- Nothing typed in the last moments before leaving a note is lost any more: switching apps,
+  rotating the screen or opening the file picker saves it straight away. After a rotation the note
+  reopens at the same place, with the cursor where it was.
 
 ## [2.6.55] - 25.09.2026
 

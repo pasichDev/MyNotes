@@ -98,6 +98,15 @@ public interface NoteContract {
 
         /** Requests duplication of the current note. */
         void copyNoteRequest();
+
+        /**
+         * Saves right away whatever the debounced autosave is still holding. Called when the editor
+         * stops, so leaving the screen never loses the last edits.
+         */
+        void flushPending();
+
+        /** Returns true if the note holds content that has not been written yet. */
+        boolean hasUnsavedChanges();
     }
 
     interface AutoSaveCallback {
