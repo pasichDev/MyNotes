@@ -257,6 +257,34 @@ public class RoomSyncStoreTest {
     }
 
     @Test
+    public void applySnapshot_aSecondSyncOfAnUnchangedNoteWithAnAttachmentReEmitsNothing()
+            throws Exception {
+        byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
+        int noteId = seedNoteWithAttachment("photo.png", bytes);
+        // The first apply moves the file to this device's canonical name and rewrites the column;
+        // that is a real change and is written.
+        store.applySnapshot(store.readSnapshot(), Collections.emptyList());
+        String afterFirst = db.noteDao().getNoteSync(noteId).getAttachments();
+        SyncSnapshot unchanged = store.readSnapshot();
+        io.reactivex.subscribers.TestSubscriber<List<Note>> notes =
+                db.noteDao().getNotesAll().test();
+        notes.awaitCount(
+                1, io.reactivex.observers.BaseTestConsumer.TestWaitStrategy.SLEEP_10MS, 5_000L);
+        assertThat(notes.valueCount()).isEqualTo(1);
+
+        store.applySnapshot(unchanged, Collections.emptyList());
+
+        // Every later sync re-applied the note with a REPLACE insert, so the main list was
+        // re-emitted and re-animated after every sync that changed nothing.
+        notes.awaitCount(
+                2, io.reactivex.observers.BaseTestConsumer.TestWaitStrategy.SLEEP_10MS, 1_000L);
+        assertThat(notes.valueCount()).isEqualTo(1);
+        assertThat(db.noteDao().getNoteSync(noteId).getAttachments()).isEqualTo(afterFirst);
+        assertThat(resolveFirstAttachment(afterFirst).isFile()).isTrue();
+        notes.dispose();
+    }
+
+    @Test
     public void applySnapshot_repointsEditorBlocksAtTheFilesThisDeviceWrote() throws Exception {
         byte[] bytes = "photo bytes".getBytes(StandardCharsets.UTF_8);
         int noteId = seedNoteWithAttachment("photo.png", bytes);

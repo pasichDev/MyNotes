@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -363,17 +364,11 @@ public final class RoomSyncStore implements SyncStore {
                                 }
                                 if (record.isTombstone()) {
                                     markDeleted(metadata);
-                                    database.syncMetadataDao()
-                                            .setVersion(
-                                                    metadata.recordType,
-                                                    metadata.localId,
-                                                    record.getUpdatedAt().toEpochMilli(),
-                                                    record.getDeletedAt().toEpochMilli());
-                                    database.syncMetadataDao()
-                                            .setSyncedVersion(
-                                                    metadata.recordType,
-                                                    metadata.localId,
-                                                    record.getCanonicalPayloadHash());
+                                    recordAppliedVersion(
+                                            metadata,
+                                            record.getUpdatedAt().toEpochMilli(),
+                                            record.getDeletedAt().toEpochMilli(),
+                                            record.getCanonicalPayloadHash());
                                     retireConflictsSupersededBy(record);
                                     transactionFailureInjector.afterRecordApplied(record);
                                     continue;
@@ -382,17 +377,11 @@ public final class RoomSyncStore implements SyncStore {
                                     skippedKeys.add(key);
                                     continue;
                                 }
-                                database.syncMetadataDao()
-                                        .setVersion(
-                                                metadata.recordType,
-                                                metadata.localId,
-                                                record.getUpdatedAt().toEpochMilli(),
-                                                null);
-                                database.syncMetadataDao()
-                                        .setSyncedVersion(
-                                                metadata.recordType,
-                                                metadata.localId,
-                                                record.getCanonicalPayloadHash());
+                                recordAppliedVersion(
+                                        metadata,
+                                        record.getUpdatedAt().toEpochMilli(),
+                                        null,
+                                        record.getCanonicalPayloadHash());
                                 retireConflictsSupersededBy(record);
                                 transactionFailureInjector.afterRecordApplied(record);
                             }
@@ -843,7 +832,57 @@ public final class RoomSyncStore implements SyncStore {
     }
 
     /**
-     * Writes one live version over the local row.
+     * Records the version this device now holds, writing only the columns that differ.
+     *
+     * <p>Every sync applies the whole merged snapshot, and nearly all of it is what this device
+     * already holds. Rewriting identical bookkeeping for each record made every sync a burst of
+     * writes for nothing. The row is read afresh rather than taken from the map built before the
+     * loop, because an earlier record in the same apply (a tag reconciled by name) can have changed
+     * it since.
+     */
+    private void recordAppliedVersion(
+            @NonNull SyncMetadataEntity metadata,
+            long updatedAt,
+            @Nullable Long deletedAt,
+            @NonNull String versionId) {
+        SyncMetadataEntity current =
+                database.syncMetadataDao().get(metadata.recordType, metadata.localId);
+        if (current == null
+                || current.updatedAt != updatedAt
+                || !Objects.equals(current.deletedAt, deletedAt)) {
+            database.syncMetadataDao()
+                    .setVersion(metadata.recordType, metadata.localId, updatedAt, deletedAt);
+        }
+        if (current == null || !versionId.equals(current.syncedVersionId)) {
+            database.syncMetadataDao()
+                    .setSyncedVersion(metadata.recordType, metadata.localId, versionId);
+        }
+    }
+
+    /**
+     * Whether two rows of the same entity hold the same values.
+     *
+     * <p>Compared through the same Gson the payloads are read with, which sees every stored column
+     * (the entities' only non-column fields are UI state that is never set on either side here).
+     */
+    private boolean sameRow(@NonNull Object stored, @NonNull Object incoming) {
+        return gson.toJsonTree(stored).equals(gson.toJsonTree(incoming));
+    }
+
+    private static boolean isEmptyAttachmentList(@Nullable String attachments) {
+        if (attachments == null) return true;
+        String trimmed = attachments.trim();
+        return trimmed.isEmpty() || trimmed.equals("[]");
+    }
+
+    /**
+     * Writes one live version over the local row, unless the row already holds exactly it.
+     *
+     * <p>The comparison is made against the row this version would produce, not against the version
+     * hash: a note whose attachment references are rewritten to this device's files on apply hashes
+     * the same before and after, yet only the apply puts its blocks right. When the row already
+     * matches, nothing is written, so a sync that changes nothing does not invalidate the notes,
+     * tags or tasks queries and the lists on screen are not re-emitted.
      *
      * @return false when the version was deliberately not applied and the record's local version
      *     must therefore not be advanced to it.
@@ -859,7 +898,17 @@ public final class RoomSyncStore implements SyncStore {
             Note note = gson.fromJson(payload, Note.class);
             note.setId((int) metadata.localId);
             restoreAttachments(note, payload);
-            database.noteDao().addNote(note);
+            Note stored = revive ? null : database.noteDao().getNoteSync(note.getId());
+            if (stored != null
+                    && isEmptyAttachmentList(note.getAttachments())
+                    && isEmptyAttachmentList(stored.getAttachments())) {
+                // No attachments either way; the editor stores that as "[]" and a received
+                // version as null. Spelling it the local way keeps the row equal below.
+                note.setAttachments(stored.getAttachments());
+            }
+            if (stored == null || !sameRow(stored, note)) {
+                database.noteDao().addNote(note);
+            }
         } else if ("task".equals(metadata.recordType)) {
             Task task = gson.fromJson(payload, Task.class);
             task.setId((int) metadata.localId);
@@ -871,26 +920,32 @@ public final class RoomSyncStore implements SyncStore {
                                         payload.get("categoryStableId").getAsString());
                 if (category != null) task.setCategoryId((int) category.localId);
             }
-            if (revive || database.taskDao().getTaskSync(task.getId()) == null) {
+            Task stored = revive ? null : database.taskDao().getTaskSync(task.getId());
+            if (stored == null) {
                 database.taskDao().insertTask(task);
-            } else {
+            } else if (!sameRow(stored, task)) {
                 database.taskDao().updateTask(task);
             }
         } else if (SyncMetadata.RECORD_TYPE_CATEGORY.equals(metadata.recordType)) {
             TaskCategory category = gson.fromJson(payload, TaskCategory.class);
             category.setId((int) metadata.localId);
-            if (revive || database.taskCategoryDao().getCategorySync(category.getId()) == null) {
+            TaskCategory stored =
+                    revive ? null : database.taskCategoryDao().getCategorySync(category.getId());
+            if (stored == null) {
                 database.taskCategoryDao().insertCategory(category);
-            } else {
+            } else if (!sameRow(stored, category)) {
                 database.taskCategoryDao().updateCategory(category);
             }
         } else if ("tag".equals(metadata.recordType)) {
             Tag tag = gson.fromJson(payload, Tag.class);
             tag.id = metadata.localId;
-            if (revive || database.tagsDao().getTagSync(tag.id) == null) {
+            Tag stored = revive ? null : database.tagsDao().getTagSync(tag.id);
+            if (stored == null) {
                 return reviveTag(metadata, tag);
             }
-            database.tagsDao().updateTag(tag);
+            if (!sameRow(stored, tag)) {
+                database.tagsDao().updateTag(tag);
+            }
         } else if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
             // SharedPreferences is outside Room. applySnapshotInternal journals and commits this
             // payload only after the Room transaction succeeds.

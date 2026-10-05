@@ -16,6 +16,9 @@
   and the selected category stay in step with what sync changed: a category renamed or merged on
   another device stays selected, and one deleted there falls back to All notes instead of
   showing an empty page. A sync that changes nothing leaves the screen untouched.
+- A sync no longer rewrites notes, tags, tasks and task lists that did not change. Only what
+  another device actually changed is written, so a sync with nothing new finishes without the
+  main list redrawing or a card flickering.
 - The main list animates smoothly again. Cards no longer slide over one another when a note moves
   to the top or the grid is rearranged, the list can no longer get stuck invisible or half-faded
   after quick changes, and returning from a note no longer shuffles cards under the closing
