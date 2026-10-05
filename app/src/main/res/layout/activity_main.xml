@@ -10,10 +10,6 @@
         <variable
             name="presenter"
             type="com.pasich.mynotes.ui.presenter.MainPresenter" />
-
-        <variable
-            name="emptyNotes"
-            type="boolean" />
     </data>
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -96,9 +92,7 @@
                         android:overScrollMode="never"
                         android:paddingStart="5dp"
                         android:paddingEnd="5dp"
-                        android:paddingBottom="80dp"
-                        android:visibility="@{emptyNotes ? View.GONE : View.VISIBLE,  default=visible}"
-                       />
+                        android:paddingBottom="80dp" />
 
                     <include
                         android:id="@+id/includeEmpty"

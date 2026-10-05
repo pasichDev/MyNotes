@@ -3,16 +3,19 @@ package com.pasich.mynotes.ui.view.activity;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.EXTRA_UPDATE_THEME_STYLE;
 import static com.pasich.mynotes.utils.navigation.ActivityResultKeys.RESULT_CODE_THEME_UPDATE;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,6 +58,8 @@ import com.pasich.mynotes.utils.constants.SnackBarInfo;
 import com.pasich.mynotes.utils.encly.EnclyMigrationRepository;
 import com.pasich.mynotes.utils.managers.SystemTagsManager;
 import com.pasich.mynotes.utils.navigation.NoteNavigator;
+import com.pasich.mynotes.utils.recycler.NoteListTransition;
+import com.pasich.mynotes.utils.recycler.NotesItemAnimator;
 import com.pasich.mynotes.utils.recycler.SpacesItemDecoration;
 import com.pasich.mynotes.utils.recycler.SwipeToListNotesCallback;
 import com.pasich.mynotes.utils.tool.FormatListTool;
@@ -116,7 +121,23 @@ public class MainActivity extends BaseActivity implements MainContract.view {
                                 navigationController.updateNewVersionIndicator(hasNewVersion);
                         }
                     });
+
+    /** How long a return transition from the editor may take (300 ms) plus a margin. */
+    private static final long RETURN_SETTLE_MS = 380;
+
+    private final Handler settleHandler = new Handler(Looper.getMainLooper());
     private MainRenderListsController mainRenderListsController;
+
+    /** Latest state not applied yet (selection mode, or settling after a return). */
+    private MainViewState pendingState;
+
+    private boolean stopped;
+    private boolean settling;
+    private final Runnable endSettling =
+            () -> {
+                settling = false;
+                applyPendingState();
+            };
     private Tag currentSelectedTag = null;
     private List<Tag> currentTags = new ArrayList<>();
 
@@ -135,6 +156,7 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         selectionController = new SelectionController(mNoteAdapter, mActivityBinding.getRoot());
         mNoteAdapter.setSelectionController(selectionController);
         selectionController.setPanelMode(SelectionController.Mode.NORMAL);
+        mainRenderListsController = new MainRenderListsController(mActivityBinding);
 
         mainPresenter.attachView(this);
         mainPresenter.viewIsReady();
@@ -188,8 +210,6 @@ public class MainActivity extends BaseActivity implements MainContract.view {
                         this::finishActivity);
         navigationController.init();
         navigationController.handleShortcuts(getIntent());
-
-        mainRenderListsController = new MainRenderListsController(mActivityBinding);
     }
 
     /**
@@ -203,61 +223,123 @@ public class MainActivity extends BaseActivity implements MainContract.view {
                 .subscribe();
     }
 
+    /**
+     * Receives every new state. It is applied at once unless the user is selecting notes (the
+     * selection is kept in step with the new list and the state waits for selection to end) or the
+     * screen has just come back from the editor (the state waits for the return transition).
+     */
     @Override
     public void render(MainViewState state) {
+        pendingState = state;
         if (selectionController.isInSelectionMode()) {
+            List<Integer> ids = new ArrayList<>(state.notes().size());
+            for (Note n : state.notes()) ids.add(n.getId());
+            // May end selection mode, which applies the pending state.
+            selectionController.retainOnly(ids);
             return;
         }
+        applyPendingState();
+    }
+
+    private void applyPendingState() {
+        MainViewState state = pendingState;
+        if (state == null || settling || selectionController.isInSelectionMode()) return;
+        pendingState = null;
+
         currentSelectedTag = state.selectedTag();
         currentTags = state.tags();
-        // render notes list
         renderNotes(state.notes(), state.selectedTag(), state.uiEvent());
-        // render tags list
         renderTags(state.tags());
     }
 
+    /** Item and visibility animations only run while the user is actually looking at the list. */
+    private boolean isListInteractive() {
+        return !stopped && !settling;
+    }
+
     private void renderTags(List<Tag> tags) {
-        mainRenderListsController.renderListTags(tags);
+        mainRenderListsController.renderListTags(tags, isListInteractive());
         tagsAdapter.submitList(tags);
     }
 
-    private void renderNotes(List<Note> notes, Tag currentSelectedTag, UiEvent event) {
-        switch (event) {
-            case SORT_CHANGED, TAG_CHANGED ->
-                    mNoteAdapter.submitList(
-                            new ArrayList<>(notes),
-                            () -> {
-                                RecyclerView.ItemAnimator animator =
-                                        mActivityBinding.listNotes.getItemAnimator();
-                                if (animator != null) animator.endAnimations();
-                                mainRenderListsController.showStateNoteList(
-                                        currentSelectedTag, notes.size());
-                                gridLayoutManager.invalidateSpanAssignments();
-                                mainRenderListsController.animateNoteListChange();
-                            });
-            default -> {
-                boolean shouldScrollUp = event == UiEvent.NOTE_CREATED;
-                List<Note> currentList = mNoteAdapter.getCurrentList();
-                int previousTopId = currentList.isEmpty() ? -1 : currentList.get(0).getId();
-                mNoteAdapter.submitList(
-                        new ArrayList<>(notes),
-                        () -> {
-                            RecyclerView.ItemAnimator animator =
-                                    mActivityBinding.listNotes.getItemAnimator();
-                            if (animator != null) animator.endAnimations();
-                            mainRenderListsController.showStateNoteList(
-                                    currentSelectedTag, notes.size());
-                            gridLayoutManager.invalidateSpanAssignments();
-                            if (shouldScrollUp) {
-                                mainRenderListsController.scrollUpNoteList();
-                            } else if (!notes.isEmpty() && notes.get(0).getId() != previousTopId) {
-                                mainRenderListsController.scrollToTopInstant();
-                            }
-                        });
-            }
+    private void renderNotes(List<Note> notes, Tag selectedTag, UiEvent event) {
+        boolean animate = isListInteractive();
+        List<Note> previous = mNoteAdapter.getCurrentList();
+        int previousTopId = previous.isEmpty() ? -1 : previous.get(0).getId();
+        boolean topChanged = !notes.isEmpty() && notes.get(0).getId() != previousTopId;
+        boolean datasetChanged = event == UiEvent.SORT_CHANGED || event == UiEvent.TAG_CHANGED;
+        boolean swap =
+                datasetChanged
+                        || NoteListTransition.needsCrossfade(
+                                previous, notes, gridLayoutManager.getSpanCount());
+        List<Note> next = new ArrayList<>(notes);
+        int count = notes.size();
+
+        if (swap) {
+            mainRenderListsController.swapListContent(
+                    animate,
+                    () ->
+                            mNoteAdapter.submitList(
+                                    next,
+                                    () -> {
+                                        // Nothing is visible here: rebuild the columns from
+                                        // scratch so the grid comes back without gaps.
+                                        gridLayoutManager.invalidateSpanAssignments();
+                                        if (datasetChanged
+                                                || topChanged
+                                                || event == UiEvent.NOTE_CREATED) {
+                                            mainRenderListsController.jumpToTop();
+                                        }
+                                        mainRenderListsController.showStateNoteList(
+                                                selectedTag, count, animate);
+                                    }));
+        } else {
+            mNoteAdapter.submitList(
+                    next,
+                    () -> {
+                        mainRenderListsController.showStateNoteList(selectedTag, count, animate);
+                        if (event == UiEvent.NOTE_CREATED) {
+                            mainRenderListsController.scrollUpNoteList();
+                        } else if (topChanged) {
+                            mainRenderListsController.jumpToTop();
+                        }
+                    });
         }
 
         mainPresenter.clearUiEvent();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (stopped) {
+            stopped = false;
+            // Coming back, usually from the editor with a shared-element return transition.
+            // Moving cards under it makes the returning note land on a neighbour, so new states
+            // wait until the transition is over.
+            long settleMs = (long) (RETURN_SETTLE_MS * animatorDurationScale());
+            if (settleMs > 0) {
+                settling = true;
+                settleHandler.removeCallbacks(endSettling);
+                settleHandler.postDelayed(endSettling, settleMs);
+            }
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopped = true;
+        settleHandler.removeCallbacks(endSettling);
+        settling = false;
+        // Anything held back is applied now, without animation, while nobody is looking.
+        applyPendingState();
+    }
+
+    private float animatorDurationScale() {
+        if (!ValueAnimator.areAnimatorsEnabled()) return 0f;
+        return Settings.Global.getFloat(
+                getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, 1f);
     }
 
     @Override
@@ -401,6 +483,8 @@ public class MainActivity extends BaseActivity implements MainContract.view {
                     public void onSelectionModeChanged(boolean active) {
                         mActivityBinding.newNotesButton.setVisibility(
                                 active ? View.GONE : View.VISIBLE);
+                        // States that arrived while selecting were held back.
+                        if (!active) applyPendingState();
                     }
 
                     @Override
@@ -452,7 +536,9 @@ public class MainActivity extends BaseActivity implements MainContract.view {
         mActivityBinding.listNotes.addItemDecoration(itemDecorationNotes);
         mActivityBinding.listNotes.setLayoutManager(gridLayoutManager);
         mActivityBinding.listNotes.setAdapter(mNoteAdapter);
-        mActivityBinding.listNotes.setItemAnimator(new DefaultItemAnimator());
+        mActivityBinding.listNotes.setItemAnimator(
+                new NotesItemAnimator(
+                        () -> isListInteractive() && !mainRenderListsController.isSwapping()));
 
         new ItemTouchHelper(
                         new SwipeToListNotesCallback(
@@ -632,6 +718,8 @@ public class MainActivity extends BaseActivity implements MainContract.view {
 
     @Override
     protected void onDestroy() {
+        settleHandler.removeCallbacksAndMessages(null);
+        if (mainRenderListsController != null) mainRenderListsController.release();
         super.onDestroy();
         if (navigationController != null) {
             navigationController.destroy();

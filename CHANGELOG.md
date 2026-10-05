@@ -10,6 +10,17 @@
   and pins stay behind, and the page tells you how many. Nothing is deleted from My Notes; after
   a successful move you can clear it as a separate, confirmed step.
 
+**Fixes**
+
+- Notes no longer vanish from the main screen after a Google Drive sync. The list, the tags row
+  and the selected category stay in step with what sync changed: a category renamed or merged on
+  another device stays selected, and one deleted there falls back to All notes instead of
+  showing an empty page. A sync that changes nothing leaves the screen untouched.
+- The main list animates smoothly again. Cards no longer slide over one another when a note moves
+  to the top or the grid is rearranged, the list can no longer get stuck invisible or half-faded
+  after quick changes, and returning from a note no longer shuffles cards under the closing
+  animation. With system animations turned off, every change is applied instantly.
+
 ## [2.6.55] - 25.09.2026
 
 **Improvements**

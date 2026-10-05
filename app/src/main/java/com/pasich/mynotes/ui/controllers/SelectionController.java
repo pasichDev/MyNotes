@@ -7,6 +7,7 @@ import com.pasich.mynotes.databinding.ActionPanelBinding;
 import com.pasich.mynotes.utils.adapters.notes.NoteAdapter;
 import com.pasich.mynotes.utils.recycler.payloads.NotePayloads;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
@@ -121,6 +122,35 @@ public class SelectionController {
 
         selectionMode = false;
         showPanel(false);
+        notifyListener();
+    }
+
+    /**
+     * Drops selected notes that no longer exist (for example deleted by a sync). Leaves selection
+     * mode when nothing selected is left.
+     */
+    public void retainOnly(Collection<Integer> existingIds) {
+        if (!selectionMode) return;
+        HashSet<Integer> keep = new HashSet<>(existingIds);
+        List<Integer> gone = new ArrayList<>();
+        for (int id : selectedIds) {
+            if (!keep.contains(id)) gone.add(id);
+        }
+        if (gone.isEmpty()) return;
+
+        selectedIds.removeAll(gone);
+        for (int id : gone) {
+            updateNoteVisualState(id);
+        }
+        if (selectedIds.isEmpty()) {
+            clearSelection();
+            return;
+        }
+        int count = selectedIds.size();
+        panel.selectedCount.setText(
+                panel.getRoot()
+                        .getResources()
+                        .getQuantityString(R.plurals.selected_count, count, count));
         notifyListener();
     }
 

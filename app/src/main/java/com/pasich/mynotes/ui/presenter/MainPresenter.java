@@ -35,6 +35,13 @@ public class MainPresenter extends BasePresenter<MainContract.view>
         implements MainContract.presenter {
 
     private static final String TAG = "MainPresenter";
+
+    /**
+     * Room emits tags and notes separately, so one sync or edit can arrive as two or more emissions
+     * a few milliseconds apart. Waiting this long folds them into a single render.
+     */
+    static final long STATE_DEBOUNCE_MS = 50;
+
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
     private final BehaviorSubject<Tag> selectedTag =
             BehaviorSubject.createDefault(SystemTagsManager.createAllNotesTag());
@@ -97,28 +104,13 @@ public class MainPresenter extends BasePresenter<MainContract.view>
 
     private void initStreams() {
         tagsStream =
-                Observable.combineLatest(
-                        getDataManager()
-                                .getTags()
-                                .toObservable()
-                                .map(
-                                        tagList ->
-                                                TagsSorter.sortTags(
-                                                        tagList,
-                                                        getDataManager().getSortParamTags())),
-                        selectedTag,
-                        (tags, selected) ->
-                                tags.stream()
-                                        .map(
-                                                t -> {
-                                                    Tag copy = t.copy();
-                                                    copy.setSelected(
-                                                            selected != null
-                                                                    && selected.getId()
-                                                                            == t.getId());
-                                                    return copy;
-                                                })
-                                        .collect(Collectors.toList()));
+                getDataManager()
+                        .getTags()
+                        .toObservable()
+                        .map(
+                                tagList ->
+                                        TagsSorter.sortTags(
+                                                tagList, getDataManager().getSortParamTags()));
 
         notesStream = getDataManager().getNotes().toObservable();
     }
@@ -132,7 +124,10 @@ public class MainPresenter extends BasePresenter<MainContract.view>
                                         selectedTag,
                                         sortParam,
                                         this::buildState)
-                                .debounce(5, TimeUnit.MILLISECONDS)
+                                .debounce(
+                                        STATE_DEBOUNCE_MS,
+                                        TimeUnit.MILLISECONDS,
+                                        getSchedulerProvider().computation())
                                 .distinctUntilChanged()
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
@@ -142,7 +137,21 @@ public class MainPresenter extends BasePresenter<MainContract.view>
     }
 
     private MainViewState buildState(
-            List<Tag> tags, List<Note> notes, Tag selectedTag, String sort) {
+            List<Tag> sortedTags, List<Note> notes, Tag requestedTag, String sort) {
+
+        Tag selectedTag = resolveSelectedTag(sortedTags, requestedTag);
+        if (!sameSelection(selectedTag, requestedTag)) {
+            // The tag was renamed, merged or deleted by a sync: remember the fresh one so new
+            // notes, the next state and the chips all agree with what is on screen.
+            this.selectedTag.onNext(selectedTag);
+        }
+
+        List<Tag> tags = new ArrayList<>(sortedTags.size());
+        for (Tag t : sortedTags) {
+            Tag copy = t.copy();
+            copy.setSelected(t.getId() == selectedTag.getId());
+            tags.add(copy);
+        }
 
         Set<String> hidden = new HashSet<>();
         for (Tag t : tags) {
@@ -162,10 +171,7 @@ public class MainPresenter extends BasePresenter<MainContract.view>
             }
         }
 
-        boolean isAllNotes =
-                selectedTag == null
-                        || selectedTag.getSystemAction()
-                                == SystemTagsManager.SYSTEM_ACTION_ALL_NOTES;
+        boolean isAllNotes = SystemTagsManager.isAllNotesTag(selectedTag);
 
         List<Note> filtered;
         if (isAllNotes) {
@@ -193,6 +199,39 @@ public class MainPresenter extends BasePresenter<MainContract.view>
                 });
 
         return new MainViewState(tags, sorted, selectedTag, lastUiEvent);
+    }
+
+    /**
+     * Finds the selected category in a fresh tags list: by id first (survives a rename), then by
+     * name (survives a sync that replaced the row with an equal one), otherwise "All notes".
+     */
+    static Tag resolveSelectedTag(List<Tag> tags, Tag requested) {
+        Tag allNotes = null;
+        for (Tag t : tags) {
+            if (SystemTagsManager.isAllNotesTag(t)) {
+                allNotes = t;
+                break;
+            }
+        }
+        if (allNotes == null) allNotes = SystemTagsManager.createAllNotesTag();
+
+        if (requested == null || SystemTagsManager.isSystemTag(requested)) return allNotes;
+
+        for (Tag t : tags) {
+            if (!SystemTagsManager.isSystemTag(t) && t.getId() == requested.getId()) return t;
+        }
+        String name = requested.getNameTag();
+        for (Tag t : tags) {
+            if (!SystemTagsManager.isSystemTag(t) && t.getNameTag().equals(name)) return t;
+        }
+        return allNotes;
+    }
+
+    private static boolean sameSelection(Tag a, Tag b) {
+        if (a == null || b == null) return a == b;
+        return a.getId() == b.getId()
+                && a.getSystemAction() == b.getSystemAction()
+                && a.getNameTag().equals(b.getNameTag());
     }
 
     private void startSearchStream() {
@@ -247,12 +286,14 @@ public class MainPresenter extends BasePresenter<MainContract.view>
 
     @Override
     public void onSortChanged(String newSort) {
+        if (newSort == null || newSort.equals(sortParam.getValue())) return;
         lastUiEvent = UiEvent.SORT_CHANGED;
         sortParam.onNext(newSort);
     }
 
     @Override
     public void onTagSelected(Tag tag) {
+        if (tag == null || sameSelection(tag, selectedTag.getValue())) return;
         lastUiEvent = UiEvent.TAG_CHANGED;
         selectedTag.onNext(tag);
     }

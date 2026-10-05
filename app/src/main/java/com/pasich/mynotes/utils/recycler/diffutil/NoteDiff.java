@@ -22,12 +22,19 @@ public class NoteDiff extends DiffUtil.ItemCallback<Note> {
 
     @Override
     public boolean areContentsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
+        return sameContent(oldItem, newItem);
+    }
+
+    /** True when both notes would render the same card. */
+    public static boolean sameContent(@NonNull Note oldItem, @NonNull Note newItem) {
         return oldItem.getId() == newItem.getId()
-                && oldItem.getTitle().equals(newItem.getTitle())
-                && oldItem.getValue().equals(newItem.getValue())
-                && oldItem.getTag().equals(newItem.getTag())
+                && Objects.equals(oldItem.getTitle(), newItem.getTitle())
+                && Objects.equals(oldItem.getValue(), newItem.getValue())
+                && Objects.equals(oldItem.getTag(), newItem.getTag())
                 && oldItem.getDate() == newItem.getDate()
                 && oldItem.isPinned() == newItem.isPinned()
-                && Objects.equals(oldItem.getReminderTime(), newItem.getReminderTime());
+                && Objects.equals(oldItem.getReminderTime(), newItem.getReminderTime())
+                && Objects.equals(oldItem.getReminderRepeat(), newItem.getReminderRepeat())
+                && Objects.equals(oldItem.getAttachments(), newItem.getAttachments());
     }
 }
