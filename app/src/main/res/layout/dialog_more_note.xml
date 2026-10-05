@@ -39,23 +39,22 @@
                 android:visibility="@{activityNote ? View.VISIBLE : View.GONE}" />
 
             <!-- Quick actions row: Share / Copy / Translate / Pin -->
-            <LinearLayout
+            <com.pasich.mynotes.ui.view.widgets.QuickActionsRow
                 android:id="@+id/quickActionsRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:background="@drawable/bg_item_full"
-                android:orientation="horizontal"
                 android:visibility="@{activityNote ? View.VISIBLE : View.GONE}">
 
                 <LinearLayout
                     android:id="@+id/quickShare"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -68,8 +67,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
                         android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
                         android:maxLines="2"
                         android:text="@string/share"
                         android:textSize="11sp" />
@@ -79,10 +80,10 @@
                     android:id="@+id/quickCopy"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -95,8 +96,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
                         android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
                         android:maxLines="2"
                         android:text="@string/copyNoteEdits"
                         android:textSize="11sp" />
@@ -106,10 +109,10 @@
                     android:id="@+id/quickTranslate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp"
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp"
                     android:visibility="@{valuesText ? View.VISIBLE : View.GONE}">
 
                     <ImageView
@@ -123,8 +126,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
                         android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
                         android:maxLines="2"
                         android:text="@string/translateNote"
                         android:textSize="11sp" />
@@ -134,10 +139,10 @@
                     android:id="@+id/quickPin"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="12dp">
 
                     <ImageView
                         android:id="@+id/quickPinIcon"
@@ -152,13 +157,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:breakStrategy="simple"
                         android:ellipsize="end"
                         android:gravity="center_horizontal"
+                        android:hyphenationFrequency="none"
                         android:maxLines="2"
                         android:text="@string/pinNote"
                         android:textSize="11sp" />
                 </LinearLayout>
-            </LinearLayout>
+            </com.pasich.mynotes.ui.view.widgets.QuickActionsRow>
 
             <View
                 android:layout_width="match_parent"

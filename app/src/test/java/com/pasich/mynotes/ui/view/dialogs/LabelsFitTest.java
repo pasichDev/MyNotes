@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.pasich.mynotes.R;
+import com.pasich.mynotes.ui.view.widgets.QuickActionsRow;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -40,5 +41,39 @@ public class LabelsFitTest {
         }
         assertThat(label).isNotNull();
         assertThat(label.getMaxLines()).isAtLeast(2);
+    }
+
+    /** 10 px a character: "Редагувати" is 100 px wide. */
+    private static double tenPerChar(String text) {
+        return text.length() * 10.0;
+    }
+
+    @Test
+    public void aLabelWrapsOnlyBetweenWords_inTwoLines() {
+        assertThat(QuickActionsRow.fits("Редагувати копію нотатки", 130, LabelsFitTest::tenPerChar))
+                .isTrue();
+        // Three lines would be needed: the label would be cut off.
+        assertThat(QuickActionsRow.fits("Зробити переклад нотатки", 100, LabelsFitTest::tenPerChar))
+                .isFalse();
+        // "Редагувати" is wider than the cell: it would be broken inside the word.
+        assertThat(QuickActionsRow.fits("Редагувати копію", 90, LabelsFitTest::tenPerChar))
+                .isFalse();
+        assertThat(QuickActionsRow.fits("Поділитися", 100, LabelsFitTest::tenPerChar)).isTrue();
+    }
+
+    @Test
+    public void moreQuickActions_neverBreakInsideAWord() {
+        View sheet = LayoutInflater.from(context).inflate(R.layout.dialog_more_note, null);
+        assertThat((View) sheet.findViewById(R.id.quickActionsRow))
+                .isInstanceOf(QuickActionsRow.class);
+        ViewGroup copy = sheet.findViewById(R.id.quickCopy);
+        for (int i = 0; i < copy.getChildCount(); i++) {
+            if (copy.getChildAt(i) instanceof TextView label) {
+                assertThat(label.getBreakStrategy())
+                        .isEqualTo(android.text.Layout.BREAK_STRATEGY_SIMPLE);
+                assertThat(label.getHyphenationFrequency())
+                        .isEqualTo(android.text.Layout.HYPHENATION_FREQUENCY_NONE);
+            }
+        }
     }
 }
