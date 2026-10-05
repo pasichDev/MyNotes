@@ -110,6 +110,169 @@ window.EditorLocales = {
       }
     }
   },
+
+  be: {
+    placeholder: 'Пачніце пісаць...',
+    title_placeholder: 'Назва',
+    messages: {
+      ui: {
+        blockTunes: {
+          toggler: {
+            'Click to tune': 'Націсніце, каб наладзіць',
+            'or drag to move': 'або перацягніце'
+          }
+        },
+        inlineToolbar: { converter: { 'Convert to': 'Пераўтварыць у' } },
+        toolbar: { toolbox: { Add: 'Дадаць' } },
+        popover: {
+          Filter: 'Пошук',
+          'Nothing found': 'Нічога не знойдзена',
+          'Convert to': 'Пераўтварыць у'
+        }
+      },
+      toolNames: {
+        Text: 'Абзац',
+        Heading: 'Загаловак',
+        'Ordered List': 'Нумараваны спіс',
+        'Unordered List': 'Маркіраваны спіс',
+        Warning: 'Папярэджанне',
+        Checklist: 'Спіс задач',
+        Quote: 'Цытата',
+        Code: 'Код',
+        Delimiter: 'Раздзяляльнік',
+        'Raw HTML': 'HTML-фрагмент',
+        Table: 'Табліца',
+        Link: 'Спасылка',
+        Marker: 'Маркер',
+        Bold: 'Тоўсты',
+        Italic: 'Курсіў',
+        InlineCode: 'Монашырынны',
+        Image: 'Выява'
+      },
+      tools: {
+        paragraph: { 'Enter something': 'Увядзіце тэкст' },
+        link: { 'Add a link': 'Дадайце спасылку' },
+        header: { 'Heading 1': 'Загаловак 1', 'Heading 2': 'Загаловак 2' }
+      },
+      blockTunes: {
+        delete: {
+          Delete: 'Выдаліць',
+          'Click to delete': 'Пацвердзіць выдаленне'
+        },
+        moveUp: { 'Move up': 'Уверх' },
+        moveDown: { 'Move down': 'Уніз' }
+      }
+    }
+  },
+
+  it: {
+    placeholder: 'Inizia a scrivere...',
+    title_placeholder: 'Titolo',
+    messages: {
+      ui: {
+        blockTunes: {
+          toggler: {
+            'Click to tune': 'Tocca per modificare',
+            'or drag to move': 'o trascina per spostare'
+          }
+        },
+        inlineToolbar: { converter: { 'Convert to': 'Converti in' } },
+        toolbar: { toolbox: { Add: 'Aggiungi' } },
+        popover: {
+          Filter: 'Cerca',
+          'Nothing found': 'Nessun risultato',
+          'Convert to': 'Converti in'
+        }
+      },
+      toolNames: {
+        Text: 'Paragrafo',
+        Heading: 'Intestazione',
+        'Ordered List': 'Elenco numerato',
+        'Unordered List': 'Elenco puntato',
+        Warning: 'Avviso',
+        Checklist: 'Lista di controllo',
+        Quote: 'Citazione',
+        Code: 'Codice',
+        Delimiter: 'Separatore',
+        'Raw HTML': 'HTML',
+        Table: 'Tabella',
+        Link: 'Link',
+        Marker: 'Evidenziatore',
+        Bold: 'Grassetto',
+        Italic: 'Corsivo',
+        InlineCode: 'Monospaziato',
+        Image: 'Immagine'
+      },
+      tools: {
+        paragraph: { 'Enter something': 'Inserisci il testo' },
+        link: { 'Add a link': 'Aggiungi un link' },
+        header: { 'Heading 1': 'Intestazione 1', 'Heading 2': 'Intestazione 2' }
+      },
+      blockTunes: {
+        delete: {
+          Delete: 'Elimina',
+          'Click to delete': 'Conferma eliminazione'
+        },
+        moveUp: { 'Move up': 'Sposta su' },
+        moveDown: { 'Move down': 'Sposta giù' }
+      }
+    }
+  },
+
+  kk: {
+    placeholder: 'Жаза бастаңыз...',
+    title_placeholder: 'Атауы',
+    messages: {
+      ui: {
+        blockTunes: {
+          toggler: {
+            'Click to tune': 'Баптау үшін басыңыз',
+            'or drag to move': 'немесе жылжыту үшін сүйреңіз'
+          }
+        },
+        inlineToolbar: { converter: { 'Convert to': 'Түрлендіру' } },
+        toolbar: { toolbox: { Add: 'Қосу' } },
+        popover: {
+          Filter: 'Іздеу',
+          'Nothing found': 'Ештеңе табылмады',
+          'Convert to': 'Түрлендіру'
+        }
+      },
+      toolNames: {
+        Text: 'Абзац',
+        Heading: 'Тақырып',
+        'Ordered List': 'Нөмірленген тізім',
+        'Unordered List': 'Таңбаланған тізім',
+        Warning: 'Ескерту',
+        Checklist: 'Тапсырмалар тізімі',
+        Quote: 'Дәйексөз',
+        Code: 'Код',
+        Delimiter: 'Бөлгіш',
+        'Raw HTML': 'HTML үзіндісі',
+        Table: 'Кесте',
+        Link: 'Сілтеме',
+        Marker: 'Маркер',
+        Bold: 'Қалың',
+        Italic: 'Көлбеу',
+        InlineCode: 'Бірдей енді',
+        Image: 'Сурет'
+      },
+      tools: {
+        paragraph: { 'Enter something': 'Мәтін енгізіңіз' },
+        link: { 'Add a link': 'Сілтеме қосыңыз' },
+        header: { 'Heading 1': 'Тақырып 1', 'Heading 2': 'Тақырып 2' }
+      },
+      blockTunes: {
+        delete: {
+          Delete: 'Жою',
+          'Click to delete': 'Жоюды растау'
+        },
+        moveUp: { 'Move up': 'Жоғары' },
+        moveDown: { 'Move down': 'Төмен' }
+      }
+    }
+  },
+
   ru: {
     placeholder: 'Начните писать...',
     title_placeholder: 'Заголовок',

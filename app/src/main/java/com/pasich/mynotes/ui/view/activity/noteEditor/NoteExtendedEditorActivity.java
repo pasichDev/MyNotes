@@ -81,7 +81,8 @@ public class NoteExtendedEditorActivity
     private boolean isReadMode = false;
     private MenuItem readModeItem;
 
-    // "Open in editing mode" was chosen: the keyboard opens once the note is on screen.
+    // "Open in editing mode" was chosen, or the note is new: the keyboard opens once the note is
+    // on screen.
     private boolean showKeyboardWhenRendered = false;
 
     // A fresh open (not a recreation) of an existing note goes back to where it was left.
@@ -123,7 +124,8 @@ public class NoteExtendedEditorActivity
                         && noteOpeningPreferences.restoresLastPosition()
                         && hasSavedPosition(openedId);
         boolean editOnOpen = freshOpen && !newNote && mode == NoteOpeningPreferences.OpenMode.EDIT;
-        showKeyboardWhenRendered = editOnOpen;
+        // A new note opens for typing in every mode, like in the simple editor.
+        showKeyboardWhenRendered = editOnOpen || (freshOpen && newNote && !isReadMode);
         if (binding != null) {
             binding.noteEditor.setStartOptions(
                     isReadMode, noteOpeningPreferences.isDoubleTapToEdit());

@@ -1,7 +1,9 @@
 package com.pasich.mynotes.extendedEditor;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -18,7 +21,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.color.MaterialColors;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
@@ -27,6 +33,7 @@ import com.pasich.mynotes.extendedEditor.models.PickedFile;
 import com.pasich.mynotes.extendedEditor.utils.EditorAttachmentsWebViewClient;
 import com.pasich.mynotes.extendedEditor.utils.EditorJSInterface;
 import com.pasich.mynotes.extendedEditor.utils.SettingsEditorColors;
+import com.pasich.mynotes.utils.editor.KeyboardRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -75,6 +82,8 @@ public class NoteEditorView extends FrameLayout {
     // first note loaded.
     private LongFunction<String> handedOverHistory;
     private boolean releasing = false;
+    private final KeyboardRequest keyboardRequest = new KeyboardRequest();
+    private final Runnable keyboardStep = this::continueKeyboardRequest;
 
     public NoteEditorView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -113,9 +122,11 @@ public class NoteEditorView extends FrameLayout {
     /** Loads the Editor.js HTML page from the app assets with the current locale. */
     private void loadEditorHtml() {
         if (webView == null) return;
+        // The app's language, which the page's hints and tool names follow.
+        Locale locale = getResources().getConfiguration().getLocales().get(0);
         String url =
                 "file:///android_asset/editor/editor.html?locale="
-                        + Locale.getDefault().getLanguage();
+                        + (locale != null ? locale : Locale.getDefault()).getLanguage();
         if (!autofocus) url += "&autofocus=0";
         if (startReadOnly) url += "&readonly=1";
         if (doubleTapToEdit) url += "&dbltap=1";
@@ -284,6 +295,7 @@ public class NoteEditorView extends FrameLayout {
     /** Toggles read-only mode inside Editor.js (title and blocks become non-editable). */
     public void actionRead() {
         if (!editorIsReady) return;
+        keyboardRequest.cancel();
         editorInterface.toggleReadMode();
     }
 
@@ -292,14 +304,60 @@ public class NoteEditorView extends FrameLayout {
         return editorIsReady;
     }
 
-    /** Focuses the page and opens the keyboard on the caret it holds. */
+    /**
+     * Focuses the page and opens the keyboard on its caret, giving the page a caret first when it
+     * has none. A request made while the screen is still opening, or before the WebView is
+     * connected to the input method, is dropped by the system; it waits for window focus and is
+     * repeated until the keyboard is up ({@link KeyboardRequest}).
+     */
     public void showKeyboard() {
-        if (webView == null) return;
-        webView.requestFocus();
-        InputMethodManager imm =
-                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
+        if (webView == null || releasing) return;
+        if (editorInterface != null) editorInterface.focusCaret();
+        keyboardRequest.start();
+        handler.removeCallbacks(keyboardStep);
+        continueKeyboardRequest();
+    }
+
+    private void continueKeyboardRequest() {
+        if (webView == null || releasing) return;
+        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(webView);
+        boolean visible = insets != null && insets.isVisible(WindowInsetsCompat.Type.ime());
+        switch (keyboardRequest.next(visible, webView.hasWindowFocus())) {
+            case DONE, WAIT_FOR_WINDOW_FOCUS -> {
+                // Done, or continued from onWindowFocusChanged.
+            }
+            case SHOW_AND_RETRY -> {
+                if (!webView.hasFocus()) webView.requestFocus();
+                Window window = findWindow();
+                if (window != null) {
+                    WindowCompat.getInsetsController(window, webView)
+                            .show(WindowInsetsCompat.Type.ime());
+                }
+                InputMethodManager imm =
+                        (InputMethodManager)
+                                getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.showSoftInput(webView, InputMethodManager.SHOW_IMPLICIT);
+                handler.postDelayed(keyboardStep, KeyboardRequest.RETRY_MS);
+            }
+        }
+    }
+
+    @Nullable
+    private Window findWindow() {
+        Context context = getContext();
+        while (context instanceof ContextWrapper wrapper) {
+            if (context instanceof Activity activity) return activity.getWindow();
+            context = wrapper.getBaseContext();
+        }
+        return null;
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (hasWindowFocus && keyboardRequest.isPending()) {
+            handler.removeCallbacks(keyboardStep);
+            continueKeyboardRequest();
         }
     }
 

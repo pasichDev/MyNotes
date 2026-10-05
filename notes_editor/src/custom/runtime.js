@@ -1016,12 +1016,13 @@ window.deleteAttachmentBlockFromAndroid = function (blockId, fileUrl) {
 }
 
 /**
- * Placeholder logic for title
+ * Shows the title hint while the title is empty, in the page's language (editor-init sets it
+ * from the locale Android passes).
  */
 function updateTitlePlaceholder () {
   const titleEl = document.getElementById('noteTitleInput')
   if (!titleEl.innerText.trim()) {
-    titleEl.setAttribute('data-placeholder', 'Title...')
+    titleEl.setAttribute('data-placeholder', window.__titlePlaceholder || '')
   } else {
     titleEl.removeAttribute('data-placeholder')
   }
@@ -1072,6 +1073,27 @@ function setReadMode (readOnly, caret) {
     safeAndroidCall('onReadModeChanged', readOnly, !!caret)
     return readOnly
   })
+}
+
+/**
+ * Android is about to open the keyboard: makes sure the editor holds a caret for it to type at.
+ * A caret the page already has (a restored position, a tap) is kept; otherwise it goes to the
+ * start of the first block, without moving the page.
+ */
+function focusCaretFromAndroid () {
+  if (!editor || isReadMode) return
+  const active = document.activeElement
+  if (active && active.isContentEditable) {
+    active.focus({ preventScroll: true })
+    return
+  }
+  const y = window.scrollY
+  try {
+    editor.caret.setToFirstBlock('start')
+  } catch (e) {
+    console.error('[Editor] placing the caret failed:', e)
+  }
+  window.scrollTo(0, y)
 }
 
 /**
@@ -1127,6 +1149,7 @@ window.currentBlockIndex = currentBlockIndex
 window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid
 window.flushContent = flushContent
 window.finishPage = finishPage
+window.focusCaretFromAndroid = focusCaretFromAndroid
 window.historyUndo = historyUndo
 window.historyRedo = historyRedo
 window.historyEditorChanged = historyEditorChanged

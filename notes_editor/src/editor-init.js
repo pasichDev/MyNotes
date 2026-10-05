@@ -28,6 +28,8 @@ window.SpacerTool = SpacerTool
     global.__saveTimer = null
 
     const titleDiv = document.getElementById('noteTitleInput')
+    // The title hint, also for runtime.js, which shows it again whenever a note is loaded.
+    global.__titlePlaceholder = i18n.title_placeholder
     const AttachesTool = global.AttachesTool
 
 
@@ -97,7 +99,7 @@ window.SpacerTool = SpacerTool
 
         global.Android?.onEditorReady()
 
-        updateTitlePlaceholder(i18n.title_placeholder || 'Title...')
+        updateTitlePlaceholder(global.__titlePlaceholder)
       },
 
       onChange (api, event) {
@@ -115,7 +117,7 @@ window.SpacerTool = SpacerTool
     }
 
     titleDiv.addEventListener('input', () => {
-      updateTitlePlaceholder(i18n.title_placeholder || 'Title...')
+      updateTitlePlaceholder(global.__titlePlaceholder)
       global.Android?.onTitleChanged(titleDiv.innerText.trim())
     })
 

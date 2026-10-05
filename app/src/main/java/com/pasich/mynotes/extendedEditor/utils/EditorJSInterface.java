@@ -217,6 +217,11 @@ public class EditorJSInterface {
                 });
     }
 
+    /** Makes sure the page holds a caret for the keyboard that is about to open. */
+    public void focusCaret() {
+        evaluate("window.focusCaretFromAndroid && focusCaretFromAndroid();");
+    }
+
     /** Asks the editor to send its document now; it answers through onContentFlushed. */
     public void requestFlush() {
         evaluate("window.flushContent && flushContent();");
