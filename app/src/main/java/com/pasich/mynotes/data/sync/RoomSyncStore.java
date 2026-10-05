@@ -15,6 +15,8 @@ import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
 import com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity;
 import com.pasich.mynotes.data.database.entities.SyncStateEntity;
+import com.pasich.mynotes.data.history.NoteHistory;
+import com.pasich.mynotes.data.history.NoteVersionReason;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
@@ -67,6 +69,13 @@ public final class RoomSyncStore implements SyncStore {
     private final AttachmentHasher attachmentHasher;
     private final TransactionFailureInjector transactionFailureInjector;
     private final AttachmentHashCache hashCache;
+
+    /**
+     * The local version history of notes. A version from another device, or the side of a conflict
+     * the user picks, replaces a note's text without the user typing anything here, so the text it
+     * replaces is always kept first.
+     */
+    private final NoteHistory noteHistory;
 
     /**
      * Content hash to the note-folder file holding it, indexed while the snapshot is built so the
@@ -158,6 +167,15 @@ public final class RoomSyncStore implements SyncStore {
         this.transactionFailureInjector = transactionFailureInjector;
         this.preferences =
                 context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        this.noteHistory =
+                new NoteHistory(
+                        database.noteVersionDao(),
+                        noteId -> {
+                            SyncMetadataEntity metadata =
+                                    database.syncMetadataDao()
+                                            .get(SyncMetadata.RECORD_TYPE_NOTE, noteId);
+                            return metadata == null ? null : metadata.stableId;
+                        });
         this.hashCache =
                 new AttachmentHashCache(
                         new File(
@@ -384,7 +402,10 @@ public final class RoomSyncStore implements SyncStore {
                                     transactionFailureInjector.afterRecordApplied(record);
                                     continue;
                                 }
-                                if (!applyPayload(metadata, record.getPayload())) {
+                                if (!applyPayload(
+                                        metadata,
+                                        record.getPayload(),
+                                        NoteVersionReason.PRE_SYNC)) {
                                     skippedKeys.add(key);
                                     continue;
                                 }
@@ -444,6 +465,9 @@ public final class RoomSyncStore implements SyncStore {
                                 }
                             }
                             persistConflicts(conflicts, skippedKeys);
+                            // A note deleted by another device takes its history with it above;
+                            // this also catches history any older path left behind.
+                            noteHistory.sweepOrphans();
                             if (finalState != null && !deferFinalState) {
                                 database.syncStateDao().upsert(toEntity(finalState));
                             }
@@ -900,10 +924,15 @@ public final class RoomSyncStore implements SyncStore {
      * matches, nothing is written, so a sync that changes nothing does not invalidate the notes,
      * tags or tasks queries and the lists on screen are not re-emitted.
      *
+     * <p>A note's text that the version replaces is first kept in the note's local history under
+     * {@code reason}, and the note keeps its place in this device's custom order, which never
+     * travels with the version.
+     *
      * @return false when the version was deliberately not applied and the record's local version
      *     must therefore not be advanced to it.
      */
-    private boolean applyPayload(SyncMetadataEntity metadata, JsonObject payload)
+    private boolean applyPayload(
+            SyncMetadataEntity metadata, JsonObject payload, @NonNull NoteVersionReason reason)
             throws IOException {
         // A record that was deleted here and then edited on another device has no row left to
         // update; @Update on a missing row is a silent no-op, and the tombstone was cleared
@@ -922,7 +951,9 @@ public final class RoomSyncStore implements SyncStore {
                 // version as null. Spelling it the local way keeps the row equal below.
                 note.setAttachments(stored.getAttachments());
             }
+            if (stored != null) note.setCustomPosition(stored.getCustomPosition());
             if (stored == null || !sameRow(stored, note)) {
+                noteHistory.recordBeforeOverwrite(stored, note, reason, System.currentTimeMillis());
                 database.noteDao().addNote(note);
                 notesToReconcile.add(note.getId());
             }
@@ -1095,6 +1126,8 @@ public final class RoomSyncStore implements SyncStore {
     private void markDeleted(SyncMetadataEntity metadata) {
         if ("note".equals(metadata.recordType)) {
             database.noteDao().deleteById((int) metadata.localId);
+            // Deleted for good on another device, or by the side of a conflict picked here.
+            noteHistory.forget(java.util.Collections.singletonList((int) metadata.localId));
             // A position on this device means nothing once another device deleted the note.
             new NoteViewStateStore(context).remove(metadata.localId);
             notesToReconcile.add((int) metadata.localId);
@@ -1556,7 +1589,10 @@ public final class RoomSyncStore implements SyncStore {
                         database.syncMetadataDao()
                                 .getByStableId(conflict.recordType, conflict.stableId);
                 if (preferencesMetadata != null) {
-                    applyPayload(preferencesMetadata, selected.getPayload());
+                    applyPayload(
+                            preferencesMetadata,
+                            selected.getPayload(),
+                            NoteVersionReason.PRE_CONFLICT);
                     database.syncMetadataDao()
                             .setVersion(
                                     conflict.recordType,
@@ -1568,7 +1604,7 @@ public final class RoomSyncStore implements SyncStore {
             return;
         }
 
-        applyPayload(metadata, selected.getPayload());
+        applyPayload(metadata, selected.getPayload(), NoteVersionReason.PRE_CONFLICT);
         database.syncMetadataDao()
                 .setVersion(conflict.recordType, metadata.localId, updatedAt, null);
     }

@@ -8,7 +8,11 @@ import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
 import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
+import com.pasich.mynotes.data.database.entities.NoteVersionEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
+import com.pasich.mynotes.data.history.NoteHistory;
+import com.pasich.mynotes.data.history.NoteVersionReason;
+import com.pasich.mynotes.data.history.NoteVersionRestore;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
@@ -67,6 +71,7 @@ public class SyncMutationCoordinator {
     private final TimeProvider timeProvider;
     private final StableIdGenerator stableIdGenerator;
     private final AttachmentRelocation attachmentRelocation;
+    private final NoteHistory noteHistory;
     private final Object legacyImportLock = new Object();
     private long legacyImportTimestamp = -1L;
     private long legacyImportExpiresAt = -1L;
@@ -114,7 +119,15 @@ public class SyncMutationCoordinator {
                         note.setValueJson(moved.valueJson);
                     }
                     return moved.changed;
-                });
+                },
+                new NoteHistory(
+                        database.noteVersionDao(),
+                        noteId -> {
+                            SyncMetadataEntity metadata =
+                                    database.syncMetadataDao()
+                                            .get(SyncMetadata.RECORD_TYPE_NOTE, noteId);
+                            return metadata == null ? null : metadata.stableId;
+                        }));
     }
 
     SyncMutationCoordinator(
@@ -151,7 +164,34 @@ public class SyncMutationCoordinator {
             @NonNull TimeProvider timeProvider,
             @NonNull StableIdGenerator stableIdGenerator,
             @NonNull AttachmentRelocation attachmentRelocation) {
+        this(
+                transactionExecutor,
+                noteDao,
+                taskDao,
+                tagsDao,
+                taskCategoryDao,
+                transactions,
+                syncMetadataDao,
+                timeProvider,
+                stableIdGenerator,
+                attachmentRelocation,
+                NoteHistory.NONE);
+    }
+
+    SyncMutationCoordinator(
+            @NonNull TransactionExecutor transactionExecutor,
+            @NonNull NoteDao noteDao,
+            @NonNull TaskDao taskDao,
+            @NonNull TagsDao tagsDao,
+            @NonNull TaskCategoryDao taskCategoryDao,
+            @NonNull Transactions transactions,
+            @NonNull SyncMetadataDao syncMetadataDao,
+            @NonNull TimeProvider timeProvider,
+            @NonNull StableIdGenerator stableIdGenerator,
+            @NonNull AttachmentRelocation attachmentRelocation,
+            @NonNull NoteHistory noteHistory) {
         this.attachmentRelocation = attachmentRelocation;
+        this.noteHistory = noteHistory;
         this.transactionExecutor = transactionExecutor;
         this.noteDao = noteDao;
         this.taskDao = taskDao;
@@ -395,9 +435,15 @@ public class SyncMutationCoordinator {
         }
     }
 
+    /**
+     * Stores the editor's content for a note, first keeping the content it replaces in the note's
+     * history when that is due (see {@link NoteHistory#recordBeforeEdit}).
+     */
     public void updateNoteContent(@NonNull Note note) {
         transactionExecutor.run(
                 () -> {
+                    noteHistory.recordBeforeEdit(
+                            noteDao.getNoteSync(note.getId()), note, timeProvider.now());
                     noteDao.updateNoteContent(
                             note.getId(),
                             note.getTitle(),
@@ -411,10 +457,55 @@ public class SyncMutationCoordinator {
                 });
     }
 
+    /**
+     * Puts one of a note's earlier versions back as its current content.
+     *
+     * <p>The content being replaced is kept first, so a restore can itself be undone, and the
+     * restore is then stored as an ordinary edit that syncs like any other. Only text comes back;
+     * see {@link NoteVersionRestore}.
+     *
+     * @return false when the note or the version no longer exists.
+     */
+    public boolean restoreNoteVersion(int noteId, long versionId) {
+        return transactionExecutor.run(
+                () -> {
+                    NoteVersionEntity version = noteHistory.get(versionId);
+                    Note stored = noteDao.getNoteSync(noteId);
+                    if (version == null || stored == null || version.noteLocalId != noteId) {
+                        return false;
+                    }
+                    Note restored = new Note();
+                    restored.copyFrom(stored);
+                    restored.setId(stored.getId());
+                    NoteVersionRestore.plan(stored, version).applyTo(restored);
+                    if (NoteHistory.sameText(stored, restored)) return true;
+
+                    long now = timeProvider.now();
+                    noteHistory.recordBeforeOverwrite(
+                            stored, restored, NoteVersionReason.PRE_RESTORE, now);
+                    noteDao.updateNoteContent(
+                            noteId,
+                            restored.getTitle(),
+                            restored.getValue(),
+                            restored.getValueJson(),
+                            now,
+                            restored.getTag(),
+                            restored.getAttachments());
+                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, now);
+                    return true;
+                });
+    }
+
+    /** Removes history left without its note; returns how many versions went. */
+    public int sweepOrphanNoteVersions() {
+        return transactionExecutor.run(noteHistory::sweepOrphans);
+    }
+
     public void deleteNote(@NonNull Note note) {
         transactionExecutor.run(
                 () -> {
                     noteDao.deleteNote(note);
+                    noteHistory.forget(Collections.singletonList(note.getId()));
                     markDeletedRecord(
                             SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
                     return null;
@@ -426,10 +517,13 @@ public class SyncMutationCoordinator {
         transactionExecutor.run(
                 () -> {
                     long timestamp = timeProvider.now();
+                    List<Integer> deletedIds = new ArrayList<>(notes.size());
                     for (Note note : notes) {
                         noteDao.deleteNote(note);
+                        deletedIds.add(note.getId());
                         markDeletedRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timestamp);
                     }
+                    noteHistory.forget(deletedIds);
                     return null;
                 });
     }
@@ -476,6 +570,7 @@ public class SyncMutationCoordinator {
                     if (trashNoteIds.isEmpty()) return Collections.<Integer>emptyList();
                     long timestamp = timeProvider.now();
                     noteDao.deleteAllTrashNotes();
+                    noteHistory.forget(trashNoteIds);
                     markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, trashNoteIds, timestamp);
                     return trashNoteIds;
                 });
@@ -680,6 +775,7 @@ public class SyncMutationCoordinator {
                     long timestamp = timeProvider.now();
                     List<Integer> noteIds = noteDao.getAllNoteIdsSync();
                     noteDao.deleteAllNotes();
+                    noteHistory.forgetAll();
                     markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
 
                     List<Integer> taskIds = taskDao.getAllTaskIdsSync();

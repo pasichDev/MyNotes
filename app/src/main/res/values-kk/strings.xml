@@ -591,4 +591,22 @@
         <item quantity="one">%d жыл</item>
         <item quantity="other">%d жыл</item>
     </plurals>
+    <string name="version_history">Нұсқалар тарихы</string>
+    <string name="version_history_info">Осы жазбаның бұрынғы нұсқалары тек осы құрылғыда сақталады, ең көбі %1$d. Олар синхрондалмайды және сақтық көшірмелерге кірмейді.</string>
+    <string name="version_history_empty_title">Әзірге бұрынғы нұсқалар жоқ</string>
+    <string name="version_history_empty_text">Жазба өзгергенде, оның бұрынғы мәтіні қайтару үшін осында сақталады.</string>
+    <string name="version_reason_autosave">Автосақтау</string>
+    <string name="version_reason_pre_sync">Синхрондау алдында</string>
+    <string name="version_reason_pre_restore">Қалпына келтіру алдында</string>
+    <string name="version_reason_pre_conflict">Қайшылық алдында</string>
+    <string name="version_preview_this">Осы нұсқа</string>
+    <string name="version_preview_current">Ағымдағы жазба</string>
+    <string name="version_preview_same">Бұл нұсқаның мәтіні ағымдағы жазбамен бірдей.</string>
+    <string name="version_restore">Қалпына келтіру</string>
+    <string name="version_restore_title">Осы нұсқаны қалпына келтіру керек пе?</string>
+    <string name="version_restore_message">Жазбаның ағымдағы мәтіні ауыстырылады. Ол нұсқалар тарихында қалады, сондықтан оған қайта орала аласыз.</string>
+    <string name="version_restore_attachments">Жазбада енді жоқ тіркемелер осы нұсқамен бірге қайтып келмейді.</string>
+    <string name="version_restored">Нұсқа қалпына келтірілді</string>
+    <string name="version_restore_failed">Бұл нұсқаны қалпына келтіру мүмкін болмады</string>
+    <string name="version_untitled">Бос жазба</string>
 </resources>

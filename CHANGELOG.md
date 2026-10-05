@@ -26,6 +26,14 @@
   monthly reminder on the 31st rings on the last day of shorter months and is back on the 31st
   afterwards, and a yearly one on 29 February rings on 28 February in other years. Daily, weekly
   and monthly reminders keep working in older versions of the app on your other devices.
+- **Version history.** More → Version history lists earlier versions of a note, newest first,
+  with when and why each was kept: while you edit (at most every ten minutes, or at once when a
+  large part of the text is removed), and always before a sync, a conflict choice or a restore
+  replaces the text. Open a version to see it next to the current note with the difference
+  highlighted, and restore it in one tap; the text it replaces is kept too, so a restore can be
+  undone. Up to 20 versions per note stay on this device only. They are not synced or included in
+  backups, and they are deleted together with the note when it is deleted for good. A version
+  brings back text; attachments that are no longer in the note do not come back with it.
 
 **Improvements**
 

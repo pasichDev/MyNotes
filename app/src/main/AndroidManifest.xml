@@ -63,6 +63,9 @@
             android:name=".ui.view.activity.MeetEnclyActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.view.activity.NoteHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.view.activity.LibsActivity"
             android:exported="false" />
         <activity

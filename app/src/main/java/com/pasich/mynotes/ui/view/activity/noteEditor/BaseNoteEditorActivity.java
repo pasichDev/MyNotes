@@ -14,6 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
@@ -21,6 +23,7 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.viewbinding.ViewBinding;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.activity.BaseActivity;
@@ -28,6 +31,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.databinding.ActivityNoteExtendedEditorBinding;
 import com.pasich.mynotes.ui.contract.NoteContract;
 import com.pasich.mynotes.ui.presenter.NotePresenter;
+import com.pasich.mynotes.ui.view.activity.NoteHistoryActivity;
 import com.pasich.mynotes.ui.view.dialogs.MoreNoteDialog;
 import com.pasich.mynotes.ui.view.dialogs.ReminderPickerBottomSheet;
 import com.pasich.mynotes.utils.enums.SaveState;
@@ -46,6 +50,20 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     protected MenuItem saveStatusMenuItem;
     protected T binding;
     protected long idNote;
+
+    /** Version history; a restored version is read back into this editor. */
+    private final ActivityResultLauncher<Intent> versionHistoryLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() != RESULT_OK || notePresenter == null) return;
+                        notePresenter.reloadNote();
+                        Snackbar.make(
+                                        binding.getRoot(),
+                                        R.string.version_restored,
+                                        Snackbar.LENGTH_SHORT)
+                                .show();
+                    });
 
     protected abstract @MenuRes int getMenuResId();
 
@@ -342,6 +360,16 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 
         finish();
+    }
+
+    @Override
+    public void openVersionHistory() {
+        if (notePresenter == null || !notePresenter.hasNote()) return;
+        // Whatever the autosave still holds is written first, so the history shows it and a
+        // restore keeps it as the version it replaces.
+        notePresenter.flushPending();
+        versionHistoryLauncher.launch(
+                NoteHistoryActivity.intent(this, notePresenter.getNote().getId()));
     }
 
     @Override

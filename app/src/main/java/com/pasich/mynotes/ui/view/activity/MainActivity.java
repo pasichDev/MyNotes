@@ -141,6 +141,22 @@ public class MainActivity extends BaseActivity
                         }
                     });
 
+    /** Version history opened from a note's menu; a restore is confirmed here. */
+    private final ActivityResultLauncher<Intent> versionHistoryLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() != Activity.RESULT_OK
+                                || mActivityBinding == null) return;
+                        Snackbar snackbar =
+                                Snackbar.make(
+                                        mActivityBinding.drawerLayout,
+                                        R.string.version_restored,
+                                        Snackbar.LENGTH_SHORT);
+                        snackbar.setAnchorView(mActivityBinding.newNotesButton);
+                        snackbar.show();
+                    });
+
     /** How long a return transition from the editor may take (300 ms) plus a margin. */
     private static final long RETURN_SETTLE_MS = 380;
 
@@ -692,6 +708,11 @@ public class MainActivity extends BaseActivity
     public void callbackDeleteNote(Note mNote) {
         mainPresenter.setBackupDeleteNote(mNote);
         snackBarRestoreNote();
+    }
+
+    @Override
+    public void openVersionHistory(int noteId) {
+        versionHistoryLauncher.launch(NoteHistoryActivity.intent(this, noteId));
     }
 
     public void openNoteEdit(Note note, View view) {

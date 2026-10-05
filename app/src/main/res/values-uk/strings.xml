@@ -623,4 +623,22 @@
         <item quantity="many">%d років</item>
         <item quantity="other">%d року</item>
     </plurals>
+    <string name="version_history">Історія версій</string>
+    <string name="version_history_info">Попередні версії цієї нотатки зберігаються лише на цьому пристрої, до %1$d. Вони не синхронізуються й не потрапляють до резервних копій.</string>
+    <string name="version_history_empty_title">Попередніх версій ще немає</string>
+    <string name="version_history_empty_text">Коли нотатка змінюється, її попередній текст зберігається тут, щоб ви могли його повернути.</string>
+    <string name="version_reason_autosave">Автозбереження</string>
+    <string name="version_reason_pre_sync">Перед синхронізацією</string>
+    <string name="version_reason_pre_restore">Перед відновленням</string>
+    <string name="version_reason_pre_conflict">Перед конфліктом</string>
+    <string name="version_preview_this">Ця версія</string>
+    <string name="version_preview_current">Поточна нотатка</string>
+    <string name="version_preview_same">Ця версія має той самий текст, що й поточна нотатка.</string>
+    <string name="version_restore">Відновити</string>
+    <string name="version_restore_title">Відновити цю версію?</string>
+    <string name="version_restore_message">Поточний текст нотатки буде замінено. Він залишиться в історії версій, тож ви зможете до нього повернутися.</string>
+    <string name="version_restore_attachments">Вкладення, яких уже немає в нотатці, не повернуться з цією версією.</string>
+    <string name="version_restored">Версію відновлено</string>
+    <string name="version_restore_failed">Не вдалося відновити цю версію</string>
+    <string name="version_untitled">Порожня нотатка</string>
 </resources>

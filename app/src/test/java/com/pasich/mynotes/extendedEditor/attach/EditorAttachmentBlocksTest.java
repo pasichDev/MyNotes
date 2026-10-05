@@ -81,4 +81,35 @@ public class EditorAttachmentBlocksTest {
         assertThat(EditorAttachmentBlocks.findFile(DOCUMENT, "p")).isNull();
         assertThat(EditorAttachmentBlocks.findFile(DOCUMENT, "missing")).isNull();
     }
+
+    @Test
+    public void keepOnlyFiles_dropsBlocksWhoseFileIsGoneAndTrimsLists() {
+        EditorAttachmentBlocks.Filtered filtered =
+                EditorAttachmentBlocks.keepOnlyFiles(
+                        DOCUMENT,
+                        java.util.Set.of(
+                                "editorjs://attachments/note_5/one.pdf",
+                                "editorjs://attachments/note_5/three.png"));
+
+        assertThat(filtered.removed).isEqualTo(2);
+        assertThat(EditorAttachmentBlocks.fileUrls(filtered.valueJson))
+                .containsExactly(
+                        "editorjs://attachments/note_5/one.pdf",
+                        "editorjs://attachments/note_5/three.png")
+                .inOrder();
+        // The video block lost its only file and goes; text blocks are untouched.
+        assertThat(filtered.valueJson).doesNotContain("\"id\":\"v\"");
+        assertThat(filtered.valueJson).contains("hello <b>there</b>");
+    }
+
+    @Test
+    public void keepOnlyFiles_returnsTheDocumentVerbatimWhenEverythingStays() {
+        EditorAttachmentBlocks.Filtered filtered =
+                EditorAttachmentBlocks.keepOnlyFiles(
+                        DOCUMENT,
+                        new java.util.HashSet<>(EditorAttachmentBlocks.fileUrls(DOCUMENT)));
+
+        assertThat(filtered.removed).isEqualTo(0);
+        assertThat(filtered.valueJson).isSameInstanceAs(DOCUMENT);
+    }
 }

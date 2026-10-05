@@ -1,5 +1,6 @@
 package com.pasich.mynotes.data.database.helpers;
 
+import com.pasich.mynotes.data.database.entities.NoteVersionEntity;
 import com.pasich.mynotes.data.model.Note;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -60,4 +61,10 @@ public interface DbNotesHelper {
             int noteId, long reminderTime, String repeat, int intervalMinutes);
 
     Completable setPinNote(int noteId, boolean pinned);
+
+    /** The note's local version history, newest first; re-emits as it changes. */
+    Flowable<List<NoteVersionEntity>> getNoteVersions(int noteId);
+
+    /** Restores one version; emits false when the note or the version is gone. */
+    Single<Boolean> restoreNoteVersion(int noteId, long versionId);
 }

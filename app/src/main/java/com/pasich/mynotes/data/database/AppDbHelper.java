@@ -1,5 +1,6 @@
 package com.pasich.mynotes.data.database;
 
+import com.pasich.mynotes.data.database.entities.NoteVersionEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
@@ -267,6 +268,17 @@ public class AppDbHelper implements DbHelper {
     public Completable setPinNote(int noteId, boolean pinned) {
         return Completable.fromAction(() -> syncMutationCoordinator.setPinNote(noteId, pinned))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
+    }
+
+    @Override
+    public Flowable<List<NoteVersionEntity>> getNoteVersions(int noteId) {
+        return appDatabase.noteVersionDao().observeForNote(noteId);
+    }
+
+    @Override
+    public Single<Boolean> restoreNoteVersion(int noteId, long versionId) {
+        return Single.fromCallable(
+                () -> syncMutationCoordinator.restoreNoteVersion(noteId, versionId));
     }
 
     // ---- DbTasksHelper ----

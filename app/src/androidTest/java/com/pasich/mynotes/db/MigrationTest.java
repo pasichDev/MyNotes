@@ -221,6 +221,57 @@ public class MigrationTest {
     }
 
     @Test
+    public void migrate22to23_addsVersionHistoryAndSeedsTheCustomOrderNewestFirst()
+            throws IOException {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 22);
+        String columns =
+                "INSERT INTO notes "
+                        + "(id, title, value, date, tag, valueJson, hasRichContent, attachments, "
+                        + "isTrash, reminderTime, isPinned, reminderRepeat, reminderIntervalMinutes) "
+                        + "VALUES ";
+        db.execSQL(columns + "(1, 'Old', 'a', 100, '', '', 0, '', 0, NULL, 0, 'NONE', 0)");
+        db.execSQL(columns + "(2, 'New', 'b', 300, '', '', 0, '', 0, NULL, 0, 'NONE', 0)");
+        db.execSQL(columns + "(3, 'Middle', 'c', 200, '', '', 0, '', 0, NULL, 0, 'NONE', 0)");
+        db.close();
+
+        SupportSQLiteDatabase migrated =
+                helper.runMigrationsAndValidate(TEST_DB, 23, true, AppDatabase.MIGRATION_22_23);
+        try (android.database.Cursor cursor =
+                migrated.query("SELECT id FROM notes ORDER BY customPosition DESC")) {
+            // The custom order starts as the default one, newest edit first.
+            assertThat(cursor.moveToNext()).isTrue();
+            assertThat(cursor.getInt(0)).isEqualTo(2);
+            assertThat(cursor.moveToNext()).isTrue();
+            assertThat(cursor.getInt(0)).isEqualTo(3);
+            assertThat(cursor.moveToNext()).isTrue();
+            assertThat(cursor.getInt(0)).isEqualTo(1);
+        }
+        try (android.database.Cursor cursor =
+                migrated.query("SELECT COUNT(DISTINCT customPosition) FROM notes")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            assertThat(cursor.getInt(0)).isEqualTo(3);
+        }
+        migrated.execSQL(
+                "INSERT INTO note_versions (noteLocalId, noteStableId, title, value, valueJson, "
+                        + "attachments, createdAt, reason) "
+                        + "VALUES (1, NULL, 'Old', 'a', NULL, NULL, 5, 'AUTOSAVE')");
+        // No foreign key: replacing the note row must leave its history alone.
+        migrated.execSQL(
+                "INSERT OR REPLACE INTO notes "
+                        + "(id, title, value, date, tag, valueJson, hasRichContent, attachments, "
+                        + "isTrash, reminderTime, isPinned, reminderRepeat, "
+                        + "reminderIntervalMinutes, customPosition) "
+                        + "VALUES (1, 'Old', 'z', 400, '', '', 0, '', 0, NULL, 0, 'NONE', 0, 1024)");
+        try (android.database.Cursor cursor =
+                migrated.query("SELECT COUNT(*) FROM note_versions WHERE noteLocalId = 1")) {
+            assertThat(cursor.moveToFirst()).isTrue();
+            assertThat(cursor.getInt(0)).isEqualTo(1);
+        } finally {
+            migrated.close();
+        }
+    }
+
+    @Test
     public void migrateFromTheLastReleasedVersion_reachesTheCurrentSchema() throws IOException {
         // 17 is what 2.6.48 shipped; everything after it lands in later releases of this line.
         SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 17);
@@ -234,13 +285,14 @@ public class MigrationTest {
         SupportSQLiteDatabase migrated =
                 helper.runMigrationsAndValidate(
                         TEST_DB,
-                        22,
+                        23,
                         true,
                         AppDatabase.MIGRATION_17_18,
                         AppDatabase.MIGRATION_18_19,
                         AppDatabase.MIGRATION_19_20,
                         AppDatabase.MIGRATION_20_21,
-                        AppDatabase.MIGRATION_21_22);
+                        AppDatabase.MIGRATION_21_22,
+                        AppDatabase.MIGRATION_22_23);
         try (android.database.Cursor cursor = migrated.query("SELECT COUNT(*) FROM notes")) {
             assertThat(cursor.moveToFirst()).isTrue();
             assertThat(cursor.getInt(0)).isEqualTo(1);

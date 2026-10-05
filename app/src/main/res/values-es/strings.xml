@@ -595,4 +595,22 @@
         <item quantity="one">%d año</item>
         <item quantity="other">%d años</item>
     </plurals>
+    <string name="version_history">Historial de versiones</string>
+    <string name="version_history_info">Las versiones anteriores de esta nota se guardan solo en este dispositivo, hasta %1$d. No se sincronizan ni se incluyen en las copias de seguridad.</string>
+    <string name="version_history_empty_title">Aún no hay versiones anteriores</string>
+    <string name="version_history_empty_text">Cuando esta nota cambia, su texto anterior se guarda aquí para que puedas recuperarlo.</string>
+    <string name="version_reason_autosave">Guardado automático</string>
+    <string name="version_reason_pre_sync">Antes de sincronizar</string>
+    <string name="version_reason_pre_restore">Antes de restaurar</string>
+    <string name="version_reason_pre_conflict">Antes del conflicto</string>
+    <string name="version_preview_this">Esta versión</string>
+    <string name="version_preview_current">Nota actual</string>
+    <string name="version_preview_same">Esta versión tiene el mismo texto que la nota actual.</string>
+    <string name="version_restore">Restaurar</string>
+    <string name="version_restore_title">¿Restaurar esta versión?</string>
+    <string name="version_restore_message">El texto actual de la nota se reemplazará. Se conserva en el historial de versiones, así que podrás volver a él.</string>
+    <string name="version_restore_attachments">Los adjuntos que ya no están en la nota no volverán con esta versión.</string>
+    <string name="version_restored">Versión restaurada</string>
+    <string name="version_restore_failed">No se pudo restaurar esta versión</string>
+    <string name="version_untitled">Nota vacía</string>
 </resources>

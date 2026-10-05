@@ -97,9 +97,9 @@ public final class SyncConflictPresentation {
         String loserText =
                 loserKind == Kind.TEXT ? readable(conflict.recordType, conflict.loserJson) : "";
 
-        int[] range = differenceRange(winnerText, loserText);
-        Window winnerWindow = window(winnerText, range[0], range[1]);
-        Window loserWindow = window(loserText, range[0], range[2]);
+        Comparison comparison = compare(winnerText, loserText, PREVIEW_LIMIT);
+        Window winnerWindow = comparison.first;
+        Window loserWindow = comparison.second;
 
         boolean winnerNewer = conflict.winnerUpdatedAt >= conflict.loserUpdatedAt;
         return new SyncConflictPresentation(
@@ -213,11 +213,38 @@ public final class SyncConflictPresentation {
         return new int[] {prefix, first.length() - suffix, second.length() - suffix};
     }
 
+    /** Two texts, each windowed around the part where it differs from the other. */
+    public static final class Comparison {
+        @NonNull public final Window first;
+        @NonNull public final Window second;
+
+        Comparison(@NonNull Window first, @NonNull Window second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
+    /**
+     * Compares two texts and windows each one around the difference.
+     *
+     * <p>The core of a conflict's presentation, shared with anything else that shows two versions
+     * of a text side by side, such as a note's version history.
+     *
+     * @param limit longest text kept before it is windowed around the difference.
+     */
+    @NonNull
+    public static Comparison compare(@NonNull String first, @NonNull String second, int limit) {
+        int[] range = differenceRange(first, second);
+        return new Comparison(
+                window(first, range[0], range[1], limit),
+                window(second, range[0], range[2], limit));
+    }
+
     /** Preview text plus the highlight range inside it. */
-    static final class Window {
-        @NonNull final String text;
-        final int start;
-        final int end;
+    public static final class Window {
+        @NonNull public final String text;
+        public final int start;
+        public final int end;
 
         Window(@NonNull String text, int start, int end) {
             this.text = text;
@@ -234,15 +261,20 @@ public final class SyncConflictPresentation {
      */
     @NonNull
     static Window window(@NonNull String text, int diffStart, int diffEnd) {
-        if (text.length() <= PREVIEW_LIMIT) {
+        return window(text, diffStart, diffEnd, PREVIEW_LIMIT);
+    }
+
+    @NonNull
+    static Window window(@NonNull String text, int diffStart, int diffEnd, int limit) {
+        if (text.length() <= limit) {
             return new Window(text, clamp(diffStart, text.length()), clamp(diffEnd, text.length()));
         }
         int start = clamp(diffStart, text.length());
         int end = clamp(diffEnd, text.length());
         int centre = (start + end) / 2;
-        int from = Math.max(0, centre - PREVIEW_LIMIT / 2);
-        int to = Math.min(text.length(), from + PREVIEW_LIMIT);
-        from = Math.max(0, to - PREVIEW_LIMIT);
+        int from = Math.max(0, centre - limit / 2);
+        int to = Math.min(text.length(), from + limit);
+        from = Math.max(0, to - limit);
 
         String head = from > 0 ? "…" : "";
         String tail = to < text.length() ? "…" : "";

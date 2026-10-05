@@ -15,4 +15,7 @@ public interface MoreNoteNoteActivityView {
     void openCopyNote(long idNote);
 
     void changeEditor(long idNote);
+
+    /** Saves what is pending and opens the note's local version history. */
+    void openVersionHistory();
 }

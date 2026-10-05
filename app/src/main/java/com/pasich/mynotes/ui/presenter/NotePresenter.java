@@ -516,6 +516,30 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     }
 
     @Override
+    public void reloadNote() {
+        if (targetNote == null) return;
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .getNoteForId(targetNote.getId())
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        note -> {
+                                            if (note == null || note.getId() == 0 || isViewDead())
+                                                return;
+                                            setNote(note);
+                                            savedNote.copyFrom(note);
+                                            if (getExtendedEditor()) {
+                                                getView().reloadExtendedEditor();
+                                            }
+                                            getView().loadingNote(note);
+                                            updateSaveState(SaveState.IDLE);
+                                        },
+                                        throwable -> Log.e(TAG, "reloadNote() failed", throwable)));
+    }
+
+    @Override
     public void activateEditNote() {
         getView().activatedActivity();
     }

@@ -95,7 +95,10 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         textStylePreferences.addButton(binding.settingsActivity.textStyleItem);
 
         if (rootActivity != RootActivity.MainActivity) {
-            binding.setReminder.setBackgroundResource(R.drawable.bg_item_full);
+            // In the editor the reminder and the version history form a group of their own.
+            binding.setReminder.setBackgroundResource(R.drawable.bg_item_start);
+        } else {
+            binding.setReminder.setBackgroundResource(R.drawable.bg_item_middle);
         }
 
         return binding.getRoot();
@@ -328,6 +331,18 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                     dismiss();
                 });
 
+        binding.versionHistory.setOnClickListener(
+                v -> {
+                    Note note = mPresenter.getNote();
+                    if (note == null) return;
+                    if (rootActivity == RootActivity.MainActivity) {
+                        if (mainActivity != null) mainActivity.openVersionHistory(note.getId());
+                    } else if (noteActivity != null) {
+                        noteActivity.openVersionHistory();
+                    }
+                    dismiss();
+                });
+
         binding.moveToTrash.setOnClickListener(
                 v -> {
                     mPresenter.noteMoveToTrash();
@@ -363,6 +378,7 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
         }
 
         binding.setReminder.setOnClickListener(null);
+        binding.versionHistory.setOnClickListener(null);
         binding.moveToTrash.setOnClickListener(null);
     }
 

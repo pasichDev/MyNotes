@@ -446,6 +446,40 @@ public class RoomSyncStoreTest {
         }
     }
 
+    // ------------------------------------------------- version history across a sync
+
+    @Test
+    public void applySnapshot_keepsTheReplacedTextInHistoryAndKeepsTheCustomPosition()
+            throws Exception {
+        int noteId = seedNote("Shopping", "milk", null);
+        Note seeded = db.noteDao().getNoteSync(noteId);
+        seeded.setCustomPosition(7_168L);
+        db.noteDao().addNote(seeded);
+        SyncRecord local = onlyNote(store.readSnapshot());
+        JsonObject payload = local.getPayload().deepCopy();
+        payload.addProperty("c", "milk, bread from the other phone");
+        SyncRecord remote =
+                SyncRecord.live(
+                        SyncRecord.Type.NOTE,
+                        local.getId(),
+                        local.getUpdatedAt().plusSeconds(60),
+                        payload);
+
+        store.applySnapshot(
+                new SyncSnapshot(Collections.singletonList(remote)), Collections.emptyList());
+
+        // The note row is written with a REPLACE insert, which SQLite carries out as a delete and
+        // an insert; a cascading foreign key would have wiped the history right here.
+        Note applied = db.noteDao().getNoteSync(noteId);
+        assertThat(applied.getValue()).isEqualTo("milk, bread from the other phone");
+        assertThat(applied.getCustomPosition()).isEqualTo(7_168L);
+        List<com.pasich.mynotes.data.database.entities.NoteVersionEntity> history =
+                db.noteVersionDao().getForNoteSync(noteId);
+        assertThat(history).hasSize(1);
+        assertThat(history.get(0).value).isEqualTo("milk");
+        assertThat(history.get(0).reason).isEqualTo("PRE_SYNC");
+    }
+
     // ------------------------------------------------- an ordinary edit after a clean sync
 
     @Test

@@ -3,6 +3,7 @@ package com.pasich.mynotes.data;
 import android.content.Context;
 import android.net.Uri;
 import com.pasich.mynotes.data.database.DbHelper;
+import com.pasich.mynotes.data.database.entities.NoteVersionEntity;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
@@ -361,6 +362,16 @@ public class AppDataManager implements DataManager {
     @Override
     public Completable setPinNote(int noteId, boolean pinned) {
         return dbHelper.setPinNote(noteId, pinned);
+    }
+
+    @Override
+    public Flowable<List<NoteVersionEntity>> getNoteVersions(int noteId) {
+        return dbHelper.getNoteVersions(noteId);
+    }
+
+    @Override
+    public Single<Boolean> restoreNoteVersion(int noteId, long versionId) {
+        return dbHelper.restoreNoteVersion(noteId, versionId);
     }
 
     @Override

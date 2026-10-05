@@ -619,4 +619,22 @@
         <item quantity="many">%d лет</item>
         <item quantity="other">%d года</item>
     </plurals>
+    <string name="version_history">История версий</string>
+    <string name="version_history_info">Предыдущие версии этой заметки хранятся только на этом устройстве, до %1$d. Они не синхронизируются и не попадают в резервные копии.</string>
+    <string name="version_history_empty_title">Предыдущих версий пока нет</string>
+    <string name="version_history_empty_text">Когда заметка меняется, её предыдущий текст сохраняется здесь, чтобы вы могли его вернуть.</string>
+    <string name="version_reason_autosave">Автосохранение</string>
+    <string name="version_reason_pre_sync">Перед синхронизацией</string>
+    <string name="version_reason_pre_restore">Перед восстановлением</string>
+    <string name="version_reason_pre_conflict">Перед конфликтом</string>
+    <string name="version_preview_this">Эта версия</string>
+    <string name="version_preview_current">Текущая заметка</string>
+    <string name="version_preview_same">У этой версии тот же текст, что и у текущей заметки.</string>
+    <string name="version_restore">Восстановить</string>
+    <string name="version_restore_title">Восстановить эту версию?</string>
+    <string name="version_restore_message">Текущий текст заметки будет заменён. Он останется в истории версий, так что вы сможете к нему вернуться.</string>
+    <string name="version_restore_attachments">Вложения, которых уже нет в заметке, не вернутся с этой версией.</string>
+    <string name="version_restored">Версия восстановлена</string>
+    <string name="version_restore_failed">Не удалось восстановить эту версию</string>
+    <string name="version_untitled">Пустая заметка</string>
 </resources>

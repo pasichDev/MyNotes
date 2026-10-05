@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.pasich.mynotes.data.database.dao.NoteDao;
+import com.pasich.mynotes.data.database.dao.NoteVersionDao;
 import com.pasich.mynotes.data.database.dao.SyncConflictDao;
 import com.pasich.mynotes.data.database.dao.SyncMetadataDao;
 import com.pasich.mynotes.data.database.dao.SyncPendingPreferencesDao;
@@ -16,6 +17,7 @@ import com.pasich.mynotes.data.database.dao.TagsDao;
 import com.pasich.mynotes.data.database.dao.TaskCategoryDao;
 import com.pasich.mynotes.data.database.dao.TaskDao;
 import com.pasich.mynotes.data.database.dao.Transactions;
+import com.pasich.mynotes.data.database.entities.NoteVersionEntity;
 import com.pasich.mynotes.data.database.entities.SyncConflictEntity;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
 import com.pasich.mynotes.data.database.entities.SyncPendingPreferencesEntity;
@@ -40,7 +42,8 @@ import javax.inject.Singleton;
             SyncMetadataEntity.class,
             SyncPendingPreferencesEntity.class,
             SyncConflictEntity.class,
-            SyncStateEntity.class
+            SyncStateEntity.class,
+            NoteVersionEntity.class
         },
         autoMigrations = {@AutoMigration(from = 1, to = 2)})
 @Singleton
@@ -251,6 +254,46 @@ public abstract class AppDatabase extends RoomDatabase {
                 public void migrate(@NonNull SupportSQLiteDatabase database) {
                     database.execSQL(
                             "ALTER TABLE `sync_metadata` ADD COLUMN `syncedVersionId` TEXT");
+                }
+            };
+
+    /**
+     * Adds the local version history of notes and each note's place in a custom order.
+     *
+     * <p>{@code note_versions} has no foreign key on purpose; see {@link NoteVersionEntity}. The
+     * custom order starts as the default one, newest edit first, so choosing "Custom" for the first
+     * time shows the list the user already knows; gaps of {@code 1024} leave room for moves.
+     */
+    public static final Migration MIGRATION_22_23 =
+            new Migration(22, 23) {
+                @Override
+                public void migrate(@NonNull SupportSQLiteDatabase database) {
+                    database.execSQL(
+                            "CREATE TABLE IF NOT EXISTS `note_versions` ("
+                                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                                    + "`noteLocalId` INTEGER NOT NULL, "
+                                    + "`noteStableId` TEXT, "
+                                    + "`title` TEXT NOT NULL, "
+                                    + "`value` TEXT NOT NULL, "
+                                    + "`valueJson` TEXT, "
+                                    + "`attachments` TEXT, "
+                                    + "`createdAt` INTEGER NOT NULL, "
+                                    + "`reason` TEXT NOT NULL)");
+                    database.execSQL(
+                            "CREATE INDEX IF NOT EXISTS `index_note_versions_noteLocalId_createdAt` "
+                                    + "ON `note_versions` (`noteLocalId`, `createdAt`)");
+                    database.execSQL(
+                            "CREATE INDEX IF NOT EXISTS `index_note_versions_noteStableId` "
+                                    + "ON `note_versions` (`noteStableId`)");
+                    database.execSQL(
+                            "ALTER TABLE `notes` "
+                                    + "ADD COLUMN `customPosition` INTEGER NOT NULL DEFAULT 0");
+                    database.execSQL(
+                            "UPDATE `notes` SET `customPosition` = 1024 * (1 + ("
+                                    + "SELECT COUNT(*) FROM `notes` AS `other` "
+                                    + "WHERE `other`.`date` < `notes`.`date` "
+                                    + "OR (`other`.`date` = `notes`.`date` "
+                                    + "AND `other`.`id` < `notes`.`id`)))");
                 }
             };
 
@@ -469,4 +512,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract SyncStateDao syncStateDao();
 
     public abstract SyncPendingPreferencesDao syncPendingPreferencesDao();
+
+    public abstract NoteVersionDao noteVersionDao();
 }

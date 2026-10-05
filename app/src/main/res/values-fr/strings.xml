@@ -590,4 +590,22 @@
         <item quantity="one">%d an</item>
         <item quantity="other">%d ans</item>
     </plurals>
+    <string name="version_history">Historique des versions</string>
+    <string name="version_history_info">Les versions précédentes de cette note sont conservées uniquement sur cet appareil, jusqu\'à %1$d. Elles ne sont ni synchronisées ni incluses dans les sauvegardes.</string>
+    <string name="version_history_empty_title">Aucune version précédente pour l\'instant</string>
+    <string name="version_history_empty_text">Quand cette note change, son texte précédent est conservé ici pour que vous puissiez le récupérer.</string>
+    <string name="version_reason_autosave">Enregistrement automatique</string>
+    <string name="version_reason_pre_sync">Avant la synchronisation</string>
+    <string name="version_reason_pre_restore">Avant la restauration</string>
+    <string name="version_reason_pre_conflict">Avant le conflit</string>
+    <string name="version_preview_this">Cette version</string>
+    <string name="version_preview_current">Note actuelle</string>
+    <string name="version_preview_same">Cette version a le même texte que la note actuelle.</string>
+    <string name="version_restore">Restaurer</string>
+    <string name="version_restore_title">Restaurer cette version ?</string>
+    <string name="version_restore_message">Le texte actuel de la note sera remplacé. Il reste dans l\'historique des versions, vous pourrez donc y revenir.</string>
+    <string name="version_restore_attachments">Les pièces jointes qui ne sont plus dans la note ne reviendront pas avec cette version.</string>
+    <string name="version_restored">Version restaurée</string>
+    <string name="version_restore_failed">Impossible de restaurer cette version</string>
+    <string name="version_untitled">Note vide</string>
 </resources>

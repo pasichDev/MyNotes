@@ -615,4 +615,22 @@
         <item quantity="many">%d lat</item>
         <item quantity="other">%d roku</item>
     </plurals>
+    <string name="version_history">Historia wersji</string>
+    <string name="version_history_info">Wcześniejsze wersje tej notatki są przechowywane tylko na tym urządzeniu, maksymalnie %1$d. Nie są synchronizowane ani dołączane do kopii zapasowych.</string>
+    <string name="version_history_empty_title">Nie ma jeszcze wcześniejszych wersji</string>
+    <string name="version_history_empty_text">Gdy notatka się zmienia, jej wcześniejszy tekst jest zachowywany tutaj, aby można go było przywrócić.</string>
+    <string name="version_reason_autosave">Zapisano automatycznie</string>
+    <string name="version_reason_pre_sync">Przed synchronizacją</string>
+    <string name="version_reason_pre_restore">Przed przywróceniem</string>
+    <string name="version_reason_pre_conflict">Przed konfliktem</string>
+    <string name="version_preview_this">Ta wersja</string>
+    <string name="version_preview_current">Bieżąca notatka</string>
+    <string name="version_preview_same">Ta wersja ma ten sam tekst co bieżąca notatka.</string>
+    <string name="version_restore">Przywróć</string>
+    <string name="version_restore_title">Przywrócić tę wersję?</string>
+    <string name="version_restore_message">Bieżący tekst notatki zostanie zastąpiony. Pozostanie w historii wersji, więc możesz do niego wrócić.</string>
+    <string name="version_restore_attachments">Załączniki, których nie ma już w notatce, nie wrócą z tą wersją.</string>
+    <string name="version_restored">Przywrócono wersję</string>
+    <string name="version_restore_failed">Nie udało się przywrócić tej wersji</string>
+    <string name="version_untitled">Pusta notatka</string>
 </resources>

@@ -107,6 +107,12 @@ public interface NoteContract {
 
         /** Returns true if the note holds content that has not been written yet. */
         boolean hasUnsavedChanges();
+
+        /**
+         * Reads the note again from the database and shows it, after something other than this
+         * editor changed it — a version restored from its history.
+         */
+        void reloadNote();
     }
 
     interface AutoSaveCallback {

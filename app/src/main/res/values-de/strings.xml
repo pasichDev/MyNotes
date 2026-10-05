@@ -594,4 +594,22 @@
         <item quantity="one">%d Jahr</item>
         <item quantity="other">%d Jahre</item>
     </plurals>
+    <string name="version_history">Versionsverlauf</string>
+    <string name="version_history_info">Frühere Versionen dieser Notiz werden nur auf diesem Gerät gespeichert, bis zu %1$d. Sie werden weder synchronisiert noch in Sicherungen aufgenommen.</string>
+    <string name="version_history_empty_title">Noch keine früheren Versionen</string>
+    <string name="version_history_empty_text">Wenn sich diese Notiz ändert, wird der vorherige Text hier aufbewahrt, damit Sie ihn zurückholen können.</string>
+    <string name="version_reason_autosave">Automatisch gespeichert</string>
+    <string name="version_reason_pre_sync">Vor der Synchronisierung</string>
+    <string name="version_reason_pre_restore">Vor der Wiederherstellung</string>
+    <string name="version_reason_pre_conflict">Vor dem Konflikt</string>
+    <string name="version_preview_this">Diese Version</string>
+    <string name="version_preview_current">Aktuelle Notiz</string>
+    <string name="version_preview_same">Diese Version hat denselben Text wie die aktuelle Notiz.</string>
+    <string name="version_restore">Wiederherstellen</string>
+    <string name="version_restore_title">Diese Version wiederherstellen?</string>
+    <string name="version_restore_message">Der aktuelle Text der Notiz wird ersetzt. Er bleibt im Versionsverlauf, sodass Sie zurückwechseln können.</string>
+    <string name="version_restore_attachments">Anhänge, die nicht mehr in der Notiz sind, kommen mit dieser Version nicht zurück.</string>
+    <string name="version_restored">Version wiederhergestellt</string>
+    <string name="version_restore_failed">Diese Version konnte nicht wiederhergestellt werden</string>
+    <string name="version_untitled">Leere Notiz</string>
 </resources>

@@ -614,4 +614,22 @@
         <item quantity="many">%d гадоў</item>
         <item quantity="other">%d года</item>
     </plurals>
+    <string name="version_history">Гісторыя версій</string>
+    <string name="version_history_info">Папярэднія версіі гэтай нататкі захоўваюцца толькі на гэтай прыладзе, да %1$d. Яны не сінхранізуюцца і не трапляюць у рэзервовыя копіі.</string>
+    <string name="version_history_empty_title">Папярэдніх версій пакуль няма</string>
+    <string name="version_history_empty_text">Калі нататка мяняецца, яе папярэдні тэкст захоўваецца тут, каб вы маглі яго вярнуць.</string>
+    <string name="version_reason_autosave">Аўтазахаванне</string>
+    <string name="version_reason_pre_sync">Перад сінхранізацыяй</string>
+    <string name="version_reason_pre_restore">Перад аднаўленнем</string>
+    <string name="version_reason_pre_conflict">Перад канфліктам</string>
+    <string name="version_preview_this">Гэтая версія</string>
+    <string name="version_preview_current">Бягучая нататка</string>
+    <string name="version_preview_same">У гэтай версіі той самы тэкст, што і ў бягучай нататкі.</string>
+    <string name="version_restore">Аднавіць</string>
+    <string name="version_restore_title">Аднавіць гэтую версію?</string>
+    <string name="version_restore_message">Бягучы тэкст нататкі будзе заменены. Ён застанецца ў гісторыі версій, таму вы зможаце да яго вярнуцца.</string>
+    <string name="version_restore_attachments">Укладанні, якіх ужо няма ў нататцы, не вернуцца з гэтай версіяй.</string>
+    <string name="version_restored">Версія адноўлена</string>
+    <string name="version_restore_failed">Не ўдалося аднавіць гэтую версію</string>
+    <string name="version_untitled">Пустая нататка</string>
 </resources>
