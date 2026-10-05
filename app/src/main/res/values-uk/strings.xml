@@ -169,7 +169,7 @@
     <string name="help_navigation_search_title">Пошук</string>
     <string name="help_navigation_search_description">Використовуйте панель пошуку для швидкого знаходження ваших нотаток за назвою або змістом</string>
     <string name="help_navigation_sort_title">Сортування</string>
-    <string name="help_navigation_sort_description">Натисніть кнопку параметрів перегляду в рядку пошуку, щоб показувати нещодавно змінені нотатки першими або останніми.</string>
+    <string name="help_navigation_sort_description">Натисніть кнопку параметрів перегляду в рядку пошуку, щоб показувати нещодавно змінені нотатки першими або останніми, або виберіть «Власний порядок» і розставте нотатки самі, перетягуючи їх.</string>
     <string name="help_navigation_format_title">Формат відображення</string>
     <string name="help_navigation_format_description">У тих самих параметрах перегляду перемикайтеся між списком і сіткою.</string>
 
@@ -526,9 +526,9 @@
     <string name="view_options">Параметри перегляду</string>
     <string name="view_options_cd_list">Параметри перегляду. Нотатки показано списком</string>
     <string name="view_options_cd_grid">Параметри перегляду. Нотатки показано сіткою</string>
-    <string name="view_options_sort">Сортувати за останньою зміною</string>
-    <string name="view_options_sort_newest">Спочатку нові</string>
-    <string name="view_options_sort_oldest">Спочатку старі</string>
+    <string name="view_options_sort">Порядок</string>
+    <string name="view_options_sort_newest">Спочатку нещодавно змінені</string>
+    <string name="view_options_sort_oldest">Нещодавно змінені в кінці</string>
     <string name="view_options_layout">Вигляд</string>
     <string name="view_options_layout_list">Список</string>
     <string name="view_options_layout_grid">Сітка</string>
@@ -641,4 +641,11 @@
     <string name="version_restored">Версію відновлено</string>
     <string name="version_restore_failed">Не вдалося відновити цю версію</string>
     <string name="version_untitled">Порожня нотатка</string>
+    <string name="view_options_sort_custom">Власний порядок</string>
+    <string name="view_options_sort_custom_hint">Натисніть і утримуйте нотатку, а потім перетягніть її на нове місце. Закріплені нотатки залишаються над іншими.</string>
+    <string name="note_move_up">Перемістити вище</string>
+    <string name="note_move_down">Перемістити нижче</string>
+    <string name="note_move_at_top">Уже на початку</string>
+    <string name="note_move_at_bottom">Уже в кінці</string>
+    <string name="note_moved_to">Переміщено на позицію %1$d з %2$d</string>
 </resources>

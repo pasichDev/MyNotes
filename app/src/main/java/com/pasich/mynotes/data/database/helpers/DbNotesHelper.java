@@ -62,6 +62,12 @@ public interface DbNotesHelper {
 
     Completable setPinNote(int noteId, boolean pinned);
 
+    /**
+     * Moves a note in the custom order to between two neighbours (null at either end). Local only:
+     * not an edit, not synced.
+     */
+    Completable moveNoteInCustomOrder(int noteId, Integer upperId, Integer lowerId);
+
     /** The note's local version history, newest first; re-emits as it changes. */
     Flowable<List<NoteVersionEntity>> getNoteVersions(int noteId);
 

@@ -171,7 +171,7 @@
     <string name="help_navigation_search_title">Поиск</string>
     <string name="help_navigation_search_description">Используйте панель поиска для быстрого нахождения ваших заметок по названию или содержимому</string>
     <string name="help_navigation_sort_title">Сортировка</string>
-    <string name="help_navigation_sort_description">Нажмите кнопку параметров просмотра в строке поиска, чтобы показывать недавно изменённые заметки первыми или последними.</string>
+    <string name="help_navigation_sort_description">Нажмите кнопку параметров просмотра в строке поиска, чтобы показывать недавно изменённые заметки первыми или последними, или выберите «Свой порядок» и расставьте заметки сами, перетаскивая их.</string>
     <string name="help_navigation_format_title">Формат отображения</string>
     <string name="help_navigation_format_description">В тех же параметрах просмотра переключайтесь между списком и сеткой.</string>
 
@@ -522,9 +522,9 @@
     <string name="view_options">Параметры просмотра</string>
     <string name="view_options_cd_list">Параметры просмотра. Заметки показаны списком</string>
     <string name="view_options_cd_grid">Параметры просмотра. Заметки показаны сеткой</string>
-    <string name="view_options_sort">Сортировать по последнему изменению</string>
-    <string name="view_options_sort_newest">Сначала новые</string>
-    <string name="view_options_sort_oldest">Сначала старые</string>
+    <string name="view_options_sort">Порядок</string>
+    <string name="view_options_sort_newest">Сначала недавно изменённые</string>
+    <string name="view_options_sort_oldest">Недавно изменённые в конце</string>
     <string name="view_options_layout">Вид</string>
     <string name="view_options_layout_list">Список</string>
     <string name="view_options_layout_grid">Сетка</string>
@@ -637,4 +637,11 @@
     <string name="version_restored">Версия восстановлена</string>
     <string name="version_restore_failed">Не удалось восстановить эту версию</string>
     <string name="version_untitled">Пустая заметка</string>
+    <string name="view_options_sort_custom">Свой порядок</string>
+    <string name="view_options_sort_custom_hint">Нажмите и удерживайте заметку, затем перетащите её на новое место. Закреплённые заметки остаются над остальными.</string>
+    <string name="note_move_up">Переместить выше</string>
+    <string name="note_move_down">Переместить ниже</string>
+    <string name="note_move_at_top">Уже в начале</string>
+    <string name="note_move_at_bottom">Уже в конце</string>
+    <string name="note_moved_to">Перемещено на позицию %1$d из %2$d</string>
 </resources>

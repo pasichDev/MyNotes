@@ -3,6 +3,7 @@ package com.pasich.mynotes.cache;
 import android.util.Log;
 import com.pasich.mynotes.data.preferences.SafePreferences;
 import com.pasich.mynotes.utils.constants.settings.PreferencesConfig;
+import com.pasich.mynotes.utils.constants.settings.SortParam;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -14,6 +15,7 @@ public class AppPreferencesCache {
     private final SafePreferences prefs;
     private volatile String lastKnownVersion;
     private volatile String sortPref;
+    private volatile boolean customOrder;
     private volatile String tagsSortPref;
     private volatile int formatPref;
 
@@ -37,6 +39,9 @@ public class AppPreferencesCache {
                     prefs.getString(
                             PreferencesConfig.ARGUMENT_PREFERENCE_SORT,
                             PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF);
+
+            customOrder =
+                    prefs.getBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_CUSTOM_ORDER, false);
 
             tagsSortPref =
                     prefs.getString(
@@ -64,6 +69,7 @@ public class AppPreferencesCache {
     private void setDefaults() {
         lastKnownVersion = "0";
         sortPref = PreferencesConfig.ARGUMENT_DEFAULT_SORT_PREF;
+        customOrder = false;
         tagsSortPref = PreferencesConfig.ARGUMENT_DEFAULT_TAGS_SORT_PREF;
         formatPref = PreferencesConfig.ARGUMENT_DEFAULT_FORMAT_VALUE;
         imageOptEnable = PreferencesConfig.ARGUMENT_DEFAULT_IMAGEOPT_VALUE;
@@ -97,15 +103,31 @@ public class AppPreferencesCache {
         }
     }
 
+    /** The notes order in effect: {@link SortParam#Custom} or the synced date order. */
     public String getSortPref() {
         ensureInitialized();
-        return sortPref;
+        return customOrder ? SortParam.Custom : getSyncedSortPref();
+    }
+
+    /**
+     * The date order that is backed up and synced, never {@link SortParam#Custom}: older versions
+     * of the app read anything but "newest first" as "oldest first", and the custom order itself
+     * only exists on this device.
+     */
+    public String getSyncedSortPref() {
+        ensureInitialized();
+        return SortParam.Custom.equals(sortPref) ? SortParam.DataSort : sortPref;
     }
 
     public synchronized void setSortPref(String sort) {
         try {
-            sortPref = sort;
-            prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_SORT, sort);
+            boolean custom = SortParam.Custom.equals(sort);
+            customOrder = custom;
+            prefs.putBoolean(PreferencesConfig.ARGUMENT_PREFERENCE_CUSTOM_ORDER, custom);
+            if (!custom) {
+                sortPref = sort;
+                prefs.putString(PreferencesConfig.ARGUMENT_PREFERENCE_SORT, sort);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Failed to save sort preference", e);
         }

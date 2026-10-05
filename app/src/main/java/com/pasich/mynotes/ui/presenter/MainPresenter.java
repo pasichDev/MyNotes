@@ -7,6 +7,7 @@ import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
+import com.pasich.mynotes.data.order.CustomOrder;
 import com.pasich.mynotes.ui.contract.MainContract;
 import com.pasich.mynotes.ui.state.MainViewState;
 import com.pasich.mynotes.ui.state.StatsData;
@@ -23,6 +24,7 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -192,18 +194,41 @@ public class MainPresenter extends BasePresenter<MainContract.view>
         }
 
         List<Note> sorted = new ArrayList<>(filtered);
-
-        // pinned always first, then by date
-        boolean sortByNew = SortParam.DataSort.equals(sort);
-        sorted.sort(
-                (a, b) -> {
-                    if (a.isPinned() != b.isPinned()) return a.isPinned() ? -1 : 1;
-                    return sortByNew
-                            ? Long.compare(b.getDate(), a.getDate())
-                            : Long.compare(a.getDate(), b.getDate());
-                });
+        sorted.sort(comparatorFor(sort));
 
         return new MainViewState(tags, sorted, selectedTag, lastUiEvent);
+    }
+
+    /** Pinned notes always first; then the custom order, or the date of the last edit. */
+    @androidx.annotation.VisibleForTesting
+    public static Comparator<Note> comparatorFor(String sort) {
+        if (SortParam.Custom.equals(sort)) return CustomOrder.COMPARATOR;
+        boolean sortByNew = SortParam.DataSort.equals(sort);
+        return (a, b) -> {
+            if (a.isPinned() != b.isPinned()) return a.isPinned() ? -1 : 1;
+            return sortByNew
+                    ? Long.compare(b.getDate(), a.getDate())
+                    : Long.compare(a.getDate(), b.getDate());
+        };
+    }
+
+    /** Whether the list is in the custom order, where notes can be dragged. */
+    @Override
+    public boolean isCustomOrder() {
+        return SortParam.Custom.equals(sortParam.getValue());
+    }
+
+    @Override
+    public void moveNoteInCustomOrder(int noteId, Integer upperId, Integer lowerId) {
+        getCompositeDisposable()
+                .add(
+                        getDataManager()
+                                .moveNoteInCustomOrder(noteId, upperId, lowerId)
+                                .subscribeOn(getSchedulerProvider().io())
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        () -> {},
+                                        throwable -> Log.e(TAG, "Error moving note", throwable)));
     }
 
     /**

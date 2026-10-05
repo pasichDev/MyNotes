@@ -105,4 +105,24 @@ public class ViewOptionsDialogTest {
         assertThat(host.formats).isEmpty();
         assertThat(((MaterialButton) root.findViewById(R.id.layoutGrid)).isChecked()).isTrue();
     }
+
+    @Test
+    public void choosingTheCustomOrder_appliesItAndShowsHowToDrag() {
+        View root = open(SortParam.DataSort, FormatListTool.FORMAT_LIST);
+        assertThat(root.findViewById(R.id.sortCustomHint).getVisibility()).isEqualTo(View.GONE);
+
+        root.findViewById(R.id.sortCustom).performClick();
+        shadowOf(Looper.getMainLooper()).idle();
+
+        assertThat(host.sorts).containsExactly(SortParam.Custom);
+        assertThat(root.findViewById(R.id.sortCustomHint).getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    public void reopenedInTheCustomOrder_showsItChecked() {
+        View root = open(SortParam.Custom, FormatListTool.FORMAT_GRID);
+
+        assertThat(((RadioButton) root.findViewById(R.id.sortCustom)).isChecked()).isTrue();
+        assertThat(root.findViewById(R.id.sortCustomHint).getVisibility()).isEqualTo(View.VISIBLE);
+    }
 }

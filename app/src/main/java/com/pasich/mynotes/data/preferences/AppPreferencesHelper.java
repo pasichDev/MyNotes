@@ -78,7 +78,8 @@ public class AppPreferencesHelper implements PreferenceHelper {
                 // OLD FIELDS
                 getFormatCount(),
                 getTypeFaceNoteActivity(),
-                getSortParam(),
+                // The date order only: the custom order stays on this device.
+                appCache.getSyncedSortPref(),
                 getSizeTextNoteActivity(),
                 prefs.getInt(
                         PreferencesConfig.ARGUMENT_PREFERENCE_THEME,

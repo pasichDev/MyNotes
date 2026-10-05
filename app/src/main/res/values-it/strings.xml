@@ -166,7 +166,7 @@
     <string name="help_navigation_search_title">Ricerca</string>
     <string name="help_navigation_search_description">Usa la barra di ricerca per trovare rapidamente le tue note per titolo o contenuto</string>
     <string name="help_navigation_sort_title">Ordinamento</string>
-    <string name="help_navigation_sort_description">Tocca il pulsante delle opzioni di visualizzazione nella barra di ricerca per mostrare per prime o per ultime le note modificate di recente.</string>
+    <string name="help_navigation_sort_description">Tocca il pulsante delle opzioni di visualizzazione nella barra di ricerca per mostrare per prime o per ultime le note modificate di recente, oppure scegli Ordine personalizzato e disponi le note tu stesso trascinandole.</string>
     <string name="help_navigation_format_title">Formato di visualizzazione</string>
     <string name="help_navigation_format_description">Nelle stesse opzioni di visualizzazione, passa tra elenco e griglia.</string>
     
@@ -515,9 +515,9 @@
     <string name="view_options">Opzioni di visualizzazione</string>
     <string name="view_options_cd_list">Opzioni di visualizzazione. Le note sono mostrate come elenco</string>
     <string name="view_options_cd_grid">Opzioni di visualizzazione. Le note sono mostrate come griglia</string>
-    <string name="view_options_sort">Ordina per ultima modifica</string>
-    <string name="view_options_sort_newest">Prima le più recenti</string>
-    <string name="view_options_sort_oldest">Prima le meno recenti</string>
+    <string name="view_options_sort">Ordine</string>
+    <string name="view_options_sort_newest">Modificate di recente per prime</string>
+    <string name="view_options_sort_oldest">Modificate di recente per ultime</string>
     <string name="view_options_layout">Disposizione</string>
     <string name="view_options_layout_list">Elenco</string>
     <string name="view_options_layout_grid">Griglia</string>
@@ -610,4 +610,11 @@
     <string name="version_restored">Versione ripristinata</string>
     <string name="version_restore_failed">Impossibile ripristinare questa versione</string>
     <string name="version_untitled">Nota vuota</string>
+    <string name="view_options_sort_custom">Ordine personalizzato</string>
+    <string name="view_options_sort_custom_hint">Tieni premuta una nota, poi trascinala in una nuova posizione. Le note fissate restano sopra le altre.</string>
+    <string name="note_move_up">Sposta su</string>
+    <string name="note_move_down">Sposta giù</string>
+    <string name="note_move_at_top">Già in cima</string>
+    <string name="note_move_at_bottom">Già in fondo</string>
+    <string name="note_moved_to">Spostata in posizione %1$d di %2$d</string>
 </resources>

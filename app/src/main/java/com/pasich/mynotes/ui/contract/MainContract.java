@@ -57,6 +57,15 @@ public interface MainContract {
         /** Handles the new-note FAB click. */
         void newNotesClick();
 
+        /** Whether the list is in the custom order, where notes can be dragged. */
+        boolean isCustomOrder();
+
+        /**
+         * Moves a note in the custom order to between two neighbours, null at either end. Not an
+         * edit: nothing else about the note changes.
+         */
+        void moveNoteInCustomOrder(int noteId, Integer upperId, Integer lowerId);
+
         /** Moves an array of notes to trash. */
         void deleteNotesArray(ArrayList<Note> notes);
 

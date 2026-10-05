@@ -34,6 +34,13 @@
   undone. Up to 20 versions per note stay on this device only. They are not synced or included in
   backups, and they are deleted together with the note when it is deleted for good. A version
   brings back text; attachments that are no longer in the note do not come back with it.
+- **Arrange notes yourself.** View options has a new Custom order. Press and hold a note and drag
+  it where you want it, in the list or in the grid; let go without moving and the note's menu
+  opens as before. Pinned notes stay in their own section above the others and can be arranged
+  among themselves. New notes start at the top, the order is kept when you switch to another sort
+  and back, and it is saved in local backups. It stays on this device: moving a note is not an
+  edit, so it never reaches Google Drive and never changes the order on your other devices. With
+  TalkBack, each note offers Move up and Move down.
 
 **Improvements**
 

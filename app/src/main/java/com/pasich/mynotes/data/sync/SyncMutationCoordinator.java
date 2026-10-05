@@ -17,6 +17,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
+import com.pasich.mynotes.data.order.CustomOrder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -347,6 +348,7 @@ public class SyncMutationCoordinator {
                     List<Note> notes = withoutNotesAlreadyPresent(incoming, existingById);
                     adoptAttachmentsOfNotesAlreadyPresent(incoming, notes);
                     if (notes.isEmpty()) return null;
+                    placeUnorderedNotesOnTop(notes);
                     long timestamp =
                             resolveBatchTimestamp(
                                     SyncMetadata.RECORD_TYPE_NOTE, extractNoteIds(notes));
@@ -802,7 +804,86 @@ public class SyncMutationCoordinator {
                 });
     }
 
+    /**
+     * Gives notes that arrive without a place in the custom order — an import, a backup from before
+     * the order existed — places above every note, the most recently edited highest, so they come
+     * in the way a new note does.
+     */
+    private void placeUnorderedNotesOnTop(@NonNull List<Note> notes) {
+        List<Note> unordered = new ArrayList<>();
+        for (Note note : notes) {
+            if (note.getCustomPosition() == 0L) unordered.add(note);
+        }
+        if (unordered.isEmpty()) return;
+        unordered.sort(
+                (a, b) -> {
+                    int byDate = Long.compare(a.getDate(), b.getDate());
+                    return byDate != 0 ? byDate : Integer.compare(a.getId(), b.getId());
+                });
+        long highest = noteDao.getHighestCustomPositionSync();
+        for (Note note : notes) highest = Math.max(highest, note.getCustomPosition());
+        for (Note note : unordered) {
+            highest = CustomOrder.above(highest);
+            note.setCustomPosition(highest);
+        }
+    }
+
+    /**
+     * Moves a note in the custom order to between two neighbours.
+     *
+     * <p>A local arrangement, not an edit: the note's content, date and sync timestamp stay as they
+     * are, so nothing is published and no other device sees a change.
+     *
+     * @param upperId the note that will be just above it, or null when it goes to the top.
+     * @param lowerId the note that will be just below it, or null when it goes to the bottom.
+     */
+    public void moveNoteInCustomOrder(
+            int noteId,
+            @androidx.annotation.Nullable Integer upperId,
+            @androidx.annotation.Nullable Integer lowerId) {
+        transactionExecutor.run(
+                () -> {
+                    if (noteDao.getCustomPositionSync(noteId) == null) return null;
+                    Long position = positionBetween(upperId, lowerId);
+                    if (position == null) {
+                        renumberCustomOrder();
+                        position = positionBetween(upperId, lowerId);
+                    }
+                    if (position != null) noteDao.setCustomPositionSync(noteId, position);
+                    return null;
+                });
+    }
+
+    @androidx.annotation.Nullable
+    private Long positionBetween(
+            @androidx.annotation.Nullable Integer upperId,
+            @androidx.annotation.Nullable Integer lowerId) {
+        Long upper = upperId == null ? null : noteDao.getCustomPositionSync(upperId);
+        Long lower = lowerId == null ? null : noteDao.getCustomPositionSync(lowerId);
+        return CustomOrder.between(upper, lower);
+    }
+
+    /** Spreads every note {@link CustomOrder#STEP} apart again, keeping their order. */
+    private void renumberCustomOrder() {
+        List<Note> all = new ArrayList<>(noteDao.getAllNotesSync());
+        all.sort(
+                (a, b) -> {
+                    int byPosition = Long.compare(b.getCustomPosition(), a.getCustomPosition());
+                    return byPosition != 0 ? byPosition : Integer.compare(b.getId(), a.getId());
+                });
+        List<Long> positions = CustomOrder.renumbered(all.size());
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getCustomPosition() != positions.get(i)) {
+                noteDao.setCustomPositionSync(all.get(i).getId(), positions.get(i));
+            }
+        }
+    }
+
     private long insertNoteInternal(@NonNull Note note, long timestamp) {
+        if (note.getCustomPosition() == 0L) {
+            // A new note goes to the top of the custom order.
+            note.setCustomPosition(CustomOrder.above(noteDao.getHighestCustomPositionSync()));
+        }
         long insertedId = noteDao.addNote(note);
         int localId = resolveIntId(note.getId(), insertedId);
         note.setId(localId);

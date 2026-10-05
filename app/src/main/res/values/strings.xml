@@ -186,7 +186,7 @@
     <string name="help_navigation_search_title">Search</string>
     <string name="help_navigation_search_description">Use the search bar to quickly find your notes by title or content</string>
     <string name="help_navigation_sort_title">Sorting</string>
-    <string name="help_navigation_sort_description">Tap the view options button in the search bar to show recently edited notes first or last.</string>
+    <string name="help_navigation_sort_description">Tap the view options button in the search bar to show recently edited notes first or last, or choose Custom order and arrange notes yourself by dragging them.</string>
     <string name="help_navigation_format_title">Display Format</string>
     <string name="help_navigation_format_description">In the same view options, switch between a list and a grid.</string>
 
@@ -554,9 +554,9 @@
     <string name="view_options">View options</string>
     <string name="view_options_cd_list">View options. Notes are shown as a list</string>
     <string name="view_options_cd_grid">View options. Notes are shown as a grid</string>
-    <string name="view_options_sort">Sort by last edit</string>
-    <string name="view_options_sort_newest">Newest first</string>
-    <string name="view_options_sort_oldest">Oldest first</string>
+    <string name="view_options_sort">Order</string>
+    <string name="view_options_sort_newest">Recently edited first</string>
+    <string name="view_options_sort_oldest">Recently edited last</string>
     <string name="view_options_layout">Layout</string>
     <string name="view_options_layout_list">List</string>
     <string name="view_options_layout_grid">Grid</string>
@@ -650,4 +650,11 @@
     <string name="version_restored">Version restored</string>
     <string name="version_restore_failed">Couldn\'t restore this version</string>
     <string name="version_untitled">Empty note</string>
+    <string name="view_options_sort_custom">Custom order</string>
+    <string name="view_options_sort_custom_hint">Press and hold a note, then drag it to a new place. Pinned notes stay above the others.</string>
+    <string name="note_move_up">Move up</string>
+    <string name="note_move_down">Move down</string>
+    <string name="note_move_at_top">Already at the top</string>
+    <string name="note_move_at_bottom">Already at the bottom</string>
+    <string name="note_moved_to">Moved to position %1$d of %2$d</string>
 </resources>

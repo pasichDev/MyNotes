@@ -168,7 +168,7 @@
     <string name="help_navigation_search_title">Іздеу</string>
     <string name="help_navigation_search_description">Жазбаларыңызды атауы немесе мазмұны бойынша тез табу үшін іздеу жолағын пайдаланыңыз</string>
     <string name="help_navigation_sort_title">Сұрыптау</string>
-    <string name="help_navigation_sort_description">Жақында өзгертілген жазбаларды басында немесе соңында көрсету үшін іздеу жолағындағы көрініс параметрлері түймесін басыңыз.</string>
+    <string name="help_navigation_sort_description">Жақында өзгертілген жазбаларды басында немесе соңында көрсету үшін іздеу жолағындағы көрініс параметрлері түймесін басыңыз немесе «Өз ретім» тармағын таңдап, жазбаларды сүйреп өзіңіз орналастырыңыз.</string>
     <string name="help_navigation_format_title">Көрсету форматы</string>
     <string name="help_navigation_format_description">Сол көрініс параметрлерінде тізім мен тор арасында ауысыңыз.</string>
 
@@ -514,9 +514,9 @@
     <string name="view_options">Көрініс параметрлері</string>
     <string name="view_options_cd_list">Көрініс параметрлері. Жазбалар тізім түрінде көрсетілген</string>
     <string name="view_options_cd_grid">Көрініс параметрлері. Жазбалар тор түрінде көрсетілген</string>
-    <string name="view_options_sort">Соңғы өзгеріс бойынша сұрыптау</string>
-    <string name="view_options_sort_newest">Алдымен жаңалары</string>
-    <string name="view_options_sort_oldest">Алдымен ескілері</string>
+    <string name="view_options_sort">Реті</string>
+    <string name="view_options_sort_newest">Алдымен жақында өзгертілгендер</string>
+    <string name="view_options_sort_oldest">Жақында өзгертілгендер соңында</string>
     <string name="view_options_layout">Орналасу</string>
     <string name="view_options_layout_list">Тізім</string>
     <string name="view_options_layout_grid">Тор</string>
@@ -609,4 +609,11 @@
     <string name="version_restored">Нұсқа қалпына келтірілді</string>
     <string name="version_restore_failed">Бұл нұсқаны қалпына келтіру мүмкін болмады</string>
     <string name="version_untitled">Бос жазба</string>
+    <string name="view_options_sort_custom">Өз ретім</string>
+    <string name="view_options_sort_custom_hint">Жазбаны басып тұрып, оны жаңа орынға сүйреңіз. Бекітілген жазбалар басқалардан жоғары тұрады.</string>
+    <string name="note_move_up">Жоғары жылжыту</string>
+    <string name="note_move_down">Төмен жылжыту</string>
+    <string name="note_move_at_top">Қазірдің өзінде ең жоғарыда</string>
+    <string name="note_move_at_bottom">Қазірдің өзінде ең төменде</string>
+    <string name="note_moved_to">%2$d ішінен %1$d орынға жылжытылды</string>
 </resources>

@@ -365,6 +365,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public Completable moveNoteInCustomOrder(int noteId, Integer upperId, Integer lowerId) {
+        return dbHelper.moveNoteInCustomOrder(noteId, upperId, lowerId);
+    }
+
+    @Override
     public Flowable<List<NoteVersionEntity>> getNoteVersions(int noteId) {
         return dbHelper.getNoteVersions(noteId);
     }

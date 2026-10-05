@@ -170,7 +170,7 @@
     <string name="help_navigation_search_title">Wyszukiwanie</string>
     <string name="help_navigation_search_description">Użyj paska wyszukiwania, aby szybko znaleźć swoje notatki według tytułu lub zawartości</string>
     <string name="help_navigation_sort_title">Sortowanie</string>
-    <string name="help_navigation_sort_description">Naciśnij przycisk opcji widoku na pasku wyszukiwania, aby wyświetlać ostatnio edytowane notatki na początku lub na końcu.</string>
+    <string name="help_navigation_sort_description">Naciśnij przycisk opcji widoku na pasku wyszukiwania, aby wyświetlać ostatnio edytowane notatki na początku lub na końcu, albo wybierz Własną kolejność i układaj notatki samodzielnie, przeciągając je.</string>
     <string name="help_navigation_format_title">Format wyświetlania</string>
     <string name="help_navigation_format_description">W tych samych opcjach widoku przełączaj między listą a siatką.</string>
 
@@ -518,9 +518,9 @@
     <string name="view_options">Opcje widoku</string>
     <string name="view_options_cd_list">Opcje widoku. Notatki są wyświetlane jako lista</string>
     <string name="view_options_cd_grid">Opcje widoku. Notatki są wyświetlane jako siatka</string>
-    <string name="view_options_sort">Sortuj według ostatniej zmiany</string>
-    <string name="view_options_sort_newest">Najpierw najnowsze</string>
-    <string name="view_options_sort_oldest">Najpierw najstarsze</string>
+    <string name="view_options_sort">Kolejność</string>
+    <string name="view_options_sort_newest">Ostatnio edytowane na początku</string>
+    <string name="view_options_sort_oldest">Ostatnio edytowane na końcu</string>
     <string name="view_options_layout">Układ</string>
     <string name="view_options_layout_list">Lista</string>
     <string name="view_options_layout_grid">Siatka</string>
@@ -633,4 +633,11 @@
     <string name="version_restored">Przywrócono wersję</string>
     <string name="version_restore_failed">Nie udało się przywrócić tej wersji</string>
     <string name="version_untitled">Pusta notatka</string>
+    <string name="view_options_sort_custom">Własna kolejność</string>
+    <string name="view_options_sort_custom_hint">Naciśnij i przytrzymaj notatkę, a następnie przeciągnij ją w nowe miejsce. Przypięte notatki pozostają nad pozostałymi.</string>
+    <string name="note_move_up">Przenieś wyżej</string>
+    <string name="note_move_down">Przenieś niżej</string>
+    <string name="note_move_at_top">Już na początku</string>
+    <string name="note_move_at_bottom">Już na końcu</string>
+    <string name="note_moved_to">Przeniesiono na pozycję %1$d z %2$d</string>
 </resources>

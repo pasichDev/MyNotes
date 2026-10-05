@@ -78,8 +78,8 @@ public class ViewOptionsDialog extends BaseDialogBottomSheets {
     }
 
     private void bindState() {
-        binding.sortGroup.check(
-                SortParam.DataReserve.equals(sort) ? R.id.sortOldest : R.id.sortNewest);
+        binding.sortGroup.check(sortButtonFor(sort));
+        bindCustomHint();
         binding.layoutGroup.check(
                 format == FormatListTool.FORMAT_GRID ? R.id.layoutGrid : R.id.layoutList);
     }
@@ -88,12 +88,10 @@ public class ViewOptionsDialog extends BaseDialogBottomSheets {
     public void initListeners() {
         binding.sortGroup.setOnCheckedChangeListener(
                 (group, checkedId) -> {
-                    String chosen =
-                            checkedId == R.id.sortOldest
-                                    ? SortParam.DataReserve
-                                    : SortParam.DataSort;
+                    String chosen = sortFor(checkedId);
                     if (chosen.equals(sort)) return;
                     sort = chosen;
+                    bindCustomHint();
                     if (listener != null) listener.onViewSortSelected(chosen);
                 });
         binding.layoutGroup.addOnButtonCheckedListener(
@@ -107,6 +105,21 @@ public class ViewOptionsDialog extends BaseDialogBottomSheets {
                     format = chosen;
                     if (listener != null) listener.onViewLayoutSelected(chosen);
                 });
+    }
+
+    private void bindCustomHint() {
+        binding.sortCustomHint.setVisibility(
+                SortParam.Custom.equals(sort) ? View.VISIBLE : View.GONE);
+    }
+
+    static int sortButtonFor(String sort) {
+        if (SortParam.Custom.equals(sort)) return R.id.sortCustom;
+        return SortParam.DataReserve.equals(sort) ? R.id.sortOldest : R.id.sortNewest;
+    }
+
+    static String sortFor(int checkedId) {
+        if (checkedId == R.id.sortCustom) return SortParam.Custom;
+        return checkedId == R.id.sortOldest ? SortParam.DataReserve : SortParam.DataSort;
     }
 
     @Override

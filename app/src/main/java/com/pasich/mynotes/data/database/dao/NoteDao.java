@@ -137,4 +137,16 @@ public interface NoteDao {
 
     @Query("UPDATE notes SET isPinned = :pinned WHERE id = :noteId")
     void setPinNoteSync(int noteId, boolean pinned);
+
+    /** The highest place in the custom order, or 0 when there are no notes. */
+    @Query("SELECT COALESCE(MAX(customPosition), 0) FROM notes")
+    long getHighestCustomPositionSync();
+
+    /** A note's place in the custom order, or null when the note is gone. */
+    @Query("SELECT customPosition FROM notes WHERE id = :noteId")
+    Long getCustomPositionSync(int noteId);
+
+    /** Moves a note in the custom order; touches nothing else, so it is not an edit. */
+    @Query("UPDATE notes SET customPosition = :position WHERE id = :noteId")
+    void setCustomPositionSync(int noteId, long position);
 }

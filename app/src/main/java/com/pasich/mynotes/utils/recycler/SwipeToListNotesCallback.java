@@ -29,8 +29,11 @@ public abstract class SwipeToListNotesCallback extends ItemTouchHelper.SimpleCal
             int actionState,
             boolean isCurrentlyActive) {
 
-        final float alpha = 1.0f - Math.abs(dX) / (float) viewHolder.itemView.getWidth();
-        viewHolder.itemView.setAlpha(alpha);
+        // Fades a card as it is swiped away; a dragged card moves sideways too, and stays opaque.
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            final float alpha = 1.0f - Math.abs(dX) / (float) viewHolder.itemView.getWidth();
+            viewHolder.itemView.setAlpha(alpha);
+        }
 
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }

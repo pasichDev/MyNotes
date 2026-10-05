@@ -335,4 +335,75 @@ public class MainPresenterTest extends BasePresenterTest {
 
         assertThat(lastSearch(true)).isEmpty();
     }
+
+    // ---- Custom order (#178) -----------------------------------------------------------------
+
+    private static Note placed(int id, long position, boolean pinned) {
+        Note n = note(id, "n" + id, id * 10L, "");
+        n.setCustomPosition(position);
+        n.setPinned(pinned);
+        return n;
+    }
+
+    @Test
+    public void customOrder_putsPinnedFirstThenTheUsersOrder() {
+        when(mockDataManager.getSortParam()).thenReturn(SortParam.Custom);
+        List<Note> notes =
+                Arrays.asList(
+                        placed(1, 3072, false),
+                        placed(2, 1024, true),
+                        placed(3, 5120, false),
+                        placed(4, 4096, true),
+                        placed(5, 2048, false));
+        MainPresenter p = syncPresenter(tagsWith(), notes);
+        p.onSortChanged(SortParam.Custom);
+        settle();
+
+        // Pinned notes keep their own section, each section in the user's order; the edit date
+        // plays no part.
+        assertThat(ids(lastRendered())).containsExactly(4, 2, 3, 1, 5).inOrder();
+        assertThat(p.isCustomOrder()).isTrue();
+    }
+
+    @Test
+    public void customOrder_switchingAwayAndBackKeepsTheOrder() {
+        MainPresenter p =
+                syncPresenter(
+                        tagsWith(),
+                        Arrays.asList(
+                                placed(1, 3072, false),
+                                placed(2, 1024, false),
+                                placed(3, 2048, false)));
+        p.onSortChanged(SortParam.Custom);
+        settle();
+        assertThat(ids(lastRendered())).containsExactly(1, 3, 2).inOrder();
+
+        p.onSortChanged(SortParam.DataSort);
+        settle();
+        assertThat(ids(lastRendered())).containsExactly(3, 2, 1).inOrder();
+        assertThat(p.isCustomOrder()).isFalse();
+
+        p.onSortChanged(SortParam.Custom);
+        settle();
+        assertThat(ids(lastRendered())).containsExactly(1, 3, 2).inOrder();
+    }
+
+    @Test
+    public void customOrder_equalPositionsFallBackToTheNewerNote() {
+        assertThat(
+                        MainPresenter.comparatorFor(SortParam.Custom)
+                                .compare(placed(1, 1024, false), placed(2, 1024, false)))
+                .isGreaterThan(0);
+    }
+
+    @Test
+    public void moveNoteInCustomOrder_passesTheNeighboursToTheData() {
+        when(mockDataManager.moveNoteInCustomOrder(7, 3, null))
+                .thenReturn(io.reactivex.Completable.complete());
+        MainPresenter p = syncPresenter(tagsWith(), Arrays.asList(placed(7, 1024, false)));
+
+        p.moveNoteInCustomOrder(7, 3, null);
+
+        verify(mockDataManager).moveNoteInCustomOrder(7, 3, null);
+    }
 }

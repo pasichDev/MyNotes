@@ -21,6 +21,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.data.model.TaskCategory;
+import com.pasich.mynotes.data.order.CustomOrder;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentUrl;
@@ -951,7 +952,12 @@ public final class RoomSyncStore implements SyncStore {
                 // version as null. Spelling it the local way keeps the row equal below.
                 note.setAttachments(stored.getAttachments());
             }
-            if (stored != null) note.setCustomPosition(stored.getCustomPosition());
+            note.setCustomPosition(
+                    stored != null
+                            ? stored.getCustomPosition()
+                            // Brought back after a deletion here: it returns at the top, like a
+                            // new note, since its old place is gone.
+                            : CustomOrder.above(database.noteDao().getHighestCustomPositionSync()));
             if (stored == null || !sameRow(stored, note)) {
                 noteHistory.recordBeforeOverwrite(stored, note, reason, System.currentTimeMillis());
                 database.noteDao().addNote(note);
@@ -1045,6 +1051,9 @@ public final class RoomSyncStore implements SyncStore {
             Note note = gson.fromJson(record.getPayload(), Note.class);
             note.setId(0);
             note.setAttachments(null);
+            // The order is this device's own; a note from another device starts at the top.
+            note.setCustomPosition(
+                    CustomOrder.above(database.noteDao().getHighestCustomPositionSync()));
             long localId = database.noteDao().addNote(note);
             note.setId((int) localId);
             restoreAttachments(note, record.getPayload());

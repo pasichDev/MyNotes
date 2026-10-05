@@ -271,6 +271,12 @@ public class AppDbHelper implements DbHelper {
     }
 
     @Override
+    public Completable moveNoteInCustomOrder(int noteId, Integer upperId, Integer lowerId) {
+        return Completable.fromAction(
+                () -> syncMutationCoordinator.moveNoteInCustomOrder(noteId, upperId, lowerId));
+    }
+
+    @Override
     public Flowable<List<NoteVersionEntity>> getNoteVersions(int noteId) {
         return appDatabase.noteVersionDao().observeForNote(noteId);
     }

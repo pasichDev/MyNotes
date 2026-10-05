@@ -170,7 +170,7 @@
     <string name="help_navigation_search_title">Пошук</string>
     <string name="help_navigation_search_description">Выкарыстоўвайце панэль пошуку для хуткага знаходжання вашых нататак па назве або змесце</string>
     <string name="help_navigation_sort_title">Сартаванне</string>
-    <string name="help_navigation_sort_description">Націсніце кнопку параметраў прагляду ў радку пошуку, каб паказваць нядаўна змененыя нататкі першымі або апошнімі.</string>
+    <string name="help_navigation_sort_description">Націсніце кнопку параметраў прагляду ў радку пошуку, каб паказваць нядаўна змененыя нататкі першымі або апошнімі, або выберыце «Свой парадак» і расстаўце нататкі самі, перацягваючы іх.</string>
     <string name="help_navigation_format_title">Фармат адлюстравання</string>
     <string name="help_navigation_format_description">У тых жа параметрах прагляду пераключайцеся паміж спісам і сеткай.</string>
 
@@ -517,9 +517,9 @@
     <string name="view_options">Параметры прагляду</string>
     <string name="view_options_cd_list">Параметры прагляду. Нататкі паказаны спісам</string>
     <string name="view_options_cd_grid">Параметры прагляду. Нататкі паказаны сеткай</string>
-    <string name="view_options_sort">Сартаваць па апошняй змене</string>
-    <string name="view_options_sort_newest">Спачатку новыя</string>
-    <string name="view_options_sort_oldest">Спачатку старыя</string>
+    <string name="view_options_sort">Парадак</string>
+    <string name="view_options_sort_newest">Спачатку нядаўна змененыя</string>
+    <string name="view_options_sort_oldest">Нядаўна змененыя ў канцы</string>
     <string name="view_options_layout">Выгляд</string>
     <string name="view_options_layout_list">Спіс</string>
     <string name="view_options_layout_grid">Сетка</string>
@@ -632,4 +632,11 @@
     <string name="version_restored">Версія адноўлена</string>
     <string name="version_restore_failed">Не ўдалося аднавіць гэтую версію</string>
     <string name="version_untitled">Пустая нататка</string>
+    <string name="view_options_sort_custom">Свой парадак</string>
+    <string name="view_options_sort_custom_hint">Націсніце і ўтрымлівайце нататку, а потым перацягніце яе на новае месца. Замацаваныя нататкі застаюцца над астатнімі.</string>
+    <string name="note_move_up">Перамясціць вышэй</string>
+    <string name="note_move_down">Перамясціць ніжэй</string>
+    <string name="note_move_at_top">Ужо ў пачатку</string>
+    <string name="note_move_at_bottom">Ужо ў канцы</string>
+    <string name="note_moved_to">Перамешчана на пазіцыю %1$d з %2$d</string>
 </resources>

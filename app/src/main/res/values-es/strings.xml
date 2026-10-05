@@ -171,7 +171,7 @@
     <string name="help_navigation_search_title">Búsqueda</string>
     <string name="help_navigation_search_description">Usa la barra de búsqueda para encontrar rápidamente tus notas por título o contenido</string>
     <string name="help_navigation_sort_title">Ordenación</string>
-    <string name="help_navigation_sort_description">Toca el botón de opciones de vista en la barra de búsqueda para mostrar primero o al final las notas editadas recientemente.</string>
+    <string name="help_navigation_sort_description">Toca el botón de opciones de vista en la barra de búsqueda para mostrar primero o al final las notas editadas recientemente, o elige Orden personalizado y ordena las notas tú mismo arrastrándolas.</string>
     <string name="help_navigation_format_title">Formato de visualización</string>
     <string name="help_navigation_format_description">En las mismas opciones de vista, cambia entre lista y cuadrícula.</string>
 
@@ -518,9 +518,9 @@
     <string name="view_options">Opciones de vista</string>
     <string name="view_options_cd_list">Opciones de vista. Las notas se muestran en lista</string>
     <string name="view_options_cd_grid">Opciones de vista. Las notas se muestran en cuadrícula</string>
-    <string name="view_options_sort">Ordenar por última modificación</string>
-    <string name="view_options_sort_newest">Más recientes primero</string>
-    <string name="view_options_sort_oldest">Más antiguas primero</string>
+    <string name="view_options_sort">Orden</string>
+    <string name="view_options_sort_newest">Editadas recientemente primero</string>
+    <string name="view_options_sort_oldest">Editadas recientemente al final</string>
     <string name="view_options_layout">Diseño</string>
     <string name="view_options_layout_list">Lista</string>
     <string name="view_options_layout_grid">Cuadrícula</string>
@@ -613,4 +613,11 @@
     <string name="version_restored">Versión restaurada</string>
     <string name="version_restore_failed">No se pudo restaurar esta versión</string>
     <string name="version_untitled">Nota vacía</string>
+    <string name="view_options_sort_custom">Orden personalizado</string>
+    <string name="view_options_sort_custom_hint">Mantén pulsada una nota y arrástrala a un nuevo lugar. Las notas fijadas se quedan encima de las demás.</string>
+    <string name="note_move_up">Subir</string>
+    <string name="note_move_down">Bajar</string>
+    <string name="note_move_at_top">Ya está arriba del todo</string>
+    <string name="note_move_at_bottom">Ya está abajo del todo</string>
+    <string name="note_moved_to">Movida a la posición %1$d de %2$d</string>
 </resources>

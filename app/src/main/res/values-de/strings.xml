@@ -162,7 +162,7 @@
     <string name="help_navigation_search_title">Suchen</string>
     <string name="help_navigation_search_description">Verwenden Sie die Suchleiste, um Ihre Notizen schnell nach Titel oder Inhalt zu finden</string>
     <string name="help_navigation_sort_title">Sortierung</string>
-    <string name="help_navigation_sort_description">Tippen Sie in der Suchleiste auf die Schaltfläche für Ansichtsoptionen, um zuletzt bearbeitete Notizen zuerst oder zuletzt anzuzeigen.</string>
+    <string name="help_navigation_sort_description">Tippen Sie in der Suchleiste auf die Schaltfläche für Ansichtsoptionen, um zuletzt bearbeitete Notizen zuerst oder zuletzt anzuzeigen, oder wählen Sie „Eigene Reihenfolge“ und ordnen Sie Notizen selbst per Ziehen an.</string>
     <string name="help_navigation_format_title">Anzeigeformat</string>
     <string name="help_navigation_format_description">In denselben Ansichtsoptionen wechseln Sie zwischen Liste und Raster.</string>
 
@@ -517,9 +517,9 @@
     <string name="view_options">Ansichtsoptionen</string>
     <string name="view_options_cd_list">Ansichtsoptionen. Notizen werden als Liste angezeigt</string>
     <string name="view_options_cd_grid">Ansichtsoptionen. Notizen werden als Raster angezeigt</string>
-    <string name="view_options_sort">Nach letzter Änderung sortieren</string>
-    <string name="view_options_sort_newest">Neueste zuerst</string>
-    <string name="view_options_sort_oldest">Älteste zuerst</string>
+    <string name="view_options_sort">Reihenfolge</string>
+    <string name="view_options_sort_newest">Zuletzt bearbeitete zuerst</string>
+    <string name="view_options_sort_oldest">Zuletzt bearbeitete zuletzt</string>
     <string name="view_options_layout">Darstellung</string>
     <string name="view_options_layout_list">Liste</string>
     <string name="view_options_layout_grid">Raster</string>
@@ -612,4 +612,11 @@
     <string name="version_restored">Version wiederhergestellt</string>
     <string name="version_restore_failed">Diese Version konnte nicht wiederhergestellt werden</string>
     <string name="version_untitled">Leere Notiz</string>
+    <string name="view_options_sort_custom">Eigene Reihenfolge</string>
+    <string name="view_options_sort_custom_hint">Halten Sie eine Notiz gedrückt und ziehen Sie sie an eine neue Stelle. Angeheftete Notizen bleiben über den anderen.</string>
+    <string name="note_move_up">Nach oben verschieben</string>
+    <string name="note_move_down">Nach unten verschieben</string>
+    <string name="note_move_at_top">Bereits ganz oben</string>
+    <string name="note_move_at_bottom">Bereits ganz unten</string>
+    <string name="note_moved_to">An Position %1$d von %2$d verschoben</string>
 </resources>

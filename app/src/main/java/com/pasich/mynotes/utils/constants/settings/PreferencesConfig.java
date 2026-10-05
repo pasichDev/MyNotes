@@ -44,6 +44,10 @@ public class PreferencesConfig {
     public static final String ARGUMENT_PREFERENCE_LAST_KNOWN_VERSION = "lastKnownVersion";
     // One-time "Meet Encly" introduction (pasichDev/MyNotes#167)
     public static final String ARGUMENT_PREFERENCE_MEET_ENCLY_SHOWN = "meetEnclyShown";
+
+    /** Whether the notes list uses the custom order; device-local, never backed up or synced. */
+    public static final String ARGUMENT_PREFERENCE_CUSTOM_ORDER = "notesCustomOrder";
+
     // ThemeMode
     public static final String ARGUMENT_PREFERENCE_THEME_MODE = "themeMode";
     public static final int ARGUMENT_DEFAULT_THEME_MODE_VALUE =

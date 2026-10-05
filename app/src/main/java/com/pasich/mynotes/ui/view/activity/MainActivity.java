@@ -181,6 +181,29 @@ public class MainActivity extends BaseActivity
 
     private SelectionController selectionController;
 
+    /** Drives swipes on the list and, in the custom order, drags. */
+    private ItemTouchHelper noteTouchHelper;
+
+    /** From the moment a card is picked up until the dropped order is behind the adapter. */
+    private boolean dragging;
+
+    /** Whether the card picked up has actually moved. */
+    private boolean dragMoved;
+
+    /** Set by {@code onSelectedChanged} so a long press can tell that its drag started. */
+    private boolean dragStarted;
+
+    /**
+     * The note whose menu opens if the card picked up by a long press is let go without moving: in
+     * the custom order, press and hold both picks a card up and opens its menu.
+     */
+    @Nullable private Note pendingMenuNote;
+
+    private int pendingMenuPosition;
+
+    /** The cards' "move up" and "move down" accessibility actions in the custom order. */
+    private final NoteAdapter.ReorderListener accessibilityReorder = this::moveByAccessibility;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         setExitSharedElementCallback(new MaterialContainerTransformSharedElementCallback());
@@ -329,7 +352,8 @@ public class MainActivity extends BaseActivity
 
     private void applyPendingState() {
         MainViewState state = pendingState;
-        if (state == null || settling || selectionController.isInSelectionMode()) return;
+        if (state == null || settling || dragging || selectionController.isInSelectionMode())
+            return;
         pendingState = null;
 
         currentSelectedTag = state.selectedTag();
@@ -392,6 +416,8 @@ public class MainActivity extends BaseActivity
                     });
         }
 
+        mNoteAdapter.setReorderListener(
+                mainPresenter.isCustomOrder() ? accessibilityReorder : null);
         mainPresenter.clearUiEvent();
     }
 
@@ -555,8 +581,9 @@ public class MainActivity extends BaseActivity
 
                     @Override
                     public void onLongClick(int position, Note model) {
-                        if (!selectionController.isInSelectionMode())
-                            choiceNoteDialog(model, position);
+                        if (selectionController.isInSelectionMode()) return;
+                        if (pickUpForDrag(position, model)) return;
+                        choiceNoteDialog(model, position);
                     }
                 });
         selectionController.setListener(
@@ -650,13 +677,80 @@ public class MainActivity extends BaseActivity
                 new NotesItemAnimator(
                         () -> isListInteractive() && !mainRenderListsController.isSwapping()));
 
-        new ItemTouchHelper(
+        noteTouchHelper =
+                new ItemTouchHelper(
                         new SwipeToListNotesCallback(
                                 0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
                             @Override
                             public boolean isItemViewSwipeEnabled() {
                                 return !selectionController.isInSelectionMode()
                                         && mainPresenter.getDataManager().getFormatCount() == 1;
+                            }
+
+                            @Override
+                            public boolean isLongPressDragEnabled() {
+                                // Started from the card's own long press, which also decides
+                                // whether its menu opens instead.
+                                return false;
+                            }
+
+                            @Override
+                            public int getDragDirs(
+                                    @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder) {
+                                if (!canDragNotes()) return 0;
+                                int vertical = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+                                return gridLayoutManager.getSpanCount() > 1
+                                        ? vertical | ItemTouchHelper.START | ItemTouchHelper.END
+                                        : vertical;
+                            }
+
+                            @Override
+                            public boolean canDropOver(
+                                    @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder current,
+                                    @NonNull RecyclerView.ViewHolder target) {
+                                return sameSection(
+                                        current.getBindingAdapterPosition(),
+                                        target.getBindingAdapterPosition());
+                            }
+
+                            @Override
+                            public boolean onMove(
+                                    @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder,
+                                    @NonNull RecyclerView.ViewHolder target) {
+                                int from = viewHolder.getBindingAdapterPosition();
+                                int to = target.getBindingAdapterPosition();
+                                if (!dragging || !sameSection(from, to)) return false;
+                                mNoteAdapter.moveDuringDrag(from, to);
+                                dragMoved = true;
+                                pendingMenuNote = null;
+                                return true;
+                            }
+
+                            @Override
+                            public void onSelectedChanged(
+                                    @Nullable RecyclerView.ViewHolder viewHolder, int actionState) {
+                                super.onSelectedChanged(viewHolder, actionState);
+                                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG
+                                        && viewHolder != null) {
+                                    dragStarted = true;
+                                    dragging = true;
+                                    dragMoved = false;
+                                    mNoteAdapter.beginDrag();
+                                    liftCard(viewHolder.itemView, true);
+                                }
+                            }
+
+                            @Override
+                            public void clearView(
+                                    @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder) {
+                                super.clearView(recyclerView, viewHolder);
+                                viewHolder.itemView.setAlpha(1f);
+                                liftCard(viewHolder.itemView, false);
+                                if (dragging && mNoteAdapter.isDragging()) dropCard(viewHolder);
                             }
 
                             @Override
@@ -674,8 +768,122 @@ public class MainActivity extends BaseActivity
                                     snackBarRestoreNote();
                                 }
                             }
-                        })
-                .attachToRecyclerView(mActivityBinding.listNotes);
+                        });
+        noteTouchHelper.attachToRecyclerView(mActivityBinding.listNotes);
+    }
+
+    /** Notes can be dragged in the custom order, outside selection and search. */
+    private boolean canDragNotes() {
+        return mainPresenter.isCustomOrder()
+                && !selectionController.isInSelectionMode()
+                && !mActivityBinding.searchView.isShowing();
+    }
+
+    /** Pinned and other notes keep their own sections; a card moves only within its own. */
+    private boolean sameSection(int first, int second) {
+        List<Note> list = mNoteAdapter.getCurrentList();
+        if (first < 0 || second < 0 || first >= list.size() || second >= list.size()) return false;
+        return list.get(first).isPinned() == list.get(second).isPinned();
+    }
+
+    /**
+     * Picks a card up in the custom order. Its menu opens instead if it is let go without moving,
+     * and at once for TalkBack, whose long press has no finger to follow; it moves notes with the
+     * cards' own actions.
+     *
+     * @return true when the card was picked up.
+     */
+    private boolean pickUpForDrag(int position, Note note) {
+        // The last drop may still be settling into the adapter; this press opens the menu.
+        if (dragging || !canDragNotes() || isTouchExplorationEnabled()) return false;
+        RecyclerView.ViewHolder holder =
+                mActivityBinding.listNotes.findViewHolderForAdapterPosition(position);
+        if (holder == null) return false;
+        dragStarted = false;
+        pendingMenuNote = note;
+        pendingMenuPosition = position;
+        noteTouchHelper.startDrag(holder);
+        if (!dragStarted) pendingMenuNote = null;
+        return dragStarted;
+    }
+
+    private boolean isTouchExplorationEnabled() {
+        android.view.accessibility.AccessibilityManager manager =
+                (android.view.accessibility.AccessibilityManager)
+                        getSystemService(ACCESSIBILITY_SERVICE);
+        return manager != null && manager.isTouchExplorationEnabled();
+    }
+
+    /** Raises a picked-up card a little, and puts it back down. */
+    private void liftCard(View card, boolean lifted) {
+        float scale = lifted ? 1.03f : 1f;
+        if (ValueAnimator.areAnimatorsEnabled()) {
+            card.animate().scaleX(scale).scaleY(scale).setDuration(150).start();
+        } else {
+            card.setScaleX(scale);
+            card.setScaleY(scale);
+        }
+    }
+
+    /** Stores where a dragged card was dropped, or opens its menu if it never moved. */
+    private void dropCard(RecyclerView.ViewHolder holder) {
+        int position = holder.getBindingAdapterPosition();
+        List<Note> order = mNoteAdapter.getCurrentList();
+        if (dragMoved && position >= 0 && position < order.size()) {
+            Note note = order.get(position);
+            mainPresenter.moveNoteInCustomOrder(
+                    note.getId(),
+                    neighbourId(order, position - 1, note),
+                    neighbourId(order, position + 1, note));
+        }
+        Note menuNote = dragMoved ? null : pendingMenuNote;
+        int menuPosition = pendingMenuPosition;
+        pendingMenuNote = null;
+        mNoteAdapter.endDrag(
+                () -> {
+                    dragging = false;
+                    // States that arrived during the drag were held back.
+                    applyPendingState();
+                });
+        if (menuNote != null) choiceNoteDialog(menuNote, menuPosition);
+    }
+
+    /** The id of the note at {@code position} if it is in the same section, otherwise null. */
+    @Nullable
+    private static Integer neighbourId(List<Note> order, int position, Note note) {
+        if (position < 0 || position >= order.size()) return null;
+        Note neighbour = order.get(position);
+        return neighbour.isPinned() == note.isPinned() ? neighbour.getId() : null;
+    }
+
+    /** "Move up" or "Move down" from TalkBack or another accessibility service. */
+    private void moveByAccessibility(@NonNull Note note, int step) {
+        List<Note> order = mNoteAdapter.getCurrentList();
+        int position = -1;
+        for (int i = 0; i < order.size(); i++) {
+            if (order.get(i).getId() == note.getId()) {
+                position = i;
+                break;
+            }
+        }
+        int target = position + step;
+        if (position < 0 || !sameSection(position, target)) {
+            mActivityBinding.listNotes.announceForAccessibility(
+                    getString(step < 0 ? R.string.note_move_at_top : R.string.note_move_at_bottom));
+            return;
+        }
+        Integer upper;
+        Integer lower;
+        if (step < 0) {
+            upper = neighbourId(order, target - 1, note);
+            lower = order.get(target).getId();
+        } else {
+            upper = order.get(target).getId();
+            lower = neighbourId(order, target + 1, note);
+        }
+        mainPresenter.moveNoteInCustomOrder(note.getId(), upper, lower);
+        mActivityBinding.listNotes.announceForAccessibility(
+                getString(R.string.note_moved_to, target + 1, order.size()));
     }
 
     public void snackBarRestoreNote() {
