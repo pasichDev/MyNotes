@@ -212,13 +212,6 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
     }
 
     @Override
-    public void callableCopyNote(long newNoteId) {
-        if (mainActivity != null) {
-            mainActivity.openCopyNote(Math.toIntExact(newNoteId));
-        }
-    }
-
-    @Override
     public void initListeners() {
         if (mPresenter.getNote() == null) {
             return;
@@ -252,7 +245,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             });
 
             binding.quickShare.setOnClickListener(v -> {
-                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
+                ShareOptionsDialog shareDialog =
+                        ShareOptionsDialog.newInstance(mPresenter.getNote());
                 shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
                 dismiss();
             });
@@ -298,14 +292,21 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             });
 
             binding.share.setOnClickListener(v -> {
-                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
+                ShareOptionsDialog shareDialog =
+                        ShareOptionsDialog.newInstance(mPresenter.getNote());
                 shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
                 dismiss();
             });
 
             binding.copyNote.setOnClickListener(v -> {
-                if (mPresenter.getNote().isAttachments()) return;
-                mPresenter.copyNoteMainActivity();
+                if (mPresenter.getNote().isAttachments() || mainActivity == null) return;
+                // The sheet is gone by the time the copy is written; the activity opens it.
+                MoreNoteMainActivityView host = mainActivity;
+                Activity hostActivity = requireActivity();
+                mPresenter.copyNoteMainActivity(newNoteId -> {
+                    if (hostActivity.isFinishing() || hostActivity.isDestroyed()) return;
+                    host.openCopyNote(newNoteId);
+                });
                 dismiss();
             });
 

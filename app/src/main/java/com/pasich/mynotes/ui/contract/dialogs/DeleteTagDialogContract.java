@@ -6,7 +6,10 @@ import com.pasich.mynotes.data.model.Tag;
 
 public interface DeleteTagDialogContract {
 
-    interface view extends BaseView {}
+    interface view extends BaseView {
+        /** Shows how many notes carry the tag, once it is known. */
+        void showNotesCount(int count);
+    }
 
     interface presenter extends BasePresenter<view> {
         void getLoadCountNotesForTag(String nameTag);

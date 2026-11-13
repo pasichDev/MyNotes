@@ -307,6 +307,15 @@ public class AppDbHelper implements DbHelper {
     }
 
     @Override
+    public Completable updateTasks(List<Task> tasks) {
+        // One transaction, so the task lists are reloaded once rather than once per task.
+        return Completable.fromAction(() ->
+                appDatabase.runInTransaction(() -> {
+                    for (Task task : tasks) syncMutationCoordinator.updateTask(task);
+                }));
+    }
+
+    @Override
     public Completable deleteTask(Task task) {
         return Completable.fromAction(() -> syncMutationCoordinator.deleteTask(task));
     }

@@ -1,5 +1,6 @@
 package com.pasich.mynotes.ui.presenter.dialogs;
 
+import android.util.Log;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
@@ -10,6 +11,8 @@ import javax.inject.Inject;
 
 public class DeleteTagDialogPresenter extends BasePresenter<DeleteTagDialogContract.view>
         implements DeleteTagDialogContract.presenter {
+
+    private static final String TAG = "DeleteTagDialogPresenter";
 
     private int countNotesForTag;
 
@@ -33,27 +36,28 @@ public class DeleteTagDialogPresenter extends BasePresenter<DeleteTagDialogContr
                         getDataManager()
                                 .getCountNotesTag(nameTag)
                                 .subscribeOn(getSchedulerProvider().io())
-                                .subscribe(this::setCountNotesForTag));
+                                .observeOn(getSchedulerProvider().ui())
+                                .subscribe(
+                                        this::setCountNotesForTag,
+                                        error -> Log.e(TAG, "count notes for tag failed", error)));
     }
 
     @Override
     public void deleteTagUnchecked(Tag tag) {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .clearTagInNotes(tag)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .subscribe());
+        DetachedWrites.run(
+                getDataManager().clearTagInNotes(tag),
+                getSchedulerProvider().io(),
+                TAG,
+                "deleteTagUnchecked");
     }
 
     @Override
     public void deleteTagAndNotes(Tag tag) {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .deleteTagAndMoveNotesToTrash(tag)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .subscribe());
+        DetachedWrites.run(
+                getDataManager().deleteTagAndMoveNotesToTrash(tag),
+                getSchedulerProvider().io(),
+                TAG,
+                "deleteTagAndNotes");
     }
 
     @Override
@@ -63,6 +67,7 @@ public class DeleteTagDialogPresenter extends BasePresenter<DeleteTagDialogContr
 
     public void setCountNotesForTag(int count) {
         this.countNotesForTag = count;
+        runOnView(view -> view.showNotesCount(count));
     }
 
     @Override

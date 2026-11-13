@@ -8,6 +8,7 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.RepeatRule;
 import com.pasich.mynotes.data.model.Task;
 import dagger.hilt.android.qualifiers.ApplicationContext;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.inject.Inject;
@@ -75,9 +76,24 @@ public class ReminderRescheduler {
             if (!ReminderManager.armSnooze(
                     context, snooze.noteId, snooze.time, snooze.intervalMinutes)) inexact++;
         }
-        List<Task> tasks = database.taskDao().getTasksWithRemindersSync();
+        List<Task> tasks = new ArrayList<>();
+        for (Task task : database.taskDao().getTasksWithRemindersSync()) {
+            if (shouldArm(task, now)) tasks.add(task);
+        }
         TaskReminderManager.rescheduleAll(context, tasks);
         return new Result(armed, inexact);
+    }
+
+    /**
+     * Same rule as for notes: a reminder repeating every N minutes keeps going, a one-time one
+     * missed by more than {@link #MISSED_ONE_TIME_GRACE_MS} is left alone.
+     */
+    static boolean shouldArm(@NonNull Task task, long now) {
+        Long time = task.getReminderTime();
+        if (time == null || task.isDone()) return false;
+        if (time > now) return true;
+        if (task.getReminderIntervalMinutes() > 0) return true;
+        return now - time <= MISSED_ONE_TIME_GRACE_MS;
     }
 
     /**

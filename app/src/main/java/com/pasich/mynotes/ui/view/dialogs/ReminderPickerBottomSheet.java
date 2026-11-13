@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.view.dialogs;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -505,65 +507,76 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         saveReminder();
     }
 
+    @SuppressLint("CheckResult")
     private void saveReminder() {
         if (selectedTime == null) return;
 
         final long time = selectedTime;
         final String repeat = selectedRule(time).serialize();
+        final int nag = selectedIntervalMinutes;
+        final int id = noteId;
+        final Context app = requireContext().getApplicationContext();
 
-        disposables.add(
-                dataManager
-                        .updateNoteReminderFull(noteId, time, repeat, selectedIntervalMinutes)
-                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(
-                                () -> {
-                                    Note tempNote = new Note();
-                                    tempNote.setId(noteId);
-                                    if (currentNote != null) {
-                                        tempNote.setTitle(currentNote.getTitle());
-                                        tempNote.setValue(currentNote.getValue());
-                                    }
-                                    tempNote.setReminderTime(time);
-                                    tempNote.setReminderRepeat(repeat);
-                                    tempNote.setReminderIntervalMinutes(selectedIntervalMinutes);
-                                    // Redefined: a snooze or repeating notification of the old
-                                    // reminder no longer applies.
-                                    ReminderManager.cancelReminder(requireContext(), noteId);
-                                    boolean exact =
-                                            ReminderManager.scheduleReminder(
-                                                    requireContext(), tempNote);
-                                    if (!exact) askForExactAlarms();
+        Note tempNote = new Note();
+        tempNote.setId(id);
+        if (currentNote != null) {
+            tempNote.setTitle(currentNote.getTitle());
+            tempNote.setValue(currentNote.getValue());
+        }
+        tempNote.setReminderTime(time);
+        tempNote.setReminderRepeat(repeat);
+        tempNote.setReminderIntervalMinutes(nag);
 
-                                    Bundle result = new Bundle();
-                                    result.putBoolean("hasReminder", true);
-                                    result.putLong("reminderTime", time);
-                                    getParentFragmentManager()
-                                            .setFragmentResult("reminderChanged", result);
+        // The alarm is armed right after the write on the io thread, not in a callback the sheet's
+        // teardown can cancel: a stored reminder always has its alarm. Not tied to the sheet's
+        // disposables for the same reason; the sheet part checks it is still there.
+        dataManager
+                .updateNoteReminderFull(id, time, repeat, nag)
+                .andThen(
+                        io.reactivex.Single.fromCallable(() -> {
+                            // Redefined: a snooze or repeating notification of the old reminder
+                            // no longer applies.
+                            ReminderManager.cancelReminder(app, id);
+                            return ReminderManager.scheduleReminder(app, tempNote);
+                        }))
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe(
+                        exact -> {
+                            if (!isAdded()) return;
+                            if (!exact) askForExactAlarms();
 
-                                    dismiss();
-                                },
-                                e -> Log.e(TAG, "save failed", e)));
+                            Bundle result = new Bundle();
+                            result.putBoolean("hasReminder", true);
+                            result.putLong("reminderTime", time);
+                            getParentFragmentManager().setFragmentResult("reminderChanged", result);
+
+                            dismissAllowingStateLoss();
+                        },
+                        e -> Log.e(TAG, "save failed", e));
     }
 
+    @SuppressLint("CheckResult")
     private void deleteReminder() {
-        disposables.add(
-                dataManager
-                        .clearReminder(noteId)
-                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(
-                                () -> {
-                                    ReminderManager.cancelReminder(requireContext(), noteId);
+        final int id = noteId;
+        final Context app = requireContext().getApplicationContext();
+        dataManager
+                .clearReminder(id)
+                .andThen(
+                        io.reactivex.Completable.fromAction(
+                                () -> ReminderManager.cancelReminder(app, id)))
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            if (!isAdded()) return;
+                            Bundle result = new Bundle();
+                            result.putBoolean("hasReminder", false);
+                            getParentFragmentManager().setFragmentResult("reminderChanged", result);
 
-                                    Bundle result = new Bundle();
-                                    result.putBoolean("hasReminder", false);
-                                    getParentFragmentManager()
-                                            .setFragmentResult("reminderChanged", result);
-
-                                    dismiss();
-                                },
-                                e -> Log.e(TAG, "delete failed", e)));
+                            dismissAllowingStateLoss();
+                        },
+                        e -> Log.e(TAG, "delete failed", e));
     }
 
     /**

@@ -65,15 +65,12 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
 
     @Override
     public void noteMoveToTrash() {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .moveNoteToTrash(mNote.getId())
-                                .subscribeOn(getSchedulerProvider().io())
-                                .observeOn(getSchedulerProvider().ui())
-                                .subscribe(
-                                        () -> {}, // onComplete
-                                        throwable -> Log.e(TAG, "Error deleting note", throwable)));
+        if (mNote == null) return;
+        DetachedWrites.run(
+                getDataManager().moveNoteToTrash(mNote.getId()),
+                getSchedulerProvider().io(),
+                TAG,
+                "noteMoveToTrash");
     }
 
     @Override
@@ -83,44 +80,43 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
 
     @Override
     public void removeTagNote(int idNote) {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .setTagNote("", idNote)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .subscribe(
-                                        () -> {}, // onComplete
-                                        throwable -> Log.e(TAG, "Error removing tag", throwable)));
+        DetachedWrites.run(
+                getDataManager().setTagNote("", idNote),
+                getSchedulerProvider().io(),
+                TAG,
+                "removeTagNote");
     }
 
     @Override
     public void editTagNote(String nameTag, int idNote) {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .setTagNote(nameTag, idNote)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .subscribe(
-                                        () -> {}, // onComplete
-                                        throwable -> Log.e(TAG, "Error editing tag", throwable)));
+        DetachedWrites.run(
+                getDataManager().setTagNote(nameTag, idNote),
+                getSchedulerProvider().io(),
+                TAG,
+                "editTagNote");
     }
 
+    /**
+     * Copies the note and hands the copy's id to {@code onCopied} on the main thread. The copy is
+     * not tied to the dialog, which closes before the copy is written.
+     */
     @Override
-    public void copyNoteMainActivity() {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .addNote(
-                                        new Note()
-                                                .create(
-                                                        mNote.getTitle() + " (copy)",
-                                                        mNote.getValue() + " ",
-                                                        new Date().getTime(),
-                                                        mNote.getTag()))
-                                .subscribeOn(getSchedulerProvider().io())
-                                .subscribe(
-                                        aLong -> getView().callableCopyNote(aLong),
-                                        throwable -> Log.e(TAG, "Error copying note", throwable)));
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void copyNoteMainActivity(MoreNoteDialogContract.OnNoteCopied onCopied) {
+        if (mNote == null) return;
+        getDataManager()
+                .addNote(
+                        new Note()
+                                .create(
+                                        mNote.getTitle() + " (copy)",
+                                        mNote.getValue() + " ",
+                                        new Date().getTime(),
+                                        mNote.getTag()))
+                .subscribeOn(getSchedulerProvider().io())
+                .observeOn(getSchedulerProvider().ui())
+                .subscribe(
+                        onCopied::onCopied,
+                        throwable -> Log.e(TAG, "Error copying note", throwable));
     }
 
     @Override
@@ -128,15 +124,11 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
         if (mNote == null) return;
         boolean newPin = !mNote.isPinned();
         mNote.setPinned(newPin);
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .setPinNote(mNote.getId(), newPin)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .subscribe(
-                                        () -> {},
-                                        throwable ->
-                                                Log.e(TAG, "togglePinNote failed", throwable)));
+        DetachedWrites.run(
+                getDataManager().setPinNote(mNote.getId(), newPin),
+                getSchedulerProvider().io(),
+                TAG,
+                "togglePinNote");
     }
 
     @Override

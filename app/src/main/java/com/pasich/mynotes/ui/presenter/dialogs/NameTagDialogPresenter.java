@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.presenter.dialogs;
 
-import android.util.Log;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Tag;
@@ -11,6 +10,8 @@ import javax.inject.Inject;
 
 public class NameTagDialogPresenter extends BasePresenter<NameTagDialogContract.view>
         implements NameTagDialogContract.presenter {
+
+    private static final String TAG = "NameTagDialogPresenter";
 
     @Inject
     public NameTagDialogPresenter(
@@ -27,35 +28,16 @@ public class NameTagDialogPresenter extends BasePresenter<NameTagDialogContract.
 
     @Override
     public void saveTag(Tag nameTag) {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .addTag(nameTag)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .observeOn(getSchedulerProvider().ui())
-                                .subscribe(
-                                        () -> {}, // onComplete
-                                        throwable ->
-                                                Log.e(
-                                                        "NameTagDialogPresenter",
-                                                        "Error saving tag",
-                                                        throwable)));
+        DetachedWrites.run(
+                getDataManager().addTag(nameTag), getSchedulerProvider().io(), TAG, "saveTag");
     }
 
     @Override
     public void editNameTag(String nameNewTag, Tag mTag) {
-        getCompositeDisposable()
-                .add(
-                        getDataManager()
-                                .renameTag(mTag, nameNewTag)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .observeOn(getSchedulerProvider().ui())
-                                .subscribe(
-                                        () -> {}, // onComplete
-                                        throwable ->
-                                                Log.e(
-                                                        "NameTagDialogPresenter",
-                                                        "Error editing tag name",
-                                                        throwable)));
+        DetachedWrites.run(
+                getDataManager().renameTag(mTag, nameNewTag),
+                getSchedulerProvider().io(),
+                TAG,
+                "editNameTag");
     }
 }

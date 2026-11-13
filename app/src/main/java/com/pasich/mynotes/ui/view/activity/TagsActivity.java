@@ -28,7 +28,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 @AndroidEntryPoint
-public class TagsActivity extends BaseActivity implements TagsContract.view, TagsSortView {
+public class TagsActivity extends BaseActivity
+        implements TagsContract.view, TagsSortView, TagOptionsBottomSheet.TagOptionsListener {
 
     private ActivityTagsBinding binding;
 
@@ -103,17 +104,18 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
 
     @Override
     public void showCreateTagDialog(int newPosition) {
-        new NameTagDialog(newPosition).show(getSupportFragmentManager(), "CreateTagDialog");
+        NameTagDialog.newCreateInstance(newPosition)
+                .show(getSupportFragmentManager(), "CreateTagDialog");
     }
 
     @Override
     public void showEditTagDialog(Tag tag) {
-        new NameTagDialog(tag).show(getSupportFragmentManager(), "RenameTag");
+        NameTagDialog.newRenameInstance(tag).show(getSupportFragmentManager(), "RenameTag");
     }
 
     @Override
     public void showDeleteTagDialog(Tag tag) {
-        new DeleteTagDialog(tag).show(getSupportFragmentManager(), "DeleteTagDialog");
+        DeleteTagDialog.newInstance(tag).show(getSupportFragmentManager(), "DeleteTagDialog");
     }
 
     @Override
@@ -121,28 +123,25 @@ public class TagsActivity extends BaseActivity implements TagsContract.view, Tag
         presenter.getTagNotesCount(
                 tag,
                 count -> {
-                    TagOptionsBottomSheet bottomSheet =
-                            new TagOptionsBottomSheet(
-                                    tag,
-                                    count,
-                                    new TagOptionsBottomSheet.TagOptionsListener() {
-                                        @Override
-                                        public void onDeleteTagClick(Tag tag) {
-                                            showDeleteTagDialog(tag);
-                                        }
-
-                                        @Override
-                                        public void onRenameTagClick(Tag tag) {
-                                            showEditTagDialog(tag);
-                                        }
-
-                                        @Override
-                                        public void onToggleVisibilityClick(Tag tag) {
-                                            presenter.toggleTagVisibility(tag);
-                                        }
-                                    });
-                    bottomSheet.show(getSupportFragmentManager(), "TagOptionsBottomSheet");
+                    if (getSupportFragmentManager().isStateSaved()) return;
+                    TagOptionsBottomSheet.newInstance(tag, count)
+                            .show(getSupportFragmentManager(), "TagOptionsBottomSheet");
                 });
+    }
+
+    @Override
+    public void onDeleteTagClick(Tag tag) {
+        showDeleteTagDialog(tag);
+    }
+
+    @Override
+    public void onRenameTagClick(Tag tag) {
+        showEditTagDialog(tag);
+    }
+
+    @Override
+    public void onToggleVisibilityClick(Tag tag) {
+        presenter.toggleTagVisibility(tag);
     }
 
     @Override

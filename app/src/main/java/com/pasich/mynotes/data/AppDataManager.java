@@ -403,6 +403,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public Completable updateTasks(List<Task> tasks) {
+        return dbHelper.updateTasks(tasks);
+    }
+
+    @Override
     public Completable deleteTask(Task task) {
         return dbHelper.deleteTask(task);
     }
