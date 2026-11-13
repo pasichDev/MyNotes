@@ -3,6 +3,7 @@ package com.pasich.mynotes.ui.presenter;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.util.Log;
+import androidx.annotation.Nullable;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.data.model.Note;
@@ -18,7 +19,9 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.SerialDisposable;
 import io.reactivex.subjects.PublishSubject;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
@@ -46,6 +49,9 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     // A save started by flushPending(). Kept out of the composite on purpose: the screen is often
     // being destroyed right after onStop, and disposing the composite must not cancel this write.
     private Disposable flushSave;
+    // Waiting for the next flushPending write to finish. A flush that replaces one still in flight
+    // takes over its waiters, so none is left behind.
+    private final List<Runnable> flushWaiters = new ArrayList<>();
 
     @Inject
     public NotePresenter(
@@ -181,9 +187,22 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
      */
     @Override
     public void flushPending() {
-        if (targetNote == null) return;
-        syncDocumentDerivedFields();
-        if (!hasMeaningfulContent(targetNote) || !isContentChanged()) return;
+        flushPending(null);
+    }
+
+    /**
+     * Like {@link #flushPending()}, then runs {@code onDone} on the UI thread once the note is in
+     * the database (or the write failed), at once when there is nothing to write. Another screen
+     * that reads the note from the database, such as the other editor, is opened from {@code
+     * onDone} so it never reads it before the last edits were written.
+     */
+    public void flushPending(@Nullable Runnable onDone) {
+        if (onDone != null) flushWaiters.add(onDone);
+        if (targetNote != null) syncDocumentDerivedFields();
+        if (targetNote == null || !hasMeaningfulContent(targetNote) || !isContentChanged()) {
+            runFlushWaiters();
+            return;
+        }
 
         Note note = targetNote;
         note.setDate(new Date().getTime());
@@ -199,11 +218,20 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                 () -> {
                                     savedNote.copyFrom(note);
                                     callback.onSuccess();
+                                    runFlushWaiters();
                                 },
                                 error -> {
                                     Log.e(TAG, "flushPending() failed", error);
                                     callback.onError(error);
+                                    runFlushWaiters();
                                 });
+    }
+
+    private void runFlushWaiters() {
+        if (flushWaiters.isEmpty()) return;
+        List<Runnable> waiting = new ArrayList<>(flushWaiters);
+        flushWaiters.clear();
+        for (Runnable waiter : waiting) waiter.run();
     }
 
     @Override

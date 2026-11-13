@@ -38,38 +38,12 @@ const __pageParams = new URLSearchParams(window.location.search)
 const __doubleTapToEdit = __pageParams.get('dbltap') === '1'
 
 /**
- * Sending the document is batched. Every send serializes the whole note (Editor.js saves and
- * sanitizes every block, then it is stringified and copied to Android), so on a long note sending
- * on each Editor.js change made typing cost grow with the note. Android saves only after it has
- * been quiet for two seconds anyway; it gets the document once typing pauses, at least every few
- * seconds while typing goes on, and at once through flushContent when the screen stops.
+ * Saves the blocks and sends them to Android unless they are what it already has.
  */
-const SAVE_IDLE_MS = 700
-const SAVE_MAX_WAIT_MS = 3000
-let __saveTimer = null
-let __saveFirstRequest = 0
-
-/** A change was made: the document goes to Android once typing pauses. */
 function saveContent () {
   if (!editor) return
-  const now = Date.now()
-  if (!__saveTimer) __saveFirstRequest = now
-  clearTimeout(__saveTimer)
-  const overdue = now - __saveFirstRequest >= SAVE_MAX_WAIT_MS
-  __saveTimer = setTimeout(sendContent, overdue ? 0 : SAVE_IDLE_MS)
-}
 
-function cancelPendingSave () {
-  clearTimeout(__saveTimer)
-  __saveTimer = null
-}
-
-/** Saves the blocks and sends them to Android unless they are what it already has. */
-function sendContent () {
-  cancelPendingSave()
-  if (!editor) return Promise.resolve()
-
-  return editor
+  editor
     .save()
     .then(output => {
       const jsonStr = JSON.stringify(output.blocks)
@@ -85,7 +59,6 @@ function sendContent () {
  * Android asks for this when the screen stops, so the last keystrokes are saved too.
  */
 function flushContent () {
-  cancelPendingSave()
   if (!editor) return Promise.resolve()
 
   return editor
@@ -373,6 +346,8 @@ window.addEventListener('resize', () => requestAnimationFrame(keepCaretVisible))
 const HISTORY_LIMIT = 100
 const HISTORY_IDLE_MS = 700
 const HISTORY_MAX_BATCH_MS = 3000
+// A finished word or line closes its batch after this pause.
+const HISTORY_WORD_END_MS = 300
 // Editor.js reports a change up to 400 ms after it happened; a report that late about a state
 // this history applied itself is not a new change.
 const HISTORY_SETTLE_MS = 600
@@ -388,6 +363,8 @@ const __hist = {
   lastCaret: null,
   batchStart: 0,
   timer: null,
+  // The timer closes the batch at the end of a word or line.
+  closing: false,
   applying: false,
   settleUntil: 0,
   epoch: 0,
@@ -471,6 +448,7 @@ function stopHistory () {
   __hist.epoch++
   clearTimeout(__hist.timer)
   __hist.timer = null
+  __hist.closing = false
   __hist.undo = []
   __hist.redo = []
   __hist.current = null
@@ -564,9 +542,15 @@ function resetHistory (settle) {
 
 /**
  * Something in the note changed, or is about to. {@code immediate} closes the batch now.
- * {@code fromEditor} marks Editor.js's own late change report.
+ * {@code fromEditor} marks Editor.js's own late change report. {@code endsWord} closes the batch
+ * once typing pauses for a moment (HISTORY_WORD_END_MS) instead of at once.
+ *
+ * Closing a batch saves and serializes the whole note, so a finished word or line no longer does
+ * it on the spot: on a long note that cost was paid on every space. A brief pause still makes the
+ * word or line its own step; words typed without that pause become one step. Editor.js's late
+ * report of the same typing does not push a pending close back.
  */
-function historyNoteChange (immediate, fromEditor) {
+function historyNoteChange (immediate, fromEditor, endsWord) {
   if (!__hist.current || __hist.applying || isReadMode) return
   if (fromEditor && Date.now() < __hist.settleUntil) return
   __hist.changeSeq++
@@ -576,9 +560,15 @@ function historyNoteChange (immediate, fromEditor) {
     __hist.batchStart = Date.now()
     if (!__hist.caretBefore) __hist.caretBefore = __hist.lastCaret
   }
-  clearTimeout(__hist.timer)
   const overdue = Date.now() - __hist.batchStart >= HISTORY_MAX_BATCH_MS
-  __hist.timer = setTimeout(captureHistory, immediate || overdue ? 0 : HISTORY_IDLE_MS)
+  if (!immediate && !overdue && fromEditor && __hist.closing && __hist.timer) {
+    reportHistory()
+    return
+  }
+  __hist.closing = !!endsWord && !immediate
+  clearTimeout(__hist.timer)
+  const delay = immediate || overdue ? 0 : endsWord ? HISTORY_WORD_END_MS : HISTORY_IDLE_MS
+  __hist.timer = setTimeout(captureHistory, delay)
   reportHistory()
 }
 
@@ -595,6 +585,7 @@ function historyInputStarting () {
 function captureHistory (force) {
   clearTimeout(__hist.timer)
   __hist.timer = null
+  __hist.closing = false
   if (!editor || !__hist.current || (!__hist.pending && !force)) return Promise.resolve()
   const epoch = __hist.epoch
   const seq = __hist.changeSeq
@@ -819,7 +810,7 @@ document.addEventListener(
     }
     if (isEditingKey(event)) {
       historyInputStarting()
-      if (event.key === 'Enter') historyNoteChange(true, false)
+      if (event.key === 'Enter') historyNoteChange(false, false, true)
     }
   },
   true
@@ -841,7 +832,7 @@ document.addEventListener(
     const data = typeof event.data === 'string' ? event.data : ''
     const lineBreak = event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak'
     const endsWord = lineBreak || (/\s$/.test(data) && (__hist.batchHasText || /\S/.test(data)))
-    historyNoteChange(endsWord, false)
+    historyNoteChange(false, false, endsWord)
     if (/\S/.test(data)) __hist.batchHasText = true
   },
   true
@@ -883,8 +874,16 @@ function setThemeColors (colors) {
 const PLAIN_TEXT_LINE_BLOCKS = 200
 const PLAIN_TEXT_BLOCK_CHARS = 1000
 
+/**
+ * Plain text as paragraph HTML. The paragraph tool shows its text as HTML, so markup in a note
+ * (shared into the app, say) would otherwise run in the page, which can reach Android.
+ */
+function escapeHtml (text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 function plainTextBlocks (text) {
-  const lines = text.split('\n')
+  const lines = text.split('\n').map(escapeHtml)
   while (lines.length && lines[0].trim() === '') lines.shift()
   while (lines.length && lines[lines.length - 1].trim() === '') lines.pop()
   const textLines = lines.filter(line => line.trim() !== '').length

@@ -11,7 +11,6 @@ import com.pasich.mynotes.utils.navigation.NoteNavigator;
 import com.pasich.mynotes.utils.shareProcessors.ShareProcessor;
 import com.pasich.mynotes.utils.shareProcessors.SharedNoteCreator;
 import dagger.hilt.android.AndroidEntryPoint;
-import java.io.IOException;
 import javax.inject.Inject;
 
 /**
@@ -43,6 +42,12 @@ public class ShareActivity extends AppCompatActivity {
             if (Intent.ACTION_VIEW.equals(intent.getAction())) {
 
                 Uri uri = intent.getData();
+                if (!ShareProcessor.isReadableSharedUri(uri, getPackageName())) {
+                    Toast.makeText(this, getString(R.string.notSupportedShare), Toast.LENGTH_LONG)
+                            .show();
+                    finish();
+                    return;
+                }
 
                 ShareProcessor.readFileAsync(
                         getContentResolver(),
@@ -54,7 +59,7 @@ public class ShareActivity extends AppCompatActivity {
                             }
 
                             @Override
-                            public void onError(IOException e) {
+                            public void onError(Exception e) {
                                 runOnUiThread(() -> {
                                     Toast.makeText(
                                                     ShareActivity.this,
