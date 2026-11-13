@@ -104,6 +104,16 @@ public final class RoomSyncStore implements SyncStore {
     private final Map<String, String> builtVersionIds = new ConcurrentHashMap<>();
 
     /**
+     * The {@code updatedAt} every record had, here, when the last build read its content.
+     *
+     * <p>The apply's stale-edit guard compares against this. It used to compare against the merged
+     * record's timestamp, which is another device's clock whenever the remote version wins: with
+     * that clock ahead, a local edit made during the sync looked older than the result and was
+     * overwritten, and with it behind, an untouched record refused every newer remote version.
+     */
+    private final Map<String, Long> builtUpdatedAts = new ConcurrentHashMap<>();
+
+    /**
      * Attachments the last build described from the column alone because their file is gone, keyed
      * by hash, so the service can name the note when no endpoint holds the blob either.
      */
@@ -234,8 +244,19 @@ public final class RoomSyncStore implements SyncStore {
         List<SnapshotProblem> problems = new ArrayList<>();
         rememberedOnlyAttachments.clear();
         builtVersionIds.clear();
+        builtUpdatedAts.clear();
         try {
-            for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
+            for (SyncMetadataEntity listed : database.syncMetadataDao().getAll()) {
+                // Re-read right before the content, never after it. The timestamp then predates
+                // whatever content is read next: an edit saved in between leaves newer content
+                // under an older timestamp, which the apply's guard sees and skips. Read the other
+                // way round, an edit landing between the two paired the old content with the new
+                // timestamp, the guard let the apply through, and the edit was reverted everywhere.
+                SyncMetadataEntity metadata =
+                        database.syncMetadataDao().get(listed.recordType, listed.localId);
+                if (metadata == null) {
+                    continue;
+                }
                 // Every record carries the version the remote is known to hold, so the merge can
                 // tell an edit made here alone from one made on both sides.
                 if (metadata.deletedAt != null) {
@@ -250,22 +271,29 @@ public final class RoomSyncStore implements SyncStore {
                 }
                 JsonObject payload = payload(metadata, problems);
                 if (payload != null) {
-                    SyncMetadataEntity current =
-                            database.syncMetadataDao().get(metadata.recordType, metadata.localId);
+                    long updatedAt = metadata.updatedAt;
+                    if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
+                        // The one record whose payload() writes its own timestamp: a settings
+                        // change noticed just now is touched there, after the values were read.
+                        SyncMetadataEntity touched =
+                                database.syncMetadataDao()
+                                        .get(metadata.recordType, metadata.localId);
+                        if (touched != null) {
+                            updatedAt = touched.updatedAt;
+                        }
+                    }
                     records.add(
                             SyncRecord.live(
                                             SyncRecord.Type.fromWireValue(metadata.recordType),
                                             metadata.stableId,
-                                            Instant.ofEpochMilli(
-                                                    current == null
-                                                            ? metadata.updatedAt
-                                                            : current.updatedAt),
+                                            Instant.ofEpochMilli(updatedAt),
                                             payload)
                                     .withBaseVersion(metadata.syncedVersionId));
                 }
             }
             for (SyncRecord record : records) {
                 builtVersionIds.put(recordKey(record), record.getCanonicalPayloadHash());
+                builtUpdatedAts.put(recordKey(record), record.getUpdatedAt().toEpochMilli());
             }
         } finally {
             hashCache.flush();
@@ -377,7 +405,7 @@ public final class RoomSyncStore implements SyncStore {
                         // which no longer exists, so applying its result would silently
                         // drop the newer edit. Leave it; the next sync merges the real
                         // current version.
-                        if (metadata.updatedAt > record.getUpdatedAt().toEpochMilli()) {
+                        if (editedSinceBuild(key, metadata, record.getUpdatedAt().toEpochMilli())) {
                             Log.w(
                                     TAG,
                                     "Skipping a stale sync result for "
@@ -425,7 +453,10 @@ public final class RoomSyncStore implements SyncStore {
                         String baseline = preferences.getString(PREFERENCES_HASH, null);
                         boolean edited = baseline != null && !baseline.equals(live);
                         boolean stale =
-                                preferencesMetadata[0].updatedAt > stagedPreferencesUpdatedAt;
+                                editedSinceBuild(
+                                        preferencesKey,
+                                        preferencesMetadata[0],
+                                        stagedPreferencesUpdatedAt);
                         if (stagedPreferencesJson == null || edited || stale) {
                             // Unusable payload, or edited since the build: the version
                             // is not going to be committed, so it is not recorded as
@@ -866,6 +897,19 @@ public final class RoomSyncStore implements SyncStore {
         // Runs last: the blocks above still need the local categoryId and attachment paths.
         SyncMetadata.stripDeviceLocalFields(metadata.recordType, result);
         return result;
+    }
+
+    /**
+     * Whether the local record moved on after the last build read it; see the apply's guard.
+     *
+     * <p>A record the build did not produce (an apply without a build, or a record whose content
+     * could not be read) has no timestamp of its own to compare with; the merged record's is the
+     * best remaining evidence.
+     */
+    private boolean editedSinceBuild(
+            @NonNull String key, @NonNull SyncMetadataEntity current, long mergedUpdatedAt) {
+        Long built = builtUpdatedAts.get(key);
+        return current.updatedAt > (built != null ? built : mergedUpdatedAt);
     }
 
     /**
