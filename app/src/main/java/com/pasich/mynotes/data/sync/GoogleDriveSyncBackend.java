@@ -1165,13 +1165,14 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         if (sizeBytes < 0L) {
             throw new IllegalArgumentException("An attachment upload needs a declared size");
         }
-        // Whatever happens next, the remembered listing no longer describes this root.
+        // Whatever happens next, the remembered listing no longer describes this root. It is
+        // dropped once, up front: the upload itself never lists, and every caller holds this
+        // backend's lock, so nothing can remember a listing again before the upload ends. The
+        // discovery below lists afresh, and what it remembers includes what the upload created.
         candidateListings.remove(memoKey(folderId, sha256));
         try {
             uploadStream(folderId, sha256, MIME_BINARY, content, sizeBytes);
-            candidateListings.remove(memoKey(folderId, sha256));
         } catch (IOException uploadFailure) {
-            candidateListings.remove(memoKey(folderId, sha256));
             // Attachment identity is its SHA-256. A successful request whose response was lost is
             // confirmed by discovery, not repeated with an already-consumed stream.
             if (!mayHaveCommitted(uploadFailure)
