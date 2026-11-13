@@ -30,26 +30,24 @@ public class MyApp extends Application {
         NotificationChannelManager.ensureChannel(this, notificationPreferencesCache);
 
         Executors.newSingleThreadExecutor()
-                .execute(
-                        () -> {
-                            themePreferencesCache.initialize();
-                            notificationPreferencesCache.initialize();
-                            GLOBAL_FONT_SCALE = themePreferencesCache.getUiFontScale();
-                            CACHE_READY = true;
-                        });
+                .execute(() -> {
+                    themePreferencesCache.initialize();
+                    notificationPreferencesCache.initialize();
+                    GLOBAL_FONT_SCALE = themePreferencesCache.getUiFontScale();
+                    CACHE_READY = true;
+                });
 
         // Global RxJava ErrorHandler to avoid UndeliverableException
-        RxJavaPlugins.setErrorHandler(
-                e -> {
-                    if (e instanceof UndeliverableException) {
-                        Throwable cause = e.getCause();
-                        if (cause instanceof InterruptedException) {
-                            return;
-                        }
-                        Log.w(TAG, "Undeliverable exception received", cause);
-                    } else {
-                        Log.w(TAG, "Unhandled RxJava exception", e);
-                    }
-                });
+        RxJavaPlugins.setErrorHandler(e -> {
+            if (e instanceof UndeliverableException) {
+                Throwable cause = e.getCause();
+                if (cause instanceof InterruptedException) {
+                    return;
+                }
+                Log.w(TAG, "Undeliverable exception received", cause);
+            } else {
+                Log.w(TAG, "Unhandled RxJava exception", e);
+            }
+        });
     }
 }

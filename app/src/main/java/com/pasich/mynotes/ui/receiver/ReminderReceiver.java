@@ -66,16 +66,15 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         PendingResult pending = goAsync();
         Schedulers.io()
-                .scheduleDirect(
-                        () -> {
-                            try {
-                                handle(app, intent, noteId, System.currentTimeMillis());
-                            } catch (RuntimeException e) {
-                                Log.e(TAG, "reminder handling failed", e);
-                            } finally {
-                                pending.finish();
-                            }
-                        });
+                .scheduleDirect(() -> {
+                    try {
+                        handle(app, intent, noteId, System.currentTimeMillis());
+                    } catch (RuntimeException e) {
+                        Log.e(TAG, "reminder handling failed", e);
+                    } finally {
+                        pending.finish();
+                    }
+                });
     }
 
     @WorkerThread

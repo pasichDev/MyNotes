@@ -51,17 +51,15 @@ public class DeleteTagDialog extends BaseDialogBottomSheets
 
     @Override
     public void initListeners() {
-        binding.deleteTag.setOnClickListener(
-                v -> {
-                    mPresenter.deleteTagUnchecked(tag);
-                    dismiss();
-                });
+        binding.deleteTag.setOnClickListener(v -> {
+            mPresenter.deleteTagUnchecked(tag);
+            dismiss();
+        });
 
-        binding.deleteTagAndNotes.setOnClickListener(
-                v -> {
-                    mPresenter.deleteTagAndNotes(tag);
-                    dismiss();
-                });
+        binding.deleteTagAndNotes.setOnClickListener(v -> {
+            mPresenter.deleteTagAndNotes(tag);
+            dismiss();
+        });
 
         binding.cancel.setOnClickListener(v -> dismiss());
     }

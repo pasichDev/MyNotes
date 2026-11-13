@@ -161,10 +161,9 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
                         (d, w) -> {
                             if (onCancel != null) onCancel.run();
                         })
-                .setOnCancelListener(
-                        d -> {
-                            if (onCancel != null) onCancel.run();
-                        })
+                .setOnCancelListener(d -> {
+                    if (onCancel != null) onCancel.run();
+                })
                 .show();
     }
 
@@ -204,16 +203,14 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
     @Override
     public void initListeners() {
         binding.tasksToolbar.setNavigationOnClickListener(v -> finish());
-        binding.tasksToolbar.setOnMenuItemClickListener(
-                item -> {
-                    if (item.getItemId() == R.id.tasks_add_category) {
-                        AddCategoryDialog.show(
-                                this,
-                                (name, colorHex) -> tasksPresenter.addCategory(name, colorHex));
-                        return true;
-                    }
-                    return false;
-                });
+        binding.tasksToolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.tasks_add_category) {
+                AddCategoryDialog.show(
+                        this, (name, colorHex) -> tasksPresenter.addCategory(name, colorHex));
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
@@ -237,11 +234,10 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
         allChip.setText(getString(R.string.search_filter_all));
         allChip.setCheckable(true);
         allChip.setChecked(selectedCategoryId == 0);
-        allChip.setOnClickListener(
-                v -> {
-                    selectedCategoryId = 0;
-                    tasksPresenter.onCategorySelected(0);
-                });
+        allChip.setOnClickListener(v -> {
+            selectedCategoryId = 0;
+            tasksPresenter.onCategorySelected(0);
+        });
         binding.tasksCategoryChips.addView(allChip);
 
         for (TaskCategory cat : categories) {
@@ -249,20 +245,18 @@ public class TasksActivity extends BaseActivity implements TasksContract.view {
             chip.setText(cat.getName());
             chip.setCheckable(true);
             chip.setChecked(selectedCategoryId == cat.getId());
-            chip.setOnLongClickListener(
-                    v -> {
-                        showDeleteDialog(
-                                R.string.tasks_category_delete_confirm,
-                                cat.getName(),
-                                () -> tasksPresenter.deleteCategory(cat),
-                                null);
-                        return true;
-                    });
-            chip.setOnClickListener(
-                    v -> {
-                        selectedCategoryId = cat.getId();
-                        tasksPresenter.onCategorySelected(cat.getId());
-                    });
+            chip.setOnLongClickListener(v -> {
+                showDeleteDialog(
+                        R.string.tasks_category_delete_confirm,
+                        cat.getName(),
+                        () -> tasksPresenter.deleteCategory(cat),
+                        null);
+                return true;
+            });
+            chip.setOnClickListener(v -> {
+                selectedCategoryId = cat.getId();
+                tasksPresenter.onCategorySelected(cat.getId());
+            });
             binding.tasksCategoryChips.addView(chip);
         }
     }

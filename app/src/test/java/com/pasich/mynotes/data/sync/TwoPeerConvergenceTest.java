@@ -357,14 +357,12 @@ public class TwoPeerConvergenceTest {
          */
         private void retireConflictsSupersededBy(SyncRecord applied) {
             String key = key(applied);
-            conflicts.removeIf(
-                    row ->
-                            !row.resolved
-                                    && key.equals(
-                                            row.conflict.getType() + ":" + row.conflict.getId())
-                                    && !row.conflict
-                                            .getWinnerVersionId()
-                                            .equals(applied.getCanonicalPayloadHash()));
+            conflicts.removeIf(row ->
+                    !row.resolved
+                            && key.equals(row.conflict.getType() + ":" + row.conflict.getId())
+                            && !row.conflict
+                                    .getWinnerVersionId()
+                                    .equals(applied.getCanonicalPayloadHash()));
         }
 
         @Override
@@ -418,14 +416,12 @@ public class TwoPeerConvergenceTest {
             for (SyncMergeResult.Conflict conflict : incoming) {
                 String key = conflict.getType() + ":" + conflict.getId();
                 if (skipped.contains(key)) continue;
-                conflicts.removeIf(
-                        row ->
-                                !row.resolved
-                                        && key.equals(
-                                                row.conflict.getType() + ":" + row.conflict.getId())
-                                        && !row.conflict
-                                                .getWinnerVersionId()
-                                                .equals(conflict.getWinnerVersionId()));
+                conflicts.removeIf(row ->
+                        !row.resolved
+                                && key.equals(row.conflict.getType() + ":" + row.conflict.getId())
+                                && !row.conflict
+                                        .getWinnerVersionId()
+                                        .equals(conflict.getWinnerVersionId()));
                 boolean duplicate = false;
                 for (ConflictRow row : conflicts) {
                     if (row.conflict.getWinnerVersionId().equals(conflict.getWinnerVersionId())

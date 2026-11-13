@@ -66,13 +66,12 @@ public class OtherAppImportDialog extends BottomSheetDialogFragment {
                 binding.trashedNotesCount.setText(String.valueOf(result.getTrashedNotes().size()));
                 binding.tagsCount.setText(String.valueOf(result.getLabels().size()));
 
-                binding.importButton.setOnClickListener(
-                        v -> {
-                            if (callback != null) {
-                                callback.onImportConfirmed(result);
-                            }
-                            dismiss();
-                        });
+                binding.importButton.setOnClickListener(v -> {
+                    if (callback != null) {
+                        callback.onImportConfirmed(result);
+                    }
+                    dismiss();
+                });
             }
 
             binding.cancel.setOnClickListener(v -> dismiss());

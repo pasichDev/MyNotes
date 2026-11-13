@@ -342,25 +342,21 @@ public class SyncServiceTest {
         backend.readReleased = new java.util.concurrent.CountDownLatch(1);
         List<String> order = Collections.synchronizedList(new ArrayList<>());
         Thread syncing =
-                new Thread(
-                        () -> {
-                            new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
-                            order.add("sync finished");
-                        });
+                new Thread(() -> {
+                    new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+                    order.add("sync finished");
+                });
         syncing.start();
         assertThat(backend.readStarted.await(5, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
 
         java.util.concurrent.atomic.AtomicBoolean syncAppliedBeforeClear =
                 new java.util.concurrent.atomic.AtomicBoolean();
         Thread clearing =
-                new Thread(
-                        () ->
-                                SyncService.runWhileNoSyncRuns(
-                                        () -> {
-                                            syncAppliedBeforeClear.set(
-                                                    store.appliedSnapshot != null);
-                                            order.add("cleared");
-                                        }));
+                new Thread(() ->
+                        SyncService.runWhileNoSyncRuns(() -> {
+                            syncAppliedBeforeClear.set(store.appliedSnapshot != null);
+                            order.add("cleared");
+                        }));
         clearing.start();
         Thread.sleep(200L);
 

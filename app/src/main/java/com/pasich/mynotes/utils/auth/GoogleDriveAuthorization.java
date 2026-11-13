@@ -37,24 +37,23 @@ public final class GoogleDriveAuthorization {
                         .setRequestedScopes(Collections.singletonList(DRIVE_FILE))
                         .build();
         Task<AuthorizationResult> task = client.authorize(request);
-        task.addOnSuccessListener(
-                result -> {
-                    if (result.hasResolution()) {
-                        try {
-                            activity.startIntentSenderForResult(
-                                    result.getPendingIntent().getIntentSender(),
-                                    REQUEST_CODE,
-                                    null,
-                                    0,
-                                    0,
-                                    0);
-                        } catch (IntentSender.SendIntentException error) {
-                            finishWithError(error);
-                        }
-                    } else {
-                        finishWithToken(result);
-                    }
-                });
+        task.addOnSuccessListener(result -> {
+            if (result.hasResolution()) {
+                try {
+                    activity.startIntentSenderForResult(
+                            result.getPendingIntent().getIntentSender(),
+                            REQUEST_CODE,
+                            null,
+                            0,
+                            0,
+                            0);
+                } catch (IntentSender.SendIntentException error) {
+                    finishWithError(error);
+                }
+            } else {
+                finishWithToken(result);
+            }
+        });
         task.addOnFailureListener(this::finishWithError);
     }
 

@@ -410,53 +410,52 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     private void scrollToCursor() {
         if (!binding.valueNote.isFocused()) return;
 
-        binding.valueNote.post(
-                () -> {
-                    WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(binding.getRoot());
-                    if (insets == null || !insets.isVisible(WindowInsetsCompat.Type.ime())) {
-                        return;
-                    }
+        binding.valueNote.post(() -> {
+            WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(binding.getRoot());
+            if (insets == null || !insets.isVisible(WindowInsetsCompat.Type.ime())) {
+                return;
+            }
 
-                    Layout layout = binding.valueNote.getLayout();
-                    if (layout == null) {
-                        return;
-                    }
+            Layout layout = binding.valueNote.getLayout();
+            if (layout == null) {
+                return;
+            }
 
-                    int cursorPosition = binding.valueNote.getSelectionStart();
-                    int line = layout.getLineForOffset(cursorPosition);
+            int cursorPosition = binding.valueNote.getSelectionStart();
+            int line = layout.getLineForOffset(cursorPosition);
 
-                    if (cursorPosition == lastCursorPosition && line == lastCursorLine) {
-                        return;
-                    }
+            if (cursorPosition == lastCursorPosition && line == lastCursorLine) {
+                return;
+            }
 
-                    int lineTop = layout.getLineTop(line);
-                    int editTextTop = binding.valueNote.getTop();
-                    int absoluteLineTop = editTextTop + lineTop;
+            int lineTop = layout.getLineTop(line);
+            int editTextTop = binding.valueNote.getTop();
+            int absoluteLineTop = editTextTop + lineTop;
 
-                    int currentScrollY = binding.scrollView.getScrollY();
+            int currentScrollY = binding.scrollView.getScrollY();
 
-                    Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
-                    Insets systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-                    int visibleHeight =
-                            binding.getRoot().getHeight()
-                                    - imeInsets.bottom
-                                    - systemInsets.top
-                                    - binding.keyboardBar.getReservedHeight();
+            int visibleHeight =
+                    binding.getRoot().getHeight()
+                            - imeInsets.bottom
+                            - systemInsets.top
+                            - binding.keyboardBar.getReservedHeight();
 
-                    int lineHeight = layout.getLineBottom(line) - layout.getLineTop(line);
-                    int lineVisibleTop = absoluteLineTop - currentScrollY;
-                    int lineVisibleBottom = lineVisibleTop + lineHeight;
+            int lineHeight = layout.getLineBottom(line) - layout.getLineTop(line);
+            int lineVisibleTop = absoluteLineTop - currentScrollY;
+            int lineVisibleBottom = lineVisibleTop + lineHeight;
 
-                    float ratio = (float) lineVisibleBottom / (float) visibleHeight;
+            float ratio = (float) lineVisibleBottom / (float) visibleHeight;
 
-                    if (ratio > 0.9f) {
-                        int targetScrollY = absoluteLineTop - (int) (visibleHeight * 0.7f);
-                        binding.scrollView.smoothScrollTo(0, Math.max(0, targetScrollY));
-                    }
-                    lastCursorPosition = cursorPosition;
-                    lastCursorLine = line;
-                });
+            if (ratio > 0.9f) {
+                int targetScrollY = absoluteLineTop - (int) (visibleHeight * 0.7f);
+                binding.scrollView.smoothScrollTo(0, Math.max(0, targetScrollY));
+            }
+            lastCursorPosition = cursorPosition;
+            lastCursorLine = line;
+        });
     }
 
     /** Sets up a scroll listener for AppBar */
@@ -762,12 +761,11 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         binding.valueNote.setSaveEnabled(false);
 
         // Add a click handler for the input field - only for cursor movement processing
-        binding.valueNote.setOnClickListener(
-                v -> {
-                    if (binding.valueNote.isFocused() && scrollProgress < 95) {
-                        binding.valueNote.postDelayed(this::scrollToCursor, 50);
-                    }
-                });
+        binding.valueNote.setOnClickListener(v -> {
+            if (binding.valueNote.isFocused() && scrollProgress < 95) {
+                binding.valueNote.postDelayed(this::scrollToCursor, 50);
+            }
+        });
     }
 
     /**
@@ -929,10 +927,8 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
             String restoredTitle = pendingTitle;
             String restoredValue = pendingValue;
             binding.getRoot()
-                    .post(
-                            () ->
-                                    notePresenter.simpleNoteChange(
-                                            restoredTitle, restoredValue, false));
+                    .post(() ->
+                            notePresenter.simpleNoteChange(restoredTitle, restoredValue, false));
         }
 
         if (restoredAnchorOffset != EditorCursor.NONE) {

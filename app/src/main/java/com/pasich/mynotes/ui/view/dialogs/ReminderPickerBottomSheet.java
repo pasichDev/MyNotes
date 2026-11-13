@@ -133,32 +133,29 @@ public class ReminderPickerBottomSheet extends BottomSheetDialogFragment {
         intervalChips = view.findViewById(R.id.intervalChips);
         pastTimeError = view.findViewById(R.id.pastTimeError);
 
-        switchRepeatInterval.setOnCheckedChangeListener(
-                (btn, checked) -> {
-                    intervalChips.setVisibility(checked ? View.VISIBLE : View.GONE);
-                    if (!checked) {
-                        selectedIntervalMinutes = 0;
-                    } else {
-                        intervalChips.check(R.id.chipInterval10);
-                        selectedIntervalMinutes = 10;
-                    }
-                });
+        switchRepeatInterval.setOnCheckedChangeListener((btn, checked) -> {
+            intervalChips.setVisibility(checked ? View.VISIBLE : View.GONE);
+            if (!checked) {
+                selectedIntervalMinutes = 0;
+            } else {
+                intervalChips.check(R.id.chipInterval10);
+                selectedIntervalMinutes = 10;
+            }
+        });
 
-        repeatChips.setOnCheckedStateChangeListener(
-                (group, checkedIds) -> {
-                    if (!checkedIds.isEmpty() && checkedIds.get(0) != R.id.chipCustom) {
-                        lastPresetChipId = checkedIds.get(0);
-                    }
-                });
+        repeatChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (!checkedIds.isEmpty() && checkedIds.get(0) != R.id.chipCustom) {
+                lastPresetChipId = checkedIds.get(0);
+            }
+        });
         // A click rather than a check: tapping Custom again, already selected, edits the rule.
         chipCustom.setOnClickListener(v -> openCustomRepeat());
 
-        intervalChips.setOnCheckedStateChangeListener(
-                (group, checkedIds) -> {
-                    if (!checkedIds.isEmpty()) {
-                        selectedIntervalMinutes = intervalMinutesFromChipId(checkedIds.get(0));
-                    }
-                });
+        intervalChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (!checkedIds.isEmpty()) {
+                selectedIntervalMinutes = intervalMinutesFromChipId(checkedIds.get(0));
+            }
+        });
 
         disposables.add(
                 dataManager

@@ -212,11 +212,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteHolder> {
                     .setOnClickListener(v -> listener.onClick(getBindingAdapterPosition(), note));
 
             binding.getRoot()
-                    .setOnLongClickListener(
-                            v -> {
-                                listener.onLongClick(getBindingAdapterPosition(), note);
-                                return true;
-                            });
+                    .setOnLongClickListener(v -> {
+                        listener.onLongClick(getBindingAdapterPosition(), note);
+                        return true;
+                    });
 
             binding.getRoot().setTransitionName("note_" + note.getId());
         }

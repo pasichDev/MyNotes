@@ -121,23 +121,21 @@ public class TaskReminderPickerBottomSheet extends BottomSheetDialogFragment {
         view.findViewById(R.id.repeatChips).setVisibility(View.GONE);
 
         // Wire interval switch
-        switchRepeatInterval.setOnCheckedChangeListener(
-                (btn, checked) -> {
-                    intervalChips.setVisibility(checked ? View.VISIBLE : View.GONE);
-                    if (!checked) {
-                        selectedIntervalMinutes = 0;
-                    } else {
-                        intervalChips.check(R.id.chipInterval10);
-                        selectedIntervalMinutes = 10;
-                    }
-                });
+        switchRepeatInterval.setOnCheckedChangeListener((btn, checked) -> {
+            intervalChips.setVisibility(checked ? View.VISIBLE : View.GONE);
+            if (!checked) {
+                selectedIntervalMinutes = 0;
+            } else {
+                intervalChips.check(R.id.chipInterval10);
+                selectedIntervalMinutes = 10;
+            }
+        });
 
-        intervalChips.setOnCheckedStateChangeListener(
-                (group, checkedIds) -> {
-                    if (!checkedIds.isEmpty()) {
-                        selectedIntervalMinutes = intervalMinutesFromChipId(checkedIds.get(0));
-                    }
-                });
+        intervalChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (!checkedIds.isEmpty()) {
+                selectedIntervalMinutes = intervalMinutesFromChipId(checkedIds.get(0));
+            }
+        });
 
         // Pre-fill existing reminder
         if (selectedTime != null && selectedTime > System.currentTimeMillis()) {
@@ -205,44 +203,42 @@ public class TaskReminderPickerBottomSheet extends BottomSheetDialogFragment {
                         .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                         .setCalendarConstraints(constraints)
                         .build();
-        datePicker.addOnPositiveButtonClickListener(
-                dateMs -> {
-                    Calendar dateCal = Calendar.getInstance();
-                    dateCal.setTimeInMillis(dateMs);
-                    Calendar now = Calendar.getInstance();
-                    int defaultHour =
-                            (dateCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)
-                                            && dateCal.get(Calendar.YEAR) == now.get(Calendar.YEAR))
-                                    ? now.get(Calendar.HOUR_OF_DAY)
-                                    : 9;
-                    int defaultMinute =
-                            (defaultHour == now.get(Calendar.HOUR_OF_DAY))
-                                    ? now.get(Calendar.MINUTE) + 1
-                                    : 0;
-                    MaterialTimePicker timePicker =
-                            new MaterialTimePicker.Builder()
-                                    .setTimeFormat(TimeFormat.CLOCK_24H)
-                                    .setHour(defaultHour)
-                                    .setMinute(defaultMinute)
-                                    .build();
-                    timePicker.addOnPositiveButtonClickListener(
-                            v -> {
-                                dateCal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
-                                dateCal.set(Calendar.MINUTE, timePicker.getMinute());
-                                dateCal.set(Calendar.SECOND, 0);
-                                dateCal.set(Calendar.MILLISECOND, 0);
-                                if (dateCal.getTimeInMillis() <= System.currentTimeMillis()) {
-                                    Toast.makeText(
-                                                    requireContext(),
-                                                    R.string.reminder_past_time_error,
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
-                                    return;
-                                }
-                                applyPreset(dateCal.getTimeInMillis());
-                            });
-                    timePicker.show(getChildFragmentManager(), "timePicker");
-                });
+        datePicker.addOnPositiveButtonClickListener(dateMs -> {
+            Calendar dateCal = Calendar.getInstance();
+            dateCal.setTimeInMillis(dateMs);
+            Calendar now = Calendar.getInstance();
+            int defaultHour =
+                    (dateCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)
+                                    && dateCal.get(Calendar.YEAR) == now.get(Calendar.YEAR))
+                            ? now.get(Calendar.HOUR_OF_DAY)
+                            : 9;
+            int defaultMinute =
+                    (defaultHour == now.get(Calendar.HOUR_OF_DAY))
+                            ? now.get(Calendar.MINUTE) + 1
+                            : 0;
+            MaterialTimePicker timePicker =
+                    new MaterialTimePicker.Builder()
+                            .setTimeFormat(TimeFormat.CLOCK_24H)
+                            .setHour(defaultHour)
+                            .setMinute(defaultMinute)
+                            .build();
+            timePicker.addOnPositiveButtonClickListener(v -> {
+                dateCal.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
+                dateCal.set(Calendar.MINUTE, timePicker.getMinute());
+                dateCal.set(Calendar.SECOND, 0);
+                dateCal.set(Calendar.MILLISECOND, 0);
+                if (dateCal.getTimeInMillis() <= System.currentTimeMillis()) {
+                    Toast.makeText(
+                                    requireContext(),
+                                    R.string.reminder_past_time_error,
+                                    Toast.LENGTH_SHORT)
+                            .show();
+                    return;
+                }
+                applyPreset(dateCal.getTimeInMillis());
+            });
+            timePicker.show(getChildFragmentManager(), "timePicker");
+        });
         datePicker.show(getChildFragmentManager(), "datePicker");
     }
 

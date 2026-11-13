@@ -44,11 +44,10 @@ public class ChangelogActivity extends BaseActivity {
 
     @Override
     public void initListeners() {
-        binding.acknowledgeButton.setOnClickListener(
-                v -> {
-                    changelogManager.markChangelogRead();
-                    finish();
-                });
+        binding.acknowledgeButton.setOnClickListener(v -> {
+            changelogManager.markChangelogRead();
+            finish();
+        });
     }
 
     private void initActivity() {
@@ -77,17 +76,15 @@ public class ChangelogActivity extends BaseActivity {
 
         updateAcknowledgeButtonVisibility();
 
-        executor.execute(
-                () -> {
-                    Spanned markdown = markwon.toMarkdown(content);
+        executor.execute(() -> {
+            Spanned markdown = markwon.toMarkdown(content);
 
-                    runOnUiThread(
-                            () -> {
-                                if (!isFinishing()) {
-                                    markwon.setParsedMarkdown(binding.changelogText, markdown);
-                                }
-                            });
-                });
+            runOnUiThread(() -> {
+                if (!isFinishing()) {
+                    markwon.setParsedMarkdown(binding.changelogText, markdown);
+                }
+            });
+        });
     }
 
     @Override

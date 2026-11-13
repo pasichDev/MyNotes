@@ -236,52 +236,43 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
                         }
                     });
 
-            binding.settingsActivity.textSize.addOnChangeListener(
-                    (slider, value, fromUser) -> {
-                        if (fromUser) noteActivity.changeTextSizeOnline(Math.round(value));
-                    });
+            binding.settingsActivity.textSize.addOnChangeListener((slider, value, fromUser) -> {
+                if (fromUser) noteActivity.changeTextSizeOnline(Math.round(value));
+            });
 
-            binding.settingsActivity.textStyleItem.setOnClickListener(
-                    v -> {
-                        textStylePreferences.changeArgument();
-                        noteActivity.changeTextStyle();
-                    });
+            binding.settingsActivity.textStyleItem.setOnClickListener(v -> {
+                textStylePreferences.changeArgument();
+                noteActivity.changeTextStyle();
+            });
 
-            binding.editorSwitchRow.setOnClickListener(
-                    v -> {
-                        if (!isAdded() || noteActivity == null || mPresenter.getNote() == null)
-                            return;
-                        noteActivity.changeEditor(mPresenter.getNote().getId());
-                        dismiss();
-                    });
+            binding.editorSwitchRow.setOnClickListener(v -> {
+                if (!isAdded() || noteActivity == null || mPresenter.getNote() == null) return;
+                noteActivity.changeEditor(mPresenter.getNote().getId());
+                dismiss();
+            });
 
-            binding.quickShare.setOnClickListener(
-                    v -> {
-                        ShareOptionsDialog shareDialog =
-                                new ShareOptionsDialog(mPresenter.getNote());
-                        shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
-                        dismiss();
-                    });
+            binding.quickShare.setOnClickListener(v -> {
+                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
+                shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+                dismiss();
+            });
 
-            binding.quickCopy.setOnClickListener(
-                    v -> {
-                        if (mPresenter.getNote().isAttachments()) return;
-                        noteActivity.openCopyNote(mPresenter.getNote().getId());
-                        dismiss();
-                    });
+            binding.quickCopy.setOnClickListener(v -> {
+                if (mPresenter.getNote().isAttachments()) return;
+                noteActivity.openCopyNote(mPresenter.getNote().getId());
+                dismiss();
+            });
 
-            binding.quickTranslate.setOnClickListener(
-                    v -> {
-                        GoogleTranslateHelper.startTranslation(
-                                requireActivity(), mPresenter.getNote().getValue());
-                        dismiss();
-                    });
+            binding.quickTranslate.setOnClickListener(v -> {
+                GoogleTranslateHelper.startTranslation(
+                        requireActivity(), mPresenter.getNote().getValue());
+                dismiss();
+            });
 
-            binding.quickPin.setOnClickListener(
-                    v -> {
-                        mPresenter.togglePinNote();
-                        dismiss();
-                    });
+            binding.quickPin.setOnClickListener(v -> {
+                mPresenter.togglePinNote();
+                dismiss();
+            });
 
             if (mPresenter.getNote().getValue().isEmpty()) {
                 binding.quickShare.setVisibility(GONE);
@@ -290,45 +281,38 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
 
             // The sheet stays open, so Undo can be pressed several times; the rows follow the
             // history as it changes.
-            binding.moreUndo.setOnClickListener(
-                    v -> {
-                        if (noteActivity != null) noteActivity.undoLastEdit();
-                    });
-            binding.moreRedo.setOnClickListener(
-                    v -> {
-                        if (noteActivity != null) noteActivity.redoLastEdit();
-                    });
+            binding.moreUndo.setOnClickListener(v -> {
+                if (noteActivity != null) noteActivity.undoLastEdit();
+            });
+            binding.moreRedo.setOnClickListener(v -> {
+                if (noteActivity != null) noteActivity.redoLastEdit();
+            });
             if (noteActivity != null) noteActivity.setEditHistoryObserver(this::applyEditHistory);
             applyEditHistory();
 
         } else {
-            binding.actionPanelActivate.setOnClickListener(
-                    view -> {
-                        assert mainActivity != null;
-                        mainActivity.actionStartNote(mPresenter.getNote(), positionItem);
-                        dismiss();
-                    });
+            binding.actionPanelActivate.setOnClickListener(view -> {
+                assert mainActivity != null;
+                mainActivity.actionStartNote(mPresenter.getNote(), positionItem);
+                dismiss();
+            });
 
-            binding.share.setOnClickListener(
-                    v -> {
-                        ShareOptionsDialog shareDialog =
-                                new ShareOptionsDialog(mPresenter.getNote());
-                        shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
-                        dismiss();
-                    });
+            binding.share.setOnClickListener(v -> {
+                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
+                shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
+                dismiss();
+            });
 
-            binding.copyNote.setOnClickListener(
-                    v -> {
-                        if (mPresenter.getNote().isAttachments()) return;
-                        mPresenter.copyNoteMainActivity();
-                        dismiss();
-                    });
+            binding.copyNote.setOnClickListener(v -> {
+                if (mPresenter.getNote().isAttachments()) return;
+                mPresenter.copyNoteMainActivity();
+                dismiss();
+            });
 
-            binding.pinNote.setOnClickListener(
-                    v -> {
-                        mPresenter.togglePinNote();
-                        dismiss();
-                    });
+            binding.pinNote.setOnClickListener(v -> {
+                mPresenter.togglePinNote();
+                dismiss();
+            });
 
             if (mPresenter.getNote().getValue().isEmpty()) {
                 binding.share.setVisibility(GONE);
@@ -336,36 +320,33 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             }
         }
 
-        binding.setReminder.setOnClickListener(
-                v -> {
-                    if (mPresenter.getNote() == null) return;
-                    ReminderPickerBottomSheet.newInstance(mPresenter.getNote().getId())
-                            .show(getParentFragmentManager(), "ReminderPicker");
-                    dismiss();
-                });
+        binding.setReminder.setOnClickListener(v -> {
+            if (mPresenter.getNote() == null) return;
+            ReminderPickerBottomSheet.newInstance(mPresenter.getNote().getId())
+                    .show(getParentFragmentManager(), "ReminderPicker");
+            dismiss();
+        });
 
-        binding.versionHistory.setOnClickListener(
-                v -> {
-                    Note note = mPresenter.getNote();
-                    if (note == null) return;
-                    if (rootActivity == RootActivity.MainActivity) {
-                        if (mainActivity != null) mainActivity.openVersionHistory(note.getId());
-                    } else if (noteActivity != null) {
-                        noteActivity.openVersionHistory();
-                    }
-                    dismiss();
-                });
+        binding.versionHistory.setOnClickListener(v -> {
+            Note note = mPresenter.getNote();
+            if (note == null) return;
+            if (rootActivity == RootActivity.MainActivity) {
+                if (mainActivity != null) mainActivity.openVersionHistory(note.getId());
+            } else if (noteActivity != null) {
+                noteActivity.openVersionHistory();
+            }
+            dismiss();
+        });
 
-        binding.moveToTrash.setOnClickListener(
-                v -> {
-                    mPresenter.noteMoveToTrash();
-                    if (rootActivity == RootActivity.MainActivity) {
-                        mainActivity.callbackDeleteNote(mPresenter.getNote());
-                        dismiss();
-                    } else {
-                        noteActivity.closeActivityNotSaved();
-                    }
-                });
+        binding.moveToTrash.setOnClickListener(v -> {
+            mPresenter.noteMoveToTrash();
+            if (rootActivity == RootActivity.MainActivity) {
+                mainActivity.callbackDeleteNote(mPresenter.getNote());
+                dismiss();
+            } else {
+                noteActivity.closeActivityNotSaved();
+            }
+        });
     }
 
     /** Shows Undo and Redo while the note is edited and enables them by its history. */

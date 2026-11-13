@@ -136,10 +136,8 @@ public class InteractionSettingsFragment extends Fragment {
 
         binding.extendedEditor.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> themePreferencesCache.setExtendedEditor(isChecked));
-        binding.feedbackNewEditor.setOnClickListener(
-                v ->
-                        startActivity(
-                                new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK_EDITOR))));
+        binding.feedbackNewEditor.setOnClickListener(v ->
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(SEND_FEEDBACK_EDITOR))));
         binding.detailsExtended.setOnClickListener(v -> toggleDetails());
         binding.openModeCard.setOnClickListener(v -> chooseOpenMode());
         binding.openPositionCard.setOnClickListener(v -> chooseOpenPosition());

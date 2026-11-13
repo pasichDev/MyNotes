@@ -205,47 +205,43 @@ public class SyncMutationCoordinator {
     }
 
     public long insertTag(@NonNull Tag tag) {
-        return transactionExecutor.run(
-                () -> {
-                    long insertedId = tagsDao.addTag(tag);
-                    long localId = resolveLongId(tag.getId(), insertedId);
-                    tag.id = localId;
-                    touchRecord(SyncMetadata.RECORD_TYPE_TAG, localId, timeProvider.now());
-                    return insertedId;
-                });
+        return transactionExecutor.run(() -> {
+            long insertedId = tagsDao.addTag(tag);
+            long localId = resolveLongId(tag.getId(), insertedId);
+            tag.id = localId;
+            touchRecord(SyncMetadata.RECORD_TYPE_TAG, localId, timeProvider.now());
+            return insertedId;
+        });
     }
 
     public void insertTags(List<Tag> incoming) {
         if (incoming == null || incoming.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    List<Tag> tags = withoutTagsAlreadyPresent(incoming);
-                    if (tags.isEmpty()) return null;
-                    long timestamp =
-                            resolveBatchTimestamp(
-                                    SyncMetadata.RECORD_TYPE_TAG, extractTagIds(tags));
+        transactionExecutor.run(() -> {
+            List<Tag> tags = withoutTagsAlreadyPresent(incoming);
+            if (tags.isEmpty()) return null;
+            long timestamp =
+                    resolveBatchTimestamp(SyncMetadata.RECORD_TYPE_TAG, extractTagIds(tags));
 
-                    // Same REPLACE-insert collision as notes; see insertNotes.
-                    Set<Long> taken = new LinkedHashSet<>();
-                    for (Tag existing : tagsByIds(extractTagIds(tags))) {
-                        taken.add(existing.getId());
-                    }
-                    List<Tag> keepingId = new ArrayList<>();
-                    List<Tag> reassigned = new ArrayList<>();
-                    Set<Long> claimed = new LinkedHashSet<>();
-                    for (Tag tag : tags) {
-                        if (tag.getId() > 0
-                                && (taken.contains(tag.getId()) || !claimed.add(tag.getId()))) {
-                            tag.id = 0;
-                            reassigned.add(tag);
-                        } else {
-                            keepingId.add(tag);
-                        }
-                    }
-                    assignInsertedTagIds(keepingId, timestamp);
-                    assignInsertedTagIds(reassigned, timestamp);
-                    return null;
-                });
+            // Same REPLACE-insert collision as notes; see insertNotes.
+            Set<Long> taken = new LinkedHashSet<>();
+            for (Tag existing : tagsByIds(extractTagIds(tags))) {
+                taken.add(existing.getId());
+            }
+            List<Tag> keepingId = new ArrayList<>();
+            List<Tag> reassigned = new ArrayList<>();
+            Set<Long> claimed = new LinkedHashSet<>();
+            for (Tag tag : tags) {
+                if (tag.getId() > 0 && (taken.contains(tag.getId()) || !claimed.add(tag.getId()))) {
+                    tag.id = 0;
+                    reassigned.add(tag);
+                } else {
+                    keepingId.add(tag);
+                }
+            }
+            assignInsertedTagIds(keepingId, timestamp);
+            assignInsertedTagIds(reassigned, timestamp);
+            return null;
+        });
     }
 
     /** Inserts one group of tags and settles each tag's final id and metadata. */
@@ -261,76 +257,69 @@ public class SyncMutationCoordinator {
     }
 
     public void updateTag(@NonNull Tag tag) {
-        transactionExecutor.run(
-                () -> {
-                    tagsDao.updateTag(tag);
-                    touchRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            tagsDao.updateTag(tag);
+            touchRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     public void updateTags(List<Tag> tags) {
         if (tags == null || tags.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    tagsDao.updateTags(tags);
-                    for (Tag tag : tags) {
-                        touchRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
-                    }
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            tagsDao.updateTags(tags);
+            for (Tag tag : tags) {
+                touchRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
+            }
+            return null;
+        });
     }
 
     public void deleteTag(@NonNull Tag tag) {
-        transactionExecutor.run(
-                () -> {
-                    tagsDao.deleteTag(tag);
-                    markDeletedRecord(
-                            SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            tagsDao.deleteTag(tag);
+            markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     public void renameTag(@NonNull Tag tag, @NonNull String newName) {
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    List<Integer> affectedNoteIds = transactions.getNoteIdsForTag(tag.getNameTag());
-                    transactions.renameTagNotes(tag.getNameTag(), newName);
-                    transactions.updateTagName(newName, tag.getId());
-                    touchRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
-                    touchRecords(SyncMetadata.RECORD_TYPE_NOTE, affectedNoteIds, timestamp);
-                    tag.setNameTag(newName);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            List<Integer> affectedNoteIds = transactions.getNoteIdsForTag(tag.getNameTag());
+            transactions.renameTagNotes(tag.getNameTag(), newName);
+            transactions.updateTagName(newName, tag.getId());
+            touchRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
+            touchRecords(SyncMetadata.RECORD_TYPE_NOTE, affectedNoteIds, timestamp);
+            tag.setNameTag(newName);
+            return null;
+        });
     }
 
     public void deleteTagButKeepNotes(@NonNull Tag tag) {
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    List<Integer> affectedNoteIds = transactions.getNoteIdsForTag(tag.getNameTag());
-                    transactions.clearTagInNotes(tag.getNameTag());
-                    tagsDao.deleteTag(tag);
-                    touchRecords(SyncMetadata.RECORD_TYPE_NOTE, affectedNoteIds, timestamp);
-                    markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            List<Integer> affectedNoteIds = transactions.getNoteIdsForTag(tag.getNameTag());
+            transactions.clearTagInNotes(tag.getNameTag());
+            tagsDao.deleteTag(tag);
+            touchRecords(SyncMetadata.RECORD_TYPE_NOTE, affectedNoteIds, timestamp);
+            markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
+            return null;
+        });
     }
 
     public void deleteTagAndMoveNotesToTrash(@NonNull Tag tag) {
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    List<Integer> affectedNoteIds = transactions.getNoteIdsForTag(tag.getNameTag());
-                    transactions.moveNotesWithTagToTrash(tag.getNameTag());
-                    transactions.clearTagInNotes(tag.getNameTag());
-                    tagsDao.deleteTag(tag);
-                    touchRecords(SyncMetadata.RECORD_TYPE_NOTE, affectedNoteIds, timestamp);
-                    markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            List<Integer> affectedNoteIds = transactions.getNoteIdsForTag(tag.getNameTag());
+            transactions.moveNotesWithTagToTrash(tag.getNameTag());
+            transactions.clearTagInNotes(tag.getNameTag());
+            tagsDao.deleteTag(tag);
+            touchRecords(SyncMetadata.RECORD_TYPE_NOTE, affectedNoteIds, timestamp);
+            markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
+            return null;
+        });
     }
 
     public long insertNote(@NonNull Note note) {
@@ -339,47 +328,44 @@ public class SyncMutationCoordinator {
 
     public void insertNotes(List<Note> incoming) {
         if (incoming == null || incoming.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    // One query for every incoming id rather than one per note per pass: a
-                    // large restore ran four point lookups per note inside the transaction and
-                    // sat on the restore dialog for tens of seconds doing nothing else.
-                    Map<Integer, Note> existingById = notesByIds(extractNoteIds(incoming));
-                    List<Note> notes = withoutNotesAlreadyPresent(incoming, existingById);
-                    adoptAttachmentsOfNotesAlreadyPresent(incoming, notes);
-                    if (notes.isEmpty()) return null;
-                    placeUnorderedNotesOnTop(notes);
-                    long timestamp =
-                            resolveBatchTimestamp(
-                                    SyncMetadata.RECORD_TYPE_NOTE, extractNoteIds(notes));
+        transactionExecutor.run(() -> {
+            // One query for every incoming id rather than one per note per pass: a
+            // large restore ran four point lookups per note inside the transaction and
+            // sat on the restore dialog for tens of seconds doing nothing else.
+            Map<Integer, Note> existingById = notesByIds(extractNoteIds(incoming));
+            List<Note> notes = withoutNotesAlreadyPresent(incoming, existingById);
+            adoptAttachmentsOfNotesAlreadyPresent(incoming, notes);
+            if (notes.isEmpty()) return null;
+            placeUnorderedNotesOnTop(notes);
+            long timestamp =
+                    resolveBatchTimestamp(SyncMetadata.RECORD_TYPE_NOTE, extractNoteIds(notes));
 
-                    // Split by whether the row id is still free. Inserting the ones that keep
-                    // their id first leaves the autoincrement counter past all of them, which is
-                    // what stops a reassigned note being handed an id a later note in the same
-                    // batch is about to claim: addNotes is a REPLACE insert, so that collision
-                    // silently destroyed one of the two restored notes. An id claimed twice
-                    // within the batch itself is the same collision: the second note would
-                    // REPLACE the first, so only the first may keep it.
-                    List<Note> keepingId = new ArrayList<>();
-                    List<Note> reassigned = new ArrayList<>();
-                    Map<Note, Integer> previousIds = new java.util.IdentityHashMap<>();
-                    Set<Integer> claimed = new LinkedHashSet<>();
-                    for (Note note : notes) {
-                        previousIds.put(note, note.getId());
-                        if (note.getId() > 0
-                                && (existingById.containsKey(note.getId())
-                                        || !claimed.add(note.getId()))) {
-                            note.setId(0);
-                            reassigned.add(note);
-                        } else {
-                            keepingId.add(note);
-                        }
-                    }
+            // Split by whether the row id is still free. Inserting the ones that keep
+            // their id first leaves the autoincrement counter past all of them, which is
+            // what stops a reassigned note being handed an id a later note in the same
+            // batch is about to claim: addNotes is a REPLACE insert, so that collision
+            // silently destroyed one of the two restored notes. An id claimed twice
+            // within the batch itself is the same collision: the second note would
+            // REPLACE the first, so only the first may keep it.
+            List<Note> keepingId = new ArrayList<>();
+            List<Note> reassigned = new ArrayList<>();
+            Map<Note, Integer> previousIds = new java.util.IdentityHashMap<>();
+            Set<Integer> claimed = new LinkedHashSet<>();
+            for (Note note : notes) {
+                previousIds.put(note, note.getId());
+                if (note.getId() > 0
+                        && (existingById.containsKey(note.getId()) || !claimed.add(note.getId()))) {
+                    note.setId(0);
+                    reassigned.add(note);
+                } else {
+                    keepingId.add(note);
+                }
+            }
 
-                    assignInsertedNoteIds(keepingId, timestamp, previousIds);
-                    assignInsertedNoteIds(reassigned, timestamp, previousIds);
-                    return null;
-                });
+            assignInsertedNoteIds(keepingId, timestamp, previousIds);
+            assignInsertedNoteIds(reassigned, timestamp, previousIds);
+            return null;
+        });
     }
 
     /**
@@ -442,21 +428,20 @@ public class SyncMutationCoordinator {
      * history when that is due (see {@link NoteHistory#recordBeforeEdit}).
      */
     public void updateNoteContent(@NonNull Note note) {
-        transactionExecutor.run(
-                () -> {
-                    noteHistory.recordBeforeEdit(
-                            noteDao.getNoteSync(note.getId()), note, timeProvider.now());
-                    noteDao.updateNoteContent(
-                            note.getId(),
-                            note.getTitle(),
-                            note.getValue(),
-                            note.getValueJson(),
-                            note.getDate(),
-                            note.getTag(),
-                            note.getAttachments());
-                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            noteHistory.recordBeforeEdit(
+                    noteDao.getNoteSync(note.getId()), note, timeProvider.now());
+            noteDao.updateNoteContent(
+                    note.getId(),
+                    note.getTitle(),
+                    note.getValue(),
+                    note.getValueJson(),
+                    note.getDate(),
+                    note.getTag(),
+                    note.getAttachments());
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     /**
@@ -469,33 +454,31 @@ public class SyncMutationCoordinator {
      * @return false when the note or the version no longer exists.
      */
     public boolean restoreNoteVersion(int noteId, long versionId) {
-        return transactionExecutor.run(
-                () -> {
-                    NoteVersionEntity version = noteHistory.get(versionId);
-                    Note stored = noteDao.getNoteSync(noteId);
-                    if (version == null || stored == null || version.noteLocalId != noteId) {
-                        return false;
-                    }
-                    Note restored = new Note();
-                    restored.copyFrom(stored);
-                    restored.setId(stored.getId());
-                    NoteVersionRestore.plan(stored, version).applyTo(restored);
-                    if (NoteHistory.sameText(stored, restored)) return true;
+        return transactionExecutor.run(() -> {
+            NoteVersionEntity version = noteHistory.get(versionId);
+            Note stored = noteDao.getNoteSync(noteId);
+            if (version == null || stored == null || version.noteLocalId != noteId) {
+                return false;
+            }
+            Note restored = new Note();
+            restored.copyFrom(stored);
+            restored.setId(stored.getId());
+            NoteVersionRestore.plan(stored, version).applyTo(restored);
+            if (NoteHistory.sameText(stored, restored)) return true;
 
-                    long now = timeProvider.now();
-                    noteHistory.recordBeforeOverwrite(
-                            stored, restored, NoteVersionReason.PRE_RESTORE, now);
-                    noteDao.updateNoteContent(
-                            noteId,
-                            restored.getTitle(),
-                            restored.getValue(),
-                            restored.getValueJson(),
-                            now,
-                            restored.getTag(),
-                            restored.getAttachments());
-                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, now);
-                    return true;
-                });
+            long now = timeProvider.now();
+            noteHistory.recordBeforeOverwrite(stored, restored, NoteVersionReason.PRE_RESTORE, now);
+            noteDao.updateNoteContent(
+                    noteId,
+                    restored.getTitle(),
+                    restored.getValue(),
+                    restored.getValueJson(),
+                    now,
+                    restored.getTag(),
+                    restored.getAttachments());
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, now);
+            return true;
+        });
     }
 
     /** Removes history left without its note; returns how many versions went. */
@@ -504,30 +487,27 @@ public class SyncMutationCoordinator {
     }
 
     public void deleteNote(@NonNull Note note) {
-        transactionExecutor.run(
-                () -> {
-                    noteDao.deleteNote(note);
-                    noteHistory.forget(Collections.singletonList(note.getId()));
-                    markDeletedRecord(
-                            SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            noteDao.deleteNote(note);
+            noteHistory.forget(Collections.singletonList(note.getId()));
+            markDeletedRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     public void deleteNotes(List<Note> notes) {
         if (notes == null || notes.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    List<Integer> deletedIds = new ArrayList<>(notes.size());
-                    for (Note note : notes) {
-                        noteDao.deleteNote(note);
-                        deletedIds.add(note.getId());
-                        markDeletedRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timestamp);
-                    }
-                    noteHistory.forget(deletedIds);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            List<Integer> deletedIds = new ArrayList<>(notes.size());
+            for (Note note : notes) {
+                noteDao.deleteNote(note);
+                deletedIds.add(note.getId());
+                markDeletedRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timestamp);
+            }
+            noteHistory.forget(deletedIds);
+            return null;
+        });
     }
 
     public void moveNoteToTrash(int noteId) {
@@ -536,13 +516,12 @@ public class SyncMutationCoordinator {
 
     public void moveNotesToTrash(List<Integer> noteIds) {
         if (noteIds == null || noteIds.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    noteDao.moveNotesToTrash(noteIds);
-                    touchRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            noteDao.moveNotesToTrash(noteIds);
+            touchRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
+            return null;
+        });
     }
 
     public void restoreNoteFromTrash(int noteId) {
@@ -551,13 +530,12 @@ public class SyncMutationCoordinator {
 
     public void restoreNotesFromTrash(List<Integer> noteIds) {
         if (noteIds == null || noteIds.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    noteDao.restoreNotesFromTrash(noteIds);
-                    touchRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            noteDao.restoreNotesFromTrash(noteIds);
+            touchRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
+            return null;
+        });
     }
 
     /**
@@ -566,204 +544,177 @@ public class SyncMutationCoordinator {
      * @return the ids of the deleted notes.
      */
     public List<Integer> deleteAllTrashNotes() {
-        return transactionExecutor.run(
-                () -> {
-                    List<Integer> trashNoteIds = noteDao.getTrashNoteIdsSync();
-                    if (trashNoteIds.isEmpty()) return Collections.<Integer>emptyList();
-                    long timestamp = timeProvider.now();
-                    noteDao.deleteAllTrashNotes();
-                    noteHistory.forget(trashNoteIds);
-                    markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, trashNoteIds, timestamp);
-                    return trashNoteIds;
-                });
+        return transactionExecutor.run(() -> {
+            List<Integer> trashNoteIds = noteDao.getTrashNoteIdsSync();
+            if (trashNoteIds.isEmpty()) return Collections.<Integer>emptyList();
+            long timestamp = timeProvider.now();
+            noteDao.deleteAllTrashNotes();
+            noteHistory.forget(trashNoteIds);
+            markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, trashNoteIds, timestamp);
+            return trashNoteIds;
+        });
     }
 
     public void setTagForNotes(@NonNull String tag, List<Integer> noteIds) {
         if (noteIds == null || noteIds.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    noteDao.setTagForNotes(tag, noteIds);
-                    touchRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            noteDao.setTagForNotes(tag, noteIds);
+            touchRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
+            return null;
+        });
     }
 
     public void setTagNote(@NonNull String tag, int noteId) {
-        transactionExecutor.run(
-                () -> {
-                    noteDao.setTagNote(tag, noteId);
-                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            noteDao.setTagNote(tag, noteId);
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
+            return null;
+        });
     }
 
     public void restoreNotesAndFixTags(List<Integer> noteIds) {
         if (noteIds == null || noteIds.isEmpty()) return;
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    Set<Integer> affectedNoteIds =
-                            new LinkedHashSet<>(transactions.getNoteIdsWithInvalidTags());
-                    affectedNoteIds.addAll(noteIds);
-                    transactions.clearInvalidTags();
-                    transactions.restoreNotesInternal(noteIds);
-                    touchRecords(
-                            SyncMetadata.RECORD_TYPE_NOTE,
-                            new ArrayList<>(affectedNoteIds),
-                            timestamp);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            Set<Integer> affectedNoteIds =
+                    new LinkedHashSet<>(transactions.getNoteIdsWithInvalidTags());
+            affectedNoteIds.addAll(noteIds);
+            transactions.clearInvalidTags();
+            transactions.restoreNotesInternal(noteIds);
+            touchRecords(
+                    SyncMetadata.RECORD_TYPE_NOTE, new ArrayList<>(affectedNoteIds), timestamp);
+            return null;
+        });
     }
 
     public void clearReminder(int noteId) {
-        transactionExecutor.run(
-                () -> {
-                    noteDao.clearReminderSync(noteId);
-                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            noteDao.clearReminderSync(noteId);
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
+            return null;
+        });
     }
 
     public void updateNoteReminder(int noteId, long reminderTime, @NonNull String repeat) {
-        transactionExecutor.run(
-                () -> {
-                    noteDao.updateReminderSync(noteId, reminderTime, repeat);
-                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            noteDao.updateReminderSync(noteId, reminderTime, repeat);
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
+            return null;
+        });
     }
 
     public void updateNoteReminderFull(
             int noteId, long reminderTime, @NonNull String repeat, int intervalMinutes) {
-        transactionExecutor.run(
-                () -> {
-                    noteDao.updateReminderFullSync(noteId, reminderTime, repeat, intervalMinutes);
-                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            noteDao.updateReminderFullSync(noteId, reminderTime, repeat, intervalMinutes);
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
+            return null;
+        });
     }
 
     public void setPinNote(int noteId, boolean pinned) {
-        transactionExecutor.run(
-                () -> {
-                    noteDao.setPinNoteSync(noteId, pinned);
-                    touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            noteDao.setPinNoteSync(noteId, pinned);
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, noteId, timeProvider.now());
+            return null;
+        });
     }
 
     public long insertTask(@NonNull Task task) {
-        return transactionExecutor.run(
-                () -> {
-                    long insertedId = taskDao.insertTask(task);
-                    int localId = resolveIntId(task.getId(), insertedId);
-                    task.setId(localId);
-                    touchRecord(SyncMetadata.RECORD_TYPE_TASK, localId, timeProvider.now());
-                    return insertedId;
-                });
+        return transactionExecutor.run(() -> {
+            long insertedId = taskDao.insertTask(task);
+            int localId = resolveIntId(task.getId(), insertedId);
+            task.setId(localId);
+            touchRecord(SyncMetadata.RECORD_TYPE_TASK, localId, timeProvider.now());
+            return insertedId;
+        });
     }
 
     public void updateTask(@NonNull Task task) {
-        transactionExecutor.run(
-                () -> {
-                    taskDao.updateTask(task);
-                    touchRecord(SyncMetadata.RECORD_TYPE_TASK, task.getId(), timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskDao.updateTask(task);
+            touchRecord(SyncMetadata.RECORD_TYPE_TASK, task.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     public void deleteTask(@NonNull Task task) {
-        transactionExecutor.run(
-                () -> {
-                    taskDao.deleteTask(task);
-                    markDeletedRecord(
-                            SyncMetadata.RECORD_TYPE_TASK, task.getId(), timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskDao.deleteTask(task);
+            markDeletedRecord(SyncMetadata.RECORD_TYPE_TASK, task.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     public void setTaskDone(int taskId, boolean isDone) {
-        transactionExecutor.run(
-                () -> {
-                    taskDao.setTaskDone(taskId, isDone ? 1 : 0);
-                    touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskDao.setTaskDone(taskId, isDone ? 1 : 0);
+            touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
+            return null;
+        });
     }
 
     public void clearCompletedTasks() {
-        transactionExecutor.run(
-                () -> {
-                    List<Integer> completedTaskIds = taskDao.getCompletedTaskIdsSync();
-                    if (completedTaskIds.isEmpty()) return null;
-                    long timestamp = timeProvider.now();
-                    taskDao.clearCompletedTasks();
-                    markDeletedRecords(SyncMetadata.RECORD_TYPE_TASK, completedTaskIds, timestamp);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            List<Integer> completedTaskIds = taskDao.getCompletedTaskIdsSync();
+            if (completedTaskIds.isEmpty()) return null;
+            long timestamp = timeProvider.now();
+            taskDao.clearCompletedTasks();
+            markDeletedRecords(SyncMetadata.RECORD_TYPE_TASK, completedTaskIds, timestamp);
+            return null;
+        });
     }
 
     public void setTaskReminder(int taskId, long time) {
-        transactionExecutor.run(
-                () -> {
-                    taskDao.setTaskReminder(taskId, time);
-                    touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskDao.setTaskReminder(taskId, time);
+            touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
+            return null;
+        });
     }
 
     public void setTaskReminderFull(int taskId, long time, int intervalMinutes) {
-        transactionExecutor.run(
-                () -> {
-                    taskDao.setTaskReminderFullSync(taskId, time, intervalMinutes);
-                    touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskDao.setTaskReminderFullSync(taskId, time, intervalMinutes);
+            touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
+            return null;
+        });
     }
 
     public void clearTaskReminder(int taskId) {
-        transactionExecutor.run(
-                () -> {
-                    taskDao.clearTaskReminder(taskId);
-                    touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskDao.clearTaskReminder(taskId);
+            touchRecord(SyncMetadata.RECORD_TYPE_TASK, taskId, timeProvider.now());
+            return null;
+        });
     }
 
     public long insertCategory(@NonNull TaskCategory category) {
-        return transactionExecutor.run(
-                () -> {
-                    long insertedId = taskCategoryDao.insertCategory(category);
-                    int localId = resolveIntId(category.getId(), insertedId);
-                    category.setId(localId);
-                    touchRecord(SyncMetadata.RECORD_TYPE_CATEGORY, localId, timeProvider.now());
-                    return insertedId;
-                });
+        return transactionExecutor.run(() -> {
+            long insertedId = taskCategoryDao.insertCategory(category);
+            int localId = resolveIntId(category.getId(), insertedId);
+            category.setId(localId);
+            touchRecord(SyncMetadata.RECORD_TYPE_CATEGORY, localId, timeProvider.now());
+            return insertedId;
+        });
     }
 
     public void updateCategory(@NonNull TaskCategory category) {
-        transactionExecutor.run(
-                () -> {
-                    taskCategoryDao.updateCategory(category);
-                    touchRecord(
-                            SyncMetadata.RECORD_TYPE_CATEGORY,
-                            category.getId(),
-                            timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskCategoryDao.updateCategory(category);
+            touchRecord(SyncMetadata.RECORD_TYPE_CATEGORY, category.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     public void deleteCategory(@NonNull TaskCategory category) {
-        transactionExecutor.run(
-                () -> {
-                    taskCategoryDao.deleteCategory(category);
-                    markDeletedRecord(
-                            SyncMetadata.RECORD_TYPE_CATEGORY,
-                            category.getId(),
-                            timeProvider.now());
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            taskCategoryDao.deleteCategory(category);
+            markDeletedRecord(
+                    SyncMetadata.RECORD_TYPE_CATEGORY, category.getId(), timeProvider.now());
+            return null;
+        });
     }
 
     /**
@@ -772,36 +723,35 @@ public class SyncMutationCoordinator {
      * restoring the records from the remote copy. Attachment files and alarms are the caller's.
      */
     public void clearAllUserData() {
-        transactionExecutor.run(
-                () -> {
-                    long timestamp = timeProvider.now();
-                    List<Integer> noteIds = noteDao.getAllNoteIdsSync();
-                    noteDao.deleteAllNotes();
-                    noteHistory.forgetAll();
-                    markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
+        transactionExecutor.run(() -> {
+            long timestamp = timeProvider.now();
+            List<Integer> noteIds = noteDao.getAllNoteIdsSync();
+            noteDao.deleteAllNotes();
+            noteHistory.forgetAll();
+            markDeletedRecords(SyncMetadata.RECORD_TYPE_NOTE, noteIds, timestamp);
 
-                    List<Integer> taskIds = taskDao.getAllTaskIdsSync();
-                    taskDao.deleteAllTasks();
-                    markDeletedRecords(SyncMetadata.RECORD_TYPE_TASK, taskIds, timestamp);
+            List<Integer> taskIds = taskDao.getAllTaskIdsSync();
+            taskDao.deleteAllTasks();
+            markDeletedRecords(SyncMetadata.RECORD_TYPE_TASK, taskIds, timestamp);
 
-                    List<Tag> tags = tagsDao.getUserTagsSync();
-                    tagsDao.deleteUserTags();
-                    if (tags != null) {
-                        for (Tag tag : tags) {
-                            markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
-                        }
-                    }
+            List<Tag> tags = tagsDao.getUserTagsSync();
+            tagsDao.deleteUserTags();
+            if (tags != null) {
+                for (Tag tag : tags) {
+                    markDeletedRecord(SyncMetadata.RECORD_TYPE_TAG, tag.getId(), timestamp);
+                }
+            }
 
-                    List<TaskCategory> categories = taskCategoryDao.getCategoriesSync();
-                    taskCategoryDao.deleteAllCategories();
-                    if (categories != null) {
-                        for (TaskCategory category : categories) {
-                            markDeletedRecord(
-                                    SyncMetadata.RECORD_TYPE_CATEGORY, category.getId(), timestamp);
-                        }
-                    }
-                    return null;
-                });
+            List<TaskCategory> categories = taskCategoryDao.getCategoriesSync();
+            taskCategoryDao.deleteAllCategories();
+            if (categories != null) {
+                for (TaskCategory category : categories) {
+                    markDeletedRecord(
+                            SyncMetadata.RECORD_TYPE_CATEGORY, category.getId(), timestamp);
+                }
+            }
+            return null;
+        });
     }
 
     /**
@@ -815,11 +765,10 @@ public class SyncMutationCoordinator {
             if (note.getCustomPosition() == 0L) unordered.add(note);
         }
         if (unordered.isEmpty()) return;
-        unordered.sort(
-                (a, b) -> {
-                    int byDate = Long.compare(a.getDate(), b.getDate());
-                    return byDate != 0 ? byDate : Integer.compare(a.getId(), b.getId());
-                });
+        unordered.sort((a, b) -> {
+            int byDate = Long.compare(a.getDate(), b.getDate());
+            return byDate != 0 ? byDate : Integer.compare(a.getId(), b.getId());
+        });
         long highest = noteDao.getHighestCustomPositionSync();
         for (Note note : notes) highest = Math.max(highest, note.getCustomPosition());
         for (Note note : unordered) {
@@ -841,17 +790,16 @@ public class SyncMutationCoordinator {
             int noteId,
             @androidx.annotation.Nullable Integer upperId,
             @androidx.annotation.Nullable Integer lowerId) {
-        transactionExecutor.run(
-                () -> {
-                    if (noteDao.getCustomPositionSync(noteId) == null) return null;
-                    Long position = positionBetween(upperId, lowerId);
-                    if (position == null) {
-                        renumberCustomOrder();
-                        position = positionBetween(upperId, lowerId);
-                    }
-                    if (position != null) noteDao.setCustomPositionSync(noteId, position);
-                    return null;
-                });
+        transactionExecutor.run(() -> {
+            if (noteDao.getCustomPositionSync(noteId) == null) return null;
+            Long position = positionBetween(upperId, lowerId);
+            if (position == null) {
+                renumberCustomOrder();
+                position = positionBetween(upperId, lowerId);
+            }
+            if (position != null) noteDao.setCustomPositionSync(noteId, position);
+            return null;
+        });
     }
 
     @androidx.annotation.Nullable
@@ -866,11 +814,10 @@ public class SyncMutationCoordinator {
     /** Spreads every note {@link CustomOrder#STEP} apart again, keeping their order. */
     private void renumberCustomOrder() {
         List<Note> all = new ArrayList<>(noteDao.getAllNotesSync());
-        all.sort(
-                (a, b) -> {
-                    int byPosition = Long.compare(b.getCustomPosition(), a.getCustomPosition());
-                    return byPosition != 0 ? byPosition : Integer.compare(b.getId(), a.getId());
-                });
+        all.sort((a, b) -> {
+            int byPosition = Long.compare(b.getCustomPosition(), a.getCustomPosition());
+            return byPosition != 0 ? byPosition : Integer.compare(b.getId(), a.getId());
+        });
         List<Long> positions = CustomOrder.renumbered(all.size());
         for (int i = 0; i < all.size(); i++) {
             if (all.get(i).getCustomPosition() != positions.get(i)) {

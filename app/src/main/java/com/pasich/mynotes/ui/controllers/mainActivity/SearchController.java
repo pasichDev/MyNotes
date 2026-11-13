@@ -55,18 +55,17 @@ public class SearchController {
     }
 
     private void setupSearchBehavior() {
-        binding.searchView.addTransitionListener(
-                (searchView, oldState, newState) -> {
-                    if (newState == SearchView.TransitionState.SHOWING) {
-                        listener.onSearchOpen();
-                        ensureFullScreen();
-                    }
+        binding.searchView.addTransitionListener((searchView, oldState, newState) -> {
+            if (newState == SearchView.TransitionState.SHOWING) {
+                listener.onSearchOpen();
+                ensureFullScreen();
+            }
 
-                    if (newState == SearchView.TransitionState.HIDDEN) {
-                        listener.onSearchClose();
-                        clearSearch();
-                    }
-                });
+            if (newState == SearchView.TransitionState.HIDDEN) {
+                listener.onSearchClose();
+                clearSearch();
+            }
+        });
 
         binding.actionSearch.setOnClickListener(v -> binding.searchView.show());
     }
@@ -136,15 +135,14 @@ public class SearchController {
             binding.searchTagChips.addView(chip);
         }
 
-        binding.searchTagChips.setOnCheckedStateChangeListener(
-                (group, checkedIds) -> {
-                    if (checkedIds.isEmpty()) return;
-                    View checked = group.findViewById(checkedIds.get(0));
-                    if (checked != null) {
-                        Object tag = checked.getTag();
-                        listener.onTagFilterChanged(tag instanceof String ? (String) tag : null);
-                    }
-                });
+        binding.searchTagChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) return;
+            View checked = group.findViewById(checkedIds.get(0));
+            if (checked != null) {
+                Object tag = checked.getTag();
+                listener.onTagFilterChanged(tag instanceof String ? (String) tag : null);
+            }
+        });
 
         binding.searchTagsScroll.setVisibility(View.VISIBLE);
     }

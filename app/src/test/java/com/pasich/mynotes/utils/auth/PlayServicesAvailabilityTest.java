@@ -34,21 +34,19 @@ public class PlayServicesAvailabilityTest {
         // A dead package manager throws from a binder call. Sync hiding itself is recoverable;
         // taking the backup screen down with it is not.
         assertThat(
-                        PlayServicesAvailability.isAvailable(
-                                packageName -> {
-                                    throw new IllegalStateException("package manager is dead");
-                                }))
+                        PlayServicesAvailability.isAvailable(packageName -> {
+                            throw new IllegalStateException("package manager is dead");
+                        }))
                 .isFalse();
     }
 
     @Test
     public void asksAboutThePlayServicesPackage() {
         String[] asked = new String[1];
-        PlayServicesAvailability.isAvailable(
-                packageName -> {
-                    asked[0] = packageName;
-                    return Boolean.TRUE;
-                });
+        PlayServicesAvailability.isAvailable(packageName -> {
+            asked[0] = packageName;
+            return Boolean.TRUE;
+        });
 
         // The manifest declares this exact package under <queries>; a mismatch would make the
         // lookup report "absent" on every API 30+ device.

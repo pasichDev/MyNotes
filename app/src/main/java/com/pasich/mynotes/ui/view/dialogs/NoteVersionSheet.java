@@ -159,12 +159,11 @@ public class NoteVersionSheet extends BaseDialogBottomSheets {
     @Override
     public void initListeners() {
         binding.versionSheetClose.setOnClickListener(v -> dismiss());
-        binding.versionSheetRestore.setOnClickListener(
-                v -> {
-                    Host target = host;
-                    dismiss();
-                    if (target != null) target.onRestoreRequested(versionId);
-                });
+        binding.versionSheetRestore.setOnClickListener(v -> {
+            Host target = host;
+            dismiss();
+            if (target != null) target.onRestoreRequested(versionId);
+        });
     }
 
     @Override

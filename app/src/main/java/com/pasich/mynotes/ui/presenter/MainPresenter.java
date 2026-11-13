@@ -114,10 +114,8 @@ public class MainPresenter extends BasePresenter<MainContract.view>
                 getDataManager()
                         .getTags()
                         .toObservable()
-                        .map(
-                                tagList ->
-                                        TagsSorter.sortTags(
-                                                tagList, getDataManager().getSortParamTags()));
+                        .map(tagList ->
+                                TagsSorter.sortTags(tagList, getDataManager().getSortParamTags()));
 
         notesStream = getDataManager().getNotes().toObservable();
     }
@@ -344,16 +342,15 @@ public class MainPresenter extends BasePresenter<MainContract.view>
                 .add(
                         tagsStream
                                 .take(1)
-                                .map(
-                                        tags -> {
-                                            List<Tag> filtered = new ArrayList<>();
-                                            for (Tag t : tags) {
-                                                if (!SystemTagsManager.isSystemTag(t)) {
-                                                    filtered.add(t);
-                                                }
-                                            }
-                                            return filtered;
-                                        })
+                                .map(tags -> {
+                                    List<Tag> filtered = new ArrayList<>();
+                                    for (Tag t : tags) {
+                                        if (!SystemTagsManager.isSystemTag(t)) {
+                                            filtered.add(t);
+                                        }
+                                    }
+                                    return filtered;
+                                })
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(
                                         tags -> {

@@ -375,9 +375,9 @@ public abstract class AppDatabase extends RoomDatabase {
                     db.execSQL("ALTER TABLE notes ADD COLUMN isTrash INTEGER NOT NULL DEFAULT 0");
                     db.execSQL(
                             """
-                        INSERT INTO notes (title, value, date, tag, valueJson, attachments, hasRichContent, isTrash)
-                        SELECT title, value, date, '', '', '', 0, 1 FROM trash
-                    """);
+                                INSERT INTO notes (title, value, date, tag, valueJson, attachments, hasRichContent, isTrash)
+                                SELECT title, value, date, '', '', '', 0, 1 FROM trash
+                            """);
                     db.execSQL("DROP TABLE IF EXISTS trash");
                 }
             };

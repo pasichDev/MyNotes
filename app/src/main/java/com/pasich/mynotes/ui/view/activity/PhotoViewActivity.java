@@ -104,23 +104,22 @@ public class PhotoViewActivity extends BaseActivity {
     }
 
     private void loadImage(File file) {
-        executor.execute(
-                () -> {
-                    try {
-                        Bitmap bmp = SafeImageLoader.load(this, file, 1080, 1920);
+        executor.execute(() -> {
+            try {
+                Bitmap bmp = SafeImageLoader.load(this, file, 1080, 1920);
 
-                        if (bmp == null) {
-                            runOnUiThread(this::errorViewImage);
-                            return;
-                        }
+                if (bmp == null) {
+                    runOnUiThread(this::errorViewImage);
+                    return;
+                }
 
-                        runOnUiThread(() -> binding.photoView.setImageBitmap(bmp));
+                runOnUiThread(() -> binding.photoView.setImageBitmap(bmp));
 
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error loading bitmap", ex);
-                        runOnUiThread(this::errorViewImage);
-                    }
-                });
+            } catch (Exception ex) {
+                Log.e(TAG, "Error loading bitmap", ex);
+                runOnUiThread(this::errorViewImage);
+            }
+        });
     }
 
     private void errorViewImage() {

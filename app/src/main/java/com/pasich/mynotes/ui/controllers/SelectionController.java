@@ -34,22 +34,18 @@ public class SelectionController {
 
     private void initActions() {
         panel.actionClose.setOnClickListener(v -> clearSelection());
-        panel.actionDelete.setOnClickListener(
-                v -> {
-                    if (listener != null) listener.onDeleteRequested();
-                });
-        panel.actionShare.setOnClickListener(
-                v -> {
-                    if (listener != null) listener.onShareRequested();
-                });
-        panel.actionRestore.setOnClickListener(
-                v -> {
-                    if (listener != null) listener.onRestoreRequested();
-                });
-        panel.actionTagChange.setOnClickListener(
-                v -> {
-                    if (listener != null) listener.onChangeTagRequested();
-                });
+        panel.actionDelete.setOnClickListener(v -> {
+            if (listener != null) listener.onDeleteRequested();
+        });
+        panel.actionShare.setOnClickListener(v -> {
+            if (listener != null) listener.onShareRequested();
+        });
+        panel.actionRestore.setOnClickListener(v -> {
+            if (listener != null) listener.onRestoreRequested();
+        });
+        panel.actionTagChange.setOnClickListener(v -> {
+            if (listener != null) listener.onChangeTagRequested();
+        });
         panel.actionClose.setOnClickListener(v -> clearSelection());
     }
 

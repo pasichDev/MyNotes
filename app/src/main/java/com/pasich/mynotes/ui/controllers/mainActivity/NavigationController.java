@@ -89,14 +89,13 @@ public class NavigationController {
     }
 
     private void setupDrawerButton() {
-        binding.actionSearch.setNavigationOnClickListener(
-                v -> {
-                    if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                        drawerLayout.closeDrawer(GravityCompat.START);
-                    } else {
-                        drawerLayout.openDrawer(GravityCompat.START);
-                    }
-                });
+        binding.actionSearch.setNavigationOnClickListener(v -> {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
     }
 
     private void setupNavigationMenu() {
@@ -112,67 +111,42 @@ public class NavigationController {
         View header = binding.navigationView.getHeaderView(0);
 
         header.findViewById(R.id.nav_tasks)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                activity.startActivity(
-                                                        new Intent(
-                                                                activity, TasksActivity.class))));
+                .setOnClickListener(v ->
+                        delay(() ->
+                                activity.startActivity(new Intent(activity, TasksActivity.class))));
 
         header.findViewById(R.id.nav_tags)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                activity.startActivity(
-                                                        new Intent(activity, TagsActivity.class))));
+                .setOnClickListener(v ->
+                        delay(() ->
+                                activity.startActivity(new Intent(activity, TagsActivity.class))));
 
         header.findViewById(R.id.nav_trash)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                activity.startActivity(
-                                                        new Intent(
-                                                                activity, TrashActivity.class))));
+                .setOnClickListener(v ->
+                        delay(() ->
+                                activity.startActivity(new Intent(activity, TrashActivity.class))));
 
         header.findViewById(R.id.nav_settings)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                themeActivityLauncher.launch(
-                                                        new Intent(
-                                                                activity,
-                                                                SettingsActivity.class))));
+                .setOnClickListener(v ->
+                        delay(() ->
+                                themeActivityLauncher.launch(
+                                        new Intent(activity, SettingsActivity.class))));
 
         header.findViewById(R.id.nav_backups)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                themeActivityLauncher.launch(
-                                                        new Intent(
-                                                                activity, BackupActivity.class))));
+                .setOnClickListener(v ->
+                        delay(() ->
+                                themeActivityLauncher.launch(
+                                        new Intent(activity, BackupActivity.class))));
 
         header.findViewById(R.id.nav_about)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                activity.startActivity(
-                                                        new Intent(
-                                                                activity, AboutActivity.class))));
+                .setOnClickListener(v ->
+                        delay(() ->
+                                activity.startActivity(new Intent(activity, AboutActivity.class))));
 
         header.findViewById(R.id.nav_support)
-                .setOnClickListener(
-                        v ->
-                                delay(
-                                        () ->
-                                                activity.startActivity(
-                                                        new Intent(
-                                                                activity, SupportActivity.class))));
+                .setOnClickListener(v ->
+                        delay(() ->
+                                activity.startActivity(
+                                        new Intent(activity, SupportActivity.class))));
 
         header.findViewById(R.id.nav_meet_encly)
                 .setOnClickListener(v -> delay(appUpdateController::openMeetEncly));

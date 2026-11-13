@@ -261,32 +261,30 @@ public class BackupActivity extends BaseActivity
                                         new BackupFileValidator.BackupValidatorCallback() {
                                             @Override
                                             public void onValid(String fileName) {
-                                                runOnUiThread(
-                                                        () -> {
-                                                            if (isFinishing() || isDestroyed()) {
-                                                                return;
-                                                            }
-                                                            pendingRestorePick = null;
-                                                            dismissProgressDialog();
-                                                            presenter.readFileBackupLocal(uri);
-                                                        });
+                                                runOnUiThread(() -> {
+                                                    if (isFinishing() || isDestroyed()) {
+                                                        return;
+                                                    }
+                                                    pendingRestorePick = null;
+                                                    dismissProgressDialog();
+                                                    presenter.readFileBackupLocal(uri);
+                                                });
                                             }
 
                                             @Override
                                             public void onInvalid(String errorMessage) {
-                                                runOnUiThread(
-                                                        () -> {
-                                                            if (isFinishing() || isDestroyed()) {
-                                                                return;
-                                                            }
-                                                            pendingRestorePick = null;
-                                                            dismissProgressDialog();
-                                                            onInfoSnack(
-                                                                    errorMessage,
-                                                                    null,
-                                                                    SnackBarInfo.Error,
-                                                                    Snackbar.LENGTH_LONG);
-                                                        });
+                                                runOnUiThread(() -> {
+                                                    if (isFinishing() || isDestroyed()) {
+                                                        return;
+                                                    }
+                                                    pendingRestorePick = null;
+                                                    dismissProgressDialog();
+                                                    onInfoSnack(
+                                                            errorMessage,
+                                                            null,
+                                                            SnackBarInfo.Error,
+                                                            Snackbar.LENGTH_LONG);
+                                                });
                                             }
                                         }),
                         "backup-pick-validation")
@@ -324,16 +322,15 @@ public class BackupActivity extends BaseActivity
      */
     private void runInBackground(Runnable task) {
         try {
-            syncExecutor.execute(
-                    () -> {
-                        try {
-                            task.run();
-                        } catch (RuntimeException error) {
-                            // An exception escaping a worker thread kills the process; a failed
-                            // background read must degrade the screen, not the app.
-                            Log.e(TAG, "Background work failed", error);
-                        }
-                    });
+            syncExecutor.execute(() -> {
+                try {
+                    task.run();
+                } catch (RuntimeException error) {
+                    // An exception escaping a worker thread kills the process; a failed
+                    // background read must degrade the screen, not the app.
+                    Log.e(TAG, "Background work failed", error);
+                }
+            });
         } catch (java.util.concurrent.RejectedExecutionException rejected) {
             Log.w(TAG, "Background work could not be scheduled; the screen is gone", rejected);
         }
@@ -342,17 +339,15 @@ public class BackupActivity extends BaseActivity
     private void updateSyncUi() {
         if (!canSchedule()) return;
         SyncCoordinator.Profile profile = syncCoordinator.getProfile();
-        runInBackground(
-                () -> {
-                    SyncState state = syncCoordinator.getLastState();
-                    int unresolved = unresolvedConflictCount(syncCoordinator.getConflicts());
-                    runOnUiThread(
-                            () -> {
-                                if (!isFinishing() && !isDestroyed()) {
-                                    renderSyncUi(profile, state, unresolved);
-                                }
-                            });
-                });
+        runInBackground(() -> {
+            SyncState state = syncCoordinator.getLastState();
+            int unresolved = unresolvedConflictCount(syncCoordinator.getConflicts());
+            runOnUiThread(() -> {
+                if (!isFinishing() && !isDestroyed()) {
+                    renderSyncUi(profile, state, unresolved);
+                }
+            });
+        });
     }
 
     private void renderSyncUi(
@@ -392,78 +387,73 @@ public class BackupActivity extends BaseActivity
     private void prepareFirstSyncConfirmation() {
         syncRunning = true;
         if (accountTab != null) accountTab.setSyncing(true);
-        runInBackground(
-                () -> {
-                    try {
-                        SyncSnapshot snapshot = roomSyncStore.readSnapshot();
-                        byte[] bundle =
-                                new SyncBundleCodec().encode(snapshot, java.time.Instant.now());
-                        long attachmentBytes = 0L;
-                        Set<String> seenAttachmentHashes = new HashSet<>();
-                        for (com.pasich.mynotes.data.sync.SyncRecord record :
-                                snapshot.getLiveRecords(
-                                        com.pasich.mynotes.data.sync.SyncRecord.Type.NOTE)) {
-                            JsonElement manifest = record.getPayload().get("attachmentsManifest");
-                            if (manifest != null && manifest.isJsonArray()) {
-                                for (JsonElement value : manifest.getAsJsonArray()) {
-                                    if (value.isJsonObject()
-                                            && value.getAsJsonObject().has("size")) {
-                                        String hash =
-                                                value.getAsJsonObject().has("sha256")
-                                                        ? value.getAsJsonObject()
-                                                                .get("sha256")
-                                                                .getAsString()
-                                                        : null;
-                                        if (hash == null || seenAttachmentHashes.add(hash)) {
-                                            attachmentBytes +=
-                                                    Math.max(
-                                                            0L,
-                                                            value.getAsJsonObject()
-                                                                    .get("size")
-                                                                    .getAsLong());
-                                        }
-                                    }
+        runInBackground(() -> {
+            try {
+                SyncSnapshot snapshot = roomSyncStore.readSnapshot();
+                byte[] bundle = new SyncBundleCodec().encode(snapshot, java.time.Instant.now());
+                long attachmentBytes = 0L;
+                Set<String> seenAttachmentHashes = new HashSet<>();
+                for (com.pasich.mynotes.data.sync.SyncRecord record :
+                        snapshot.getLiveRecords(
+                                com.pasich.mynotes.data.sync.SyncRecord.Type.NOTE)) {
+                    JsonElement manifest = record.getPayload().get("attachmentsManifest");
+                    if (manifest != null && manifest.isJsonArray()) {
+                        for (JsonElement value : manifest.getAsJsonArray()) {
+                            if (value.isJsonObject() && value.getAsJsonObject().has("size")) {
+                                String hash =
+                                        value.getAsJsonObject().has("sha256")
+                                                ? value.getAsJsonObject()
+                                                        .get("sha256")
+                                                        .getAsString()
+                                                : null;
+                                if (hash == null || seenAttachmentHashes.add(hash)) {
+                                    attachmentBytes +=
+                                            Math.max(
+                                                    0L,
+                                                    value.getAsJsonObject()
+                                                            .get("size")
+                                                            .getAsLong());
                                 }
                             }
                         }
-                        long estimatedBytes = bundle.length + attachmentBytes;
-                        runOnUiThread(
-                                () -> {
-                                    // Reading the snapshot hashes every attachment on disk, so
-                                    // seconds can pass here. Showing a dialog on a window that is
-                                    // already gone throws BadTokenException.
-                                    if (isFinishing() || isDestroyed()) {
-                                        return;
-                                    }
-                                    syncRunning = false;
-                                    if (accountTab != null) accountTab.setSyncing(false);
-                                    new MaterialAlertDialogBuilder(this)
-                                            .setTitle(R.string.sync_first_sync_title)
-                                            .setMessage(
-                                                    getString(
-                                                            R.string.sync_first_sync_message,
-                                                            snapshot.getRecords().size(),
-                                                            formatBytes(estimatedBytes)))
-                                            .setNegativeButton(
-                                                    R.string.sync_first_sync_cancel,
-                                                    (dialog, which) -> updateSyncUi())
-                                            .setPositiveButton(
-                                                    R.string.sync_now,
-                                                    (dialog, which) -> {
-                                                        syncCoordinator.confirmFirstSync();
-                                                        runSync();
-                                                    })
-                                            .show();
-                                });
-                    } catch (Exception error) {
-                        runOnUiThread(
-                                () -> {
-                                    syncRunning = false;
-                                    if (accountTab != null) accountTab.setSyncing(false);
-                                    finishSyncError(error);
-                                });
                     }
+                }
+                long estimatedBytes = bundle.length + attachmentBytes;
+                runOnUiThread(() -> {
+                    // Reading the snapshot hashes every attachment on disk, so
+                    // seconds can pass here. Showing a dialog on a window that is
+                    // already gone throws BadTokenException.
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+                    syncRunning = false;
+                    if (accountTab != null) accountTab.setSyncing(false);
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle(R.string.sync_first_sync_title)
+                            .setMessage(
+                                    getString(
+                                            R.string.sync_first_sync_message,
+                                            snapshot.getRecords().size(),
+                                            formatBytes(estimatedBytes)))
+                            .setNegativeButton(
+                                    R.string.sync_first_sync_cancel,
+                                    (dialog, which) -> updateSyncUi())
+                            .setPositiveButton(
+                                    R.string.sync_now,
+                                    (dialog, which) -> {
+                                        syncCoordinator.confirmFirstSync();
+                                        runSync();
+                                    })
+                            .show();
                 });
+            } catch (Exception error) {
+                runOnUiThread(() -> {
+                    syncRunning = false;
+                    if (accountTab != null) accountTab.setSyncing(false);
+                    finishSyncError(error);
+                });
+            }
+        });
     }
 
     private void runSync() {
@@ -661,17 +651,15 @@ public class BackupActivity extends BaseActivity
 
     private void showNextConflictDialog() {
         if (recreatePending) return;
-        runInBackground(
-                () -> {
-                    List<SyncConflictEntity> unresolved =
-                            unresolvedConflicts(syncCoordinator.getConflicts());
-                    runOnUiThread(
-                            () -> {
-                                if (!isFinishing() && !isDestroyed()) {
-                                    showConflictDialog(unresolved);
-                                }
-                            });
-                });
+        runInBackground(() -> {
+            List<SyncConflictEntity> unresolved =
+                    unresolvedConflicts(syncCoordinator.getConflicts());
+            runOnUiThread(() -> {
+                if (!isFinishing() && !isDestroyed()) {
+                    showConflictDialog(unresolved);
+                }
+            });
+        });
     }
 
     private void showConflictDialog(List<SyncConflictEntity> unresolved) {
@@ -716,16 +704,14 @@ public class BackupActivity extends BaseActivity
                     firstRadio.setChecked(keepWinner[0]);
                     secondRadio.setChecked(!keepWinner[0]);
                 };
-        firstCard.setOnClickListener(
-                view -> {
-                    keepWinner[0] = true;
-                    paint.run();
-                });
-        secondCard.setOnClickListener(
-                view -> {
-                    keepWinner[0] = false;
-                    paint.run();
-                });
+        firstCard.setOnClickListener(view -> {
+            keepWinner[0] = true;
+            paint.run();
+        });
+        secondCard.setOnClickListener(view -> {
+            keepWinner[0] = false;
+            paint.run();
+        });
         paint.run();
 
         new MaterialAlertDialogBuilder(this)

@@ -64,13 +64,12 @@ public class EnclyMigrationRepository {
     @WorkerThread
     @NonNull
     public Library load() {
-        return database.runInTransaction(
-                () ->
-                        new Library(
-                                database.noteDao().getAllNotesSync(),
-                                database.tagsDao().getUserTagsSync(),
-                                database.taskDao().getAllTasksSync(),
-                                database.taskCategoryDao().getCategoriesSync()));
+        return database.runInTransaction(() ->
+                new Library(
+                        database.noteDao().getAllNotesSync(),
+                        database.tagsDao().getUserTagsSync(),
+                        database.taskDao().getAllTasksSync(),
+                        database.taskCategoryDao().getCategoriesSync()));
     }
 
     /** Writes the hand-off ZIP into the cache and returns it. */

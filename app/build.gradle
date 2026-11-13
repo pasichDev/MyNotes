@@ -170,7 +170,7 @@ ext {
     roomVersion = '2.8.5'
 }
 dependencies {
-    implementation platform('com.google.firebase:firebase-bom:34.18.0')
+    implementation platform('com.google.firebase:firebase-bom:35.2.0')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'androidx.appcompat:appcompat:1.8.0'
     implementation 'com.google.android.material:material:1.14.0'
@@ -185,7 +185,7 @@ dependencies {
     implementation 'androidx.credentials:credentials:1.6.0'
     implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
     implementation 'com.google.android.libraries.identity.googleid:googleid:1.2.1'
-    implementation 'com.google.android.gms:play-services-auth:21.4.0'
+    implementation 'com.google.android.gms:play-services-auth:22.0.0'
 
     //DI (Hilt)
     implementation "com.google.dagger:hilt-android:$daggerHilt"
@@ -200,7 +200,7 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
 
     //Pay Billing
-    implementation 'com.android.billingclient:billing:8.3.0'
+    implementation 'com.android.billingclient:billing:9.1.0'
 
     //Other lib (Gson/PhotoView)
     implementation 'com.google.code.gson:gson:2.15.0'
@@ -243,7 +243,7 @@ configurations.configureEach {
 spotless {
     java {
         target 'src/**/*.java'
-        googleJavaFormat('1.22.0').aosp()   // 4-space indent (AOSP style)
+        googleJavaFormat('2.0.0').aosp()   // 4-space indent (AOSP style)
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
