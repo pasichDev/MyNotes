@@ -216,15 +216,14 @@ public class NoteEditorView extends FrameLayout {
                     }
                 });
 
-        webView.setOnLongClickListener(
-                v -> {
-                    if (onContextDialogListener != null) {
-                        onContextDialogListener.openContextCopy();
-                    } else {
-                        Log.w(TAG, "OnContextDialogListener is null");
-                    }
-                    return true;
-                });
+        webView.setOnLongClickListener(v -> {
+            if (onContextDialogListener != null) {
+                onContextDialogListener.openContextCopy();
+            } else {
+                Log.w(TAG, "OnContextDialogListener is null");
+            }
+            return true;
+        });
     }
 
     public WebView getWebView() {
@@ -249,22 +248,19 @@ public class NoteEditorView extends FrameLayout {
     }
 
     public void onEditorReadyFromBridge() {
-        handler.post(
-                () -> {
-                    editorIsReady = true;
-                    applyTheme();
-                    if (pendingNote != null) {
-                        if (editorInterface != null) {
-                            loadIntoEditor(pendingNote);
-                        } else {
-                            Log.w(
-                                    TAG,
-                                    "onEditorReady: editorInterface is null, dropping pending note");
-                        }
-                        pendingNote = null;
-                    }
-                    handler.postDelayed(this::showEditor, 120);
-                });
+        handler.post(() -> {
+            editorIsReady = true;
+            applyTheme();
+            if (pendingNote != null) {
+                if (editorInterface != null) {
+                    loadIntoEditor(pendingNote);
+                } else {
+                    Log.w(TAG, "onEditorReady: editorInterface is null, dropping pending note");
+                }
+                pendingNote = null;
+            }
+            handler.postDelayed(this::showEditor, 120);
+        });
     }
 
     public void setEditorInterface(EditorJSInterface editorInterface) {
@@ -452,11 +448,10 @@ public class NoteEditorView extends FrameLayout {
             callback.onReceiveValue(null);
             return;
         }
-        editorInterface.readViewState(
-                json -> {
-                    if (json != null) lastViewState = json;
-                    callback.onReceiveValue(json);
-                });
+        editorInterface.readViewState(json -> {
+            if (json != null) lastViewState = json;
+            callback.onReceiveValue(json);
+        });
     }
 
     /** The last position the page reported, or null when it has not reported one yet. */
@@ -546,11 +541,10 @@ public class NoteEditorView extends FrameLayout {
 
     /** Called when the page has rendered a note; picks waiting for it are inserted now. */
     public void onNoteRenderedFromBridge() {
-        handler.post(
-                () -> {
-                    noteRendered = true;
-                    insertOrphanedPicks();
-                });
+        handler.post(() -> {
+            noteRendered = true;
+            insertOrphanedPicks();
+        });
     }
 
     private void insertOrphanedPicks() {
@@ -676,24 +670,22 @@ public class NoteEditorView extends FrameLayout {
         webView.animate()
                 .alpha(0f)
                 .setDuration(150)
-                .withEndAction(
-                        () -> {
-                            handler.postDelayed(
-                                    () -> {
+                .withEndAction(() -> {
+                    handler.postDelayed(
+                            () -> {
 
-                                        // Hide loader
-                                        loader.animate()
-                                                .alpha(0f)
-                                                .setDuration(200)
-                                                .withEndAction(
-                                                        () -> loader.setVisibility(View.GONE))
-                                                .start();
+                                // Hide loader
+                                loader.animate()
+                                        .alpha(0f)
+                                        .setDuration(200)
+                                        .withEndAction(() -> loader.setVisibility(View.GONE))
+                                        .start();
 
-                                        // Show editor again
-                                        webView.animate().alpha(1f).setDuration(200).start();
-                                    },
-                                    500); // loader visible ~0.5 sec
-                        })
+                                // Show editor again
+                                webView.animate().alpha(1f).setDuration(200).start();
+                            },
+                            500); // loader visible ~0.5 sec
+                })
                 .start();
     }
 

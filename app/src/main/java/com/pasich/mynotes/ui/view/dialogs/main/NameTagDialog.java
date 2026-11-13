@@ -80,13 +80,12 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
     public void initListeners() {
         binding.outlinedTextField.setEndIconOnClickListener(v -> saveTag());
 
-        binding.nameTag.setOnEditorActionListener(
-                (v, actionId, event) -> {
-                    if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        saveTag();
-                        return true;
-                    } else return false;
-                });
+        binding.nameTag.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                saveTag();
+                return true;
+            } else return false;
+        });
         binding.nameTag.addTextChangedListener(
                 new TextWatcher() {
 

@@ -64,12 +64,11 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
             Log.d(TAG, "Billing service connected successfully");
 
             // Спочатку споживаємо всі наявні покупки
-            consumeAllExistingPurchases(
-                    () -> {
-                        listener.onBillingInitialized();
-                        queryProductDetails();
-                        queryPurchases();
-                    });
+            consumeAllExistingPurchases(() -> {
+                listener.onBillingInitialized();
+                queryProductDetails();
+                queryPurchases();
+            });
         } else {
             Log.e(TAG, "Failed to connect to billing service: " + billingResult.getDebugMessage());
             listener.onBillingError("Failed to connect to billing service");
@@ -162,18 +161,17 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                         }
 
                         // Сортуємо товари за ціною (від меншої до більшої)
-                        products.sort(
-                                (p1, p2) -> {
-                                    try {
-                                        // Витягуємо числові значення з цін
-                                        double price1 = extractPrice(p1.getPrice());
-                                        double price2 = extractPrice(p2.getPrice());
-                                        return Double.compare(price1, price2);
-                                    } catch (Exception e) {
-                                        Log.w(TAG, "Error sorting prices: " + e.getMessage());
-                                        return 0;
-                                    }
-                                });
+                        products.sort((p1, p2) -> {
+                            try {
+                                // Витягуємо числові значення з цін
+                                double price1 = extractPrice(p1.getPrice());
+                                double price2 = extractPrice(p2.getPrice());
+                                return Double.compare(price1, price2);
+                            } catch (Exception e) {
+                                Log.w(TAG, "Error sorting prices: " + e.getMessage());
+                                return 0;
+                            }
+                        });
 
                         listener.onProductsLoaded(products);
                     } else {

@@ -564,14 +564,13 @@ public class MainActivity extends BaseActivity
                 mActivityBinding.actionSearch,
                 getString(R.string.search),
                 getString(R.string.search_short));
-        mActivityBinding.actionSearch.setOnMenuItemClickListener(
-                menuItem -> {
-                    if (menuItem.getItemId() == R.id.viewOptions
-                            && !selectionController.isInSelectionMode()) {
-                        showViewOptions();
-                    }
-                    return true;
-                });
+        mActivityBinding.actionSearch.setOnMenuItemClickListener(menuItem -> {
+            if (menuItem.getItemId() == R.id.viewOptions
+                    && !selectionController.isInSelectionMode()) {
+                showViewOptions();
+            }
+            return true;
+        });
 
         tagsAdapter.setOnItemClickListener(
                 new OnItemClickListenerTag() {
@@ -886,18 +885,17 @@ public class MainActivity extends BaseActivity
         pendingMenuNote = null;
         boolean moved = dragMoved;
         boolean droppedFirst = moved && position == 0;
-        mNoteAdapter.endDrag(
-                () -> {
-                    dragging = false;
-                    // The cards moved one by one under the finger; laying the grid's columns out
-                    // again closes the gaps that leaves.
-                    if (moved) gridLayoutManager.invalidateSpanAssignments();
-                    // Dropped first, often after scrolling up past the top edge: show it at the
-                    // top with the search bar and tags expanded again.
-                    if (droppedFirst) mainRenderListsController.jumpToTop();
-                    // States that arrived during the drag were held back.
-                    applyPendingState();
-                });
+        mNoteAdapter.endDrag(() -> {
+            dragging = false;
+            // The cards moved one by one under the finger; laying the grid's columns out
+            // again closes the gaps that leaves.
+            if (moved) gridLayoutManager.invalidateSpanAssignments();
+            // Dropped first, often after scrolling up past the top edge: show it at the
+            // top with the search bar and tags expanded again.
+            if (droppedFirst) mainRenderListsController.jumpToTop();
+            // States that arrived during the drag were held back.
+            applyPendingState();
+        });
         if (menuNote != null) choiceNoteDialog(menuNote, menuPosition);
     }
 

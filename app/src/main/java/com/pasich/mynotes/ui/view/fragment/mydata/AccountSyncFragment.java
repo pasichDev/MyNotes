@@ -68,29 +68,24 @@ public class AccountSyncFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding.googleSignInButtonSignedOut.setOnClickListener(
-                v -> {
-                    if (host != null) host.onAccountSignInClicked();
-                });
-        binding.googleSignInButton.setOnClickListener(
-                v -> {
-                    if (host != null) host.onAccountSignOutClicked();
-                });
-        binding.syncButton.setOnClickListener(
-                v -> {
-                    if (host != null) host.onAccountSyncClicked();
-                });
-        binding.syncConflictsButton.setOnClickListener(
-                v -> {
-                    if (host != null) host.onAccountConflictsClicked();
-                });
-        binding.syncBackgroundSwitch.setOnCheckedChangeListener(
-                (button, checked) -> {
-                    // Programmatic updates must not be mistaken for a user toggle.
-                    if (!updatingControls && host != null) {
-                        host.onAccountBackgroundSyncChanged(checked);
-                    }
-                });
+        binding.googleSignInButtonSignedOut.setOnClickListener(v -> {
+            if (host != null) host.onAccountSignInClicked();
+        });
+        binding.googleSignInButton.setOnClickListener(v -> {
+            if (host != null) host.onAccountSignOutClicked();
+        });
+        binding.syncButton.setOnClickListener(v -> {
+            if (host != null) host.onAccountSyncClicked();
+        });
+        binding.syncConflictsButton.setOnClickListener(v -> {
+            if (host != null) host.onAccountConflictsClicked();
+        });
+        binding.syncBackgroundSwitch.setOnCheckedChangeListener((button, checked) -> {
+            // Programmatic updates must not be mistaken for a user toggle.
+            if (!updatingControls && host != null) {
+                host.onAccountBackgroundSyncChanged(checked);
+            }
+        });
         if (host != null) host.onAccountTabAttached(this);
     }
 

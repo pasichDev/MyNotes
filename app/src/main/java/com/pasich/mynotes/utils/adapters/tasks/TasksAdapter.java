@@ -263,19 +263,17 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             checkBox.setOnCheckedChangeListener((btn, checked) -> toggle.onToggle(task));
 
-            itemView.setOnLongClickListener(
-                    v -> {
-                        edit.onEdit(task);
-                        return true;
-                    });
+            itemView.setOnLongClickListener(v -> {
+                edit.onEdit(task);
+                return true;
+            });
 
-            dragHandle.setOnTouchListener(
-                    (v, e) -> {
-                        if (e.getAction() == MotionEvent.ACTION_DOWN) {
-                            drag.onStartDrag(this);
-                        }
-                        return false;
-                    });
+            dragHandle.setOnTouchListener((v, e) -> {
+                if (e.getAction() == MotionEvent.ACTION_DOWN) {
+                    drag.onStartDrag(this);
+                }
+                return false;
+            });
         }
     }
 

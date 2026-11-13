@@ -23,14 +23,13 @@ public class DriveRequestExecutorTest {
         AtomicInteger attempts = new AtomicInteger();
 
         String result =
-                executor.executeIdempotent(
-                        () -> {
-                            if (attempts.getAndIncrement() == 0) {
-                                throw new DriveRequestExecutor.DriveHttpException(
-                                        429, "2", "rateLimitExceeded");
-                            }
-                            return "ok";
-                        });
+                executor.executeIdempotent(() -> {
+                    if (attempts.getAndIncrement() == 0) {
+                        throw new DriveRequestExecutor.DriveHttpException(
+                                429, "2", "rateLimitExceeded");
+                    }
+                    return "ok";
+                });
 
         assertThat(result).isEqualTo("ok");
         assertThat(attempts.get()).isEqualTo(2);
@@ -68,12 +67,11 @@ public class DriveRequestExecutorTest {
         assertThrows(
                 IOException.class,
                 () ->
-                        executor.executeIdempotent(
-                                () -> {
-                                    attempts.incrementAndGet();
-                                    throw new DriveRequestExecutor.DriveHttpException(
-                                            401, null, "unauthorized");
-                                }));
+                        executor.executeIdempotent(() -> {
+                            attempts.incrementAndGet();
+                            throw new DriveRequestExecutor.DriveHttpException(
+                                    401, null, "unauthorized");
+                        }));
 
         assertThat(attempts.get()).isEqualTo(1);
     }

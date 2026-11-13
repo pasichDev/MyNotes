@@ -33,12 +33,11 @@ public class CopyNoteAnimationUtil {
         ValueAnimator alphaAnimator = ValueAnimator.ofInt(0, 180, 0);
         alphaAnimator.setDuration(750);
         alphaAnimator.setInterpolator(new DecelerateInterpolator());
-        alphaAnimator.addUpdateListener(
-                a -> {
-                    int alpha = (int) a.getAnimatedValue();
-                    pulse.setAlpha(alpha);
-                    root.invalidate();
-                });
+        alphaAnimator.addUpdateListener(a -> {
+            int alpha = (int) a.getAnimatedValue();
+            pulse.setAlpha(alpha);
+            root.invalidate();
+        });
         alphaAnimator.start();
 
         // Bounce

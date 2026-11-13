@@ -79,18 +79,15 @@ public class EditorKeyboardBar extends LinearLayout {
         undoButton = findViewById(R.id.keyboardBarUndo);
         redoButton = findViewById(R.id.keyboardBarRedo);
         hideButton = findViewById(R.id.keyboardBarHide);
-        undoButton.setOnClickListener(
-                v -> {
-                    if (actions != null) actions.onUndo();
-                });
-        redoButton.setOnClickListener(
-                v -> {
-                    if (actions != null) actions.onRedo();
-                });
-        hideButton.setOnClickListener(
-                v -> {
-                    if (actions != null) actions.onHideKeyboard();
-                });
+        undoButton.setOnClickListener(v -> {
+            if (actions != null) actions.onUndo();
+        });
+        redoButton.setOnClickListener(v -> {
+            if (actions != null) actions.onRedo();
+        });
+        hideButton.setOnClickListener(v -> {
+            if (actions != null) actions.onHideKeyboard();
+        });
         setBackgroundColor(
                 MaterialColors.getColor(
                         this, com.google.android.material.R.attr.colorSurfaceContainer));

@@ -146,10 +146,9 @@ public class MoreNoteDialogPresenter extends BasePresenter<MoreNoteDialogContrac
                         getDataManager()
                                 .getTagsUser()
                                 .take(1)
-                                .map(
-                                        tags ->
-                                                TagsSorter.sortTags(
-                                                        tags, getDataManager().getSortParamTags()))
+                                .map(tags ->
+                                        TagsSorter.sortTags(
+                                                tags, getDataManager().getSortParamTags()))
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(
                                         sorted -> getView().createChipsTag(sorted),

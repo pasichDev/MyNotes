@@ -39,11 +39,10 @@ public class AppDbHelper implements DbHelper {
         return appDatabase
                 .tagsDao()
                 .getTags()
-                .map(
-                        userTags -> {
-                            userTags.addAll(SystemTagsManager.getSystemTags());
-                            return userTags;
-                        });
+                .map(userTags -> {
+                    userTags.addAll(SystemTagsManager.getSystemTags());
+                    return userTags;
+                });
     }
 
     @Override
@@ -180,21 +179,19 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable deleteNote(Note note) {
-        return Completable.fromAction(
-                () -> {
-                    syncMutationCoordinator.deleteNote(note);
-                    noteViewStateStore.remove(note.getId());
-                });
+        return Completable.fromAction(() -> {
+            syncMutationCoordinator.deleteNote(note);
+            noteViewStateStore.remove(note.getId());
+        });
     }
 
     @Override
     public Completable deleteNote(ArrayList<Note> notes) {
-        return Completable.fromAction(
-                () -> {
-                    syncMutationCoordinator.deleteNotes(notes);
-                    if (notes == null) return;
-                    for (Note note : notes) noteViewStateStore.remove(note.getId());
-                });
+        return Completable.fromAction(() -> {
+            syncMutationCoordinator.deleteNotes(notes);
+            if (notes == null) return;
+            for (Note note : notes) noteViewStateStore.remove(note.getId());
+        });
     }
 
     @Override
@@ -230,12 +227,10 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Single<List<Note>> getNotesWithActiveReminders() {
-        return Single.fromCallable(
-                        () ->
-                                appDatabase
-                                        .noteDao()
-                                        .getNotesWithActiveRemindersSync(
-                                                System.currentTimeMillis()))
+        return Single.fromCallable(() ->
+                        appDatabase
+                                .noteDao()
+                                .getNotesWithActiveRemindersSync(System.currentTimeMillis()))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
@@ -247,20 +242,17 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable updateNoteReminder(int noteId, long reminderTime, String repeat) {
-        return Completable.fromAction(
-                        () ->
-                                syncMutationCoordinator.updateNoteReminder(
-                                        noteId, reminderTime, repeat))
+        return Completable.fromAction(() ->
+                        syncMutationCoordinator.updateNoteReminder(noteId, reminderTime, repeat))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
     @Override
     public Completable updateNoteReminderFull(
             int noteId, long reminderTime, String repeat, int intervalMinutes) {
-        return Completable.fromAction(
-                        () ->
-                                syncMutationCoordinator.updateNoteReminderFull(
-                                        noteId, reminderTime, repeat, intervalMinutes))
+        return Completable.fromAction(() ->
+                        syncMutationCoordinator.updateNoteReminderFull(
+                                noteId, reminderTime, repeat, intervalMinutes))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 
@@ -361,10 +353,8 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable setTaskReminderFull(int taskId, long time, int intervalMinutes) {
-        return Completable.fromAction(
-                        () ->
-                                syncMutationCoordinator.setTaskReminderFull(
-                                        taskId, time, intervalMinutes))
+        return Completable.fromAction(() ->
+                        syncMutationCoordinator.setTaskReminderFull(taskId, time, intervalMinutes))
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io());
     }
 

@@ -39,19 +39,17 @@ public class SyncMutationCoordinatorOrderTest {
         noteDao = mock(NoteDao.class);
         syncMetadataDao = mock(SyncMetadataDao.class);
         when(noteDao.getCustomPositionSync(anyInt()))
-                .thenAnswer(
-                        call -> {
-                            Note note = notes.get((Integer) call.getArgument(0));
-                            return note == null ? null : note.getCustomPosition();
-                        });
+                .thenAnswer(call -> {
+                    Note note = notes.get((Integer) call.getArgument(0));
+                    return note == null ? null : note.getCustomPosition();
+                });
         when(noteDao.getHighestCustomPositionSync())
-                .thenAnswer(
-                        call -> {
-                            long highest = 0;
-                            for (Note note : notes.values())
-                                highest = Math.max(highest, note.getCustomPosition());
-                            return highest;
-                        });
+                .thenAnswer(call -> {
+                    long highest = 0;
+                    for (Note note : notes.values())
+                        highest = Math.max(highest, note.getCustomPosition());
+                    return highest;
+                });
         when(noteDao.getAllNotesSync()).thenAnswer(call -> new ArrayList<>(notes.values()));
         doAnswer(
                         call -> {

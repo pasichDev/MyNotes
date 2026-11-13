@@ -41,23 +41,20 @@ public class SnoozeActivity extends AppCompatActivity {
         dialog.setOnDismissListener(d -> finish());
 
         view.findViewById(com.pasich.mynotes.R.id.snooze10min)
-                .setOnClickListener(
-                        v -> {
-                            snooze(10 * 60 * 1000L);
-                            dialog.dismiss();
-                        });
+                .setOnClickListener(v -> {
+                    snooze(10 * 60 * 1000L);
+                    dialog.dismiss();
+                });
         view.findViewById(com.pasich.mynotes.R.id.snooze1hour)
-                .setOnClickListener(
-                        v -> {
-                            snooze(60 * 60 * 1000L);
-                            dialog.dismiss();
-                        });
+                .setOnClickListener(v -> {
+                    snooze(60 * 60 * 1000L);
+                    dialog.dismiss();
+                });
         view.findViewById(com.pasich.mynotes.R.id.snoozeTomorrow)
-                .setOnClickListener(
-                        v -> {
-                            snoozeTomorrow();
-                            dialog.dismiss();
-                        });
+                .setOnClickListener(v -> {
+                    snoozeTomorrow();
+                    dialog.dismiss();
+                });
 
         dialog.show();
     }

@@ -121,31 +121,28 @@ public class TwoSideSwitchView extends LinearLayout {
         post(() -> applyCurrentState(true));
 
         // ---------- LISTENERS ----------
-        switchView.setOnCheckedChangeListener(
-                (btn, checked) -> {
-                    if (currentMode == Mode.INACTIVE) return;
-                    currentMode = checked ? Mode.EXTENDED : Mode.SIMPLE;
-                    applyCurrentState(false);
-                    notifyModeChanged();
-                });
+        switchView.setOnCheckedChangeListener((btn, checked) -> {
+            if (currentMode == Mode.INACTIVE) return;
+            currentMode = checked ? Mode.EXTENDED : Mode.SIMPLE;
+            applyCurrentState(false);
+            notifyModeChanged();
+        });
 
-        leftIcon.setOnClickListener(
-                v -> {
-                    if (currentMode == Mode.INACTIVE) return;
-                    currentMode = Mode.SIMPLE;
-                    switchView.setChecked(false);
-                    applyCurrentState(false);
-                    notifyModeChanged();
-                });
+        leftIcon.setOnClickListener(v -> {
+            if (currentMode == Mode.INACTIVE) return;
+            currentMode = Mode.SIMPLE;
+            switchView.setChecked(false);
+            applyCurrentState(false);
+            notifyModeChanged();
+        });
 
-        rightIcon.setOnClickListener(
-                v -> {
-                    if (currentMode == Mode.INACTIVE) return;
-                    currentMode = Mode.EXTENDED;
-                    switchView.setChecked(true);
-                    applyCurrentState(false);
-                    notifyModeChanged();
-                });
+        rightIcon.setOnClickListener(v -> {
+            if (currentMode == Mode.INACTIVE) return;
+            currentMode = Mode.EXTENDED;
+            switchView.setChecked(true);
+            applyCurrentState(false);
+            notifyModeChanged();
+        });
         applyInteractionState();
     }
 

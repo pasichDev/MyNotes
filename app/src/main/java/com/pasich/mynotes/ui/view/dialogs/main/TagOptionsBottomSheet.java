@@ -60,23 +60,20 @@ public class TagOptionsBottomSheet extends BaseDialogBottomSheets {
     }
 
     private void setupListeners() {
-        binding.deleteTag.setOnClickListener(
-                v -> {
-                    listener.onDeleteTagClick(tag);
-                    dismiss();
-                });
+        binding.deleteTag.setOnClickListener(v -> {
+            listener.onDeleteTagClick(tag);
+            dismiss();
+        });
 
-        binding.renameTag.setOnClickListener(
-                v -> {
-                    listener.onRenameTagClick(tag);
-                    dismiss();
-                });
+        binding.renameTag.setOnClickListener(v -> {
+            listener.onRenameTagClick(tag);
+            dismiss();
+        });
 
-        binding.visibleTag.setOnClickListener(
-                v -> {
-                    listener.onToggleVisibilityClick(tag);
-                    dismiss();
-                });
+        binding.visibleTag.setOnClickListener(v -> {
+            listener.onToggleVisibilityClick(tag);
+            dismiss();
+        });
     }
 
     @Override

@@ -320,12 +320,11 @@ public class NoteDragCallback extends SwipeToListNotesCallback {
         ValueAnimator back = ValueAnimator.ofFloat(1f, 0f);
         back.setDuration(SWIPE_RETURN_MS);
         back.setInterpolator(new DecelerateInterpolator());
-        back.addUpdateListener(
-                animation -> {
-                    float left = (float) animation.getAnimatedValue();
-                    card.setTranslationX(x * left);
-                    card.setAlpha(1f - (1f - alpha) * left);
-                });
+        back.addUpdateListener(animation -> {
+            float left = (float) animation.getAnimatedValue();
+            card.setTranslationX(x * left);
+            card.setAlpha(1f - (1f - alpha) * left);
+        });
         back.start();
     }
 

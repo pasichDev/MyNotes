@@ -34,11 +34,10 @@ public class AllTagSelectDialog {
             chip.setCheckable(false);
             chip.setClickable(true);
 
-            chip.setOnClickListener(
-                    v -> {
-                        callback.onTagSelected(tag);
-                        dialog.dismiss();
-                    });
+            chip.setOnClickListener(v -> {
+                callback.onTagSelected(tag);
+                dialog.dismiss();
+            });
 
             chipGroup.addView(chip);
         }

@@ -55,15 +55,14 @@ public class ShareActivity extends AppCompatActivity {
 
                             @Override
                             public void onError(IOException e) {
-                                runOnUiThread(
-                                        () -> {
-                                            Toast.makeText(
-                                                            ShareActivity.this,
-                                                            "Error reading file",
-                                                            Toast.LENGTH_LONG)
-                                                    .show();
-                                            finish();
-                                        });
+                                runOnUiThread(() -> {
+                                    Toast.makeText(
+                                                    ShareActivity.this,
+                                                    "Error reading file",
+                                                    Toast.LENGTH_LONG)
+                                            .show();
+                                    finish();
+                                });
                             }
                         });
                 return;

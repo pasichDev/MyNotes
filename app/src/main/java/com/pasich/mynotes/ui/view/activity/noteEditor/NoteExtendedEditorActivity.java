@@ -252,69 +252,62 @@ public class NoteExtendedEditorActivity
 
                             @Override
                             public void onContentFlushed(String json) {
-                                runOnUiThread(
-                                        () -> {
-                                            processTextChange(json);
-                                            notePresenter.flushPending();
-                                        });
+                                runOnUiThread(() -> {
+                                    processTextChange(json);
+                                    notePresenter.flushPending();
+                                });
                             }
 
                             @Override
                             public void onViewportAnchor(int blockIndex, int offsetPx) {
-                                runOnUiThread(
-                                        () -> {
-                                            if (binding != null) {
-                                                binding.noteEditor.onViewportAnchor(
-                                                        blockIndex, offsetPx);
-                                            }
-                                        });
+                                runOnUiThread(() -> {
+                                    if (binding != null) {
+                                        binding.noteEditor.onViewportAnchor(blockIndex, offsetPx);
+                                    }
+                                });
                             }
 
                             @Override
                             public void onViewState(String json) {
-                                runOnUiThread(
-                                        () -> {
-                                            if (binding != null) {
-                                                binding.noteEditor.onViewState(json);
-                                            }
-                                        });
+                                runOnUiThread(() -> {
+                                    if (binding != null) {
+                                        binding.noteEditor.onViewState(json);
+                                    }
+                                });
                             }
 
                             @Override
                             public void onReadModeChanged(boolean readOnly, boolean byDoubleTap) {
-                                runOnUiThread(
-                                        () -> {
-                                            if (binding == null) return;
-                                            isReadMode = readOnly;
-                                            updateReadModeItem();
-                                            // A double tap means "let me type here".
-                                            if (!readOnly && byDoubleTap) {
-                                                binding.noteEditor.showKeyboard();
-                                            }
-                                        });
+                                runOnUiThread(() -> {
+                                    if (binding == null) return;
+                                    isReadMode = readOnly;
+                                    updateReadModeItem();
+                                    // A double tap means "let me type here".
+                                    if (!readOnly && byDoubleTap) {
+                                        binding.noteEditor.showKeyboard();
+                                    }
+                                });
                             }
 
                             @Override
                             public void onHistoryChanged(boolean canUndo, boolean canRedo) {
-                                runOnUiThread(
-                                        () -> {
-                                            if (binding != null) {
-                                                setUndoRedoState(canUndo, canRedo);
-                                            }
-                                        });
+                                runOnUiThread(() -> {
+                                    if (binding != null) {
+                                        setUndoRedoState(canUndo, canRedo);
+                                    }
+                                });
                             }
 
                             @Override
                             public void onNoteRendered() {
                                 if (binding != null) binding.noteEditor.onNoteRenderedFromBridge();
-                                runOnUiThread(
-                                        () -> {
-                                            if (binding == null || !showKeyboardWhenRendered) {
-                                                return;
-                                            }
-                                            showKeyboardWhenRendered = false;
-                                            if (!isReadMode) binding.noteEditor.showKeyboard();
-                                        });
+                                runOnUiThread(() -> {
+                                    if (binding == null || !showKeyboardWhenRendered) {
+                                        return;
+                                    }
+                                    showKeyboardWhenRendered = false;
+                                    if (!isReadMode) binding.noteEditor.showKeyboard();
+                                });
                             }
 
                             @Override
@@ -335,13 +328,11 @@ public class NoteExtendedEditorActivity
 
                             @Override
                             public void openFile(EditorAttachment att) {
-                                runOnUiThread(
-                                        () ->
-                                                AttachmentActionsDialog.show(
-                                                        NoteExtendedEditorActivity.this,
-                                                        att,
-                                                        (at, ls) ->
-                                                                handleAttachmentDelete(at, ls)));
+                                runOnUiThread(() ->
+                                        AttachmentActionsDialog.show(
+                                                NoteExtendedEditorActivity.this,
+                                                att,
+                                                (at, ls) -> handleAttachmentDelete(at, ls)));
                             }
 
                             @Override
@@ -407,13 +398,12 @@ public class NoteExtendedEditorActivity
     @Override
     public void initListeners() {
         binding.noteEditor.setOnFileChooserListener(this);
-        binding.noteEditor.setOnContextDialogListener(
-                () ->
-                        CopyTextDialog.show(
-                                this,
-                                null, // title
-                                notePresenter.getNote().getValue() // plain text
-                                ));
+        binding.noteEditor.setOnContextDialogListener(() ->
+                CopyTextDialog.show(
+                        this,
+                        null, // title
+                        notePresenter.getNote().getValue() // plain text
+                        ));
     }
 
     /**

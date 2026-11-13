@@ -90,31 +90,28 @@ public class TagsManagementAdapter extends ListAdapter<Tag, TagsManagementAdapte
 
             // Set click listeners
             binding.getRoot()
-                    .setOnClickListener(
-                            v -> {
-                                if (clickListener != null) {
-                                    clickListener.onTagClick(tag, position);
-                                }
-                            });
+                    .setOnClickListener(v -> {
+                        if (clickListener != null) {
+                            clickListener.onTagClick(tag, position);
+                        }
+                    });
 
             binding.getRoot()
-                    .setOnLongClickListener(
-                            v -> {
-                                if (clickListener != null && !SystemTagsManager.isAddTag(tag)) {
-                                    clickListener.onTagLongClick(tag, v);
-                                    return true;
-                                }
-                                return false;
-                            });
+                    .setOnLongClickListener(v -> {
+                        if (clickListener != null && !SystemTagsManager.isAddTag(tag)) {
+                            clickListener.onTagLongClick(tag, v);
+                            return true;
+                        }
+                        return false;
+                    });
 
             // Options button listener (only for regular tags)
             if (!SystemTagsManager.isAddTag(tag)) {
-                binding.optionsButton.setOnClickListener(
-                        v -> {
-                            if (clickListener != null) {
-                                clickListener.onOptionsClick(tag, v);
-                            }
-                        });
+                binding.optionsButton.setOnClickListener(v -> {
+                    if (clickListener != null) {
+                        clickListener.onOptionsClick(tag, v);
+                    }
+                });
             }
         }
     }

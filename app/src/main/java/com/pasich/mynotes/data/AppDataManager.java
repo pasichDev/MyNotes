@@ -210,14 +210,12 @@ public class AppDataManager implements DataManager {
     public Completable clearTrash() {
         return dbHelper.getNotesInTrash()
                 .firstOrError()
-                .flatMapCompletable(
-                        notes -> {
-                            for (Note note : notes) {
-                                AttachmentCleaner.deleteAttachmentFolderByNoteId(
-                                        context, note.getId());
-                            }
-                            return dbHelper.clearTrash();
-                        });
+                .flatMapCompletable(notes -> {
+                    for (Note note : notes) {
+                        AttachmentCleaner.deleteAttachmentFolderByNoteId(context, note.getId());
+                    }
+                    return dbHelper.clearTrash();
+                });
     }
 
     @Override

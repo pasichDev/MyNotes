@@ -118,12 +118,11 @@ public class DonationProductAdapter
             } else {
                 // Normal state
                 itemView.setAlpha(1.0f);
-                itemView.setOnClickListener(
-                        v -> {
-                            if (listener != null) {
-                                listener.onProductClick(product);
-                            }
-                        });
+                itemView.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onProductClick(product);
+                    }
+                });
             }
         }
 
