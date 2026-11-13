@@ -346,6 +346,8 @@ window.addEventListener('resize', () => requestAnimationFrame(keepCaretVisible))
 const HISTORY_LIMIT = 100
 const HISTORY_IDLE_MS = 700
 const HISTORY_MAX_BATCH_MS = 3000
+// A finished word or line closes its batch after this pause.
+const HISTORY_WORD_END_MS = 300
 // Editor.js reports a change up to 400 ms after it happened; a report that late about a state
 // this history applied itself is not a new change.
 const HISTORY_SETTLE_MS = 600
@@ -361,6 +363,8 @@ const __hist = {
   lastCaret: null,
   batchStart: 0,
   timer: null,
+  // The timer closes the batch at the end of a word or line.
+  closing: false,
   applying: false,
   settleUntil: 0,
   epoch: 0,
@@ -444,6 +448,7 @@ function stopHistory () {
   __hist.epoch++
   clearTimeout(__hist.timer)
   __hist.timer = null
+  __hist.closing = false
   __hist.undo = []
   __hist.redo = []
   __hist.current = null
@@ -537,9 +542,15 @@ function resetHistory (settle) {
 
 /**
  * Something in the note changed, or is about to. {@code immediate} closes the batch now.
- * {@code fromEditor} marks Editor.js's own late change report.
+ * {@code fromEditor} marks Editor.js's own late change report. {@code endsWord} closes the batch
+ * once typing pauses for a moment (HISTORY_WORD_END_MS) instead of at once.
+ *
+ * Closing a batch saves and serializes the whole note, so a finished word or line no longer does
+ * it on the spot: on a long note that cost was paid on every space. A brief pause still makes the
+ * word or line its own step; words typed without that pause become one step. Editor.js's late
+ * report of the same typing does not push a pending close back.
  */
-function historyNoteChange (immediate, fromEditor) {
+function historyNoteChange (immediate, fromEditor, endsWord) {
   if (!__hist.current || __hist.applying || isReadMode) return
   if (fromEditor && Date.now() < __hist.settleUntil) return
   __hist.changeSeq++
@@ -549,9 +560,15 @@ function historyNoteChange (immediate, fromEditor) {
     __hist.batchStart = Date.now()
     if (!__hist.caretBefore) __hist.caretBefore = __hist.lastCaret
   }
-  clearTimeout(__hist.timer)
   const overdue = Date.now() - __hist.batchStart >= HISTORY_MAX_BATCH_MS
-  __hist.timer = setTimeout(captureHistory, immediate || overdue ? 0 : HISTORY_IDLE_MS)
+  if (!immediate && !overdue && fromEditor && __hist.closing && __hist.timer) {
+    reportHistory()
+    return
+  }
+  __hist.closing = !!endsWord && !immediate
+  clearTimeout(__hist.timer)
+  const delay = immediate || overdue ? 0 : endsWord ? HISTORY_WORD_END_MS : HISTORY_IDLE_MS
+  __hist.timer = setTimeout(captureHistory, delay)
   reportHistory()
 }
 
@@ -568,6 +585,7 @@ function historyInputStarting () {
 function captureHistory (force) {
   clearTimeout(__hist.timer)
   __hist.timer = null
+  __hist.closing = false
   if (!editor || !__hist.current || (!__hist.pending && !force)) return Promise.resolve()
   const epoch = __hist.epoch
   const seq = __hist.changeSeq
@@ -792,7 +810,7 @@ document.addEventListener(
     }
     if (isEditingKey(event)) {
       historyInputStarting()
-      if (event.key === 'Enter') historyNoteChange(true, false)
+      if (event.key === 'Enter') historyNoteChange(false, false, true)
     }
   },
   true
@@ -814,7 +832,7 @@ document.addEventListener(
     const data = typeof event.data === 'string' ? event.data : ''
     const lineBreak = event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak'
     const endsWord = lineBreak || (/\s$/.test(data) && (__hist.batchHasText || /\S/.test(data)))
-    historyNoteChange(endsWord, false)
+    historyNoteChange(false, false, endsWord)
     if (/\S/.test(data)) __hist.batchHasText = true
   },
   true
