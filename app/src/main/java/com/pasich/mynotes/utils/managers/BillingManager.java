@@ -30,6 +30,8 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
     private final BillingClient billingClient;
     private final BillingManagerListener listener;
+
+    /** Setup finished once; later drops are healed by automatic service reconnection. */
     private boolean isServiceConnected;
 
     // Product IDs for donations
@@ -48,6 +50,9 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                         .setListener(this)
                         .enablePendingPurchases(
                                 PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+                        // Reconnects on the next call after the Play Store service drops (killed
+                        // or updated) instead of failing until the screen is reopened.
+                        .enableAutoServiceReconnection()
                         .build();
 
         startServiceConnection();
@@ -65,9 +70,9 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
             // Спочатку споживаємо всі наявні покупки
             consumeAllExistingPurchases(() -> {
+                // The listener queries purchases itself once billing is initialized.
                 listener.onBillingInitialized();
                 queryProductDetails();
-                queryPurchases();
             });
         } else {
             Log.e(TAG, "Failed to connect to billing service: " + billingResult.getDebugMessage());
@@ -100,7 +105,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
                         for (Purchase purchase : purchasesList) {
                             if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                                consumePurchase(
+                                settleUnseenPurchase(
                                         purchase,
                                         () -> {
                                             remainingPurchases[0]--;
@@ -127,7 +132,8 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
     @Override
     public void onBillingServiceDisconnected() {
-        isServiceConnected = false;
+        // isServiceConnected stays true: with automatic service reconnection the next call
+        // reconnects by itself, so calls must not be refused here.
         Log.w(TAG, "Billing service disconnected");
     }
 
@@ -160,18 +166,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                             products.add(product);
                         }
 
-                        // Сортуємо товари за ціною (від меншої до більшої)
-                        products.sort((p1, p2) -> {
-                            try {
-                                // Витягуємо числові значення з цін
-                                double price1 = extractPrice(p1.getPrice());
-                                double price2 = extractPrice(p2.getPrice());
-                                return Double.compare(price1, price2);
-                            } catch (Exception e) {
-                                Log.w(TAG, "Error sorting prices: " + e.getMessage());
-                                return 0;
-                            }
-                        });
+                        products.sort(DonationProduct.BY_PRICE);
 
                         listener.onProductsLoaded(products);
                     } else {
@@ -189,13 +184,18 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         ProductDetails.OneTimePurchaseOfferDetails offerDetails =
                 productDetails.getOneTimePurchaseOfferDetails();
         String price = offerDetails != null ? offerDetails.getFormattedPrice() : "N/A";
+        long priceAmountMicros =
+                offerDetails != null
+                        ? offerDetails.getPriceAmountMicros()
+                        : DonationProduct.NO_PRICE;
 
         return new DonationProduct(
                 productDetails.getProductId(),
                 productDetails.getTitle(),
                 productDetails.getDescription(),
                 price,
-                iconResource);
+                iconResource,
+                priceAmountMicros);
     }
 
     private String getIconForProduct(String productId) {
@@ -246,7 +246,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                                         "Found existing purchase for "
                                                 + productId
                                                 + ", consuming it first");
-                                consumePurchase(purchase, onComplete);
+                                settleUnseenPurchase(purchase, onComplete);
                                 break;
                             }
                         }
@@ -352,7 +352,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         for (Purchase purchase : purchasesList) {
                             if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                                consumePurchase(purchase);
+                                settleUnseenPurchase(purchase, null);
                             }
                         }
                     }
@@ -374,10 +374,20 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
     }
 
     private void consumePurchase(Purchase purchase) {
-        consumePurchase(purchase, null);
+        consumePurchase(purchase, false, null);
     }
 
-    private void consumePurchase(Purchase purchase, Runnable onComplete) {
+    /**
+     * Consumes a purchase the user has not been thanked for: one that completed while the app was
+     * closed, or a pending purchase that settled in the background. The thanks follow a successful
+     * consume only, so a purchase whose consume fails comes back next time and is not thanked
+     * twice.
+     */
+    private void settleUnseenPurchase(Purchase purchase, Runnable onComplete) {
+        consumePurchase(purchase, true, onComplete);
+    }
+
+    private void consumePurchase(Purchase purchase, boolean thankOnSuccess, Runnable onComplete) {
         ConsumeParams consumeParams =
                 ConsumeParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build();
 
@@ -386,6 +396,10 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                 (billingResult, purchaseToken) -> {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         Log.d(TAG, "Purchase consumed successfully, can be purchased again");
+                        List<String> products = purchase.getProducts();
+                        if (thankOnSuccess && !products.isEmpty()) {
+                            listener.onPurchaseSuccessful(products.get(0));
+                        }
                     } else {
                         Log.e(
                                 TAG,
@@ -409,8 +423,10 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
     /** Maps a billing response code to a human-readable error description. */
     public static String getBillingErrorMessage(int responseCode) {
         return switch (responseCode) {
+            // Since Play Billing 9 this also covers a Play Store blocked by the system (an OEM
+            // kids mode, for example), not only an unsupported billing API version.
             case BillingClient.BillingResponseCode.BILLING_UNAVAILABLE ->
-                    "Billing API version is not supported for the type requested";
+                    "Google Play billing is not available on this device";
             case BillingClient.BillingResponseCode.DEVELOPER_ERROR ->
                     "Invalid arguments provided to the API";
             case BillingClient.BillingResponseCode.ERROR -> "Fatal error during the API action";
@@ -430,34 +446,6 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                     "User pressed back or canceled a dialog";
             default -> "Unknown billing error";
         };
-    }
-
-    /**
-     * Extracts the numerical value of the price from the price string. For example: “₴40.00” ->
-     * 40.0, “200,00 UAH” -> 200.0
-     */
-    private double extractPrice(String priceString) {
-        if (priceString == null || priceString.isEmpty()) {
-            return 0.0;
-        }
-
-        try {
-            String cleanPrice = priceString.replaceAll("[^\\d.,]", "");
-
-            cleanPrice = cleanPrice.replace(",", ".");
-
-            int lastDotIndex = cleanPrice.lastIndexOf(".");
-            if (lastDotIndex != -1 && lastDotIndex != cleanPrice.indexOf(".")) {
-                cleanPrice =
-                        cleanPrice.substring(0, lastDotIndex).replace(".", "")
-                                + cleanPrice.substring(lastDotIndex);
-            }
-
-            return Double.parseDouble(cleanPrice);
-        } catch (NumberFormatException e) {
-            Log.w(TAG, "Failed to parse price: " + priceString, e);
-            return 0.0;
-        }
     }
 
     /** Queries existing in-app purchases and delivers them to the listener. */
