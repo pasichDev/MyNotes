@@ -35,13 +35,13 @@ import org.mockito.Mock;
 
 /**
  * A note deleted while it is open (a sync applying another device's delete) must not swallow what
- * is typed into it: the save fails in the database, and the presenter saves the content as a new
- * note and carries on with that one.
+ * is typed into it: the save fails in the database, and the presenter puts the note back under its
+ * own id. The id has to stay: the screen's intent, saved state and draft, and the note's attachment
+ * folder all go by it.
  */
 public class NotePresenterDeletedNoteTest extends BasePresenterTest {
 
     private static final int DELETED_ID = 1;
-    private static final long NEW_ID = 42L;
 
     @Mock DataManager dataManager;
     @Mock NoteContract.view view;
@@ -65,13 +65,12 @@ public class NotePresenterDeletedNoteTest extends BasePresenterTest {
                         written.add(note.getId() + ":" + note.getValue());
                     });
                 });
-        when(dataManager.addNote(any()))
+        when(dataManager.reviveNote(any()))
                 .thenAnswer(invocation -> {
                     Note note = invocation.getArgument(0);
-                    return Single.fromCallable(() -> {
-                        existingIds.add((int) NEW_ID);
-                        written.add("new:" + note.getValue());
-                        return NEW_ID;
+                    return Completable.fromAction(() -> {
+                        existingIds.add(note.getId());
+                        written.add("revived " + note.getId() + ":" + note.getValue());
                     });
                 });
         presenter = new NotePresenter(provider(), new CompositeDisposable(), dataManager);
@@ -112,36 +111,39 @@ public class NotePresenterDeletedNoteTest extends BasePresenterTest {
     }
 
     @Test
-    public void anEditToADeletedNote_isSavedAsANewNote() {
+    public void anEditToADeletedNote_revivesItUnderItsOwnId() {
         existingIds.remove(DELETED_ID);
 
         typeAndWait("typed after the delete");
 
-        assertThat(written).containsExactly("new:typed after the delete");
-        assertThat(presenter.getIdKey()).isEqualTo(NEW_ID);
-        assertThat(presenter.getNote().getId()).isEqualTo((int) NEW_ID);
+        assertThat(written).containsExactly("revived " + DELETED_ID + ":typed after the delete");
+        assertThat(presenter.getIdKey()).isEqualTo(DELETED_ID);
+        assertThat(presenter.getNote().getId()).isEqualTo(DELETED_ID);
         assertThat(presenter.hasUnsavedChanges()).isFalse();
+        verify(dataManager, never()).addNote(any());
     }
 
     @Test
-    public void laterEdits_goToTheNewNote() {
+    public void laterEdits_updateTheRevivedNote() {
         existingIds.remove(DELETED_ID);
         typeAndWait("first");
 
         typeAndWait("second");
 
-        assertThat(written).containsExactly("new:first", NEW_ID + ":second").inOrder();
-        verify(dataManager, times(1)).addNote(any());
+        assertThat(written)
+                .containsExactly("revived " + DELETED_ID + ":first", DELETED_ID + ":second")
+                .inOrder();
+        verify(dataManager, times(1)).reviveNote(any());
     }
 
     @Test
-    public void flushOfADeletedNote_savesItAsANewNote() {
+    public void flushOfADeletedNote_revivesIt() {
         existingIds.remove(DELETED_ID);
         presenter.simpleNoteChange(null, "typed before leaving", false);
 
         presenter.flushPending();
 
-        assertThat(written).containsExactly("new:typed before leaving");
+        assertThat(written).containsExactly("revived " + DELETED_ID + ":typed before leaving");
     }
 
     @Test
@@ -151,6 +153,7 @@ public class NotePresenterDeletedNoteTest extends BasePresenterTest {
 
         typeAndWait("typed");
 
+        verify(dataManager, never()).reviveNote(any());
         verify(dataManager, never()).addNote(any());
         ArgumentCaptor<SaveState> states = ArgumentCaptor.forClass(SaveState.class);
         verify(view, org.mockito.Mockito.atLeastOnce()).updateSaveStatus(states.capture());
@@ -163,7 +166,7 @@ public class NotePresenterDeletedNoteTest extends BasePresenterTest {
         typeAndWait("typed");
 
         assertThat(written).containsExactly(DELETED_ID + ":typed");
-        verify(dataManager, never()).addNote(any());
+        verify(dataManager, never()).reviveNote(any());
         assertThat(presenter.getIdKey()).isEqualTo(DELETED_ID);
     }
 }

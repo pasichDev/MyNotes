@@ -205,6 +205,11 @@ public class AppDbHelper implements DbHelper {
     }
 
     @Override
+    public Completable reviveNote(Note note) {
+        return Completable.fromAction(() -> syncMutationCoordinator.reviveNote(note));
+    }
+
+    @Override
     public Completable moveToNotes(List<Note> notes) {
         return Completable.fromAction(() -> syncMutationCoordinator.insertNotes(notes));
     }
