@@ -746,6 +746,16 @@ public class SyncMutationCoordinatorTest {
         }
 
         @Override
+        public List<SyncMetadataEntity> getByLocalIds(String recordType, List<Long> localIds) {
+            List<SyncMetadataEntity> found = new ArrayList<>();
+            for (Long localId : localIds) {
+                SyncMetadataEntity row = get(recordType, localId);
+                if (row != null) found.add(row);
+            }
+            return found;
+        }
+
+        @Override
         public SyncMetadataEntity getByStableId(String recordType, String stableId) {
             for (SyncMetadataEntity value : rows.values()) {
                 if (value.recordType.equals(recordType) && value.stableId.equals(stableId)) {

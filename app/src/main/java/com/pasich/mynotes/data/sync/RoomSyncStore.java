@@ -67,6 +67,10 @@ public final class RoomSyncStore implements SyncStore {
     private static final String ATTACHMENT_CACHE_DIR = "sync-attachments";
     private static final String HASH_CACHE_FILE = "hash-cache.json";
     private static final String SHA_256 = "[0-9a-f]{64}";
+
+    /** Metadata rows re-read per query while building a snapshot; well under SQLite's 999. */
+    private static final int SNAPSHOT_METADATA_BATCH = 500;
+
     private final AppDatabase database;
     private final SharedPreferences preferences;
     private volatile boolean seeded;
@@ -246,14 +250,26 @@ public final class RoomSyncStore implements SyncStore {
         builtVersionIds.clear();
         builtUpdatedAts.clear();
         try {
-            for (SyncMetadataEntity listed : database.syncMetadataDao().getAll()) {
-                // Re-read right before the content, never after it. The timestamp then predates
-                // whatever content is read next: an edit saved in between leaves newer content
-                // under an older timestamp, which the apply's guard sees and skips. Read the other
-                // way round, an edit landing between the two paired the old content with the new
-                // timestamp, the guard let the apply through, and the edit was reverted everywhere.
-                SyncMetadataEntity metadata =
-                        database.syncMetadataDao().get(listed.recordType, listed.localId);
+            List<SyncMetadataEntity> listedRows = database.syncMetadataDao().getAll();
+            List<SyncMetadataEntity> metadataBatch = new ArrayList<>();
+            for (int index = 0; index < listedRows.size(); index++) {
+                if (index % SNAPSHOT_METADATA_BATCH == 0) {
+                    // Re-read before the content, never after it: a batch at a time, right before
+                    // that batch's content is read. Each timestamp then predates the content read
+                    // next: an edit saved in between leaves newer content under an older
+                    // timestamp, which the apply's guard sees and skips. Read the other way round,
+                    // an edit landing between the two paired the old content with the new
+                    // timestamp, the guard let the apply through, and the edit was reverted
+                    // everywhere. One point query per record made a sync thousands of SELECTs.
+                    metadataBatch =
+                            rereadMetadata(
+                                    listedRows.subList(
+                                            index,
+                                            Math.min(
+                                                    index + SNAPSHOT_METADATA_BATCH,
+                                                    listedRows.size())));
+                }
+                SyncMetadataEntity metadata = metadataBatch.get(index % SNAPSHOT_METADATA_BATCH);
                 if (metadata == null) {
                     continue;
                 }
@@ -302,6 +318,32 @@ public final class RoomSyncStore implements SyncStore {
         return problems.isEmpty()
                 ? SnapshotBuildResult.publishable(snapshot)
                 : SnapshotBuildResult.incomplete(snapshot, problems);
+    }
+
+    /**
+     * The current rows for {@code listed}, in the same order, null where a row is gone; one query
+     * per record type in the batch instead of one per row.
+     */
+    @NonNull
+    private List<SyncMetadataEntity> rereadMetadata(@NonNull List<SyncMetadataEntity> listed) {
+        Map<String, List<Long>> idsByType = new HashMap<>();
+        for (SyncMetadataEntity row : listed) {
+            idsByType
+                    .computeIfAbsent(row.recordType, ignored -> new ArrayList<>())
+                    .add(row.localId);
+        }
+        Map<String, SyncMetadataEntity> current = new HashMap<>();
+        for (Map.Entry<String, List<Long>> entry : idsByType.entrySet()) {
+            for (SyncMetadataEntity row :
+                    database.syncMetadataDao().getByLocalIds(entry.getKey(), entry.getValue())) {
+                current.put(row.recordType + ":" + row.localId, row);
+            }
+        }
+        List<SyncMetadataEntity> result = new ArrayList<>(listed.size());
+        for (SyncMetadataEntity row : listed) {
+            result.add(current.get(row.recordType + ":" + row.localId));
+        }
+        return result;
     }
 
     @Override

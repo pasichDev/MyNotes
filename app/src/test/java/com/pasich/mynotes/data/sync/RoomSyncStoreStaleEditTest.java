@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,6 +123,40 @@ public class RoomSyncStoreStaleEditTest {
                 Collections.emptyList());
 
         assertThat(db.noteDao().getNoteSync(noteId).getTitle()).isEqualTo("Remote");
+    }
+
+    /** The metadata is re-read in batches; records on every side of a batch boundary are kept. */
+    @Test
+    public void aSnapshotSpanningSeveralMetadataBatchesKeepsEveryRecord() throws Exception {
+        int count = 1_201;
+        for (int i = 0; i < count; i++) {
+            Note note = new Note().create("Note " + i, "Body", 1_000L, "");
+            int id = db.noteDao().addNote(note).intValue();
+            db.syncMetadataDao()
+                    .insertIfAbsent(
+                            new SyncMetadataEntity(
+                                    SyncMetadata.RECORD_TYPE_NOTE,
+                                    id,
+                                    UUID.nameUUIDFromBytes(("note-" + i).getBytes()).toString(),
+                                    1_000L + i,
+                                    null));
+        }
+        RoomSyncStore store = new RoomSyncStore(context, db, mock(PreferenceHelper.class));
+
+        SyncSnapshot built = store.readSnapshot();
+
+        int notes = 0;
+        for (int i = 0; i < count; i++) {
+            SyncRecord record =
+                    built.find(
+                            SyncRecord.Type.NOTE,
+                            UUID.nameUUIDFromBytes(("note-" + i).getBytes()).toString());
+            assertThat(record).isNotNull();
+            assertThat(record.getUpdatedAt().toEpochMilli()).isEqualTo(1_000L + i);
+            assertThat(record.getPayload().get("b").getAsString()).isEqualTo("Note " + i);
+            notes++;
+        }
+        assertThat(notes).isEqualTo(count);
     }
 
     private void saveEdit(int noteId, String title, long at) {
