@@ -1,6 +1,5 @@
 package com.pasich.mynotes.ui.view.dialogs;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -77,16 +76,6 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
     }
 
     public ShareOptionsDialog() {}
-
-    /**
-     * @deprecated use {@link #newInstance(List, boolean)}; kept for callers not yet moved over.
-     */
-    @Deprecated
-    @SuppressLint("ValidFragment")
-    public ShareOptionsDialog(List<Note> selectedNotes, boolean isDataExport) {
-        setArguments(arguments(selectedNotes, false, isDataExport));
-        this.notes = selectedNotes == null ? null : new ArrayList<>(selectedNotes);
-    }
 
     public static ShareOptionsDialog newInstance(@NonNull Note note) {
         return create(Collections.singletonList(note), true, false);

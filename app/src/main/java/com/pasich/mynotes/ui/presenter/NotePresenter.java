@@ -6,6 +6,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
+import com.pasich.mynotes.data.database.NoteDeletedException;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import com.pasich.mynotes.extendedEditor.utils.EditorDocument;
@@ -15,6 +16,7 @@ import com.pasich.mynotes.utils.constants.AutoSave;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
+import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.SerialDisposable;
@@ -36,7 +38,8 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
 
-    private long idKey;
+    // Written from the IO thread when a note deleted meanwhile is saved as a new one.
+    private volatile long idKey;
     private boolean newNoteKey;
     private boolean extendedEditor = false;
     private boolean isSavingInProgress = false;
@@ -52,6 +55,8 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     // Waiting for the next flushPending write to finish. A flush that replaces one still in flight
     // takes over its waiters, so none is left behind.
     private final List<Runnable> flushWaiters = new ArrayList<>();
+    // Held while a note deleted meanwhile is saved as a new one, so two saves never both do it.
+    private final Object recreateLock = new Object();
 
     @Inject
     public NotePresenter(
@@ -210,8 +215,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
         updateSaveState(SaveState.SAVING);
         if (flushSave != null) flushSave.dispose();
         flushSave =
-                getDataManager()
-                        .updateNote(note)
+                writeNote(note)
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
@@ -313,8 +317,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
 
         getCompositeDisposable()
                 .add(
-                        getDataManager()
-                                .updateNote(note)
+                        writeNote(note)
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(
@@ -326,6 +329,39 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                             Log.e(TAG, "saveNote() failed", error);
                                             callback.onError(error);
                                         }));
+    }
+
+    /**
+     * Writes the note's content. When the note was deleted meanwhile (a sync applied another
+     * device's delete while it was open), what is on screen is saved as a new note instead, and the
+     * editor carries on with that one: the delete stands, and nothing typed is lost.
+     */
+    private Completable writeNote(Note note) {
+        return Completable.defer(() -> {
+            int writtenId = note.getId();
+            return getDataManager()
+                    .updateNote(note)
+                    .onErrorResumeNext(error ->
+                            error instanceof NoteDeletedException
+                                    ? recreateDeletedNote(note, writtenId)
+                                    : Completable.error(error));
+        });
+    }
+
+    private Completable recreateDeletedNote(Note note, int deletedId) {
+        return Completable.defer(() -> {
+            synchronized (recreateLock) {
+                // Another save of this note has already saved it again: write to that one.
+                if (note.getId() != deletedId) return getDataManager().updateNote(note);
+                Note revived = note.duplicate();
+                revived.setDate(note.getDate());
+                long newId = getDataManager().addNote(revived).blockingGet();
+                Log.w(TAG, "Note " + deletedId + " was deleted while open; saved as " + newId);
+                note.setId((int) newId);
+                idKey = newId;
+                return Completable.complete();
+            }
+        });
     }
 
     /**
@@ -341,8 +377,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                 note.setDate(new Date().getTime());
                 getCompositeDisposable()
                         .add(
-                                getDataManager()
-                                        .updateNote(note)
+                                writeNote(note)
                                         .subscribeOn(getSchedulerProvider().io())
                                         .subscribe(
                                                 () -> savedNote.copyFrom(note),

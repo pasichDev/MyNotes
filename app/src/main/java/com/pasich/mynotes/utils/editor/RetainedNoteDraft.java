@@ -51,6 +51,31 @@ public class RetainedNoteDraft extends ViewModel {
         if (body != null) this.body = body;
     }
 
+    /**
+     * Called as the screen saves its state. Only a screen that is being recreated keeps a draft
+     * here: a screen that only goes to the background comes back as itself, keeps editing and
+     * saving, and a draft left here would later be shown, and saved, over that newer content. Such
+     * a save forgets any draft still kept instead.
+     *
+     * @param recreating whether the screen is being recreated (its isChangingConfigurations)
+     */
+    @MainThread
+    public void keepForRecreation(
+            boolean recreating, long noteId, @Nullable String title, @Nullable String body) {
+        if (recreating) put(noteId, title, body);
+        else discard();
+    }
+
+    /**
+     * Forgets the kept draft. A screen calls this once it holds the note and saves its state
+     * without being recreated, so no draft older than what it holds is left for a later screen.
+     */
+    @MainThread
+    public void discard() {
+        title = null;
+        body = null;
+    }
+
     /** The draft kept for {@code noteId}, which is then forgotten; null when there is none. */
     @Nullable
     @MainThread

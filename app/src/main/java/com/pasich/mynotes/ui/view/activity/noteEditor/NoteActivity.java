@@ -220,6 +220,8 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         outState.putInt(STATE_ANCHOR_OFFSET, readingAnchorOffset());
         // The fields do not save their own text (see initListeners); a draft is kept only while a
         // save is still on its way, so the next instance never shows older text than was typed.
+        // A long draft is kept in memory only for a recreation; see RetainedNoteDraft.
+        boolean keptInMemory = false;
         if (notePresenter != null && notePresenter.hasUnsavedChanges()) {
             String title = binding.notesTitle.getText().toString();
             String value = binding.valueNote.getText().toString();
@@ -227,9 +229,12 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                 outState.putString(STATE_DRAFT_TITLE, title);
                 outState.putString(STATE_DRAFT_VALUE, value);
             } else if (retainedDraft != null) {
-                retainedDraft.put(notePresenter.getIdKey(), title, value);
+                retainedDraft.keepForRecreation(
+                        isChangingConfigurations(), notePresenter.getIdKey(), title, value);
+                keptInMemory = true;
             }
         }
+        if (!keptInMemory && retainedDraft != null) retainedDraft.discard();
         saveEditHistory(outState);
     }
 
