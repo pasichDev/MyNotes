@@ -24,11 +24,6 @@ public class DonationProduct {
     private boolean isPurchased;
 
     public DonationProduct(
-            String id, String title, String description, String price, String iconResource) {
-        this(id, title, description, price, iconResource, NO_PRICE);
-    }
-
-    public DonationProduct(
             String id,
             String title,
             String description,
