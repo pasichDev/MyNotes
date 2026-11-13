@@ -491,6 +491,18 @@ public class NoteEditorView extends FrameLayout {
     }
 
     /**
+     * Asks the editor for its document right away and runs {@code then} once it has been handed
+     * over (or the page did not answer in time); at once when there is no page to ask.
+     */
+    public void flush(@NonNull Runnable then) {
+        if (!editorIsReady || editorInterface == null || releasing) {
+            then.run();
+            return;
+        }
+        editorInterface.flush(then);
+    }
+
+    /**
      * Handles result from WebView file chooser, including validation (size limit, free space),
      * before passing the file to JS.
      */
@@ -613,13 +625,29 @@ public class NoteEditorView extends FrameLayout {
      * at once lost the last edit and made a flush still on its way reach a destroyed WebView.
      */
     public void release(boolean keepHistory) {
-        if (releasing) return;
+        release(keepHistory, null);
+    }
+
+    /**
+     * Like {@link #release(boolean)}; {@code onFinished} runs once the page has handed over
+     * everything and the WebView is gone.
+     */
+    public void release(boolean keepHistory, @Nullable Runnable onFinished) {
+        if (releasing) {
+            if (onFinished != null) onFinished.run();
+            return;
+        }
         releasing = true;
         if (handler != null) handler.removeCallbacksAndMessages(null);
+        Runnable finish =
+                () -> {
+                    destroyWebView();
+                    if (onFinished != null) onFinished.run();
+                };
         if (editorIsReady && editorInterface != null && webView != null) {
-            editorInterface.finishPage(keepHistory, this::destroyWebView);
+            editorInterface.finishPage(keepHistory, finish);
         } else {
-            destroyWebView();
+            finish.run();
         }
     }
 

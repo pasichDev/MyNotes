@@ -690,6 +690,14 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     }
 
     @Override
+    protected void flushEditor(@NonNull Runnable then) {
+        if (binding != null && notePresenter != null && notePresenter.hasNote()) {
+            commitPendingValueEdit();
+        }
+        then.run();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         // Leaving the screen (home, rotation, another app) writes what is still waiting in the

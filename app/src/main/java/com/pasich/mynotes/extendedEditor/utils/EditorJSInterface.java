@@ -23,8 +23,10 @@ import com.pasich.mynotes.extendedEditor.models.PickedFile;
 import com.pasich.mynotes.extendedEditor.models.SettingsEditorJsBridge;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.json.JSONArray;
@@ -65,6 +67,9 @@ public class EditorJSInterface {
     private volatile boolean released = false;
     // Runs once the page has finished (onPageFinished) or the wait timed out.
     @Nullable private volatile Runnable pendingFinish;
+    // Flushes waiting for the page's answer, by id: what to run and its timeout. Main thread only.
+    private final TreeMap<Integer, Runnable[]> pendingFlushes = new TreeMap<>();
+    private int lastFlushId = 0;
 
     public EditorJSInterface(
             EditorListener listener,
@@ -239,6 +244,50 @@ public class EditorJSInterface {
     /** Asks the editor to send its document now; it answers through onContentFlushed. */
     public void requestFlush() {
         evaluate("window.flushContent && flushContent();");
+    }
+
+    /**
+     * Asks the editor to send its document now and runs {@code then} on the main thread once it has
+     * (after the listener's onContentFlushed, when the document had changed), or after {@link
+     * #FINISH_TIMEOUT_MS} when the page does not answer. Called on the main thread.
+     */
+    public void flush(@NonNull Runnable then) {
+        if (webView == null || released) {
+            then.run();
+            return;
+        }
+        int id = ++lastFlushId;
+        Runnable timeout = () -> finishFlushes(id);
+        pendingFlushes.put(id, new Runnable[] {then, timeout});
+        mainHandler.postDelayed(timeout, FINISH_TIMEOUT_MS);
+        evaluate(
+                "(window.flushContent ? flushContent() : Promise.resolve()).finally(() => "
+                        + nameInterface
+                        + ".onFlushFinished("
+                        + id
+                        + "));");
+    }
+
+    /** Answer to {@link #flush}: everything up to flush {@code id} was sent. */
+    @SuppressWarnings("unused")
+    @JavascriptInterface
+    public void onFlushFinished(int id) {
+        // Posted after the onContentFlushed the page sent first, so it runs after it.
+        mainHandler.post(() -> finishFlushes(id));
+    }
+
+    /** Runs the flushes up to {@code id} that are still waiting. Main thread. */
+    private void finishFlushes(int id) {
+        List<Runnable> ready = new ArrayList<>();
+        Iterator<Map.Entry<Integer, Runnable[]>> it = pendingFlushes.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, Runnable[]> entry = it.next();
+            if (entry.getKey() > id) break;
+            mainHandler.removeCallbacks(entry.getValue()[1]);
+            ready.add(entry.getValue()[0]);
+            it.remove();
+        }
+        for (Runnable then : ready) then.run();
     }
 
     /**
@@ -496,6 +545,9 @@ public class EditorJSInterface {
         if (finish != null) mainHandler.removeCallbacks(finish);
         pendingFinish = null;
         uploads.shutdownNow();
+        // Nothing more will come from the page: nobody waits for it any longer.
+        if (Looper.myLooper() == Looper.getMainLooper()) finishFlushes(Integer.MAX_VALUE);
+        else mainHandler.post(() -> finishFlushes(Integer.MAX_VALUE));
     }
 
     private PickedFile takePickedFile(String name, long size) {

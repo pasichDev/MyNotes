@@ -111,6 +111,65 @@ public class EditorJSInterfaceFinishTest {
     }
 
     @Test
+    public void aFlushWaitsForThePageAndRunsAfterTheFlushedDocument() {
+        StringBuilder order = new StringBuilder();
+        EditorJSInterface.EditorListener listener = mock(EditorJSInterface.EditorListener.class);
+        org.mockito.Mockito.doAnswer(
+                        invocation -> {
+                            // As the activity does: handled on the main thread, posted from the
+                            // bridge.
+                            new android.os.Handler(Looper.getMainLooper())
+                                    .post(() -> order.append("document;"));
+                            return null;
+                        })
+                .when(listener)
+                .onContentFlushed(any());
+        EditorJSInterface page =
+                new EditorJSInterface(
+                        listener,
+                        webView,
+                        RuntimeEnvironment.getApplication(),
+                        new SettingsEditorJsBridge(false));
+
+        page.flush(() -> order.append("close;"));
+        verify(webView).evaluateJavascript(contains("onFlushFinished(1)"), any());
+        idleFor(10);
+        assertThat(order.toString()).isEmpty();
+
+        // The page sends the document, then reports the flush finished.
+        page.onContentFlushed("[]");
+        page.onFlushFinished(1);
+        idleFor(0);
+        assertThat(order.toString()).isEqualTo("document;close;");
+
+        idleFor(EditorJSInterface.FINISH_TIMEOUT_MS * 2);
+        assertThat(order.toString()).isEqualTo("document;close;");
+    }
+
+    @Test
+    public void aFlushThePageNeverAnswers_runsAfterTheTimeout() {
+        AtomicInteger closed = new AtomicInteger();
+        bridge.flush(closed::incrementAndGet);
+
+        idleFor(EditorJSInterface.FINISH_TIMEOUT_MS - 10);
+        assertThat(closed.get()).isEqualTo(0);
+        idleFor(20);
+        assertThat(closed.get()).isEqualTo(1);
+    }
+
+    @Test
+    public void aFlushStillWaiting_runsWhenTheWebViewGoes() {
+        AtomicInteger closed = new AtomicInteger();
+        bridge.flush(closed::incrementAndGet);
+
+        bridge.release();
+        assertThat(closed.get()).isEqualTo(1);
+
+        bridge.flush(closed::incrementAndGet);
+        assertThat(closed.get()).isEqualTo(2);
+    }
+
+    @Test
     public void finishingAnAlreadyDestroyedPage_runsAtOnce() {
         bridge.release();
         bridge.finishPage(false, destroyed::incrementAndGet);

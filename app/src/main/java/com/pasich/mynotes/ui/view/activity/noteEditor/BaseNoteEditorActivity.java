@@ -61,6 +61,10 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     @Nullable private Runnable editHistoryObserver;
     protected T binding;
     protected long idNote;
+    // Back was pressed and the editor's last edits are on their way to the presenter.
+    private boolean closeRequested = false;
+    // The other editor opens once this one's last edits are written.
+    private boolean switchingEditor = false;
 
     /** Version history; a restored version is read back into this editor. */
     private final ActivityResultLauncher<Intent> versionHistoryLauncher =
@@ -164,7 +168,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
                         new OnBackPressedCallback(true) {
                             @Override
                             public void handleOnBackPressed() {
-                                notePresenter.closeActivity();
+                                requestClose();
                             }
                         });
     }
@@ -386,7 +390,7 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            notePresenter.closeActivity();
+            requestClose();
         }
 
         if (item.getItemId() == R.id.moreBut) {
@@ -481,8 +485,48 @@ public abstract class BaseNoteEditorActivity<T extends ViewBinding> extends Base
         notePresenter.copyNoteRequest();
     }
 
+    /**
+     * Hands whatever the editor has not passed to the presenter yet over to it, then runs {@code
+     * then} on the main thread. The simple editor copies its body out of the field once typing
+     * pauses and the extended editor's page sends its document on its own schedule, so the
+     * presenter alone can be a little behind what is on screen.
+     */
+    protected void flushEditor(@NonNull Runnable then) {
+        then.run();
+    }
+
+    /**
+     * Back or Up: the presenter decides whether a new note is empty and deleted, or saved, only
+     * once it holds every edit; deciding on what it held before deleted a note typed into just
+     * before Back.
+     */
+    private void requestClose() {
+        if (closeRequested || notePresenter == null) return;
+        closeRequested = true;
+        flushEditor(() -> {
+            closeRequested = false;
+            if (isDestroyed() || isFinishing()) return;
+            notePresenter.closeActivity();
+        });
+    }
+
+    /**
+     * Opens the note in the other editor. The other editor reads the note from the database, so
+     * this one's last edits are handed to the presenter and written first.
+     */
     @Override
     public void changeEditor(long idNote) {
+        if (switchingEditor || notePresenter == null) return;
+        switchingEditor = true;
+        flushEditor(() ->
+                ((NotePresenter) notePresenter)
+                        .flushPending(() -> {
+                            if (isDestroyed() || isFinishing()) return;
+                            openOtherEditor(idNote);
+                        }));
+    }
+
+    private void openOtherEditor(long idNote) {
         Intent intent =
                 new Intent(
                         this,
