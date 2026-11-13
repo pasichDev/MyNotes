@@ -167,24 +167,24 @@ gradle.taskGraph.whenReady { graph ->
 
 ext {
     markwon_version = '4.6.2'
-    roomVersion = '2.8.4'
+    roomVersion = '2.8.5'
 }
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:34.18.0')
     implementation 'com.google.firebase:firebase-auth'
-    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
     implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
     implementation 'androidx.preference:preference:1.2.1'
     implementation "androidx.lifecycle:lifecycle-viewmodel:2.11.0"
     implementation 'androidx.core:core-splashscreen:1.2.0'
     implementation 'androidx.activity:activity:1.13.0'
-    implementation 'androidx.work:work-runtime:2.10.1'
+    implementation 'androidx.work:work-runtime:2.12.0'
 
     // Google Credential Manager (authentication only; Drive authorization is requested separately)
-    implementation 'androidx.credentials:credentials:1.5.0'
-    implementation 'androidx.credentials:credentials-play-services-auth:1.5.0'
-    implementation 'com.google.android.libraries.identity.googleid:googleid:1.2.0'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.2.1'
     implementation 'com.google.android.gms:play-services-auth:21.4.0'
 
     //DI (Hilt)
@@ -203,7 +203,7 @@ dependencies {
     implementation 'com.android.billingclient:billing:8.3.0'
 
     //Other lib (Gson/PhotoView)
-    implementation 'com.google.code.gson:gson:2.14.0'
+    implementation 'com.google.code.gson:gson:2.15.0'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'androidx.exifinterface:exifinterface:1.4.2'
 
@@ -214,9 +214,9 @@ dependencies {
 
     // Unit tests
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.23.0'
-    testImplementation 'com.google.truth:truth:1.4.2'
-    testImplementation 'org.robolectric:robolectric:4.16.1'
+    testImplementation 'org.mockito:mockito-core:5.24.0'
+    testImplementation 'com.google.truth:truth:1.4.5'
+    testImplementation 'org.robolectric:robolectric:4.17'
 
     // Room testing (integration tests)
     testImplementation "androidx.room:room-testing:$roomVersion"
@@ -224,7 +224,7 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.7.0'
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
-    androidTestImplementation 'org.mockito:mockito-android:5.23.0'
+    androidTestImplementation 'org.mockito:mockito-android:5.24.0'
     androidTestImplementation 'com.google.truth:truth:1.4.5'
 
 }
