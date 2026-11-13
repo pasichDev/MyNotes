@@ -95,6 +95,10 @@ public class NoteExtendedEditorActivity
     private String draftJson;
     private RetainedEditHistory retainedEditHistory;
     private RetainedNoteDraft retainedDraft;
+    // Whether this screen has taken any draft kept for it and shown the note.
+    private boolean noteShown;
+    // Whether this screen's page, released for a recreation, has handed over its last edit.
+    private boolean pageHandedOver;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -168,9 +172,18 @@ public class NoteExtendedEditorActivity
                 outState.putString(STATE_DRAFT_TITLE, note.getTitle());
                 outState.putString(STATE_DRAFT_JSON, json);
             } else {
-                retainedDraft.put(notePresenter.getIdKey(), note.getTitle(), json);
+                // Kept in memory only for a recreation; see RetainedNoteDraft.
+                retainedDraft.keepForRecreation(
+                        isChangingConfigurations(),
+                        notePresenter.getIdKey(),
+                        note.getTitle(),
+                        json);
+                return;
             }
         }
+        // Before the note is shown, a draft kept by the screen this one replaced is still waiting
+        // for it.
+        if (noteShown && !isChangingConfigurations()) retainedDraft.discard();
     }
 
     @Override
@@ -482,8 +495,16 @@ public class NoteExtendedEditorActivity
      * that screen, which waits for this page to finish before it shows the note.
      */
     private void keepForRecreatedScreen(String json) {
-        if (json != null && retainedDraft != null && isChangingConfigurations()) {
-            retainedDraft.put(notePresenter.getIdKey(), null, json);
+        // A document arriving after the page has finished its hand-over (it gave up waiting)
+        // would wait here for no screen and be applied over newer content by a later one.
+        if (json != null
+                && retainedDraft != null
+                && isChangingConfigurations()
+                && !pageHandedOver) {
+            // With the title held now, so the kept draft is one consistent version.
+            Note held = notePresenter.getNote();
+            retainedDraft.put(
+                    notePresenter.getIdKey(), held != null ? held.getTitle() : null, json);
         }
     }
 
@@ -572,7 +593,12 @@ public class NoteExtendedEditorActivity
             if (isChangingConfigurations() && retainedDraft != null) {
                 RetainedNoteDraft draft = retainedDraft;
                 draft.previousPageFinishing();
-                binding.noteEditor.release(true, draft::previousPageFinished);
+                binding.noteEditor.release(
+                        true,
+                        () -> {
+                            pageHandedOver = true;
+                            draft.previousPageFinished();
+                        });
             } else {
                 binding.noteEditor.release(false);
             }
@@ -621,6 +647,7 @@ public class NoteExtendedEditorActivity
     }
 
     private void showNote(Note note, String pendingTitle, String pendingJson) {
+        noteShown = true;
         RetainedNoteDraft.Draft kept = retainedDraft.take(note.getId());
         if (kept != null) {
             // Newer than the saved state: it arrived as, or after, the state was saved.
