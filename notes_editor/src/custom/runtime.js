@@ -38,38 +38,12 @@ const __pageParams = new URLSearchParams(window.location.search)
 const __doubleTapToEdit = __pageParams.get('dbltap') === '1'
 
 /**
- * Sending the document is batched. Every send serializes the whole note (Editor.js saves and
- * sanitizes every block, then it is stringified and copied to Android), so on a long note sending
- * on each Editor.js change made typing cost grow with the note. Android saves only after it has
- * been quiet for two seconds anyway; it gets the document once typing pauses, at least every few
- * seconds while typing goes on, and at once through flushContent when the screen stops.
+ * Saves the blocks and sends them to Android unless they are what it already has.
  */
-const SAVE_IDLE_MS = 700
-const SAVE_MAX_WAIT_MS = 3000
-let __saveTimer = null
-let __saveFirstRequest = 0
-
-/** A change was made: the document goes to Android once typing pauses. */
 function saveContent () {
   if (!editor) return
-  const now = Date.now()
-  if (!__saveTimer) __saveFirstRequest = now
-  clearTimeout(__saveTimer)
-  const overdue = now - __saveFirstRequest >= SAVE_MAX_WAIT_MS
-  __saveTimer = setTimeout(sendContent, overdue ? 0 : SAVE_IDLE_MS)
-}
 
-function cancelPendingSave () {
-  clearTimeout(__saveTimer)
-  __saveTimer = null
-}
-
-/** Saves the blocks and sends them to Android unless they are what it already has. */
-function sendContent () {
-  cancelPendingSave()
-  if (!editor) return Promise.resolve()
-
-  return editor
+  editor
     .save()
     .then(output => {
       const jsonStr = JSON.stringify(output.blocks)
@@ -85,7 +59,6 @@ function sendContent () {
  * Android asks for this when the screen stops, so the last keystrokes are saved too.
  */
 function flushContent () {
-  cancelPendingSave()
   if (!editor) return Promise.resolve()
 
   return editor

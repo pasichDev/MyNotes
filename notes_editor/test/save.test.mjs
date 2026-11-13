@@ -16,51 +16,32 @@ async function loadedPage () {
   return { page, state, saves: () => saves }
 }
 
-test('a burst of changes sends the document to Android once, after typing pauses', async () => {
-  const { page, state, saves } = await loadedPage()
-  const before = saves()
-
-  for (let i = 0; i < 10; i++) {
-    state.blocks[0].data = { text: 'one' + 'x'.repeat(i + 1) }
-    page.window.saveContent()
-  }
-  await settle()
-  assert.equal(page.callsTo('onContentChanged').length, 0, 'nothing is sent while typing')
-
-  await wait(800)
-  const sent = page.callsTo('onContentChanged')
-  assert.equal(sent.length, 1)
-  assert.equal(JSON.parse(sent[0][0])[0].data.text, 'one' + 'x'.repeat(10))
-  assert.equal(saves() - before, 1, 'the document is serialized once for the whole burst')
-})
-
-test('a flush sends the latest document at once and the pending send is dropped', async () => {
+test('a change is sent to Android at once', async () => {
   const { page, state } = await loadedPage()
 
   state.blocks[0].data = { text: 'one two' }
   page.window.saveContent()
-  await page.window.flushContent()
+  await settle()
 
-  const flushed = page.callsTo('onContentFlushed')
-  assert.equal(flushed.length, 1)
-  assert.equal(JSON.parse(flushed[0][0])[0].data.text, 'one two')
-
-  await wait(800)
-  assert.equal(page.callsTo('onContentChanged').length, 0, 'the same document is not sent twice')
+  const sent = page.callsTo('onContentChanged')
+  assert.equal(sent.length, 1)
+  assert.equal(JSON.parse(sent[0][0])[0].data.text, 'one two')
 })
 
-test('steady typing still reaches Android every few seconds', async () => {
+test('a flush sends only what Android does not have yet', async () => {
   const { page, state } = await loadedPage()
 
-  const started = Date.now()
-  let i = 0
-  while (Date.now() - started < 3400) {
-    state.blocks[0].data = { text: 'one ' + i++ }
-    page.window.saveContent()
-    await wait(100)
-  }
+  state.blocks[0].data = { text: 'one two' }
+  page.window.saveContent()
+  await settle()
+  await page.window.flushContent()
+  assert.equal(page.callsTo('onContentFlushed').length, 0, 'the same document is not sent twice')
 
-  assert.ok(page.callsTo('onContentChanged').length >= 1, 'a change was sent before the pause')
+  state.blocks[0].data = { text: 'one two three' }
+  await page.window.flushContent()
+  const flushed = page.callsTo('onContentFlushed')
+  assert.equal(flushed.length, 1)
+  assert.equal(JSON.parse(flushed[0][0])[0].data.text, 'one two three')
 })
 
 test('history states keep the document once, as JSON', async () => {
