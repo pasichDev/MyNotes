@@ -112,13 +112,16 @@ public class MainPresenterTest extends BasePresenterTest {
     private final TestScheduler debounceClock = new TestScheduler();
     private BehaviorProcessor<List<Tag>> tagsDb;
     private BehaviorProcessor<List<Note>> notesDb;
+    private final java.util.concurrent.atomic.AtomicInteger notesQueries =
+            new java.util.concurrent.atomic.AtomicInteger();
 
     /** Presenter wired to processors standing in for Room, with a controllable debounce clock. */
     private MainPresenter syncPresenter(List<Tag> tags, List<Note> notes) {
         tagsDb = BehaviorProcessor.createDefault(tags);
         notesDb = BehaviorProcessor.createDefault(notes);
         when(mockDataManager.getTags()).thenReturn(tagsDb);
-        when(mockDataManager.getNotes()).thenReturn(notesDb);
+        when(mockDataManager.getNotes())
+                .thenReturn(notesDb.doOnSubscribe(s -> notesQueries.incrementAndGet()));
         when(mockDataManager.getSortParam()).thenReturn(SortParam.DataSort);
         SchedulerProvider provider =
                 new SchedulerProvider() {
@@ -321,6 +324,36 @@ public class MainPresenterTest extends BasePresenterTest {
         assertThat(hits).hasSize(2);
         assertThat(hits.get(0).note().getTitle()).isEqualTo("PR");
         assertThat(hits.get(0).kind()).isEqualTo(SearchHit.MatchKind.EXACT_TITLE);
+    }
+
+    @Test
+    public void notes_areReadOnceForTheListAndTheSearch() {
+        syncPresenter(tagsWith(), Collections.emptyList());
+
+        assertThat(notesQueries.get()).isEqualTo(1);
+    }
+
+    @Test
+    public void whileStopped_searchIsNotRerun_andCatchesUpOnStart() {
+        MainPresenter p =
+                syncPresenter(tagsWith(), Arrays.asList(new Note().create("PR", "", 10, "")));
+        p.updateSearchQuery("PR");
+        settle();
+        clearInvocations(mockView);
+
+        p.onViewStopped();
+        notesDb.onNext(
+                Arrays.asList(
+                        new Note().create("PR", "", 10, ""),
+                        new Note().create("PR 2", "", 20, "")));
+        settle();
+        verify(mockView, never()).renderSearch(any(), anyBoolean());
+        // The list itself keeps following the database, ready for the return transition.
+        assertThat(lastRendered().notes()).hasSize(2);
+
+        p.onViewStarted();
+        settle();
+        assertThat(lastSearch(false)).hasSize(2);
     }
 
     @Test

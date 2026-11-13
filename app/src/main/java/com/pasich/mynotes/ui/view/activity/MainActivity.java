@@ -442,6 +442,7 @@ public class MainActivity extends BaseActivity
     @Override
     protected void onStart() {
         super.onStart();
+        mainPresenter.onViewStarted();
         if (stopped) {
             stopped = false;
             // Coming back, usually from the editor with a shared-element return transition.
@@ -476,6 +477,8 @@ public class MainActivity extends BaseActivity
         settling = false;
         // Anything held back is applied now, without animation, while nobody is looking.
         applyPendingState();
+        // Search and statistics are not re-run behind the editor; they catch up on return.
+        mainPresenter.onViewStopped();
     }
 
     private float animatorDurationScale() {
