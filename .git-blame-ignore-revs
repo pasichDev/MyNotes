@@ -1,0 +1,6 @@
+# Formatting-only commits. Enable locally with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# The hashes are those of the PR branch, so merge it with a merge commit (not squash or rebase).
+
+# style: reformat with google-java-format 2.0.0
+8e4e5566d864e3b20bbf25dce824b10023d3bf36
