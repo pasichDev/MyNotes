@@ -176,6 +176,27 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_persistsTheStoresDigestCacheOnceForAllAttachments() throws Exception {
+        List<String> hashes = new ArrayList<>();
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local with attachments")));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        for (int i = 0; i < 3; i++) {
+            byte[] bytes = ("attachment " + i).getBytes(StandardCharsets.UTF_8);
+            String hash = sha256(bytes);
+            hashes.add(hash);
+            store.attachments.put(hash, bytes);
+            store.verifiedFromCache.add(hash);
+            backend.attachments.put(hash, bytes);
+        }
+        store.attachmentHashes = hashes;
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(store.finishAttachmentVerificationCalls).isEqualTo(1);
+    }
+
+    @Test
     public void sync_stopsPublishingADeletionOnceItIsPastTheHorizon() {
         // Every tombstone used to go into every bundle for good, and the schema caps a bundle's
         // records, so enough deletions over a library's life failed every publish permanently.
@@ -725,6 +746,13 @@ public class SyncServiceTest {
 
         /** Blobs the store vouches for from its digest cache, as RoomSyncStore does. */
         private final java.util.Set<String> verifiedFromCache = new java.util.HashSet<>();
+
+        private int finishAttachmentVerificationCalls;
+
+        @Override
+        public void finishAttachmentVerification() {
+            finishAttachmentVerificationCalls++;
+        }
 
         private int readAttachmentCalls;
 

@@ -8,6 +8,7 @@ import androidx.room.Room;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.preferences.PreferenceHelper;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import org.junit.After;
 import org.junit.Before;
@@ -61,6 +62,40 @@ public class RoomSyncStoreAttachmentVerificationTest {
         assertThat(store.hasVerifiedAttachment(hash, null)).isTrue();
 
         assertThat(hashes[0]).isEqualTo(1);
+    }
+
+    @Test
+    public void manyVerificationsWriteTheDigestCacheOnceAtTheEnd() throws Exception {
+        File cacheFile =
+                new File(
+                        new File(
+                                RuntimeEnvironment.getApplication().getFilesDir(),
+                                "sync-attachments"),
+                        "hash-cache.json");
+        java.util.List<String> written = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            byte[] bytes = ("photo " + i).getBytes(StandardCharsets.UTF_8);
+            String hash = Sha256.of(bytes);
+            store.writeAttachment(hash, bytes.length, new ByteArrayInputStream(bytes));
+            written.add(hash);
+        }
+        cacheFile.delete();
+
+        for (String hash : written) {
+            assertThat(store.hasVerifiedAttachment(hash, null)).isTrue();
+            // Rewriting the whole cache after each one was quadratic on a cold cache.
+            assertThat(cacheFile.exists()).isFalse();
+        }
+        store.finishAttachmentVerification();
+
+        assertThat(cacheFile.isFile()).isTrue();
+        String persisted =
+                new String(
+                        java.nio.file.Files.readAllBytes(cacheFile.toPath()),
+                        StandardCharsets.UTF_8);
+        for (String hash : written) {
+            assertThat(persisted).contains(hash);
+        }
     }
 
     @Test

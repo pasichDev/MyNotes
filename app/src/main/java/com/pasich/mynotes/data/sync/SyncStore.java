@@ -118,6 +118,12 @@ public interface SyncStore {
         }
     }
 
+    /**
+     * Ends a run of {@link #hasVerifiedAttachment} calls: a store that caches digests persists what
+     * it learned once here rather than after every verification.
+     */
+    default void finishAttachmentVerification() {}
+
     /** Opens one complete local attachment. The caller closes the returned stream. */
     @NonNull
     InputStream readAttachment(@NonNull String sha256) throws IOException;

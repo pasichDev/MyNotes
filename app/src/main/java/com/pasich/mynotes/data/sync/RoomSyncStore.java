@@ -1770,7 +1770,8 @@ public final class RoomSyncStore implements SyncStore {
     /**
      * Answers from the hash cache the snapshot build already uses, so an untouched blob is not read
      * and hashed again on every sync. The cache keys a digest by path, size and modification time;
-     * any rewrite of the file is hashed afresh.
+     * any rewrite of the file is hashed afresh. What it learns is persisted by {@link
+     * #finishAttachmentVerification}.
      */
     @Override
     public boolean hasVerifiedAttachment(@NonNull String sha256, @Nullable Long expectedSize) {
@@ -1782,9 +1783,16 @@ public final class RoomSyncStore implements SyncStore {
             return sha256.equals(hashCache.sha256(file, attachmentHasher::sha256));
         } catch (IOException unreadable) {
             return false;
-        } finally {
-            hashCache.flush();
         }
+    }
+
+    /**
+     * Persists the digests the verifications learned. Flushing after each one rewrote the whole
+     * cache file once per attachment, quadratic in the library on a cold cache.
+     */
+    @Override
+    public void finishAttachmentVerification() {
+        hashCache.flush();
     }
 
     @Nullable

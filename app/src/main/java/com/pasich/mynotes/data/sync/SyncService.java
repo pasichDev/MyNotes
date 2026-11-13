@@ -193,17 +193,23 @@ public final class SyncService {
             // durable unless the loser can later be restored as well, so preflight and pin each
             // version independently; SyncSnapshot deliberately forbids two versions of one ID.
             java.util.Set<String> synchronizedHashes = new java.util.HashSet<>();
-            synchronizeAttachments(backend, merged, expectedSizes, synchronizedHashes);
-            for (SyncMergeResult.Conflict conflict : allConflicts) {
-                // Best effort. The merged snapshot's own blobs are mandatory and were just
-                // transferred above; these are the extra copies that let a conflict be resolved
-                // later. An alternative whose bytes have gone from Drive is already beyond
-                // recovery, and failing here made that one missing blob stop every device from
-                // syncing anything at all, including the devices that could never resolve it.
-                // Resolution still verifies before it applies, so a version that cannot be
-                // materialized simply cannot be chosen.
-                pinConflictVersionQuietly(backend, conflict.getWinner(), synchronizedHashes);
-                pinConflictVersionQuietly(backend, conflict.getLoser(), synchronizedHashes);
+            try {
+                synchronizeAttachments(backend, merged, expectedSizes, synchronizedHashes);
+                for (SyncMergeResult.Conflict conflict : allConflicts) {
+                    // Best effort. The merged snapshot's own blobs are mandatory and were just
+                    // transferred above; these are the extra copies that let a conflict be resolved
+                    // later. An alternative whose bytes have gone from Drive is already beyond
+                    // recovery, and failing here made that one missing blob stop every device from
+                    // syncing anything at all, including the devices that could never resolve it.
+                    // Resolution still verifies before it applies, so a version that cannot be
+                    // materialized simply cannot be chosen.
+                    pinConflictVersionQuietly(backend, conflict.getWinner(), synchronizedHashes);
+                    pinConflictVersionQuietly(backend, conflict.getLoser(), synchronizedHashes);
+                }
+            } finally {
+                // Once for the whole phase: persisting the digest cache after every single
+                // verification rewrote it once per attachment on a cold cache.
+                store.finishAttachmentVerification();
             }
 
             // What goes to Drive omits deletions every device has long had the chance to see;
