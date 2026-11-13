@@ -60,7 +60,16 @@ public final class EditableLinkMovementMethod extends ArrowKeyMovementMethod {
                 }
             }
         }
-        return super.onTouchEvent(widget, buffer, event);
+        try {
+            return super.onTouchEvent(widget, buffer, event);
+        } catch (IndexOutOfBoundsException e) {
+            // In selecting mode (Shift held on a hardware keyboard) the platform extends the
+            // selection from the offset it recorded on the down. When the down came before
+            // selecting started, nothing was recorded and it selects from -1, which throws. The
+            // selection is left as it was rather than taking the app down.
+            Log.w(TAG, "Selection gesture without a recorded start", e);
+            return true;
+        }
     }
 
     private boolean isTap(TextView widget, MotionEvent up) {
