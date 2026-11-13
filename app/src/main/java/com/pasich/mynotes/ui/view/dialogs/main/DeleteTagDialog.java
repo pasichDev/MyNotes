@@ -24,8 +24,22 @@ public class DeleteTagDialog extends BaseDialogBottomSheets
     private Tag tag;
     private DialogDeleteTagBinding binding;
 
-    public DeleteTagDialog(Tag tag) {
-        this.tag = tag;
+    /** Used by the system to recreate the dialog; use {@link #newInstance} instead. */
+    public DeleteTagDialog() {}
+
+    public static DeleteTagDialog newInstance(@NonNull Tag tag) {
+        DeleteTagDialog dialog = new DeleteTagDialog();
+        Bundle args = new Bundle();
+        TagArgs.put(args, tag);
+        dialog.setArguments(args);
+        return dialog;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        tag = TagArgs.get(getArguments());
+        if (tag == null) dismissAllowingStateLoss();
     }
 
     @Nullable
@@ -35,18 +49,20 @@ public class DeleteTagDialog extends BaseDialogBottomSheets
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         binding = DialogDeleteTagBinding.inflate(getLayoutInflater());
+        binding.title.headTextDialog.setText(R.string.deleteTag);
+        // Shown once the tag turns out to have notes.
+        binding.deleteTagAndNotes.setVisibility(View.GONE);
+        if (tag == null) return binding.getRoot();
         mPresenter.attachView(this);
         mPresenter.viewIsReady();
         mPresenter.getLoadCountNotesForTag(tag.getNameTag());
-        binding.title.headTextDialog.setText(R.string.deleteTag);
         return binding.getRoot();
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        binding.deleteTagAndNotes.setVisibility(
-                mPresenter.getCountNotesForTag() > 0 ? View.VISIBLE : View.GONE);
+    public void showNotesCount(int count) {
+        if (binding == null) return;
+        binding.deleteTagAndNotes.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -68,9 +84,17 @@ public class DeleteTagDialog extends BaseDialogBottomSheets
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         mPresenter.detachView();
-        binding.deleteTag.setOnClickListener(null);
-        binding.deleteTagAndNotes.setOnClickListener(null);
-        binding.cancel.setOnClickListener(null);
-        tag = null;
+        if (binding != null) {
+            binding.deleteTag.setOnClickListener(null);
+            binding.deleteTagAndNotes.setOnClickListener(null);
+            binding.cancel.setOnClickListener(null);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mPresenter.detachView();
+        binding = null;
     }
 }

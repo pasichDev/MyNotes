@@ -510,7 +510,7 @@ public class MainActivity extends BaseActivity
 
     @Override
     public void startDeleteTagDialog(Tag tag) {
-        new DeleteTagDialog(tag).show(getSupportFragmentManager(), "deleteTag");
+        DeleteTagDialog.newInstance(tag).show(getSupportFragmentManager(), "deleteTag");
     }
 
     @Override
@@ -1011,7 +1011,8 @@ public class MainActivity extends BaseActivity
 
                     @Override
                     public void renameTag() {
-                        new NameTagDialog(tag).show(getSupportFragmentManager(), "RenameTag");
+                        NameTagDialog.newRenameInstance(tag)
+                                .show(getSupportFragmentManager(), "RenameTag");
                     }
 
                     @Override
