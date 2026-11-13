@@ -1223,7 +1223,7 @@ public class BackupActivity extends BaseActivity
 
     @Override
     public void openShareOptionsDialog(java.util.List<Note> notes, boolean isDataExport) {
-        ShareOptionsDialog shareOptionsDialog = new ShareOptionsDialog(notes, isDataExport);
+        ShareOptionsDialog shareOptionsDialog = ShareOptionsDialog.newInstance(notes, isDataExport);
         shareOptionsDialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
     }
 
