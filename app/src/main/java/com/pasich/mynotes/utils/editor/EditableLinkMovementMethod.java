@@ -5,6 +5,7 @@ import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
 import android.text.method.ArrowKeyMovementMethod;
+import android.text.method.MetaKeyKeyListener;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
 import android.util.Log;
@@ -68,6 +69,9 @@ public final class EditableLinkMovementMethod extends ArrowKeyMovementMethod {
             // selecting started, nothing was recorded and it selects from -1, which throws. The
             // selection is left as it was rather than taking the app down.
             Log.w(TAG, "Selection gesture without a recorded start", e);
+            // The platform would have ended selecting mode after this event; without that, Shift
+            // stays held and every later tap extends a selection.
+            MetaKeyKeyListener.resetMetaState(buffer);
             return true;
         }
     }

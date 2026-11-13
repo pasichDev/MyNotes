@@ -67,5 +67,10 @@ public class EditableLinkMovementMethodTest {
         assertThat(handled).isTrue();
         assertThat(Selection.getSelectionStart(buffer)).isEqualTo(caretBefore);
         assertThat(Selection.getSelectionEnd(buffer)).isEqualTo(caretBefore);
+        // The platform ends selecting mode after an up; skipping it would leave Shift stuck.
+        assertThat(
+                        android.text.method.MetaKeyKeyListener.getMetaState(
+                                buffer, KeyEvent.META_SHIFT_ON))
+                .isEqualTo(0);
     }
 }

@@ -121,29 +121,38 @@ public class MediaSettingsFragment extends Fragment {
 
         binding.volumeSeekBar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
+                    /** The system refused a change during this drag. */
+                    private boolean refused;
+
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        if (fromUser && audioManager != null) {
-                            try {
-                                audioManager.setStreamVolume(
-                                        AudioManager.STREAM_NOTIFICATION, progress, 0);
-                            } catch (SecurityException e) {
-                                // With Do Not Disturb on, the system refuses volume changes
-                                // that would toggle it unless the app has notification policy
-                                // access. The slider goes back to the volume actually in effect.
-                                Log.w(TAG, "Notification volume change refused", e);
-                                seekBar.setProgress(
-                                        audioManager.getStreamVolume(
-                                                AudioManager.STREAM_NOTIFICATION));
-                            }
+                        if (!fromUser || audioManager == null || refused) return;
+                        try {
+                            audioManager.setStreamVolume(
+                                    AudioManager.STREAM_NOTIFICATION, progress, 0);
+                        } catch (SecurityException e) {
+                            // With Do Not Disturb on, the system refuses volume changes that
+                            // would toggle it unless the app has notification policy access.
+                            // The rest of the drag is not tried again (every step would throw
+                            // and log), and the slider goes back to the volume in effect.
+                            Log.w(TAG, "Notification volume change refused: " + e.getMessage());
+                            refused = true;
                         }
                     }
 
                     @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {}
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                        refused = false;
+                    }
 
                     @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {}
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        if (refused && audioManager != null) {
+                            seekBar.setProgress(
+                                    audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION));
+                        }
+                        refused = false;
+                    }
                 });
     }
 
