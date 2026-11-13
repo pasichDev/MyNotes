@@ -91,6 +91,7 @@
     <string name="selectRestore">Вибрати рез. копію</string>
     <string name="nextRestore">Відновити з хмари</string>
     <string name="messageRestoreProcess"><b>Відновлення даних</b> \nПісля завершення це вікно буде автоматично закрито.</string>
+    <string name="restore_already_running">Інше відновлення ще триває. Виберіть резервну копію знову, коли його буде завершено.</string>
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">Немає даних для створення резервної копії</string>

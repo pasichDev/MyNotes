@@ -84,6 +84,7 @@
     <string name="selectRestore">Auflösung auswählen. kopieren</string>
     <string name="nextRestore">Aus Cloud wiederherstellen</string>
     <string name="messageRestoreProcess"><b>Daten wiederherstellen</b> \nDieses Fenster wird nach Abschluss automatisch geschlossen.</string>
+    <string name="restore_already_running">Eine andere Wiederherstellung läuft noch. Wähle die Sicherung erneut aus, sobald sie abgeschlossen ist.</string>
 
 
     <!-- Fehlerergebnisse sichern/wiederherstellen -->

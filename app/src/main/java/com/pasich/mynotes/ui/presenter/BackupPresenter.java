@@ -169,8 +169,11 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
     @Override
     public void readFileBackupLocal(Uri mUri) {
         if (BackgroundWork.restoreRunning) {
-            // One restore at a time; the running one reports to whichever screen is current.
+            // One restore at a time; the running one reports to whichever screen is current. The
+            // newly picked backup is not restored, so say so instead of dropping it silently
+            // behind a progress dialog that belongs to the other restore.
             getView().showProcessRestoreDialog();
+            rejectRestoreWhileRunning();
             return;
         }
         getView().showProcessRestoreDialog();
@@ -204,6 +207,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
      */
     private void restoreData(JsonBackup jsonBackup) {
         if (BackgroundWork.restoreRunning) {
+            rejectRestoreWhileRunning();
             return;
         }
         BackgroundWork.restoreRunning = true;
@@ -243,6 +247,11 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
             });
             getDataManager().setListPreferences(jsonBackup.getPreferences());
         });
+    }
+
+    /** Tells the user a second restore was not started because one is already running. */
+    private void rejectRestoreWhileRunning() {
+        runOnView(view -> view.showErrorsText(0, R.string.restore_already_running));
     }
 
     private void runInTransaction(Runnable body) {

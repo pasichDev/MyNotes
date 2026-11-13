@@ -91,6 +91,7 @@
     <string name="selectRestore">Қалпына келтіру опциясын таңдаңыз. көшіру</string>
     <string name="nextRestore">Бұлттан қалпына келтіру</string>
     <string name="messageRestoreProcess"><b>Деректерді қалпына келтіру</b> \nБұл терезе аяқталғаннан кейін автоматты түрде жабылады.</string>
+    <string name="restore_already_running">Басқа қалпына келтіру әлі орындалуда. Ол аяқталғаннан кейін сақтық көшірмені қайта таңдаңыз.</string>
 
     <!-- Қате нәтижелерінің сақтық көшірмесін жасау/қалпына келтіру -->
     <string name="emptyDataToBackup">Сақтық көшірме жасау үшін деректер жоқ</string>

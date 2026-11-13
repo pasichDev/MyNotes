@@ -107,6 +107,7 @@
     <string name="selectRestore">Select Restore. copy</string>
     <string name="nextRestore">Restore from Cloud</string>
     <string name="messageRestoreProcess"><b>Restoring data</b> \nThis window will close automatically when completed.</string>
+    <string name="restore_already_running">Another restore is still running. Pick the backup again once it finishes.</string>
 
     <!-- Error results backup/restore -->
     <string name="emptyDataToBackup">No data to backup</string>

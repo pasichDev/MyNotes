@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.gson.Gson;
+import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.BasePresenterTest;
 import com.pasich.mynotes.data.DataManager;
 import com.pasich.mynotes.ui.contract.BackupContract;
@@ -129,5 +130,32 @@ public class BackupPresenterRestoreTest extends BasePresenterTest {
         verify(view).restoreFinish(CloudErrors.BACKUP_DESTROY);
         verify(view, never()).onRestoreSuccessFlag();
         verify(dataManager, never()).setListPreferences(any());
+    }
+
+    @Test
+    public void pickingABackupWhileARestoreRuns_tellsTheUserInsteadOfDroppingIt() {
+        BackupContract.view view = mock(BackupContract.view.class);
+        BackupPresenter presenter = presenter(view);
+        presenter.importDataOtherApp(oneKeepNote());
+
+        presenter.readFileBackupLocal(null);
+
+        verify(view).showErrorsText(0, R.string.restore_already_running);
+        verify(dataManager, never()).readBackupLocalFile(any());
+        io.triggerActions();
+        verify(view).restoreFinish(CloudErrors.OKAY_RESTORE);
+    }
+
+    @Test
+    public void secondKeepImportWhileARestoreRuns_tellsTheUser() {
+        BackupContract.view view = mock(BackupContract.view.class);
+        BackupPresenter presenter = presenter(view);
+        presenter.importDataOtherApp(oneKeepNote());
+
+        presenter.importDataOtherApp(oneKeepNote());
+
+        verify(view).showErrorsText(0, R.string.restore_already_running);
+        io.triggerActions();
+        verify(view).restoreFinish(CloudErrors.OKAY_RESTORE);
     }
 }
