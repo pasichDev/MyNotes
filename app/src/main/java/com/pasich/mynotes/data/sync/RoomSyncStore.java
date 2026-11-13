@@ -56,6 +56,13 @@ public final class RoomSyncStore implements SyncStore {
     private static final String PREFS = "sync_state";
     private static final String LEGACY_STATE = "last_state";
     private static final String PREFERENCES_HASH = "preferences_hash";
+
+    /**
+     * Settled conflicts kept, newest first. Each names two versions, so this matches the number of
+     * settled versions {@link SyncService} publishes; older rows could never be published anyway.
+     */
+    static final int MAX_KEPT_RESOLVED_CONFLICTS = SyncService.MAX_PUBLISHED_SETTLED_IDS / 2;
+
     private static final String PREFERENCES_STABLE_ID = "00000000-0000-4000-8000-000000000000";
     private static final String ATTACHMENT_CACHE_DIR = "sync-attachments";
     private static final String HASH_CACHE_FILE = "hash-cache.json";
@@ -1242,6 +1249,7 @@ public final class RoomSyncStore implements SyncStore {
                     throw new SyncRuntimeException(error);
                 }
                 database.syncConflictDao().markResolved(conflictId, resolution.name(), resolvedAt);
+                database.syncConflictDao().deleteResolvedBeyond(MAX_KEPT_RESOLVED_CONFLICTS);
             });
         } catch (SyncRuntimeException error) {
             notesToReconcile.clear();
@@ -1411,6 +1419,7 @@ public final class RoomSyncStore implements SyncStore {
                                 null);
             }
             database.syncConflictDao().markResolved(conflictId, resolution, resolvedAt);
+            database.syncConflictDao().deleteResolvedBeyond(MAX_KEPT_RESOLVED_CONFLICTS);
         });
     }
 

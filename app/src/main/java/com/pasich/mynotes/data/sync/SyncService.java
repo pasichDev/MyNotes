@@ -32,7 +32,7 @@ public final class SyncService {
     private static final long MAX_TOLERATED_CLOCK_SKEW_MILLIS = 24L * 60L * 60L * 1000L;
 
     /** Well under the schema record limit, so a bundle can always still be published. */
-    private static final int MAX_PUBLISHED_SETTLED_IDS = 2_000;
+    static final int MAX_PUBLISHED_SETTLED_IDS = 2_000;
 
     private final SyncStore store;
     private final SyncMerger merger;
@@ -151,9 +151,9 @@ public final class SyncService {
 
             // A choice the user already made must never be offered again, wherever it was made.
             java.util.Set<String> settledVersionIds =
-                    new java.util.LinkedHashSet<>(store.getResolvedAlternativeIds());
-            settledVersionIds.addAll(remoteResult.getResolvedAlternativeIds());
-            settledVersionIds = capSettledVersionIds(settledVersionIds);
+                    capSettledVersionIds(
+                            store.getResolvedAlternativeIds(),
+                            remoteResult.getResolvedAlternativeIds());
 
             java.util.List<SyncMergeResult.Conflict> allConflicts = new java.util.ArrayList<>();
             for (SyncMergeResult.Conflict conflict : remoteResult.getConflicts()) {
@@ -262,24 +262,36 @@ public final class SyncService {
      *
      * <p>Every resolution adds its two version identities and they were never dropped, so the array
      * grew for the life of the account. Past the schema's record limit {@code encode} refuses the
-     * bundle and every publish fails permanently, with nothing the user can do about it. Trimming
-     * preserves the identities this device settled most recently; the worst case for a dropped one
-     * is that an already-settled conflict is offered again, which is recoverable, whereas a bundle
-     * that cannot be published is not.
+     * bundle and every publish fails permanently, with nothing the user can do about it. The worst
+     * case for a dropped identity is that an already-settled conflict is offered again, which is
+     * recoverable, whereas a bundle that cannot be published is not — so the oldest go first.
+     *
+     * <p>The store's own settlements come newest first, so it is the oldest of them that go. The
+     * bundle carries no settlement time, so the remote ones come in wire order; they are
+     * interleaved with the local ones, so neither this device's own settlements nor everyone else's
+     * can crowd the other side out entirely.
      */
     @NonNull
-    private static java.util.Set<String> capSettledVersionIds(
-            @NonNull java.util.Set<String> settled) {
-        if (settled.size() <= MAX_PUBLISHED_SETTLED_IDS) {
-            return settled;
+    static java.util.Set<String> capSettledVersionIds(
+            @NonNull java.util.Collection<String> local,
+            @NonNull java.util.Collection<String> remote) {
+        java.util.Set<String> merged = new java.util.LinkedHashSet<>();
+        java.util.Iterator<String> localIds = local.iterator();
+        java.util.Iterator<String> remoteIds = remote.iterator();
+        while (localIds.hasNext() || remoteIds.hasNext()) {
+            if (localIds.hasNext()) merged.add(localIds.next());
+            if (remoteIds.hasNext()) merged.add(remoteIds.next());
+        }
+        if (merged.size() <= MAX_PUBLISHED_SETTLED_IDS) {
+            return merged;
         }
         Log.w(
                 TAG,
                 "Trimming "
-                        + settled.size()
+                        + merged.size()
                         + " settled conflict versions to the publishable limit");
         java.util.Set<String> trimmed = new java.util.LinkedHashSet<>();
-        for (String versionId : settled) {
+        for (String versionId : merged) {
             if (trimmed.size() >= MAX_PUBLISHED_SETTLED_IDS) {
                 break;
             }
