@@ -1725,6 +1725,26 @@ public final class RoomSyncStore implements SyncStore {
         return resolveLocalAttachment(sha256) != null;
     }
 
+    /**
+     * Answers from the hash cache the snapshot build already uses, so an untouched blob is not read
+     * and hashed again on every sync. The cache keys a digest by path, size and modification time;
+     * any rewrite of the file is hashed afresh.
+     */
+    @Override
+    public boolean hasVerifiedAttachment(@NonNull String sha256, @Nullable Long expectedSize) {
+        File file = resolveLocalAttachment(sha256);
+        if (file == null || (expectedSize != null && file.length() != expectedSize)) {
+            return false;
+        }
+        try {
+            return sha256.equals(hashCache.sha256(file, attachmentHasher::sha256));
+        } catch (IOException unreadable) {
+            return false;
+        } finally {
+            hashCache.flush();
+        }
+    }
+
     @Nullable
     @Override
     public SnapshotProblem describeMissingAttachment(@NonNull String sha256) {

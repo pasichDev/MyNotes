@@ -98,6 +98,26 @@ public interface SyncStore {
         return false;
     }
 
+    /**
+     * True when the local blob exists and its bytes hash to {@code sha256}.
+     *
+     * <p>The default reads and hashes the whole blob. A store that already knows the digest of an
+     * unchanged file should answer from that instead: the service asks this for every attachment on
+     * every sync, and re-hashing an untouched library each time dominated an idle sync.
+     *
+     * @param expectedSize the declared size, or null to accept any.
+     */
+    default boolean hasVerifiedAttachment(@NonNull String sha256, @Nullable Long expectedSize)
+            throws IOException {
+        // Missing, unreadable and corrupt all mean the same here: not a copy to rely on.
+        try (InputStream input = readAttachment(sha256)) {
+            VerifyingInputStream.verify(input, sha256, expectedSize);
+            return true;
+        } catch (IOException unusable) {
+            return false;
+        }
+    }
+
     /** Opens one complete local attachment. The caller closes the returned stream. */
     @NonNull
     InputStream readAttachment(@NonNull String sha256) throws IOException;

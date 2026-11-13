@@ -157,6 +157,25 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_trustsTheStoresDigestCacheInsteadOfReHashingEveryLocalBlob() throws Exception {
+        SyncRecord local = note(TEN, "Local with an unchanged attachment");
+        byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, bytes);
+        store.verifiedFromCache.add(hash);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, bytes);
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        // Every local blob used to be read in full and hashed on every sync, cache or not.
+        assertThat(store.readAttachmentCalls).isEqualTo(0);
+    }
+
+    @Test
     public void sync_repairsCorruptLocalAttachmentFromRemote() throws Exception {
         SyncRecord local = note(TEN, "Local with corrupt attachment");
         byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
@@ -596,8 +615,20 @@ public class SyncServiceTest {
             return attachments.containsKey(sha256);
         }
 
+        /** Blobs the store vouches for from its digest cache, as RoomSyncStore does. */
+        private final java.util.Set<String> verifiedFromCache = new java.util.HashSet<>();
+
+        private int readAttachmentCalls;
+
+        @Override
+        public boolean hasVerifiedAttachment(String sha256, Long expectedSize) throws IOException {
+            return verifiedFromCache.contains(sha256)
+                    || SyncStore.super.hasVerifiedAttachment(sha256, expectedSize);
+        }
+
         @Override
         public InputStream readAttachment(String sha256) throws IOException {
+            readAttachmentCalls++;
             byte[] bytes = attachments.get(sha256);
             if (bytes == null) {
                 throw new IOException("missing local attachment");

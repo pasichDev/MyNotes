@@ -116,6 +116,16 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
      */
     private final Map<String, Long> verifiedAttachments = new HashMap<>();
 
+    /**
+     * Candidate listings already made during this sync, keyed by root and hash.
+     *
+     * <p>The service asks whether a blob exists and then whether it is verified, and each question
+     * listed the root again: two Drive listings per attachment per sync, for every attachment in
+     * the library. The answer the first one got is the one the second needs. Anything this backend
+     * uploads drops the listing for its root and hash, so a fresh copy is always seen.
+     */
+    private final Map<String, List<AttachmentCandidate>> candidateListings = new HashMap<>();
+
     public GoogleDriveSyncBackend(@NonNull String accessToken) {
         this(accessToken, DEFAULT_API, DEFAULT_UPLOAD, Clock.systemUTC(), new SyncBundleCodec());
     }
@@ -667,6 +677,11 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
     @NonNull
     private List<AttachmentCandidate> listAttachmentCandidates(
             @NonNull String folderId, @NonNull String sha256) throws IOException {
+        String listingKey = memoKey(folderId, sha256);
+        List<AttachmentCandidate> listed = candidateListings.get(listingKey);
+        if (listed != null) {
+            return listed;
+        }
         JsonArray files =
                 listFiles(
                         ownedFilesQuery(folderId, PROPERTY_ATTACHMENT_SHA256, sha256),
@@ -684,7 +699,9 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         // same hash are byte-identical and either one will do. Rejecting them used to break every
         // subsequent sync permanently.
         candidates.sort(Comparator.comparing(candidate -> candidate.id));
-        return candidates;
+        List<AttachmentCandidate> result = Collections.unmodifiableList(candidates);
+        candidateListings.put(listingKey, result);
+        return result;
     }
 
     /**
@@ -1148,9 +1165,13 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         if (sizeBytes < 0L) {
             throw new IllegalArgumentException("An attachment upload needs a declared size");
         }
+        // Whatever happens next, the remembered listing no longer describes this root.
+        candidateListings.remove(memoKey(folderId, sha256));
         try {
             uploadStream(folderId, sha256, MIME_BINARY, content, sizeBytes);
+            candidateListings.remove(memoKey(folderId, sha256));
         } catch (IOException uploadFailure) {
+            candidateListings.remove(memoKey(folderId, sha256));
             // Attachment identity is its SHA-256. A successful request whose response was lost is
             // confirmed by discovery, not repeated with an already-consumed stream.
             if (!mayHaveCommitted(uploadFailure)

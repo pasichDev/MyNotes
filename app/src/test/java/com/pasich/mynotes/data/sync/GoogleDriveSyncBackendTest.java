@@ -939,6 +939,37 @@ public class GoogleDriveSyncBackendTest {
     }
 
     @Test
+    public void existenceAndVerificationShareOneListingOfTheBlob() throws Exception {
+        byte[] bytes = "photo".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        backend().writeAttachment(hash, bytes.length, new ByteArrayInputStream(bytes));
+        GoogleDriveSyncBackend backend = backend();
+        int before = server.listingsMentioning(hash);
+
+        assertThat(backend.hasAttachment(hash)).isTrue();
+        assertThat(backend.hasVerifiedAttachment(hash, (long) bytes.length)).isTrue();
+
+        // The service asks both questions for every attachment on every sync; each used to list
+        // the root again.
+        assertThat(server.listingsMentioning(hash) - before).isEqualTo(1);
+    }
+
+    @Test
+    public void aBlobUploadedAfterAListingIsSeenByTheNextQuestion() throws Exception {
+        byte[] bytes = "photo".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        byte[] other = "other".getBytes(StandardCharsets.UTF_8);
+        backend().writeAttachment(sha256(other), other.length, new ByteArrayInputStream(other));
+        GoogleDriveSyncBackend backend = backend();
+        // The blob is listed, and found absent, before this same backend uploads it.
+        assertThat(backend.hasAttachment(hash)).isFalse();
+
+        backend.writeAttachment(hash, bytes.length, new ByteArrayInputStream(bytes));
+
+        assertThat(backend.hasVerifiedAttachment(hash, (long) bytes.length)).isTrue();
+    }
+
+    @Test
     public void anOversizedCandidateIsSkippedRatherThanFailingTheSync() throws Exception {
         // A Drive object larger than the ceiling and tagged with the expected hash: the ceiling
         // used to throw a plain IOException from the stream, past the "skip a corrupt candidate"
@@ -1277,6 +1308,7 @@ public class GoogleDriveSyncBackendTest {
         private volatile boolean running = true;
         private volatile CyclicBarrier emptyRootListingBarrier;
         private final AtomicInteger folderListings = new AtomicInteger();
+        private final List<String> listingQueries = new ArrayList<>();
         private final Map<String, Integer> mediaReads = new ConcurrentHashMap<>();
         private final List<String> deletedFileIds =
                 java.util.Collections.synchronizedList(new ArrayList<>());
@@ -1357,6 +1389,17 @@ public class GoogleDriveSyncBackendTest {
         /** How many times the folder index was listed. */
         int folderListings() {
             return folderListings.get();
+        }
+
+        /** How many file listings named {@code text} in their query. */
+        int listingsMentioning(String text) {
+            int total = 0;
+            synchronized (listingQueries) {
+                for (String query : listingQueries) {
+                    if (query.contains(text)) total++;
+                }
+            }
+            return total;
         }
 
         /** How many times the bytes of the blob carrying {@code sha256} were downloaded. */
@@ -1681,6 +1724,11 @@ public class GoogleDriveSyncBackendTest {
             if (query != null
                     && query.contains("mimeType = 'application/vnd.google-apps.folder'")) {
                 folderListings.incrementAndGet();
+            }
+            if (query != null) {
+                synchronized (listingQueries) {
+                    listingQueries.add(query);
+                }
             }
             JsonArray array = new JsonArray();
             for (DriveFile file : files.values()) {

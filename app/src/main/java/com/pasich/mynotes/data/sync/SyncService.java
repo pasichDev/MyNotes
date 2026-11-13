@@ -414,21 +414,25 @@ public final class SyncService {
             }
             if (store.hasAttachment(hash)) {
                 Long expectedSize = expectedSizes.get(hash);
-                // Index lookup only; the bytes are checked once, below.
+                // Index lookup only; the backend remembers the listing, so the verification
+                // below does not list the same blob again.
                 boolean remotePresent = backend.hasAttachment(hash);
-                try {
-                    verifyAttachment(hash, expectedSize, store.readAttachment(hash));
-                } catch (IOException localError) {
+                // Through the store's digest cache: reading and hashing every local blob on every
+                // sync, unchanged or not, was the bulk of an idle sync's work.
+                if (!store.hasVerifiedAttachment(hash, expectedSize)) {
                     if (!remotePresent) {
-                        throw localError;
+                        // Nothing to repair it from. Read it in full, which raises the precise
+                        // failure — missing, wrong size or wrong digest — for the user to see.
+                        verifyAttachment(hash, expectedSize, store.readAttachment(hash));
+                    } else {
+                        // The local copy is missing or corrupt; repair it from the remote blob,
+                        // which copyVerified refuses to accept unless it hashes correctly.
+                        copyVerified(
+                                hash,
+                                expectedSize,
+                                backend.readAttachment(hash),
+                                store::writeAttachment);
                     }
-                    // The local copy is missing or corrupt; repair it from the remote blob,
-                    // which copyVerified refuses to accept unless it hashes correctly.
-                    copyVerified(
-                            hash,
-                            expectedSize,
-                            backend.readAttachment(hash),
-                            store::writeAttachment);
                 }
                 // Drive is untrusted: a matching appProperty is only a claim. The blob is read
                 // and hashed exactly once per sync, and the result is remembered, so publishing
