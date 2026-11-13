@@ -232,7 +232,6 @@
                         android:hint="@string/hintTextNote"
                         android:inputType="textAutoComplete|text|textCapSentences|textMultiLine"
                         android:longClickable="true"
-                        android:maxLength="@integer/maxLengthNotesTextValue"
                         android:minHeight="100dp"
                         android:padding="20dp"
                         android:singleLine="false"
