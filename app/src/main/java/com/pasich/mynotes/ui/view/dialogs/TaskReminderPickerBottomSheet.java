@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.view.dialogs;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -32,7 +34,7 @@ import com.pasich.mynotes.data.model.Task;
 import com.pasich.mynotes.utils.reminder.ReminderManager;
 import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 import dagger.hilt.android.AndroidEntryPoint;
-import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.Completable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,7 +56,6 @@ public class TaskReminderPickerBottomSheet extends BottomSheetDialogFragment {
     private String taskTitle;
     private Long selectedTime = null;
     private int selectedIntervalMinutes = 0;
-    private final CompositeDisposable disposables = new CompositeDisposable();
 
     private View selectedTimeCard;
     private TextView selectedTimeDisplay;
@@ -296,56 +297,59 @@ public class TaskReminderPickerBottomSheet extends BottomSheetDialogFragment {
         saveReminder();
     }
 
+    @SuppressLint("CheckResult")
     private void saveReminder() {
         if (selectedTime == null) return;
         final long time = selectedTime;
         final int interval = selectedIntervalMinutes;
+        final Context app = requireContext().getApplicationContext();
 
-        disposables.add(
-                dataManager
-                        .setTaskReminderFull(taskId, time, interval)
-                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(
-                                () -> {
-                                    Task tempTask = new Task();
-                                    tempTask.setId(taskId);
-                                    tempTask.setTitle(taskTitle);
-                                    tempTask.setReminderTime(time);
-                                    tempTask.setReminderIntervalMinutes(interval);
-                                    TaskReminderManager.scheduleReminder(
-                                            requireContext(), tempTask);
+        Task tempTask = new Task();
+        tempTask.setId(taskId);
+        tempTask.setTitle(taskTitle);
+        tempTask.setReminderTime(time);
+        tempTask.setReminderIntervalMinutes(interval);
 
-                                    Bundle result = new Bundle();
-                                    result.putBoolean("saved", true);
-                                    getParentFragmentManager()
-                                            .setFragmentResult("taskReminderChanged", result);
-                                    dismiss();
-                                },
-                                e -> Log.e(TAG, "save failed", e)));
+        // The alarm is armed right after the write on the io thread, not in a callback the sheet's
+        // teardown can cancel, so a stored reminder always has its alarm. Not tied to the sheet's
+        // disposables for the same reason; the sheet part checks it is still there.
+        dataManager
+                .setTaskReminderFull(taskId, time, interval)
+                .andThen(
+                        Completable.fromAction(
+                                () -> TaskReminderManager.scheduleReminder(app, tempTask)))
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            if (!isAdded()) return;
+                            Bundle result = new Bundle();
+                            result.putBoolean("saved", true);
+                            getParentFragmentManager()
+                                    .setFragmentResult("taskReminderChanged", result);
+                            dismissAllowingStateLoss();
+                        },
+                        e -> Log.e(TAG, "save failed", e));
     }
 
+    @SuppressLint("CheckResult")
     private void deleteReminder() {
-        disposables.add(
-                dataManager
-                        .clearTaskReminder(taskId)
-                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(
-                                () -> {
-                                    TaskReminderManager.cancelReminder(requireContext(), taskId);
-                                    Bundle result = new Bundle();
-                                    result.putBoolean("saved", false);
-                                    getParentFragmentManager()
-                                            .setFragmentResult("taskReminderChanged", result);
-                                    dismiss();
-                                },
-                                e -> Log.e(TAG, "delete failed", e)));
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        disposables.clear();
+        final int id = taskId;
+        final Context app = requireContext().getApplicationContext();
+        dataManager
+                .clearTaskReminder(id)
+                .andThen(Completable.fromAction(() -> TaskReminderManager.cancelReminder(app, id)))
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe(
+                        () -> {
+                            if (!isAdded()) return;
+                            Bundle result = new Bundle();
+                            result.putBoolean("saved", false);
+                            getParentFragmentManager()
+                                    .setFragmentResult("taskReminderChanged", result);
+                            dismissAllowingStateLoss();
+                        },
+                        e -> Log.e(TAG, "delete failed", e));
     }
 }
