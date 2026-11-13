@@ -106,6 +106,34 @@ public class EnclyMigrationRepository {
     }
 
     /**
+     * Keeps what a hand-off carried until Encly answers; see {@link ExportedSnapshotStore}.
+     *
+     * @return the token that reads it back.
+     */
+    @WorkerThread
+    @NonNull
+    public String saveExported(@NonNull Exported exported) throws IOException {
+        return ExportedSnapshotStore.save(exportedDir(), exported);
+    }
+
+    /** What the hand-off saved under {@code token} carried, or null when it is gone. */
+    @WorkerThread
+    @Nullable
+    public Exported loadExported(@Nullable String token) {
+        return ExportedSnapshotStore.load(exportedDir(), token);
+    }
+
+    /** Deletes the hand-off snapshots saved before {@code requestedAt}. */
+    @WorkerThread
+    public void forgetExported(long requestedAt) {
+        ExportedSnapshotStore.sweep(exportedDir(), requestedAt);
+    }
+
+    private File exportedDir() {
+        return new File(context.getNoBackupFilesDir(), "encly-handoff");
+    }
+
+    /**
      * Which records a hand-off carried, and what each held when it was carried.
      *
      * <p>The clear offered afterwards removes exactly these. It used to remove whatever the
