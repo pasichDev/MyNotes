@@ -220,6 +220,7 @@
 
                     <EditText
                         android:id="@+id/valueNote"
+                        app:emojiCompatEnabled="false"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:autoLink="web|email"
