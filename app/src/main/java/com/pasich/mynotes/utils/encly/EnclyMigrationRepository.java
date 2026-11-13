@@ -2,6 +2,7 @@ package com.pasich.mynotes.utils.encly;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.database.entities.SyncMetadataEntity;
@@ -17,9 +18,13 @@ import com.pasich.mynotes.utils.reminder.TaskReminderManager;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.ToLongFunction;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -97,25 +102,93 @@ public class EnclyMigrationRepository {
     }
 
     /**
-     * Deletes notes, tasks, tags, task categories and attachment files. Only ever called after
-     * Encly confirmed the move and the user confirmed this separate step.
+     * Which records a hand-off carried.
+     *
+     * <p>The clear offered afterwards removes exactly these. It used to remove whatever the
+     * database held when the button was pressed, including a note written, or synced in, after the
+     * archive was made — which never reached Encly.
+     */
+    public static final class Exported {
+        public final long[] notes;
+        public final long[] tasks;
+        public final long[] tags;
+        public final long[] categories;
+
+        public Exported(long[] notes, long[] tasks, long[] tags, long[] categories) {
+            this.notes = notes;
+            this.tasks = tasks;
+            this.tags = tags;
+            this.categories = categories;
+        }
+
+        @NonNull
+        public static Exported of(@NonNull Library library) {
+            return new Exported(
+                    ids(library.notes, Note::getId),
+                    ids(library.tasks, Task::getId),
+                    ids(library.tags, Tag::getId),
+                    ids(library.categories, TaskCategory::getId));
+        }
+
+        private static <T> long[] ids(List<T> items, ToLongFunction<T> id) {
+            if (items == null) return new long[0];
+            long[] out = new long[items.size()];
+            for (int i = 0; i < out.length; i++) out[i] = id.applyAsLong(items.get(i));
+            return out;
+        }
+    }
+
+    /** The items of {@code current} whose id is among {@code exported}. */
+    @NonNull
+    static <T> List<T> onlyExported(
+            @Nullable List<T> current, @NonNull long[] exported, @NonNull ToLongFunction<T> id) {
+        List<T> out = new ArrayList<>();
+        if (current == null || exported.length == 0) return out;
+        Set<Long> wanted = new HashSet<>();
+        for (long value : exported) wanted.add(value);
+        for (T item : current) {
+            if (wanted.contains(id.applyAsLong(item))) out.add(item);
+        }
+        return out;
+    }
+
+    /**
+     * Deletes the notes, tasks, tags and task categories the hand-off carried, with the notes'
+     * attachment files. Only ever called after Encly confirmed the move and the user confirmed this
+     * separate step. Anything added since the archive was made stays.
      */
     @WorkerThread
-    public void clearAllData() {
+    public void clearExported(@NonNull Exported exported) {
         Library library = load();
-        for (Note note : library.notes) {
+        List<Note> notes = onlyExported(library.notes, exported.notes, Note::getId);
+        List<Task> tasks = onlyExported(library.tasks, exported.tasks, Task::getId);
+        List<Tag> tags = onlyExported(library.tags, exported.tags, Tag::getId);
+        List<TaskCategory> categories =
+                onlyExported(library.categories, exported.categories, TaskCategory::getId);
+
+        for (Note note : notes) {
             if (note.getReminderTime() != null) {
                 ReminderManager.cancelReminder(context, note.getId());
             }
         }
-        for (Task task : library.tasks) {
+        for (Task task : tasks) {
             if (task.getReminderTime() != null) {
                 TaskReminderManager.cancelReminder(context, task.getId());
             }
         }
-        syncMutationCoordinator.clearAllUserData();
-        new NoteViewStateStore(context).clear();
-        deleteRecursively(AttachmentStorage.baseDirPath(context));
+        database.runInTransaction(() -> {
+            syncMutationCoordinator.deleteNotes(notes);
+            for (Task task : tasks) syncMutationCoordinator.deleteTask(task);
+            for (Tag tag : tags) syncMutationCoordinator.deleteTag(tag);
+            for (TaskCategory category : categories)
+                syncMutationCoordinator.deleteCategory(category);
+        });
+        NoteViewStateStore viewState = new NoteViewStateStore(context);
+        File attachments = AttachmentStorage.baseDirPath(context);
+        for (Note note : notes) {
+            viewState.remove(note.getId());
+            deleteRecursively(new File(attachments, "note_" + note.getId()));
+        }
     }
 
     private static String key(String recordType, long localId) {
