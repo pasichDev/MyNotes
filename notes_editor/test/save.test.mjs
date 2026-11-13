@@ -114,3 +114,31 @@ test('a very long plain-text note opens in blocks of about a kilobyte that give 
       'no block starts or ends with an empty line, which the editor could drop')
   }
 })
+
+test('markup in a plain-text note is shown as text, never run as HTML', () => {
+  const page = openPage()
+  const text = '<img src=x onerror="Android.x()">\n\nList<String> a && b > c'
+
+  const blocks = page.window.plainTextBlocks(text)
+
+  assert.deepEqual(JSON.parse(JSON.stringify(blocks.map(b => b.data.text))), [
+    '&lt;img src=x onerror="Android.x()"&gt;',
+    '<br>List&lt;String&gt; a &amp;&amp; b &gt; c'
+  ])
+  const decode = html =>
+    html.replace(/<br>/g, '\n').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+  assert.equal(blocks.map(b => decode(b.data.text)).join('\n'), text)
+})
+
+test('markup is escaped in a very long plain-text note too', () => {
+  const page = openPage()
+  const lines = []
+  for (let i = 0; i < 300; i++) lines.push(`<b>line ${i}</b> & more`)
+
+  const blocks = page.window.plainTextBlocks(lines.join('\n'))
+
+  assert.ok(blocks.length > 1)
+  for (const block of blocks) {
+    assert.ok(!/<(?!br>)/.test(block.data.text), 'no tag other than <br> is left')
+  }
+})

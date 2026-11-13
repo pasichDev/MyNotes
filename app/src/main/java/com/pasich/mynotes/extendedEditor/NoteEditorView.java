@@ -164,9 +164,13 @@ public class NoteEditorView extends FrameLayout {
     private void setupWebView() {
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setAllowFileAccess(true);
+        // The page and its scripts come from file:///android_asset, which this setting does not
+        // govern, and attachments through the editorjs:// interceptor: no other file:// URL is
+        // needed, so a note's content cannot read the app's private files. Nothing is loaded over
+        // the network either, so mixed content is never allowed.
+        webSettings.setAllowFileAccess(false);
         webSettings.setDomStorageEnabled(true);
-        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         webSettings.setGeolocationEnabled(false);
         webSettings.setAllowUniversalAccessFromFileURLs(false);
         webSettings.setOffscreenPreRaster(true);

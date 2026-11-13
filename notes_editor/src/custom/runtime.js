@@ -856,8 +856,16 @@ function setThemeColors (colors) {
 const PLAIN_TEXT_LINE_BLOCKS = 200
 const PLAIN_TEXT_BLOCK_CHARS = 1000
 
+/**
+ * Plain text as paragraph HTML. The paragraph tool shows its text as HTML, so markup in a note
+ * (shared into the app, say) would otherwise run in the page, which can reach Android.
+ */
+function escapeHtml (text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 function plainTextBlocks (text) {
-  const lines = text.split('\n')
+  const lines = text.split('\n').map(escapeHtml)
   while (lines.length && lines[0].trim() === '') lines.shift()
   while (lines.length && lines[lines.length - 1].trim() === '') lines.pop()
   const textLines = lines.filter(line => line.trim() !== '').length
