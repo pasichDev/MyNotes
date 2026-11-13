@@ -210,7 +210,11 @@ public final class SyncService {
             // the local apply below still receives all of them.
             SyncSnapshot published = forPublication(merged, remote, alternatives.values());
             if (needsPublication(
-                    published, remote, alternatives.keySet(), settledVersionIds, remoteResult)) {
+                    published,
+                    withoutExpiredTombstones(remote, alternatives.values()),
+                    alternatives.keySet(),
+                    settledVersionIds,
+                    remoteResult)) {
                 backend.publish(
                         new SyncPublication(
                                 published,
@@ -360,6 +364,41 @@ public final class SyncService {
             kept.add(record);
         }
         return pruned ? new SyncSnapshot(kept) : merged;
+    }
+
+    /**
+     * {@code remote} as this version would have published it: without the expired tombstones {@link
+     * #forPublication} leaves out.
+     *
+     * <p>Only for deciding whether to publish. An older app version on another device keeps every
+     * tombstone and puts the expired ones back in each bundle it writes; compared with those, the
+     * pruned snapshot never matched, and both devices republished the whole bundle on every sync,
+     * each undoing the other. A remote that differs only by tombstones nobody needs any more
+     * already says everything this sync would say. A tombstone {@code forPublication} keeps — one
+     * that is contested, or whose record Drive still holds live — is not a tombstone in {@code
+     * remote} or is kept here as well.
+     */
+    @NonNull
+    private SyncSnapshot withoutExpiredTombstones(
+            @NonNull SyncSnapshot remote, @NonNull Collection<SyncRecord> alternatives) {
+        long horizon = clock.millis() - TOMBSTONE_PUBLICATION_HORIZON_MILLIS;
+        java.util.Set<String> contested = new java.util.HashSet<>();
+        for (SyncRecord alternative : alternatives) {
+            contested.add(alternative.getType().getWireValue() + ":" + alternative.getId());
+        }
+        java.util.List<SyncRecord> kept = new java.util.ArrayList<>();
+        boolean pruned = false;
+        for (SyncRecord record : remote.getRecords()) {
+            if (record.isTombstone()
+                    && record.getDeletedAt().toEpochMilli() < horizon
+                    && !contested.contains(
+                            record.getType().getWireValue() + ":" + record.getId())) {
+                pruned = true;
+                continue;
+            }
+            kept.add(record);
+        }
+        return pruned ? new SyncSnapshot(kept) : remote;
     }
 
     /**

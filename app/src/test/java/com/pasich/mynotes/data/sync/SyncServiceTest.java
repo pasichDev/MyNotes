@@ -197,6 +197,36 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_doesNotRepublishWhenRemoteOnlyAddsBackExpiredTombstones() {
+        // An older app version on another device keeps every tombstone and puts the expired ones
+        // back into each bundle it writes. Comparing the pruned snapshot with that bundle made
+        // both devices republish everything on every sync, forever.
+        SyncRecord old = tombstone(NOTE_ID, daysBeforeNow(100));
+        SyncRecord recent = tombstone(OTHER_NOTE_ID, daysBeforeNow(10));
+        FakeStore store = new FakeStore(snapshot(old, recent));
+        FakeBackend backend = new FakeBackend(snapshot(old, recent));
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+        assertThat(store.appliedSnapshot.getRecords()).containsExactly(old, recent);
+    }
+
+    @Test
+    public void sync_stillPublishesWhenRemoteLacksAnUnexpiredTombstone() {
+        SyncRecord old = tombstone(NOTE_ID, daysBeforeNow(100));
+        SyncRecord recent = tombstone(OTHER_NOTE_ID, daysBeforeNow(10));
+        FakeStore store = new FakeStore(snapshot(old, recent));
+        FakeBackend backend = new FakeBackend(snapshot(old));
+
+        new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(backend.writeSnapshotCalls).isEqualTo(1);
+        assertThat(backend.snapshot.getRecords()).containsExactly(recent);
+    }
+
+    @Test
     public void sync_answersAStaleCopyOfAnOldDeletionWithTheTombstone() {
         // A device that slept through the horizon never saw the deletion, and once Drive stopped
         // carrying the tombstone it republished its live copy. The next device still holding the
@@ -220,9 +250,11 @@ public class SyncServiceTest {
 
         assertThat(versions(stale.appliedSnapshot))
                 .containsExactly(deleted.getCanonicalPayloadHash());
-        // Settled everywhere, the tombstone leaves the bundle again and stays out.
-        assertThat(backend.snapshot.getRecords()).isEmpty();
+        // Settled everywhere, nobody republishes the bundle just to drop the expired tombstone: it
+        // leaves Drive with the next publish that has news, and until then it is harmless.
         int publishes = backend.writeSnapshotCalls;
+        new SyncService(stale, new SyncMerger(), CLOCK).sync(backend);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(publishes);
         new SyncService(holder, new SyncMerger(), CLOCK).sync(backend);
         assertThat(backend.writeSnapshotCalls).isEqualTo(publishes);
         assertThat(versions(holder.appliedSnapshot))
