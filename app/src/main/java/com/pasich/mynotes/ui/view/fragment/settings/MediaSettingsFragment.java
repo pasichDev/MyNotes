@@ -121,6 +121,9 @@ public class MediaSettingsFragment extends Fragment {
 
         binding.volumeSeekBar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
+                    /** A touch drag is in progress. */
+                    private boolean tracking;
+
                     /** The system refused a change during this drag. */
                     private boolean refused;
 
@@ -133,25 +136,38 @@ public class MediaSettingsFragment extends Fragment {
                         } catch (SecurityException e) {
                             // With Do Not Disturb on, the system refuses volume changes that
                             // would toggle it unless the app has notification policy access.
-                            // The rest of the drag is not tried again (every step would throw
-                            // and log), and the slider goes back to the volume in effect.
                             Log.w(TAG, "Notification volume change refused: " + e.getMessage());
-                            refused = true;
+                            if (tracking) {
+                                // The rest of the drag is not tried again (every step would
+                                // throw and log); the slider goes back when the drag ends.
+                                refused = true;
+                            } else {
+                                // A keyboard, D-pad or accessibility change: no drag will end
+                                // to put the slider back, so it goes back to the volume in
+                                // effect now, and the next such change is tried afresh.
+                                showVolumeInEffect(seekBar);
+                            }
                         }
                     }
 
                     @Override
                     public void onStartTrackingTouch(SeekBar seekBar) {
+                        tracking = true;
                         refused = false;
                     }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                        if (refused && audioManager != null) {
-                            seekBar.setProgress(
-                                    audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION));
-                        }
+                        if (refused) showVolumeInEffect(seekBar);
+                        tracking = false;
                         refused = false;
+                    }
+
+                    private void showVolumeInEffect(SeekBar seekBar) {
+                        if (audioManager == null) return;
+                        // Not from the user, so onProgressChanged ignores it.
+                        seekBar.setProgress(
+                                audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION));
                     }
                 });
     }

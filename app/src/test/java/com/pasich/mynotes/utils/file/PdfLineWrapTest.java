@@ -47,6 +47,47 @@ public class PdfLineWrapTest {
     }
 
     @Test
+    public void anIndentedLine_keepsItsIndentOnEveryDrawnLine() {
+        assertEquals(
+                Arrays.asList("    aaa bbb", "    ccc ddd"),
+                FileExportUtils.wrapLine("    aaa bbb ccc ddd", 11, CHARS));
+    }
+
+    @Test
+    public void anIndentedShortLine_isStillDrawnAsIs() {
+        assertEquals(List.of("  short"), FileExportUtils.wrapLine("  short", 10, CHARS));
+    }
+
+    @Test
+    public void anIndentedOverlongWord_isBrokenBesideTheIndent() {
+        List<String> lines = FileExportUtils.wrapLine("\tabcdefgh", 4, CHARS);
+
+        assertEquals(Arrays.asList("\tabc", "\tdef", "\tgh"), lines);
+    }
+
+    @Test
+    public void anIndentWiderThanHalfTheLine_isCutSoTextStillFits() {
+        List<String> lines = FileExportUtils.wrapLine("        abcd efgh", 8, CHARS);
+
+        assertEquals(Arrays.asList("    abcd", "    efgh"), lines);
+        for (String line : lines) {
+            assertTrue(line, line.length() <= 8);
+        }
+    }
+
+    @Test
+    public void indentedSurrogatePairs_areNotSplit() {
+        String emoji = "😀";
+        List<String> lines = FileExportUtils.wrapLine("  " + emoji + emoji + emoji, 4, CHARS);
+
+        for (String line : lines) {
+            assertTrue(line, line.startsWith("  "));
+            assertTrue(!Character.isHighSurrogate(line.charAt(line.length() - 1)));
+            assertTrue(!Character.isLowSurrogate(line.charAt(2)));
+        }
+    }
+
+    @Test
     public void surrogatePairs_areNotSplit() {
         String emoji = "😀"; // one character, two chars
         List<String> lines = FileExportUtils.wrapLine(emoji + emoji + emoji, 3, CHARS);

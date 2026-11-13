@@ -38,7 +38,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
 
-    // Written from the IO thread when a note deleted meanwhile is saved as a new one.
     private volatile long idKey;
     private boolean newNoteKey;
     private boolean extendedEditor = false;
@@ -55,8 +54,6 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     // Waiting for the next flushPending write to finish. A flush that replaces one still in flight
     // takes over its waiters, so none is left behind.
     private final List<Runnable> flushWaiters = new ArrayList<>();
-    // Held while a note deleted meanwhile is saved as a new one, so two saves never both do it.
-    private final Object recreateLock = new Object();
 
     @Inject
     public NotePresenter(
@@ -333,35 +330,19 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
 
     /**
      * Writes the note's content. When the note was deleted meanwhile (a sync applied another
-     * device's delete while it was open), what is on screen is saved as a new note instead, and the
-     * editor carries on with that one: the delete stands, and nothing typed is lost.
+     * device's delete while it was open), it is put back under its own id with what is on screen:
+     * nothing typed is lost, and the id the screen, its saved state, its draft and the note's
+     * attachment folder all go by stays valid. The edit is newer than the deletion, so it is what
+     * the next sync keeps.
      */
     private Completable writeNote(Note note) {
-        return Completable.defer(() -> {
-            int writtenId = note.getId();
-            return getDataManager()
-                    .updateNote(note)
-                    .onErrorResumeNext(error ->
-                            error instanceof NoteDeletedException
-                                    ? recreateDeletedNote(note, writtenId)
-                                    : Completable.error(error));
-        });
-    }
-
-    private Completable recreateDeletedNote(Note note, int deletedId) {
-        return Completable.defer(() -> {
-            synchronized (recreateLock) {
-                // Another save of this note has already saved it again: write to that one.
-                if (note.getId() != deletedId) return getDataManager().updateNote(note);
-                Note revived = note.duplicate();
-                revived.setDate(note.getDate());
-                long newId = getDataManager().addNote(revived).blockingGet();
-                Log.w(TAG, "Note " + deletedId + " was deleted while open; saved as " + newId);
-                note.setId((int) newId);
-                idKey = newId;
-                return Completable.complete();
-            }
-        });
+        return getDataManager()
+                .updateNote(note)
+                .onErrorResumeNext(error -> {
+                    if (!(error instanceof NoteDeletedException)) return Completable.error(error);
+                    Log.w(TAG, "Note " + note.getId() + " was deleted while open; reviving it");
+                    return getDataManager().reviveNote(note);
+                });
     }
 
     /**
