@@ -5,6 +5,8 @@ import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.EditorAttachment;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -134,7 +136,7 @@ public class EditorJsonUtils {
 
                     case "header":
                     case "Headers":
-                        plainText.append(data.optString("text", ""));
+                        plainText.append(cleanText(data.optString("text", "")));
                         break;
 
                     case "list":
@@ -269,24 +271,66 @@ public class EditorJsonUtils {
         }
     }
 
+    // The entities the editor writes into block HTML: what the page escapes (& < > and, in
+    // attributes, quotes), non-breaking spaces, and numeric references.
+    private static final Pattern ENTITY =
+            Pattern.compile("&(#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|amp|lt|gt|quot|apos|nbsp);");
+
     /**
-     * Cleans HTML-formatted text extracted from Editor.js blocks and converts it into plain text.
-     *
-     * <p>Operations performed: - Converts <br>
-     * tags (any variant) into newline characters - Replaces &nbsp; with a normal space - Removes
-     * all remaining HTML tags using a regex
-     *
-     * <p>This method ensures that paragraph and header text from the rich-text editor is safely
-     * converted into a readable plain-text form.
+     * Turns the HTML of a paragraph, header or list item into plain text: line breaks become
+     * newlines, tags are dropped and entities are decoded, so text such as {@code a < b && c} comes
+     * back as it was typed and not as {@code a &lt; b &amp;&amp; c}.
      *
      * @param text Raw HTML/text content from Editor.js
      * @return Sanitized plain-text string
      */
-    private static String cleanText(String text) {
+    static String cleanText(String text) {
         if (text == null) return "";
         text = text.replaceAll("(?i)<br\\s*/?>", "\n");
-        text = text.replace("&nbsp;", " ");
         text = text.replaceAll("<[^>]+>", "");
-        return text;
+        return decodeEntities(text);
+    }
+
+    /** Decodes entities in one pass, so {@code &amp;lt;} gives {@code &lt;} and not {@code <}. */
+    private static String decodeEntities(String text) {
+        if (text.indexOf('&') < 0) return text;
+        Matcher matcher = ENTITY.matcher(text);
+        StringBuilder out = new StringBuilder(text.length());
+        int last = 0;
+        while (matcher.find()) {
+            out.append(text, last, matcher.start());
+            out.append(decodeEntity(matcher.group(1), matcher.group()));
+            last = matcher.end();
+        }
+        out.append(text, last, text.length());
+        return out.toString();
+    }
+
+    private static String decodeEntity(String name, String original) {
+        switch (name) {
+            case "amp":
+                return "&";
+            case "lt":
+                return "<";
+            case "gt":
+                return ">";
+            case "quot":
+                return "\"";
+            case "apos":
+                return "'";
+            case "nbsp":
+                return " ";
+            default:
+                try {
+                    boolean hex = name.charAt(1) == 'x' || name.charAt(1) == 'X';
+                    int code = Integer.parseInt(name.substring(hex ? 2 : 1), hex ? 16 : 10);
+                    if (code == 0xA0) return " ";
+                    return Character.isValidCodePoint(code)
+                            ? new String(Character.toChars(code))
+                            : original;
+                } catch (NumberFormatException e) {
+                    return original;
+                }
+        }
     }
 }
