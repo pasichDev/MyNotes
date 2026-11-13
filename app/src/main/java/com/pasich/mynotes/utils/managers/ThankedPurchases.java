@@ -25,12 +25,21 @@ final class ThankedPurchases {
     }
 
     boolean wasThanked(String purchaseToken) {
-        return tokens().contains(purchaseToken);
+        return prefs.getStringSet(KEY_TOKENS, Set.of()).contains(purchaseToken);
     }
 
     void markThanked(String purchaseToken) {
         Set<String> tokens = tokens();
         if (tokens.add(purchaseToken)) save(tokens);
+    }
+
+    /**
+     * Keeps only the tokens of purchases that still exist. A purchase refunded or revoked before
+     * its consume never comes back to be forgotten.
+     */
+    void retainOnly(Set<String> ownedTokens) {
+        Set<String> tokens = tokens();
+        if (tokens.retainAll(ownedTokens)) save(tokens);
     }
 
     void forget(String purchaseToken) {
