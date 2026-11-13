@@ -284,21 +284,31 @@ public final class SyncCoordinator {
                                             "Sync was disconnected before it could start"));
                             return;
                         }
+                        // Switched on before the submission so a disconnect queued ahead of the
+                        // sync still wins, and back off when the submission is refused: the
+                        // screen is gone, nothing will run, and leaving it on claimed a sync the
+                        // user was never going to get. The refusal itself is reported.
+                        boolean wasEnabled = preferenceHelper.isSyncEnabled();
                         preferenceHelper.setSyncEnabled(true);
-                        runOnWorker(
-                                callback,
-                                () -> {
-                                    try {
-                                        SyncState result = conflictStore.sync(accessToken);
-                                        if (result.getStatus() == SyncState.Status.SUCCESS
-                                                && preferenceHelper.isBackgroundSyncEnabled()) {
-                                            backgroundScheduler.enable();
-                                        }
-                                        deliverSuccess(callback, result);
-                                    } catch (Exception error) {
-                                        deliverError(callback, error);
-                                    }
-                                });
+                        boolean accepted =
+                                runOnWorker(
+                                        callback,
+                                        () -> {
+                                            try {
+                                                SyncState result = conflictStore.sync(accessToken);
+                                                if (result.getStatus() == SyncState.Status.SUCCESS
+                                                        && preferenceHelper
+                                                                .isBackgroundSyncEnabled()) {
+                                                    backgroundScheduler.enable();
+                                                }
+                                                deliverSuccess(callback, result);
+                                            } catch (Exception error) {
+                                                deliverError(callback, error);
+                                            }
+                                        });
+                        if (!accepted && !wasEnabled) {
+                            preferenceHelper.setSyncEnabled(false);
+                        }
                     }
 
                     @Override
@@ -335,13 +345,18 @@ public final class SyncCoordinator {
      * after that activity finished used to hit a terminated pool and throw {@link
      * RejectedExecutionException} from whatever thread delivered it. Checking {@code isShutdown()}
      * first cannot close the race; catching the rejection can.
+     *
+     * @return whether the task was accepted; a refusal has already been reported to {@code
+     *     callback}.
      */
-    private void runOnWorker(@NonNull Callback<?> callback, @NonNull Runnable task) {
+    private boolean runOnWorker(@NonNull Callback<?> callback, @NonNull Runnable task) {
         try {
             workerExecutor.execute(task);
+            return true;
         } catch (RejectedExecutionException rejected) {
             Log.w(TAG, "Sync work could not be scheduled; the screen is gone", rejected);
             deliverError(callback, rejected);
+            return false;
         }
     }
 

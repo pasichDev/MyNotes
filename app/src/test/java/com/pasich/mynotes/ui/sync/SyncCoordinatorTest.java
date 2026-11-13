@@ -346,6 +346,44 @@ public class SyncCoordinatorTest {
     }
 
     @Test
+    public void syncNow_refusedByAGoneScreenLeavesSyncDisabledAndReportsIt() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        preferences.firstSyncConfirmed = true;
+        GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
+        Mockito.doAnswer(
+                        invocation -> {
+                            GoogleDriveAuthorization.Callback callback = invocation.getArgument(1);
+                            callback.onAuthorized("access-token");
+                            return null;
+                        })
+                .when(authorization)
+                .authorize(
+                        Mockito.any(Activity.class),
+                        Mockito.any(GoogleDriveAuthorization.Callback.class));
+        FakeConflictStore store = new FakeConflictStore();
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        mock(GoogleCredentialAuth.class),
+                        authorization,
+                        store,
+                        new FakeScheduler(),
+                        task -> {
+                            throw new java.util.concurrent.RejectedExecutionException("shut down");
+                        },
+                        directExecutor);
+
+        CapturingCallback<SyncState> callback = new CapturingCallback<>();
+        coordinator.syncNow(mock(Activity.class), callback);
+
+        assertThat(preferences.syncEnabled).isFalse();
+        assertThat(store.lastToken).isNull();
+        assertThat(callback.error)
+                .isInstanceOf(java.util.concurrent.RejectedExecutionException.class);
+    }
+
+    @Test
     public void syncNow_declinedAuthorizationLeavesSyncDisabled() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         preferences.firstSyncConfirmed = true;
