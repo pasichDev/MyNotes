@@ -169,6 +169,7 @@ public class BackupActivity extends BaseActivity
     @Nullable private Uri pendingRestorePick;
 
     private static final String STATE_PENDING_RESTORE_PICK = "pendingRestorePick";
+    private static final String STATE_SCREEN_TOKEN = "backupScreenToken";
     private Dialog progressDialog;
     private RoomSyncStore roomSyncStore;
     private SyncCoordinatorFactory.Result syncSetup;
@@ -215,6 +216,12 @@ public class BackupActivity extends BaseActivity
 
         setupEdgeToEdgeInsets(binding.getRoot());
         presenter.attachView(this);
+        // Ties restores and saves still running to this screen across a recreation, so their
+        // result reaches it and never a later, unrelated visit to the screen.
+        presenter.restoreScreenToken(
+                savedInstanceState == null
+                        ? null
+                        : savedInstanceState.getString(STATE_SCREEN_TOKEN));
         presenter.viewIsReady();
         binding.setPresenter((BackupPresenter) presenter);
 
@@ -973,6 +980,7 @@ public class BackupActivity extends BaseActivity
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putString(STATE_SCREEN_TOKEN, presenter.getScreenToken());
         if (pendingRestorePick != null) {
             outState.putParcelable(STATE_PENDING_RESTORE_PICK, pendingRestorePick);
         }
@@ -990,6 +998,10 @@ public class BackupActivity extends BaseActivity
         // refused, which runInBackground already handles, and every delivery re-checks
         // isFinishing()/isDestroyed() before touching a view.
         syncExecutor.shutdown();
+        if (isFinishing()) {
+            // Gone for good rather than recreated: nothing can receive its pending results.
+            presenter.onScreenFinished();
+        }
         if (isDestroyed()) {
             presenter.detachView();
         }

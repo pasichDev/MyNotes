@@ -2,6 +2,7 @@ package com.pasich.mynotes.ui.presenter;
 
 import android.net.Uri;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.presenter.BasePresenter;
@@ -26,6 +27,7 @@ import io.reactivex.observers.DisposableSingleObserver;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
@@ -41,15 +43,27 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
      *
      * <p>A presenter lives exactly as long as its activity, and a rotation in the middle of a
      * restore used to dispose it part-way, silently. The work now runs to the end and reports to
-     * whichever presenter is attached at that moment, or to the next one. Main thread only.
+     * whichever presenter is attached at that moment. A result that finds no screen is kept only
+     * for the screen that started the work, recognised by its {@link #screenToken} after a
+     * recreation, and dropped once that screen is finished: it used to wait in a static for the
+     * life of the process and pop up on any later visit, hours on. Main thread only.
      */
     private static final class BackgroundWork {
         static boolean restoreRunning;
         static boolean saveRunning;
+        @Nullable static String restoreOwner;
+        @Nullable static String saveOwner;
         @Nullable static Integer undeliveredRestore;
+        @Nullable static String undeliveredRestoreOwner;
         @Nullable static Boolean undeliveredSave;
+        @Nullable static String undeliveredSaveOwner;
         @Nullable static BackupPresenter current;
     }
+
+    /**
+     * Identifies the screen instance across recreations; the activity keeps it in its saved state.
+     */
+    private String screenToken = UUID.randomUUID().toString();
 
     @Inject public BackupCacheHelper serviceCache;
     @Inject GoogleKeepImportService importService;
@@ -66,6 +80,37 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
             CompositeDisposable compositeDisposable,
             DataManager dataManager) {
         super(schedulerProvider, compositeDisposable, dataManager);
+    }
+
+    @Override
+    public void restoreScreenToken(@Nullable String token) {
+        if (token != null) {
+            screenToken = token;
+        }
+    }
+
+    @Override
+    @NonNull
+    public String getScreenToken() {
+        return screenToken;
+    }
+
+    @Override
+    public void onScreenFinished() {
+        if (screenToken.equals(BackgroundWork.restoreOwner)) {
+            BackgroundWork.restoreOwner = null;
+        }
+        if (screenToken.equals(BackgroundWork.saveOwner)) {
+            BackgroundWork.saveOwner = null;
+        }
+        if (screenToken.equals(BackgroundWork.undeliveredRestoreOwner)) {
+            BackgroundWork.undeliveredRestore = null;
+            BackgroundWork.undeliveredRestoreOwner = null;
+        }
+        if (screenToken.equals(BackgroundWork.undeliveredSaveOwner)) {
+            BackgroundWork.undeliveredSave = null;
+            BackgroundWork.undeliveredSaveOwner = null;
+        }
     }
 
     @Override
@@ -148,6 +193,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
             return;
         }
         BackgroundWork.saveRunning = true;
+        BackgroundWork.saveOwner = screenToken;
         Disposable ignored =
                 Single.fromCallable(() -> getDataManager().writeBackupLocalFile(serviceCache, mUri))
                         .subscribeOn(getSchedulerProvider().io())
@@ -178,6 +224,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
         }
         getView().showProcessRestoreDialog();
         BackgroundWork.restoreRunning = true;
+        BackgroundWork.restoreOwner = screenToken;
 
         Disposable ignored =
                 Completable.timer(3, TimeUnit.SECONDS, getSchedulerProvider().io())
@@ -211,6 +258,7 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
             return;
         }
         BackgroundWork.restoreRunning = true;
+        BackgroundWork.restoreOwner = screenToken;
         Disposable ignored =
                 restoreCompletable(jsonBackup)
                         .subscribeOn(getSchedulerProvider().io())
@@ -264,11 +312,14 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
 
     private static void finishRestore(int infoCode) {
         BackgroundWork.restoreRunning = false;
+        String owner = BackgroundWork.restoreOwner;
+        BackgroundWork.restoreOwner = null;
         BackupPresenter current = BackgroundWork.current;
         if (current != null && current.isViewAttached()) {
             current.deliverRestore(infoCode);
-        } else {
+        } else if (owner != null) {
             BackgroundWork.undeliveredRestore = infoCode;
+            BackgroundWork.undeliveredRestoreOwner = owner;
         }
     }
 
@@ -281,26 +332,36 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
 
     private static void finishSave(boolean saved) {
         BackgroundWork.saveRunning = false;
+        String owner = BackgroundWork.saveOwner;
+        BackgroundWork.saveOwner = null;
         BackupPresenter current = BackgroundWork.current;
         if (current != null && current.isViewAttached()) {
             current.getView().createLocalCopyFinish(saved);
-        } else {
+        } else if (owner != null) {
             BackgroundWork.undeliveredSave = saved;
+            BackgroundWork.undeliveredSaveOwner = owner;
         }
     }
 
-    /** Hands a screen recreated meanwhile what finished, or is still running, without it. */
+    /**
+     * Shows a running restore's progress, and hands a recreation of the screen that started some
+     * work what finished without it. Another screen instance never gets someone else's result.
+     */
     private void catchUpOnBackgroundWork() {
         if (BackgroundWork.restoreRunning) {
             getView().showProcessRestoreDialog();
-        } else if (BackgroundWork.undeliveredRestore != null) {
+        } else if (BackgroundWork.undeliveredRestore != null
+                && screenToken.equals(BackgroundWork.undeliveredRestoreOwner)) {
             int infoCode = BackgroundWork.undeliveredRestore;
             BackgroundWork.undeliveredRestore = null;
+            BackgroundWork.undeliveredRestoreOwner = null;
             deliverRestore(infoCode);
         }
-        if (BackgroundWork.undeliveredSave != null) {
+        if (BackgroundWork.undeliveredSave != null
+                && screenToken.equals(BackgroundWork.undeliveredSaveOwner)) {
             boolean saved = BackgroundWork.undeliveredSave;
             BackgroundWork.undeliveredSave = null;
+            BackgroundWork.undeliveredSaveOwner = null;
             getView().createLocalCopyFinish(saved);
         }
     }

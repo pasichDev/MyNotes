@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.contract;
 
 import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
@@ -83,5 +85,18 @@ public interface BackupContract {
 
         /** Forwards the selected file URI to the view for processing. */
         void startProcessSelectedFileOtherApp(Uri fileUri);
+
+        /**
+         * Adopts the token a recreated screen saved, so it receives results of work it started
+         * before the recreation. Call before {@code viewIsReady}; null keeps a fresh token.
+         */
+        void restoreScreenToken(@Nullable String token);
+
+        /** The token identifying this screen instance, to keep in its saved state. */
+        @NonNull
+        String getScreenToken();
+
+        /** The screen is gone for good (not recreated): drop results nobody can receive now. */
+        void onScreenFinished();
     }
 }

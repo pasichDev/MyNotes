@@ -1,6 +1,7 @@
 package com.pasich.mynotes.presenter;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
@@ -66,9 +67,15 @@ public class BackupPresenterRestoreTest extends BasePresenterTest {
     }
 
     private BackupPresenter presenter(BackupContract.view view) {
+        return presenter(view, null);
+    }
+
+    /** A screen instance; a non-null token makes it the recreation of the one that saved it. */
+    private BackupPresenter presenter(BackupContract.view view, String savedToken) {
         BackupPresenter presenter =
                 new BackupPresenter(schedulers(), new CompositeDisposable(), dataManager);
         presenter.attachView(view);
+        presenter.restoreScreenToken(savedToken);
         presenter.viewIsReady();
         return presenter;
     }
@@ -104,18 +111,78 @@ public class BackupPresenterRestoreTest extends BasePresenterTest {
     }
 
     @Test
-    public void restore_finishingWithNoScreen_isReportedToTheNextOne() {
+    public void restore_finishingWithNoScreen_isReportedToItsRecreation() {
         BackupContract.view first = mock(BackupContract.view.class);
-        BackupContract.view later = mock(BackupContract.view.class);
+        BackupContract.view recreated = mock(BackupContract.view.class);
 
         BackupPresenter gone = presenter(first);
+        String token = gone.getScreenToken();
         gone.importDataOtherApp(oneKeepNote());
         gone.detachView();
         io.triggerActions();
 
-        presenter(later);
+        presenter(recreated, token);
 
-        verify(later).restoreFinish(CloudErrors.OKAY_RESTORE);
+        verify(recreated).restoreFinish(CloudErrors.OKAY_RESTORE);
+        verify(recreated).onRestoreSuccessFlag();
+    }
+
+    @Test
+    public void restore_finishingWithNoScreen_isNotReportedToAnUnrelatedVisit() {
+        BackupContract.view first = mock(BackupContract.view.class);
+        BackupContract.view later = mock(BackupContract.view.class);
+        BackupContract.view recreated = mock(BackupContract.view.class);
+
+        BackupPresenter gone = presenter(first);
+        String token = gone.getScreenToken();
+        gone.importDataOtherApp(oneKeepNote());
+        gone.detachView();
+        io.triggerActions();
+
+        // Another instance of the screen does not get it...
+        BackupPresenter unrelated = presenter(later);
+        unrelated.detachView();
+        verify(later, never()).restoreFinish(anyInt());
+        verify(later, never()).onRestoreSuccessFlag();
+        // ...and the recreation of the starting screen still does.
+        presenter(recreated, token);
+        verify(recreated).restoreFinish(CloudErrors.OKAY_RESTORE);
+    }
+
+    @Test
+    public void restore_ofAFinishedScreen_isDroppedNotReportedLater() {
+        BackupContract.view first = mock(BackupContract.view.class);
+        BackupContract.view later = mock(BackupContract.view.class);
+
+        BackupPresenter gone = presenter(first);
+        String token = gone.getScreenToken();
+        gone.importDataOtherApp(oneKeepNote());
+        gone.onScreenFinished();
+        gone.detachView();
+        io.triggerActions();
+
+        presenter(later, token);
+
+        verify(later, never()).restoreFinish(anyInt());
+        verify(later, never()).onRestoreSuccessFlag();
+    }
+
+    @Test
+    public void save_finishingWithNoScreen_reachesOnlyItsRecreation() {
+        BackupContract.view first = mock(BackupContract.view.class);
+        BackupContract.view later = mock(BackupContract.view.class);
+        BackupContract.view recreated = mock(BackupContract.view.class);
+
+        BackupPresenter gone = presenter(first);
+        String token = gone.getScreenToken();
+        gone.writeFileBackupLocal(null);
+        gone.detachView();
+        io.triggerActions();
+
+        presenter(later).detachView();
+        verify(later, never()).createLocalCopyFinish(anyBoolean());
+        presenter(recreated, token);
+        verify(recreated).createLocalCopyFinish(anyBoolean());
     }
 
     @Test
