@@ -619,9 +619,15 @@ public class EditorJSInterface {
      */
     public void deleteAttachmentBlockRequest(String blockId, String fileUrl) {
         // If fileUrl == null → JS should receive “null” instead of “null string”
-        String jsUrl = (fileUrl == null) ? "null" : "'" + fileUrl.replace("'", "\\'") + "'";
+        // Both come from the note's document: quoted as JS string literals, never pasted in raw.
+        String jsUrl = (fileUrl == null) ? "null" : JSONObject.quote(fileUrl);
 
-        evaluate("deleteAttachmentBlockFromAndroid('" + blockId + "', " + jsUrl + ");");
+        evaluate(
+                "deleteAttachmentBlockFromAndroid("
+                        + JSONObject.quote(blockId == null ? "" : blockId)
+                        + ", "
+                        + jsUrl
+                        + ");");
     }
 
     /**
