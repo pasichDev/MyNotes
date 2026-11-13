@@ -34,6 +34,9 @@ public final class SyncService {
     /** Well under the schema record limit, so a bundle can always still be published. */
     static final int MAX_PUBLISHED_SETTLED_IDS = 2_000;
 
+    /** How long a deletion keeps travelling in every bundle; see {@link #forPublication}. */
+    static final long TOMBSTONE_PUBLICATION_HORIZON_MILLIS = 90L * 24L * 60L * 60L * 1000L;
+
     private final SyncStore store;
     private final SyncMerger merger;
     private final Clock clock;
@@ -203,11 +206,14 @@ public final class SyncService {
                 pinConflictVersionQuietly(backend, conflict.getLoser(), synchronizedHashes);
             }
 
+            // What goes to Drive omits deletions every device has long had the chance to see;
+            // the local apply below still receives all of them.
+            SyncSnapshot published = forPublication(merged, remote, alternatives.values());
             if (needsPublication(
-                    merged, remote, alternatives.keySet(), settledVersionIds, remoteResult)) {
+                    published, remote, alternatives.keySet(), settledVersionIds, remoteResult)) {
                 backend.publish(
                         new SyncPublication(
-                                merged,
+                                published,
                                 new java.util.ArrayList<>(alternatives.values()),
                                 settledVersionIds,
                                 remoteResult));
@@ -298,6 +304,62 @@ public final class SyncService {
             trimmed.add(versionId);
         }
         return trimmed;
+    }
+
+    /**
+     * The merged snapshot as it is published: without the tombstones nobody needs to be told about.
+     *
+     * <p>Tombstones were never dropped, and every one of them went into every bundle. The schema
+     * caps a bundle at {@link SyncBundleValidator#MAX_RECORD_COUNT} records, live and deleted
+     * together, so a library that had seen enough deletions over its lifetime failed every publish
+     * from then on, permanently and on every device.
+     *
+     * <p>The rule, and why it cannot bring a deleted record back:
+     *
+     * <ul>
+     *   <li>A tombstone is published while its deletion is younger than {@link
+     *       #TOMBSTONE_PUBLICATION_HORIZON_MILLIS}. Any device that syncs within that window learns
+     *       of the deletion directly.
+     *   <li>Past it, the tombstone is published only when this sync read a live version of the same
+     *       record from Drive, or an open conflict alternative for it is carried along. A device
+     *       that slept through the horizon and republishes its stale live copy therefore gets the
+     *       tombstone back from the next device that syncs; the merge sees a deletion newer than
+     *       that copy and removes it there too, exactly as it would have without pruning. An edit
+     *       made after the deletion is newer and wins, which is the ordinary rule as well.
+     *   <li>Pruning is publication-only. Every device keeps its tombstone rows in {@code
+     *       sync_metadata} for good — they are what lets it answer a stale copy as above — and
+     *       still applies and merges them locally; only the bundle stops carrying them.
+     * </ul>
+     *
+     * <p>The one window left: a fresh device installed while a stale copy is the only thing in
+     * Drive shows that record until any device holding the tombstone next syncs.
+     */
+    @NonNull
+    private SyncSnapshot forPublication(
+            @NonNull SyncSnapshot merged,
+            @NonNull SyncSnapshot remote,
+            @NonNull Collection<SyncRecord> alternatives) {
+        long horizon = clock.millis() - TOMBSTONE_PUBLICATION_HORIZON_MILLIS;
+        java.util.Set<String> contested = new java.util.HashSet<>();
+        for (SyncRecord alternative : alternatives) {
+            contested.add(alternative.getType().getWireValue() + ":" + alternative.getId());
+        }
+        java.util.List<SyncRecord> kept = new java.util.ArrayList<>();
+        boolean pruned = false;
+        for (SyncRecord record : merged.getRecords()) {
+            if (record.isTombstone()
+                    && record.getDeletedAt().toEpochMilli() < horizon
+                    && !contested.contains(
+                            record.getType().getWireValue() + ":" + record.getId())) {
+                SyncRecord remoteRecord = remote.find(record.getType(), record.getId());
+                if (remoteRecord == null || remoteRecord.isTombstone()) {
+                    pruned = true;
+                    continue;
+                }
+            }
+            kept.add(record);
+        }
+        return pruned ? new SyncSnapshot(kept) : merged;
     }
 
     /**

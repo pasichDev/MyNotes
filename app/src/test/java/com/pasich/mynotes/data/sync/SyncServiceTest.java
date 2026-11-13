@@ -176,6 +176,60 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_stopsPublishingADeletionOnceItIsPastTheHorizon() {
+        // Every tombstone used to go into every bundle for good, and the schema caps a bundle's
+        // records, so enough deletions over a library's life failed every publish permanently.
+        SyncRecord old = tombstone(NOTE_ID, daysBeforeNow(100));
+        SyncRecord recent = tombstone(OTHER_NOTE_ID, daysBeforeNow(10));
+        FakeStore store = new FakeStore(snapshot(old, recent));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.snapshot.getRecords()).containsExactly(recent);
+        // The device itself still holds and applies the deletion.
+        assertThat(store.appliedSnapshot.getRecords()).containsExactly(old, recent);
+
+        // And the omission is not mistaken for news on the next sync.
+        new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(1);
+    }
+
+    @Test
+    public void sync_answersAStaleCopyOfAnOldDeletionWithTheTombstone() {
+        // A device that slept through the horizon never saw the deletion, and once Drive stopped
+        // carrying the tombstone it republished its live copy. The next device still holding the
+        // tombstone has to put the deletion back rather than take the copy.
+        SyncRecord staleCopy = note(daysBeforeNow(101), "Deleted elsewhere long ago");
+        SyncRecord deleted = tombstone(NOTE_ID, daysBeforeNow(100));
+        FakeStore holder = new FakeStore(snapshot(deleted));
+        holder.syncedVersions.put(key(deleted), deleted.getCanonicalPayloadHash());
+        FakeBackend backend = new FakeBackend(snapshot(staleCopy));
+
+        new SyncService(holder, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(versions(backend.snapshot)).containsExactly(deleted.getCanonicalPayloadHash());
+        assertThat(versions(holder.appliedSnapshot))
+                .containsExactly(deleted.getCanonicalPayloadHash());
+
+        // The stale device now receives the deletion instead of keeping its copy.
+        FakeStore stale = new FakeStore(snapshot(staleCopy));
+        stale.syncedVersions.put(key(staleCopy), staleCopy.getCanonicalPayloadHash());
+        new SyncService(stale, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(versions(stale.appliedSnapshot))
+                .containsExactly(deleted.getCanonicalPayloadHash());
+        // Settled everywhere, the tombstone leaves the bundle again and stays out.
+        assertThat(backend.snapshot.getRecords()).isEmpty();
+        int publishes = backend.writeSnapshotCalls;
+        new SyncService(holder, new SyncMerger(), CLOCK).sync(backend);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(publishes);
+        assertThat(versions(holder.appliedSnapshot))
+                .containsExactly(deleted.getCanonicalPayloadHash());
+    }
+
+    @Test
     public void sync_repairsCorruptLocalAttachmentFromRemote() throws Exception {
         SyncRecord local = note(TEN, "Local with corrupt attachment");
         byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
@@ -457,6 +511,28 @@ public class SyncServiceTest {
                 .isEqualTo(
                         "Local snapshot is incomplete: MISSING_ATTACHMENT in note \"Shopping list\"");
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+    }
+
+    private static final String OTHER_NOTE_ID = "550e8400-e29b-41d4-a716-446655440001";
+
+    private static Instant daysBeforeNow(long days) {
+        return TWENTY.minus(java.time.Duration.ofDays(days));
+    }
+
+    private static SyncRecord tombstone(String id, Instant deletedAt) {
+        return SyncRecord.tombstone(SyncRecord.Type.NOTE, id, deletedAt, deletedAt);
+    }
+
+    private static List<String> versions(SyncSnapshot snapshot) {
+        List<String> versions = new ArrayList<>();
+        for (SyncRecord record : snapshot.getRecords()) {
+            versions.add(record.getCanonicalPayloadHash());
+        }
+        return versions;
+    }
+
+    private static String key(SyncRecord record) {
+        return record.getType() + ":" + record.getId();
     }
 
     private static SyncSnapshot snapshot(SyncRecord... records) {

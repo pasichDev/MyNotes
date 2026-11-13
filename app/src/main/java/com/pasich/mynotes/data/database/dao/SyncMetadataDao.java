@@ -64,7 +64,13 @@ public interface SyncMetadataDao {
                     + "WHERE recordType = :recordType AND localId = :localId")
     void touch(String recordType, long localId, long nowMillis);
 
-    /** Retains the metadata row and records a monotonic tombstone timestamp. */
+    /**
+     * Retains the metadata row and records a monotonic tombstone timestamp.
+     *
+     * <p>Tombstone rows are never deleted. Old ones stop being published (see {@code
+     * SyncService.forPublication}), and the row kept here is what lets this device answer a stale
+     * live copy republished by a device that never saw the deletion.
+     */
     @Query(
             "UPDATE sync_metadata SET "
                     + "updatedAt = CASE WHEN updatedAt >= :nowMillis THEN updatedAt + 1 ELSE :nowMillis END, "
