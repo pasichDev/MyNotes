@@ -21,7 +21,7 @@ apply from: "$projectDir/gradle/libs-task.gradle"
 apply from: "$projectDir/gradle/changelog-task.gradle"
 
 
-def appVersionCode = 56
+def appVersionCode = 57
 def appVersionName = "2.7.${appVersionCode}"
 
 def gitCommitHashProvider = providers.exec {
