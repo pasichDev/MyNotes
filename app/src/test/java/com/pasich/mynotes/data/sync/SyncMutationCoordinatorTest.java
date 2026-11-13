@@ -45,6 +45,13 @@ public class SyncMutationCoordinatorTest {
         taskCategoryDao = mock(TaskCategoryDao.class);
         transactions = mock(Transactions.class);
         syncMetadataDao = new FakeSyncMetadataDao();
+        // Every note an edit names exists unless a test says otherwise.
+        when(noteDao.getNoteSync(org.mockito.ArgumentMatchers.anyInt()))
+                .thenAnswer(call -> {
+                    Note stored = new Note().create("Stored", "", 1L, "");
+                    stored.setId(call.getArgument(0));
+                    return stored;
+                });
         coordinator =
                 new SyncMutationCoordinator(
                         new SyncMutationCoordinator.TransactionExecutor() {
@@ -203,6 +210,35 @@ public class SyncMutationCoordinatorTest {
         assertThat(metadata.stableId).isEqualTo("seed-stable");
         assertThat(metadata.updatedAt).isEqualTo(1_000L);
         assertThat(metadata.deletedAt).isNull();
+    }
+
+    @Test
+    public void updateNoteContent_leavesTheTombstoneOfANoteDeletedMeanwhile() {
+        // Another device's deletion was applied by a sync while the editor was open. The content
+        // UPDATE matches no row, and touching the metadata anyway cleared the tombstone: a live
+        // record with no note behind it, which then also outranked the remote deletion forever.
+        syncMetadataDao.insertIfAbsent(
+                new SyncMetadataEntity(
+                        SyncMetadata.RECORD_TYPE_NOTE, 7L, "seed-stable", 900L, 900L));
+        when(noteDao.getNoteSync(7)).thenReturn(null);
+        Note note = new Note().create("Late edit", "Body", 10L, "");
+        note.setId(7);
+
+        boolean stored = coordinator.updateNoteContent(note);
+
+        assertThat(stored).isFalse();
+        verify(noteDao, never())
+                .updateNoteContent(
+                        org.mockito.ArgumentMatchers.anyInt(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.anyLong(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any());
+        SyncMetadataEntity metadata = syncMetadataDao.get(SyncMetadata.RECORD_TYPE_NOTE, 7L);
+        assertThat(metadata.updatedAt).isEqualTo(900L);
+        assertThat(metadata.deletedAt).isEqualTo(900L);
     }
 
     @Test

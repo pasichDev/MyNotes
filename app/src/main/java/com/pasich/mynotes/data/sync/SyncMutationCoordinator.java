@@ -426,11 +426,23 @@ public class SyncMutationCoordinator {
     /**
      * Stores the editor's content for a note, first keeping the content it replaces in the note's
      * history when that is due (see {@link NoteHistory#recordBeforeEdit}).
+     *
+     * <p>The note may be gone: a sync can apply another device's deletion while the editor is still
+     * open. The content UPDATE then matches no row, and touching the metadata anyway cleared the
+     * tombstone, leaving a live record with nothing behind it — the edit lost silently, and the
+     * remote deletion skipped forever because the record now looked newer. Re-inserting the note
+     * instead is not an option either: the deletion already removed its history and attachments. So
+     * nothing is written and the caller is told.
+     *
+     * @return false when the note no longer exists and nothing was stored.
      */
-    public void updateNoteContent(@NonNull Note note) {
-        transactionExecutor.run(() -> {
-            noteHistory.recordBeforeEdit(
-                    noteDao.getNoteSync(note.getId()), note, timeProvider.now());
+    public boolean updateNoteContent(@NonNull Note note) {
+        return transactionExecutor.run(() -> {
+            Note stored = noteDao.getNoteSync(note.getId());
+            if (stored == null) {
+                return false;
+            }
+            noteHistory.recordBeforeEdit(stored, note, timeProvider.now());
             noteDao.updateNoteContent(
                     note.getId(),
                     note.getTitle(),
@@ -440,7 +452,7 @@ public class SyncMutationCoordinator {
                     note.getTag(),
                     note.getAttachments());
             touchRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
-            return null;
+            return true;
         });
     }
 
