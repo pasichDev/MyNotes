@@ -1114,7 +1114,7 @@ public class MainActivity extends BaseActivity
         List<Note> selected = selectionController.getSelectedNotes();
 
         if (!selected.isEmpty()) {
-            ShareOptionsDialog dialog = new ShareOptionsDialog(selected);
+            ShareOptionsDialog dialog = ShareOptionsDialog.newInstance(selected);
             dialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
         }
 

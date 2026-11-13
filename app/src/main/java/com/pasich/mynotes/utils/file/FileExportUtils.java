@@ -10,6 +10,7 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
+import androidx.annotation.WorkerThread;
 import androidx.core.content.FileProvider;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
@@ -144,8 +145,12 @@ public class FileExportUtils {
         context.startActivity(chooser);
     }
 
-    /** Save TXT content to selected URI */
-    public static void saveTxtToUri(
+    /**
+     * Saves TXT content to the selected URI. Runs on a background thread and shows nothing; returns
+     * whether the file was written.
+     */
+    @WorkerThread
+    public static boolean saveTxtToUri(
             Context context, Uri uri, String noteTitle, String noteContent) {
         try {
             String formattedContent = formatNoteContent(noteTitle, noteContent);
@@ -162,28 +167,21 @@ public class FileExportUtils {
                 outputStream.write(contentBytes);
                 outputStream.flush();
                 outputStream.close();
-
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.fileSavedSuccessfully),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            } else {
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.errorSavingFile),
-                                Toast.LENGTH_SHORT)
-                        .show();
+                return true;
             }
+            return false;
         } catch (Exception e) {
             Log.e(TAG, "Error saving TXT file", e);
-            Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT)
-                    .show();
+            return false;
         }
     }
 
-    /** Save PDF content to selected URI */
-    public static void savePdfToUri(
+    /**
+     * Saves PDF content to the selected URI. Runs on a background thread and shows nothing; returns
+     * whether the file was written.
+     */
+    @WorkerThread
+    public static boolean savePdfToUri(
             Context context, Uri uri, String noteTitle, String noteContent) {
         try {
             PdfDocument pdfDocument = new PdfDocument();
@@ -262,36 +260,30 @@ public class FileExportUtils {
             OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
             Log.d(TAG, "PDF OutputStream opened: " + (outputStream != null));
 
+            boolean written = false;
             if (outputStream != null) {
                 pdfDocument.writeTo(outputStream);
                 outputStream.flush();
                 outputStream.close();
-
-                Log.d(TAG, "PDF written successfully");
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.fileSavedSuccessfully),
-                                Toast.LENGTH_SHORT)
-                        .show();
+                written = true;
             } else {
                 Log.e(TAG, "PDF OutputStream is null");
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.errorSavingFile),
-                                Toast.LENGTH_SHORT)
-                        .show();
             }
 
             pdfDocument.close();
-
+            return written;
         } catch (Exception e) {
-            Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT)
-                    .show();
+            Log.e(TAG, "Error saving PDF file", e);
+            return false;
         }
     }
 
-    /** Save HTML content to selected URI */
-    public static void saveHtmlToUri(
+    /**
+     * Saves HTML content to the selected URI. Runs on a background thread and shows nothing;
+     * returns whether the file was written.
+     */
+    @WorkerThread
+    public static boolean saveHtmlToUri(
             Context context, Uri uri, String noteTitle, String noteContent, List<Note> notes) {
         try {
             String htmlContent =
@@ -310,23 +302,12 @@ public class FileExportUtils {
                 outputStream.write(contentBytes);
                 outputStream.flush();
                 outputStream.close();
-
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.fileSavedSuccessfully),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            } else {
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.errorSavingFile),
-                                Toast.LENGTH_SHORT)
-                        .show();
+                return true;
             }
+            return false;
         } catch (Exception e) {
             Log.e(TAG, "Error saving HTML file", e);
-            Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT)
-                    .show();
+            return false;
         }
     }
 

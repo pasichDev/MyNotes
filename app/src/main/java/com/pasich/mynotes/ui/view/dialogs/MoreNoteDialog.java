@@ -245,7 +245,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             });
 
             binding.quickShare.setOnClickListener(v -> {
-                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
+                ShareOptionsDialog shareDialog =
+                        ShareOptionsDialog.newInstance(mPresenter.getNote());
                 shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
                 dismiss();
             });
@@ -291,7 +292,8 @@ public class MoreNoteDialog extends BaseDialogBottomSheets implements MoreNoteDi
             });
 
             binding.share.setOnClickListener(v -> {
-                ShareOptionsDialog shareDialog = new ShareOptionsDialog(mPresenter.getNote());
+                ShareOptionsDialog shareDialog =
+                        ShareOptionsDialog.newInstance(mPresenter.getNote());
                 shareDialog.show(getParentFragmentManager(), "ShareOptionsDialog");
                 dismiss();
             });
