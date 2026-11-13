@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [2.7.57] - 13.11.2026
+
+**Improvements**
+
+- **Faster with long notes.** Typing in a big note is smooth again, with no lag between a key
+  press and the letter on screen.
+- **Quicker lists.** The note and task lists respond faster, even with many notes.
+
+**Fixes**
+
+- **Long notes are kept in full.** A very long note no longer loses its end when you edit it.
+- **Your last words are saved.** What you just typed is kept even if you leave the note right
+  away or turn the phone.
+- **Text looks the way you wrote it.** Symbols like & and < no longer turn into odd codes.
+- **Backups are more reliable.** Saving and restoring a backup no longer stops when you turn the
+  phone.
+- **Sync is more careful.** It no longer undoes changes you make while it runs, and turning it
+  off really turns it off.
+- **No more reminders for deleted or finished tasks.**
+- **Smaller fixes.** Photos attach the right way up and no longer crash the app, Google Keep
+  checklists import with their items, and long text fits on the page in PDF export.
+
 ## [2.7.56] - 05.10.2026
 
 **New**
