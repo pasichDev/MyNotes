@@ -196,7 +196,12 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable updateNote(Note note) {
-        return Completable.fromAction(() -> syncMutationCoordinator.updateNoteContent(note));
+        return Completable.fromAction(() -> {
+            // A note deleted meanwhile must not read as saved: every later edit would be lost.
+            if (!syncMutationCoordinator.updateNoteContent(note)) {
+                throw new NoteDeletedException(note.getId());
+            }
+        });
     }
 
     @Override
