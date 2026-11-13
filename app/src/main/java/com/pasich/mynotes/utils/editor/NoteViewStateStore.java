@@ -130,11 +130,10 @@ public class NoteViewStateStore {
     static List<String> leastRecentlyUsed(@NonNull Map<String, Long> usedAt, int count) {
         if (count <= 0) return Collections.emptyList();
         List<Map.Entry<String, Long>> entries = new ArrayList<>(usedAt.entrySet());
-        entries.sort(
-                (a, b) -> {
-                    int byTime = Long.compare(a.getValue(), b.getValue());
-                    return byTime != 0 ? byTime : a.getKey().compareTo(b.getKey());
-                });
+        entries.sort((a, b) -> {
+            int byTime = Long.compare(a.getValue(), b.getValue());
+            return byTime != 0 ? byTime : a.getKey().compareTo(b.getKey());
+        });
         List<String> keys = new ArrayList<>();
         for (int i = 0; i < Math.min(count, entries.size()); i++) {
             keys.add(entries.get(i).getKey());

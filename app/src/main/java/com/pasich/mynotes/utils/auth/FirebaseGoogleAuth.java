@@ -46,25 +46,24 @@ public final class FirebaseGoogleAuth {
             AuthCredential firebaseCredential =
                     GoogleAuthProvider.getCredential(googleCredential.getIdToken(), null);
             Task<AuthResult> signInTask = firebaseAuth.signInWithCredential(firebaseCredential);
-            signInTask.addOnCompleteListener(
-                    task -> {
-                        if (!task.isSuccessful()) {
-                            callback.onError(
-                                    task.getException() != null
-                                            ? task.getException()
-                                            : new IllegalStateException("Firebase sign-in failed"));
-                            return;
-                        }
+            signInTask.addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    callback.onError(
+                            task.getException() != null
+                                    ? task.getException()
+                                    : new IllegalStateException("Firebase sign-in failed"));
+                    return;
+                }
 
-                        FirebaseUser user = firebaseAuth.getCurrentUser();
-                        if (user == null) {
-                            callback.onError(
-                                    new IllegalStateException(
-                                            "Firebase sign-in completed without an authenticated user"));
-                            return;
-                        }
-                        callback.onSuccess(user);
-                    });
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
+                    callback.onError(
+                            new IllegalStateException(
+                                    "Firebase sign-in completed without an authenticated user"));
+                    return;
+                }
+                callback.onSuccess(user);
+            });
         } catch (Exception error) {
             callback.onError(error);
         }

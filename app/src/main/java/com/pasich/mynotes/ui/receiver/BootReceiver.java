@@ -34,15 +34,14 @@ public class BootReceiver extends BroadcastReceiver {
 
         final PendingResult pendingResult = goAsync();
         Schedulers.io()
-                .scheduleDirect(
-                        () -> {
-                            try {
-                                reminderRescheduler.rescheduleAll(System.currentTimeMillis());
-                            } catch (RuntimeException e) {
-                                Log.e(TAG, "reschedule failed", e);
-                            } finally {
-                                pendingResult.finish();
-                            }
-                        });
+                .scheduleDirect(() -> {
+                    try {
+                        reminderRescheduler.rescheduleAll(System.currentTimeMillis());
+                    } catch (RuntimeException e) {
+                        Log.e(TAG, "reschedule failed", e);
+                    } finally {
+                        pendingResult.finish();
+                    }
+                });
     }
 }

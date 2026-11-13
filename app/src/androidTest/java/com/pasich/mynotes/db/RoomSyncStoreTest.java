@@ -1906,17 +1906,16 @@ public class RoomSyncStoreTest {
                     .thenAnswer(invocation -> current.get());
             org.mockito.Mockito.when(
                             helper.commitListPreferences(org.mockito.ArgumentMatchers.any()))
-                    .thenAnswer(
-                            invocation -> {
-                                if (!succeeds.get()) {
-                                    return false;
-                                }
-                                com.pasich.mynotes.utils.backup.models.PreferencesBackup value =
-                                        invocation.getArgument(0);
-                                committed.set(value);
-                                current.set(value);
-                                return true;
-                            });
+                    .thenAnswer(invocation -> {
+                        if (!succeeds.get()) {
+                            return false;
+                        }
+                        com.pasich.mynotes.utils.backup.models.PreferencesBackup value =
+                                invocation.getArgument(0);
+                        committed.set(value);
+                        current.set(value);
+                        return true;
+                    });
         }
     }
 

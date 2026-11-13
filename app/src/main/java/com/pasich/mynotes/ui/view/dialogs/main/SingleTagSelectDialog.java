@@ -34,12 +34,11 @@ public class SingleTagSelectDialog {
         clearChip.setCheckable(true);
         clearChip.setClickable(true);
 
-        clearChip.setOnCheckedChangeListener(
-                (v, checked) -> {
-                    if (checked) {
-                        selectedTag[0] = "";
-                    }
-                });
+        clearChip.setOnCheckedChangeListener((v, checked) -> {
+            if (checked) {
+                selectedTag[0] = "";
+            }
+        });
 
         chipGroup.addView(clearChip);
 
@@ -53,12 +52,11 @@ public class SingleTagSelectDialog {
                 chip.setChecked(true);
             }
 
-            chip.setOnCheckedChangeListener(
-                    (v, checked) -> {
-                        if (checked) {
-                            selectedTag[0] = tag.getNameTag();
-                        }
-                    });
+            chip.setOnCheckedChangeListener((v, checked) -> {
+                if (checked) {
+                    selectedTag[0] = tag.getNameTag();
+                }
+            });
 
             chipGroup.addView(chip);
         }

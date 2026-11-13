@@ -768,10 +768,8 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
         // ByteArrayOutputStream first doubled, then copied) was the largest single allocation in
         // the sync and an OutOfMemoryError on an ordinary phone.
         HttpURLConnection connection =
-                requestExecutor.executeIdempotent(
-                        () ->
-                                openSuccessful(
-                                        "GET", apiBase + "/files/" + attachmentId + "?alt=media"));
+                requestExecutor.executeIdempotent(() ->
+                        openSuccessful("GET", apiBase + "/files/" + attachmentId + "?alt=media"));
         try {
             return new ConnectionInputStream(connection, maxAttachmentBytes);
         } catch (IOException failure) {
@@ -967,16 +965,15 @@ public final class GoogleDriveSyncBackend implements SyncBackend {
             // committed. Retrying is therefore safe, and it keeps one transient 5xx between
             // chunks from discarding a large upload that is nearly complete.
             long reported =
-                    requestExecutor.executeIdempotent(
-                            () ->
-                                    uploadChunk(
-                                            sessionUrl,
-                                            mimeType,
-                                            buffer,
-                                            0,
-                                            length,
-                                            chunkStart,
-                                            sizeBytes));
+                    requestExecutor.executeIdempotent(() ->
+                            uploadChunk(
+                                    sessionUrl,
+                                    mimeType,
+                                    buffer,
+                                    0,
+                                    length,
+                                    chunkStart,
+                                    sizeBytes));
 
             if (reported < acknowledgedExclusive) {
                 throw new IOException(

@@ -49,12 +49,11 @@ public class AccentColorAdapter extends RecyclerView.Adapter<AccentColorAdapter.
 
         h.checkmark.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
-        h.itemView.setOnClickListener(
-                v -> {
-                    selectedId = themes.get(position).getId();
-                    listener.onSelect(themes.get(position));
-                    notifyDataSetChanged();
-                });
+        h.itemView.setOnClickListener(v -> {
+            selectedId = themes.get(position).getId();
+            listener.onSelect(themes.get(position));
+            notifyDataSetChanged();
+        });
     }
 
     @Override

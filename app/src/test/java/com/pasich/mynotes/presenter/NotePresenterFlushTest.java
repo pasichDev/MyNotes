@@ -53,12 +53,10 @@ public class NotePresenterFlushTest extends BasePresenterTest {
     public void setUp() {
         initMocks(this);
         when(dataManager.updateNote(any()))
-                .thenAnswer(
-                        invocation -> {
-                            Note written = invocation.getArgument(0);
-                            return Completable.fromAction(
-                                    () -> writtenValues.add(written.getValue()));
-                        });
+                .thenAnswer(invocation -> {
+                    Note written = invocation.getArgument(0);
+                    return Completable.fromAction(() -> writtenValues.add(written.getValue()));
+                });
         presenter = new NotePresenter(provider(), new CompositeDisposable(), dataManager);
         presenter.attachView(view);
 

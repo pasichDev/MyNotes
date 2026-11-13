@@ -89,21 +89,18 @@ public class PopupWindowsTag {
     }
 
     private void initListeners() {
-        mBinding.deleteTag.setOnClickListener(
-                v -> {
-                    mListener.deleteTag();
-                    getPopupWindows().dismiss();
-                });
-        mBinding.renameTag.setOnClickListener(
-                v -> {
-                    mListener.renameTag();
-                    getPopupWindows().dismiss();
-                });
-        mBinding.visibleTag.setOnClickListener(
-                v -> {
-                    mListener.visibleEditTag();
-                    getPopupWindows().dismiss();
-                });
+        mBinding.deleteTag.setOnClickListener(v -> {
+            mListener.deleteTag();
+            getPopupWindows().dismiss();
+        });
+        mBinding.renameTag.setOnClickListener(v -> {
+            mListener.renameTag();
+            getPopupWindows().dismiss();
+        });
+        mBinding.visibleTag.setOnClickListener(v -> {
+            mListener.visibleEditTag();
+            getPopupWindows().dismiss();
+        });
     }
 
     public PopupWindow getPopupWindows() {

@@ -56,17 +56,15 @@ public class ImportDataFragment extends Fragment {
                                         result.getData().getData());
                             }
                         });
-        binding.btnGoogleKeepInstructions.setOnClickListener(
-                v ->
-                        GoogleTakeoutInstructionsBottomSheet.newInstance()
-                                .show(getChildFragmentManager(), "google_takeout_instructions"));
+        binding.btnGoogleKeepInstructions.setOnClickListener(v ->
+                GoogleTakeoutInstructionsBottomSheet.newInstance()
+                        .show(getChildFragmentManager(), "google_takeout_instructions"));
 
-        binding.importFromGoogleKeep.setOnClickListener(
-                v -> {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("application/zip");
-                    zipFilePicker.launch(intent);
-                });
+        binding.importFromGoogleKeep.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("application/zip");
+            zipFilePicker.launch(intent);
+        });
     }
 
     @Override

@@ -305,177 +305,170 @@ public final class RoomSyncStore implements SyncStore {
         String[] preferencesBaseline = {null};
         notesToReconcile.clear();
         try {
-            database.runInTransaction(
-                    () -> {
-                        try {
-                            Map<String, SyncMetadataEntity> byStableId = new HashMap<>();
-                            for (SyncMetadataEntity metadata :
-                                    database.syncMetadataDao().getAll()) {
-                                byStableId.put(recordKey(metadata), metadata);
-                            }
-                            // Records the merge decided about but this apply left untouched. A
-                            // conflict for one of them names versions that no longer describe
-                            // the local record, so it must not be stored for the user to apply.
-                            Set<String> skippedKeys = new HashSet<>();
-                            SyncMetadataEntity[] preferencesMetadata = {null};
-                            for (SyncRecord record : snapshot.getRecords()) {
-                                String key = recordKey(record);
-                                SyncMetadataEntity metadata = byStableId.get(key);
-                                if (metadata == null && !record.isTombstone()) {
-                                    long localId = insertRemoteRecord(record);
-                                    if (localId >= 0) {
-                                        database.syncMetadataDao()
-                                                .insertIfAbsent(
-                                                        new SyncMetadataEntity(
-                                                                record.getType().getWireValue(),
-                                                                localId,
-                                                                record.getId(),
-                                                                record.getUpdatedAt()
-                                                                        .toEpochMilli(),
-                                                                null));
-                                        database.syncMetadataDao()
-                                                .setSyncedVersion(
+            database.runInTransaction(() -> {
+                try {
+                    Map<String, SyncMetadataEntity> byStableId = new HashMap<>();
+                    for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
+                        byStableId.put(recordKey(metadata), metadata);
+                    }
+                    // Records the merge decided about but this apply left untouched. A
+                    // conflict for one of them names versions that no longer describe
+                    // the local record, so it must not be stored for the user to apply.
+                    Set<String> skippedKeys = new HashSet<>();
+                    SyncMetadataEntity[] preferencesMetadata = {null};
+                    for (SyncRecord record : snapshot.getRecords()) {
+                        String key = recordKey(record);
+                        SyncMetadataEntity metadata = byStableId.get(key);
+                        if (metadata == null && !record.isTombstone()) {
+                            long localId = insertRemoteRecord(record);
+                            if (localId >= 0) {
+                                database.syncMetadataDao()
+                                        .insertIfAbsent(
+                                                new SyncMetadataEntity(
                                                         record.getType().getWireValue(),
                                                         localId,
-                                                        record.getCanonicalPayloadHash());
-                                    }
-                                    // A row stored here before this device held the record — a
-                                    // conflict replicated from elsewhere — may name a winner
-                                    // that is no longer the live version. Left open, it was
-                                    // offered pre-selected on that winner, and when the winner
-                                    // was a deletion one tap deleted the record everywhere.
-                                    retireConflictsSupersededBy(record);
-                                    transactionFailureInjector.afterRecordApplied(record);
-                                    continue;
-                                }
-                                if (metadata == null) {
-                                    // A deletion of a record this device never held: nothing to
-                                    // apply, but an open row for it must still follow the version.
-                                    retireConflictsSupersededBy(record);
-                                    continue;
-                                }
-                                if (record.getType() == SyncRecord.Type.PREFERENCES
-                                        && !record.isTombstone()) {
-                                    // Decided last, once every other record has been applied:
-                                    // the settings screens write SharedPreferences directly and
-                                    // nothing touches the sync record for them, so the
-                                    // stale-record guard below cannot see a setting changed while
-                                    // this transaction ran. Committing the merged version anyway
-                                    // overwrote such an edit and recorded its digest as the
-                                    // baseline, hiding the loss from the next build.
-                                    preferencesMetadata[0] = metadata;
-                                    continue;
-                                }
-                                // The snapshot was built before Drive was read and every blob
-                                // transferred, which can take minutes, and the six-hourly worker
-                                // does it while the user is in the editor. If the record moved on
-                                // locally since then, the merge chose between versions one of
-                                // which no longer exists, so applying its result would silently
-                                // drop the newer edit. Leave it; the next sync merges the real
-                                // current version.
-                                if (metadata.updatedAt > record.getUpdatedAt().toEpochMilli()) {
-                                    Log.w(
-                                            TAG,
-                                            "Skipping a stale sync result for "
-                                                    + metadata.recordType
-                                                    + "; it was edited during this sync");
-                                    skippedKeys.add(key);
-                                    if (record.getCanonicalPayloadHash()
-                                            .equals(builtVersionIds.get(key))) {
-                                        // The version just published is this device's own; the
-                                        // edit made meanwhile is a step past it, not a conflict.
-                                        database.syncMetadataDao()
-                                                .setSyncedVersion(
-                                                        metadata.recordType,
-                                                        metadata.localId,
-                                                        record.getCanonicalPayloadHash());
-                                    }
-                                    continue;
-                                }
-                                if (record.isTombstone()) {
-                                    markDeleted(metadata);
-                                    recordAppliedVersion(
-                                            metadata,
-                                            record.getUpdatedAt().toEpochMilli(),
-                                            record.getDeletedAt().toEpochMilli(),
-                                            record.getCanonicalPayloadHash());
-                                    retireConflictsSupersededBy(record);
-                                    transactionFailureInjector.afterRecordApplied(record);
-                                    continue;
-                                }
-                                if (!applyPayload(
-                                        metadata,
-                                        record.getPayload(),
-                                        NoteVersionReason.PRE_SYNC)) {
-                                    skippedKeys.add(key);
-                                    continue;
-                                }
-                                recordAppliedVersion(
-                                        metadata,
-                                        record.getUpdatedAt().toEpochMilli(),
-                                        null,
-                                        record.getCanonicalPayloadHash());
-                                retireConflictsSupersededBy(record);
-                                transactionFailureInjector.afterRecordApplied(record);
+                                                        record.getId(),
+                                                        record.getUpdatedAt().toEpochMilli(),
+                                                        null));
+                                database.syncMetadataDao()
+                                        .setSyncedVersion(
+                                                record.getType().getWireValue(),
+                                                localId,
+                                                record.getCanonicalPayloadHash());
                             }
-                            if (preferencesMetadata[0] != null) {
-                                String preferencesKey = recordKey(preferencesMetadata[0]);
-                                String live = livePreferencesDigest();
-                                String baseline = preferences.getString(PREFERENCES_HASH, null);
-                                boolean edited = baseline != null && !baseline.equals(live);
-                                boolean stale =
-                                        preferencesMetadata[0].updatedAt
-                                                > stagedPreferencesUpdatedAt;
-                                if (stagedPreferencesJson == null || edited || stale) {
-                                    // Unusable payload, or edited since the build: the version
-                                    // is not going to be committed, so it is not recorded as
-                                    // the one this device holds either. The next build sees the
-                                    // live values differ from the baseline and publishes them
-                                    // as the local edit they are.
-                                    if (edited) {
-                                        Log.w(
-                                                TAG,
-                                                "Skipping synchronized preferences; they were"
-                                                        + " edited during this sync");
-                                    }
-                                    skippedKeys.add(preferencesKey);
-                                } else {
-                                    preferencesBaseline[0] = live;
-                                    database.syncMetadataDao()
-                                            .setVersion(
-                                                    preferencesMetadata[0].recordType,
-                                                    preferencesMetadata[0].localId,
-                                                    stagedPreferencesUpdatedAt,
-                                                    null);
-                                    // The synced version is recorded only once the commit below
-                                    // has succeeded: recorded here, a refused or failed commit
-                                    // left the base naming a version that was never applied, and
-                                    // the next build then published the local settings over the
-                                    // other device's change with no conflict.
-                                    database.syncPendingPreferencesDao()
-                                            .upsert(
-                                                    new SyncPendingPreferencesEntity(
-                                                            1,
-                                                            stagedPreferencesJson,
-                                                            stagedPreferencesTarget,
-                                                            live,
-                                                            stagedPreferencesUpdatedAt,
-                                                            false,
-                                                            0L,
-                                                            ""));
-                                }
-                            }
-                            persistConflicts(conflicts, skippedKeys);
-                            // A note deleted by another device takes its history with it above;
-                            // this also catches history any older path left behind.
-                            noteHistory.sweepOrphans();
-                            if (finalState != null && !deferFinalState) {
-                                database.syncStateDao().upsert(toEntity(finalState));
-                            }
-                        } catch (IOException error) {
-                            throw new SyncRuntimeException(error);
+                            // A row stored here before this device held the record — a
+                            // conflict replicated from elsewhere — may name a winner
+                            // that is no longer the live version. Left open, it was
+                            // offered pre-selected on that winner, and when the winner
+                            // was a deletion one tap deleted the record everywhere.
+                            retireConflictsSupersededBy(record);
+                            transactionFailureInjector.afterRecordApplied(record);
+                            continue;
                         }
-                    });
+                        if (metadata == null) {
+                            // A deletion of a record this device never held: nothing to
+                            // apply, but an open row for it must still follow the version.
+                            retireConflictsSupersededBy(record);
+                            continue;
+                        }
+                        if (record.getType() == SyncRecord.Type.PREFERENCES
+                                && !record.isTombstone()) {
+                            // Decided last, once every other record has been applied:
+                            // the settings screens write SharedPreferences directly and
+                            // nothing touches the sync record for them, so the
+                            // stale-record guard below cannot see a setting changed while
+                            // this transaction ran. Committing the merged version anyway
+                            // overwrote such an edit and recorded its digest as the
+                            // baseline, hiding the loss from the next build.
+                            preferencesMetadata[0] = metadata;
+                            continue;
+                        }
+                        // The snapshot was built before Drive was read and every blob
+                        // transferred, which can take minutes, and the six-hourly worker
+                        // does it while the user is in the editor. If the record moved on
+                        // locally since then, the merge chose between versions one of
+                        // which no longer exists, so applying its result would silently
+                        // drop the newer edit. Leave it; the next sync merges the real
+                        // current version.
+                        if (metadata.updatedAt > record.getUpdatedAt().toEpochMilli()) {
+                            Log.w(
+                                    TAG,
+                                    "Skipping a stale sync result for "
+                                            + metadata.recordType
+                                            + "; it was edited during this sync");
+                            skippedKeys.add(key);
+                            if (record.getCanonicalPayloadHash().equals(builtVersionIds.get(key))) {
+                                // The version just published is this device's own; the
+                                // edit made meanwhile is a step past it, not a conflict.
+                                database.syncMetadataDao()
+                                        .setSyncedVersion(
+                                                metadata.recordType,
+                                                metadata.localId,
+                                                record.getCanonicalPayloadHash());
+                            }
+                            continue;
+                        }
+                        if (record.isTombstone()) {
+                            markDeleted(metadata);
+                            recordAppliedVersion(
+                                    metadata,
+                                    record.getUpdatedAt().toEpochMilli(),
+                                    record.getDeletedAt().toEpochMilli(),
+                                    record.getCanonicalPayloadHash());
+                            retireConflictsSupersededBy(record);
+                            transactionFailureInjector.afterRecordApplied(record);
+                            continue;
+                        }
+                        if (!applyPayload(
+                                metadata, record.getPayload(), NoteVersionReason.PRE_SYNC)) {
+                            skippedKeys.add(key);
+                            continue;
+                        }
+                        recordAppliedVersion(
+                                metadata,
+                                record.getUpdatedAt().toEpochMilli(),
+                                null,
+                                record.getCanonicalPayloadHash());
+                        retireConflictsSupersededBy(record);
+                        transactionFailureInjector.afterRecordApplied(record);
+                    }
+                    if (preferencesMetadata[0] != null) {
+                        String preferencesKey = recordKey(preferencesMetadata[0]);
+                        String live = livePreferencesDigest();
+                        String baseline = preferences.getString(PREFERENCES_HASH, null);
+                        boolean edited = baseline != null && !baseline.equals(live);
+                        boolean stale =
+                                preferencesMetadata[0].updatedAt > stagedPreferencesUpdatedAt;
+                        if (stagedPreferencesJson == null || edited || stale) {
+                            // Unusable payload, or edited since the build: the version
+                            // is not going to be committed, so it is not recorded as
+                            // the one this device holds either. The next build sees the
+                            // live values differ from the baseline and publishes them
+                            // as the local edit they are.
+                            if (edited) {
+                                Log.w(
+                                        TAG,
+                                        "Skipping synchronized preferences; they were"
+                                                + " edited during this sync");
+                            }
+                            skippedKeys.add(preferencesKey);
+                        } else {
+                            preferencesBaseline[0] = live;
+                            database.syncMetadataDao()
+                                    .setVersion(
+                                            preferencesMetadata[0].recordType,
+                                            preferencesMetadata[0].localId,
+                                            stagedPreferencesUpdatedAt,
+                                            null);
+                            // The synced version is recorded only once the commit below
+                            // has succeeded: recorded here, a refused or failed commit
+                            // left the base naming a version that was never applied, and
+                            // the next build then published the local settings over the
+                            // other device's change with no conflict.
+                            database.syncPendingPreferencesDao()
+                                    .upsert(
+                                            new SyncPendingPreferencesEntity(
+                                                    1,
+                                                    stagedPreferencesJson,
+                                                    stagedPreferencesTarget,
+                                                    live,
+                                                    stagedPreferencesUpdatedAt,
+                                                    false,
+                                                    0L,
+                                                    ""));
+                        }
+                    }
+                    persistConflicts(conflicts, skippedKeys);
+                    // A note deleted by another device takes its history with it above;
+                    // this also catches history any older path left behind.
+                    noteHistory.sweepOrphans();
+                    if (finalState != null && !deferFinalState) {
+                        database.syncStateDao().upsert(toEntity(finalState));
+                    }
+                } catch (IOException error) {
+                    throw new SyncRuntimeException(error);
+                }
+            });
         } catch (SyncRuntimeException error) {
             notesToReconcile.clear();
             throw error.ioException;
@@ -497,26 +490,24 @@ public final class RoomSyncStore implements SyncStore {
                                 stagedPreferences, stagedPreferencesTarget, preferencesBaseline[0]);
             }
             boolean recordBase = committed && preferencesRecord != null;
-            database.runInTransaction(
-                    () -> {
-                        database.syncPendingPreferencesDao().clear();
-                        if (recordBase) {
-                            SyncMetadataEntity metadata =
-                                    database.syncMetadataDao()
-                                            .getByStableId(
-                                                    SyncMetadata.RECORD_TYPE_PREFERENCES,
-                                                    PREFERENCES_STABLE_ID);
-                            if (metadata != null) {
-                                database.syncMetadataDao()
-                                        .setSyncedVersion(
-                                                metadata.recordType,
-                                                metadata.localId,
-                                                preferencesRecord.getCanonicalPayloadHash());
-                            }
-                        }
-                        if (finalState != null)
-                            database.syncStateDao().upsert(toEntity(finalState));
-                    });
+            database.runInTransaction(() -> {
+                database.syncPendingPreferencesDao().clear();
+                if (recordBase) {
+                    SyncMetadataEntity metadata =
+                            database.syncMetadataDao()
+                                    .getByStableId(
+                                            SyncMetadata.RECORD_TYPE_PREFERENCES,
+                                            PREFERENCES_STABLE_ID);
+                    if (metadata != null) {
+                        database.syncMetadataDao()
+                                .setSyncedVersion(
+                                        metadata.recordType,
+                                        metadata.localId,
+                                        preferencesRecord.getCanonicalPayloadHash());
+                    }
+                }
+                if (finalState != null) database.syncStateDao().upsert(toEntity(finalState));
+            });
         }
         pruneAttachmentCache(snapshot);
     }
@@ -716,11 +707,9 @@ public final class RoomSyncStore implements SyncStore {
                                 Instant.ofEpochMilli(pending.recordUpdatedAt),
                                 gson.toJsonTree(backup).getAsJsonObject())
                         .getCanonicalPayloadHash();
-        database.runInTransaction(
-                () ->
-                        database.syncMetadataDao()
-                                .setSyncedVersion(
-                                        metadata.recordType, metadata.localId, versionId));
+        database.runInTransaction(() ->
+                database.syncMetadataDao()
+                        .setSyncedVersion(metadata.recordType, metadata.localId, versionId));
     }
 
     /** Clears the journal, completing the conflict bookkeeping when it names one. */
@@ -1180,20 +1169,18 @@ public final class RoomSyncStore implements SyncStore {
      * conflicts back after the wipe, into a cache directory that had just been deleted.
      */
     public void clearAfterDisconnect() {
-        SyncService.runWhileNoSyncRuns(
-                () -> {
-                    database.runInTransaction(
-                            () -> {
-                                database.syncStateDao().clear();
-                                database.syncConflictDao().clearAll();
-                                database.syncPendingPreferencesDao().clear();
-                            });
-                    preferences.edit().remove(PREFERENCES_HASH).remove(LEGACY_STATE).apply();
-                    localAttachments.clear();
-                    noteFoldersIndexed = false;
-                    hashCache.clear();
-                    deleteAttachmentCache();
-                });
+        SyncService.runWhileNoSyncRuns(() -> {
+            database.runInTransaction(() -> {
+                database.syncStateDao().clear();
+                database.syncConflictDao().clearAll();
+                database.syncPendingPreferencesDao().clear();
+            });
+            preferences.edit().remove(PREFERENCES_HASH).remove(LEGACY_STATE).apply();
+            localAttachments.clear();
+            noteFoldersIndexed = false;
+            hashCache.clear();
+            deleteAttachmentCache();
+        });
     }
 
     /** Removes the download cache only; the notes' own attachment folders are untouched. */
@@ -1244,21 +1231,18 @@ public final class RoomSyncStore implements SyncStore {
 
         notesToReconcile.clear();
         try {
-            database.runInTransaction(
-                    () -> {
-                        SyncConflictEntity conflict =
-                                database.syncConflictDao().getById(conflictId);
-                        if (conflict == null || conflict.resolved) return;
+            database.runInTransaction(() -> {
+                SyncConflictEntity conflict = database.syncConflictDao().getById(conflictId);
+                if (conflict == null || conflict.resolved) return;
 
-                        long resolvedAt = System.currentTimeMillis();
-                        try {
-                            applyResolvedRecord(conflict, resolution, resolvedAt);
-                        } catch (IOException error) {
-                            throw new SyncRuntimeException(error);
-                        }
-                        database.syncConflictDao()
-                                .markResolved(conflictId, resolution.name(), resolvedAt);
-                    });
+                long resolvedAt = System.currentTimeMillis();
+                try {
+                    applyResolvedRecord(conflict, resolution, resolvedAt);
+                } catch (IOException error) {
+                    throw new SyncRuntimeException(error);
+                }
+                database.syncConflictDao().markResolved(conflictId, resolution.name(), resolvedAt);
+            });
         } catch (SyncRuntimeException error) {
             notesToReconcile.clear();
             throw error.ioException;
@@ -1372,22 +1356,21 @@ public final class RoomSyncStore implements SyncStore {
         String payloadJson = gson.toJson(chosen);
         long recordUpdatedAt = selected.getUpdatedAt().toEpochMilli();
 
-        database.runInTransaction(
-                () -> {
-                    SyncConflictEntity conflict = database.syncConflictDao().getById(conflictId);
-                    if (conflict == null || conflict.resolved) return;
-                    database.syncPendingPreferencesDao()
-                            .upsert(
-                                    new SyncPendingPreferencesEntity(
-                                            1,
-                                            payloadJson,
-                                            target,
-                                            baseline,
-                                            recordUpdatedAt,
-                                            false,
-                                            conflictId,
-                                            resolution.name()));
-                });
+        database.runInTransaction(() -> {
+            SyncConflictEntity conflict = database.syncConflictDao().getById(conflictId);
+            if (conflict == null || conflict.resolved) return;
+            database.syncPendingPreferencesDao()
+                    .upsert(
+                            new SyncPendingPreferencesEntity(
+                                    1,
+                                    payloadJson,
+                                    target,
+                                    baseline,
+                                    recordUpdatedAt,
+                                    false,
+                                    conflictId,
+                                    resolution.name()));
+        });
 
         // Throws when the write is not durable, leaving the journal in place and the conflict
         // unresolved so the user can try again. A setting changed while the choice was being
@@ -1411,25 +1394,24 @@ public final class RoomSyncStore implements SyncStore {
      * could quietly put the rejected version back.
      */
     private void finalizeResolvedPreferencesConflict(long conflictId, @NonNull String resolution) {
-        database.runInTransaction(
-                () -> {
-                    SyncConflictEntity conflict = database.syncConflictDao().getById(conflictId);
-                    database.syncPendingPreferencesDao().clear();
-                    if (conflict == null || conflict.resolved) return;
-                    long resolvedAt = System.currentTimeMillis();
-                    SyncMetadataEntity metadata =
-                            database.syncMetadataDao()
-                                    .getByStableId(conflict.recordType, conflict.stableId);
-                    if (metadata != null) {
-                        database.syncMetadataDao()
-                                .setVersion(
-                                        conflict.recordType,
-                                        metadata.localId,
-                                        Math.max(resolvedAt, metadata.updatedAt + 1L),
-                                        null);
-                    }
-                    database.syncConflictDao().markResolved(conflictId, resolution, resolvedAt);
-                });
+        database.runInTransaction(() -> {
+            SyncConflictEntity conflict = database.syncConflictDao().getById(conflictId);
+            database.syncPendingPreferencesDao().clear();
+            if (conflict == null || conflict.resolved) return;
+            long resolvedAt = System.currentTimeMillis();
+            SyncMetadataEntity metadata =
+                    database.syncMetadataDao()
+                            .getByStableId(conflict.recordType, conflict.stableId);
+            if (metadata != null) {
+                database.syncMetadataDao()
+                        .setVersion(
+                                conflict.recordType,
+                                metadata.localId,
+                                Math.max(resolvedAt, metadata.updatedAt + 1L),
+                                null);
+            }
+            database.syncConflictDao().markResolved(conflictId, resolution, resolvedAt);
+        });
     }
 
     private void pinResolvedConflictAttachments(@NonNull SyncRecord selected) throws IOException {

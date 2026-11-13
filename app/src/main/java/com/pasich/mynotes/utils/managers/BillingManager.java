@@ -30,7 +30,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
     private final BillingClient billingClient;
     private final BillingManagerListener listener;
-    private boolean isServiceConnected;
+    private final ThankedPurchases thankedPurchases;
 
     // Product IDs for donations
     private static final List<String> DONATION_PRODUCT_IDS =
@@ -43,11 +43,15 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
     public BillingManager(Context context, BillingManagerListener listener) {
         this.listener = listener;
+        this.thankedPurchases = new ThankedPurchases(context);
         billingClient =
                 BillingClient.newBuilder(context)
                         .setListener(this)
                         .enablePendingPurchases(
                                 PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+                        // Reconnects on the next call after the Play Store service drops (killed
+                        // or updated) instead of failing until the screen is reopened.
+                        .enableAutoServiceReconnection()
                         .build();
 
         startServiceConnection();
@@ -60,22 +64,25 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
     @Override
     public void onBillingSetupFinished(BillingResult billingResult) {
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-            isServiceConnected = true;
             Log.d(TAG, "Billing service connected successfully");
 
             // Спочатку споживаємо всі наявні покупки
-            consumeAllExistingPurchases(
-                    () -> {
-                        listener.onBillingInitialized();
-                        queryProductDetails();
-                        queryPurchases();
-                    });
+            consumeAllExistingPurchases(() -> {
+                // The listener queries purchases itself once billing is initialized.
+                listener.onBillingInitialized();
+                queryProductDetails();
+            });
         } else {
             Log.e(TAG, "Failed to connect to billing service: " + billingResult.getDebugMessage());
             listener.onBillingError("Failed to connect to billing service");
         }
     }
 
+    /**
+     * Consumes every purchase left from earlier sessions. Purchases the user was never thanked for
+     * (completed while the app was closed, or pending ones that settled in the background) get a
+     * single thank-you for the whole batch once they are consumed.
+     */
     private void consumeAllExistingPurchases(Runnable onComplete) {
         QueryPurchasesParams params =
                 QueryPurchasesParams.newBuilder()
@@ -85,59 +92,55 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         billingClient.queryPurchasesAsync(
                 params,
                 (billingResult, purchasesList) -> {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        if (purchasesList.isEmpty()) {
-                            Log.d(TAG, "No existing purchases to consume");
-                            onComplete.run();
-                            return;
-                        }
-
-                        Log.d(
-                                TAG,
-                                "Found "
-                                        + purchasesList.size()
-                                        + " existing purchases, consuming them");
-                        int[] remainingPurchases = {purchasesList.size()};
-
-                        for (Purchase purchase : purchasesList) {
-                            if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                                consumePurchase(
-                                        purchase,
-                                        () -> {
-                                            remainingPurchases[0]--;
-                                            if (remainingPurchases[0] <= 0) {
-                                                onComplete.run();
-                                            }
-                                        });
-                            } else {
-                                remainingPurchases[0]--;
-                                if (remainingPurchases[0] <= 0) {
-                                    onComplete.run();
-                                }
-                            }
-                        }
-                    } else {
+                    if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                         Log.e(
                                 TAG,
                                 "Failed to query existing purchases for consumption: "
                                         + billingResult.getDebugMessage());
                         onComplete.run();
+                        return;
+                    }
+                    List<Purchase> settled = new ArrayList<>();
+                    for (Purchase purchase : purchasesList) {
+                        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                            settled.add(purchase);
+                        }
+                    }
+                    if (settled.isEmpty()) {
+                        Log.d(TAG, "No existing purchases to consume");
+                        onComplete.run();
+                        return;
+                    }
+
+                    Log.d(TAG, "Found " + settled.size() + " existing purchases, consuming them");
+                    int[] remaining = {settled.size()};
+                    String[] unthankedProduct = {null};
+                    for (Purchase purchase : settled) {
+                        boolean thanked = thankedPurchases.wasThanked(purchase.getPurchaseToken());
+                        consumePurchase(
+                                purchase,
+                                consumed -> {
+                                    if (consumed && !thanked && !purchase.getProducts().isEmpty()) {
+                                        unthankedProduct[0] = purchase.getProducts().get(0);
+                                    }
+                                    if (--remaining[0] == 0) {
+                                        if (unthankedProduct[0] != null) {
+                                            listener.onPurchaseSuccessful(unthankedProduct[0]);
+                                        }
+                                        onComplete.run();
+                                    }
+                                });
                     }
                 });
     }
 
     @Override
     public void onBillingServiceDisconnected() {
-        isServiceConnected = false;
+        // Nothing to refuse here: with automatic service reconnection the next call reconnects.
         Log.w(TAG, "Billing service disconnected");
     }
 
     private void queryProductDetails() {
-        if (!isServiceConnected) {
-            Log.w(TAG, "Billing service not connected, can't query product details");
-            return;
-        }
-
         List<QueryProductDetailsParams.Product> productList = new ArrayList<>();
         for (String productId : DONATION_PRODUCT_IDS) {
             productList.add(
@@ -161,19 +164,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                             products.add(product);
                         }
 
-                        // Сортуємо товари за ціною (від меншої до більшої)
-                        products.sort(
-                                (p1, p2) -> {
-                                    try {
-                                        // Витягуємо числові значення з цін
-                                        double price1 = extractPrice(p1.getPrice());
-                                        double price2 = extractPrice(p2.getPrice());
-                                        return Double.compare(price1, price2);
-                                    } catch (Exception e) {
-                                        Log.w(TAG, "Error sorting prices: " + e.getMessage());
-                                        return 0;
-                                    }
-                                });
+                        products.sort(DonationProduct.BY_PRICE);
 
                         listener.onProductsLoaded(products);
                     } else {
@@ -191,13 +182,18 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         ProductDetails.OneTimePurchaseOfferDetails offerDetails =
                 productDetails.getOneTimePurchaseOfferDetails();
         String price = offerDetails != null ? offerDetails.getFormattedPrice() : "N/A";
+        long priceAmountMicros =
+                offerDetails != null
+                        ? offerDetails.getPriceAmountMicros()
+                        : DonationProduct.NO_PRICE;
 
         return new DonationProduct(
                 productDetails.getProductId(),
                 productDetails.getTitle(),
                 productDetails.getDescription(),
                 price,
-                iconResource);
+                iconResource,
+                priceAmountMicros);
     }
 
     private String getIconForProduct(String productId) {
@@ -213,11 +209,6 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
 
     /** Initiates the purchase flow for the given product, consuming any stale purchase first. */
     public void launchBillingFlow(Activity activity, String productId) {
-        if (!isServiceConnected) {
-            listener.onBillingError("Billing service not connected");
-            return;
-        }
-
         // Спочатку перевіряємо і споживаємо наявні покупки цього товару
         queryAndConsumeExistingPurchases(
                 productId,
@@ -248,7 +239,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                                         "Found existing purchase for "
                                                 + productId
                                                 + ", consuming it first");
-                                consumePurchase(purchase, onComplete);
+                                consumePurchase(purchase, consumed -> onComplete.run());
                                 break;
                             }
                         }
@@ -268,11 +259,6 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
     }
 
     private void proceedWithBillingFlow(Activity activity, String productId) {
-        if (!isServiceConnected) {
-            listener.onBillingError("Billing service not connected");
-            return;
-        }
-
         List<QueryProductDetailsParams.Product> productList =
                 List.of(
                         QueryProductDetailsParams.Product.newBuilder()
@@ -354,7 +340,7 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         for (Purchase purchase : purchasesList) {
                             if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                                consumePurchase(purchase);
+                                consumePurchase(purchase, consumed -> {});
                             }
                         }
                     }
@@ -368,51 +354,56 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
             if (!products.isEmpty()) {
                 String productId = products.get(0);
                 listener.onPurchaseSuccessful(productId);
+                // Remembered until consumed, so a failed consume is not thanked again later.
+                thankedPurchases.markThanked(purchase.getPurchaseToken());
 
                 // Consume the purchase immediately to allow repeated purchases
-                consumePurchase(purchase);
+                consumePurchase(purchase, consumed -> {});
             }
         }
     }
 
-    private void consumePurchase(Purchase purchase) {
-        consumePurchase(purchase, null);
+    /** Receives whether a consume succeeded; it is called whatever the result. */
+    private interface ConsumeCallback {
+        void onConsumeFinished(boolean consumed);
     }
 
-    private void consumePurchase(Purchase purchase, Runnable onComplete) {
+    private void consumePurchase(Purchase purchase, ConsumeCallback callback) {
         ConsumeParams consumeParams =
                 ConsumeParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build();
 
         billingClient.consumeAsync(
                 consumeParams,
                 (billingResult, purchaseToken) -> {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    boolean consumed =
+                            billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK;
+                    if (consumed) {
                         Log.d(TAG, "Purchase consumed successfully, can be purchased again");
+                        // A consumed purchase never comes back, so its thanks need no record.
+                        thankedPurchases.forget(purchase.getPurchaseToken());
                     } else {
                         Log.e(
                                 TAG,
                                 "Failed to consume purchase: " + billingResult.getDebugMessage());
                     }
-
-                    // Викликаємо callback незалежно від результату
-                    if (onComplete != null) {
-                        onComplete.run();
-                    }
+                    callback.onConsumeFinished(consumed);
                 });
     }
 
     /** Ends the billing client connection; call from Activity/Fragment onDestroy. */
     public void destroy() {
-        if (billingClient != null && billingClient.isReady()) {
-            billingClient.endConnection();
-        }
+        // Unconditional: with automatic service reconnection a dropped client is not ready but
+        // still live, and would reconnect for a call still in flight.
+        billingClient.endConnection();
     }
 
     /** Maps a billing response code to a human-readable error description. */
     public static String getBillingErrorMessage(int responseCode) {
         return switch (responseCode) {
+            // Since Play Billing 9 this also covers a Play Store blocked by the system (an OEM
+            // kids mode, for example), not only an unsupported billing API version.
             case BillingClient.BillingResponseCode.BILLING_UNAVAILABLE ->
-                    "Billing API version is not supported for the type requested";
+                    "Google Play billing is not available on this device";
             case BillingClient.BillingResponseCode.DEVELOPER_ERROR ->
                     "Invalid arguments provided to the API";
             case BillingClient.BillingResponseCode.ERROR -> "Fatal error during the API action";
@@ -434,41 +425,8 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
         };
     }
 
-    /**
-     * Extracts the numerical value of the price from the price string. For example: “₴40.00” ->
-     * 40.0, “200,00 UAH” -> 200.0
-     */
-    private double extractPrice(String priceString) {
-        if (priceString == null || priceString.isEmpty()) {
-            return 0.0;
-        }
-
-        try {
-            String cleanPrice = priceString.replaceAll("[^\\d.,]", "");
-
-            cleanPrice = cleanPrice.replace(",", ".");
-
-            int lastDotIndex = cleanPrice.lastIndexOf(".");
-            if (lastDotIndex != -1 && lastDotIndex != cleanPrice.indexOf(".")) {
-                cleanPrice =
-                        cleanPrice.substring(0, lastDotIndex).replace(".", "")
-                                + cleanPrice.substring(lastDotIndex);
-            }
-
-            return Double.parseDouble(cleanPrice);
-        } catch (NumberFormatException e) {
-            Log.w(TAG, "Failed to parse price: " + priceString, e);
-            return 0.0;
-        }
-    }
-
     /** Queries existing in-app purchases and delivers them to the listener. */
     public void queryPurchases() {
-        if (!isServiceConnected) {
-            Log.w(TAG, "Billing service not connected, can't query purchases");
-            return;
-        }
-
         QueryPurchasesParams params =
                 QueryPurchasesParams.newBuilder()
                         .setProductType(BillingClient.ProductType.INAPP)

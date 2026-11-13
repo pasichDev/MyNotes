@@ -36,11 +36,10 @@ public class MeetEnclyDialog extends BaseDialogBottomSheets {
 
     @Override
     public void initListeners() {
-        binding.moreButton.setOnClickListener(
-                v -> {
-                    startActivity(new Intent(requireActivity(), MeetEnclyActivity.class));
-                    dismiss();
-                });
+        binding.moreButton.setOnClickListener(v -> {
+            startActivity(new Intent(requireActivity(), MeetEnclyActivity.class));
+            dismiss();
+        });
         binding.laterButton.setOnClickListener(v -> dismiss());
     }
 

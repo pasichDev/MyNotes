@@ -41,22 +41,20 @@ public class TagsAdapter extends ListAdapter<Tag, TagsAdapter.ViewHolder> {
 
         ViewHolder holder = new ViewHolder(binding);
 
-        holder.itemView.setOnClickListener(
-                v -> {
-                    int pos = holder.getBindingAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION && clickListener != null) {
-                        clickListener.onClick(pos);
-                    }
-                });
+        holder.itemView.setOnClickListener(v -> {
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && clickListener != null) {
+                clickListener.onClick(pos);
+            }
+        });
 
-        holder.itemView.setOnLongClickListener(
-                v -> {
-                    int pos = holder.getBindingAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION && clickListener != null) {
-                        clickListener.onLongClick(pos, holder.itemView);
-                    }
-                    return true;
-                });
+        holder.itemView.setOnLongClickListener(v -> {
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && clickListener != null) {
+                clickListener.onLongClick(pos, holder.itemView);
+            }
+            return true;
+        });
 
         return holder;
     }

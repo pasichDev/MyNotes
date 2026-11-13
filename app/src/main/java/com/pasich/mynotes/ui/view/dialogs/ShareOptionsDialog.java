@@ -99,13 +99,12 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
                                         && currentNoteTitle != null
                                         && currentNoteContent != null) {
                                     Schedulers.io()
-                                            .scheduleDirect(
-                                                    () ->
-                                                            FileExportUtils.saveTxtToUri(
-                                                                    requireContext(),
-                                                                    uri,
-                                                                    currentNoteTitle,
-                                                                    currentNoteContent));
+                                            .scheduleDirect(() ->
+                                                    FileExportUtils.saveTxtToUri(
+                                                            requireContext(),
+                                                            uri,
+                                                            currentNoteTitle,
+                                                            currentNoteContent));
                                 }
                             }
                             dismiss(); // Dismiss after handling result
@@ -169,46 +168,40 @@ public class ShareOptionsDialog extends BaseDialogBottomSheets {
 
     @Override
     public void initListeners() {
-        binding.saveToGoogleDrive.setOnClickListener(
-                v -> {
-                    prepareNoteData();
-                    String formattedContent =
-                            FileExportUtils.formatNoteContent(currentNoteTitle, currentNoteContent);
-                    FileExportUtils.saveToGoogleDrive(
-                            requireContext(), currentNoteTitle, formattedContent);
-                    dismiss();
-                });
+        binding.saveToGoogleDrive.setOnClickListener(v -> {
+            prepareNoteData();
+            String formattedContent =
+                    FileExportUtils.formatNoteContent(currentNoteTitle, currentNoteContent);
+            FileExportUtils.saveToGoogleDrive(requireContext(), currentNoteTitle, formattedContent);
+            dismiss();
+        });
 
-        binding.saveAsTxt.setOnClickListener(
-                v -> {
-                    prepareNoteData();
-                    Intent intent = FileExportUtils.createSaveTxtIntent(currentNoteTitle);
-                    saveTxtLauncher.launch(intent);
-                });
+        binding.saveAsTxt.setOnClickListener(v -> {
+            prepareNoteData();
+            Intent intent = FileExportUtils.createSaveTxtIntent(currentNoteTitle);
+            saveTxtLauncher.launch(intent);
+        });
 
-        binding.saveAsPdf.setOnClickListener(
-                v -> {
-                    prepareNoteData();
-                    Intent intent = FileExportUtils.createSavePdfIntent(currentNoteTitle);
-                    savePdfLauncher.launch(intent);
-                });
+        binding.saveAsPdf.setOnClickListener(v -> {
+            prepareNoteData();
+            Intent intent = FileExportUtils.createSavePdfIntent(currentNoteTitle);
+            savePdfLauncher.launch(intent);
+        });
 
-        binding.saveAsHtml.setOnClickListener(
-                v -> {
-                    prepareNoteData();
-                    Intent intent = FileExportUtils.createSaveHtmlIntent(currentNoteTitle);
-                    saveHtmlLauncher.launch(intent);
-                });
+        binding.saveAsHtml.setOnClickListener(v -> {
+            prepareNoteData();
+            Intent intent = FileExportUtils.createSaveHtmlIntent(currentNoteTitle);
+            saveHtmlLauncher.launch(intent);
+        });
 
-        binding.shareViaOtherApps.setOnClickListener(
-                v -> {
-                    prepareNoteData();
-                    String formattedContent =
-                            FileExportUtils.formatNoteContent(currentNoteTitle, currentNoteContent);
-                    FileExportUtils.shareViaOtherApps(
-                            requireActivity(), currentNoteTitle, formattedContent);
-                    dismiss();
-                });
+        binding.shareViaOtherApps.setOnClickListener(v -> {
+            prepareNoteData();
+            String formattedContent =
+                    FileExportUtils.formatNoteContent(currentNoteTitle, currentNoteContent);
+            FileExportUtils.shareViaOtherApps(
+                    requireActivity(), currentNoteTitle, formattedContent);
+            dismiss();
+        });
     }
 
     @Override

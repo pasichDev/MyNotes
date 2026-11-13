@@ -58,16 +58,14 @@ public class BackupOptionsDialog extends BaseDialogBottomSheets {
 
     @Override
     public void initListeners() {
-        binding.googleDrive.setOnClickListener(
-                v -> {
-                    if (callback != null) callback.onGoogleDrive();
-                    dismiss();
-                });
+        binding.googleDrive.setOnClickListener(v -> {
+            if (callback != null) callback.onGoogleDrive();
+            dismiss();
+        });
 
-        binding.deviceStorage.setOnClickListener(
-                v -> {
-                    if (callback != null) callback.onDeviceStorage();
-                    dismiss();
-                });
+        binding.deviceStorage.setOnClickListener(v -> {
+            if (callback != null) callback.onDeviceStorage();
+            dismiss();
+        });
     }
 }

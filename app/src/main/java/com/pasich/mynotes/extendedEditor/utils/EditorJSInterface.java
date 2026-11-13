@@ -212,10 +212,9 @@ public class EditorJSInterface {
             webView.evaluateJavascript(script, null);
             return;
         }
-        mainHandler.post(
-                () -> {
-                    if (!released) webView.evaluateJavascript(script, null);
-                });
+        mainHandler.post(() -> {
+            if (!released) webView.evaluateJavascript(script, null);
+        });
     }
 
     /**
@@ -301,10 +300,9 @@ public class EditorJSInterface {
     @SuppressWarnings("unused")
     @JavascriptInterface
     public void onTitleChanged(String title) {
-        mainHandler.post(
-                () -> {
-                    if (!released) listener.onTitleChanged(title);
-                });
+        mainHandler.post(() -> {
+            if (!released) listener.onTitleChanged(title);
+        });
     }
 
     /** Receives error messages thrown by the JS editor and reports them to listener. */
@@ -425,11 +423,10 @@ public class EditorJSInterface {
     public boolean requestPickedUpload(String requestId, String kind, String name, double size) {
         PickedFile match = takePickedFile(name, (long) size);
         if (match == null || released) return false;
-        uploads.execute(
-                () -> {
-                    byte[] raw = AttachmentStorage.readUri(appContext, match.uri);
-                    deliverUpload(requestId, raw == null ? null : store(raw, match.name, kind));
-                });
+        uploads.execute(() -> {
+            byte[] raw = AttachmentStorage.readUri(appContext, match.uri);
+            deliverUpload(requestId, raw == null ? null : store(raw, match.name, kind));
+        });
         return true;
     }
 
@@ -442,19 +439,18 @@ public class EditorJSInterface {
     @JavascriptInterface
     public boolean uploadBase64Async(String requestId, String kind, String base64, String name) {
         if (released || base64 == null) return false;
-        uploads.execute(
-                () -> {
-                    String payload = base64;
-                    int comma = payload.indexOf(',');
-                    if (comma != -1) payload = payload.substring(comma + 1);
-                    byte[] raw;
-                    try {
-                        raw = Base64.decode(payload, Base64.DEFAULT);
-                    } catch (IllegalArgumentException e) {
-                        raw = null;
-                    }
-                    deliverUpload(requestId, raw == null ? null : store(raw, name, kind));
-                });
+        uploads.execute(() -> {
+            String payload = base64;
+            int comma = payload.indexOf(',');
+            if (comma != -1) payload = payload.substring(comma + 1);
+            byte[] raw;
+            try {
+                raw = Base64.decode(payload, Base64.DEFAULT);
+            } catch (IllegalArgumentException e) {
+                raw = null;
+            }
+            deliverUpload(requestId, raw == null ? null : store(raw, name, kind));
+        });
         return true;
     }
 
@@ -466,31 +462,28 @@ public class EditorJSInterface {
      */
     public void uploadAndInsert(String kind, PickedFile file, int index, Runnable onFailed) {
         if (released) return;
-        uploads.execute(
-                () -> {
-                    byte[] raw = AttachmentStorage.readUri(appContext, file.uri);
-                    JSONObject result = raw == null ? null : store(raw, file.name, kind);
-                    mainHandler.post(
-                            () -> {
-                                if (released || webView == null) return;
-                                JSONObject stored =
-                                        result == null ? null : result.optJSONObject("file");
-                                if (stored == null) {
-                                    onFailed.run();
-                                    return;
-                                }
-                                webView.evaluateJavascript(
-                                        "window.insertUploadedBlockFromAndroid && "
-                                                + "insertUploadedBlockFromAndroid("
-                                                + JSONObject.quote(kind)
-                                                + ","
-                                                + stored
-                                                + ","
-                                                + index
-                                                + ");",
-                                        null);
-                            });
-                });
+        uploads.execute(() -> {
+            byte[] raw = AttachmentStorage.readUri(appContext, file.uri);
+            JSONObject result = raw == null ? null : store(raw, file.name, kind);
+            mainHandler.post(() -> {
+                if (released || webView == null) return;
+                JSONObject stored = result == null ? null : result.optJSONObject("file");
+                if (stored == null) {
+                    onFailed.run();
+                    return;
+                }
+                webView.evaluateJavascript(
+                        "window.insertUploadedBlockFromAndroid && "
+                                + "insertUploadedBlockFromAndroid("
+                                + JSONObject.quote(kind)
+                                + ","
+                                + stored
+                                + ","
+                                + index
+                                + ");",
+                        null);
+            });
+        });
     }
 
     /**
@@ -567,11 +560,10 @@ public class EditorJSInterface {
                         + ","
                         + (result == null ? "null" : result.toString())
                         + ");";
-        mainHandler.post(
-                () -> {
-                    if (released || webView == null) return;
-                    webView.evaluateJavascript(script, null);
-                });
+        mainHandler.post(() -> {
+            if (released || webView == null) return;
+            webView.evaluateJavascript(script, null);
+        });
     }
 
     /**

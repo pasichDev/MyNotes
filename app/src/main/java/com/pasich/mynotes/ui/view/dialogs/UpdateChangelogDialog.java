@@ -68,30 +68,27 @@ public class UpdateChangelogDialog extends BaseDialogBottomSheets {
     public void initListeners() {
 
         // Close button
-        binding.okButton.setOnClickListener(
-                v -> {
-                    changelogManager.markChangelogRead();
-                    dismiss();
-                });
+        binding.okButton.setOnClickListener(v -> {
+            changelogManager.markChangelogRead();
+            dismiss();
+        });
 
         // Support button
-        binding.supportButton.setOnClickListener(
-                v -> {
-                    changelogManager.markChangelogRead();
-                    Intent intent = new Intent(requireActivity(), SupportActivity.class);
-                    intent.putExtra(PURCHASES_OPEN_EXTRA, true);
-                    startActivity(intent);
+        binding.supportButton.setOnClickListener(v -> {
+            changelogManager.markChangelogRead();
+            Intent intent = new Intent(requireActivity(), SupportActivity.class);
+            intent.putExtra(PURCHASES_OPEN_EXTRA, true);
+            startActivity(intent);
 
-                    dismiss();
-                });
+            dismiss();
+        });
 
-        binding.translateIcon.setOnClickListener(
-                v -> {
-                    String text = binding.changelogText.getText().toString();
-                    if (!text.isEmpty()) {
-                        GoogleTranslateHelper.startTranslation(requireActivity(), text);
-                    }
-                });
+        binding.translateIcon.setOnClickListener(v -> {
+            String text = binding.changelogText.getText().toString();
+            if (!text.isEmpty()) {
+                GoogleTranslateHelper.startTranslation(requireActivity(), text);
+            }
+        });
     }
 
     @Override

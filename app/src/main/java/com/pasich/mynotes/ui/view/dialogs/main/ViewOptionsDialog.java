@@ -86,25 +86,23 @@ public class ViewOptionsDialog extends BaseDialogBottomSheets {
 
     @Override
     public void initListeners() {
-        binding.sortGroup.setOnCheckedChangeListener(
-                (group, checkedId) -> {
-                    String chosen = sortFor(checkedId);
-                    if (chosen.equals(sort)) return;
-                    sort = chosen;
-                    bindCustomHint();
-                    if (listener != null) listener.onViewSortSelected(chosen);
-                });
-        binding.layoutGroup.addOnButtonCheckedListener(
-                (group, checkedId, isChecked) -> {
-                    if (!isChecked) return;
-                    int chosen =
-                            checkedId == R.id.layoutGrid
-                                    ? FormatListTool.FORMAT_GRID
-                                    : FormatListTool.FORMAT_LIST;
-                    if (chosen == format) return;
-                    format = chosen;
-                    if (listener != null) listener.onViewLayoutSelected(chosen);
-                });
+        binding.sortGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            String chosen = sortFor(checkedId);
+            if (chosen.equals(sort)) return;
+            sort = chosen;
+            bindCustomHint();
+            if (listener != null) listener.onViewSortSelected(chosen);
+        });
+        binding.layoutGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            int chosen =
+                    checkedId == R.id.layoutGrid
+                            ? FormatListTool.FORMAT_GRID
+                            : FormatListTool.FORMAT_LIST;
+            if (chosen == format) return;
+            format = chosen;
+            if (listener != null) listener.onViewLayoutSelected(chosen);
+        });
     }
 
     private void bindCustomHint() {

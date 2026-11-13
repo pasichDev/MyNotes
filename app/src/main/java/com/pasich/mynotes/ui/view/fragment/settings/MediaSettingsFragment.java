@@ -105,21 +105,19 @@ public class MediaSettingsFragment extends Fragment {
         binding.imgOptSwitch.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> appPreferencesCache.setImageOpt(isChecked));
 
-        binding.soundRow.setOnClickListener(
-                v -> {
-                    String savedUri = notificationPreferencesCache.getSoundUri();
-                    Uri currentUri =
-                            (savedUri != null && !savedUri.isEmpty())
-                                    ? Uri.parse(savedUri)
-                                    : android.provider.Settings.System.DEFAULT_NOTIFICATION_URI;
+        binding.soundRow.setOnClickListener(v -> {
+            String savedUri = notificationPreferencesCache.getSoundUri();
+            Uri currentUri =
+                    (savedUri != null && !savedUri.isEmpty())
+                            ? Uri.parse(savedUri)
+                            : android.provider.Settings.System.DEFAULT_NOTIFICATION_URI;
 
-                    Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-                    intent.putExtra(
-                            RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
-                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentUri);
-                    ringtoneLauncher.launch(intent);
-                });
+            Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentUri);
+            ringtoneLauncher.launch(intent);
+        });
 
         binding.volumeSeekBar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
@@ -183,20 +181,16 @@ public class MediaSettingsFragment extends Fragment {
     private void updateMemoryUsage() {
         if (getContext() == null) return;
         Schedulers.io()
-                .scheduleDirect(
-                        () -> {
-                            long usedBytes =
-                                    AttachmentStorage.getTotalAttachmentsSize(getContext());
-                            float usedMB = usedBytes / 1024f / 1024f;
-                            new Handler(Looper.getMainLooper())
-                                    .post(
-                                            () -> {
-                                                if (binding != null) {
-                                                    binding.memoryValue.setText(
-                                                            String.format("%.1f MB", usedMB));
-                                                }
-                                            });
-                        });
+                .scheduleDirect(() -> {
+                    long usedBytes = AttachmentStorage.getTotalAttachmentsSize(getContext());
+                    float usedMB = usedBytes / 1024f / 1024f;
+                    new Handler(Looper.getMainLooper())
+                            .post(() -> {
+                                if (binding != null) {
+                                    binding.memoryValue.setText(String.format("%.1f MB", usedMB));
+                                }
+                            });
+                });
     }
 
     @Override

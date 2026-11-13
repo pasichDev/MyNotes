@@ -51,32 +51,29 @@ public class AttachmentActionsDialog {
             binding.deleteAttach.setBackground(ctx.getDrawable(R.drawable.bg_item_full));
         } else {
             // File exists → show everything
-            binding.openAction.setOnClickListener(
-                    v -> {
-                        dialog.dismiss();
-                        openWith(ctx, attachment);
-                    });
+            binding.openAction.setOnClickListener(v -> {
+                dialog.dismiss();
+                openWith(ctx, attachment);
+            });
 
-            binding.downloadAction.setOnClickListener(
-                    v -> {
-                        dialog.dismiss();
-                        saveToDownloads(ctx, attachment);
-                    });
+            binding.downloadAction.setOnClickListener(v -> {
+                dialog.dismiss();
+                saveToDownloads(ctx, attachment);
+            });
         }
 
         // DELETE — always visible
-        binding.deleteAttach.setOnClickListener(
-                v -> {
-                    dialog.dismiss();
+        binding.deleteAttach.setOnClickListener(v -> {
+            dialog.dismiss();
 
-                    if (exists) {
-                        // Showing confirmation
-                        showConfirmDelete(ctx, attachment, deleteListener);
-                    } else {
-                        // File does not exist — simply delete without dialog
-                        deleteListener.onDeleteAttachment(attachment, true);
-                    }
-                });
+            if (exists) {
+                // Showing confirmation
+                showConfirmDelete(ctx, attachment, deleteListener);
+            } else {
+                // File does not exist — simply delete without dialog
+                deleteListener.onDeleteAttachment(attachment, true);
+            }
+        });
 
         dialog.setContentView(binding.getRoot());
         dialog.show();

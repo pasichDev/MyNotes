@@ -86,12 +86,10 @@ public class CustomRepeatDialog extends DialogFragment {
                         .setNegativeButton(R.string.reminder_cancel, (d, w) -> sendCancelled())
                         .create();
 
-        dialog.setOnShowListener(
-                d -> {
-                    dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                            .setOnClickListener(v -> apply());
-                    refresh();
-                });
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> apply());
+            refresh();
+        });
         intervalInput.addTextChangedListener(
                 new TextWatcher() {
                     @Override
@@ -105,12 +103,11 @@ public class CustomRepeatDialog extends DialogFragment {
                         refresh();
                     }
                 });
-        intervalInput.setOnEditorActionListener(
-                (v, actionId, event) -> {
-                    if (actionId != EditorInfo.IME_ACTION_DONE) return false;
-                    apply();
-                    return true;
-                });
+        intervalInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_DONE) return false;
+            apply();
+            return true;
+        });
         unitChips.setOnCheckedStateChangeListener((group, ids) -> refresh());
         return dialog;
     }

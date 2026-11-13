@@ -143,53 +143,47 @@ public class InterfaceSettingsFragment extends Fragment {
 
     private void initListeners() {
         // Theme Mode Card Click Listener
-        binding.themeModeCard.setOnClickListener(
-                v ->
-                        ThemeModeDialog.show(
-                                requireContext(),
-                                themePreferencesCache,
-                                mode -> {
-                                    updateThemeModeDisplay();
-                                    themePreferencesCache.applyCurrentThemeMode();
-                                }));
+        binding.themeModeCard.setOnClickListener(v ->
+                ThemeModeDialog.show(
+                        requireContext(),
+                        themePreferencesCache,
+                        mode -> {
+                            updateThemeModeDisplay();
+                            themePreferencesCache.applyCurrentThemeMode();
+                        }));
 
         // Accent Color Card Click Listener
-        binding.accentColorCard.setOnClickListener(
-                v ->
-                        AccentColorDialog.show(
-                                requireContext(),
-                                themePreferencesCache,
-                                selectedTheme -> {
-                                    if (getActivity() instanceof ThemeChangeListener) {
-                                        ((ThemeChangeListener) getActivity())
-                                                .onThemeChanged(selectedTheme.getTHEME_STYLE());
-                                    }
-                                }));
-
-        binding.dynamicColor.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> {
-                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        if (isChecked) {
-                            // Notify activity to change theme
-                            if (getActivity() != null
-                                    && getActivity() instanceof ThemeChangeListener) {
+        binding.accentColorCard.setOnClickListener(v ->
+                AccentColorDialog.show(
+                        requireContext(),
+                        themePreferencesCache,
+                        selectedTheme -> {
+                            if (getActivity() instanceof ThemeChangeListener) {
                                 ((ThemeChangeListener) getActivity())
-                                        .onThemeChanged(R.style.AppThemeDynamic);
+                                        .onThemeChanged(selectedTheme.getTHEME_STYLE());
                             }
-                        } else {
-                            int themeStyle =
-                                    new ThemesArray()
-                                            .getThemeStyle(themePreferencesCache.getThemeId());
-                            if (getActivity() != null
-                                    && getActivity() instanceof ThemeChangeListener) {
-                                ((ThemeChangeListener) getActivity()).onThemeChanged(themeStyle);
-                            }
-                        }
-                        themePreferencesCache.setDynamicColor(isChecked);
-                        enableDynamic = isChecked;
-                        updateAccentCardState(isChecked);
+                        }));
+
+        binding.dynamicColor.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (isChecked) {
+                    // Notify activity to change theme
+                    if (getActivity() != null && getActivity() instanceof ThemeChangeListener) {
+                        ((ThemeChangeListener) getActivity())
+                                .onThemeChanged(R.style.AppThemeDynamic);
                     }
-                });
+                } else {
+                    int themeStyle =
+                            new ThemesArray().getThemeStyle(themePreferencesCache.getThemeId());
+                    if (getActivity() != null && getActivity() instanceof ThemeChangeListener) {
+                        ((ThemeChangeListener) getActivity()).onThemeChanged(themeStyle);
+                    }
+                }
+                themePreferencesCache.setDynamicColor(isChecked);
+                enableDynamic = isChecked;
+                updateAccentCardState(isChecked);
+            }
+        });
 
         binding.fontSizeSlider.addOnChangeListener(fontScaleListener);
     }

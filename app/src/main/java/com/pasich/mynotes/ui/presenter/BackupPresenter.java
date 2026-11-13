@@ -64,38 +64,30 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
         getCompositeDisposable()
                 .add(
                         Single.fromCallable(JsonBackup::new)
-                                .flatMap(
-                                        jsonBackupTemp ->
-                                                Flowable.zip(
-                                                                getDataManager().getNotes(),
-                                                                getDataManager().getNotesInTrash(),
-                                                                getDataManager().getTagsUser(),
-                                                                (noteList,
-                                                                        trashNoteList,
-                                                                        tagList) -> {
-                                                                    jsonBackupTemp.setNotes(
-                                                                            noteList);
-                                                                    jsonBackupTemp.setNewTrashNotes(
-                                                                            trashNoteList);
-                                                                    jsonBackupTemp.setTags(tagList);
-                                                                    return noteList.size()
-                                                                            + trashNoteList.size()
-                                                                            + tagList.size();
-                                                                })
-                                                        .firstOrError()
-                                                        .map(
-                                                                countData -> {
-                                                                    if (countData != 0) {
-                                                                        jsonBackupTemp
-                                                                                .setPreferences(
-                                                                                        getDataManager()
-                                                                                                .getListPreferences());
-                                                                    }
-                                                                    return new AbstractMap
-                                                                            .SimpleEntry<>(
-                                                                            jsonBackupTemp,
-                                                                            countData);
-                                                                }))
+                                .flatMap(jsonBackupTemp ->
+                                        Flowable.zip(
+                                                        getDataManager().getNotes(),
+                                                        getDataManager().getNotesInTrash(),
+                                                        getDataManager().getTagsUser(),
+                                                        (noteList, trashNoteList, tagList) -> {
+                                                            jsonBackupTemp.setNotes(noteList);
+                                                            jsonBackupTemp.setNewTrashNotes(
+                                                                    trashNoteList);
+                                                            jsonBackupTemp.setTags(tagList);
+                                                            return noteList.size()
+                                                                    + trashNoteList.size()
+                                                                    + tagList.size();
+                                                        })
+                                                .firstOrError()
+                                                .map(countData -> {
+                                                    if (countData != 0) {
+                                                        jsonBackupTemp.setPreferences(
+                                                                getDataManager()
+                                                                        .getListPreferences());
+                                                    }
+                                                    return new AbstractMap.SimpleEntry<>(
+                                                            jsonBackupTemp, countData);
+                                                }))
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(
@@ -128,16 +120,15 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
                 .add(
                         Completable.timer(3, java.util.concurrent.TimeUnit.SECONDS)
                                 .observeOn(getSchedulerProvider().ui())
-                                .subscribe(
-                                        () -> {
-                                            final JsonBackup jsonBackup =
-                                                    getDataManager().readBackupLocalFile(mUri);
-                                            if (jsonBackup.isError()) {
-                                                getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
-                                            } else {
-                                                restoreData(jsonBackup);
-                                            }
-                                        }));
+                                .subscribe(() -> {
+                                    final JsonBackup jsonBackup =
+                                            getDataManager().readBackupLocalFile(mUri);
+                                    if (jsonBackup.isError()) {
+                                        getView().restoreFinish(CloudErrors.BACKUP_DESTROY);
+                                    } else {
+                                        restoreData(jsonBackup);
+                                    }
+                                }));
     }
 
     /**
@@ -157,11 +148,9 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
 
         getCompositeDisposable()
                 .add(
-                        Completable.fromAction(
-                                        () ->
-                                                getDataManager()
-                                                        .setListPreferences(
-                                                                jsonBackup.getPreferences()))
+                        Completable.fromAction(() ->
+                                        getDataManager()
+                                                .setListPreferences(jsonBackup.getPreferences()))
                                 .subscribeOn(getSchedulerProvider().io())
                                 .andThen(
                                         Completable.mergeArray(
@@ -240,11 +229,9 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
                                         notes -> {
                                             if (notes != null && !notes.isEmpty()) {
                                                 // Sort notes by creation date - newest first
-                                                notes.sort(
-                                                        (note1, note2) ->
-                                                                Long.compare(
-                                                                        note2.getDate(),
-                                                                        note1.getDate()));
+                                                notes.sort((note1, note2) ->
+                                                        Long.compare(
+                                                                note2.getDate(), note1.getDate()));
                                                 getView().openShareOptionsDialog(notes, true);
                                             } else {
                                                 getView().emptyDataToBackup();

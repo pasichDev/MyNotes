@@ -187,12 +187,11 @@ public final class SyncCoordinatorFactory {
             if (activity.isFinishing() || activity.isDestroyed()) {
                 return;
             }
-            activity.runOnUiThread(
-                    () -> {
-                        if (!activity.isFinishing() && !activity.isDestroyed()) {
-                            command.run();
-                        }
-                    });
+            activity.runOnUiThread(() -> {
+                if (!activity.isFinishing() && !activity.isDestroyed()) {
+                    command.run();
+                }
+            });
         };
     }
 
