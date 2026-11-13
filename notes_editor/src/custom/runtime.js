@@ -38,27 +38,43 @@ const __pageParams = new URLSearchParams(window.location.search)
 const __doubleTapToEdit = __pageParams.get('dbltap') === '1'
 
 /**
- * Save current blocks and send to Android.
+ * Sending the document is batched. Every send serializes the whole note (Editor.js saves and
+ * sanitizes every block, then it is stringified and copied to Android), so on a long note sending
+ * on each Editor.js change made typing cost grow with the note. Android saves only after it has
+ * been quiet for two seconds anyway; it gets the document once typing pauses, at least every few
+ * seconds while typing goes on, and at once through flushContent when the screen stops.
  */
+const SAVE_IDLE_MS = 700
+const SAVE_MAX_WAIT_MS = 3000
+let __saveTimer = null
+let __saveFirstRequest = 0
 
+/** A change was made: the document goes to Android once typing pauses. */
 function saveContent () {
   if (!editor) return
+  const now = Date.now()
+  if (!__saveTimer) __saveFirstRequest = now
+  clearTimeout(__saveTimer)
+  const overdue = now - __saveFirstRequest >= SAVE_MAX_WAIT_MS
+  __saveTimer = setTimeout(sendContent, overdue ? 0 : SAVE_IDLE_MS)
+}
 
-  editor
+function cancelPendingSave () {
+  clearTimeout(__saveTimer)
+  __saveTimer = null
+}
+
+/** Saves the blocks and sends them to Android unless they are what it already has. */
+function sendContent () {
+  cancelPendingSave()
+  if (!editor) return Promise.resolve()
+
+  return editor
     .save()
     .then(output => {
-      const blocks = output.blocks
-      const jsonStr = JSON.stringify(blocks)
-
-      // Якщо нічого не змінилось — ідемо спати
-      if (jsonStr === __lastSavedJson) {
-        return
-      }
-
-      // Оновлюємо останнє збереження
+      const jsonStr = JSON.stringify(output.blocks)
+      if (jsonStr === __lastSavedJson) return
       __lastSavedJson = jsonStr
-
-      // Шлемо в Android
       safeAndroidCall('onContentChanged', jsonStr)
     })
     .catch(err => console.error('[Editor] Save failed:', err))
@@ -69,6 +85,7 @@ function saveContent () {
  * Android asks for this when the screen stops, so the last keystrokes are saved too.
  */
 function flushContent () {
+  cancelPendingSave()
   if (!editor) return Promise.resolve()
 
   return editor
@@ -405,8 +422,16 @@ function readDocument () {
   }))
 }
 
+/**
+ * A state is kept once, as JSON: keeping the parsed document too doubled the memory of up to
+ * HISTORY_LIMIT copies of the note. The document is parsed back only when a step is applied.
+ */
 function historyEntry (doc, caret) {
-  return { doc, json: JSON.stringify(doc), caret }
+  return { json: JSON.stringify(doc), caret }
+}
+
+function historyDoc (entry) {
+  return JSON.parse(entry.json)
 }
 
 function reportHistory () {
@@ -583,7 +608,7 @@ function captureHistory (force) {
     else __hist.batchHasText = false
     const entry = historyEntry(doc, historyCaret())
     if (entry.json !== __hist.current.json) {
-      keepAttachmentsForUndo(__hist.current.doc, doc)
+      keepAttachmentsForUndo(historyDoc(__hist.current), doc)
       __hist.undo.push({ ...__hist.current, caret: caretBefore || __hist.current.caret })
       if (__hist.undo.length > HISTORY_LIMIT) __hist.undo.shift()
       __hist.redo = []
@@ -662,8 +687,8 @@ function restoreHistoryCaret (caret, keep, fallbackId) {
 
 /** Puts the document of {@code entry} on screen with the smallest change that gets there. */
 function applyHistoryEntry (entry) {
-  const from = __hist.current.doc
-  const to = entry.doc
+  const from = historyDoc(__hist.current)
+  const to = historyDoc(entry)
   const epoch = __hist.epoch
   __hist.applying = true
   keepAttachmentsForUndo(from, to)
@@ -742,9 +767,10 @@ function historyRedo () {
  */
 function forgetHistoryBlock (blockId) {
   const strip = entry => {
-    const blocks = entry.doc.blocks.filter(block => block.id !== blockId)
-    if (blocks.length === entry.doc.blocks.length) return entry
-    return historyEntry({ title: entry.doc.title, blocks }, entry.caret)
+    const doc = historyDoc(entry)
+    const blocks = doc.blocks.filter(block => block.id !== blockId)
+    if (blocks.length === doc.blocks.length) return entry
+    return historyEntry({ title: doc.title, blocks }, entry.caret)
   }
   const distinct = list => list.filter((entry, i) => i === 0 || entry.json !== list[i - 1].json)
   if (__hist.current) __hist.current = strip(__hist.current)
@@ -838,6 +864,31 @@ function setThemeColors (colors) {
 }
 
 /**
+ * A plain-text note (from the simple editor, shared into the app or synced) as paragraph blocks.
+ *
+ * It used to become a single paragraph with a <br> per line. Every keystroke in a block makes the
+ * browser lay out that whole block again, so typing in a long note cost more the longer it was.
+ * Now each line of text is a paragraph, as if it had been typed here with Enter. A blank line
+ * cannot be a block of its own (the editor drops empty blocks when it saves), so blank lines go
+ * in front of the next line as <br>. Android joins blocks back with a newline, which gives exactly
+ * the text that came in; blank lines before the first and after the last line are left out, as
+ * Android trims them anyway.
+ */
+function plainTextBlocks (text) {
+  const blocks = []
+  let blanks = ''
+  for (const line of text.split('\n')) {
+    if (line.trim() === '') {
+      if (blocks.length) blanks += line + '<br>'
+      continue
+    }
+    blocks.push({ type: 'paragraph', data: { text: blanks + line } })
+    blanks = ''
+  }
+  return blocks
+}
+
+/**
  * Load note into editor
  */
 function loadNote (note) {
@@ -849,12 +900,7 @@ function loadNote (note) {
 
   let blocks = []
   if (note.plainTextFallback && note.plainText) {
-    blocks = [
-      {
-        type: 'paragraph',
-        data: { text: note.plainText.replace(/\n/g, '<br>') }
-      }
-    ]
+    blocks = plainTextBlocks(note.plainText)
   } else if (note.valueJson) {
     blocks = note.valueJson
   }
@@ -1177,6 +1223,7 @@ window.uploadAttachment = uploadAttachment
 window.toggleReadModeFromAndroid = toggleReadModeFromAndroid
 window.setReadMode = setReadMode
 window.saveContent = saveContent
+window.plainTextBlocks = plainTextBlocks
 window.currentBlockIndex = currentBlockIndex
 window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid
 window.flushContent = flushContent
