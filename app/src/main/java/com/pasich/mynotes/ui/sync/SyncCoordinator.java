@@ -20,11 +20,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Coordinates connect/disconnect/manual-sync flows so BackupActivity stays presentation-only. */
 public final class SyncCoordinator {
 
     private static final String TAG = "SyncCoordinator";
+
+    /**
+     * Bumped by every {@link #disconnect}. Process-wide because the sync flags it guards are
+     * process-wide too: a coordinator rebuilt for a recreated screen must still see a disconnect
+     * made through the old one.
+     */
+    private static final AtomicLong disconnectGeneration = new AtomicLong();
 
     public interface Callback<T> {
         void onSuccess(@NonNull T value);
@@ -210,6 +218,7 @@ public final class SyncCoordinator {
     }
 
     public void disconnect(@NonNull Callback<Profile> callback) {
+        disconnectGeneration.incrementAndGet();
         firebaseGoogleAuth.signOut();
         preferenceHelper.setSyncEnabled(false);
         preferenceHelper.setBackgroundSyncEnabled(false);
@@ -255,17 +264,27 @@ public final class SyncCoordinator {
                     new IllegalStateException("Confirm the first sync before continuing"));
             return;
         }
-        // Enabled here, on the calling thread and after the checks above, never on the worker.
-        // SyncService re-reads this flag under its lock precisely so a disconnect that lands while
-        // this sync waits for the token or the lock stops it; switching it back on from the worker
-        // just before the sync undid that disconnect and synced the signed-out account anyway.
-        // disconnect() runs on the same thread as this method, so the two cannot interleave here.
-        preferenceHelper.setSyncEnabled(true);
+        // Sync is switched on only once Drive authorization succeeds, so a declined or failed
+        // authorization leaves the flag as it was. It is switched on from the authorization
+        // callback (main thread, like disconnect()) and never from the worker: SyncService re-reads
+        // the flag under its lock so a disconnect that lands while the sync waits in the queue
+        // stops it, and turning it on from the worker undid that disconnect. A disconnect made
+        // between this tap and the authorization result is caught by the generation check.
+        final long generationAtTap = disconnectGeneration.get();
         googleDriveAuthorization.authorize(
                 activity,
                 new GoogleDriveAuthorization.Callback() {
                     @Override
                     public void onAuthorized(@NonNull String accessToken) {
+                        if (disconnectGeneration.get() != generationAtTap
+                                || !firebaseGoogleAuth.isSignedIn()) {
+                            deliverError(
+                                    callback,
+                                    new IllegalStateException(
+                                            "Sync was disconnected before it could start"));
+                            return;
+                        }
+                        preferenceHelper.setSyncEnabled(true);
                         runOnWorker(
                                 callback,
                                 () -> {

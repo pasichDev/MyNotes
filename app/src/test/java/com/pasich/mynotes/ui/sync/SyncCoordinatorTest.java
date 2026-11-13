@@ -346,6 +346,79 @@ public class SyncCoordinatorTest {
     }
 
     @Test
+    public void syncNow_declinedAuthorizationLeavesSyncDisabled() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        preferences.firstSyncConfirmed = true;
+        GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
+        Mockito.doAnswer(
+                        invocation -> {
+                            GoogleDriveAuthorization.Callback callback = invocation.getArgument(1);
+                            callback.onError(new IllegalStateException("cancelled"));
+                            return null;
+                        })
+                .when(authorization)
+                .authorize(
+                        Mockito.any(Activity.class),
+                        Mockito.any(GoogleDriveAuthorization.Callback.class));
+        FakeConflictStore store = new FakeConflictStore();
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        mock(GoogleCredentialAuth.class),
+                        authorization,
+                        store,
+                        new FakeScheduler(),
+                        directExecutor,
+                        directExecutor);
+
+        CapturingCallback<SyncState> callback = new CapturingCallback<>();
+        coordinator.syncNow(mock(Activity.class), callback);
+
+        assertThat(callback.error).isNotNull();
+        assertThat(preferences.syncEnabled).isFalse();
+        assertThat(store.lastToken).isNull();
+    }
+
+    @Test
+    public void syncNow_disconnectWhileAuthorizingDoesNotTurnSyncBackOn() {
+        FakePreferenceHelper preferences = new FakePreferenceHelper();
+        preferences.firstSyncConfirmed = true;
+        GoogleDriveAuthorization authorization = mock(GoogleDriveAuthorization.class);
+        List<GoogleDriveAuthorization.Callback> pending = new ArrayList<>();
+        Mockito.doAnswer(
+                        invocation -> {
+                            pending.add(invocation.getArgument(1));
+                            return null;
+                        })
+                .when(authorization)
+                .authorize(
+                        Mockito.any(Activity.class),
+                        Mockito.any(GoogleDriveAuthorization.Callback.class));
+        FakeConflictStore store = new FakeConflictStore();
+        SyncCoordinator coordinator =
+                new SyncCoordinator(
+                        preferences,
+                        firebaseAuth(mock(FirebaseUser.class)),
+                        mock(GoogleCredentialAuth.class),
+                        authorization,
+                        store,
+                        new FakeScheduler(),
+                        directExecutor,
+                        directExecutor);
+
+        CapturingCallback<SyncState> callback = new CapturingCallback<>();
+        coordinator.syncNow(mock(Activity.class), callback);
+        assertThat(preferences.syncEnabled).isFalse();
+        coordinator.disconnect(new CapturingCallback<>());
+        pending.get(0).onAuthorized("access-token");
+
+        assertThat(preferences.syncEnabled).isFalse();
+        assertThat(store.lastToken).isNull();
+        assertThat(callback.error).isNotNull();
+    }
+
+    @Test
     public void resolveConflict_updatesStoreAndReturnsLatestConflicts() {
         FakePreferenceHelper preferences = new FakePreferenceHelper();
         FakeConflictStore store = new FakeConflictStore();
