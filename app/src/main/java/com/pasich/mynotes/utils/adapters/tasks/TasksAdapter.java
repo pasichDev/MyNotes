@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Task;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -109,14 +111,104 @@ public class TasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 list.addAll(completedTasks);
             }
         }
+        // Snapshots of what is shown: the presenter edits Task objects in place, so the bound
+        // objects themselves cannot tell what the rows show.
+        List<Object> keys = new ArrayList<>(list.size());
+        for (Object item : list) keys.add(item instanceof Task ? snapshot((Task) item) : item);
+
+        List<Object> oldKeys = displayKeys;
+        boolean headerChanged =
+                shownCompletedCount != completedTasks.size() || shownExpanded != completedExpanded;
         displayList = list;
-        notifyDataSetChanged();
+        displayKeys = keys;
+        shownCompletedCount = completedTasks.size();
+        shownExpanded = completedExpanded;
+        // Only the rows that changed are rebound; every database change used to rebind them all.
+        DiffUtil.calculateDiff(new DisplayDiff(oldKeys, keys, headerChanged))
+                .dispatchUpdatesTo(this);
+    }
+
+    private List<Object> displayKeys = new ArrayList<>();
+    private int shownCompletedCount = -1;
+    private boolean shownExpanded;
+
+    private static Task snapshot(Task t) {
+        Task copy = new Task();
+        copy.setId(t.getId());
+        copy.setTitle(t.getTitle());
+        copy.setDescription(t.getDescription());
+        copy.setDone(t.isDone());
+        copy.setCategoryId(t.getCategoryId());
+        copy.setCreatedAt(t.getCreatedAt());
+        copy.setPosition(t.getPosition());
+        copy.setReminderTime(t.getReminderTime());
+        copy.setReminderIntervalMinutes(t.getReminderIntervalMinutes());
+        return copy;
+    }
+
+    /** Rows are the same task by id; a task row changes when any of its fields changes. */
+    static final class DisplayDiff extends DiffUtil.Callback {
+        private final List<Object> oldList;
+        private final List<Object> newList;
+        private final boolean headerChanged;
+
+        DisplayDiff(List<Object> oldList, List<Object> newList, boolean headerChanged) {
+            this.oldList = oldList;
+            this.newList = newList;
+            this.headerChanged = headerChanged;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldPos, int newPos) {
+            Object a = oldList.get(oldPos);
+            Object b = newList.get(newPos);
+            if (a instanceof Task && b instanceof Task) {
+                return ((Task) a).getId() == ((Task) b).getId()
+                        && ((Task) a).isDone() == ((Task) b).isDone();
+            }
+            return a.equals(b);
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldPos, int newPos) {
+            Object a = oldList.get(oldPos);
+            Object b = newList.get(newPos);
+            if (a instanceof Task && b instanceof Task) return sameContent((Task) a, (Task) b);
+            if (SENTINEL_HEADER.equals(a)) return !headerChanged;
+            return true;
+        }
+    }
+
+    /**
+     * Compares every stored field: an unchanged row keeps the Task it was bound with, and its click
+     * handlers hand that object back to be written, so it must not be stale in any field.
+     */
+    static boolean sameContent(Task a, Task b) {
+        return a.isDone() == b.isDone()
+                && a.getPosition() == b.getPosition()
+                && a.getCreatedAt() == b.getCreatedAt()
+                && a.getCategoryId() == b.getCategoryId()
+                && Objects.equals(a.getTitle(), b.getTitle())
+                && Objects.equals(a.getDescription(), b.getDescription())
+                && Objects.equals(a.getReminderTime(), b.getReminderTime())
+                && a.getReminderIntervalMinutes() == b.getReminderIntervalMinutes();
     }
 
     public boolean moveItem(int fromPos, int toPos) {
         if (!isActiveTask(fromPos) || !isActiveTask(toPos)) return false;
         Collections.swap(activeTasks, fromPos, toPos);
         Collections.swap(displayList, fromPos, toPos);
+        Collections.swap(displayKeys, fromPos, toPos);
         notifyItemMoved(fromPos, toPos);
         return true;
     }

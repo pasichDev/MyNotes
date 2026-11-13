@@ -13,6 +13,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.android.scopes.ActivityScoped;
 import io.reactivex.Flowable;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.SerialDisposable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
@@ -24,6 +26,7 @@ public class TasksPresenter extends BasePresenter<TasksContract.view>
     private static final String TAG = "TasksPresenter";
     private int selectedCategoryId = 0;
     private final Context appContext;
+    private SerialDisposable tasksSubscription;
 
     @Inject
     public TasksPresenter(
@@ -58,8 +61,11 @@ public class TasksPresenter extends BasePresenter<TasksContract.view>
     }
 
     private void loadTasks() {
-        getCompositeDisposable().clear();
-        loadCategories();
+        // Replaces only the previous list subscription; writes still running are left alone.
+        if (tasksSubscription == null) {
+            tasksSubscription = new SerialDisposable();
+            getCompositeDisposable().add(tasksSubscription);
+        }
 
         Flowable<List<Task>> activeStream =
                 selectedCategoryId == 0
@@ -68,25 +74,24 @@ public class TasksPresenter extends BasePresenter<TasksContract.view>
 
         Flowable<List<Task>> completedStream = getDataManager().getCompletedTasks();
 
-        getCompositeDisposable()
-                .add(
-                        Flowable.combineLatest(
-                                        activeStream,
-                                        completedStream,
-                                        (active, completed) -> new Object[] {active, completed})
-                                .subscribeOn(getSchedulerProvider().io())
-                                .observeOn(getSchedulerProvider().ui())
-                                .subscribe(
-                                        pair -> {
-                                            if (isViewAttached()) {
-                                                @SuppressWarnings("unchecked")
-                                                List<Task> active = (List<Task>) pair[0];
-                                                @SuppressWarnings("unchecked")
-                                                List<Task> completed = (List<Task>) pair[1];
-                                                getView().renderTasks(active, completed);
-                                            }
-                                        },
-                                        err -> Log.e(TAG, "loadTasks", err)));
+        tasksSubscription.set(
+                Flowable.combineLatest(
+                                activeStream,
+                                completedStream,
+                                (active, completed) -> new Object[] {active, completed})
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                pair -> {
+                                    if (isViewAttached()) {
+                                        @SuppressWarnings("unchecked")
+                                        List<Task> active = (List<Task>) pair[0];
+                                        @SuppressWarnings("unchecked")
+                                        List<Task> completed = (List<Task>) pair[1];
+                                        getView().renderTasks(active, completed);
+                                    }
+                                },
+                                err -> Log.e(TAG, "loadTasks", err)));
     }
 
     @Override
@@ -180,13 +185,21 @@ public class TasksPresenter extends BasePresenter<TasksContract.view>
 
     @Override
     public void updatePositions(List<Task> tasks) {
+        // Only the tasks that moved are written, in one transaction: one reload of the list
+        // instead of one per task.
+        List<Task> moved = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
-            tasks.get(i).setPosition(i);
+            Task task = tasks.get(i);
+            if (task.getPosition() != i) {
+                task.setPosition(i);
+                moved.add(task);
+            }
         }
+        if (moved.isEmpty()) return;
         getCompositeDisposable()
                 .add(
-                        io.reactivex.Observable.fromIterable(tasks)
-                                .flatMapCompletable(t -> getDataManager().updateTask(t))
+                        getDataManager()
+                                .updateTasks(moved)
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(() -> {}, err -> Log.e(TAG, "updatePositions", err)));
