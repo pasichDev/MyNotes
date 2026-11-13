@@ -255,6 +255,12 @@ public final class SyncCoordinator {
                     new IllegalStateException("Confirm the first sync before continuing"));
             return;
         }
+        // Enabled here, on the calling thread and after the checks above, never on the worker.
+        // SyncService re-reads this flag under its lock precisely so a disconnect that lands while
+        // this sync waits for the token or the lock stops it; switching it back on from the worker
+        // just before the sync undid that disconnect and synced the signed-out account anyway.
+        // disconnect() runs on the same thread as this method, so the two cannot interleave here.
+        preferenceHelper.setSyncEnabled(true);
         googleDriveAuthorization.authorize(
                 activity,
                 new GoogleDriveAuthorization.Callback() {
@@ -264,7 +270,6 @@ public final class SyncCoordinator {
                                 callback,
                                 () -> {
                                     try {
-                                        preferenceHelper.setSyncEnabled(true);
                                         SyncState result = conflictStore.sync(accessToken);
                                         if (result.getStatus() == SyncState.Status.SUCCESS
                                                 && preferenceHelper.isBackgroundSyncEnabled()) {
