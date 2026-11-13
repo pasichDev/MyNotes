@@ -66,6 +66,10 @@ public class MeetEnclyActivity extends BaseActivity {
     private static final String STATE_EXPORTED_TASKS = "encly_exported_tasks";
     private static final String STATE_EXPORTED_TAGS = "encly_exported_tags";
     private static final String STATE_EXPORTED_CATEGORIES = "encly_exported_categories";
+    private static final String STATE_EXPORTED_NOTE_PRINTS = "encly_exported_note_prints";
+    private static final String STATE_EXPORTED_TASK_PRINTS = "encly_exported_task_prints";
+    private static final String STATE_EXPORTED_TAG_PRINTS = "encly_exported_tag_prints";
+    private static final String STATE_EXPORTED_CATEGORY_PRINTS = "encly_exported_category_prints";
 
     @Inject EnclyMigrationRepository repository;
     @Inject UpdateChecker updateChecker;
@@ -467,7 +471,17 @@ public class MeetEnclyActivity extends BaseActivity {
         busy = true;
         render();
         disposables.add(
-                Completable.fromAction(() -> repository.clearExported(snapshot))
+                Completable.fromAction(
+                                () -> {
+                                    int kept = repository.clearExported(snapshot);
+                                    if (kept > 0) {
+                                        Log.i(
+                                                TAG,
+                                                "kept "
+                                                        + kept
+                                                        + " records changed since the hand-off");
+                                    }
+                                })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -519,6 +533,10 @@ public class MeetEnclyActivity extends BaseActivity {
             outState.putLongArray(STATE_EXPORTED_TASKS, exported.tasks);
             outState.putLongArray(STATE_EXPORTED_TAGS, exported.tags);
             outState.putLongArray(STATE_EXPORTED_CATEGORIES, exported.categories);
+            outState.putLongArray(STATE_EXPORTED_NOTE_PRINTS, exported.noteFingerprints);
+            outState.putLongArray(STATE_EXPORTED_TASK_PRINTS, exported.taskFingerprints);
+            outState.putLongArray(STATE_EXPORTED_TAG_PRINTS, exported.tagFingerprints);
+            outState.putLongArray(STATE_EXPORTED_CATEGORY_PRINTS, exported.categoryFingerprints);
         }
     }
 
@@ -536,8 +554,30 @@ public class MeetEnclyActivity extends BaseActivity {
         long[] tasks = state.getLongArray(STATE_EXPORTED_TASKS);
         long[] tags = state.getLongArray(STATE_EXPORTED_TAGS);
         long[] categories = state.getLongArray(STATE_EXPORTED_CATEGORIES);
-        if (notes != null && tasks != null && tags != null && categories != null) {
-            exported = new EnclyMigrationRepository.Exported(notes, tasks, tags, categories);
+        long[] notePrints = state.getLongArray(STATE_EXPORTED_NOTE_PRINTS);
+        long[] taskPrints = state.getLongArray(STATE_EXPORTED_TASK_PRINTS);
+        long[] tagPrints = state.getLongArray(STATE_EXPORTED_TAG_PRINTS);
+        long[] categoryPrints = state.getLongArray(STATE_EXPORTED_CATEGORY_PRINTS);
+        // Without the fingerprints nothing could tell a record changed since the hand-off, so the
+        // clear is not offered at all.
+        if (notes != null
+                && tasks != null
+                && tags != null
+                && categories != null
+                && notePrints != null
+                && taskPrints != null
+                && tagPrints != null
+                && categoryPrints != null) {
+            exported =
+                    new EnclyMigrationRepository.Exported(
+                            notes,
+                            tasks,
+                            tags,
+                            categories,
+                            notePrints,
+                            taskPrints,
+                            tagPrints,
+                            categoryPrints);
         }
         if (!state.getBoolean(STATE_HAS_RESULT, false)) return;
         resultCode = state.getInt(STATE_RESULT_CODE);
