@@ -113,6 +113,8 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                 QueryPurchasesParams.newBuilder()
                         .setProductType(BillingClient.ProductType.INAPP)
                         .build();
+        // Taken before the query is sent: its answer can only vouch for tokens recorded by then.
+        Set<String> recordedAtQuery = productId == null ? thankedPurchases.snapshot() : null;
 
         billingClient.queryPurchasesAsync(
                 params,
@@ -127,14 +129,15 @@ public class BillingManager implements PurchasesUpdatedListener, BillingClientSt
                                 onComplete.run();
                                 return;
                             }
-                            if (productId == null) {
+                            if (recordedAtQuery != null) {
                                 // Tokens of purchases that are gone (refunded, revoked) are
-                                // dropped from the record.
+                                // dropped from the record; one thanked after the query was sent
+                                // is not in this answer and is kept.
                                 Set<String> owned = new HashSet<>();
                                 for (Purchase purchase : purchasesList) {
                                     owned.add(purchase.getPurchaseToken());
                                 }
-                                thankedPurchases.retainOnly(owned);
+                                thankedPurchases.retainOnly(owned, recordedAtQuery);
                             }
                             List<Purchase> settled = new ArrayList<>();
                             for (Purchase purchase : purchasesList) {
