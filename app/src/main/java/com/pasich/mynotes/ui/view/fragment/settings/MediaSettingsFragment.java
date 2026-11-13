@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,8 @@ import javax.inject.Inject;
 
 @AndroidEntryPoint
 public class MediaSettingsFragment extends Fragment {
+
+    private static final String TAG = "MediaSettings";
 
     @Inject ThemePreferencesCache themePreferencesCache;
 
@@ -123,8 +126,18 @@ public class MediaSettingsFragment extends Fragment {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         if (fromUser && audioManager != null) {
-                            audioManager.setStreamVolume(
-                                    AudioManager.STREAM_NOTIFICATION, progress, 0);
+                            try {
+                                audioManager.setStreamVolume(
+                                        AudioManager.STREAM_NOTIFICATION, progress, 0);
+                            } catch (SecurityException e) {
+                                // With Do Not Disturb on, the system refuses volume changes
+                                // that would toggle it unless the app has notification policy
+                                // access. The slider goes back to the volume actually in effect.
+                                Log.w(TAG, "Notification volume change refused", e);
+                                seekBar.setProgress(
+                                        audioManager.getStreamVolume(
+                                                AudioManager.STREAM_NOTIFICATION));
+                            }
                         }
                     }
 
