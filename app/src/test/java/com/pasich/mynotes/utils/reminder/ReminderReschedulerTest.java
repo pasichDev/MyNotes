@@ -10,6 +10,7 @@ import androidx.room.Room;
 import com.pasich.mynotes.data.database.AppDatabase;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.data.model.RepeatRule;
+import com.pasich.mynotes.data.model.Task;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +74,39 @@ public class ReminderReschedulerTest {
             if (action == null ? a == null : action.equals(a)) found.add(alarm);
         }
         return found;
+    }
+
+    private int task(long time, int intervalMinutes) {
+        Task task = new Task("Task", 0);
+        task.setReminderTime(time);
+        task.setReminderIntervalMinutes(intervalMinutes);
+        return (int) db.taskDao().insertTask(task);
+    }
+
+    private List<ShadowAlarmManager.ScheduledAlarm> taskAlarmsFor(int taskId) {
+        List<ShadowAlarmManager.ScheduledAlarm> found = new ArrayList<>();
+        for (ShadowAlarmManager.ScheduledAlarm alarm : alarms.getScheduledAlarms()) {
+            Intent intent = shadowOf(alarm.operation).getSavedIntent();
+            if (intent.getIntExtra(TaskReminderManager.EXTRA_TASK_ID, -1) == taskId) {
+                found.add(alarm);
+            }
+        }
+        return found;
+    }
+
+    @Test
+    public void rescheduleAll_taskReminders_sameGraceAsNotes() {
+        int upcoming = task(NOW + HOUR, 0);
+        int recent = task(NOW - HOUR, 0);
+        int stale = task(NOW - 3 * 24 * HOUR, 0);
+        int repeating = task(NOW - 3 * 24 * HOUR, 15);
+
+        rescheduler.rescheduleAll(NOW);
+
+        assertThat(taskAlarmsFor(upcoming)).hasSize(1);
+        assertThat(taskAlarmsFor(recent)).hasSize(1);
+        assertThat(taskAlarmsFor(stale)).isEmpty();
+        assertThat(taskAlarmsFor(repeating)).hasSize(1);
     }
 
     @Test

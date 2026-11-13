@@ -126,6 +126,8 @@ public class TasksPresenter extends BasePresenter<TasksContract.view>
 
     @Override
     public void deleteTask(Task task) {
+        // A deleted task must not keep announcing itself (every N minutes for a repeating one).
+        TaskReminderManager.cancelReminder(appContext, task.getId());
         getCompositeDisposable()
                 .add(
                         getDataManager()
