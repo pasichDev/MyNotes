@@ -868,23 +868,57 @@ function setThemeColors (colors) {
  *
  * It used to become a single paragraph with a <br> per line. Every keystroke in a block makes the
  * browser lay out that whole block again, so typing in a long note cost more the longer it was.
- * Now each line of text is a paragraph, as if it had been typed here with Enter. A blank line
- * cannot be a block of its own (the editor drops empty blocks when it saves), so blank lines go
- * in front of the next line as <br>. Android joins blocks back with a newline, which gives exactly
- * the text that came in; blank lines before the first and after the last line are left out, as
+ *
+ * Up to PLAIN_TEXT_LINE_BLOCKS lines of text, each line is a paragraph, as if it had been typed
+ * here with Enter. A longer note is cut into blocks of about PLAIN_TEXT_BLOCK_CHARS instead: every
+ * block holds DOM and a mutation observer of its own, and a block per line made a 1,300-line note
+ * take 70 MB more in the WebView.
+ *
+ * Android joins blocks back with a newline, so both give back exactly the text that came in. A
+ * blank line cannot be a block of its own (the editor drops empty blocks when it saves): per line,
+ * blank lines go in front of the next line as <br>; in kilobyte blocks, a cut is only made between
+ * two lines that hold text. Blank lines before the first and after the last line are left out, as
  * Android trims them anyway.
  */
+const PLAIN_TEXT_LINE_BLOCKS = 200
+const PLAIN_TEXT_BLOCK_CHARS = 1000
+
 function plainTextBlocks (text) {
-  const blocks = []
-  let blanks = ''
-  for (const line of text.split('\n')) {
-    if (line.trim() === '') {
-      if (blocks.length) blanks += line + '<br>'
-      continue
+  const lines = text.split('\n')
+  while (lines.length && lines[0].trim() === '') lines.shift()
+  while (lines.length && lines[lines.length - 1].trim() === '') lines.pop()
+  const textLines = lines.filter(line => line.trim() !== '').length
+  const paragraph = text => ({ type: 'paragraph', data: { text } })
+
+  if (textLines <= PLAIN_TEXT_LINE_BLOCKS) {
+    const blocks = []
+    let blanks = ''
+    for (const line of lines) {
+      if (line.trim() === '') {
+        blanks += line + '<br>'
+      } else {
+        blocks.push(paragraph(blanks + line))
+        blanks = ''
+      }
     }
-    blocks.push({ type: 'paragraph', data: { text: blanks + line } })
-    blanks = ''
+    return blocks
   }
+
+  const blocks = []
+  let chunk = []
+  let size = 0
+  for (let i = 0; i < lines.length; i++) {
+    chunk.push(lines[i])
+    size += lines[i].length + 1
+    const next = lines[i + 1]
+    const canCut = next !== undefined && lines[i].trim() !== '' && next.trim() !== ''
+    if (size >= PLAIN_TEXT_BLOCK_CHARS && canCut) {
+      blocks.push(paragraph(chunk.join('<br>')))
+      chunk = []
+      size = 0
+    }
+  }
+  if (chunk.length) blocks.push(paragraph(chunk.join('<br>')))
   return blocks
 }
 

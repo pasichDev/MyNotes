@@ -89,7 +89,7 @@ const toPlain = blocks => blocks.map(b => b.data.text.replace(/<br>/g, '\n')).jo
 test('a plain-text note opens with a block per line and gives back the same text', () => {
   const page = openPage()
   const lines = []
-  for (let i = 0; i < 1300; i++) lines.push(i % 7 === 3 ? '' : `paragraph ${i}: the quick brown fox`)
+  for (let i = 0; i < 201; i++) lines.push(i % 7 === 3 ? '' : `paragraph ${i}: the quick brown fox`)
   lines[10] = '   '
   const text = lines.join('\n')
 
@@ -115,4 +115,21 @@ test('blank lines around the note are left out, as Android trims them', () => {
   const page = openPage()
   const blocks = page.window.plainTextBlocks('\n\none\ntwo\n\n')
   assert.deepEqual(JSON.parse(JSON.stringify(blocks.map(b => b.data.text))), ['one', 'two'])
+})
+
+test('a very long plain-text note opens in blocks of about a kilobyte that give back the same text', () => {
+  const page = openPage()
+  const lines = []
+  for (let i = 0; i < 1300; i++) lines.push(i % 7 === 3 ? '' : `paragraph ${i}: the quick brown fox`)
+  const text = lines.join('\n')
+
+  const blocks = page.window.plainTextBlocks(text)
+
+  assert.equal(toPlain(blocks), text)
+  assert.ok(blocks.length > 20 && blocks.length < 120, `${blocks.length} blocks`)
+  for (const block of blocks) {
+    assert.ok(block.data.text.length < 2500, 'each block stays small')
+    assert.ok(!block.data.text.startsWith('<br>') && !block.data.text.endsWith('<br>'),
+      'no block starts or ends with an empty line, which the editor could drop')
+  }
 })
