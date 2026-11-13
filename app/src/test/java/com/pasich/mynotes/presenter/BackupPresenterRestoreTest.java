@@ -4,11 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.net.Uri;
 import com.google.gson.Gson;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.BasePresenterTest;
@@ -183,6 +185,25 @@ public class BackupPresenterRestoreTest extends BasePresenterTest {
         verify(later, never()).createLocalCopyFinish(anyBoolean());
         presenter(recreated, token);
         verify(recreated).createLocalCopyFinish(anyBoolean());
+    }
+
+    @Test
+    public void pickingASaveTargetWhileASaveRuns_removesTheEmptyFileAndTellsTheUser() {
+        BackupContract.view view = mock(BackupContract.view.class);
+        BackupPresenter presenter = presenter(view);
+        Uri running = mock(Uri.class);
+        Uri refused = mock(Uri.class);
+        presenter.writeFileBackupLocal(running);
+
+        presenter.writeFileBackupLocal(refused);
+
+        verify(view).discardUnwrittenBackupFile(refused);
+        verify(view).showErrorsText(0, R.string.save_already_running);
+        verify(view, never()).discardUnwrittenBackupFile(running);
+        io.triggerActions();
+        verify(dataManager).writeBackupLocalFile(any(), eq(running));
+        verify(dataManager, never()).writeBackupLocalFile(any(), eq(refused));
+        verify(view).createLocalCopyFinish(anyBoolean());
     }
 
     @Test

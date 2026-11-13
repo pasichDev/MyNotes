@@ -190,6 +190,12 @@ public class BackupPresenter extends BasePresenter<BackupContract.view>
     @Override
     public void writeFileBackupLocal(Uri mUri) {
         if (BackgroundWork.saveRunning) {
+            // The picker has already created an empty file at the chosen place. Left there it
+            // looks like a backup and holds nothing, so remove it and say why nothing was saved.
+            runOnView(view -> {
+                view.discardUnwrittenBackupFile(mUri);
+                view.showErrorsText(0, R.string.save_already_running);
+            });
             return;
         }
         BackgroundWork.saveRunning = true;

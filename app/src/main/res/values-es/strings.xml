@@ -95,6 +95,7 @@
     <string name="nextRestore">Restaurar desde la nube</string>
     <string name="messageRestoreProcess"><b>Restaurando datos</b> \nEsta ventana se cerrará automáticamente cuando se complete.</string>
     <string name="restore_already_running">Otra restauración sigue en curso. Vuelve a elegir la copia de seguridad cuando termine.</string>
+    <string name="save_already_running">Otra copia de seguridad se sigue guardando. Vuelve a guardar cuando termine.</string>
 
     <!-- Copia de seguridad/restauración de resultados de error -->
     <string name="emptyDataToBackup">No hay datos para respaldar</string>

@@ -92,6 +92,7 @@
     <string name="nextRestore">Бұлттан қалпына келтіру</string>
     <string name="messageRestoreProcess"><b>Деректерді қалпына келтіру</b> \nБұл терезе аяқталғаннан кейін автоматты түрде жабылады.</string>
     <string name="restore_already_running">Басқа қалпына келтіру әлі орындалуда. Ол аяқталғаннан кейін сақтық көшірмені қайта таңдаңыз.</string>
+    <string name="save_already_running">Басқа сақтық көшірме әлі сақталуда. Ол аяқталғаннан кейін қайта сақтаңыз.</string>
 
     <!-- Қате нәтижелерінің сақтық көшірмесін жасау/қалпына келтіру -->
     <string name="emptyDataToBackup">Сақтық көшірме жасау үшін деректер жоқ</string>

@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -1129,6 +1130,19 @@ public class BackupActivity extends BaseActivity
                                         }));
             }
         };
+    }
+
+    @Override
+    public void discardUnwrittenBackupFile(@Nullable Uri uri) {
+        if (uri == null) {
+            return;
+        }
+        try {
+            DocumentsContract.deleteDocument(getContentResolver(), uri);
+        } catch (Exception error) {
+            // Some providers do not support deleting; the empty file then stays, as before.
+            Log.w(TAG, "Could not delete the unwritten backup file", error);
+        }
     }
 
     @Override

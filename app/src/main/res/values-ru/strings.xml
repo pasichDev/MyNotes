@@ -95,6 +95,7 @@
     <string name="nextRestore">Восстановить из облака</string>
     <string name="messageRestoreProcess"><b>Восстановление данных</b> \nПо завершении это окно закроется автоматически.</string>
     <string name="restore_already_running">Другое восстановление ещё выполняется. Выберите резервную копию снова, когда оно завершится.</string>
+    <string name="save_already_running">Другая резервная копия ещё сохраняется. Сохраните снова, когда это завершится.</string>
 
     <!-- Error results backup/restore  -->
     <string name="emptyDataToBackup">Нет данных, для создания резервной копии</string>

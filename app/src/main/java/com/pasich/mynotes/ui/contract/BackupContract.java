@@ -40,6 +40,12 @@ public interface BackupContract {
         /** Called after a local copy write attempt; error is true on failure. */
         void createLocalCopyFinish(boolean error);
 
+        /**
+         * Deletes, best effort, the empty file the system picker created for a backup that is not
+         * going to be written after all.
+         */
+        void discardUnwrittenBackupFile(@Nullable Uri uri);
+
         /** Shows a localised error message identified by errorCode and string. */
         void showErrorsText(int errorCode, @StringRes int string);
 

@@ -90,6 +90,7 @@
     <string name="nextRestore">Ripristina dal cloud</string>
     <string name="messageRestoreProcess"><b>Ripristina dati</b> \nQuesta finestra si chiuderà automaticamente al termine.</string>
     <string name="restore_already_running">Un altro ripristino è ancora in corso. Seleziona di nuovo il backup al termine.</string>
+    <string name="save_already_running">Un altro backup è ancora in fase di salvataggio. Salva di nuovo al termine.</string>
 
     <!-- Lerrore genera backup/ripristino -->
     <string name="emptyDataToBackup">Non ci sono dati di cui eseguire il backup</string>

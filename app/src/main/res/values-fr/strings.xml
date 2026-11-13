@@ -91,6 +91,7 @@
     <string name="nextRestore">Restauration à partir du cloud</string>
     <string name="messageRestoreProcess"><b>Restaurer les données</b> \nCette fenêtre se fermera automatiquement une fois terminée.</string>
     <string name="restore_already_running">Une autre restauration est encore en cours. Sélectionnez à nouveau la sauvegarde une fois celle-ci terminée.</string>
+    <string name="save_already_running">Une autre sauvegarde est encore en cours d\'enregistrement. Réessayez une fois celle-ci terminée.</string>
 
     <!-- Erreur de sauvegarde/restauration des résultats -->
     <string name="emptyDataToBackup">Il n\'y a pas de données à sauvegarder</string>
