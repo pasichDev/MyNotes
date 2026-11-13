@@ -283,6 +283,11 @@ public class FileExportUtils {
      *
      * <p>Lines break between words; a single word wider than the whole line is broken between
      * characters, since a word that cannot fit anywhere was otherwise never drawn at all.
+     *
+     * <p>The line's leading whitespace is its indent (a nested list item, a code block), and every
+     * line drawn for it starts with it. Splitting on spaces used to turn the indent into empty
+     * words that the first line swallowed, so a wrapped line lost its indent while a short one kept
+     * it. An indent wider than half the line is cut to half, so some text always fits beside it.
      */
     @VisibleForTesting
     static List<String> wrapLine(String line, float maxWidth, TextWidth width) {
@@ -291,8 +296,30 @@ public class FileExportUtils {
             out.add(line);
             return out;
         }
+        int bodyStart = 0;
+        while (bodyStart < line.length()
+                && (line.charAt(bodyStart) == ' ' || line.charAt(bodyStart) == '\t')) {
+            bodyStart++;
+        }
+        String indent = line.substring(0, bodyStart);
+        while (!indent.isEmpty() && width.of(indent) > maxWidth / 2) {
+            indent = indent.substring(0, indent.length() - 1);
+        }
+        float bodyWidth = maxWidth - width.of(indent);
+        for (String drawn : wrapWords(line.substring(bodyStart), bodyWidth, width)) {
+            out.add(indent + drawn);
+        }
+        if (out.isEmpty()) {
+            out.add(indent);
+        }
+        return out;
+    }
+
+    /** Breaks text that starts with no whitespace into lines no wider than {@code maxWidth}. */
+    private static List<String> wrapWords(String text, float maxWidth, TextWidth width) {
+        List<String> out = new ArrayList<>();
         StringBuilder current = new StringBuilder();
-        for (String word : line.split(" ", -1)) {
+        for (String word : text.split(" ", -1)) {
             String candidate = current.length() == 0 ? word : current + " " + word;
             if (width.of(candidate) <= maxWidth) {
                 current.setLength(0);
