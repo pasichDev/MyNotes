@@ -91,6 +91,8 @@
     <string name="selectRestore">Выбраць рэз. копію</string>
     <string name="nextRestore">Аднавіць з аблокі</string>
     <string name="messageRestoreProcess"><b>Аднаўленне дадзеных</b> \nПасля завяршэння дадзенае акно будзе аўтаматычна зачынена.</string>
+    <string name="restore_already_running">Іншае аднаўленне яшчэ выконваецца. Выберыце рэзервовую копію зноў, калі яно завершыцца.</string>
+    <string name="save_already_running">Іншая рэзервовая копія яшчэ захоўваецца. Захавайце зноў, калі яна завершыцца.</string>
 
 
     <!-- Error results backup/restore -->

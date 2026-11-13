@@ -38,27 +38,17 @@ const __pageParams = new URLSearchParams(window.location.search)
 const __doubleTapToEdit = __pageParams.get('dbltap') === '1'
 
 /**
- * Save current blocks and send to Android.
+ * Saves the blocks and sends them to Android unless they are what it already has.
  */
-
 function saveContent () {
   if (!editor) return
 
   editor
     .save()
     .then(output => {
-      const blocks = output.blocks
-      const jsonStr = JSON.stringify(blocks)
-
-      // Якщо нічого не змінилось — ідемо спати
-      if (jsonStr === __lastSavedJson) {
-        return
-      }
-
-      // Оновлюємо останнє збереження
+      const jsonStr = JSON.stringify(output.blocks)
+      if (jsonStr === __lastSavedJson) return
       __lastSavedJson = jsonStr
-
-      // Шлемо в Android
       safeAndroidCall('onContentChanged', jsonStr)
     })
     .catch(err => console.error('[Editor] Save failed:', err))
@@ -356,6 +346,8 @@ window.addEventListener('resize', () => requestAnimationFrame(keepCaretVisible))
 const HISTORY_LIMIT = 100
 const HISTORY_IDLE_MS = 700
 const HISTORY_MAX_BATCH_MS = 3000
+// A finished word or line closes its batch after this pause.
+const HISTORY_WORD_END_MS = 300
 // Editor.js reports a change up to 400 ms after it happened; a report that late about a state
 // this history applied itself is not a new change.
 const HISTORY_SETTLE_MS = 600
@@ -371,6 +363,8 @@ const __hist = {
   lastCaret: null,
   batchStart: 0,
   timer: null,
+  // The timer closes the batch at the end of a word or line.
+  closing: false,
   applying: false,
   settleUntil: 0,
   epoch: 0,
@@ -405,8 +399,16 @@ function readDocument () {
   }))
 }
 
+/**
+ * A state is kept once, as JSON: keeping the parsed document too doubled the memory of up to
+ * HISTORY_LIMIT copies of the note. The document is parsed back only when a step is applied.
+ */
 function historyEntry (doc, caret) {
-  return { doc, json: JSON.stringify(doc), caret }
+  return { json: JSON.stringify(doc), caret }
+}
+
+function historyDoc (entry) {
+  return JSON.parse(entry.json)
 }
 
 function reportHistory () {
@@ -446,6 +448,7 @@ function stopHistory () {
   __hist.epoch++
   clearTimeout(__hist.timer)
   __hist.timer = null
+  __hist.closing = false
   __hist.undo = []
   __hist.redo = []
   __hist.current = null
@@ -539,9 +542,15 @@ function resetHistory (settle) {
 
 /**
  * Something in the note changed, or is about to. {@code immediate} closes the batch now.
- * {@code fromEditor} marks Editor.js's own late change report.
+ * {@code fromEditor} marks Editor.js's own late change report. {@code endsWord} closes the batch
+ * once typing pauses for a moment (HISTORY_WORD_END_MS) instead of at once.
+ *
+ * Closing a batch saves and serializes the whole note, so a finished word or line no longer does
+ * it on the spot: on a long note that cost was paid on every space. A brief pause still makes the
+ * word or line its own step; words typed without that pause become one step. Editor.js's late
+ * report of the same typing does not push a pending close back.
  */
-function historyNoteChange (immediate, fromEditor) {
+function historyNoteChange (immediate, fromEditor, endsWord) {
   if (!__hist.current || __hist.applying || isReadMode) return
   if (fromEditor && Date.now() < __hist.settleUntil) return
   __hist.changeSeq++
@@ -551,9 +560,15 @@ function historyNoteChange (immediate, fromEditor) {
     __hist.batchStart = Date.now()
     if (!__hist.caretBefore) __hist.caretBefore = __hist.lastCaret
   }
-  clearTimeout(__hist.timer)
   const overdue = Date.now() - __hist.batchStart >= HISTORY_MAX_BATCH_MS
-  __hist.timer = setTimeout(captureHistory, immediate || overdue ? 0 : HISTORY_IDLE_MS)
+  if (!immediate && !overdue && fromEditor && __hist.closing && __hist.timer) {
+    reportHistory()
+    return
+  }
+  __hist.closing = !!endsWord && !immediate
+  clearTimeout(__hist.timer)
+  const delay = immediate || overdue ? 0 : endsWord ? HISTORY_WORD_END_MS : HISTORY_IDLE_MS
+  __hist.timer = setTimeout(captureHistory, delay)
   reportHistory()
 }
 
@@ -570,6 +585,7 @@ function historyInputStarting () {
 function captureHistory (force) {
   clearTimeout(__hist.timer)
   __hist.timer = null
+  __hist.closing = false
   if (!editor || !__hist.current || (!__hist.pending && !force)) return Promise.resolve()
   const epoch = __hist.epoch
   const seq = __hist.changeSeq
@@ -583,7 +599,7 @@ function captureHistory (force) {
     else __hist.batchHasText = false
     const entry = historyEntry(doc, historyCaret())
     if (entry.json !== __hist.current.json) {
-      keepAttachmentsForUndo(__hist.current.doc, doc)
+      keepAttachmentsForUndo(historyDoc(__hist.current), doc)
       __hist.undo.push({ ...__hist.current, caret: caretBefore || __hist.current.caret })
       if (__hist.undo.length > HISTORY_LIMIT) __hist.undo.shift()
       __hist.redo = []
@@ -662,8 +678,8 @@ function restoreHistoryCaret (caret, keep, fallbackId) {
 
 /** Puts the document of {@code entry} on screen with the smallest change that gets there. */
 function applyHistoryEntry (entry) {
-  const from = __hist.current.doc
-  const to = entry.doc
+  const from = historyDoc(__hist.current)
+  const to = historyDoc(entry)
   const epoch = __hist.epoch
   __hist.applying = true
   keepAttachmentsForUndo(from, to)
@@ -742,9 +758,10 @@ function historyRedo () {
  */
 function forgetHistoryBlock (blockId) {
   const strip = entry => {
-    const blocks = entry.doc.blocks.filter(block => block.id !== blockId)
-    if (blocks.length === entry.doc.blocks.length) return entry
-    return historyEntry({ title: entry.doc.title, blocks }, entry.caret)
+    const doc = historyDoc(entry)
+    const blocks = doc.blocks.filter(block => block.id !== blockId)
+    if (blocks.length === doc.blocks.length) return entry
+    return historyEntry({ title: doc.title, blocks }, entry.caret)
   }
   const distinct = list => list.filter((entry, i) => i === 0 || entry.json !== list[i - 1].json)
   if (__hist.current) __hist.current = strip(__hist.current)
@@ -793,7 +810,7 @@ document.addEventListener(
     }
     if (isEditingKey(event)) {
       historyInputStarting()
-      if (event.key === 'Enter') historyNoteChange(true, false)
+      if (event.key === 'Enter') historyNoteChange(false, false, true)
     }
   },
   true
@@ -815,7 +832,7 @@ document.addEventListener(
     const data = typeof event.data === 'string' ? event.data : ''
     const lineBreak = event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak'
     const endsWord = lineBreak || (/\s$/.test(data) && (__hist.batchHasText || /\S/.test(data)))
-    historyNoteChange(endsWord, false)
+    historyNoteChange(false, false, endsWord)
     if (/\S/.test(data)) __hist.batchHasText = true
   },
   true
@@ -838,6 +855,73 @@ function setThemeColors (colors) {
 }
 
 /**
+ * A plain-text note (from the simple editor, shared into the app or synced) as paragraph blocks.
+ *
+ * It used to become a single paragraph with a <br> per line. Every keystroke in a block makes the
+ * browser lay out that whole block again, so typing in a long note cost more the longer it was.
+ *
+ * Up to PLAIN_TEXT_LINE_BLOCKS lines of text, each line is a paragraph, as if it had been typed
+ * here with Enter. A longer note is cut into blocks of about PLAIN_TEXT_BLOCK_CHARS instead: every
+ * block holds DOM and a mutation observer of its own, and a block per line made a 1,300-line note
+ * take 70 MB more in the WebView.
+ *
+ * Android joins blocks back with a newline, so both give back exactly the text that came in. A
+ * blank line cannot be a block of its own (the editor drops empty blocks when it saves): per line,
+ * blank lines go in front of the next line as <br>; in kilobyte blocks, a cut is only made between
+ * two lines that hold text. Blank lines before the first and after the last line are left out, as
+ * Android trims them anyway.
+ */
+const PLAIN_TEXT_LINE_BLOCKS = 200
+const PLAIN_TEXT_BLOCK_CHARS = 1000
+
+/**
+ * Plain text as paragraph HTML. The paragraph tool shows its text as HTML, so markup in a note
+ * (shared into the app, say) would otherwise run in the page, which can reach Android.
+ */
+function escapeHtml (text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function plainTextBlocks (text) {
+  const lines = text.split('\n').map(escapeHtml)
+  while (lines.length && lines[0].trim() === '') lines.shift()
+  while (lines.length && lines[lines.length - 1].trim() === '') lines.pop()
+  const textLines = lines.filter(line => line.trim() !== '').length
+  const paragraph = text => ({ type: 'paragraph', data: { text } })
+
+  if (textLines <= PLAIN_TEXT_LINE_BLOCKS) {
+    const blocks = []
+    let blanks = ''
+    for (const line of lines) {
+      if (line.trim() === '') {
+        blanks += line + '<br>'
+      } else {
+        blocks.push(paragraph(blanks + line))
+        blanks = ''
+      }
+    }
+    return blocks
+  }
+
+  const blocks = []
+  let chunk = []
+  let size = 0
+  for (let i = 0; i < lines.length; i++) {
+    chunk.push(lines[i])
+    size += lines[i].length + 1
+    const next = lines[i + 1]
+    const canCut = next !== undefined && lines[i].trim() !== '' && next.trim() !== ''
+    if (size >= PLAIN_TEXT_BLOCK_CHARS && canCut) {
+      blocks.push(paragraph(chunk.join('<br>')))
+      chunk = []
+      size = 0
+    }
+  }
+  if (chunk.length) blocks.push(paragraph(chunk.join('<br>')))
+  return blocks
+}
+
+/**
  * Load note into editor
  */
 function loadNote (note) {
@@ -849,12 +933,7 @@ function loadNote (note) {
 
   let blocks = []
   if (note.plainTextFallback && note.plainText) {
-    blocks = [
-      {
-        type: 'paragraph',
-        data: { text: note.plainText.replace(/\n/g, '<br>') }
-      }
-    ]
+    blocks = plainTextBlocks(note.plainText)
   } else if (note.valueJson) {
     blocks = note.valueJson
   }
@@ -1177,6 +1256,7 @@ window.uploadAttachment = uploadAttachment
 window.toggleReadModeFromAndroid = toggleReadModeFromAndroid
 window.setReadMode = setReadMode
 window.saveContent = saveContent
+window.plainTextBlocks = plainTextBlocks
 window.currentBlockIndex = currentBlockIndex
 window.insertUploadedBlockFromAndroid = insertUploadedBlockFromAndroid
 window.flushContent = flushContent

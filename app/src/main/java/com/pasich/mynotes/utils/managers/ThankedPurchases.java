@@ -25,12 +25,35 @@ final class ThankedPurchases {
     }
 
     boolean wasThanked(String purchaseToken) {
-        return tokens().contains(purchaseToken);
+        return prefs.getStringSet(KEY_TOKENS, Set.of()).contains(purchaseToken);
     }
 
     void markThanked(String purchaseToken) {
         Set<String> tokens = tokens();
         if (tokens.add(purchaseToken)) save(tokens);
+    }
+
+    /** The tokens recorded right now; pass it to {@link #retainOnly} with a query sent after it. */
+    Set<String> snapshot() {
+        return tokens();
+    }
+
+    /**
+     * Drops the tokens of purchases that no longer exist. A purchase refunded or revoked before its
+     * consume never comes back to be forgotten.
+     *
+     * <p>Only tokens that were already recorded when the purchases query was sent ({@code
+     * recordedAtQuery}) can be judged by its answer. A purchase thanked while the query was in
+     * flight is missing from that answer although it exists, and dropping its token got it thanked
+     * a second time after a failed consume.
+     */
+    void retainOnly(Set<String> ownedTokens, Set<String> recordedAtQuery) {
+        Set<String> tokens = tokens();
+        boolean changed = false;
+        for (String token : recordedAtQuery) {
+            if (!ownedTokens.contains(token)) changed |= tokens.remove(token);
+        }
+        if (changed) save(tokens);
     }
 
     void forget(String purchaseToken) {

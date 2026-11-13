@@ -220,6 +220,7 @@
 
                     <EditText
                         android:id="@+id/valueNote"
+                        app:emojiCompatEnabled="false"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:autoLink="web|email"
@@ -232,7 +233,6 @@
                         android:hint="@string/hintTextNote"
                         android:inputType="textAutoComplete|text|textCapSentences|textMultiLine"
                         android:longClickable="true"
-                        android:maxLength="@integer/maxLengthNotesTextValue"
                         android:minHeight="100dp"
                         android:padding="20dp"
                         android:singleLine="false"

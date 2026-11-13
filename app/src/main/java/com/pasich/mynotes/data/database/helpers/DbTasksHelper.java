@@ -18,6 +18,9 @@ public interface DbTasksHelper {
 
     Completable updateTask(Task task);
 
+    /** Updates several tasks in one transaction, e.g. their positions after a drag. */
+    Completable updateTasks(List<Task> tasks);
+
     Completable deleteTask(Task task);
 
     Completable toggleTask(int taskId, boolean isDone);

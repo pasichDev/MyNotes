@@ -157,6 +157,132 @@ public class SyncServiceTest {
     }
 
     @Test
+    public void sync_trustsTheStoresDigestCacheInsteadOfReHashingEveryLocalBlob() throws Exception {
+        SyncRecord local = note(TEN, "Local with an unchanged attachment");
+        byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
+        String hash = sha256(bytes);
+        FakeStore store = new FakeStore(snapshot(local));
+        store.attachmentHashes = Collections.singletonList(hash);
+        store.attachments.put(hash, bytes);
+        store.verifiedFromCache.add(hash);
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        backend.attachments.put(hash, bytes);
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        // Every local blob used to be read in full and hashed on every sync, cache or not.
+        assertThat(store.readAttachmentCalls).isEqualTo(0);
+    }
+
+    @Test
+    public void sync_persistsTheStoresDigestCacheOnceForAllAttachments() throws Exception {
+        List<String> hashes = new ArrayList<>();
+        FakeStore store = new FakeStore(snapshot(note(TEN, "Local with attachments")));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+        for (int i = 0; i < 3; i++) {
+            byte[] bytes = ("attachment " + i).getBytes(StandardCharsets.UTF_8);
+            String hash = sha256(bytes);
+            hashes.add(hash);
+            store.attachments.put(hash, bytes);
+            store.verifiedFromCache.add(hash);
+            backend.attachments.put(hash, bytes);
+        }
+        store.attachmentHashes = hashes;
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(store.finishAttachmentVerificationCalls).isEqualTo(1);
+    }
+
+    @Test
+    public void sync_stopsPublishingADeletionOnceItIsPastTheHorizon() {
+        // Every tombstone used to go into every bundle for good, and the schema caps a bundle's
+        // records, so enough deletions over a library's life failed every publish permanently.
+        SyncRecord old = tombstone(NOTE_ID, daysBeforeNow(100));
+        SyncRecord recent = tombstone(OTHER_NOTE_ID, daysBeforeNow(10));
+        FakeStore store = new FakeStore(snapshot(old, recent));
+        FakeBackend backend = new FakeBackend(SyncSnapshot.empty());
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.snapshot.getRecords()).containsExactly(recent);
+        // The device itself still holds and applies the deletion.
+        assertThat(store.appliedSnapshot.getRecords()).containsExactly(old, recent);
+
+        // And the omission is not mistaken for news on the next sync.
+        new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(1);
+    }
+
+    @Test
+    public void sync_doesNotRepublishWhenRemoteOnlyAddsBackExpiredTombstones() {
+        // An older app version on another device keeps every tombstone and puts the expired ones
+        // back into each bundle it writes. Comparing the pruned snapshot with that bundle made
+        // both devices republish everything on every sync, forever.
+        SyncRecord old = tombstone(NOTE_ID, daysBeforeNow(100));
+        SyncRecord recent = tombstone(OTHER_NOTE_ID, daysBeforeNow(10));
+        FakeStore store = new FakeStore(snapshot(old, recent));
+        FakeBackend backend = new FakeBackend(snapshot(old, recent));
+
+        SyncState state = new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(state.getStatus()).isEqualTo(SyncState.Status.SUCCESS);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(0);
+        assertThat(store.appliedSnapshot.getRecords()).containsExactly(old, recent);
+    }
+
+    @Test
+    public void sync_stillPublishesWhenRemoteLacksAnUnexpiredTombstone() {
+        SyncRecord old = tombstone(NOTE_ID, daysBeforeNow(100));
+        SyncRecord recent = tombstone(OTHER_NOTE_ID, daysBeforeNow(10));
+        FakeStore store = new FakeStore(snapshot(old, recent));
+        FakeBackend backend = new FakeBackend(snapshot(old));
+
+        new SyncService(store, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(backend.writeSnapshotCalls).isEqualTo(1);
+        assertThat(backend.snapshot.getRecords()).containsExactly(recent);
+    }
+
+    @Test
+    public void sync_answersAStaleCopyOfAnOldDeletionWithTheTombstone() {
+        // A device that slept through the horizon never saw the deletion, and once Drive stopped
+        // carrying the tombstone it republished its live copy. The next device still holding the
+        // tombstone has to put the deletion back rather than take the copy.
+        SyncRecord staleCopy = note(daysBeforeNow(101), "Deleted elsewhere long ago");
+        SyncRecord deleted = tombstone(NOTE_ID, daysBeforeNow(100));
+        FakeStore holder = new FakeStore(snapshot(deleted));
+        holder.syncedVersions.put(key(deleted), deleted.getCanonicalPayloadHash());
+        FakeBackend backend = new FakeBackend(snapshot(staleCopy));
+
+        new SyncService(holder, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(versions(backend.snapshot)).containsExactly(deleted.getCanonicalPayloadHash());
+        assertThat(versions(holder.appliedSnapshot))
+                .containsExactly(deleted.getCanonicalPayloadHash());
+
+        // The stale device now receives the deletion instead of keeping its copy.
+        FakeStore stale = new FakeStore(snapshot(staleCopy));
+        stale.syncedVersions.put(key(staleCopy), staleCopy.getCanonicalPayloadHash());
+        new SyncService(stale, new SyncMerger(), CLOCK).sync(backend);
+
+        assertThat(versions(stale.appliedSnapshot))
+                .containsExactly(deleted.getCanonicalPayloadHash());
+        // Settled everywhere, nobody republishes the bundle just to drop the expired tombstone: it
+        // leaves Drive with the next publish that has news, and until then it is harmless.
+        int publishes = backend.writeSnapshotCalls;
+        new SyncService(stale, new SyncMerger(), CLOCK).sync(backend);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(publishes);
+        new SyncService(holder, new SyncMerger(), CLOCK).sync(backend);
+        assertThat(backend.writeSnapshotCalls).isEqualTo(publishes);
+        assertThat(versions(holder.appliedSnapshot))
+                .containsExactly(deleted.getCanonicalPayloadHash());
+    }
+
+    @Test
     public void sync_repairsCorruptLocalAttachmentFromRemote() throws Exception {
         SyncRecord local = note(TEN, "Local with corrupt attachment");
         byte[] bytes = "local attachment".getBytes(StandardCharsets.UTF_8);
@@ -440,6 +566,28 @@ public class SyncServiceTest {
         assertThat(backend.writeSnapshotCalls).isEqualTo(0);
     }
 
+    private static final String OTHER_NOTE_ID = "550e8400-e29b-41d4-a716-446655440001";
+
+    private static Instant daysBeforeNow(long days) {
+        return TWENTY.minus(java.time.Duration.ofDays(days));
+    }
+
+    private static SyncRecord tombstone(String id, Instant deletedAt) {
+        return SyncRecord.tombstone(SyncRecord.Type.NOTE, id, deletedAt, deletedAt);
+    }
+
+    private static List<String> versions(SyncSnapshot snapshot) {
+        List<String> versions = new ArrayList<>();
+        for (SyncRecord record : snapshot.getRecords()) {
+            versions.add(record.getCanonicalPayloadHash());
+        }
+        return versions;
+    }
+
+    private static String key(SyncRecord record) {
+        return record.getType() + ":" + record.getId();
+    }
+
     private static SyncSnapshot snapshot(SyncRecord... records) {
         return new SyncSnapshot(Arrays.asList(records));
     }
@@ -596,8 +744,27 @@ public class SyncServiceTest {
             return attachments.containsKey(sha256);
         }
 
+        /** Blobs the store vouches for from its digest cache, as RoomSyncStore does. */
+        private final java.util.Set<String> verifiedFromCache = new java.util.HashSet<>();
+
+        private int finishAttachmentVerificationCalls;
+
+        @Override
+        public void finishAttachmentVerification() {
+            finishAttachmentVerificationCalls++;
+        }
+
+        private int readAttachmentCalls;
+
+        @Override
+        public boolean hasVerifiedAttachment(String sha256, Long expectedSize) throws IOException {
+            return verifiedFromCache.contains(sha256)
+                    || SyncStore.super.hasVerifiedAttachment(sha256, expectedSize);
+        }
+
         @Override
         public InputStream readAttachment(String sha256) throws IOException {
+            readAttachmentCalls++;
             byte[] bytes = attachments.get(sha256);
             if (bytes == null) {
                 throw new IOException("missing local attachment");

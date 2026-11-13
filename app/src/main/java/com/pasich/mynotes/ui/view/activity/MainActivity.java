@@ -442,6 +442,7 @@ public class MainActivity extends BaseActivity
     @Override
     protected void onStart() {
         super.onStart();
+        mainPresenter.onViewStarted();
         if (stopped) {
             stopped = false;
             // Coming back, usually from the editor with a shared-element return transition.
@@ -476,6 +477,8 @@ public class MainActivity extends BaseActivity
         settling = false;
         // Anything held back is applied now, without animation, while nobody is looking.
         applyPendingState();
+        // Search and statistics are not re-run behind the editor; they catch up on return.
+        mainPresenter.onViewStopped();
     }
 
     private float animatorDurationScale() {
@@ -510,7 +513,7 @@ public class MainActivity extends BaseActivity
 
     @Override
     public void startDeleteTagDialog(Tag tag) {
-        new DeleteTagDialog(tag).show(getSupportFragmentManager(), "deleteTag");
+        DeleteTagDialog.newInstance(tag).show(getSupportFragmentManager(), "deleteTag");
     }
 
     @Override
@@ -1011,7 +1014,8 @@ public class MainActivity extends BaseActivity
 
                     @Override
                     public void renameTag() {
-                        new NameTagDialog(tag).show(getSupportFragmentManager(), "RenameTag");
+                        NameTagDialog.newRenameInstance(tag)
+                                .show(getSupportFragmentManager(), "RenameTag");
                     }
 
                     @Override
@@ -1113,7 +1117,7 @@ public class MainActivity extends BaseActivity
         List<Note> selected = selectionController.getSelectedNotes();
 
         if (!selected.isEmpty()) {
-            ShareOptionsDialog dialog = new ShareOptionsDialog(selected);
+            ShareOptionsDialog dialog = ShareOptionsDialog.newInstance(selected);
             dialog.show(getSupportFragmentManager(), "ShareOptionsDialog");
         }
 

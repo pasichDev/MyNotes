@@ -28,19 +28,48 @@ import javax.inject.Inject;
 @AndroidEntryPoint
 public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDialogContract.view {
 
-    private final Tag mTag;
+    private static final String ARG_NEW_POSITION = "newTagPosition";
+
+    private Tag mTag;
     @Inject public NameTagDialogPresenter mPresenter;
     private DialogNameTagBinding binding;
     private boolean errorText = true;
     private int newTagPosition = -1;
 
-    public NameTagDialog(int newPosition) {
-        this.mTag = null;
-        this.newTagPosition = newPosition;
+    /**
+     * Used by the system to recreate the dialog; use {@link #newCreateInstance} or {@link
+     * #newRenameInstance} instead.
+     */
+    public NameTagDialog() {}
+
+    /** A dialog that creates a tag at {@code newPosition}. */
+    public static NameTagDialog newCreateInstance(int newPosition) {
+        NameTagDialog dialog = new NameTagDialog();
+        Bundle args = new Bundle();
+        args.putInt(ARG_NEW_POSITION, newPosition);
+        dialog.setArguments(args);
+        return dialog;
     }
 
-    public NameTagDialog(Tag tag) {
-        this.mTag = tag;
+    /** A dialog that renames {@code tag}. */
+    public static NameTagDialog newRenameInstance(@NonNull Tag tag) {
+        NameTagDialog dialog = new NameTagDialog();
+        Bundle args = new Bundle();
+        TagArgs.put(args, tag);
+        dialog.setArguments(args);
+        return dialog;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        mTag = TagArgs.get(args);
+        newTagPosition = args == null ? -1 : args.getInt(ARG_NEW_POSITION, -1);
+    }
+
+    private boolean isRename() {
+        return mTag != null;
     }
 
     @Nullable
@@ -54,7 +83,7 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
         mPresenter.attachView(this);
         mPresenter.viewIsReady();
 
-        if (getTag() != null && getTag().equals("RenameTag") && mTag != null) {
+        if (isRename()) {
             binding.nameTag.setText(mTag.getNameTag());
             binding.outlinedTextField.setEndIconDrawable(
                     AppCompatResources.getDrawable(requireContext(), R.drawable.ic_rename));
@@ -120,7 +149,7 @@ public class NameTagDialog extends BaseDialogBottomSheets implements NameTagDial
 
     private void saveTag() {
         if (!errorText) {
-            if (getTag() != null && getTag().equals("RenameTag") && mTag != null) {
+            if (isRename()) {
                 mPresenter.editNameTag(
                         Objects.requireNonNull(binding.nameTag.getText()).toString(), mTag);
             } else {

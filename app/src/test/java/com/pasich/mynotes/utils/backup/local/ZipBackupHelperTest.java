@@ -105,6 +105,51 @@ public class ZipBackupHelperTest {
         assertThat(backup.isError()).isTrue();
     }
 
+    @Test
+    public void writtenArchive_readsBackWithItsAttachments() throws Exception {
+        File attachments = temporaryFolder.newFolder("files", "attachments");
+        File noteDir = new File(attachments, "note_3");
+        assertThat(noteDir.mkdirs()).isTrue();
+        // Larger than one copy chunk, so the streamed copy is exercised past its first read.
+        byte[] photo = new byte[200 * 1024 + 17];
+        for (int i = 0; i < photo.length; i++) photo[i] = (byte) i;
+        Files.write(new File(noteDir, "photo.jpg").toPath(), photo);
+        File zipFile = new File(temporaryFolder.getRoot(), "backup.mnbkn");
+        File staging = new File(temporaryFolder.getRoot(), "staging/attachments");
+
+        ZipBackupHelper.writeZipBackup(new JsonBackup(), attachments, zipFile);
+        JsonBackup backup;
+        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipFile.toPath()))) {
+            backup = ZipBackupHelper.readZipBackup(zis, staging);
+        }
+
+        assertThat(backup.isError()).isFalse();
+        assertThat(Files.readAllBytes(new File(new File(staging, "note_3"), "photo.jpg").toPath()))
+                .isEqualTo(photo);
+    }
+
+    @Test
+    public void writesAnArchiveWithNoAttachmentFolder() throws Exception {
+        File zipFile = new File(temporaryFolder.getRoot(), "backup.mnbkn");
+
+        ZipBackupHelper.writeZipBackup(
+                new JsonBackup(), new File(temporaryFolder.getRoot(), "missing"), zipFile);
+
+        try (java.io.InputStream in = Files.newInputStream(zipFile.toPath())) {
+            assertThat(ZipBackupHelper.isZip(in)).isTrue();
+        }
+    }
+
+    @Test
+    public void isZip_readsOnlyTheMagicFromAStream() throws Exception {
+        assertThat(ZipBackupHelper.isZip(new ByteArrayInputStream(new byte[] {0x50, 0x4B, 3})))
+                .isTrue();
+        assertThat(ZipBackupHelper.isZip(new ByteArrayInputStream("{\"a\":1}".getBytes())))
+                .isFalse();
+        assertThat(ZipBackupHelper.isZip(new ByteArrayInputStream(new byte[] {0x50}))).isFalse();
+        assertThat(ZipBackupHelper.isZip(new ByteArrayInputStream(new byte[0]))).isFalse();
+    }
+
     private static ZipInputStream zip(Map<String, byte[]> entries) throws Exception {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bytes)) {

@@ -105,6 +105,8 @@
     <string name="selectRestore">Select backup</string>
     <string name="nextRestore">Restore from cloud</string>
     <string name="messageRestoreProcess"><b>Restoring data</b>\nThis window will close automatically when finished.</string>
+    <string name="restore_already_running">Another restore is still running. Pick the backup again once it has finished.</string>
+    <string name="save_already_running">Another backup is still being saved. Save again once it has finished.</string>
 
     <string name="emptyDataToBackup">No data to back up</string>
     <string name="creteLocalCopyOkay">Backup created successfully</string>

@@ -56,10 +56,21 @@ public final class RoomSyncStore implements SyncStore {
     private static final String PREFS = "sync_state";
     private static final String LEGACY_STATE = "last_state";
     private static final String PREFERENCES_HASH = "preferences_hash";
+
+    /**
+     * Settled conflicts kept, newest first. Each names two versions, so this matches the number of
+     * settled versions {@link SyncService} publishes; older rows could never be published anyway.
+     */
+    static final int MAX_KEPT_RESOLVED_CONFLICTS = SyncService.MAX_PUBLISHED_SETTLED_IDS / 2;
+
     private static final String PREFERENCES_STABLE_ID = "00000000-0000-4000-8000-000000000000";
     private static final String ATTACHMENT_CACHE_DIR = "sync-attachments";
     private static final String HASH_CACHE_FILE = "hash-cache.json";
     private static final String SHA_256 = "[0-9a-f]{64}";
+
+    /** Metadata rows re-read per query while building a snapshot; well under SQLite's 999. */
+    private static final int SNAPSHOT_METADATA_BATCH = 500;
+
     private final AppDatabase database;
     private final SharedPreferences preferences;
     private volatile boolean seeded;
@@ -95,6 +106,16 @@ public final class RoomSyncStore implements SyncStore {
      * the next merge from calling the follow-up edit a conflict.
      */
     private final Map<String, String> builtVersionIds = new ConcurrentHashMap<>();
+
+    /**
+     * The {@code updatedAt} every record had, here, when the last build read its content.
+     *
+     * <p>The apply's stale-edit guard compares against this. It used to compare against the merged
+     * record's timestamp, which is another device's clock whenever the remote version wins: with
+     * that clock ahead, a local edit made during the sync looked older than the result and was
+     * overwritten, and with it behind, an untouched record refused every newer remote version.
+     */
+    private final Map<String, Long> builtUpdatedAts = new ConcurrentHashMap<>();
 
     /**
      * Attachments the last build described from the column alone because their file is gone, keyed
@@ -227,8 +248,31 @@ public final class RoomSyncStore implements SyncStore {
         List<SnapshotProblem> problems = new ArrayList<>();
         rememberedOnlyAttachments.clear();
         builtVersionIds.clear();
+        builtUpdatedAts.clear();
         try {
-            for (SyncMetadataEntity metadata : database.syncMetadataDao().getAll()) {
+            List<SyncMetadataEntity> listedRows = database.syncMetadataDao().getAll();
+            List<SyncMetadataEntity> metadataBatch = new ArrayList<>();
+            for (int index = 0; index < listedRows.size(); index++) {
+                if (index % SNAPSHOT_METADATA_BATCH == 0) {
+                    // Re-read before the content, never after it: a batch at a time, right before
+                    // that batch's content is read. Each timestamp then predates the content read
+                    // next: an edit saved in between leaves newer content under an older
+                    // timestamp, which the apply's guard sees and skips. Read the other way round,
+                    // an edit landing between the two paired the old content with the new
+                    // timestamp, the guard let the apply through, and the edit was reverted
+                    // everywhere. One point query per record made a sync thousands of SELECTs.
+                    metadataBatch =
+                            rereadMetadata(
+                                    listedRows.subList(
+                                            index,
+                                            Math.min(
+                                                    index + SNAPSHOT_METADATA_BATCH,
+                                                    listedRows.size())));
+                }
+                SyncMetadataEntity metadata = metadataBatch.get(index % SNAPSHOT_METADATA_BATCH);
+                if (metadata == null) {
+                    continue;
+                }
                 // Every record carries the version the remote is known to hold, so the merge can
                 // tell an edit made here alone from one made on both sides.
                 if (metadata.deletedAt != null) {
@@ -243,22 +287,29 @@ public final class RoomSyncStore implements SyncStore {
                 }
                 JsonObject payload = payload(metadata, problems);
                 if (payload != null) {
-                    SyncMetadataEntity current =
-                            database.syncMetadataDao().get(metadata.recordType, metadata.localId);
+                    long updatedAt = metadata.updatedAt;
+                    if (SyncMetadata.RECORD_TYPE_PREFERENCES.equals(metadata.recordType)) {
+                        // The one record whose payload() writes its own timestamp: a settings
+                        // change noticed just now is touched there, after the values were read.
+                        SyncMetadataEntity touched =
+                                database.syncMetadataDao()
+                                        .get(metadata.recordType, metadata.localId);
+                        if (touched != null) {
+                            updatedAt = touched.updatedAt;
+                        }
+                    }
                     records.add(
                             SyncRecord.live(
                                             SyncRecord.Type.fromWireValue(metadata.recordType),
                                             metadata.stableId,
-                                            Instant.ofEpochMilli(
-                                                    current == null
-                                                            ? metadata.updatedAt
-                                                            : current.updatedAt),
+                                            Instant.ofEpochMilli(updatedAt),
                                             payload)
                                     .withBaseVersion(metadata.syncedVersionId));
                 }
             }
             for (SyncRecord record : records) {
                 builtVersionIds.put(recordKey(record), record.getCanonicalPayloadHash());
+                builtUpdatedAts.put(recordKey(record), record.getUpdatedAt().toEpochMilli());
             }
         } finally {
             hashCache.flush();
@@ -267,6 +318,32 @@ public final class RoomSyncStore implements SyncStore {
         return problems.isEmpty()
                 ? SnapshotBuildResult.publishable(snapshot)
                 : SnapshotBuildResult.incomplete(snapshot, problems);
+    }
+
+    /**
+     * The current rows for {@code listed}, in the same order, null where a row is gone; one query
+     * per record type in the batch instead of one per row.
+     */
+    @NonNull
+    private List<SyncMetadataEntity> rereadMetadata(@NonNull List<SyncMetadataEntity> listed) {
+        Map<String, List<Long>> idsByType = new HashMap<>();
+        for (SyncMetadataEntity row : listed) {
+            idsByType
+                    .computeIfAbsent(row.recordType, ignored -> new ArrayList<>())
+                    .add(row.localId);
+        }
+        Map<String, SyncMetadataEntity> current = new HashMap<>();
+        for (Map.Entry<String, List<Long>> entry : idsByType.entrySet()) {
+            for (SyncMetadataEntity row :
+                    database.syncMetadataDao().getByLocalIds(entry.getKey(), entry.getValue())) {
+                current.put(row.recordType + ":" + row.localId, row);
+            }
+        }
+        List<SyncMetadataEntity> result = new ArrayList<>(listed.size());
+        for (SyncMetadataEntity row : listed) {
+            result.add(current.get(row.recordType + ":" + row.localId));
+        }
+        return result;
     }
 
     @Override
@@ -370,7 +447,7 @@ public final class RoomSyncStore implements SyncStore {
                         // which no longer exists, so applying its result would silently
                         // drop the newer edit. Leave it; the next sync merges the real
                         // current version.
-                        if (metadata.updatedAt > record.getUpdatedAt().toEpochMilli()) {
+                        if (editedSinceBuild(key, metadata, record.getUpdatedAt().toEpochMilli())) {
                             Log.w(
                                     TAG,
                                     "Skipping a stale sync result for "
@@ -418,7 +495,10 @@ public final class RoomSyncStore implements SyncStore {
                         String baseline = preferences.getString(PREFERENCES_HASH, null);
                         boolean edited = baseline != null && !baseline.equals(live);
                         boolean stale =
-                                preferencesMetadata[0].updatedAt > stagedPreferencesUpdatedAt;
+                                editedSinceBuild(
+                                        preferencesKey,
+                                        preferencesMetadata[0],
+                                        stagedPreferencesUpdatedAt);
                         if (stagedPreferencesJson == null || edited || stale) {
                             // Unusable payload, or edited since the build: the version
                             // is not going to be committed, so it is not recorded as
@@ -862,6 +942,19 @@ public final class RoomSyncStore implements SyncStore {
     }
 
     /**
+     * Whether the local record moved on after the last build read it; see the apply's guard.
+     *
+     * <p>A record the build did not produce (an apply without a build, or a record whose content
+     * could not be read) has no timestamp of its own to compare with; the merged record's is the
+     * best remaining evidence.
+     */
+    private boolean editedSinceBuild(
+            @NonNull String key, @NonNull SyncMetadataEntity current, long mergedUpdatedAt) {
+        Long built = builtUpdatedAts.get(key);
+        return current.updatedAt > (built != null ? built : mergedUpdatedAt);
+    }
+
+    /**
      * Records the version this device now holds, writing only the columns that differ.
      *
      * <p>Every sync applies the whole merged snapshot, and nearly all of it is what this device
@@ -1242,6 +1335,7 @@ public final class RoomSyncStore implements SyncStore {
                     throw new SyncRuntimeException(error);
                 }
                 database.syncConflictDao().markResolved(conflictId, resolution.name(), resolvedAt);
+                database.syncConflictDao().deleteResolvedBeyond(MAX_KEPT_RESOLVED_CONFLICTS);
             });
         } catch (SyncRuntimeException error) {
             notesToReconcile.clear();
@@ -1411,6 +1505,7 @@ public final class RoomSyncStore implements SyncStore {
                                 null);
             }
             database.syncConflictDao().markResolved(conflictId, resolution, resolvedAt);
+            database.syncConflictDao().deleteResolvedBeyond(MAX_KEPT_RESOLVED_CONFLICTS);
         });
     }
 
@@ -1670,6 +1765,34 @@ public final class RoomSyncStore implements SyncStore {
     @Override
     public boolean hasAttachment(@NonNull String sha256) {
         return resolveLocalAttachment(sha256) != null;
+    }
+
+    /**
+     * Answers from the hash cache the snapshot build already uses, so an untouched blob is not read
+     * and hashed again on every sync. The cache keys a digest by path, size and modification time;
+     * any rewrite of the file is hashed afresh. What it learns is persisted by {@link
+     * #finishAttachmentVerification}.
+     */
+    @Override
+    public boolean hasVerifiedAttachment(@NonNull String sha256, @Nullable Long expectedSize) {
+        File file = resolveLocalAttachment(sha256);
+        if (file == null || (expectedSize != null && file.length() != expectedSize)) {
+            return false;
+        }
+        try {
+            return sha256.equals(hashCache.sha256(file, attachmentHasher::sha256));
+        } catch (IOException unreadable) {
+            return false;
+        }
+    }
+
+    /**
+     * Persists the digests the verifications learned. Flushing after each one rewrote the whole
+     * cache file once per attachment, quadratic in the library on a cold cache.
+     */
+    @Override
+    public void finishAttachmentVerification() {
+        hashCache.flush();
     }
 
     @Nullable

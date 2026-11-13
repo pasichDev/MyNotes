@@ -16,20 +16,44 @@ import com.pasich.mynotes.base.view.BackupOptionsCallback;
 import com.pasich.mynotes.databinding.DialogBackupOptionsBinding;
 import com.pasich.mynotes.utils.file.FileExportUtils;
 
+/**
+ * Asks where a backup is saved to or restored from.
+ *
+ * <p>The fragment is recreated by the framework after a rotation or process death, through the
+ * no-argument constructor, so it keeps nothing but its arguments: the choice is handed to the
+ * hosting activity, which implements {@link Host}.
+ */
 public class BackupOptionsDialog extends BaseDialogBottomSheets {
 
-    private DialogBackupOptionsBinding binding;
-    private final BackupOptionsCallback callback;
-    private final boolean isRestore;
+    private static final String ARG_IS_RESTORE = "isRestore";
 
-    public BackupOptionsDialog(BackupOptionsCallback callback, boolean isRestore) {
-        this.callback = callback;
-        this.isRestore = isRestore;
+    /** The screen that acts on the choice; whichever instance of it is current. */
+    public interface Host {
+        /** The callback for a restore ({@code isRestore}) or for saving a backup. */
+        @NonNull
+        BackupOptionsCallback backupOptionsCallback(boolean isRestore);
     }
 
-    public static BackupOptionsDialog newInstance(
-            BackupOptionsCallback callback, boolean isRestore) {
-        return new BackupOptionsDialog(callback, isRestore);
+    private DialogBackupOptionsBinding binding;
+
+    public BackupOptionsDialog() {}
+
+    public static BackupOptionsDialog newInstance(boolean isRestore) {
+        BackupOptionsDialog dialog = new BackupOptionsDialog();
+        Bundle args = new Bundle();
+        args.putBoolean(ARG_IS_RESTORE, isRestore);
+        dialog.setArguments(args);
+        return dialog;
+    }
+
+    private boolean isRestore() {
+        Bundle args = getArguments();
+        return args != null && args.getBoolean(ARG_IS_RESTORE, false);
+    }
+
+    @Nullable
+    private BackupOptionsCallback callback() {
+        return getActivity() instanceof Host host ? host.backupOptionsCallback(isRestore()) : null;
     }
 
     @Nullable
@@ -44,7 +68,7 @@ public class BackupOptionsDialog extends BaseDialogBottomSheets {
 
         initListeners();
 
-        if (isRestore) {
+        if (isRestore()) {
             binding.backupOptions.setText(R.string.restore_backup);
         } else {
             binding.backupOptions.setText(R.string.save_backup);
@@ -59,13 +83,21 @@ public class BackupOptionsDialog extends BaseDialogBottomSheets {
     @Override
     public void initListeners() {
         binding.googleDrive.setOnClickListener(v -> {
+            BackupOptionsCallback callback = callback();
             if (callback != null) callback.onGoogleDrive();
             dismiss();
         });
 
         binding.deviceStorage.setOnClickListener(v -> {
+            BackupOptionsCallback callback = callback();
             if (callback != null) callback.onDeviceStorage();
             dismiss();
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

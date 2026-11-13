@@ -10,6 +10,8 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
+import androidx.annotation.VisibleForTesting;
+import androidx.annotation.WorkerThread;
 import androidx.core.content.FileProvider;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.data.model.Note;
@@ -18,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -144,113 +147,112 @@ public class FileExportUtils {
         context.startActivity(chooser);
     }
 
-    /** Save TXT content to selected URI */
-    public static void saveTxtToUri(
+    /**
+     * Saves TXT content to the selected URI. Runs on a background thread and shows nothing; returns
+     * whether the file was written.
+     */
+    @WorkerThread
+    public static boolean saveTxtToUri(
             Context context, Uri uri, String noteTitle, String noteContent) {
         try {
             String formattedContent = formatNoteContent(noteTitle, noteContent);
 
-            OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
-
-            if (outputStream != null) {
-                // Add UTF-8 BOM for better compatibility
-                byte[] bom = new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
-                outputStream.write(bom);
-
-                byte[] contentBytes = formattedContent.getBytes(StandardCharsets.UTF_8);
-
-                outputStream.write(contentBytes);
-                outputStream.flush();
-                outputStream.close();
-
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.fileSavedSuccessfully),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            } else {
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.errorSavingFile),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            }
+            return writeUtf8WithBom(context, uri, formattedContent);
         } catch (Exception e) {
             Log.e(TAG, "Error saving TXT file", e);
-            Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT)
-                    .show();
+            return false;
         }
     }
 
-    /** Save PDF content to selected URI */
-    public static void savePdfToUri(
+    /** Measures how wide a piece of text is drawn. */
+    interface TextWidth {
+        float of(String text);
+    }
+
+    private static final int PDF_TOP = 50;
+
+    /** Lowest baseline a body line may be drawn at before the next page starts. */
+    private static final int PDF_BOTTOM = 800;
+
+    // A4 in points.
+    private static final int PDF_PAGE_WIDTH = 595;
+    private static final int PDF_PAGE_HEIGHT = 842;
+    private static final int PDF_LEFT = 50;
+    private static final int PDF_LINE_HEIGHT = 20;
+    private static final int PDF_TEXT_WIDTH = 500;
+
+    /**
+     * Writes text as UTF-8 behind a byte-order mark, closing the stream even when a write fails.
+     *
+     * @return false when the document could not be opened for writing.
+     */
+    private static boolean writeUtf8WithBom(Context context, Uri uri, String text)
+            throws java.io.IOException {
+        try (OutputStream outputStream = context.getContentResolver().openOutputStream(uri)) {
+            if (outputStream == null) {
+                return false;
+            }
+            // Add UTF-8 BOM for better compatibility
+            outputStream.write(new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+            outputStream.write(text.getBytes(StandardCharsets.UTF_8));
+            outputStream.flush();
+            return true;
+        }
+    }
+
+    /**
+     * Saves PDF content to the selected URI. Runs on a background thread and shows nothing; returns
+     * whether the file was written.
+     */
+    @WorkerThread
+    public static boolean savePdfToUri(
             Context context, Uri uri, String noteTitle, String noteContent) {
+        PdfDocument pdfDocument = new PdfDocument();
         try {
-            PdfDocument pdfDocument = new PdfDocument();
             PdfDocument.PageInfo pageInfo =
-                    new PdfDocument.PageInfo.Builder(595, 842, 1).create(); // A4 size
+                    new PdfDocument.PageInfo.Builder(PDF_PAGE_WIDTH, PDF_PAGE_HEIGHT, 1).create();
             PdfDocument.Page page = pdfDocument.startPage(pageInfo);
 
             Canvas canvas = page.getCanvas();
             Paint paint = new Paint();
             paint.setColor(Color.BLACK);
-            paint.setTextSize(12);
             paint.setAntiAlias(true);
 
-            int y = 50;
-            int lineHeight = 20;
-            int maxWidth = 500;
+            int y = PDF_TOP;
 
             String title =
                     (noteTitle == null || noteTitle.trim().isEmpty()) ? "***" : noteTitle.trim();
 
             paint.setTextSize(16);
             paint.setFakeBoldText(true);
-            canvas.drawText(title, 50, y, paint);
-            y += 30; // Extra space after title
+            for (String titleLine : wrapLine(title, PDF_TEXT_WIDTH, paint::measureText)) {
+                canvas.drawText(titleLine, PDF_LEFT, y, paint);
+                y += PDF_LINE_HEIGHT;
+            }
+            y += 10; // Extra space after title
 
             paint.setTextSize(12);
             paint.setFakeBoldText(false);
 
             if (noteContent != null && !noteContent.trim().isEmpty()) {
-                String[] lines = noteContent.trim().split("\n");
-
-                for (String line : lines) {
-                    if (y > 800) { // Start new page if needed
-                        pdfDocument.finishPage(page);
-                        pageInfo =
-                                new PdfDocument.PageInfo.Builder(
-                                                595, 842, pdfDocument.getPages().size() + 1)
-                                        .create();
-                        page = pdfDocument.startPage(pageInfo);
-                        canvas = page.getCanvas();
-                        y = 50;
-                    }
-
-                    // Handle line wrapping
-                    if (paint.measureText(line) > maxWidth) {
-                        String[] words = line.split(" ");
-                        StringBuilder currentLine = new StringBuilder();
-
-                        for (String word : words) {
-                            if (paint.measureText(currentLine + word + " ") > maxWidth) {
-                                if (currentLine.length() > 0) {
-                                    canvas.drawText(currentLine.toString(), 50, y, paint);
-                                    y += lineHeight;
-                                    currentLine = new StringBuilder(word + " ");
-                                }
-                            } else {
-                                currentLine.append(word).append(" ");
-                            }
+                for (String line : noteContent.trim().split("\n")) {
+                    // The page break is checked per drawn line, not per paragraph: a long
+                    // paragraph wraps to many lines and ran off the bottom of the page.
+                    for (String drawn : wrapLine(line, PDF_TEXT_WIDTH, paint::measureText)) {
+                        if (y > PDF_BOTTOM) {
+                            pdfDocument.finishPage(page);
+                            pageInfo =
+                                    new PdfDocument.PageInfo.Builder(
+                                                    PDF_PAGE_WIDTH,
+                                                    PDF_PAGE_HEIGHT,
+                                                    pdfDocument.getPages().size() + 1)
+                                            .create();
+                            page = pdfDocument.startPage(pageInfo);
+                            canvas = page.getCanvas();
+                            y = PDF_TOP;
                         }
-
-                        if (currentLine.length() > 0) {
-                            canvas.drawText(currentLine.toString(), 50, y, paint);
-                            y += lineHeight;
-                        }
-                    } else {
-                        canvas.drawText(line, 50, y, paint);
-                        y += lineHeight;
+                        canvas.drawText(drawn, PDF_LEFT, y, paint);
+                        y += PDF_LINE_HEIGHT;
                     }
                 }
             } else {
@@ -259,74 +261,129 @@ public class FileExportUtils {
 
             pdfDocument.finishPage(page);
 
-            OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
-            Log.d(TAG, "PDF OutputStream opened: " + (outputStream != null));
-
-            if (outputStream != null) {
+            try (OutputStream outputStream = context.getContentResolver().openOutputStream(uri)) {
+                if (outputStream == null) {
+                    Log.e(TAG, "PDF OutputStream is null");
+                    return false;
+                }
                 pdfDocument.writeTo(outputStream);
                 outputStream.flush();
-                outputStream.close();
-
-                Log.d(TAG, "PDF written successfully");
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.fileSavedSuccessfully),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            } else {
-                Log.e(TAG, "PDF OutputStream is null");
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.errorSavingFile),
-                                Toast.LENGTH_SHORT)
-                        .show();
             }
-
-            pdfDocument.close();
-
+            return true;
         } catch (Exception e) {
-            Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT)
-                    .show();
+            Log.e(TAG, "Error saving PDF file", e);
+            return false;
+        } finally {
+            pdfDocument.close();
         }
     }
 
-    /** Save HTML content to selected URI */
-    public static void saveHtmlToUri(
+    /**
+     * Splits one source line into the lines drawn for it, none wider than {@code maxWidth}.
+     *
+     * <p>Lines break between words; a single word wider than the whole line is broken between
+     * characters, since a word that cannot fit anywhere was otherwise never drawn at all.
+     *
+     * <p>The line's leading whitespace is its indent (a nested list item, a code block), and every
+     * line drawn for it starts with it. Splitting on spaces used to turn the indent into empty
+     * words that the first line swallowed, so a wrapped line lost its indent while a short one kept
+     * it. An indent wider than half the line is cut to half, so some text always fits beside it.
+     */
+    @VisibleForTesting
+    static List<String> wrapLine(String line, float maxWidth, TextWidth width) {
+        List<String> out = new ArrayList<>();
+        if (width.of(line) <= maxWidth) {
+            out.add(line);
+            return out;
+        }
+        int bodyStart = 0;
+        while (bodyStart < line.length()
+                && (line.charAt(bodyStart) == ' ' || line.charAt(bodyStart) == '\t')) {
+            bodyStart++;
+        }
+        String indent = line.substring(0, bodyStart);
+        while (!indent.isEmpty() && width.of(indent) > maxWidth / 2) {
+            indent = indent.substring(0, indent.length() - 1);
+        }
+        float bodyWidth = maxWidth - width.of(indent);
+        for (String drawn : wrapWords(line.substring(bodyStart), bodyWidth, width)) {
+            out.add(indent + drawn);
+        }
+        if (out.isEmpty()) {
+            out.add(indent);
+        }
+        return out;
+    }
+
+    /** Breaks text that starts with no whitespace into lines no wider than {@code maxWidth}. */
+    private static List<String> wrapWords(String text, float maxWidth, TextWidth width) {
+        List<String> out = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (String word : text.split(" ", -1)) {
+            String candidate = current.length() == 0 ? word : current + " " + word;
+            if (width.of(candidate) <= maxWidth) {
+                current.setLength(0);
+                current.append(candidate);
+                continue;
+            }
+            if (current.length() > 0) {
+                out.add(current.toString());
+                current.setLength(0);
+            }
+            while (width.of(word) > maxWidth) {
+                int cut = fittingPrefix(word, maxWidth, width);
+                out.add(word.substring(0, cut));
+                word = word.substring(cut);
+            }
+            current.append(word);
+        }
+        if (current.length() > 0) {
+            out.add(current.toString());
+        }
+        return out;
+    }
+
+    /**
+     * The length of the longest prefix of {@code word} that fits, never splitting a surrogate pair
+     * and never less than one character, so the caller always makes progress.
+     */
+    private static int fittingPrefix(String word, float maxWidth, TextWidth width) {
+        int low = word.offsetByCodePoints(0, 1);
+        int high = word.length();
+        // Invariant: the prefix of length low is taken (it fits, or is the forced minimum).
+        while (low < high) {
+            int mid = (low + high + 1) >>> 1;
+            if (Character.isHighSurrogate(word.charAt(mid - 1))) {
+                mid--; // the prefix would end between the two halves of one character
+            }
+            if (mid <= low) {
+                break;
+            }
+            if (width.of(word.substring(0, mid)) <= maxWidth) {
+                low = mid;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return low;
+    }
+
+    /**
+     * Saves HTML content to the selected URI. Runs on a background thread and shows nothing;
+     * returns whether the file was written.
+     */
+    @WorkerThread
+    public static boolean saveHtmlToUri(
             Context context, Uri uri, String noteTitle, String noteContent, List<Note> notes) {
         try {
             String htmlContent =
                     HtmlTemplateGenerator.generateHtmlContent(
                             context, noteTitle, noteContent, notes);
 
-            OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
-
-            if (outputStream != null) {
-                // Add UTF-8 BOM for better compatibility
-                byte[] bom = new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
-                outputStream.write(bom);
-
-                byte[] contentBytes = htmlContent.getBytes(StandardCharsets.UTF_8);
-
-                outputStream.write(contentBytes);
-                outputStream.flush();
-                outputStream.close();
-
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.fileSavedSuccessfully),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            } else {
-                Toast.makeText(
-                                context,
-                                context.getString(R.string.errorSavingFile),
-                                Toast.LENGTH_SHORT)
-                        .show();
-            }
+            return writeUtf8WithBom(context, uri, htmlContent);
         } catch (Exception e) {
             Log.e(TAG, "Error saving HTML file", e);
-            Toast.makeText(context, context.getString(R.string.errorSavingFile), Toast.LENGTH_SHORT)
-                    .show();
+            return false;
         }
     }
 

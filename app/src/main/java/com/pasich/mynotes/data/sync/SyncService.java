@@ -32,7 +32,10 @@ public final class SyncService {
     private static final long MAX_TOLERATED_CLOCK_SKEW_MILLIS = 24L * 60L * 60L * 1000L;
 
     /** Well under the schema record limit, so a bundle can always still be published. */
-    private static final int MAX_PUBLISHED_SETTLED_IDS = 2_000;
+    static final int MAX_PUBLISHED_SETTLED_IDS = 2_000;
+
+    /** How long a deletion keeps travelling in every bundle; see {@link #forPublication}. */
+    static final long TOMBSTONE_PUBLICATION_HORIZON_MILLIS = 90L * 24L * 60L * 60L * 1000L;
 
     private final SyncStore store;
     private final SyncMerger merger;
@@ -151,9 +154,9 @@ public final class SyncService {
 
             // A choice the user already made must never be offered again, wherever it was made.
             java.util.Set<String> settledVersionIds =
-                    new java.util.LinkedHashSet<>(store.getResolvedAlternativeIds());
-            settledVersionIds.addAll(remoteResult.getResolvedAlternativeIds());
-            settledVersionIds = capSettledVersionIds(settledVersionIds);
+                    capSettledVersionIds(
+                            store.getResolvedAlternativeIds(),
+                            remoteResult.getResolvedAlternativeIds());
 
             java.util.List<SyncMergeResult.Conflict> allConflicts = new java.util.ArrayList<>();
             for (SyncMergeResult.Conflict conflict : remoteResult.getConflicts()) {
@@ -190,24 +193,37 @@ public final class SyncService {
             // durable unless the loser can later be restored as well, so preflight and pin each
             // version independently; SyncSnapshot deliberately forbids two versions of one ID.
             java.util.Set<String> synchronizedHashes = new java.util.HashSet<>();
-            synchronizeAttachments(backend, merged, expectedSizes, synchronizedHashes);
-            for (SyncMergeResult.Conflict conflict : allConflicts) {
-                // Best effort. The merged snapshot's own blobs are mandatory and were just
-                // transferred above; these are the extra copies that let a conflict be resolved
-                // later. An alternative whose bytes have gone from Drive is already beyond
-                // recovery, and failing here made that one missing blob stop every device from
-                // syncing anything at all, including the devices that could never resolve it.
-                // Resolution still verifies before it applies, so a version that cannot be
-                // materialized simply cannot be chosen.
-                pinConflictVersionQuietly(backend, conflict.getWinner(), synchronizedHashes);
-                pinConflictVersionQuietly(backend, conflict.getLoser(), synchronizedHashes);
+            try {
+                synchronizeAttachments(backend, merged, expectedSizes, synchronizedHashes);
+                for (SyncMergeResult.Conflict conflict : allConflicts) {
+                    // Best effort. The merged snapshot's own blobs are mandatory and were just
+                    // transferred above; these are the extra copies that let a conflict be resolved
+                    // later. An alternative whose bytes have gone from Drive is already beyond
+                    // recovery, and failing here made that one missing blob stop every device from
+                    // syncing anything at all, including the devices that could never resolve it.
+                    // Resolution still verifies before it applies, so a version that cannot be
+                    // materialized simply cannot be chosen.
+                    pinConflictVersionQuietly(backend, conflict.getWinner(), synchronizedHashes);
+                    pinConflictVersionQuietly(backend, conflict.getLoser(), synchronizedHashes);
+                }
+            } finally {
+                // Once for the whole phase: persisting the digest cache after every single
+                // verification rewrote it once per attachment on a cold cache.
+                store.finishAttachmentVerification();
             }
 
+            // What goes to Drive omits deletions every device has long had the chance to see;
+            // the local apply below still receives all of them.
+            SyncSnapshot published = forPublication(merged, remote, alternatives.values());
             if (needsPublication(
-                    merged, remote, alternatives.keySet(), settledVersionIds, remoteResult)) {
+                    published,
+                    withoutExpiredTombstones(remote, alternatives.values()),
+                    alternatives.keySet(),
+                    settledVersionIds,
+                    remoteResult)) {
                 backend.publish(
                         new SyncPublication(
-                                merged,
+                                published,
                                 new java.util.ArrayList<>(alternatives.values()),
                                 settledVersionIds,
                                 remoteResult));
@@ -262,30 +278,133 @@ public final class SyncService {
      *
      * <p>Every resolution adds its two version identities and they were never dropped, so the array
      * grew for the life of the account. Past the schema's record limit {@code encode} refuses the
-     * bundle and every publish fails permanently, with nothing the user can do about it. Trimming
-     * preserves the identities this device settled most recently; the worst case for a dropped one
-     * is that an already-settled conflict is offered again, which is recoverable, whereas a bundle
-     * that cannot be published is not.
+     * bundle and every publish fails permanently, with nothing the user can do about it. The worst
+     * case for a dropped identity is that an already-settled conflict is offered again, which is
+     * recoverable, whereas a bundle that cannot be published is not — so the oldest go first.
+     *
+     * <p>The store's own settlements come newest first, so it is the oldest of them that go. The
+     * bundle carries no settlement time, so the remote ones come in wire order; they are
+     * interleaved with the local ones, so neither this device's own settlements nor everyone else's
+     * can crowd the other side out entirely.
      */
     @NonNull
-    private static java.util.Set<String> capSettledVersionIds(
-            @NonNull java.util.Set<String> settled) {
-        if (settled.size() <= MAX_PUBLISHED_SETTLED_IDS) {
-            return settled;
+    static java.util.Set<String> capSettledVersionIds(
+            @NonNull java.util.Collection<String> local,
+            @NonNull java.util.Collection<String> remote) {
+        java.util.Set<String> merged = new java.util.LinkedHashSet<>();
+        java.util.Iterator<String> localIds = local.iterator();
+        java.util.Iterator<String> remoteIds = remote.iterator();
+        while (localIds.hasNext() || remoteIds.hasNext()) {
+            if (localIds.hasNext()) merged.add(localIds.next());
+            if (remoteIds.hasNext()) merged.add(remoteIds.next());
+        }
+        if (merged.size() <= MAX_PUBLISHED_SETTLED_IDS) {
+            return merged;
         }
         Log.w(
                 TAG,
                 "Trimming "
-                        + settled.size()
+                        + merged.size()
                         + " settled conflict versions to the publishable limit");
         java.util.Set<String> trimmed = new java.util.LinkedHashSet<>();
-        for (String versionId : settled) {
+        for (String versionId : merged) {
             if (trimmed.size() >= MAX_PUBLISHED_SETTLED_IDS) {
                 break;
             }
             trimmed.add(versionId);
         }
         return trimmed;
+    }
+
+    /**
+     * The merged snapshot as it is published: without the tombstones nobody needs to be told about.
+     *
+     * <p>Tombstones were never dropped, and every one of them went into every bundle. The schema
+     * caps a bundle at {@link SyncBundleValidator#MAX_RECORD_COUNT} records, live and deleted
+     * together, so a library that had seen enough deletions over its lifetime failed every publish
+     * from then on, permanently and on every device.
+     *
+     * <p>The rule, and why it cannot bring a deleted record back:
+     *
+     * <ul>
+     *   <li>A tombstone is published while its deletion is younger than {@link
+     *       #TOMBSTONE_PUBLICATION_HORIZON_MILLIS}. Any device that syncs within that window learns
+     *       of the deletion directly.
+     *   <li>Past it, the tombstone is published only when this sync read a live version of the same
+     *       record from Drive, or an open conflict alternative for it is carried along. A device
+     *       that slept through the horizon and republishes its stale live copy therefore gets the
+     *       tombstone back from the next device that syncs; the merge sees a deletion newer than
+     *       that copy and removes it there too, exactly as it would have without pruning. An edit
+     *       made after the deletion is newer and wins, which is the ordinary rule as well.
+     *   <li>Pruning is publication-only. Every device keeps its tombstone rows in {@code
+     *       sync_metadata} for good — they are what lets it answer a stale copy as above — and
+     *       still applies and merges them locally; only the bundle stops carrying them.
+     * </ul>
+     *
+     * <p>The one window left: a fresh device installed while a stale copy is the only thing in
+     * Drive shows that record until any device holding the tombstone next syncs.
+     */
+    @NonNull
+    private SyncSnapshot forPublication(
+            @NonNull SyncSnapshot merged,
+            @NonNull SyncSnapshot remote,
+            @NonNull Collection<SyncRecord> alternatives) {
+        long horizon = clock.millis() - TOMBSTONE_PUBLICATION_HORIZON_MILLIS;
+        java.util.Set<String> contested = new java.util.HashSet<>();
+        for (SyncRecord alternative : alternatives) {
+            contested.add(alternative.getType().getWireValue() + ":" + alternative.getId());
+        }
+        java.util.List<SyncRecord> kept = new java.util.ArrayList<>();
+        boolean pruned = false;
+        for (SyncRecord record : merged.getRecords()) {
+            if (record.isTombstone()
+                    && record.getDeletedAt().toEpochMilli() < horizon
+                    && !contested.contains(
+                            record.getType().getWireValue() + ":" + record.getId())) {
+                SyncRecord remoteRecord = remote.find(record.getType(), record.getId());
+                if (remoteRecord == null || remoteRecord.isTombstone()) {
+                    pruned = true;
+                    continue;
+                }
+            }
+            kept.add(record);
+        }
+        return pruned ? new SyncSnapshot(kept) : merged;
+    }
+
+    /**
+     * {@code remote} as this version would have published it: without the expired tombstones {@link
+     * #forPublication} leaves out.
+     *
+     * <p>Only for deciding whether to publish. An older app version on another device keeps every
+     * tombstone and puts the expired ones back in each bundle it writes; compared with those, the
+     * pruned snapshot never matched, and both devices republished the whole bundle on every sync,
+     * each undoing the other. A remote that differs only by tombstones nobody needs any more
+     * already says everything this sync would say. A tombstone {@code forPublication} keeps — one
+     * that is contested, or whose record Drive still holds live — is not a tombstone in {@code
+     * remote} or is kept here as well.
+     */
+    @NonNull
+    private SyncSnapshot withoutExpiredTombstones(
+            @NonNull SyncSnapshot remote, @NonNull Collection<SyncRecord> alternatives) {
+        long horizon = clock.millis() - TOMBSTONE_PUBLICATION_HORIZON_MILLIS;
+        java.util.Set<String> contested = new java.util.HashSet<>();
+        for (SyncRecord alternative : alternatives) {
+            contested.add(alternative.getType().getWireValue() + ":" + alternative.getId());
+        }
+        java.util.List<SyncRecord> kept = new java.util.ArrayList<>();
+        boolean pruned = false;
+        for (SyncRecord record : remote.getRecords()) {
+            if (record.isTombstone()
+                    && record.getDeletedAt().toEpochMilli() < horizon
+                    && !contested.contains(
+                            record.getType().getWireValue() + ":" + record.getId())) {
+                pruned = true;
+                continue;
+            }
+            kept.add(record);
+        }
+        return pruned ? new SyncSnapshot(kept) : remote;
     }
 
     /**
@@ -402,21 +521,25 @@ public final class SyncService {
             }
             if (store.hasAttachment(hash)) {
                 Long expectedSize = expectedSizes.get(hash);
-                // Index lookup only; the bytes are checked once, below.
+                // Index lookup only; the backend remembers the listing, so the verification
+                // below does not list the same blob again.
                 boolean remotePresent = backend.hasAttachment(hash);
-                try {
-                    verifyAttachment(hash, expectedSize, store.readAttachment(hash));
-                } catch (IOException localError) {
+                // Through the store's digest cache: reading and hashing every local blob on every
+                // sync, unchanged or not, was the bulk of an idle sync's work.
+                if (!store.hasVerifiedAttachment(hash, expectedSize)) {
                     if (!remotePresent) {
-                        throw localError;
+                        // Nothing to repair it from. Read it in full, which raises the precise
+                        // failure — missing, wrong size or wrong digest — for the user to see.
+                        verifyAttachment(hash, expectedSize, store.readAttachment(hash));
+                    } else {
+                        // The local copy is missing or corrupt; repair it from the remote blob,
+                        // which copyVerified refuses to accept unless it hashes correctly.
+                        copyVerified(
+                                hash,
+                                expectedSize,
+                                backend.readAttachment(hash),
+                                store::writeAttachment);
                     }
-                    // The local copy is missing or corrupt; repair it from the remote blob,
-                    // which copyVerified refuses to accept unless it hashes correctly.
-                    copyVerified(
-                            hash,
-                            expectedSize,
-                            backend.readAttachment(hash),
-                            store::writeAttachment);
                 }
                 // Drive is untrusted: a matching appProperty is only a claim. The blob is read
                 // and hashed exactly once per sync, and the result is remembered, so publishing

@@ -8,12 +8,15 @@ import java.util.List;
 
 public interface MoreNoteDialogContract {
 
+    /** Receives the id of a note's copy, on the main thread. */
+    interface OnNoteCopied {
+        void onCopied(long newNoteId);
+    }
+
     interface view extends BaseView {
         void setSliderValue(int value);
 
         void initInterfaces();
-
-        void callableCopyNote(long newNoteId);
 
         void createChipsTag(List<Tag> tags);
 
@@ -33,7 +36,7 @@ public interface MoreNoteDialogContract {
 
         void editTagNote(String nameTag, int idNote);
 
-        void copyNoteMainActivity();
+        void copyNoteMainActivity(OnNoteCopied onCopied);
 
         void requestTagsOneShot();
 

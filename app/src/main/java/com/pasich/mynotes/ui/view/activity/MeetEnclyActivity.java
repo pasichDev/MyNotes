@@ -36,6 +36,7 @@ import com.pasich.mynotes.utils.encly.HandoffPayloadBuilder;
 import com.pasich.mynotes.utils.encly.HandoffResult;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -62,6 +63,7 @@ public class MeetEnclyActivity extends BaseActivity {
     private static final String STATE_SKIPPED = "encly_skipped";
     private static final String STATE_REASON = "encly_reason";
     private static final String STATE_CLEARED = "encly_cleared";
+    private static final String STATE_EXPORTED_TOKEN = "encly_exported_token";
 
     @Inject EnclyMigrationRepository repository;
     @Inject UpdateChecker updateChecker;
@@ -79,6 +81,15 @@ public class MeetEnclyActivity extends BaseActivity {
     private int[] resultCounts = new int[4];
     @Nullable private String resultReason;
     private boolean cleared;
+
+    /** What the last hand-off carried; the only records a clear may delete. */
+    @Nullable private EnclyMigrationRepository.Exported exported;
+
+    /**
+     * Names the copy of {@link #exported} kept on disk. Only this goes into the saved state: the
+     * snapshot itself is an id and a fingerprint per record, too big for it with a large library.
+     */
+    @Nullable private String exportedToken;
 
     private final ActivityResultLauncher<Intent> enclyLauncher =
             registerForActivityResult(
@@ -101,6 +112,7 @@ public class MeetEnclyActivity extends BaseActivity {
         if (savedInstanceState == null) {
             // A hand-off file left behind by a crash or a killed process is plain text: sweep it.
             clearArchivesInBackground();
+            forgetExportedInBackground(System.currentTimeMillis());
         } else {
             restoreResult(savedInstanceState);
         }
@@ -274,7 +286,7 @@ public class MeetEnclyActivity extends BaseActivity {
             } else {
                 binding.resultText.setVisibility(View.GONE);
             }
-            binding.clearGroup.setVisibility(cleared ? View.GONE : View.VISIBLE);
+            binding.clearGroup.setVisibility(cleared || !canClear() ? View.GONE : View.VISIBLE);
             binding.clearButton.setEnabled(!busy);
         } else {
             setResultIcon(
@@ -342,12 +354,23 @@ public class MeetEnclyActivity extends BaseActivity {
                 Single.fromCallable(
                                 () -> {
                                     repository.clearArchives();
-                                    return repository.writeArchive(repository.load());
+                                    EnclyMigrationRepository.Library library = repository.load();
+                                    EnclyMigrationRepository.Exported snapshot =
+                                            EnclyMigrationRepository.Exported.of(library);
+                                    // Saved before Encly is opened, so the snapshot survives
+                                    // this process being killed while Encly is in front.
+                                    String token = repository.saveExported(snapshot);
+                                    return new PreparedHandoff(
+                                            repository.writeArchive(library), snapshot, token);
                                 })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                file -> launchEncly(file, activityClassName),
+                                prepared -> {
+                                    exported = prepared.exported;
+                                    exportedToken = prepared.token;
+                                    launchEncly(prepared.archive, activityClassName);
+                                },
                                 error -> {
                                     Log.e(TAG, "prepare hand-off", error);
                                     clearArchivesInBackground();
@@ -446,16 +469,35 @@ public class MeetEnclyActivity extends BaseActivity {
     }
 
     private void clearMyNotes() {
+        EnclyMigrationRepository.Exported snapshot = exported;
+        if (snapshot == null || !canClear()) {
+            render();
+            return;
+        }
         busy = true;
         render();
         disposables.add(
-                Completable.fromAction(repository::clearAllData)
+                Completable.fromAction(
+                                () -> {
+                                    int kept = repository.clearExported(snapshot);
+                                    if (kept > 0) {
+                                        Log.i(
+                                                TAG,
+                                                "kept "
+                                                        + kept
+                                                        + " records changed since the hand-off");
+                                    }
+                                })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 () -> {
                                     busy = false;
                                     cleared = true;
+                                    // Nothing is left to clear: the snapshot has done its job.
+                                    exported = null;
+                                    exportedToken = null;
+                                    forgetExportedInBackground(Long.MAX_VALUE);
                                     loadSummary();
                                     render();
                                     onInfoSnack(
@@ -483,6 +525,29 @@ public class MeetEnclyActivity extends BaseActivity {
                         .subscribe(() -> {}, error -> Log.e(TAG, "clear hand-off files", error)));
     }
 
+    private void forgetExportedInBackground(long requestedAt) {
+        disposables.add(
+                Completable.fromAction(() -> repository.forgetExported(requestedAt))
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(() -> {}, error -> Log.e(TAG, "forget hand-off", error)));
+    }
+
+    /** Reads back what the hand-off before a recreation carried. */
+    private void loadExportedInBackground(@NonNull String token) {
+        disposables.add(
+                Maybe.fromCallable(() -> repository.loadExported(token))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                snapshot -> {
+                                    // A hand-off started since then carries its own snapshot.
+                                    if (!token.equals(exportedToken)) return;
+                                    exported = snapshot;
+                                    render();
+                                },
+                                error -> Log.e(TAG, "load hand-off", error)));
+    }
+
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -494,10 +559,22 @@ public class MeetEnclyActivity extends BaseActivity {
         outState.putInt(STATE_SKIPPED, resultCounts[3]);
         outState.putString(STATE_REASON, resultReason);
         outState.putBoolean(STATE_CLEARED, cleared);
+        outState.putString(STATE_EXPORTED_TOKEN, exportedToken);
+    }
+
+    /**
+     * Whether clearing My Notes may be offered: only for what the hand-off carried, and only when
+     * Encly took all of it. With records skipped, some of the library exists nowhere but here.
+     */
+    private boolean canClear() {
+        return exported != null && result != null && result.success && result.skipped == 0;
     }
 
     private void restoreResult(@NonNull Bundle state) {
         cleared = state.getBoolean(STATE_CLEARED, false);
+        // Read back off the main thread; until then no clear is offered.
+        exportedToken = state.getString(STATE_EXPORTED_TOKEN);
+        if (exportedToken != null) loadExportedInBackground(exportedToken);
         if (!state.getBoolean(STATE_HAS_RESULT, false)) return;
         resultCode = state.getInt(STATE_RESULT_CODE);
         resultCounts =
@@ -535,6 +612,26 @@ public class MeetEnclyActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         disposables.clear();
+        if (isFinishing()) {
+            // The screen is gone for good, and its snapshot with it.
+            Schedulers.io().scheduleDirect(() -> repository.forgetExported(Long.MAX_VALUE));
+        }
         super.onDestroy();
+    }
+
+    /** What preparing a hand-off produced. */
+    private static final class PreparedHandoff {
+        final File archive;
+        final EnclyMigrationRepository.Exported exported;
+        final String token;
+
+        PreparedHandoff(
+                @NonNull File archive,
+                @NonNull EnclyMigrationRepository.Exported exported,
+                @NonNull String token) {
+            this.archive = archive;
+            this.exported = exported;
+            this.token = token;
+        }
     }
 }

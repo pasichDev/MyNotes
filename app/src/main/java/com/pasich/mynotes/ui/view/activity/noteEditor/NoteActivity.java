@@ -27,6 +27,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.chip.Chip;
 import com.pasich.mynotes.R;
 import com.pasich.mynotes.base.simplifications.TextWatcher;
@@ -40,6 +41,7 @@ import com.pasich.mynotes.utils.editor.EditorCursor;
 import com.pasich.mynotes.utils.editor.NoteViewState;
 import com.pasich.mynotes.utils.editor.NoteViewStateStore;
 import com.pasich.mynotes.utils.editor.PositionRestorer;
+import com.pasich.mynotes.utils.editor.RetainedNoteDraft;
 import com.pasich.mynotes.utils.editor.TextEditHistory;
 import dagger.hilt.android.AndroidEntryPoint;
 import javax.inject.Inject;
@@ -69,6 +71,9 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
      * shared with the whole screen; the most recent steps are what matter after a rotation.
      */
     private static final int MAX_HISTORY_STATE_CHARS = 32 * 1024;
+
+    /** Largest unsaved title and body kept in the saved state, as in the extended editor. */
+    static final int MAX_DRAFT_CHARS = 64 * 1024;
 
     /**
      * How long typing has to pause before the body is copied out of the field. Copying, counting
@@ -102,6 +107,7 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
     private int restoredAnchorOffset = EditorCursor.NONE;
     private String draftTitle;
     private String draftValue;
+    private RetainedNoteDraft retainedDraft;
 
     // Undo and redo for the title and the body. Changes made by the app itself (loading the note,
     // applying an undo) are not recorded.
@@ -135,6 +141,16 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         readRestoredState(savedInstanceState);
         restoreSavedPosition = savedInstanceState == null;
         super.onCreate(savedInstanceState);
+        retainedDraft = new ViewModelProvider(this).get(RetainedNoteDraft.class);
+        if (savedInstanceState != null && notePresenter != null) {
+            // A draft too long for the saved state was kept in memory instead. The note itself
+            // loads asynchronously, after this.
+            RetainedNoteDraft.Draft kept = retainedDraft.take(notePresenter.getIdKey());
+            if (kept != null && draftTitle == null && draftValue == null) {
+                draftTitle = kept.title;
+                draftValue = kept.body;
+            }
+        }
     }
 
     private void readRestoredState(@Nullable Bundle state) {
@@ -180,6 +196,17 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         outState.putInt(STATE_HISTORY_BODY_HASH, snapshot.bodyHash);
     }
 
+    /**
+     * Whether an unsaved draft is small enough for the saved state. The body has no length limit,
+     * and the saved state shares a size limit with the whole screen: a long note there crashed the
+     * app (TransactionTooLargeException). A bigger draft is kept in memory ({@link
+     * RetainedNoteDraft}) for a recreation; onStop has already started writing it.
+     */
+    static boolean draftFitsSavedState(String title, String value) {
+        long length = (title != null ? title.length() : 0) + (value != null ? value.length() : 0);
+        return length <= MAX_DRAFT_CHARS;
+    }
+
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -193,10 +220,21 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
         outState.putInt(STATE_ANCHOR_OFFSET, readingAnchorOffset());
         // The fields do not save their own text (see initListeners); a draft is kept only while a
         // save is still on its way, so the next instance never shows older text than was typed.
+        // A long draft is kept in memory only for a recreation; see RetainedNoteDraft.
+        boolean keptInMemory = false;
         if (notePresenter != null && notePresenter.hasUnsavedChanges()) {
-            outState.putString(STATE_DRAFT_TITLE, binding.notesTitle.getText().toString());
-            outState.putString(STATE_DRAFT_VALUE, binding.valueNote.getText().toString());
+            String title = binding.notesTitle.getText().toString();
+            String value = binding.valueNote.getText().toString();
+            if (draftFitsSavedState(title, value)) {
+                outState.putString(STATE_DRAFT_TITLE, title);
+                outState.putString(STATE_DRAFT_VALUE, value);
+            } else if (retainedDraft != null) {
+                retainedDraft.keepForRecreation(
+                        isChangingConfigurations(), notePresenter.getIdKey(), title, value);
+                keptInMemory = true;
+            }
         }
+        if (!keptInMemory && retainedDraft != null) retainedDraft.discard();
         saveEditHistory(outState);
     }
 
@@ -687,6 +725,14 @@ public class NoteActivity extends BaseNoteEditorActivity<ActivityNoteBinding> {
                         readingAnchorOffset(),
                         scrollY,
                         scrollable > 0 ? (float) scrollY / scrollable : 0f));
+    }
+
+    @Override
+    protected void flushEditor(@NonNull Runnable then) {
+        if (binding != null && notePresenter != null && notePresenter.hasNote()) {
+            commitPendingValueEdit();
+        }
+        then.run();
     }
 
     @Override

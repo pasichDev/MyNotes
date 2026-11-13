@@ -21,6 +21,7 @@ import com.pasich.mynotes.utils.search.SearchHit;
 import dagger.hilt.android.scopes.ActivityScoped;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 import java.util.ArrayList;
@@ -78,23 +79,52 @@ public class MainPresenter extends BasePresenter<MainContract.view>
         initStreams();
         startStateCombiner();
         starListsRenderStream();
+        startLiveStreams();
+    }
+
+    /**
+     * Search and drawer statistics, live only while the screen is visible: behind the editor every
+     * autosave would otherwise re-rank the notes and re-count every character for nothing. Null
+     * while stopped.
+     *
+     * <p>The list itself stays live: coming back from the editor it must already show the edit when
+     * the return transition starts, which a re-query on return could not guarantee.
+     */
+    private CompositeDisposable liveStreams;
+
+    @Override
+    public void onViewStarted() {
+        if (isViewAttached()) startLiveStreams();
+    }
+
+    @Override
+    public void onViewStopped() {
+        if (liveStreams == null) return;
+        getCompositeDisposable().remove(liveStreams); // disposes it
+        liveStreams = null;
+    }
+
+    private void startLiveStreams() {
+        if (liveStreams != null || tagsStream == null) return;
+        liveStreams = new CompositeDisposable();
+        getCompositeDisposable().add(liveStreams);
+        // The query and tag filter live in subjects, so a restart picks up where it stopped.
         startSearchStream();
         startStatsStream();
     }
 
     void startStatsStream() {
-        getCompositeDisposable()
-                .add(
-                        Flowable.combineLatest(
-                                        getDataManager().getNotesCount(),
-                                        getDataManager().getNotesCreatedLastMonth(),
-                                        getDataManager().getTotalCharacters(),
-                                        StatsData::new)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .observeOn(getSchedulerProvider().ui())
-                                .subscribe(
-                                        stats -> getView().renderDrawerStats(stats),
-                                        error -> Log.e(TAG, "drawer stats stream error", error)));
+        liveStreams.add(
+                Flowable.combineLatest(
+                                getDataManager().getNotesCount(),
+                                getDataManager().getNotesCreatedLastMonth(),
+                                getDataManager().getTotalCharacters(),
+                                StatsData::new)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                stats -> getView().renderDrawerStats(stats),
+                                error -> Log.e(TAG, "drawer stats stream error", error)));
     }
 
     void starListsRenderStream() {
@@ -115,19 +145,25 @@ public class MainPresenter extends BasePresenter<MainContract.view>
                         .getTags()
                         .toObservable()
                         .map(tagList ->
-                                TagsSorter.sortTags(tagList, getDataManager().getSortParamTags()));
+                                TagsSorter.sortTags(tagList, getDataManager().getSortParamTags()))
+                        .replay(1)
+                        .refCount();
 
-        notesStream = getDataManager().getNotes().toObservable();
+        // Shared by the list and the search: every note body is read once per change, not twice.
+        notesStream = getDataManager().getNotes().toObservable().replay(1).refCount();
     }
 
     private void startStateCombiner() {
+        Scheduler computation = getSchedulerProvider().computation();
         getCompositeDisposable()
                 .add(
                         Observable.combineLatest(
                                         tagsStream,
                                         notesStream,
-                                        selectedTag,
-                                        sortParam,
+                                        // A tap on a chip or a sort option emits on the main
+                                        // thread; the filter and sort of every note must not.
+                                        selectedTag.observeOn(computation),
+                                        sortParam.observeOn(computation),
                                         this::buildState)
                                 .debounce(
                                         STATE_DEBOUNCE_MS,
@@ -263,26 +299,19 @@ public class MainPresenter extends BasePresenter<MainContract.view>
     }
 
     private void startSearchStream() {
-        getCompositeDisposable()
-                .add(
-                        Observable.combineLatest(
-                                        notesStream,
-                                        searchQuery,
-                                        searchTagFilter,
-                                        SearchRequest::new)
-                                .debounce(
-                                        SEARCH_DEBOUNCE_MS,
-                                        TimeUnit.MILLISECONDS,
-                                        getSchedulerProvider().computation())
-                                .map(this::runSearch)
-                                .subscribeOn(getSchedulerProvider().io())
-                                .observeOn(getSchedulerProvider().ui())
-                                .subscribe(
-                                        result ->
-                                                getView()
-                                                        .renderSearch(
-                                                                result.hits, result.titlesOnly),
-                                        throwable -> Log.e(TAG, "search error", throwable)));
+        liveStreams.add(
+                Observable.combineLatest(
+                                notesStream, searchQuery, searchTagFilter, SearchRequest::new)
+                        .debounce(
+                                SEARCH_DEBOUNCE_MS,
+                                TimeUnit.MILLISECONDS,
+                                getSchedulerProvider().computation())
+                        .map(this::runSearch)
+                        .subscribeOn(getSchedulerProvider().io())
+                        .observeOn(getSchedulerProvider().ui())
+                        .subscribe(
+                                result -> getView().renderSearch(result.hits, result.titlesOnly),
+                                throwable -> Log.e(TAG, "search error", throwable)));
     }
 
     /** Ranks off the main thread: the debounce hands the latest request to a worker. */

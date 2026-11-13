@@ -426,11 +426,24 @@ public class SyncMutationCoordinator {
     /**
      * Stores the editor's content for a note, first keeping the content it replaces in the note's
      * history when that is due (see {@link NoteHistory#recordBeforeEdit}).
+     *
+     * <p>The note may be gone: a sync can apply another device's deletion while the editor is still
+     * open. The content UPDATE then matches no row, and touching the metadata anyway cleared the
+     * tombstone, leaving a live record with nothing behind it — the edit lost silently, and the
+     * remote deletion skipped forever because the record now looked newer. Re-inserting the note
+     * silently is not right either: the deletion already removed its history and attachments. So
+     * nothing is written and the caller is told; it can put the note back deliberately with {@link
+     * #reviveNote}.
+     *
+     * @return false when the note no longer exists and nothing was stored.
      */
-    public void updateNoteContent(@NonNull Note note) {
-        transactionExecutor.run(() -> {
-            noteHistory.recordBeforeEdit(
-                    noteDao.getNoteSync(note.getId()), note, timeProvider.now());
+    public boolean updateNoteContent(@NonNull Note note) {
+        return transactionExecutor.run(() -> {
+            Note stored = noteDao.getNoteSync(note.getId());
+            if (stored == null) {
+                return false;
+            }
+            noteHistory.recordBeforeEdit(stored, note, timeProvider.now());
             noteDao.updateNoteContent(
                     note.getId(),
                     note.getTitle(),
@@ -439,6 +452,31 @@ public class SyncMutationCoordinator {
                     note.getDate(),
                     note.getTag(),
                     note.getAttachments());
+            touchRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
+            return true;
+        });
+    }
+
+    /**
+     * Stores the editor's content for a note that may have been deleted while it was open, putting
+     * the note back under its own id when it was.
+     *
+     * <p>Keeping the id is what keeps everything that names the note valid: the editor's screen
+     * state and draft, and the {@code note_<id>} attachment folder its blocks point into. Touching
+     * the metadata clears the tombstone and stamps the record newer than the deletion (the touch is
+     * monotonic past it), so the next sync publishes the note again under its old stable id and the
+     * edit outranks the deletion everywhere. Files the deletion removed stay gone; the blocks that
+     * pointed at them simply no longer resolve.
+     */
+    public void reviveNote(@NonNull Note note) {
+        if (note.getId() <= 0) throw new IllegalArgumentException("A note to revive needs its id");
+        transactionExecutor.run(() -> {
+            if (noteDao.getNoteSync(note.getId()) != null) {
+                // Someone else (an earlier save of the same editor) already put it back.
+                updateNoteContent(note);
+                return null;
+            }
+            noteDao.addNote(note);
             touchRecord(SyncMetadata.RECORD_TYPE_NOTE, note.getId(), timeProvider.now());
             return null;
         });

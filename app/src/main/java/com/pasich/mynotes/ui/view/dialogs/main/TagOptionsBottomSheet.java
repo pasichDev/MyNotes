@@ -1,5 +1,6 @@
 package com.pasich.mynotes.ui.view.dialogs.main;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,17 +13,54 @@ import com.pasich.mynotes.base.dialog.BaseDialogBottomSheets;
 import com.pasich.mynotes.data.model.Tag;
 import com.pasich.mynotes.databinding.BottomSheetTagOptionsBinding;
 
+/**
+ * Options for one tag. The host (the parent fragment or the activity) must implement {@link
+ * TagOptionsListener}; it is looked up on attach, so the sheet survives being recreated.
+ */
 public class TagOptionsBottomSheet extends BaseDialogBottomSheets {
 
-    private BottomSheetTagOptionsBinding binding;
-    private final Tag tag;
-    private final TagOptionsListener listener;
-    private final int notesCount;
+    private static final String ARG_NOTES_COUNT = "notesCount";
 
-    public TagOptionsBottomSheet(Tag tag, int notesCount, TagOptionsListener listener) {
-        this.tag = tag;
-        this.notesCount = notesCount;
-        this.listener = listener;
+    private BottomSheetTagOptionsBinding binding;
+    private Tag tag;
+    @Nullable private TagOptionsListener listener;
+    private int notesCount;
+
+    /** Used by the system to recreate the sheet; use {@link #newInstance} instead. */
+    public TagOptionsBottomSheet() {}
+
+    public static TagOptionsBottomSheet newInstance(@NonNull Tag tag, int notesCount) {
+        TagOptionsBottomSheet sheet = new TagOptionsBottomSheet();
+        Bundle args = new Bundle();
+        TagArgs.put(args, tag);
+        args.putInt(ARG_NOTES_COUNT, notesCount);
+        sheet.setArguments(args);
+        return sheet;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof TagOptionsListener) {
+            listener = (TagOptionsListener) getParentFragment();
+        } else if (context instanceof TagOptionsListener) {
+            listener = (TagOptionsListener) context;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        tag = TagArgs.get(args);
+        notesCount = args == null ? 0 : args.getInt(ARG_NOTES_COUNT);
+        if (tag == null || listener == null) dismissAllowingStateLoss();
     }
 
     @Nullable
@@ -38,6 +76,7 @@ public class TagOptionsBottomSheet extends BaseDialogBottomSheets {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (tag == null || listener == null) return;
         setState((BottomSheetDialog) requireDialog());
         vibrateOpenDialog(true);
         setupView();
@@ -61,17 +100,17 @@ public class TagOptionsBottomSheet extends BaseDialogBottomSheets {
 
     private void setupListeners() {
         binding.deleteTag.setOnClickListener(v -> {
-            listener.onDeleteTagClick(tag);
+            if (listener != null) listener.onDeleteTagClick(tag);
             dismiss();
         });
 
         binding.renameTag.setOnClickListener(v -> {
-            listener.onRenameTagClick(tag);
+            if (listener != null) listener.onRenameTagClick(tag);
             dismiss();
         });
 
         binding.visibleTag.setOnClickListener(v -> {
-            listener.onToggleVisibilityClick(tag);
+            if (listener != null) listener.onToggleVisibilityClick(tag);
             dismiss();
         });
     }

@@ -201,4 +201,64 @@ public class NotePresenterFlushTest extends BasePresenterTest {
         verify(dataManager, never()).updateNote(any());
         verify(view, never()).runAttachmentsCleanup(any());
     }
+
+    @Test
+    public void theOtherEditorOpensOnlyOnceTheLastEditIsWritten() {
+        List<String> events = new ArrayList<>();
+        presenter.simpleNoteChange(null, "typed just now", false);
+
+        presenter.flushPending(() -> events.add("done after " + writtenValues));
+        assertThat(events).isEmpty();
+
+        ioScheduler.triggerActions();
+        assertThat(events).containsExactly("done after [typed just now]");
+    }
+
+    @Test
+    public void withNothingToWriteTheFlushIsDoneAtOnce() {
+        List<String> events = new ArrayList<>();
+
+        presenter.flushPending(() -> events.add("done"));
+
+        assertThat(events).containsExactly("done");
+        verify(dataManager, never()).updateNote(any());
+    }
+
+    @Test
+    public void aFlushThatReplacesOneInFlightKeepsItsWaiter() {
+        List<String> events = new ArrayList<>();
+        presenter.simpleNoteChange(null, "first", false);
+        presenter.flushPending(() -> events.add("switch"));
+
+        // The screen stops before the first write ran: onStop flushes again.
+        presenter.simpleNoteChange(null, "second", false);
+        presenter.flushPending();
+        ioScheduler.triggerActions();
+
+        assertThat(events).containsExactly("switch");
+        assertThat(writtenValues).contains("second");
+    }
+
+    /**
+     * Back on a new note just typed into: once the editor has handed over its document, the note is
+     * saved and the screen closes; it is not taken for an empty note and deleted.
+     */
+    @Test
+    public void closingANewNoteAfterTheFlushedDocumentArrivesSavesIt() {
+        presenter.setNewNoteKey(true);
+        presenter.setExtendedEditor(true);
+        note.setValue("");
+        note.setTitle("");
+        presenter.setNote(note);
+        when(dataManager.deleteNote(any(Note.class))).thenReturn(Completable.complete());
+
+        // What the page's flush delivers before the close is decided.
+        presenter.extendedNoteChange(null, DOC_HELLO);
+        presenter.flushPending();
+        presenter.closeActivity();
+        ioScheduler.triggerActions();
+
+        verify(dataManager, never()).deleteNote(any(Note.class));
+        verify(view).closeNoteActivity();
+    }
 }

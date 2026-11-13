@@ -20,11 +20,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Coordinates connect/disconnect/manual-sync flows so BackupActivity stays presentation-only. */
 public final class SyncCoordinator {
 
     private static final String TAG = "SyncCoordinator";
+
+    /**
+     * Bumped by every {@link #disconnect}. Process-wide because the sync flags it guards are
+     * process-wide too: a coordinator rebuilt for a recreated screen must still see a disconnect
+     * made through the old one.
+     */
+    private static final AtomicLong disconnectGeneration = new AtomicLong();
 
     public interface Callback<T> {
         void onSuccess(@NonNull T value);
@@ -210,6 +218,7 @@ public final class SyncCoordinator {
     }
 
     public void disconnect(@NonNull Callback<Profile> callback) {
+        disconnectGeneration.incrementAndGet();
         firebaseGoogleAuth.signOut();
         preferenceHelper.setSyncEnabled(false);
         preferenceHelper.setBackgroundSyncEnabled(false);
@@ -255,26 +264,51 @@ public final class SyncCoordinator {
                     new IllegalStateException("Confirm the first sync before continuing"));
             return;
         }
+        // Sync is switched on only once Drive authorization succeeds, so a declined or failed
+        // authorization leaves the flag as it was. It is switched on from the authorization
+        // callback (main thread, like disconnect()) and never from the worker: SyncService re-reads
+        // the flag under its lock so a disconnect that lands while the sync waits in the queue
+        // stops it, and turning it on from the worker undid that disconnect. A disconnect made
+        // between this tap and the authorization result is caught by the generation check.
+        final long generationAtTap = disconnectGeneration.get();
         googleDriveAuthorization.authorize(
                 activity,
                 new GoogleDriveAuthorization.Callback() {
                     @Override
                     public void onAuthorized(@NonNull String accessToken) {
-                        runOnWorker(
-                                callback,
-                                () -> {
-                                    try {
-                                        preferenceHelper.setSyncEnabled(true);
-                                        SyncState result = conflictStore.sync(accessToken);
-                                        if (result.getStatus() == SyncState.Status.SUCCESS
-                                                && preferenceHelper.isBackgroundSyncEnabled()) {
-                                            backgroundScheduler.enable();
-                                        }
-                                        deliverSuccess(callback, result);
-                                    } catch (Exception error) {
-                                        deliverError(callback, error);
-                                    }
-                                });
+                        if (disconnectGeneration.get() != generationAtTap
+                                || !firebaseGoogleAuth.isSignedIn()) {
+                            deliverError(
+                                    callback,
+                                    new IllegalStateException(
+                                            "Sync was disconnected before it could start"));
+                            return;
+                        }
+                        // Switched on before the submission so a disconnect queued ahead of the
+                        // sync still wins, and back off when the submission is refused: the
+                        // screen is gone, nothing will run, and leaving it on claimed a sync the
+                        // user was never going to get. The refusal itself is reported.
+                        boolean wasEnabled = preferenceHelper.isSyncEnabled();
+                        preferenceHelper.setSyncEnabled(true);
+                        boolean accepted =
+                                runOnWorker(
+                                        callback,
+                                        () -> {
+                                            try {
+                                                SyncState result = conflictStore.sync(accessToken);
+                                                if (result.getStatus() == SyncState.Status.SUCCESS
+                                                        && preferenceHelper
+                                                                .isBackgroundSyncEnabled()) {
+                                                    backgroundScheduler.enable();
+                                                }
+                                                deliverSuccess(callback, result);
+                                            } catch (Exception error) {
+                                                deliverError(callback, error);
+                                            }
+                                        });
+                        if (!accepted && !wasEnabled) {
+                            preferenceHelper.setSyncEnabled(false);
+                        }
                     }
 
                     @Override
@@ -311,13 +345,18 @@ public final class SyncCoordinator {
      * after that activity finished used to hit a terminated pool and throw {@link
      * RejectedExecutionException} from whatever thread delivered it. Checking {@code isShutdown()}
      * first cannot close the race; catching the rejection can.
+     *
+     * @return whether the task was accepted; a refusal has already been reported to {@code
+     *     callback}.
      */
-    private void runOnWorker(@NonNull Callback<?> callback, @NonNull Runnable task) {
+    private boolean runOnWorker(@NonNull Callback<?> callback, @NonNull Runnable task) {
         try {
             workerExecutor.execute(task);
+            return true;
         } catch (RejectedExecutionException rejected) {
             Log.w(TAG, "Sync work could not be scheduled; the screen is gone", rejected);
             deliverError(callback, rejected);
+            return false;
         }
     }
 

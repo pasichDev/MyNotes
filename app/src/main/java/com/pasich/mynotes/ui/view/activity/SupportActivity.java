@@ -230,14 +230,22 @@ public class SupportActivity extends BaseActivity implements BillingManager.Bill
     }
 
     private boolean finishActivity() {
-        if (billingManager != null) {
-            billingManager.destroy();
-        }
         if (purchasesBottomSheet != null) {
             purchasesBottomSheet.dismiss();
         }
         supportFinishAfterTransition();
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Every way out ends the billing client, a rotation or a recreation too: a client left
+        // open keeps this activity alive and goes on handling purchase updates for it.
+        if (billingManager != null) {
+            billingManager.destroy();
+            billingManager = null;
+        }
+        super.onDestroy();
     }
 
     @Override

@@ -196,7 +196,17 @@ public class AppDbHelper implements DbHelper {
 
     @Override
     public Completable updateNote(Note note) {
-        return Completable.fromAction(() -> syncMutationCoordinator.updateNoteContent(note));
+        return Completable.fromAction(() -> {
+            // A note deleted meanwhile must not read as saved: every later edit would be lost.
+            if (!syncMutationCoordinator.updateNoteContent(note)) {
+                throw new NoteDeletedException(note.getId());
+            }
+        });
+    }
+
+    @Override
+    public Completable reviveNote(Note note) {
+        return Completable.fromAction(() -> syncMutationCoordinator.reviveNote(note));
     }
 
     @Override
@@ -304,6 +314,15 @@ public class AppDbHelper implements DbHelper {
     @Override
     public Completable updateTask(Task task) {
         return Completable.fromAction(() -> syncMutationCoordinator.updateTask(task));
+    }
+
+    @Override
+    public Completable updateTasks(List<Task> tasks) {
+        // One transaction, so the task lists are reloaded once rather than once per task.
+        return Completable.fromAction(() ->
+                appDatabase.runInTransaction(() -> {
+                    for (Task task : tasks) syncMutationCoordinator.updateTask(task);
+                }));
     }
 
     @Override

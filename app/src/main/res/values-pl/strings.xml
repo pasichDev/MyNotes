@@ -92,6 +92,8 @@
     <string name="selectRestore">Wybierz opcję Przywróć. skopiuj</string>
     <string name="nextRestore">Przywróć z chmury</string>
     <string name="messageRestoreProcess"><b>Przywracanie danych</b> \nTo okno zamknie się automatycznie po zakończeniu.</string>
+    <string name="restore_already_running">Inne przywracanie wciąż trwa. Wybierz kopię zapasową ponownie, gdy się zakończy.</string>
+    <string name="save_already_running">Inna kopia zapasowa jest wciąż zapisywana. Zapisz ponownie, gdy się zakończy.</string>
 
 
     <!-- Błąd wyników tworzenia kopii zapasowej/przywracania -->

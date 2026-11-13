@@ -3,8 +3,10 @@ package com.pasich.mynotes.ui.presenter;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.util.Log;
+import androidx.annotation.Nullable;
 import com.pasich.mynotes.base.presenter.BasePresenter;
 import com.pasich.mynotes.data.DataManager;
+import com.pasich.mynotes.data.database.NoteDeletedException;
 import com.pasich.mynotes.data.model.Note;
 import com.pasich.mynotes.extendedEditor.models.ParsedNote;
 import com.pasich.mynotes.extendedEditor.utils.EditorDocument;
@@ -14,11 +16,14 @@ import com.pasich.mynotes.utils.constants.AutoSave;
 import com.pasich.mynotes.utils.enums.SaveState;
 import com.pasich.mynotes.utils.navigation.NoteExtras;
 import com.pasich.mynotes.utils.rx.SchedulerProvider;
+import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.SerialDisposable;
 import io.reactivex.subjects.PublishSubject;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
@@ -33,7 +38,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     // Last successfully saved version of the note
     private final Note savedNote = new Note().create("", "", new Date().getTime(), "");
 
-    private long idKey;
+    private volatile long idKey;
     private boolean newNoteKey;
     private boolean extendedEditor = false;
     private boolean isSavingInProgress = false;
@@ -46,6 +51,9 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
     // A save started by flushPending(). Kept out of the composite on purpose: the screen is often
     // being destroyed right after onStop, and disposing the composite must not cancel this write.
     private Disposable flushSave;
+    // Waiting for the next flushPending write to finish. A flush that replaces one still in flight
+    // takes over its waiters, so none is left behind.
+    private final List<Runnable> flushWaiters = new ArrayList<>();
 
     @Inject
     public NotePresenter(
@@ -181,9 +189,22 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
      */
     @Override
     public void flushPending() {
-        if (targetNote == null) return;
-        syncDocumentDerivedFields();
-        if (!hasMeaningfulContent(targetNote) || !isContentChanged()) return;
+        flushPending(null);
+    }
+
+    /**
+     * Like {@link #flushPending()}, then runs {@code onDone} on the UI thread once the note is in
+     * the database (or the write failed), at once when there is nothing to write. Another screen
+     * that reads the note from the database, such as the other editor, is opened from {@code
+     * onDone} so it never reads it before the last edits were written.
+     */
+    public void flushPending(@Nullable Runnable onDone) {
+        if (onDone != null) flushWaiters.add(onDone);
+        if (targetNote != null) syncDocumentDerivedFields();
+        if (targetNote == null || !hasMeaningfulContent(targetNote) || !isContentChanged()) {
+            runFlushWaiters();
+            return;
+        }
 
         Note note = targetNote;
         note.setDate(new Date().getTime());
@@ -191,19 +212,27 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
         updateSaveState(SaveState.SAVING);
         if (flushSave != null) flushSave.dispose();
         flushSave =
-                getDataManager()
-                        .updateNote(note)
+                writeNote(note)
                         .subscribeOn(getSchedulerProvider().io())
                         .observeOn(getSchedulerProvider().ui())
                         .subscribe(
                                 () -> {
                                     savedNote.copyFrom(note);
                                     callback.onSuccess();
+                                    runFlushWaiters();
                                 },
                                 error -> {
                                     Log.e(TAG, "flushPending() failed", error);
                                     callback.onError(error);
+                                    runFlushWaiters();
                                 });
+    }
+
+    private void runFlushWaiters() {
+        if (flushWaiters.isEmpty()) return;
+        List<Runnable> waiting = new ArrayList<>(flushWaiters);
+        flushWaiters.clear();
+        for (Runnable waiter : waiting) waiter.run();
     }
 
     @Override
@@ -285,8 +314,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
 
         getCompositeDisposable()
                 .add(
-                        getDataManager()
-                                .updateNote(note)
+                        writeNote(note)
                                 .subscribeOn(getSchedulerProvider().io())
                                 .observeOn(getSchedulerProvider().ui())
                                 .subscribe(
@@ -298,6 +326,23 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                                             Log.e(TAG, "saveNote() failed", error);
                                             callback.onError(error);
                                         }));
+    }
+
+    /**
+     * Writes the note's content. When the note was deleted meanwhile (a sync applied another
+     * device's delete while it was open), it is put back under its own id with what is on screen:
+     * nothing typed is lost, and the id the screen, its saved state, its draft and the note's
+     * attachment folder all go by stays valid. The edit is newer than the deletion, so it is what
+     * the next sync keeps.
+     */
+    private Completable writeNote(Note note) {
+        return getDataManager()
+                .updateNote(note)
+                .onErrorResumeNext(error -> {
+                    if (!(error instanceof NoteDeletedException)) return Completable.error(error);
+                    Log.w(TAG, "Note " + note.getId() + " was deleted while open; reviving it");
+                    return getDataManager().reviveNote(note);
+                });
     }
 
     /**
@@ -313,8 +358,7 @@ public class NotePresenter extends BasePresenter<NoteContract.view>
                 note.setDate(new Date().getTime());
                 getCompositeDisposable()
                         .add(
-                                getDataManager()
-                                        .updateNote(note)
+                                writeNote(note)
                                         .subscribeOn(getSchedulerProvider().io())
                                         .subscribe(
                                                 () -> savedNote.copyFrom(note),

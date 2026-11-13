@@ -54,6 +54,12 @@ public interface MainContract {
 
     @ActivityScoped
     interface presenter extends BasePresenter<view> {
+        /** The screen became visible: search and statistics follow the database again. */
+        void onViewStarted();
+
+        /** The screen is hidden: stop re-running search and statistics until it is back. */
+        void onViewStopped();
+
         /** Handles the new-note FAB click. */
         void newNotesClick();
 

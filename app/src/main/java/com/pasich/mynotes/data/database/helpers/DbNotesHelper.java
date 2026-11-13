@@ -32,6 +32,12 @@ public interface DbNotesHelper {
 
     Completable updateNote(Note note);
 
+    /**
+     * Stores a note's content, putting the note back under its own id when it was deleted
+     * meanwhile.
+     */
+    Completable reviveNote(Note note);
+
     Completable moveToNotes(List<Note> notes);
 
     Completable setTagNote(String nameTag, int idNote);

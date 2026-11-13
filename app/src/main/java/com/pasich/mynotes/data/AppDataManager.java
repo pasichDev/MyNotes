@@ -297,6 +297,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
+    public Completable reviveNote(Note note) {
+        return dbHelper.reviveNote(note);
+    }
+
+    @Override
     public Completable moveToNotes(List<Note> notes) {
         return dbHelper.moveToNotes(notes);
     }
@@ -400,6 +405,11 @@ public class AppDataManager implements DataManager {
     @Override
     public Completable updateTask(Task task) {
         return dbHelper.updateTask(task);
+    }
+
+    @Override
+    public Completable updateTasks(List<Task> tasks) {
+        return dbHelper.updateTasks(tasks);
     }
 
     @Override

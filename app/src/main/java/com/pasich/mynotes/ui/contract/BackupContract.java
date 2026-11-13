@@ -1,6 +1,8 @@
 package com.pasich.mynotes.ui.contract;
 
 import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import com.pasich.mynotes.base.view.BasePresenter;
 import com.pasich.mynotes.base.view.BaseView;
@@ -38,6 +40,12 @@ public interface BackupContract {
         /** Called after a local copy write attempt; error is true on failure. */
         void createLocalCopyFinish(boolean error);
 
+        /**
+         * Deletes, best effort, the empty file the system picker created for a backup that is not
+         * going to be written after all.
+         */
+        void discardUnwrittenBackupFile(@Nullable Uri uri);
+
         /** Shows a localised error message identified by errorCode and string. */
         void showErrorsText(int errorCode, @StringRes int string);
 
@@ -46,9 +54,6 @@ public interface BackupContract {
 
         /** Displays the result summary of a Google Keep import. */
         void showImportResultOtherApp(GoogleKeepImportResult result);
-
-        /** Registers the import result callback to confirm the import. */
-        void setupImportCallbackOtherApp(GoogleKeepImportResult result);
 
         /** Processes the user-selected file URI from another app. */
         void processSelectedFileOtherApp(Uri fileUri);
@@ -81,7 +86,23 @@ public interface BackupContract {
         /** Reads a Google Keep ZIP archive from the given URI. */
         void importFromZipOtherApp(Uri fileUri);
 
+        /** Drops a scan started by {@link #importFromZipOtherApp} that is no longer wanted. */
+        void cancelImportFromZipOtherApp();
+
         /** Forwards the selected file URI to the view for processing. */
         void startProcessSelectedFileOtherApp(Uri fileUri);
+
+        /**
+         * Adopts the token a recreated screen saved, so it receives results of work it started
+         * before the recreation. Call before {@code viewIsReady}; null keeps a fresh token.
+         */
+        void restoreScreenToken(@Nullable String token);
+
+        /** The token identifying this screen instance, to keep in its saved state. */
+        @NonNull
+        String getScreenToken();
+
+        /** The screen is gone for good (not recreated): drop results nobody can receive now. */
+        void onScreenFinished();
     }
 }
