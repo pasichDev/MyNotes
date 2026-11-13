@@ -2,7 +2,9 @@ package com.pasich.mynotes.utils.backup;
 
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class BackupCacheHelper {
 
     private JsonBackup jsonBackup;

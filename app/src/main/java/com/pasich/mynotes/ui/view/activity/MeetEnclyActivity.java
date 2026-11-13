@@ -62,6 +62,10 @@ public class MeetEnclyActivity extends BaseActivity {
     private static final String STATE_SKIPPED = "encly_skipped";
     private static final String STATE_REASON = "encly_reason";
     private static final String STATE_CLEARED = "encly_cleared";
+    private static final String STATE_EXPORTED_NOTES = "encly_exported_notes";
+    private static final String STATE_EXPORTED_TASKS = "encly_exported_tasks";
+    private static final String STATE_EXPORTED_TAGS = "encly_exported_tags";
+    private static final String STATE_EXPORTED_CATEGORIES = "encly_exported_categories";
 
     @Inject EnclyMigrationRepository repository;
     @Inject UpdateChecker updateChecker;
@@ -79,6 +83,9 @@ public class MeetEnclyActivity extends BaseActivity {
     private int[] resultCounts = new int[4];
     @Nullable private String resultReason;
     private boolean cleared;
+
+    /** What the last hand-off carried; the only records a clear may delete. */
+    @Nullable private EnclyMigrationRepository.Exported exported;
 
     private final ActivityResultLauncher<Intent> enclyLauncher =
             registerForActivityResult(
@@ -274,7 +281,7 @@ public class MeetEnclyActivity extends BaseActivity {
             } else {
                 binding.resultText.setVisibility(View.GONE);
             }
-            binding.clearGroup.setVisibility(cleared ? View.GONE : View.VISIBLE);
+            binding.clearGroup.setVisibility(cleared || !canClear() ? View.GONE : View.VISIBLE);
             binding.clearButton.setEnabled(!busy);
         } else {
             setResultIcon(
@@ -342,12 +349,18 @@ public class MeetEnclyActivity extends BaseActivity {
                 Single.fromCallable(
                                 () -> {
                                     repository.clearArchives();
-                                    return repository.writeArchive(repository.load());
+                                    EnclyMigrationRepository.Library library = repository.load();
+                                    return new android.util.Pair<>(
+                                            repository.writeArchive(library),
+                                            EnclyMigrationRepository.Exported.of(library));
                                 })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                file -> launchEncly(file, activityClassName),
+                                prepared -> {
+                                    exported = prepared.second;
+                                    launchEncly(prepared.first, activityClassName);
+                                },
                                 error -> {
                                     Log.e(TAG, "prepare hand-off", error);
                                     clearArchivesInBackground();
@@ -446,10 +459,15 @@ public class MeetEnclyActivity extends BaseActivity {
     }
 
     private void clearMyNotes() {
+        EnclyMigrationRepository.Exported snapshot = exported;
+        if (snapshot == null || !canClear()) {
+            render();
+            return;
+        }
         busy = true;
         render();
         disposables.add(
-                Completable.fromAction(repository::clearAllData)
+                Completable.fromAction(() -> repository.clearExported(snapshot))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -494,10 +512,33 @@ public class MeetEnclyActivity extends BaseActivity {
         outState.putInt(STATE_SKIPPED, resultCounts[3]);
         outState.putString(STATE_REASON, resultReason);
         outState.putBoolean(STATE_CLEARED, cleared);
+        if (exported != null) {
+            // Saved before Encly is opened, so the snapshot survives this process being killed
+            // while Encly is in front.
+            outState.putLongArray(STATE_EXPORTED_NOTES, exported.notes);
+            outState.putLongArray(STATE_EXPORTED_TASKS, exported.tasks);
+            outState.putLongArray(STATE_EXPORTED_TAGS, exported.tags);
+            outState.putLongArray(STATE_EXPORTED_CATEGORIES, exported.categories);
+        }
+    }
+
+    /**
+     * Whether clearing My Notes may be offered: only for what the hand-off carried, and only when
+     * Encly took all of it. With records skipped, some of the library exists nowhere but here.
+     */
+    private boolean canClear() {
+        return exported != null && result != null && result.success && result.skipped == 0;
     }
 
     private void restoreResult(@NonNull Bundle state) {
         cleared = state.getBoolean(STATE_CLEARED, false);
+        long[] notes = state.getLongArray(STATE_EXPORTED_NOTES);
+        long[] tasks = state.getLongArray(STATE_EXPORTED_TASKS);
+        long[] tags = state.getLongArray(STATE_EXPORTED_TAGS);
+        long[] categories = state.getLongArray(STATE_EXPORTED_CATEGORIES);
+        if (notes != null && tasks != null && tags != null && categories != null) {
+            exported = new EnclyMigrationRepository.Exported(notes, tasks, tags, categories);
+        }
         if (!state.getBoolean(STATE_HAS_RESULT, false)) return;
         resultCode = state.getInt(STATE_RESULT_CODE);
         resultCounts =

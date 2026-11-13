@@ -13,13 +13,16 @@ import com.google.gson.Gson;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentStorage;
 import com.pasich.mynotes.extendedEditor.attach.AttachmentUrl;
 import com.pasich.mynotes.utils.backup.models.JsonBackup;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -48,50 +51,82 @@ public class ZipBackupHelper {
         return data.length > 2 && data[0] == 0x50 && data[1] == 0x4B;
     }
 
-    /** Create ZIP backup */
-    public static File writeZipBackup(Context ctx, JsonBackup backup) throws Exception {
+    /**
+     * Detects ZIP by the magic header "PK", reading only the first bytes of the stream.
+     *
+     * <p>The stream is left part-read; the caller opens the document again to parse it.
+     */
+    public static boolean isZip(@NonNull InputStream in) throws IOException {
+        int first = in.read();
+        int second = first == -1 ? -1 : in.read();
+        return first == 0x50 && second == 0x4B;
+    }
 
+    /**
+     * Creates the ZIP backup in the cache directory.
+     *
+     * <p>Everything is streamed — the JSON straight from Gson, each attachment in chunks — so the
+     * size of the library, not of the heap, is the limit.
+     */
+    public static File writeZipBackup(Context ctx, JsonBackup backup) throws IOException {
         File zipFile = new File(ctx.getCacheDir(), FILE_NAME_BACKUP_MNBKN);
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
+        try {
+            writeZipBackup(backup, new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR), zipFile);
+        } catch (IOException | RuntimeException e) {
+            if (zipFile.exists() && !zipFile.delete()) {
+                Log.w(TAG, "Could not remove a partly written backup archive");
+            }
+            throw e;
+        }
+        return zipFile;
+    }
 
-        // Write backup.json
-        zos.putNextEntry(new ZipEntry(FILE_NAME_BACKUP));
-        String json = new Gson().toJson(backup);
-        zos.write(json.getBytes(StandardCharsets.UTF_8));
-        zos.closeEntry();
+    /** Filesystem-only core of {@link #writeZipBackup(Context, JsonBackup)}. */
+    static void writeZipBackup(
+            @NonNull JsonBackup backup, @NonNull File attachmentsDir, @NonNull File zipFile)
+            throws IOException {
+        try (ZipOutputStream zos =
+                new ZipOutputStream(
+                        new BufferedOutputStream(new FileOutputStream(zipFile), 64 * 1024))) {
 
-        // Write attachments (full structure)
-        File baseDir = new File(ctx.getFilesDir(), ATTACHMENTS_BASE_DIR);
+            // Write backup.json
+            zos.putNextEntry(new ZipEntry(FILE_NAME_BACKUP));
+            Writer writer = new OutputStreamWriter(zos, StandardCharsets.UTF_8);
+            new Gson().toJson(backup, writer);
+            // Flushed, not closed: closing the writer would close the archive.
+            writer.flush();
+            zos.closeEntry();
 
-        if (baseDir.exists()) {
-            File[] noteDirs = baseDir.listFiles();
+            // Write attachments (full structure)
+            File[] noteDirs = attachmentsDir.listFiles();
+            if (noteDirs == null) return;
 
-            if (noteDirs != null) {
-                for (File noteDir : noteDirs) {
+            byte[] chunk = new byte[64 * 1024];
+            for (File noteDir : noteDirs) {
+                if (!noteDir.isDirectory()) continue;
+                File[] files = noteDir.listFiles();
+                if (files == null) continue;
 
-                    if (!noteDir.isDirectory()) continue;
-                    File[] files = noteDir.listFiles();
+                for (File attachment : files) {
+                    if (!attachment.isFile()) continue;
+                    String entryName =
+                            ATTACHMENTS_BASE_DIR
+                                    + "/"
+                                    + noteDir.getName()
+                                    + "/"
+                                    + attachment.getName();
 
-                    if (files == null) continue;
-
-                    for (File attachment : files) {
-                        String entryName =
-                                ATTACHMENTS_BASE_DIR
-                                        + "/"
-                                        + noteDir.getName()
-                                        + "/"
-                                        + attachment.getName();
-
-                        zos.putNextEntry(new ZipEntry(entryName));
-                        zos.write(Files.readAllBytes(attachment.toPath()));
-                        zos.closeEntry();
+                    zos.putNextEntry(new ZipEntry(entryName));
+                    try (InputStream in = new FileInputStream(attachment)) {
+                        int n;
+                        while ((n = in.read(chunk)) != -1) {
+                            zos.write(chunk, 0, n);
+                        }
                     }
+                    zos.closeEntry();
                 }
             }
         }
-
-        zos.close();
-        return zipFile;
     }
 
     /**

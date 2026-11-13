@@ -82,7 +82,10 @@ import javax.inject.Inject;
 /** Activity for creating and restoring app data backups. */
 @AndroidEntryPoint
 public class BackupActivity extends BaseActivity
-        implements BackupContract.view, AccountSyncFragment.Host {
+        implements BackupContract.view,
+                AccountSyncFragment.Host,
+                BackupOptionsDialog.Host,
+                OtherAppImportDialog.Host {
 
     private static final String TAG = "BackupActivity";
 
@@ -166,7 +169,6 @@ public class BackupActivity extends BaseActivity
     @Nullable private Uri pendingRestorePick;
 
     private static final String STATE_PENDING_RESTORE_PICK = "pendingRestorePick";
-    private OtherAppImportDialog importDialog;
     private Dialog progressDialog;
     private RoomSyncStore roomSyncStore;
     private SyncCoordinatorFactory.Result syncSetup;
@@ -217,6 +219,7 @@ public class BackupActivity extends BaseActivity
         binding.setPresenter((BackupPresenter) presenter);
 
         setupTabs();
+        resumeOtherAppImport();
 
         if (savedInstanceState != null) {
             Uri pick = savedInstanceState.getParcelable(STATE_PENDING_RESTORE_PICK);
@@ -1001,113 +1004,119 @@ public class BackupActivity extends BaseActivity
     /** Save local backup (2/3) - start intent save json file */
     @Override
     public void openIntentSaveBackup(JsonBackup jsonBackup) {
-        BackupOptionsDialog.newInstance(
-                        new BackupOptionsCallback() {
-                            @Override
-                            public void onGoogleDrive() {
-                                saveBackupToGoogleDrive(
-                                        BackupActivity.this,
-                                        ScramblerBackupHelper.encodeString(jsonBackup),
-                                        new DriveProcess() {
-                                            @Override
-                                            public void onSuccess(Uri uri, String nameFile) {
-                                                // Формуємо інтент для Drive
-                                                Intent intent = new Intent(Intent.ACTION_SEND);
-                                                intent.setType("*/*");
-                                                intent.putExtra(
-                                                        Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN);
-                                                intent.putExtra(
-                                                        Intent.EXTRA_MIME_TYPES,
-                                                        new String[] {
-                                                            "application/zip",
-                                                            "application/octet-stream"
-                                                        });
-                                                intent.putExtra(Intent.EXTRA_STREAM, uri);
-                                                intent.putExtra(
-                                                        Intent.EXTRA_SUBJECT,
-                                                        FILE_NAME_BACKUP_MNBKN);
-                                                intent.setPackage(GOOGLE_DRIVE_PACKAGE);
-                                                intent.addFlags(
-                                                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                launchGoogleDriveIntent(
-                                                        launcherExportDrive,
-                                                        intent,
-                                                        R.string.export_drive_error);
-                                            }
-
-                                            @Override
-                                            public void onError(String error) {
-                                                onInfoSnack(
-                                                        error,
-                                                        null,
-                                                        SnackBarInfo.Error,
-                                                        Snackbar.LENGTH_LONG);
-                                            }
-                                        });
-                            }
-
-                            @Override
-                            public void onDeviceStorage() {
-                                intentExportDevice.launch(
-                                        new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                                                .addCategory(Intent.CATEGORY_OPENABLE)
-                                                .putExtra(
-                                                        Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN)
-                                                .setType("*/*")
-                                                .putExtra(
-                                                        Intent.EXTRA_MIME_TYPES,
-                                                        new String[] {
-                                                            "application/zip",
-                                                            "application/octet-stream"
-                                                        }));
-                            }
-                        },
-                        false)
+        BackupOptionsDialog.newInstance(false)
                 .show(getSupportFragmentManager(), "ShareOptionsDialog");
+    }
+
+    @NonNull
+    @Override
+    public BackupOptionsCallback backupOptionsCallback(boolean isRestore) {
+        return isRestore ? restoreOptionsCallback() : saveOptionsCallback();
+    }
+
+    /**
+     * Where a backup is saved to.
+     *
+     * <p>Asked of the activity when the user chooses, not captured when the dialog opens: after a
+     * rotation the dialog is recreated and the activity that opened it is gone.
+     */
+    private BackupOptionsCallback saveOptionsCallback() {
+        return new BackupOptionsCallback() {
+            @Override
+            public void onGoogleDrive() {
+                JsonBackup jsonBackup = ((BackupPresenter) presenter).serviceCache.getJsonBackup();
+                if (jsonBackup == null) {
+                    // The process was recreated since the backup was gathered.
+                    createLocalCopyFinish(false);
+                    return;
+                }
+                saveBackupToGoogleDrive(
+                        BackupActivity.this,
+                        ScramblerBackupHelper.encodeString(jsonBackup),
+                        new DriveProcess() {
+                            @Override
+                            public void onSuccess(Uri uri, String nameFile) {
+                                // Формуємо інтент для Drive
+                                Intent intent = new Intent(Intent.ACTION_SEND);
+                                intent.setType("*/*");
+                                intent.putExtra(Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN);
+                                intent.putExtra(
+                                        Intent.EXTRA_MIME_TYPES,
+                                        new String[] {
+                                            "application/zip", "application/octet-stream"
+                                        });
+                                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                intent.putExtra(Intent.EXTRA_SUBJECT, FILE_NAME_BACKUP_MNBKN);
+                                intent.setPackage(GOOGLE_DRIVE_PACKAGE);
+                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                launchGoogleDriveIntent(
+                                        launcherExportDrive, intent, R.string.export_drive_error);
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                onInfoSnack(error, null, SnackBarInfo.Error, Snackbar.LENGTH_LONG);
+                            }
+                        });
+            }
+
+            @Override
+            public void onDeviceStorage() {
+                intentExportDevice.launch(
+                        new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                                .addCategory(Intent.CATEGORY_OPENABLE)
+                                .putExtra(Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN)
+                                .setType("*/*")
+                                .putExtra(
+                                        Intent.EXTRA_MIME_TYPES,
+                                        new String[] {
+                                            "application/zip", "application/octet-stream"
+                                        }));
+            }
+        };
     }
 
     /** Restore local backup (2/3) - start intent load json file */
     @Override
     public void openIntentReadBackup() {
-        BackupOptionsDialog.newInstance(
-                        new BackupOptionsCallback() {
-                            @Override
-                            public void onGoogleDrive() {
-                                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                                intent.putExtra(Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN);
-                                intent.setType("*/*");
-                                intent.putExtra(
+        BackupOptionsDialog.newInstance(true)
+                .show(getSupportFragmentManager(), "ShareOptionsDialog");
+    }
+
+    /** Where a backup is restored from; see {@link #saveOptionsCallback()}. */
+    private BackupOptionsCallback restoreOptionsCallback() {
+        return new BackupOptionsCallback() {
+            @Override
+            public void onGoogleDrive() {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.putExtra(Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN);
+                intent.setType("*/*");
+                intent.putExtra(
+                        Intent.EXTRA_MIME_TYPES,
+                        new String[] {
+                            "application/json", "application/zip", "application/octet-stream"
+                        });
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setPackage(GOOGLE_DRIVE_PACKAGE);
+                launchGoogleDriveIntent(launcherImportDrive, intent, R.string.drive_selected_error);
+            }
+
+            @Override
+            public void onDeviceStorage() {
+                intentImportDevice.launch(
+                        new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                                .addCategory(Intent.CATEGORY_OPENABLE)
+                                .setType("*/*")
+                                .putExtra(Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN)
+                                .putExtra(
                                         Intent.EXTRA_MIME_TYPES,
                                         new String[] {
                                             "application/json",
                                             "application/zip",
                                             "application/octet-stream"
-                                        });
-                                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                                intent.setPackage(GOOGLE_DRIVE_PACKAGE);
-                                launchGoogleDriveIntent(
-                                        launcherImportDrive, intent, R.string.drive_selected_error);
-                            }
-
-                            @Override
-                            public void onDeviceStorage() {
-                                intentImportDevice.launch(
-                                        new Intent(Intent.ACTION_OPEN_DOCUMENT)
-                                                .addCategory(Intent.CATEGORY_OPENABLE)
-                                                .setType("*/*")
-                                                .putExtra(
-                                                        Intent.EXTRA_TITLE, FILE_NAME_BACKUP_MNBKN)
-                                                .putExtra(
-                                                        Intent.EXTRA_MIME_TYPES,
-                                                        new String[] {
-                                                            "application/json",
-                                                            "application/zip",
-                                                            "application/octet-stream"
-                                                        }));
-                            }
-                        },
-                        true)
-                .show(getSupportFragmentManager(), "ShareOptionsDialog");
+                                        }));
+            }
+        };
     }
 
     @Override
@@ -1181,6 +1190,10 @@ public class BackupActivity extends BaseActivity
 
     @Override
     public void showProcessRestoreDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            // Already up: a restore picked up after a rotation and a pick being judged both ask.
+            return;
+        }
         MaterialAlertDialogBuilder builder =
                 new MaterialAlertDialogBuilder(this, R.style.progressDialogRestore)
                         .setCancelable(false)
@@ -1216,19 +1229,57 @@ public class BackupActivity extends BaseActivity
 
     @Override
     public void processSelectedFileOtherApp(Uri fileUri) {
-        importDialog = OtherAppImportDialog.newInstance();
-        importDialog.show(getSupportFragmentManager(), "import_progress");
-        importDialog.updateProgress(true);
+        if (fileUri == null || importDialog() != null) {
+            return;
+        }
+        OtherAppImportDialog.newInstance(fileUri)
+                .show(getSupportFragmentManager(), OtherAppImportDialog.TAG);
         presenter.importFromZipOtherApp(fileUri);
+    }
+
+    /**
+     * Restarts the scan behind an import dialog the framework brought back after a rotation.
+     *
+     * <p>The scan was disposed with the previous instance, so the restored dialog would otherwise
+     * spin forever.
+     */
+    private void resumeOtherAppImport() {
+        OtherAppImportDialog dialog = importDialog();
+        if (dialog == null || dialog.hasResult()) {
+            return;
+        }
+        Uri file = dialog.getFile();
+        if (file == null) {
+            dialog.dismissAllowingStateLoss();
+            return;
+        }
+        presenter.importFromZipOtherApp(file);
+    }
+
+    @Nullable
+    private OtherAppImportDialog importDialog() {
+        return getSupportFragmentManager().findFragmentByTag(OtherAppImportDialog.TAG)
+                        instanceof OtherAppImportDialog dialog
+                ? dialog
+                : null;
     }
 
     @Override
     public void showImportResultOtherApp(GoogleKeepImportResult result) {
-        importDialog.showResult(result);
+        OtherAppImportDialog dialog = importDialog();
+        // Null when the user closed the dialog before the scan finished: nothing to show.
+        if (dialog != null) {
+            dialog.showResult(result);
+        }
     }
 
     @Override
-    public void setupImportCallbackOtherApp(GoogleKeepImportResult result) {
-        importDialog.setCallback(importResult -> presenter.importDataOtherApp(importResult));
+    public void onOtherAppImportConfirmed(@NonNull GoogleKeepImportResult result) {
+        presenter.importDataOtherApp(result);
+    }
+
+    @Override
+    public void onOtherAppImportCancelled() {
+        presenter.cancelImportFromZipOtherApp();
     }
 }
