@@ -82,7 +82,10 @@ import javax.inject.Inject;
 /** Activity for creating and restoring app data backups. */
 @AndroidEntryPoint
 public class BackupActivity extends BaseActivity
-        implements BackupContract.view, AccountSyncFragment.Host, BackupOptionsDialog.Host {
+        implements BackupContract.view,
+                AccountSyncFragment.Host,
+                BackupOptionsDialog.Host,
+                OtherAppImportDialog.Host {
 
     private static final String TAG = "BackupActivity";
 
@@ -166,7 +169,6 @@ public class BackupActivity extends BaseActivity
     @Nullable private Uri pendingRestorePick;
 
     private static final String STATE_PENDING_RESTORE_PICK = "pendingRestorePick";
-    private OtherAppImportDialog importDialog;
     private Dialog progressDialog;
     private RoomSyncStore roomSyncStore;
     private SyncCoordinatorFactory.Result syncSetup;
@@ -217,6 +219,7 @@ public class BackupActivity extends BaseActivity
         binding.setPresenter((BackupPresenter) presenter);
 
         setupTabs();
+        resumeOtherAppImport();
 
         if (savedInstanceState != null) {
             Uri pick = savedInstanceState.getParcelable(STATE_PENDING_RESTORE_PICK);
@@ -1187,6 +1190,10 @@ public class BackupActivity extends BaseActivity
 
     @Override
     public void showProcessRestoreDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            // Already up: a restore picked up after a rotation and a pick being judged both ask.
+            return;
+        }
         MaterialAlertDialogBuilder builder =
                 new MaterialAlertDialogBuilder(this, R.style.progressDialogRestore)
                         .setCancelable(false)
@@ -1222,19 +1229,57 @@ public class BackupActivity extends BaseActivity
 
     @Override
     public void processSelectedFileOtherApp(Uri fileUri) {
-        importDialog = OtherAppImportDialog.newInstance();
-        importDialog.show(getSupportFragmentManager(), "import_progress");
-        importDialog.updateProgress(true);
+        if (fileUri == null || importDialog() != null) {
+            return;
+        }
+        OtherAppImportDialog.newInstance(fileUri)
+                .show(getSupportFragmentManager(), OtherAppImportDialog.TAG);
         presenter.importFromZipOtherApp(fileUri);
+    }
+
+    /**
+     * Restarts the scan behind an import dialog the framework brought back after a rotation.
+     *
+     * <p>The scan was disposed with the previous instance, so the restored dialog would otherwise
+     * spin forever.
+     */
+    private void resumeOtherAppImport() {
+        OtherAppImportDialog dialog = importDialog();
+        if (dialog == null || dialog.hasResult()) {
+            return;
+        }
+        Uri file = dialog.getFile();
+        if (file == null) {
+            dialog.dismissAllowingStateLoss();
+            return;
+        }
+        presenter.importFromZipOtherApp(file);
+    }
+
+    @Nullable
+    private OtherAppImportDialog importDialog() {
+        return getSupportFragmentManager().findFragmentByTag(OtherAppImportDialog.TAG)
+                        instanceof OtherAppImportDialog dialog
+                ? dialog
+                : null;
     }
 
     @Override
     public void showImportResultOtherApp(GoogleKeepImportResult result) {
-        importDialog.showResult(result);
+        OtherAppImportDialog dialog = importDialog();
+        // Null when the user closed the dialog before the scan finished: nothing to show.
+        if (dialog != null) {
+            dialog.showResult(result);
+        }
     }
 
     @Override
-    public void setupImportCallbackOtherApp(GoogleKeepImportResult result) {
-        importDialog.setCallback(importResult -> presenter.importDataOtherApp(importResult));
+    public void onOtherAppImportConfirmed(@NonNull GoogleKeepImportResult result) {
+        presenter.importDataOtherApp(result);
+    }
+
+    @Override
+    public void onOtherAppImportCancelled() {
+        presenter.cancelImportFromZipOtherApp();
     }
 }

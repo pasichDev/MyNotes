@@ -47,9 +47,6 @@ public interface BackupContract {
         /** Displays the result summary of a Google Keep import. */
         void showImportResultOtherApp(GoogleKeepImportResult result);
 
-        /** Registers the import result callback to confirm the import. */
-        void setupImportCallbackOtherApp(GoogleKeepImportResult result);
-
         /** Processes the user-selected file URI from another app. */
         void processSelectedFileOtherApp(Uri fileUri);
 
@@ -80,6 +77,9 @@ public interface BackupContract {
 
         /** Reads a Google Keep ZIP archive from the given URI. */
         void importFromZipOtherApp(Uri fileUri);
+
+        /** Drops a scan started by {@link #importFromZipOtherApp} that is no longer wanted. */
+        void cancelImportFromZipOtherApp();
 
         /** Forwards the selected file URI to the view for processing. */
         void startProcessSelectedFileOtherApp(Uri fileUri);
